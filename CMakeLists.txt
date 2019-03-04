@@ -18,6 +18,20 @@ option(DOWNLOAD_EIGEN3    "Download and install Eigen3 if not found"            
 option(DOWNLOAD_ALL       "Download and install all dependencies if not found"  ON)
 
 
+#################################################################
+### Set default build type for compilation if none was given  ###
+#################################################################
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Setting build type to Release as none was specified.")
+    set(CMAKE_BUILD_TYPE "Release" CACHE
+            STRING "Choose the type of build." FORCE)
+    # Set the possible values of build type for cmake-gui
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+            "Debug" "Release")
+endif ()
+
+
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "..." FORCE)
 endif()
@@ -39,9 +53,6 @@ execute_process(COMMAND ${GET_OS_INFO_CMD}
 message("========= DETECTED OS =========")
 message("${OS_PROPERTIES}")
 message("===============================")
-
-
-
 
 
 
@@ -71,10 +82,10 @@ message("=======================================================================
 message("")
 
 
-
+# Bind projects together
 add_custom_target(${PROJECT_NAME})
 add_dependencies(${PROJECT_NAME} h5pp hdf5 Eigen3 spdlog)
-
+target_link_libraries(h5pp INTERFACE hdf5 Eigen3 spdlog)
 
 #######################################################
 ### Install library                                 ###

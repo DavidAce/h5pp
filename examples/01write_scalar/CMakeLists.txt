@@ -12,7 +12,4 @@ find_package(h5pp HINTS ../../install REQUIRED)
 
 if (h5pp_FOUND)
     target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::h5pp)
-    target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::Eigen3)
-    target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::hdf5)
-    target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::spdlog)
 endif()
