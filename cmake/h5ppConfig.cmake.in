@@ -1,0 +1,52 @@
+@PACKAGE_INIT@
+
+
+set(Eigen3_DIR                      "@PACKAGE_Eigen3_DIR@")
+set(EIGEN_INCLUDE_DIR               "@PACKAGE_EIGEN_INCLUDE_DIR@")
+set(spdlog_DIR                      "@PACKAGE_spdlog_DIR@")
+set(HDF5_DIR                        "@PACKAGE_HDF5_DIR@")
+set(HDF5_ROOT                       "@PACKAGE_HDF5_ROOT@")
+set(INSTALL_DIRECTORY_THIRD_PARTY   "@PACKAGE_INSTALL_DIRECTORY_THIRD_PARTY@")
+
+find_package(Eigen3 3.3.4 HINTS ${Eigen3_DIR} ${EIGEN_INCLUDE_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 REQUIRED)
+find_package(spdlog HINTS ${spdlog_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog  REQUIRED)
+find_package(HDF5 COMPONENTS C HL REQUIRED)
+
+include(${CMAKE_CURRENT_LIST_DIR}/h5ppTargets.cmake)
+
+
+
+
+################################
+####  Require c++17 support  ###
+################################
+#set(CMAKE_CXX_STANDARD 17)
+#set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#target_compile_features(h5pp::h5pp INTERFACE cxx_std_17)
+#set_target_properties(h5pp::h5pp
+#        PROPERTIES
+#        CXX_STANDARD 17
+#        CXX_STANDARD_REQUIRED ON
+#        CXX_EXTENSIONS OFF)
+#
+#
+#######################################
+####  Require experimental headers  ###
+#######################################
+## Use cmake_policy CMP0067 to let try_compile honor current CMAKE_CXX_STANDARD setting.
+## See here
+## https://stackoverflow.com/questions/47213356/cmake-using-corrext-c-standard-when-checking-for-header-files
+#cmake_policy(SET CMP0067 NEW)
+#include(CheckIncludeFileCXX)
+#set(CMAKE_REQUIRED_FLAGS -std=c++17  -lstdc++fs -l${PATH_TO_LIBSTDCXXFS})
+#check_include_file_cxx(experimental/filesystem    has_experimental_filesystem)
+#check_include_file_cxx(experimental/type_traits   has_experimental_type_traits)
+#if(NOT has_experimental_filesystem OR NOT has_experimental_type_traits )
+#    message(FATAL_ERROR "\n\
+#        Missing one or more experimental headers.\n\
+#        Consider using a newer compiler (GCC 7 or above, Clang 6 or above),\n\
+#        or checking the compiler flags.")
+#endif()
+
+
+
