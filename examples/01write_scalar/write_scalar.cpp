@@ -2,7 +2,6 @@
 #include <iostream>
 #include <h5pp/h5pp.h>
 
-const size_t size_dataset = 20;
 int main(){
 
     h5pp::File file("someFile.h5", "output", true,false,true);
