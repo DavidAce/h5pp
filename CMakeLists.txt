@@ -16,7 +16,7 @@ option(ENABLE_TESTS       "Enable testing"                                      
 option(DOWNLOAD_HDF5      "Download and install HDF5 if not found"              ON)
 option(DOWNLOAD_SPDLOG    "Download and install spdlog if not found"            ON)
 option(DOWNLOAD_EIGEN3    "Download and install Eigen3 if not found"            ON)
-option(DOWNLOAD_ALL       "Download and install all dependencies if not found"  ON)
+option(DOWNLOAD_ALL       "Download and install all dependencies if not found"  OFF)
 
 
 #################################################################
