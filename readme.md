@@ -1,7 +1,8 @@
-# libh5pp
-libh5pp is a C++ wrapper for HDF5 that focuses on simplicity for the end-user. 
+# h5pp
+h5pp is a header-only C++ wrapper for HDF5 that focuses on simplicity for the end-user. 
 
 ## Features
+* Header only, just include to use.
 * Support for common data types:
     - `ìnt`, `float`, `double` in unsigned and long versions.
     - any of the above types in std::complex<> form.
@@ -9,7 +10,7 @@ libh5pp is a C++ wrapper for HDF5 that focuses on simplicity for the end-user.
     - `std::vector`
     - `Eigen` types such as `Matrix`, `Array` and `Tensor` (from the unsupported module), with automatic conversion to/from row-major storage.
 * Standard CMake build, install and linking. 
-* Automated install of dependencies. 
+* Automated install of dependencies if desired.
 
 ## Usage
 
@@ -43,7 +44,7 @@ int main(){
 ## Requirements
 * C++17 capable compiler.
 * CMake 3.11
-* Optional dependencies:
+* Automated dependencies:
     - [**HDF5**](https://support.hdfgroup.org/HDF5/) (tested with version >= 1.10).
     - [**Eigen**](http://eigen.tuxfamily.org) (tested with version >= 3.3.4).
 
@@ -90,7 +91,7 @@ In addition, the following variables can be set to help guide CMake's `find_pack
 
 
 ### Linking 
-
+#### Using install method
 After installing the library it is easily imported using CMake's `find_package()`, just point it to the install directory.
 
 ```cmake
@@ -105,3 +106,8 @@ After installing the library it is easily imported using CMake's `find_package()
         target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::h5pp)
     endif()
 ```
+
+The target `h5pp::h5pp` will import and enable everything you need to compile with `h5pp`.
+
+#### Without install method (i.e. just copying the header folder)
+You will have to manually link the dependencies `hdf5`, `Eigen3` and `splog` to your project.

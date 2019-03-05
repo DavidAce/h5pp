@@ -44,12 +44,7 @@ int main()
     bool        overwrite_file_if_found = true;
 
 
-    h5pp::File file("readTest.h5",
-                    "output",
-                    true,
-                    false,
-                    true);
-
+    h5pp::File file("readTest.h5", "output",h5pp::AccessMode::RENAME,true,0);
     std::cout << "Writing vectorDouble      : \n" <<  vectorDouble   << std::endl;
     std::cout << "Writing vectorComplex     : \n" <<  vectorComplex  << std::endl;
     std::cout << "Writing tensorComplex     : \n" <<  tensorComplex  << std::endl;

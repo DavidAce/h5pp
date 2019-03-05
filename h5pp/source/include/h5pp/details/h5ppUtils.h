@@ -5,8 +5,8 @@
 #ifndef H5PP_INFO_H
 #define H5PP_INFO_H
 #include <spdlog/spdlog.h>
-#include <h5pp/details/h5ppType.h>
-#include <h5pp/details/h5ppTypeCheck.h>
+#include "h5ppType.h"
+#include "h5ppTypeCheck.h"
 
 
 

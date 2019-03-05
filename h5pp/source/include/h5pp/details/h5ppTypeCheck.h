@@ -7,7 +7,7 @@
 #include <experimental/type_traits>
 #include <Eigen/Core>
 #include <unsupported/Eigen/CXX11/Tensor>
-#include <h5pp/details/h5ppTypeComplex.h>
+#include "h5ppTypeComplex.h"
 
 namespace h5pp{
     namespace Type{

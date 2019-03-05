@@ -97,7 +97,7 @@ target_link_libraries(h5pp INTERFACE hdf5 Eigen3 spdlog)
 
 
 include(GNUInstallDirs)
-set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp)
+set(INSTALL_CONFIGDIR share/cmake/h5pp)
 set(H5PP_ROOT ${CMAKE_INSTALL_PREFIX})
 set(H5PP_DIR  ${INSTALL_CONFIGDIR})
 

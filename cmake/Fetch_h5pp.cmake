@@ -22,11 +22,11 @@ ExternalProject_Add(external_H5PP
 ExternalProject_Get_Property(external_H5PP INSTALL_DIR)
 add_library(h5pp INTERFACE)
 add_dependencies(h5pp external_H5PP)
-target_link_libraries(
-        h5pp
-        INTERFACE
-        ${INSTALL_DIR}/lib/libh5pp.a
-)
+#target_link_libraries(
+#        h5pp
+#        INTERFACE
+#        ${INSTALL_DIR}/lib/libh5pp.a
+#)
 target_include_directories(
         h5pp
         INTERFACE

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(simpleWrite)
-add_executable(${PROJECT_NAME} simpleWrite.cpp ${CMAKE_SOURCE_DIR}/h5pp/source/h5ppCpp/h5ppFile.cpp)
+add_executable(${PROJECT_NAME} simpleWrite.cpp )
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/h5pp/source/include)
 target_compile_options (${PROJECT_NAME} PRIVATE "${COMMON_OPTIONS}")                                 ### Common options
 target_compile_options (${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${DEBUG_OPTIONS}>")               ### Debug build options

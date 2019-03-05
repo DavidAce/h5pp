@@ -5,7 +5,6 @@
 #ifndef H5PP_TYPECOMPLEX_H
 #define H5PP_TYPECOMPLEX_H
 
-//#include <h5pp/details/h5ppType.h>
 
 namespace h5pp{
     namespace Type{

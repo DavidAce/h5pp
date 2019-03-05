@@ -79,53 +79,33 @@ endif()
 ###########################################
 ###  Add source files                   ###
 ###########################################
-add_library(${PROJECT_NAME}
-        source/include/h5pp/h5pp.h
-        source/h5ppCpp/h5ppFile.cpp
-        source/include/h5pp/details/h5ppFile.h
-        source/include/h5pp/details/nmspc_tensor_extra.h
-        source/include/h5pp/details/h5ppTypeCheck.h source/include/h5pp/details/h5ppTypeComplex.h)
+add_library(${PROJECT_NAME} INTERFACE)
 add_library(h5pp::h5pp ALIAS h5pp)
-
 target_include_directories(
         ${PROJECT_NAME}
-        PRIVATE
-        source source/include
         INTERFACE
         $<INSTALL_INTERFACE:include>
-
 )
-
-
-
-
 
 
 
 ###########################################
 ###  Apply RELEASE/DEBUG compile flags  ###
 ###########################################
-target_compile_options (${PROJECT_NAME} PRIVATE ${COMMON_OPTIONS})                                   ### Common options
-target_compile_options (${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${DEBUG_OPTIONS}>")               ### Debug build options
-target_compile_options (${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:${RELEASE_OPTIONS}>")           ### Release build options
-target_compile_options (${PROJECT_NAME} PRIVATE "$<$<CONFIG:PROFILE>:${PROFILE_OPTIONS}>")           ### Profiling build options
-
-target_link_libraries  (${PROJECT_NAME} PRIVATE -Wl,--no-allow-shlib-undefined )
-target_link_libraries  (${PROJECT_NAME} PRIVATE -Wl,--no-undefined )
-target_link_libraries  (${PROJECT_NAME} PRIVATE -flto)                                               ### Link time optimization flag
-target_link_libraries  (${PROJECT_NAME} PUBLIC -lstdc++fs)                                           ### For experimental::filesystem
+#target_compile_options (${PROJECT_NAME} INTERFACE ${COMMON_OPTIONS})                                   ### Common options
+#target_compile_options (${PROJECT_NAME} INTERFACE "$<$<CONFIG:DEBUG>:${DEBUG_OPTIONS}>")               ### Debug build options
+#target_compile_options (${PROJECT_NAME} INTERFACE "$<$<CONFIG:RELEASE>:${RELEASE_OPTIONS}>")           ### Release build options
+#target_compile_options (${PROJECT_NAME} INTERFACE "$<$<CONFIG:PROFILE>:${PROFILE_OPTIONS}>")           ### Profiling build options
+#
+#target_link_libraries  (${PROJECT_NAME} INTERFACE -Wl,--no-allow-shlib-undefined )
+#target_link_libraries  (${PROJECT_NAME} INTERFACE -Wl,--no-undefined )
+target_link_libraries  (${PROJECT_NAME} INTERFACE -flto)                                               ### Link time optimization flag
+target_link_libraries  (${PROJECT_NAME} INTERFACE -lstdc++fs)                                           ### For experimental::filesystem
 
 ###############################
 ###  Require c++17 support  ###
 ###############################
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
-set_target_properties(${PROJECT_NAME}
-        PROPERTIES
-        CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED ON
-        CXX_EXTENSIONS OFF)
 
 
 ######################################
@@ -164,17 +144,15 @@ endif()
 
 
 
-# Require packages before building
+# Require packages
 find_package(Eigen3 3.3.4 HINTS ${Eigen3_DIR} ${EIGEN_INCLUDE_DIR} REQUIRED)
 find_package(spdlog HINTS ${spdlog_DIR} ${spdlog_ROOT} NO_DEFAULT_PATH REQUIRED)
-#find_package(HDF5 COMPONENTS C HL HINTS ${HDF5_DIR} ${HDF5_ROOT} REQUIRED)
-#find_package(HDF5 1.10 COMPONENTS C CXX HL REQUIRED)
 include(cmake/FindPackageHDF5.cmake)
 
 
-target_link_libraries(${PROJECT_NAME} PUBLIC hdf5)
-target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
-target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} INTERFACE hdf5)
+target_link_libraries(${PROJECT_NAME} INTERFACE Eigen3::Eigen)
+target_link_libraries(${PROJECT_NAME} INTERFACE spdlog::spdlog)
 
 get_target_property(EIGEN_INFO  Eigen3::Eigen           INTERFACE_INCLUDE_DIRECTORIES)
 get_target_property(SPDLOG_INFO spdlog::spdlog          INTERFACE_INCLUDE_DIRECTORIES)
@@ -193,7 +171,7 @@ message("")
 
 #
 ########################################################
-#### Install library                                 ###
+#### Install                                         ###
 #### Default path is ${PROJECT_SOURCE_DIR}/install   ###
 #### where ${PROJECT_SOURCE_DIR}  is the path of     ###
 #### this CMakeLists.txt                             ###
@@ -201,12 +179,6 @@ message("")
 #
 
 include(GNUInstallDirs)
-install(TARGETS ${PROJECT_NAME}
-        EXPORT        h5ppTargets
-        RUNTIME       DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE       DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        )
-
+install(TARGETS ${PROJECT_NAME} EXPORT h5ppTargets)
 install(DIRECTORY source/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 

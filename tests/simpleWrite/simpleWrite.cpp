@@ -4,7 +4,7 @@
 
 int main(){
 
-    h5pp::File file("someFile.h5", "output", true,false,true);
+    h5pp::File file("someFile.h5", "output");
     using namespace std::complex_literals;
 
     std::string                         dummyString         ("This is a dummy string");

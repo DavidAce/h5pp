@@ -6,15 +6,12 @@
 #define H5PP_HDF5_H
 #include <hdf5.h>
 #include <spdlog/spdlog.h>
-#include <h5pp/details/h5ppTypeCheck.h>
-//#include <h5pp/h5pp.h>
-//#include "h5ppFile.h"
+#include "h5ppTypeCheck.h"
+
 
 
 namespace h5pp{
     namespace Hdf5{
-
-        bool check_if_link_exists_recursively(hid_t file, std::string path);
 
         inline bool check_if_link_exists_recursively(hid_t file, std::string path){
             std::stringstream path_stream(path);
@@ -113,6 +110,71 @@ namespace h5pp{
                 extend_dataset(dataset_relative_name, 0, h5pp::Utils::get_Size(data));
             }
         }
+
+
+
+        inline void create_group_link(hid_t file, hid_t plist_lncr, const std::string &group_relative_name) {
+            //Check if group exists already
+            spdlog::trace("Creating group link: {}", group_relative_name);
+            std::stringstream path_stream(group_relative_name);
+            std::vector<std::string> split_path;
+            std::string head;
+            std::string stem = "/";
+            while(std::getline(path_stream, head, '/')){
+                split_path.push_back(stem + head);
+                stem += head + "/";
+            }
+
+            for(auto &group_name : split_path){
+                if (not h5pp::Hdf5::check_if_link_exists_recursively(file, group_name)) {
+                    hid_t group = H5Gcreate(file, group_name.c_str(), plist_lncr, H5P_DEFAULT, H5P_DEFAULT);
+                    H5Gclose(group);
+                }
+            }
+        }
+
+        inline void write_symbolic_link(hid_t file ,const std::string &src_path, const std::string &tgt_path){
+            bool exists = h5pp::Hdf5::check_if_link_exists_recursively(file, src_path);
+            if (not exists)throw std::runtime_error("Trying to write soft link to non-existing path: " + src_path);
+            herr_t retval = H5Lcreate_soft(src_path.c_str(), file, tgt_path.c_str(), H5P_DEFAULT, H5P_DEFAULT);
+        }
+
+
+        inline void create_dataset_link(hid_t file,hid_t plist_lncr, const DatasetProperties &props){
+            if (not h5pp::Hdf5::check_if_link_exists_recursively(file, props.dset_name)){
+                hid_t dataspace = h5pp::Utils::get_DataSpace_unlimited(props.ndims);
+                hid_t dset_cpl  = H5Pcreate(H5P_DATASET_CREATE);
+                H5Pset_layout(dset_cpl, H5D_CHUNKED);
+                H5Pset_chunk(dset_cpl, props.ndims, props.chunk_size.data());
+                // H5Pset_deflate (dset_cpl ,props.compression_level);
+                hid_t dataset = H5Dcreate(file,
+                                          props.dset_name.c_str(),
+                                          props.datatype,
+                                          dataspace,
+                                          plist_lncr,
+                                          dset_cpl,
+                                          H5P_DEFAULT);
+                H5Dclose(dataset);
+                H5Sclose(dataspace);
+                H5Pclose(dset_cpl);
+            }
+        }
+
+
+        inline void select_hyperslab(const hid_t &filespace, const hid_t &memspace){
+            const int ndims = H5Sget_simple_extent_ndims(filespace);
+            std::vector<hsize_t> mem_dims(ndims);
+            std::vector<hsize_t> file_dims(ndims);
+            std::vector<hsize_t> start(ndims);
+            H5Sget_simple_extent_dims(memspace , mem_dims.data(), nullptr);
+            H5Sget_simple_extent_dims(filespace, file_dims.data(), nullptr);
+            for(int i = 0; i < ndims; i++){
+                start[i] = file_dims[i] - mem_dims[i];
+            }
+            H5Sselect_hyperslab(filespace, H5S_SELECT_SET, start.data(), nullptr, mem_dims.data(), nullptr);
+        }
+
+
 
 //        template<typename DataType>
 //        void extendDataset(h5pp::File &h5ppFile, const DataType &data, const std::string & dataset_relative_name){

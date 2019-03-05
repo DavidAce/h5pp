@@ -4,7 +4,7 @@
 
 int main(){
 
-    h5pp::File file("someFile.h5", "output", true,false,true);
+    h5pp::File file("someFile.h5", "output");
     using namespace std::complex_literals;
     std::vector<std::complex<double>> testdata (5, 10.0 + 5.0i);
     std::vector<std::complex<int>> testdata2 (5, std::complex<int>(8,5));

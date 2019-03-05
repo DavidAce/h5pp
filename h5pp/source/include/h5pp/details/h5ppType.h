@@ -4,10 +4,9 @@
 
 #ifndef H5PP_DATATYPE_H
 #define H5PP_DATATYPE_H
-//#include <h5pp/details/h5ppLogger.h>
-//#include <h5pp/details/h5ppUtils.h>
-#include <h5pp/details/h5ppTypeCheck.h>
-#include <h5pp/details/h5ppTypeComplex.h>
+
+#include "h5ppTypeCheck.h"
+#include "h5ppTypeComplex.h"
 //namespace fs = std::experimental::filesystem;
 
 
