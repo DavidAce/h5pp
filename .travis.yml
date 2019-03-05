@@ -1,0 +1,120 @@
+dist: xenial
+sudo: false
+language: generic
+notifications:
+  email: false
+branches:
+  only:
+    - master
+
+
+matrix:
+  fast_finish: true
+  include:
+    - os: linux
+      compiler: gcc-7
+      env:
+        - COMPILER_NAME=gcc
+        - GCC_VERSION=7
+        - CC=gcc-7
+        - CXX=g++-7
+        - FC=gfortran-7
+        - MATRIX_EVAL="CXX=g++-7 && CC=gcc-7 && FC=gfortran-7"
+      cache:
+        apt: true
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+          packages:
+            - gcc-7
+            - g++-7
+            - gfortran-7
+    - os: linux
+      compiler: gcc-8
+      env:
+        - COMPILER_NAME=gcc
+        - GCC_VERSION=8
+        - CC=gcc-8
+        - CXX=g++-8
+        - FC=gfortran-8
+        - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8 && FC=gfortran-8"
+      cache:
+        apt: true
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+          packages:
+            - gcc-8
+            - g++-8
+            - gfortran-8
+    - os: linux
+      compiler: clang-7
+      env:
+        - COMPILER_NAME=clang
+        - CXX=clang++-7
+        - CC=clang-7
+        - CLANG_VERSION=7
+        - FC=gfortran-8
+        - MATRIX_EVAL="CXX=clang++-7 && CC=clang-7 && FC=gfortran-8"
+      cache:
+        apt: true
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline:  'ppa:ubuntu-toolchain-r/test'
+            - sourceline:  'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main'
+              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - llvm-7-dev
+            - clang-7
+            - libstdc++-8-dev
+            - gfortran-8
+    - os: linux
+      compiler: gcc-7 (preinstalled libs)
+      env:
+        - COMPILER_NAME=gcc
+        - GCC_VERSION=7
+        - CC=gcc-7
+        - CXX=g++-7
+        - FC=gfortran-7
+        - MATRIX_EVAL="CXX=g++-7 && CC=gcc-7 && FC=gfortran-7"
+      cache:
+        apt: true
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+          packages:
+            - gcc-7
+            - g++-7
+            - gfortran-7
+            - libhdf5-dev
+            - libhdf5-serial-dev
+            - hdf5-helpers
+            - hdf5-tools
+            - libsz2
+            - zlibc
+            - libgsl0-dev
+            - libopenblas-dev
+            - libarpack2-dev
+            - libarpack++2-dev
+            - liblapacke
+            - liblapacke-dev
+
+before_install:
+  - eval "${MATRIX_EVAL}"
+
+script:
+  - cmake -E make_directory build/Debug
+  - cd build/Debug
+    cmake -G "CodeBlocks - Unix Makefiles" ../../
+    cmake --build . --target libh5pp -- -j 2
+
+
+
