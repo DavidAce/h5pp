@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/DavidAce/libh5pp.svg?branch=master)](https://travis-ci.org/DavidAce/libh5pp)# h5pp
+[![Build Status](https://travis-ci.org/DavidAce/libh5pp.svg?branch=master)](https://travis-ci.org/DavidAce/libh5pp)
+
+# h5pp
 h5pp is a header-only C++ wrapper for HDF5 that focuses on simplicity for the end-user. 
 
 ## Features
