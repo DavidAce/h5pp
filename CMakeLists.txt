@@ -164,13 +164,15 @@ if(ENABLE_TESTS)
     add_custom_target(all_tests ALL
             DEPENDS simpleWrite
             DEPENDS readWrite
+            DEPENDS h5pp external_H5PP
+#            DEPENDS ${PROJECT_NAME}
             )
-    add_dependencies(${PROJECT_NAME} all_tests)
+    add_dependencies(${PROJECT_NAME} all_tests h5pp external_H5PP)
     add_custom_command(TARGET ${PROJECT_NAME}
             POST_BUILD
             COMMENT "Running Tests"
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            DEPENDS ${PROJECT_NAME} all_tests
+            DEPENDS all_tests
             COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
 endif()
 
