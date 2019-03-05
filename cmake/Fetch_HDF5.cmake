@@ -1,62 +1,6 @@
 
 
 include(cmake/FindPackageHDF5.cmake)
-#find_file(HDF5_C_COMPILER_EXECUTABLE        NAMES h5cc  HINTS /usr/bin /usr/local/bin )
-#find_file(HDF5_CXX_COMPILER_EXECUTABLE      NAMES h5c++ HINTS /usr/bin /usr/local/bin )
-#if(BUILD_SHARED_LIBS)
-#    set(HDF5_TARGET_SUFFIX "shared")
-#    set(HDF5_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
-#    set(HDF5_USE_STATIC_LIBRARIES OFF)
-#else()
-#    set(HDF5_TARGET_SUFFIX "static")
-#    set(HDF5_LIBRARY_SUFFIX ${CMAKE_STATIC_LIBRARY_SUFFIX})
-#    set(HDF5_USE_STATIC_LIBRARIES TRUE)
-#endif()
-#
-#set(HDF5_FIND_DEBUG OFF)
-#set(HDF5_ROOT ${INSTALL_DIRECTORY_THIRD_PARTY}/hdf5)
-#find_package(HDF5 1.10 COMPONENTS C CXX HL)
-##find_package(HDF5 1.10 COMPONENTS C CXX HL HINTS ${HDF5_DIR} ${HDF5_ROOT} ${INSTALL_DIRECTORY_THIRD_PARTY}/hdf5)
-#
-#if(HDF5_FOUND)
-#    message(STATUS "HDF5 FOUND IN SYSTEM: ${HDF5_BUILD_DIR} ${HDF5_CXX_INCLUDE_DIRS}")
-#    # Add convenience libraries to collect all the hdf5 libraries
-#    add_library(hdf5    INTERFACE)
-#    if(TARGET hdf5::hdf5-${HDF5_TARGET_SUFFIX})
-#        target_link_libraries(hdf5
-#                INTERFACE
-#                hdf5::hdf5-${HDF5_TARGET_SUFFIX}
-#                hdf5::hdf5_hl-${HDF5_TARGET_SUFFIX}
-#                hdf5::hdf5_cpp-${HDF5_TARGET_SUFFIX}
-#                hdf5::hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
-#                )
-#    else()
-#        add_dependencies(hdf5  SZIP)
-#        target_link_libraries(
-#                hdf5
-#                INTERFACE
-#                ${HDF5_CXX_LIBRARY_hdf5}
-#                ${HDF5_CXX_LIBRARY_hdf5_hl}
-#                ${HDF5_CXX_LIBRARY_hdf5_cpp}
-#                ${HDF5_CXX_LIBRARY_hdf5_hl_cpp}
-#                ${HDF5_CXX_LIBRARY_iomp5} ${HDF5_CXX_LIBRARY_sz}
-#                $<LINK_ONLY:-lpthread>
-#                $<LINK_ONLY:-Wl,--no-as-needed -ldl -lm -lz -Wl,--as-needed>
-#
-#        )
-#        target_include_directories(
-#                hdf5
-#                INTERFACE
-#                ${HDF5_INCLUDE_DIR}
-#        )
-#
-#    endif()
-#    get_cmake_property(_variableNames VARIABLES)
-#    foreach (_variableName ${_variableNames})
-#        if("${_variableName}" MATCHES "HDF5" OR "${_variableName}" MATCHES "hdf5" OR "${_variableName}" MATCHES "h5")
-#            message(STATUS "${_variableName}=${${_variableName}}")
-#        endif()
-#    endforeach()
 
 if(TARGET hdf5)
         message(STATUS "HDF5 FOUND IN SYSTEM: ${HDF5_BUILD_DIR} ${HDF5_CXX_INCLUDE_DIRS}")
@@ -90,9 +34,7 @@ elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
 
     ExternalProject_Get_Property(external_HDF5 INSTALL_DIR)
     add_library(hdf5 INTERFACE)
-#    add_library(hdf5::hdf5          ALIAS hdf5)
     add_dependencies(hdf5          external_HDF5)
-    set(HDF5_ROOT             ${INSTALL_DIR})
     set(HDF5_DIR              ${INSTALL_DIR}/share/cmake/hdf5)
 
     #    if (HDF5_IS_PARALLEL)

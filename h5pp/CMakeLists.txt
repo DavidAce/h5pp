@@ -6,6 +6,9 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
 
+cmake_policy(SET CMP0074 NEW)
+cmake_policy(SET CMP0075 NEW)
+
 
 
 ################################################################

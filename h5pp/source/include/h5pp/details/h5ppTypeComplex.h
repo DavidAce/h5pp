@@ -16,11 +16,37 @@ namespace h5pp{
             inline hid_t H5T_COMPLEX_ULONG;
             inline hid_t H5T_COMPLEX_DOUBLE;
             inline hid_t H5T_COMPLEX_FLOAT;
+
+
             template <typename T>
             struct H5T_COMPLEX_STRUCT {
                 T real;   /*real part*/
                 T imag;   /*imaginary part*/
+                using value_type = T;
+                using Scalar = T;
+                H5T_COMPLEX_STRUCT() = default;
+                explicit H5T_COMPLEX_STRUCT(const std::complex<T> &in){
+                    real = in.real();
+                    imag = in.imag();
+                }
+                H5T_COMPLEX_STRUCT & operator=(const std::complex<T> & rhs){
+                    real = rhs.real();
+                    imag = rhs.imag();
+                    return *this;
+                }
             };
+
+//            template <typename T>
+//            struct H5T_COMPLEX_STRUCT<std::complex<T>> {
+//                T real;   /*real part*/
+//                T imag;   /*imaginary part*/
+//                H5T_COMPLEX_STRUCT(std::complex<T> &in){
+//                    real = in.real();
+//                    imag = in.imag();
+//                }
+//            };
+
+
 
         }
 

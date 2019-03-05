@@ -189,30 +189,12 @@ void h5pp::File::set_output_file_path() {
 
 }
 
-//bool h5pp::File::check_link_exists_recursively(std::string path){
-//    std::stringstream path_stream(path);
-//    std::vector<std::string> split_path;
-//    std::string part;
-//    while(std::getline(path_stream, part, '/')){
-//        split_path.push_back(part);
-//    }
-//    bool exists = true;
-//    part.clear();
-//    std::cout << "Searching for path: " << path << std::endl;
-//    for(unsigned long i = 0; i < split_path.size(); i++){
-//        part += "/" + split_path[i];
-//        std::cout << "   Looking for part: " << part << std::endl;
-//        exists = exists and H5Lexists(file, part.c_str(), H5P_DEFAULT);
-//        if (not exists){break;}
-//    }
-//    return exists;
-//}
 
 
 void h5pp::File::write_symbolic_link(const std::string &src_path, const std::string &tgt_path){
     hid_t file = open_file();
 //    hid_t src_link = H5Dopen(file, src_path.c_str(), H5P_DEFAULT);
-    bool exists = check_link_exists_recursively(file,src_path);
+    bool exists = h5pp::Hdf5::check_if_link_exists_recursively(file, src_path);
     if (not exists)throw std::runtime_error("Trying to write soft link to non-existing path: " + src_path);
     retval = H5Lcreate_soft(src_path.c_str(), file, tgt_path.c_str(), H5P_DEFAULT, H5P_DEFAULT);
     H5Fclose(file);
@@ -220,70 +202,11 @@ void h5pp::File::write_symbolic_link(const std::string &src_path, const std::str
 
 
 
-bool h5pp::File::check_link_exists_recursively(hid_t file, std::string path){
-    std::stringstream path_stream(path);
-    std::vector<std::string> split_path;
-    std::string part;
-    while(std::getline(path_stream, part, '/')){
-        if (not part.empty()) {
-            split_path.push_back(part);
-        }
-    }
-//    std::cout << "split into: \n";
-//    for(auto & str : split_path) std::cout << " " << str << std::endl;
-
-    bool exists = true;
-    std::string sum_parts;
-//    std::cout << "Searching for path: " << path << std::endl;
-    for(unsigned long i = 0; i < split_path.size(); i++){
-        sum_parts += "/" + split_path[i] ;
-//        std::cout << "   Looking for part: " << sum_parts << " H5Lexists: "<< H5Lexists(file, sum_parts.c_str(), H5P_DEFAULT) << std::endl;
-        exists = exists and H5Lexists(file, sum_parts.c_str(), H5P_DEFAULT) > 0;
-        if (not exists){break;}
-//        else if (i < split_path.size()-1){print_contents_of_group(sum_parts);}
-    }
-//    if (not exists){std::cerr << "   Could not find: " << path << std::endl;}
-    return exists;
-}
-
-
-
-
-bool h5pp::File::check_if_attribute_exists(hid_t file,const std::string &link_name, const std::string &attribute_name){
-    hid_t dataset      = H5Dopen(file, link_name.c_str(), H5P_DEFAULT);
-    bool exists = false;
-    unsigned int num_attrs = H5Aget_num_attrs(dataset);
-//    hid_t attr_id = H5Aopen_name(dataset, attribute_name.c_str());
-//    if (attr_id < 0 ){
-//        std::cerr << "Warning! Does not exists! \n";
-//        exists = false;
-//    }else{
-//        H5Aclose(attr_id);
-//        exists = true;
-//    }
-
-
-    for (unsigned int i = 0; i < num_attrs; i ++){
-        hid_t attr_id = H5Aopen_idx(dataset, i);
-        hsize_t buf_size = 0;
-        std::vector<char> buf;
-//        char *buf;
-        buf_size = H5Aget_name (attr_id, buf_size, nullptr);
-        buf.resize(buf_size+1);
-        buf_size = H5Aget_name (attr_id, buf_size+1, buf.data());
-        std::string attr_name (buf.data());
-        H5Aclose(attr_id);
-        if (attribute_name == attr_name){exists  = true ; break;}
-    }
-
-    H5Dclose(dataset);
-    return exists;
-}
 
 
 void h5pp::File::create_dataset_link(hid_t file, const DatasetProperties &props){
-    if (not check_link_exists_recursively(file,props.dset_name)){
-        hid_t dataspace = get_DataSpace_unlimited(props.ndims);
+    if (not h5pp::Hdf5::check_if_link_exists_recursively(file, props.dset_name)){
+        hid_t dataspace = h5pp::Utils::get_DataSpace_unlimited(props.ndims);
         hid_t dset_cpl  = H5Pcreate(H5P_DATASET_CREATE);
         H5Pset_layout(dset_cpl, H5D_CHUNKED);
         H5Pset_chunk(dset_cpl, props.ndims, props.chunk_size.data());
@@ -315,7 +238,7 @@ void h5pp::File::create_group_link(const std::string &group_relative_name) {
     }
 
     for(auto &group_name : split_path){
-        if (not check_link_exists_recursively(file,group_name)) {
+        if (not h5pp::Hdf5::check_if_link_exists_recursively(file, group_name)) {
             hid_t group = H5Gcreate(file, group_name.c_str(), plist_lncr, H5P_DEFAULT, H5P_DEFAULT);
             H5Gclose(group);
         }
@@ -336,35 +259,7 @@ void h5pp::File::select_hyperslab(const hid_t &filespace, const hid_t &memspace)
     H5Sselect_hyperslab(filespace, H5S_SELECT_SET, start.data(), nullptr, mem_dims.data(), nullptr);
 }
 
-void h5pp::File::set_extent_dataset(hid_t file,const DatasetProperties &props){
-    if (check_link_exists_recursively(file,props.dset_name)) {
-        hid_t dataset = H5Dopen(file, props.dset_name.c_str(), H5P_DEFAULT);
-        H5Dset_extent(dataset, props.dims.data());
-        H5Dclose(dataset);
-    }else{
-        std::cerr << "Link does not exist, yet the extent is being set." << std::endl;
-        exit(1);
-    }
-}
 
-void h5pp::File::extend_dataset(hid_t file, const std::string & dataset_relative_name, const int dim, const int extent){
-    if (H5Lexists(file, dataset_relative_name.c_str(), H5P_DEFAULT)) {
-        hid_t dataset = H5Dopen(file, dataset_relative_name.c_str(), H5P_DEFAULT);
-        // Retrieve the current size of the memspace (act as if you don't know it's size and want to append)
-        hid_t filespace = H5Dget_space(dataset);
-        const int ndims = H5Sget_simple_extent_ndims(filespace);
-        std::vector<hsize_t> old_dims(ndims);
-        std::vector<hsize_t> new_dims(ndims);
-        H5Sget_simple_extent_dims(filespace, old_dims.data(), nullptr);
-        new_dims = old_dims;
-        new_dims[dim] += extent;
-        H5Dset_extent(dataset, new_dims.data());
-        H5Dclose(dataset);
-        H5Sclose(filespace);
-        H5Fflush(file,H5F_SCOPE_LOCAL);
-    }
-
-}
 
 
 //herr_t

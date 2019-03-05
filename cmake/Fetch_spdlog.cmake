@@ -26,7 +26,6 @@ elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
     add_library(spdlog INTERFACE)
     add_library(spdlog::spdlog ALIAS spdlog)
     set(spdlog_DIR ${INSTALL_DIR}/lib/cmake/spdlog)
-    set(spdlog_ROOT ${INSTALL_DIR})
     add_dependencies(spdlog external_SPDLOG)
 
     target_include_directories(

@@ -8,7 +8,6 @@
 #  The user can guide the find pattern with variables:
 #       BUILD_SHARED_LIBS           ON/OFF for shared/static libs
 #       HDF5_REQUIRED               to require HDF5 to be found, set to ON
-#       HDF5_ROOT                   set to the install dir of HDF5
 #       HDF5_WANT_VERSION           sets the required version (default 1.10)
 #
 
@@ -51,33 +50,42 @@ if(HDF5_FOUND)
                 hdf5::hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
                 )
     else()
-            get_cmake_property(_variableNames VARIABLES)
-            foreach (_variableName ${_variableNames})
-                if("${_variableName}" MATCHES "HDF5" OR "${_variableName}" MATCHES "hdf5" OR "${_variableName}" MATCHES "h5")
-                    message(STATUS "${_variableName}=${${_variableName}}")
-                endif()
-            endforeach()
+#            get_cmake_property(_variableNames VARIABLES)
+#            foreach (_variableName ${_variableNames})
+#                if("${_variableName}" MATCHES "HDF5" OR "${_variableName}" MATCHES "hdf5" OR "${_variableName}" MATCHES "h5")
+#                    message(STATUS "${_variableName}=${${_variableName}}")
+#                endif()
+#            endforeach()
         message(STATUS "HDF5 FOUND IN SYSTEM: ${HDF5_LIBRARIES}")
         add_dependencies(hdf5  SZIP)
+        if (_HDF5_LPATH AND NOT HDF5_ROOT)
+            set(HDF5_ROOT ${_HDF5_LPATH})
+        endif()
         target_link_libraries(
-                hdf5
-                INTERFACE
-                ${HDF5_LIBRARIES}
-#                ${HDF5_CXX_HL_LIBRARIES}
-#                ${HDF5_CXX_LIBRARY_hdf5}
-#                ${HDF5_CXX_LIBRARY_hdf5_hl}
-#                ${HDF5_CXX_LIBRARY_hdf5_cpp}
-#                ${HDF5_CXX_LIBRARY_hdf5_hl_cpp}
-#                ${HDF5_CXX_LIBRARY_iomp5} ${HDF5_CXX_LIBRARY_sz}
-#                $<LINK_ONLY:${HDF5_CXX_LIBRARY_pthread}>
-#                $<LINK_ONLY:"-Wl,--no-as-needed -ldl -lm -lz -Wl,--as-needed">
+            hdf5
+            INTERFACE
+            ${HDF5_HL_LIBRARIES}
+            ${HDF5_LIBRARIES}
+#            ${HDF5_CXX_HL_LIBRARIES}
+#            ${HDF5_CXX_LIBRARY_hdf5}
+#            ${HDF5_CXX_LIBRARY_hdf5_hl}
+#            ${HDF5_CXX_LIBRARY_hdf5_cpp}
+#            ${HDF5_CXX_LIBRARY_hdf5_hl_cpp}
+#            ${HDF5_CXX_LIBRARY_iomp5} ${HDF5_CXX_LIBRARY_sz}
+#            $<LINK_ONLY:${HDF5_CXX_LIBRARY_pthread}>
+#            $<LINK_ONLY:"-Wl,--no-as-needed -ldl -lm -lz -Wl,--as-needed">
 
         )
+
         target_include_directories(
                 hdf5
                 INTERFACE
                 ${HDF5_INCLUDE_DIR}
         )
+
+
+
+
 
     endif()
 endif()

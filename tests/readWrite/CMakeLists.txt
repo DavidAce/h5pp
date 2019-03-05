@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.10)
+project(readWrite)
+
+add_executable(${PROJECT_NAME} readWrite.cpp ${CMAKE_SOURCE_DIR}/h5pp/source/h5ppCpp/h5ppFile.cpp)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/h5pp/source/include)
+target_compile_options (${PROJECT_NAME} PRIVATE "${COMMON_OPTIONS}")                                 ### Common options
+target_compile_options (${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${DEBUG_OPTIONS}>")               ### Debug build options
+target_compile_options (${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:${RELEASE_OPTIONS}>")           ### Release build options
+target_link_libraries(${PROJECT_NAME} PRIVATE hdf5 Eigen3 spdlog)
+target_compile_features (${PROJECT_NAME} PRIVATE cxx_std_17)
+target_compile_options  (${PROJECT_NAME} PRIVATE -std=c++17)
+target_link_libraries   (${PROJECT_NAME} PRIVATE -lstdc++fs)
+add_test(NAME readWriteTest WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND ${PROJECT_NAME})

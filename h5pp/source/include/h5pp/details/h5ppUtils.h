@@ -13,95 +13,145 @@
 namespace h5pp{
     namespace Utils{
 
-        template <typename T>
-        auto complex_vector_to_rowmajor(const std::vector<std::complex<T>> &data){
-            std::vector<std::complex<T>> new_data = data;
-//            auto it1 = data.begin();
-//            auto it2 = data.begin();
-//            std::advance(it2,1);
-//            while(true){
-//                new_data.emplace_back(it1->real(), it2->real());
-//                std::advance(it1,2);
-//                if(it1 == data.end()){break;}
-//                std::advance(it2,2);
-//                if(it2 == data.end()){break;}
-//            }
-//            it1 = data.begin();
-//            it2 = data.begin();
-//            std::advance(it2,1);
-//            while(true){
-//                new_data.emplace_back(it1->imag(), it2->imag());
-//                std::advance(it1,2);
-//                if(it1 == data.end()){break;}
-//                std::advance(it2,2);
-//                if(it2 == data.end()){break;}
-//            }
 
-//            while (i < data.size() and j < new_data.size()) {
-////                new_data[j].real() = data[i++].real();
-////                new_data[j].imag() = data[i++].real();
-//                new_data[j] = std::complex<T>(data[i].real(), data[i+1].real());
-//                i +=2;
-//            }
-//            i = 0;
-//            while (i < data.size() and  j < new_data.size()) {
-////                new_data[j].real() = data[i++].imag();
-////                new_data[j].imag() = data[i++].imag();
-//                new_data[j] = std::complex<T>(data[i].imag(), data[i+1].imag());
-//                j++;
-//                i +=2;
-//            }
-            return new_data;
+        template<typename DataType>
+        hsize_t get_Size(const DataType &data){
+            namespace tc = h5pp::Type::Check;
+            if constexpr (tc::has_member_size<DataType>::value)          {return data.size();} //Fails on clang?
+            else if constexpr (std::is_arithmetic<DataType>::value)      {return 1;}
+            else if constexpr (std::is_pod<DataType>::value)             {return 1;}
+            else if constexpr (tc::isStdComplex<DataType>())             {return 1;}
+            else{
+                spdlog::warn("WARNING: get_Size can't match the type provided: " + std::string(typeid(data).name()));
+                return data.size();
+            }
+        }
 
+
+        template<typename DataType>
+        constexpr int get_Rank() {
+            namespace tc = h5pp::Type::Check;
+            if      constexpr(tc::is_eigen_tensor<DataType>::value){return (int) DataType::NumIndices;}
+            else if constexpr(tc::is_eigen_core<DataType>::value){return 2; }
+            else if constexpr(std::is_arithmetic<DataType>::value){return 1; }
+            else if constexpr(tc::is_vector<DataType>::value){return 1;}
+            else if constexpr(std::is_same<std::string, DataType>::value){return 1;}
+            else if constexpr(std::is_same<const char *,DataType>::value){return 1;}
+            else if constexpr(std::is_array<DataType>::value){return 1;}
+            else if constexpr(std::is_pod<DataType>::value){return 1;}
+            else if constexpr(tc::isStdComplex<DataType>()){return 1;}
+            else {
+                tc::print_type_and_exit_compile_time<DataType>();
+            }
+        }
+
+
+        inline hid_t get_DataSpace_unlimited(int rank){
+            std::vector<hsize_t> dims(rank);
+            std::vector<hsize_t> max_dims(rank);
+            std::fill_n(dims.begin(), rank, 0);
+            std::fill_n(max_dims.begin(), rank, H5S_UNLIMITED);
+            return H5Screate_simple(rank, dims.data(), max_dims.data());
         }
 
 
 
-        template<typename DataType>
-        auto convert_complex_data(const DataType &data){
-            static_assert(h5pp::Type::Check::isComplex<DataType>());
-//            if constexpr (not h5pp::Type::isComplex<DataType>()){
-//                throw std::logic_error("Tried to convert non-complex data to complex: " + std::string(typeid(data).name()));
-//            }
 
-            if constexpr(h5pp::Type::Check::is_eigen_tensor<DataType>::value or h5pp::Type::Check::is_eigen_matrix_or_array<DataType>()){
-                std::vector<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<typename DataType::Scalar>> new_data(data.size());
-                for (int i = 0; i < data.size(); i++) {
-                    new_data[i].real = data(i).real();
-                    new_data[i].imag = data(i).imag();
-                }
+
+        template <typename DataType>
+        std::vector<hsize_t> get_Dimensions(const DataType &data) {
+            namespace tc = h5pp::Type::Check;
+            int rank = get_Rank<DataType>();
+            std::vector<hsize_t> dims(rank);
+            if constexpr (tc::is_eigen_tensor<DataType>::value){
+                std::copy(data.dimensions().begin(), data.dimensions().end(), dims.begin());
+                return dims;
+            }
+            else if constexpr (tc::is_eigen_core <DataType>::value) {
+                dims[0] = (hsize_t) data.rows();
+                dims[1] = (hsize_t) data.cols();
+                return dims;
+            }
+            else if constexpr(tc::is_vector<DataType>::value){
+                dims[0]={data.size()};
+                return dims;
+            }
+            else if constexpr(std::is_array<DataType>::value){
+                dims[0]={data.size()};
+                return dims;
+            }
+
+            else if constexpr(std::is_same<std::string, DataType>::value){
+                // Read more about this step here
+                //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
+//            dims[0]={data.size()};
+                dims[0]= 1;
+                return dims;
+            }
+            else if constexpr(std::is_same<const char *, DataType>::value){
+                // Read more about this step here
+                //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
+//            dims[0]={data.size()};
+                dims[0]= 1;
+                return dims;
+            }
+            else if constexpr (std::is_arithmetic<DataType>::value or tc::isStdComplex<DataType>()){
+                dims[0]= 1;
+                return dims;
+            }
+
+            else{
+                tc::print_type_and_exit_compile_time<DataType>();
+                std::string error = "get_Dimensions can't match the type provided: " + std::string(typeid(DataType).name());
+                spdlog::critical(error);
+                throw(std::logic_error(error));
+            }
+
+        }
+
+        template<typename DataType>
+        hid_t get_MemSpace(const DataType &data) {
+            auto rank = get_Rank<DataType>();
+            auto dims = get_Dimensions<DataType>(data);
+            if constexpr (std::is_same<std::string, DataType>::value){
+                // Read more about this step here
+                //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
+//            return H5Screate (H5S_SCALAR);
+
+                return H5Screate_simple(rank, dims.data(), nullptr);
+//            return get_DataSpace_unlimited(rank);
+//            return H5Screate_simple(rank, dims.data(),maxdims);
+
+            }else{
+                return H5Screate_simple(rank, dims.data(), nullptr);
+            }
+        }
+
+
+        template<typename DataType>
+        auto convertComplexDataToH5T(const DataType &data){
+            static_assert(h5pp::Type::Check::hasStdComplex<DataType>() or h5pp::Type::Check::isStdComplex<DataType>(),
+                    "Data must be complex for conversion to H5T_COMPLEX_STRUCT");
+            if constexpr(h5pp::Type::Check::is_eigen_type<DataType>::value){
+                using scalarType  = typename DataType::Scalar;
+                using complexType = typename scalarType::value_type;
+                std::vector<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<complexType>> new_data;
+                new_data.insert(new_data.end(), data.data(), data.data()+data.size());
                 return new_data;
-//                if constexpr(std::is_same<typename DataType::Scalar, std::complex<double>>::value) {
-//
-//                }
             }
             else if constexpr(h5pp::Type::Check::is_vector<DataType>::value) {
-                using vectorType = typename DataType::value_type;
-                using scalarType = typename vectorType::value_type;
-                std::vector<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<scalarType>> new_data(data.size());
-                for (size_t i = 0; i < data.size(); i++) {
-                    new_data[i].real = data[i].real();
-                    new_data[i].imag = data[i].imag();
-                    std::cout << "real: "  << data[i].real() << " imag: "  << data[i].imag() << std::endl;
-                }
+                using scalarType  = typename DataType::value_type;
+                using complexType = typename scalarType::value_type;
+                std::vector<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<complexType>> new_data;
+                new_data.insert(new_data.end(), data.data(), data.data()+data.size());
                 return new_data;
-
-//                if constexpr(std::is_same<typename DataType::value_type, std::complex<double>>::value) {
-
-//                }
             }
-
-            else if  constexpr (std::is_arithmetic<DataType>::value){
-                std::vector<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<DataType>> new_data(1);
-                new_data[0].real = data.real();
-                new_data[0].imag = data.imag();
-                return new_data;
+            else if  constexpr (h5pp::Type::Check::isStdComplex<DataType>()){
+                return h5pp::Type::Complex::H5T_COMPLEX_STRUCT<typename DataType::value_type>(data);
             }else{
-                //This should never happen, but is here so that we compile successfully.
-                assert(NAN == NAN and "Big error! Tried to convert non-complex data to complex");
-                return     std::vector<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<std::complex<double>>>();
+                //This should never happen.
+                throw::std::runtime_error("Unrecognized complex type: " +  std::string(typeid(data).name() ));
             }
-
         }
 
 

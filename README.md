@@ -75,16 +75,17 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 * `-DDOWNLOAD_ALL:BOOL=<ON/OFF>` to toggle automatic installation of third-party dependencies (default: `OFF`).
 * `-DCMAKE_BUILD_TYPE=Release/Debug` to specify build type (default: `Release`)
 * `-DBUILD_SHARED_LIBS:BOOL=<ON/OFF>` to toggle shared/static library (default: `OFF`)
+* `-DENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (default: `ON`).
+* `-DBUILD_EXAMPLES:BOOL=<ON/OFF>` to compile the examples after build (default: `OFF`).
 * `-DMARCH=<micro-architecture>` to specify compiler micro-architecture (default: `native`)
+
 
 In addition, the following variables can be set to help guide CMake's `find_package()` to your preinstalled software (no defaults):
 
 * `-DEigen3_DIR:PATH=<path to Eigen3Config.cmake>` 
-* `-DEigen3_ROOT:PATH=<path to Eigen3 install-dir>` 
 * `-DEigen3_ROOT_DIR:PATH=<path to Eigen3 install-dir>` 
 * `-DEIGEN3_INCLUDE_DIR:PATH=<path to Eigen3 include-dir>`
 * `-DHDF5_DIR:PATH=<path to HDF5Config.cmake>` 
-* `-DHDF5_ROOT:PATH=<path-to HDF5 install-dir>` 
 
 
 
