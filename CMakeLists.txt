@@ -116,8 +116,6 @@ install(EXPORT
 
 #Create a ConfigVersion.cmake file
 include(CMakePackageConfigHelpers)
-message(${INSTALL_CONFIGDIR})
-message(${CMAKE_INSTALL_PREFIX})
 configure_package_config_file(
         cmake/h5ppConfig.cmake.in
         ${PROJECT_BINARY_DIR}/h5ppConfig.cmake

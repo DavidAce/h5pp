@@ -7,11 +7,9 @@ set(spdlog_DIR                      "@PACKAGE_spdlog_DIR@")
 set(HDF5_DIR                        "@PACKAGE_HDF5_DIR@")
 set(INSTALL_DIRECTORY_THIRD_PARTY   "@PACKAGE_INSTALL_DIRECTORY_THIRD_PARTY@")
 
-message("PACKAGE_PREFIX_DIR: ${PACKAGE_PREFIX_DIR}")
 find_package(Eigen3 3.3.4 HINTS ${Eigen3_DIR} ${EIGEN_INCLUDE_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 REQUIRED)
 find_package(spdlog HINTS ${spdlog_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog  REQUIRED)
 find_package(HDF5 COMPONENTS C HL REQUIRED)
-
 include(${H5PP_DIR}/h5ppTargets.cmake)
 
 
