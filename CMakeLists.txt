@@ -11,11 +11,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 ### Set options for compilation                              ###
 ################################################################
 option(BUILD_SHARED_LIBS  "Builds shared libraries"                             OFF)
-option(BUILD_EXAMPLES     "Build examples"                                      ON)
+option(BUILD_EXAMPLES     "Build examples"                                      OFF)
 option(ENABLE_TESTS       "Enable testing"                                      ON)
-option(DOWNLOAD_HDF5      "Download and install HDF5 if not found"              ON)
-option(DOWNLOAD_SPDLOG    "Download and install spdlog if not found"            ON)
-option(DOWNLOAD_EIGEN3    "Download and install Eigen3 if not found"            ON)
+option(DOWNLOAD_HDF5      "Download and install HDF5 if not found"              OFF)
+option(DOWNLOAD_SPDLOG    "Download and install spdlog if not found"            OFF)
+option(DOWNLOAD_EIGEN3    "Download and install Eigen3 if not found"            OFF)
 option(DOWNLOAD_ALL       "Download and install all dependencies if not found"  OFF)
 
 

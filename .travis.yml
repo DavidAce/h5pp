@@ -106,7 +106,7 @@ before_install:
 script:
   - cmake -E make_directory build/Debug
   - cd build/Debug
-  - cmake -G "CodeBlocks - Unix Makefiles" ../../
+  - cmake -DDOWNLOAD_ALL:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
   - cmake --build .  --target libh5pp   -j 2
 
 

@@ -63,20 +63,20 @@ Build the library just as any CMake project:
 ```bash
     mkdir build
     cd build
-    cmake ../
+    cmake -DDOWNLOAD_ALL=ON ../
     make
     make install
 ```
 
-By default all dependencies are downloaded and installed in `project-dir/install/` if not found in the system.
+By passing the variable `DOWNLOAD_ALL=ON` CMake will download all the dependencies and install them under `project-dir/install/` if not found in the system.
 
 ### Build options
 
 The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 * `-DCMAKE_INSTALL_PREFIX:PATH=<install-dir>` to specify install directory (default: `project-dir/install/`).
-* `-DDOWNLOAD_HDF5:BOOL=<ON/OFF>` to toggle automatic installation of HDF5 (default: `ON`).
-* `-DDOWNLOAD_EIGEN3:BOOL=<ON/OFF>` to toggle automatic installation of HDF5 (default: `ON`).
-* `-DDOWNLOAD_ALL:BOOL=<ON/OFF>` to toggle automatic installation of third-party dependencies (default: `ON`).
+* `-DDOWNLOAD_HDF5:BOOL=<ON/OFF>` to toggle automatic installation of HDF5 (default: `OFF`).
+* `-DDOWNLOAD_EIGEN3:BOOL=<ON/OFF>` to toggle automatic installation of HDF5 (default: `OFF`).
+* `-DDOWNLOAD_ALL:BOOL=<ON/OFF>` to toggle automatic installation of third-party dependencies (default: `OFF`).
 * `-DCMAKE_BUILD_TYPE=Release/Debug` to specify build type (default: `Release`)
 * `-DBUILD_SHARED_LIBS:BOOL=<ON/OFF>` to link dependencies with static or shared libraries (default: `OFF`)
 * `-DENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (default: `ON`).
