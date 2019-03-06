@@ -93,19 +93,12 @@ matrix:
           packages:
             - gcc-7
             - g++-7
-            - gfortran-7
             - libhdf5-dev
             - libhdf5-serial-dev
             - hdf5-helpers
             - hdf5-tools
             - libsz2
             - zlibc
-            - libgsl0-dev
-            - libopenblas-dev
-            - libarpack2-dev
-            - libarpack++2-dev
-            - liblapacke
-            - liblapacke-dev
 
 before_install:
   - eval "${MATRIX_EVAL}"

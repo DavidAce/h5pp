@@ -35,18 +35,6 @@ namespace h5pp{
                 }
             };
 
-//            template <typename T>
-//            struct H5T_COMPLEX_STRUCT<std::complex<T>> {
-//                T real;   /*real part*/
-//                T imag;   /*imaginary part*/
-//                H5T_COMPLEX_STRUCT(std::complex<T> &in){
-//                    real = in.real();
-//                    imag = in.imag();
-//                }
-//            };
-
-
-
         }
 
     }

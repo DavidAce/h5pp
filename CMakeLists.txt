@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 ################################################################
 ### Set options for compilation                              ###
 ################################################################
-option(BUILD_SHARED_LIBS  "Builds shared libraries (libh5pp.so)"                OFF)
+option(BUILD_SHARED_LIBS  "Builds shared libraries"                             OFF)
 option(BUILD_EXAMPLES     "Build examples"                                      ON)
 option(ENABLE_TESTS       "Enable testing"                                      ON)
 option(DOWNLOAD_HDF5      "Download and install HDF5 if not found"              ON)
@@ -37,8 +37,8 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "..." FORCE)
 endif()
 
-cmake_policy(SET CMP0074 NEW)
-cmake_policy(SET CMP0075 NEW)
+#cmake_policy(SET CMP0074 NEW)
+#cmake_policy(SET CMP0075 NEW)
 
 
 ##################################################################
@@ -158,22 +158,28 @@ export(PACKAGE h5pp)
 ############################
 if(ENABLE_TESTS)
     enable_testing()
-    add_subdirectory(tests/simpleWrite)
-    add_subdirectory(tests/readWrite)
+    add_subdirectory(tests/simpleWrite EXCLUDE_FROM_ALL)
+    add_subdirectory(tests/readWrite EXCLUDE_FROM_ALL)
 
     add_custom_target(all_tests ALL
             DEPENDS simpleWrite
             DEPENDS readWrite
-            DEPENDS h5pp external_H5PP
-#            DEPENDS ${PROJECT_NAME}
+            DEPENDS h5pp
             )
-    add_dependencies(${PROJECT_NAME} all_tests h5pp external_H5PP)
-    add_custom_command(TARGET ${PROJECT_NAME}
+    add_dependencies(${PROJECT_NAME} all_tests h5pp)
+#    add_custom_command(TARGET ${PROJECT_NAME}
+#            POST_BUILD
+#            COMMENT "Running Tests"
+#            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+#            DEPENDS all_tests
+#            COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
+    add_custom_command(TARGET all_tests
             POST_BUILD
             COMMENT "Running Tests"
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            DEPENDS all_tests
+            DEPENDS ${PROJECT_NAME}
             COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
+
 endif()
 
 

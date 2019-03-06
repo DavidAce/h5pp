@@ -6,15 +6,15 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
 
-cmake_policy(SET CMP0074 NEW)
-cmake_policy(SET CMP0075 NEW)
+#cmake_policy(SET CMP0074 NEW)
+#cmake_policy(SET CMP0075 NEW)
 
 
 
 ################################################################
 ### Set options for compilation                              ###
 ################################################################
-option(BUILD_SHARED_LIBS  "Builds shared libraries (libh5pp.so)"  OFF)
+option(BUILD_SHARED_LIBS  "Builds shared libraries"  OFF)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "..." FORCE)

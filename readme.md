@@ -62,6 +62,7 @@ Build the library just as any CMake project:
 
 ```bash
     mkdir build
+    cd build
     cmake ../
     make
     make install
@@ -73,11 +74,11 @@ By default all dependencies are downloaded and installed in `project-dir/install
 
 The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 * `-DCMAKE_INSTALL_PREFIX:PATH=<install-dir>` to specify install directory (default: `project-dir/install/`).
-* `-DDOWNLOAD_HDF5:BOOL=<ON/OFF>` to toggle automatic installation of HDF5 (default: `OFF`).
-* `-DDOWNLOAD_EIGEN3:BOOL=<ON/OFF>` to toggle automatic installation of HDF5 (default: `OFF`).
-* `-DDOWNLOAD_ALL:BOOL=<ON/OFF>` to toggle automatic installation of third-party dependencies (default: `OFF`).
+* `-DDOWNLOAD_HDF5:BOOL=<ON/OFF>` to toggle automatic installation of HDF5 (default: `ON`).
+* `-DDOWNLOAD_EIGEN3:BOOL=<ON/OFF>` to toggle automatic installation of HDF5 (default: `ON`).
+* `-DDOWNLOAD_ALL:BOOL=<ON/OFF>` to toggle automatic installation of third-party dependencies (default: `ON`).
 * `-DCMAKE_BUILD_TYPE=Release/Debug` to specify build type (default: `Release`)
-* `-DBUILD_SHARED_LIBS:BOOL=<ON/OFF>` to toggle shared/static library (default: `OFF`)
+* `-DBUILD_SHARED_LIBS:BOOL=<ON/OFF>` to link dependencies with static or shared libraries (default: `OFF`)
 * `-DENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (default: `ON`).
 * `-DBUILD_EXAMPLES:BOOL=<ON/OFF>` to compile the examples after build (default: `OFF`).
 * `-DMARCH=<micro-architecture>` to specify compiler micro-architecture (default: `native`)
