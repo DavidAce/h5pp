@@ -6,7 +6,7 @@ h5pp is a header-only C++ wrapper for HDF5 that focuses on simplicity for the en
 ## Features
 * Header only, just include to use.
 * Support for common data types:
-    - `ìnt`, `float`, `double` in unsigned and long versions.
+    - `int`, `float`, `double` in unsigned and long versions.
     - any of the above types in std::complex<> form.
     - `std::string`
     - `std::vector`
@@ -22,19 +22,19 @@ h5pp is a header-only C++ wrapper for HDF5 that focuses on simplicity for the en
 #include <h5pp/h5pp.h>
 using namespace std::complex_literals;
 
-int main(){
+int main() {
     
-    # Initialize a file
+    // Initialize a file
     h5pp::File file("someFile.h5", "outputDir");
 
     // Write a vector with std::complex<double>
     std::vector<std::complex<double>> testvector (5, 10.0 + 5.0i);
-    file.write_dataset(testvector,"testvector");
+    file.write_dataset(testvector, "testvector");
 
     // Write an Eigen matrix with std::complex<double>
-    Eigen::MatrixXcd testmatrix (2,2);
-    testdata3 << 1.0 + 2.0i,  3.0 + 4.0i, 5.0+6.0i , 7.0+8.0i;
-    file.write_dataset(testmatrix,"someGroup/testmatrix");
+    Eigen::MatrixXcd testmatrix (2, 2);
+    testdata3 << 1.0 + 2.0i,  3.0 + 4.0i, 5.0 + 6.0i , 7.0 + 8.0i;
+    file.write_dataset(testmatrix, "someGroup/testmatrix");
 
 
     return 0;
@@ -51,7 +51,7 @@ int main(){
     - [**Eigen**](http://eigen.tuxfamily.org) (tested with version >= 3.3.4).
 
 The build process will attempt to find the libraries above installed on the system.
-On failure it wll download and install them into the given install-directory (default: `project-dir/install/`).
+On failure it will download and install them into the given install-directory (default: `project-dir/install/`).
 To modify this behavior see the available build options.
 
 During the build process the dependency [**spdlog**](https://github.com/gabime/spdlog) will be downloaded and installed in a local subdirectory.
