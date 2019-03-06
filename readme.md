@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/DavidAce/libh5pp.svg?branch=master)](https://travis-ci.org/DavidAce/libh5pp)
+[![Build Status](https://travis-ci.org/DavidAce/h5pp.svg?branch=master)](https://travis-ci.org/DavidAce/h5pp)
 
 # h5pp
 h5pp is a C++ wrapper for HDF5 that focuses on simplicity for the end-user. 
@@ -96,7 +96,7 @@ In addition, the following variables can be set to help guide CMake's `find_pack
 ### Linking 
 #### Using install method
 After installing the library it is easily imported using CMake's `find_package()`, just point it to the install directory.
-A minimal CMakeLists.txt looks like:
+A minimal `CMakeLists.txt` looks like:
 
 ```cmake
     cmake_minimum_required(VERSION 3.10)
