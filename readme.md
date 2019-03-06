@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/DavidAce/libh5pp.svg?branch=master)](https://travis-ci.org/DavidAce/libh5pp)
 
 # h5pp
-h5pp is a header-only C++ wrapper for HDF5 that focuses on simplicity for the end-user. 
+h5pp is a C++ wrapper for HDF5 that focuses on simplicity for the end-user. 
 
 ## Features
 * Header only, just include to use.
@@ -33,7 +33,7 @@ int main() {
 
     // Write an Eigen matrix with std::complex<double>
     Eigen::MatrixXcd testmatrix (2, 2);
-    testdata3 << 1.0 + 2.0i,  3.0 + 4.0i, 5.0 + 6.0i , 7.0 + 8.0i;
+    testmatrix << 1.0 + 2.0i,  3.0 + 4.0i, 5.0 + 6.0i , 7.0 + 8.0i;
     file.write_dataset(testmatrix, "someGroup/testmatrix");
 
 
@@ -96,6 +96,7 @@ In addition, the following variables can be set to help guide CMake's `find_pack
 ### Linking 
 #### Using install method
 After installing the library it is easily imported using CMake's `find_package()`, just point it to the install directory.
+A minimal CMakeLists.txt looks like:
 
 ```cmake
     cmake_minimum_required(VERSION 3.10)
