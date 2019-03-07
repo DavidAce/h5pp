@@ -53,8 +53,9 @@ int main() {
     - [**spdlog**](https://github.com/gabime/spdlog) (tested with version >= 1.3.1)
 
 The build process will attempt to find the libraries above installed on the system.
-On failure it will emit an error by default. However, one it is able to download and install these dependencies for you into the given install-directory (default: `project-dir/install/`).
-To enable this automated behavior, see the available build options.
+By default, CMake will emit an error if it can't find the dependencies. For convenience, CMake is able to download and install these dependencies for you into the given install-directory (default: `install-dir/third-party`),
+and add these dependencies to the exported target `h5pp::h5pp`.
+To enable this automated behavior, see the available build options below.
 
 
 ## Installation
