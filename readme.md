@@ -4,15 +4,14 @@
 h5pp is a C++ wrapper for HDF5 that focuses on simplicity for the end-user. 
 
 ## Features
-* Header only, just include to use.
+* Standard CMake build, instal of headersl and linking.
+* Automated install and linking of dependencies if desired.
 * Support for common data types:
     - `int`, `float`, `double` in unsigned and long versions.
     - any of the above types in std::complex<> form.
     - `std::string`
     - `std::vector`
     - `Eigen` types such as `Matrix`, `Array` and `Tensor` (from the unsupported module), with automatic conversion to/from row-major storage.
-* Standard CMake build, install and linking. 
-* Automated install of dependencies if desired.
 
 ## Usage
 
@@ -44,17 +43,16 @@ int main() {
 
 
 ## Requirements
-* C++17 capable compiler.
-* CMake 3.11
+* C++17 capable compiler with experimenal headers. (tested with GCC version >= 7.3 and CLang version >= 6.0)
+* CMake 3.10
 * Automated dependencies:
     - [**HDF5**](https://support.hdfgroup.org/HDF5/) (tested with version >= 1.10).
     - [**Eigen**](http://eigen.tuxfamily.org) (tested with version >= 3.3.4).
+    - [**spdlog**](https://github.com/gabime/spdlog) (tested with version >= 1.3.1)
 
 The build process will attempt to find the libraries above installed on the system.
-On failure it will download and install them into the given install-directory (default: `project-dir/install/`).
-To modify this behavior see the available build options.
-
-During the build process the dependency [**spdlog**](https://github.com/gabime/spdlog) will be downloaded and installed in a local subdirectory.
+On failure it will emit an error by default. However, one it is able to download and install these dependencies for you into the given install-directory (default: `project-dir/install/`).
+To enable this automated behavior, see the available build options.
 
 
 ## Installation
