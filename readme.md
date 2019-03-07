@@ -46,7 +46,7 @@ int main() {
 
 ## Requirements
 * C++17 capable compiler with experimental headers. (tested with GCC version >= 7.3 and CLang version >= 6.0)
-* CMake 3.10
+* CMake (tested with version >= 3.10)
 * Automated dependencies:
     - [**HDF5**](https://support.hdfgroup.org/HDF5/) (tested with version >= 1.10).
     - [**Eigen**](http://eigen.tuxfamily.org) (tested with version >= 3.3.4).
@@ -116,7 +116,7 @@ A minimal `CMakeLists.txt` looks like:
 The target `h5pp::h5pp` will import and enable everything you need to compile with `h5pp`.
 
 #### Without install method (i.e. just copying the header folder)
-You will have to manually link the dependencies `hdf5`, `Eigen3` and `splog` to your project.
+You will have to manually link the dependencies `hdf5`, `Eigen3` and `spdlog` to your project.
 
 
 
