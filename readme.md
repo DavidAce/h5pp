@@ -110,11 +110,13 @@ A minimal `CMakeLists.txt` looks like:
     find_package(h5pp HINTS <path to h5pp-install-dir> REQUIRED)
     
     if (h5pp_FOUND)
-        target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::h5pp)
+        target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::h5pp h5pp::deps)
     endif()
 ```
 
-The target `h5pp::h5pp` will import and enable everything you need to compile with `h5pp`.
+The target `h5pp::h5pp` will import the `h5pp` headers set compile flags you need to compile with `h5pp`. 
+The target `h5pp::deps` will import the dependencies needed for `h5pp` to work. If you want to link the dependencies
+manually, omit `h5pp::deps` above.
 
 #### Without install method (i.e. just copying the header folder)
 You will have to manually link the dependencies `hdf5`, `Eigen3` and `spdlog` to your project.
