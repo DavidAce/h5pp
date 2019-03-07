@@ -9,9 +9,9 @@ set(HDF5_ROOT                       "@PACKAGE_HDF5_ROOT@")
 set(HDF5_WANT_VERSION               "@HDF5_WANT_VERSION@")
 set(INSTALL_DIRECTORY_THIRD_PARTY   "@PACKAGE_INSTALL_DIRECTORY_THIRD_PARTY@")
 
-find_package(Eigen3 3.3.4 PATHS ${Eigen3_DIR} ${EIGEN_INCLUDE_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 REQUIRED)
-find_package(spdlog PATHS ${spdlog_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog  REQUIRED)
-find_package(HDF5 COMPONENTS C HL PATHS ${HDF5_DIR} REQUIRED)
+find_dependency(Eigen3 3.3.4 PATHS ${Eigen3_DIR} ${EIGEN_INCLUDE_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3)
+find_dependency(spdlog PATHS ${spdlog_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog)
+find_dependency(HDF5 COMPONENTS C HL PATHS ${HDF5_DIR})
 include(${H5PP_DIR}/h5ppTargets.cmake)
 
 

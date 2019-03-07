@@ -94,8 +94,13 @@ message("")
 
 # Bind projects together
 add_custom_target(${PROJECT_NAME})
+add_library(deps INTERFACE)
 add_dependencies(${PROJECT_NAME} h5pp hdf5 Eigen3 spdlog)
-target_link_libraries(h5pp INTERFACE hdf5 Eigen3 spdlog)
+add_dependencies(deps hdf5 Eigen3 spdlog)
+#target_link_libraries(h5pp INTERFACE hdf5 Eigen3 spdlog)
+target_link_libraries(deps INTERFACE hdf5 Eigen3 spdlog)
+
+
 
 #######################################################
 ### Install library                                 ###
@@ -111,7 +116,7 @@ set(H5PP_ROOT ${CMAKE_INSTALL_PREFIX})
 set(H5PP_DIR  ${INSTALL_CONFIGDIR})
 
 
-install(TARGETS h5pp Eigen3 hdf5 spdlog
+install(TARGETS h5pp deps Eigen3 hdf5 spdlog
         EXPORT        h5ppTargets
         )
 
