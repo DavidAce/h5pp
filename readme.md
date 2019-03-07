@@ -69,7 +69,8 @@ Build the library just as any CMake project:
     make install
 ```
 
-By passing the variable `DOWNLOAD_ALL=ON` CMake will download all the dependencies and install them under `project-dir/install/` if not found in the system.
+By passing the variable `DOWNLOAD_ALL=ON` CMake will download all the dependencies and install them under `install-dir/third-party` if not found in the system. 
+By default `ìnstall-dir` will be `project-dir/install`, where `project-dir` is the directory containing the main `CMakeLists.txt` file.
 
 ### Build options
 
