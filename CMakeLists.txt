@@ -158,12 +158,14 @@ export(PACKAGE h5pp)
 ############################
 if(ENABLE_TESTS)
     enable_testing()
-    add_subdirectory(tests/simpleWrite EXCLUDE_FROM_ALL)
-    add_subdirectory(tests/readWrite EXCLUDE_FROM_ALL)
+    add_subdirectory(tests/simpleWrite          EXCLUDE_FROM_ALL)
+    add_subdirectory(tests/readWrite            EXCLUDE_FROM_ALL)
+    add_subdirectory(tests/readWriteAttributes  EXCLUDE_FROM_ALL)
 
     add_custom_target(all_tests ALL
             DEPENDS simpleWrite
             DEPENDS readWrite
+            DEPENDS readWriteAttributes
             DEPENDS h5pp
             )
     add_dependencies(${PROJECT_NAME} all_tests h5pp)

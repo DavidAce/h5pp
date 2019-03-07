@@ -12,12 +12,15 @@
 
 namespace h5pp{
     namespace Utils{
+        template <typename DataType, size_t Size>
+        constexpr size_t get_array_size(const DataType (&arr)[Size]){return Size;}
 
 
         template<typename DataType>
         hsize_t get_Size(const DataType &data){
             namespace tc = h5pp::Type::Check;
             if constexpr (tc::has_member_size<DataType>::value)          {return data.size();} //Fails on clang?
+            else if constexpr (std::is_array<DataType>::value)           {return get_array_size(data);}
             else if constexpr (std::is_arithmetic<DataType>::value)      {return 1;}
             else if constexpr (std::is_pod<DataType>::value)             {return 1;}
             else if constexpr (tc::isStdComplex<DataType>())             {return 1;}
@@ -55,9 +58,6 @@ namespace h5pp{
         }
 
 
-
-
-
         template <typename DataType>
         std::vector<hsize_t> get_Dimensions(const DataType &data) {
             namespace tc = h5pp::Type::Check;
@@ -76,25 +76,17 @@ namespace h5pp{
                 dims[0]={data.size()};
                 return dims;
             }
+            else if constexpr(std::is_same<std::string, DataType>::value or std::is_same<char *, typename std::decay<DataType>::type>::value){
+                // Read more about this step here
+                //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
+                dims[0]= 1;
+                return dims;
+            }
             else if constexpr(std::is_array<DataType>::value){
-                dims[0]={data.size()};
+                dims[0] = get_array_size(data);
                 return dims;
             }
 
-            else if constexpr(std::is_same<std::string, DataType>::value){
-                // Read more about this step here
-                //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
-//            dims[0]={data.size()};
-                dims[0]= 1;
-                return dims;
-            }
-            else if constexpr(std::is_same<const char *, DataType>::value){
-                // Read more about this step here
-                //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
-//            dims[0]={data.size()};
-                dims[0]= 1;
-                return dims;
-            }
             else if constexpr (std::is_arithmetic<DataType>::value or tc::isStdComplex<DataType>()){
                 dims[0]= 1;
                 return dims;
@@ -113,18 +105,7 @@ namespace h5pp{
         hid_t get_MemSpace(const DataType &data) {
             auto rank = get_Rank<DataType>();
             auto dims = get_Dimensions<DataType>(data);
-            if constexpr (std::is_same<std::string, DataType>::value){
-                // Read more about this step here
-                //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
-//            return H5Screate (H5S_SCALAR);
-
-                return H5Screate_simple(rank, dims.data(), nullptr);
-//            return get_DataSpace_unlimited(rank);
-//            return H5Screate_simple(rank, dims.data(),maxdims);
-
-            }else{
-                return H5Screate_simple(rank, dims.data(), nullptr);
-            }
+            return H5Screate_simple(rank, dims.data(), nullptr);
         }
 
 
@@ -153,8 +134,6 @@ namespace h5pp{
                 throw::std::runtime_error("Unrecognized complex type: " +  std::string(typeid(data).name() ));
             }
         }
-
-
 
     }
 }

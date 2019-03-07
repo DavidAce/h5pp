@@ -4,12 +4,14 @@
 
 int main(){
 
-    h5pp::File file("someFile.h5", "output");
+    h5pp::File file("someFile.h5", "output",h5pp::AccessMode::TRUNCATE,true,0);
     using namespace std::complex_literals;
 
-    std::string                         dummyString         ("This is a dummy string");
+    std::string                         String         = "This is a string";
+    char                                Char[100]      = "This is a char array";
     double                              Double              (2);
     std::complex<double>                ComplexDouble       (3,4);
+    int                                 arrayInt[5]         = {1,2,3,4,5};
     std::vector<int>                    vectorInt           (10, 42);
     std::vector<long>                   vectorLong          (10, 42);
     std::vector<unsigned int>           vectorUint          (10, 42);
@@ -24,10 +26,11 @@ int main(){
     matrixInt           << 1,2,3,4;
     matrixDouble        << 1.5,2.5,3.5,4.5;
     matrixComplexDouble << 1.0 + 2.0i,  3.0 + 4.0i, 5.0+6.0i , 7.0+8.0i;
-
+    file.write_dataset(String             ,"simpleWriteGroup/String");
+    file.write_dataset(Char               ,"simpleWriteGroup/Char");
     file.write_dataset(Double             ,"simpleWriteGroup/Double");
     file.write_dataset(ComplexDouble      ,"simpleWriteGroup/ComplexDouble");
-    file.write_dataset(dummyString        ,"simpleWriteGroup/dummyString");
+    file.write_dataset(arrayInt           ,"simpleWriteGroup/arrayInt");
     file.write_dataset(vectorInt          ,"simpleWriteGroup/vectorInt");
     file.write_dataset(vectorLong         ,"simpleWriteGroup/vectorLong");
     file.write_dataset(vectorUint         ,"simpleWriteGroup/vectorUint");

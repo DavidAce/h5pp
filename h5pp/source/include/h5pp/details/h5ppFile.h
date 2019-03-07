@@ -110,10 +110,24 @@ namespace h5pp{
 
 
         template <typename DataType>
+        void read_dataset(DataType &data, const std::string &dataset_relative_name);
+
+        template <typename DataType>
         void write_dataset(const DataType &data, const std::string &dataset_relative_name);
 
         template <typename DataType>
-        void read_dataset(DataType &data, const std::string &dataset_relative_name);
+        void write_dataset(const DataType &data, const DatasetProperties &props);
+
+        template <typename AttrType>
+        void write_attribute_to_link(const AttrType &attribute, const AttributeProperties &aprops);
+
+        template <typename AttrType>
+        void write_attribute_to_link(const AttrType &attribute, const std::string &attribute_name,  const std::string &link_name);
+
+        template <typename AttrType>
+        void write_attribute_to_file(const AttrType &attribute, const std::string attribute_name);
+
+
 
         inline void create_group_link(const std::string &group_relative_name){
             hid_t file = open_file();
@@ -136,18 +150,12 @@ namespace h5pp{
             return exists;
         }
 
-        template <typename AttrType>
-        void write_attribute_to_file(const AttrType &attribute, const std::string attribute_name);
-
-        template <typename AttrType>
-        void write_attribute_to_dataset(const std::string &dataset_relative_name, const AttrType &attribute,
-                                        const std::string &attribute_name);
 
 
-        template <typename AttrType>
-        void write_attribute_to_group(const std::string &group_relative_name, const AttrType &attribute,
-                                      const std::string &attribute_name);
-
+//
+//        template <typename AttrType>
+//        void write_attribute_to_group(const AttrType &attribute, const std::string &attribute_name, const std::string &link_name);
+//
 
 
         std::vector<std::string> print_contents_of_group(std::string group_name);
@@ -155,17 +163,6 @@ namespace h5pp{
 
 
     private:
-        void initialize(){
-            h5pp::Logger::setLogger("h5pp-init",logLevel,false);
-            spdlog::debug("outputDir     : {}", outputDir.string() );
-            plist_facc = H5Pcreate(H5P_FILE_ACCESS);
-            plist_lncr = H5Pcreate(H5P_LINK_CREATE);   //Create missing intermediate group if they don't exist
-            plist_xfer = H5Pcreate(H5P_DATASET_XFER);
-            plist_lapl = H5Pcreate(H5P_LINK_ACCESS);
-            H5Pset_create_intermediate_group(plist_lncr, 1);
-            set_output_file_path();
-            h5pp::Type::Complex::initTypes();
-        }
 
         bool file_is_valid(){
             return file_is_valid(outputFileFullPath);
@@ -204,14 +201,24 @@ namespace h5pp{
         }
 
 
-        template <typename DataType>
-        void write_dataset(const DataType &data, const DatasetProperties &props);
 
-        template <typename AttrType>
-        void write_attribute_to_dataset(const AttrType &attribute, const AttributeProperties &aprops);
+//
+//        template <typename AttrType>
+//        void write_attribute_to_group(const AttrType &attribute, const AttributeProperties &aprops);
+//
+//
 
-        template <typename AttrType>
-        void write_attribute_to_group(const AttrType &attribute, const AttributeProperties &aprops);
+        void initialize(){
+            h5pp::Logger::setLogger("h5pp-init",logLevel,false);
+            spdlog::debug("outputDir     : {}", outputDir.string() );
+            plist_facc = H5Pcreate(H5P_FILE_ACCESS);
+            plist_lncr = H5Pcreate(H5P_LINK_CREATE);   //Create missing intermediate group if they don't exist
+            plist_xfer = H5Pcreate(H5P_DATASET_XFER);
+            plist_lapl = H5Pcreate(H5P_LINK_ACCESS);
+            H5Pset_create_intermediate_group(plist_lncr, 1);
+            set_output_file_path();
+            h5pp::Type::Complex::initTypes();
+        }
 
 
 
@@ -297,8 +304,6 @@ namespace h5pp{
             }
 
         }
-
-
 
 
 
@@ -471,12 +476,13 @@ void h5pp::File::write_attribute_to_file(const AttrType &attribute, const std::s
 
 
 template <typename AttrType>
-void h5pp::File::write_attribute_to_dataset(const AttrType &attribute, const AttributeProperties &aprops){
+void h5pp::File::write_attribute_to_link(const AttrType &attribute, const AttributeProperties &aprops){
     hid_t file = open_file();
     if (h5pp::Hdf5::check_if_link_exists_recursively(file, aprops.link_name) ) {
         if (not h5pp::Hdf5::check_if_attribute_exists(file,aprops.link_name,aprops.attr_name)) {
-            hid_t dataset = H5Dopen(file, aprops.link_name.c_str(), H5P_DEFAULT);
-            hid_t attribute_id = H5Acreate(dataset, aprops.attr_name.c_str(), aprops.datatype, aprops.memspace,
+//            hid_t linkObject = H5Dopen(file, aprops.link_name.c_str(), H5P_DEFAULT);
+            hid_t linkObject = H5Oopen(file, aprops.link_name.c_str(), H5P_DEFAULT);
+            hid_t attribute_id = H5Acreate(linkObject, aprops.attr_name.c_str(), aprops.datatype, aprops.memspace,
                                            H5P_DEFAULT, H5P_DEFAULT);
 
             if constexpr (tc::has_member_c_str<AttrType>::value) {
@@ -487,24 +493,23 @@ void h5pp::File::write_attribute_to_dataset(const AttrType &attribute, const Att
                 retval = H5Awrite(attribute_id, aprops.datatype, &attribute);
             }
 
-            H5Dclose(dataset);
+            H5Dclose(linkObject);
             H5Aclose(attribute_id);
             H5Fflush(file, H5F_SCOPE_GLOBAL);
+            H5Fclose(file);
         }
     }
     else{
-        std::string error = "Link " + aprops.link_name + " does not exist, yet attribute is being written.";
         H5Fclose(file);
+        std::string error = "Link " + aprops.link_name + " does not exist, yet attribute is being written.";
         spdlog::critical(error);
         throw(std::logic_error(error));
     }
-    H5Fclose(file);
 }
 
 
 template <typename AttrType>
-void h5pp::File::write_attribute_to_dataset(const std::string &dataset_relative_name, const AttrType &attribute,
-                                                 const std::string &attribute_name){
+void h5pp::File::write_attribute_to_link(const AttrType &attribute, const std::string &attribute_name,  const std::string &link_name){
     AttributeProperties aprops;
     aprops.datatype  = h5pp::Type::get_DataType<AttrType>();
     aprops.memspace  = h5pp::Utils::get_MemSpace(attribute);
@@ -512,48 +517,15 @@ void h5pp::File::write_attribute_to_dataset(const std::string &dataset_relative_
     aprops.ndims     = h5pp::Utils::get_Rank<AttrType>();
     aprops.dims      = h5pp::Utils::get_Dimensions(attribute);
     aprops.attr_name = attribute_name;
-    aprops.link_name = dataset_relative_name;
-    if constexpr (tc::has_member_c_str<AttrType>::value){
+    aprops.link_name = link_name;
+    if constexpr (tc::has_member_c_str<AttrType>::value
+                  or std::is_same<char * , typename std::decay<AttrType>::type>::value
+    ){
         retval                  = H5Tset_size(aprops.datatype, aprops.size);
         retval                  = H5Tset_strpad(aprops.datatype,H5T_STR_NULLTERM);
     }
-    write_attribute_to_dataset(attribute,aprops);
+    write_attribute_to_link(attribute,aprops);
 }
-
-template <typename AttrType>
-void h5pp::File::write_attribute_to_group(const AttrType &attribute,
-                                               const AttributeProperties &aprops){
-    hid_t file = open_file();
-    if (h5pp::Hdf5::check_if_link_exists_recursively(file, aprops.link_name)) {
-        if (not h5pp::Hdf5::check_if_attribute_exists(file,aprops.link_name, aprops.attr_name)){
-            hid_t group = H5Gopen(file, aprops.link_name.c_str(), H5P_DEFAULT);
-            hid_t attribute_id = H5Acreate(group, aprops.link_name.c_str(), aprops.datatype, aprops.memspace, H5P_DEFAULT, H5P_DEFAULT);
-            retval = H5Awrite(attribute_id, aprops.datatype, &attribute);
-            H5Gclose(group);
-            H5Aclose(attribute_id);
-            H5Fflush(file,H5F_SCOPE_GLOBAL);
-        }
-    }
-    H5Fclose(file);
-}
-template <typename AttrType>
-void h5pp::File::write_attribute_to_group(const std::string &group_relative_name,
-                                               const AttrType &attribute,
-                                               const std::string &attribute_name){
-
-    AttributeProperties aprops;
-    aprops.datatype  = h5pp::Type::get_DataType<AttrType>();
-    aprops.memspace  = h5pp::Utils::get_MemSpace(attribute);
-    aprops.size      = h5pp::Utils::get_Size(attribute);
-    aprops.attr_name = attribute_name;
-    aprops.link_name = group_relative_name;
-    aprops.ndims     = h5pp::Utils::get_Rank<AttrType>();
-    aprops.dims      = h5pp::Utils::get_Dimensions(attribute);
-    write_attribute_to_dataset(attribute,aprops);
-}
-
-
-
 
 
 

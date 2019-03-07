@@ -2,15 +2,15 @@
 
 # h5pp
 h5pp is a C++ wrapper for HDF5 that focuses on simplicity for the end-user. 
-
 ## Features
 * Standard CMake build, instal of headersl and linking.
 * Automated install and linking of dependencies if desired.
 * Support for common data types:
-    - `int`, `float`, `double` in unsigned and long versions.
-    - any of the above types in std::complex<> form.
-    - `std::string`
+    - `char`,`int`, `float`, `double` in unsigned and long versions.
+    - any of the above in std::complex<> form.
+    - any of the above in C-style arrays.
     - `std::vector`
+    - `std::string`
     - `Eigen` types such as `Matrix`, `Array` and `Tensor` (from the unsupported module), with automatic conversion to/from row-major storage.
 
 ## Usage
@@ -40,6 +40,8 @@ int main() {
 }
 
 ```
+
+
 
 
 ## Requirements
@@ -113,3 +115,17 @@ The target `h5pp::h5pp` will import and enable everything you need to compile wi
 
 #### Without install method (i.e. just copying the header folder)
 You will have to manually link the dependencies `hdf5`, `Eigen3` and `splog` to your project.
+
+
+
+### Pro-tip: load into Python using h5py
+Complex types are not supported natively by HDF5. Still, the storage layout used in `h5pp` makes it easy to read complex types within Python using `h5py`.
+As an example, this is how you would load a complex double array:
+
+```python
+import h5py
+import numpy as np
+file  = h5py.File('myFile.h5', 'r')
+myComplexArray = np.asarray(file['path-to-Complex-Array'].value.view(dtype=np.complex128))
+
+```

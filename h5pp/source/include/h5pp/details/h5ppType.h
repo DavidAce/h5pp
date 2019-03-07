@@ -34,9 +34,17 @@ namespace h5pp{
             if constexpr (std::is_same<DataType, Complex::H5T_COMPLEX_STRUCT<unsigned long>>::value)    {return  H5Tcopy(Complex::H5T_COMPLEX_ULONG);}
             if constexpr (std::is_same<DataType, Complex::H5T_COMPLEX_STRUCT<double>>::value)           {return  H5Tcopy(Complex::H5T_COMPLEX_DOUBLE);}
             if constexpr (std::is_same<DataType, Complex::H5T_COMPLEX_STRUCT<float>>::value)            {return  H5Tcopy(Complex::H5T_COMPLEX_FLOAT);}
+            if constexpr (std::is_same<int *           , typename std::decay<DataType>::type>::value)   {return  H5Tcopy(H5T_NATIVE_INT);}
+            if constexpr (std::is_same<long *          , typename std::decay<DataType>::type>::value)   {return  H5Tcopy(H5T_NATIVE_LONG);}
+            if constexpr (std::is_same<unsigned int *  , typename std::decay<DataType>::type>::value)   {return  H5Tcopy(H5T_NATIVE_UINT);}
+            if constexpr (std::is_same<unsigned long * , typename std::decay<DataType>::type>::value)   {return  H5Tcopy(H5T_NATIVE_ULONG);}
+            if constexpr (std::is_same<double *        , typename std::decay<DataType>::type>::value)   {return  H5Tcopy(H5T_NATIVE_DOUBLE);}
+            if constexpr (std::is_same<float *         , typename std::decay<DataType>::type>::value)   {return  H5Tcopy(H5T_NATIVE_FLOAT);}
+            if constexpr (std::is_same<bool *          , typename std::decay<DataType>::type>::value)   {return  H5Tcopy(H5T_NATIVE_HBOOL);}
+            if constexpr (std::is_same<char *          , typename std::decay<DataType>::type>::value)   {return  H5Tcopy(H5T_C_S1);}
+            if constexpr (std::is_same<DataType, std::string>::value)                                   {return  H5Tcopy(H5T_C_S1);}
             if constexpr (std::is_same<DataType, char>::value)                                          {return  H5Tcopy(H5T_C_S1);}
             if constexpr (std::is_same<DataType, const char *>::value)                                  {return  H5Tcopy(H5T_C_S1);}
-            if constexpr (std::is_same<DataType, std::string>::value)                                   {return  H5Tcopy(H5T_C_S1);}
             if constexpr (tc::is_eigen_type<DataType>::value)                                           {return  get_DataType<typename DataType::Scalar>();}
             if constexpr (tc::is_vector<DataType>::value)                                               {return  get_DataType<typename DataType::value_type>();}
             if constexpr (tc::has_member_scalar <DataType>::value)                                      {return  get_DataType<typename DataType::Scalar>();}
