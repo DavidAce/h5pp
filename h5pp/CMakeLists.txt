@@ -6,9 +6,15 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
 
-#cmake_policy(SET CMP0074 NEW)
-#cmake_policy(SET CMP0075 NEW)
-
+#################################################################
+### Set default policies if CMake is new enough               ###
+#################################################################
+if (CMAKE_VERSION VERSION_LESS 3.12)
+    message(STATUS "Not setting policies")
+else()
+    cmake_policy(SET CMP0074 NEW)
+    cmake_policy(SET CMP0075 NEW)
+endif()
 
 
 ################################################################

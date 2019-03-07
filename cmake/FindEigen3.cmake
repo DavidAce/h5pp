@@ -70,11 +70,9 @@ else (EIGEN3_INCLUDE_DIR)
   # search first if an Eigen3Config.cmake is available in the system,
   # if successful this would set EIGEN3_INCLUDE_DIR and the rest of
   # the script will work as usual
-  find_package(Eigen3 ${Eigen3_FIND_VERSION} NO_MODULE QUIET)
-#  find_package(Eigen3 ${Eigen3_FIND_VERSION} CONFIG QUIET)
-  message("IN FIND PACKAGE EIGEN3_INCLUDE_DIR  : ${EIGEN3_INCLUDE_DIR}")
-  message("IN FIND PACKAGE Eigen3_FIND_VERSION : ${Eigen3_FIND_VERSION}")
-  message("IN FIND PACKAGE EIGEN_FOUND         : ${Eigen3_FOUND}")
+#  find_package(Eigen3 ${Eigen3_FIND_VERSION} NO_MODULE QUIET)
+  find_package(Eigen3 ${Eigen3_FIND_VERSION} CONFIG QUIET)
+
 
   if(NOT EIGEN3_INCLUDE_DIR)
     find_path(EIGEN3_INCLUDE_DIR NAMES signature_of_eigen3_matrix_library

@@ -133,7 +133,7 @@ configure_package_config_file(
         H5PP_DIR
         Eigen3_DIR EIGEN3_INCLUDE_DIR EIGEN3_ROOT_DIR
         spdlog_DIR
-        HDF5_DIR
+        HDF5_DIR HDF5_ROOT HDF5_WANT_VERSION
         INSTALL_DIRECTORY_THIRD_PARTY
 )
 
@@ -178,19 +178,18 @@ if(ENABLE_TESTS)
             DEPENDS h5pp
             )
     add_dependencies(${PROJECT_NAME} all_tests h5pp)
-#    add_custom_command(TARGET ${PROJECT_NAME}
-#            POST_BUILD
-#            COMMENT "Running Tests"
-#            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#            DEPENDS all_tests
-#            COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
-    add_custom_command(TARGET all_tests
+    add_custom_command(TARGET ${PROJECT_NAME}
             POST_BUILD
             COMMENT "Running Tests"
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            DEPENDS ${PROJECT_NAME}
+            DEPENDS all_tests
             COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
-
+#    add_custom_command(TARGET all_tests
+#            POST_BUILD
+#            COMMENT "Running Tests"
+#            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+#            DEPENDS ${PROJECT_NAME}
+#            COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
 endif()
 
 
