@@ -4,6 +4,23 @@ find_package(Eigen3 3.3.4  PATHS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 NO_DEFA
 find_package(Eigen3 3.3.4  PATHS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 NO_CMAKE_PACKAGE_REGISTRY)
 find_package(Eigen3 3.3.4  PATHS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3)
 
+if(BLAS_LIBRARIES)
+    set(EIGEN3_COMPILER_FLAGS  -Wno-parentheses) # -Wno-parentheses
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
+        list(APPEND EIGEN3_COMPILER_FLAGS -Wno-unused-but-set-variable)
+    endif()
+    if(MKL_FOUND)
+        list(APPEND EIGEN3_COMPILER_FLAGS -DEIGEN_USE_MKL_ALL)
+        list(APPEND EIGEN3_COMPILER_FLAGS -DEIGEN_USE_LAPACKE_STRICT)
+        list(APPEND EIGEN3_INCLUDE_DIR ${MKL_INCLUDE_DIR})
+        message(STATUS "Eigen3 will use MKL")
+    elseif (BLAS_FOUND)
+        list(APPEND EIGEN3_COMPILER_FLAGS -DEIGEN_USE_BLAS)
+        list(APPEND EIGEN3_COMPILER_FLAGS -DEIGEN_USE_LAPACKE)
+        message(STATUS "Eigen3 will use BLAS and LAPACKE")
+    endif()
+endif()
+
 
 if(EIGEN3_FOUND)
     message(STATUS "EIGEN FOUND IN SYSTEM: ${EIGEN3_INCLUDE_DIR}")
@@ -11,6 +28,7 @@ if(EIGEN3_FOUND)
     get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
     target_link_libraries(Eigen3 INTERFACE Eigen3::Eigen)
     target_include_directories(Eigen3 INTERFACE ${EIGEN3_INCLUDE_DIR})
+    target_compile_options(Eigen3 INTERFACE ${EIGEN3_COMPILER_FLAGS})
 elseif (DOWNLOAD_EIGEN3 OR DOWNLOAD_ALL)
     message(STATUS "Eigen3 will be installed into ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 on first build.")
 
@@ -37,6 +55,7 @@ elseif (DOWNLOAD_EIGEN3 OR DOWNLOAD_ALL)
     set(EIGEN3_INCLUDE_DIR ${INSTALL_DIR}/include/eigen3)
     set(Eigen3_DIR ${INSTALL_DIR}/share/eigen3/cmake)
     add_dependencies(Eigen3 external_EIGEN3)
+    target_compile_options(Eigen3 INTERFACE ${EIGEN3_COMPILER_FLAGS})
     target_include_directories(
             Eigen3
             INTERFACE
@@ -47,23 +66,5 @@ else()
     message("WARNING: Dependency Eigen3 not found and DOWNLOAD_EIGEN3 is OFF. Build will fail.")
 endif()
 
-if(BLAS_LIBRARIES)
-    set(EIGEN3_COMPILER_FLAGS  -Wno-parentheses) # -Wno-parentheses
-    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
-        list(APPEND EIGEN3_COMPILER_FLAGS -Wno-unused-but-set-variable)
-    endif()
-    if(MKL_FOUND)
-        list(APPEND EIGEN3_COMPILER_FLAGS -DEIGEN_USE_MKL_ALL)
-        list(APPEND EIGEN3_COMPILER_FLAGS -DEIGEN_USE_LAPACKE_STRICT)
-        list(APPEND EIGEN3_INCLUDE_DIR ${MKL_INCLUDE_DIR})
-        message(STATUS "Eigen3 will use MKL")
-    elseif (BLAS_FOUND)
-        list(APPEND EIGEN3_COMPILER_FLAGS -DEIGEN_USE_BLAS)
-        list(APPEND EIGEN3_COMPILER_FLAGS -DEIGEN_USE_LAPACKE)
-        message(STATUS "Eigen3 will use BLAS and LAPACKE")
-    endif()
-endif()
 
 
-
-target_compile_options(Eigen3 INTERFACE ${EIGEN3_COMPILER_FLAGS})
