@@ -77,8 +77,8 @@ By default `ìnstall-dir` will be `project-dir/install`, where `project-dir` is 
 The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 * `-DCMAKE_INSTALL_PREFIX:PATH=<install-dir>` to specify install directory (default: `project-dir/install/`).
 * `-DDOWNLOAD_HDF5:BOOL=<ON/OFF>` to toggle automatic installation of HDF5 (default: `OFF`).
-* `-DDOWNLOAD_EIGEN3:BOOL=<ON/OFF>` to toggle automatic installation of HDF5 (default: `OFF`).
-* `-DDOWNLOAD_ALL:BOOL=<ON/OFF>` to toggle automatic installation of third-party dependencies (default: `OFF`).
+* `-DDOWNLOAD_EIGEN3:BOOL=<ON/OFF>` to toggle automatic installation of Eigen3 (default: `OFF`).
+* `-DDOWNLOAD_ALL:BOOL=<ON/OFF>` to toggle automatic installation of all third-party dependencies (default: `OFF`).
 * `-DCMAKE_BUILD_TYPE=Release/Debug` to specify build type (default: `Release`)
 * `-DBUILD_SHARED_LIBS:BOOL=<ON/OFF>` to link dependencies with static or shared libraries (default: `OFF`)
 * `-DENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (default: `ON`).
@@ -92,6 +92,7 @@ In addition, the following variables can be set to help guide CMake's `find_pack
 * `-DEigen3_ROOT_DIR:PATH=<path to Eigen3 install-dir>` 
 * `-DEIGEN3_INCLUDE_DIR:PATH=<path to Eigen3 include-dir>`
 * `-DHDF5_DIR:PATH=<path to HDF5Config.cmake>` 
+* `-Dspdlog_DIR:PATH=<path to spdlogConfig.cmake>` 
 
 
 

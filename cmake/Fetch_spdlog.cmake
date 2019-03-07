@@ -1,6 +1,6 @@
 
 
-find_package(spdlog NO_DEFAULT_PATH HINTS ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog/lib/cmake/spdlog ${spdlog_DIR} )
+find_package(spdlog 1.3 NO_DEFAULT_PATH HINTS ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog/lib/cmake/spdlog ${spdlog_DIR} )
 
 if(spdlog_FOUND)
     message(STATUS "SPDLOG FOUND IN SYSTEM: ${spdlog_DIR}")
