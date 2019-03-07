@@ -16,11 +16,6 @@ std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
 using namespace std::complex_literals;
 
 
-
-// Store some dummy data to an hdf5 file
-
-
-
 int main()
 {
     using cplx = std::complex<double>;
@@ -31,46 +26,34 @@ int main()
     std::vector<double> vectorDouble = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
                                     0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                     -1.0, 0.0, 1.0, 0.0,-1.0, 0.0, 0.0,-1.0, 0.0, 1.0, 0.0, 1.0};
-    std::vector<cplx> vectorComplex = {-0.191154 + 0.326211i, 0.964728-0.712335i, -0.0351791-0.10264i,0.177544+0.99999i};
-
-    std::string stringDummy = "Dummy string with spaces";
 
 
-    std::string output_filename         = "readWriteAttributes.h5";
-    std::string output_folder           = "output";
-    bool        create_dir_if_not_found = true;
-    bool        overwrite_file_if_found = true;
+
+    std::string outputFilename      = "readWriteAttributes.h5";
+    std::string outputDir           = "output";
+    bool        createDir = true;
+    size_t      logLevel  = 0;
+    h5pp::File file(outputFilename, outputDir,h5pp::AccessMode::TRUNCATE,createDir,logLevel);
 
 
-    h5pp::File file("readTest.h5", "output",h5pp::AccessMode::RENAME,true,0);
     std::cout << "Writing vectorDouble      : \n" <<  vectorDouble   << std::endl;
-    std::cout << "Writing vectorComplex     : \n" <<  vectorComplex  << std::endl;
-    std::cout << "Writing stringDummy       : \n" <<  stringDummy    << std::endl;
 
-    file.write_dataset(vectorDouble,"vectorDouble");
-    file.write_dataset(vectorComplex,"vectorComplex");
-    file.write_dataset(stringDummy,"stringDummy");
-    file.write_attribute_to_link(std::string("This is an attribute"), "TestAttr", "vectorDouble"  );
-    file.write_attribute_to_link(std::string("This is an attribute"), "TestAttr", "vectorComplex" );
-    file.write_attribute_to_link("This is an attribute", "TestAttr", "stringDummy"   );
+    file.write_dataset(vectorDouble,"testGroup/vectorDouble");
+
+    file.write_attribute_to_link(std::string("This is a string"), "AttributeString"           , "testGroup/vectorDouble"  );
+    file.write_attribute_to_link("This is a char array"         , "AttributeCharArray"        , "testGroup/vectorDouble"  );
+    file.write_attribute_to_link(1                              , "AttributeInt"              , "testGroup/vectorDouble"  );
+    file.write_attribute_to_link(1.0                            , "AttributeDouble"           , "testGroup/vectorDouble"  );
+    file.write_attribute_to_link(std::complex<double>(2,3)      , "AttributeComplexDouble"    , "testGroup/vectorDouble"  );
+    file.write_attribute_to_link((int[]){1,2,3,4,5,6}           , "AttributeIntArray"         , "testGroup/vectorDouble"  );
+    file.write_attribute_to_link(vectorDouble                   , "AttributeVectorDouble"     , "testGroup/vectorDouble"  );
 
 
     // Read the data back
     std::vector<double>     vectorDoubleRead;
-    std::vector<cplx>       vectorComplexRead;
-    std::string             stringDummyRead;
-
-
-    file.read_dataset(vectorDoubleRead,"vectorDouble");
-    file.read_dataset(vectorComplexRead,"vectorComplex");
-    file.read_dataset(stringDummyRead,"stringDummy");
-    std::cout << "Reading vectorDouble: " <<  vectorDoubleRead  << std::endl;
-    std::cout << "Reading vectorComplex: " <<  vectorComplexRead  << std::endl;
-    std::cout << "Reading stringDummy: " <<  stringDummyRead  << std::endl;
-
+    std::cout << "Reading testGroup/vectorDouble: " <<  vectorDoubleRead  << std::endl;
+    file.read_dataset(vectorDoubleRead,"testGroup/vectorDouble");
     if (vectorDouble != vectorDoubleRead){throw std::runtime_error("vectorDouble != vectorDoubleRead");}
-    if (vectorComplex != vectorComplexRead){throw std::runtime_error("vectorComplex != vectorComplexRead");}
-    if (stringDummy != stringDummyRead){throw std::runtime_error("stringDummy != stringDummyRead");}
 
     return 0;
 }

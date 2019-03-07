@@ -4,7 +4,13 @@
 
 int main(){
 
-    h5pp::File file("someFile.h5", "output",h5pp::AccessMode::TRUNCATE,true,0);
+    std::string outputFilename      = "simpleWrite.h5";
+    std::string outputDir           = "output";
+    bool        createDir = true;
+    size_t      logLevel  = 0;
+    h5pp::File file(outputFilename, outputDir,h5pp::AccessMode::TRUNCATE,createDir,logLevel);
+
+
     using namespace std::complex_literals;
 
     std::string                         String         = "This is a string";
