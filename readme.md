@@ -3,7 +3,7 @@
 # h5pp
 h5pp is a C++ wrapper for HDF5 that focuses on simplicity for the end-user. 
 ## Features
-* Standard CMake build, instal of headersl and linking.
+* Standard CMake build, install and linking.
 * Automated install and linking of dependencies if desired.
 * Support for common data types:
     - `char`,`int`, `float`, `double` in unsigned and long versions.
@@ -45,7 +45,7 @@ int main() {
 
 
 ## Requirements
-* C++17 capable compiler with experimenal headers. (tested with GCC version >= 7.3 and CLang version >= 6.0)
+* C++17 capable compiler with experimental headers. (tested with GCC version >= 7.3 and CLang version >= 6.0)
 * CMake 3.10
 * Automated dependencies:
     - [**HDF5**](https://support.hdfgroup.org/HDF5/) (tested with version >= 1.10).
