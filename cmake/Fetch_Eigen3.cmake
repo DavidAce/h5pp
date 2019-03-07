@@ -1,31 +1,16 @@
 
-find_package(Eigen3 3.3.4 HINTS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3)
-
-#get_cmake_property(_variableNames VARIABLES)
-#foreach (_variableName ${_variableNames})
-#    if("${_variableName}" MATCHES "EIGEN" OR "${_variableName}" MATCHES "eigen" OR "${_variableName}" MATCHES "Eigen")
-#        message(STATUS "${_variableName}=${${_variableName}}")
-#    endif()
-#endforeach()
-
-#if(NOT EIGEN3_FOUND)
-    # Try finding arpack as module library
-#    message(STATUS "SEARCHING FOR Eigen3 IN LOADED MODULES")
-#    find_package(Eigen3 3.3.4 PATHS "$ENV{EIGEN3_CMAKE_DIR}" NO_DEFAULT_PATH)
-#    if (NOT EIGEN3_FOUND)
-#    find_path(EIGEN3_INCLUDE_DIR
-#            NAMES Core
-#            PATHS "$ENV{EIGEN3_INCLUDE_DIR}/Eigen"
-#            )
-#    endif()
-#endif()
+#find_package(Eigen3 3.3.4 HINTS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3)
+find_package(Eigen3 3.3.4  PATHS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 NO_DEFAULT_PATH)
+find_package(Eigen3 3.3.4  PATHS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 NO_CMAKE_PACKAGE_REGISTRY)
+find_package(Eigen3 3.3.4  PATHS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3)
 
 
 if(EIGEN3_FOUND)
     message(STATUS "EIGEN FOUND IN SYSTEM: ${EIGEN3_INCLUDE_DIR}")
     add_library(Eigen3 INTERFACE)
-    target_link_libraries(Eigen3 INTERFACE Eigen3::Eigen)
     get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+    target_link_libraries(Eigen3 INTERFACE Eigen3::Eigen)
+    target_include_directories(Eigen3 INTERFACE ${EIGEN3_INCLUDE_DIR})
 elseif (DOWNLOAD_EIGEN3 OR DOWNLOAD_ALL)
     message(STATUS "Eigen3 will be installed into ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 on first build.")
 

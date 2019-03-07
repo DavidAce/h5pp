@@ -41,7 +41,17 @@ if(HDF5_FOUND)
     # Add convenience libraries to collect all the hdf5 libraries
     add_library(hdf5    INTERFACE)
     if(TARGET hdf5::hdf5-${HDF5_TARGET_SUFFIX})
-        message(STATUS "HDF5 FOUND IN SYSTEM: ${HDF5_BUILD_DIR}")
+        get_cmake_property(_variableNames VARIABLES)
+#        foreach (_variableName ${_variableNames})
+#            if("${_variableName}" MATCHES "HDF5" OR "${_variableName}" MATCHES "hdf5" OR "${_variableName}" MATCHES "h5")
+#                message(STATUS "${_variableName}=${${_variableName}}")
+#            endif()
+#        endforeach()
+        set(HDF5_DIR              ${HDF5_BUILD_DIR}/share/cmake/hdf5)
+        set(HDF5_ROOT             ${HDF5_BUILD_DIR})
+
+
+        message(STATUS "HDF5 FOUND PRE-INSTALLED: ${HDF5_BUILD_DIR}")
         target_link_libraries(hdf5
                 INTERFACE
                 hdf5::hdf5-${HDF5_TARGET_SUFFIX}
@@ -49,6 +59,9 @@ if(HDF5_FOUND)
                 hdf5::hdf5_cpp-${HDF5_TARGET_SUFFIX}
                 hdf5::hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
                 )
+
+
+
     else()
 #            get_cmake_property(_variableNames VARIABLES)
 #            foreach (_variableName ${_variableNames})
@@ -61,6 +74,8 @@ if(HDF5_FOUND)
         if (_HDF5_LPATH AND NOT HDF5_ROOT)
             set(HDF5_ROOT ${_HDF5_LPATH})
         endif()
+
+
         target_link_libraries(
             hdf5
             INTERFACE

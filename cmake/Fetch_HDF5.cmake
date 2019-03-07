@@ -36,6 +36,7 @@ elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
     add_library(hdf5 INTERFACE)
     add_dependencies(hdf5          external_HDF5)
     set(HDF5_DIR              ${INSTALL_DIR}/share/cmake/hdf5)
+    set(HDF5_ROOT             ${INSTALL_DIR})
 
     #    if (HDF5_IS_PARALLEL)
     #        list(APPEND HDF5_LINKER_FLAGS ${MPI_LIBRARIES})

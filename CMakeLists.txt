@@ -37,8 +37,17 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "..." FORCE)
 endif()
 
-#cmake_policy(SET CMP0074 NEW)
-#cmake_policy(SET CMP0075 NEW)
+
+#################################################################
+### Set default policies if CMake is new enough               ###
+#################################################################
+if (CMAKE_VERSION VERSION_LESS 3.12)
+    message(STATUS "Not setting policies")
+else()
+    cmake_policy(SET CMP0074 NEW)
+    cmake_policy(SET CMP0075 NEW)
+endif()
+
 
 
 ##################################################################
@@ -144,7 +153,7 @@ install(FILES
 
 
 ##Register package in user's package registry
-export(PACKAGE h5pp)
+#export(PACKAGE h5pp)
 
 
 
