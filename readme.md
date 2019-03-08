@@ -52,7 +52,7 @@ int main() {
     - [**Eigen**](http://eigen.tuxfamily.org) (tested with version >= 3.3.4).
     - [**spdlog**](https://github.com/gabime/spdlog) (tested with version >= 1.3.1)
 
-The build process will attempt to find the libraries above installed on the system.
+The build process will attempt to find the libraries above in the usual system install paths.
 By default, CMake will warn if it can't find the dependencies, and the installation step will simply copy the headers to `install-dir` and generate a target `h5pp::h5pp` for linking.
 
 For convenience, `h5pp` is also able to download and install the missing dependencies for you into the given install-directory (default: `install-dir/third-party`),
@@ -116,7 +116,7 @@ A minimal `CMakeLists.txt` looks like:
     endif()
 ```
 
-The target `h5pp::h5pp` will import the `h5pp` headers set compile flags you need to compile with `h5pp`. 
+The target `h5pp::h5pp` will import the `h5pp` headers and set the compile flags that you need to compile with `h5pp`. These flags enable C++17 and experimental headers.
 The target `h5pp::deps` will import the dependencies needed for `h5pp` to work. If you want to link the dependencies
 manually, omit `h5pp::deps` above.
 
