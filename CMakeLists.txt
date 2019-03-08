@@ -181,7 +181,7 @@ configure_package_config_file(
         ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
         INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
         PATH_VARS
-        H5PP_DIR
+        H5PP_DIR H5PP_ROOT
         Eigen3_DIR EIGEN3_INCLUDE_DIR EIGEN3_ROOT_DIR
         spdlog_DIR
         HDF5_DIR HDF5_ROOT HDF5_WANT_VERSION
