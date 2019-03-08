@@ -13,26 +13,26 @@
 namespace h5pp{
     namespace Utils{
         template <typename DataType, size_t Size>
-        constexpr size_t get_array_size(const DataType (&arr)[Size]){return Size;}
+        constexpr size_t getArraySize(const DataType (&arr)[Size]){return Size;}
 
 
         template<typename DataType>
-        hsize_t get_Size(const DataType &data){
+        hsize_t getSize(const DataType &data){
             namespace tc = h5pp::Type::Check;
-            if constexpr (tc::has_member_size<DataType>::value)          {return data.size();} //Fails on clang?
-            else if constexpr (std::is_array<DataType>::value)           {return get_array_size(data);}
-            else if constexpr (std::is_arithmetic<DataType>::value)      {return 1;}
-            else if constexpr (std::is_pod<DataType>::value)             {return 1;}
-            else if constexpr (tc::isStdComplex<DataType>())             {return 1;}
+            if constexpr (tc::hasMember_size<DataType>::value)          {return data.size();} //Fails on clang?
+            else if constexpr (std::is_array<DataType>::value)          {return getArraySize(data);}
+            else if constexpr (std::is_arithmetic<DataType>::value)     {return 1;}
+            else if constexpr (std::is_pod<DataType>::value)            {return 1;}
+            else if constexpr (tc::is_StdComplex<DataType>())           {return 1;}
             else{
-                spdlog::warn("WARNING: get_Size can't match the type provided: " + std::string(typeid(data).name()));
+                spdlog::warn("WARNING: getSize can't match the type provided: " + std::string(typeid(data).name()));
                 return data.size();
             }
         }
 
 
         template<typename DataType>
-        constexpr int get_Rank() {
+        constexpr int getRank() {
             namespace tc = h5pp::Type::Check;
             if      constexpr(tc::is_eigen_tensor<DataType>::value){return (int) DataType::NumIndices;}
             else if constexpr(tc::is_eigen_core<DataType>::value){return 2; }
@@ -42,14 +42,14 @@ namespace h5pp{
             else if constexpr(std::is_same<const char *,DataType>::value){return 1;}
             else if constexpr(std::is_array<DataType>::value){return 1;}
             else if constexpr(std::is_pod<DataType>::value){return 1;}
-            else if constexpr(tc::isStdComplex<DataType>()){return 1;}
+            else if constexpr(tc::is_StdComplex<DataType>()){return 1;}
             else {
                 tc::print_type_and_exit_compile_time<DataType>();
             }
         }
 
 
-        inline hid_t get_DataSpace_unlimited(int rank){
+        inline hid_t getDataSpaceUnlimited(int rank){
             std::vector<hsize_t> dims(rank);
             std::vector<hsize_t> max_dims(rank);
             std::fill_n(dims.begin(), rank, 0);
@@ -59,9 +59,9 @@ namespace h5pp{
 
 
         template <typename DataType>
-        std::vector<hsize_t> get_Dimensions(const DataType &data) {
+        std::vector<hsize_t> getDimensions(const DataType &data) {
             namespace tc = h5pp::Type::Check;
-            int rank = get_Rank<DataType>();
+            int rank = getRank<DataType>();
             std::vector<hsize_t> dims(rank);
             if constexpr (tc::is_eigen_tensor<DataType>::value){
                 std::copy(data.dimensions().begin(), data.dimensions().end(), dims.begin());
@@ -83,18 +83,18 @@ namespace h5pp{
                 return dims;
             }
             else if constexpr(std::is_array<DataType>::value){
-                dims[0] = get_array_size(data);
+                dims[0] = getArraySize(data);
                 return dims;
             }
 
-            else if constexpr (std::is_arithmetic<DataType>::value or tc::isStdComplex<DataType>()){
+            else if constexpr (std::is_arithmetic<DataType>::value or tc::is_StdComplex<DataType>()){
                 dims[0]= 1;
                 return dims;
             }
 
             else{
                 tc::print_type_and_exit_compile_time<DataType>();
-                std::string error = "get_Dimensions can't match the type provided: " + std::string(typeid(DataType).name());
+                std::string error = "getDimensions can't match the type provided: " + std::string(typeid(DataType).name());
                 spdlog::critical(error);
                 throw(std::logic_error(error));
             }
@@ -102,32 +102,32 @@ namespace h5pp{
         }
 
         template<typename DataType>
-        hid_t get_MemSpace(const DataType &data) {
-            auto rank = get_Rank<DataType>();
-            auto dims = get_Dimensions<DataType>(data);
+        hid_t getMemSpace(const DataType &data) {
+            auto rank = getRank<DataType>();
+            auto dims = getDimensions<DataType>(data);
             return H5Screate_simple(rank, dims.data(), nullptr);
         }
 
 
         template<typename DataType>
         auto convertComplexDataToH5T(const DataType &data){
-            static_assert(h5pp::Type::Check::hasStdComplex<DataType>() or h5pp::Type::Check::isStdComplex<DataType>(),
+            static_assert(h5pp::Type::Check::hasStdComplex<DataType>() or h5pp::Type::Check::is_StdComplex<DataType>(),
                     "Data must be complex for conversion to H5T_COMPLEX_STRUCT");
             if constexpr(h5pp::Type::Check::is_eigen_type<DataType>::value){
                 using scalarType  = typename DataType::Scalar;
                 using complexType = typename scalarType::value_type;
-                std::vector<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<complexType>> new_data;
-                new_data.insert(new_data.end(), data.data(), data.data()+data.size());
-                return new_data;
+                std::vector<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<complexType>> newData;
+                newData.insert(newData.end(), data.data(), data.data()+data.size());
+                return newData;
             }
             else if constexpr(h5pp::Type::Check::is_vector<DataType>::value) {
                 using scalarType  = typename DataType::value_type;
                 using complexType = typename scalarType::value_type;
-                std::vector<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<complexType>> new_data;
-                new_data.insert(new_data.end(), data.data(), data.data()+data.size());
-                return new_data;
+                std::vector<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<complexType>> newData;
+                newData.insert(newData.end(), data.data(), data.data()+data.size());
+                return newData;
             }
-            else if  constexpr (h5pp::Type::Check::isStdComplex<DataType>()){
+            else if  constexpr (h5pp::Type::Check::is_StdComplex<DataType>()){
                 return h5pp::Type::Complex::H5T_COMPLEX_STRUCT<typename DataType::value_type>(data);
             }else{
                 //This should never happen.

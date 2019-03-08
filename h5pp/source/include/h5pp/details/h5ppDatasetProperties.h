@@ -13,18 +13,18 @@ namespace h5pp{
 
     class DatasetProperties {
     public:
-        hid_t                   datatype;
-        hid_t                   memspace;
+        hid_t                   dataType;
+        hid_t                   memSpace;
         hsize_t                 size;
         int                     ndims;
-        std::vector<hsize_t>    chunk_size;
+        std::vector<hsize_t>    chunkSize;
         std::vector<hsize_t>    dims;
-        std::string             dset_name;
-        unsigned int            compression_level = 6;
+        std::string             dsetName;
+        unsigned int            compressionLevel = 6;
 
         ~DatasetProperties(){
-            H5Tclose(datatype);
-            H5Sclose(memspace);
+            H5Tclose(dataType);
+            H5Sclose(memSpace);
         }
     };
 

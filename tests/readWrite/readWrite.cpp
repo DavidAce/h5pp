@@ -25,13 +25,12 @@ int main()
 {
     using cplx = std::complex<double>;
 
-    static_assert(h5pp::Type::Check::has_member_data<std::vector<double>>() and "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
+    static_assert(h5pp::Type::Check::hasMember_data<std::vector<double>>() and "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
-    std::string outputFilename      = "readWrite.h5";
-    std::string outputDir           = "output";
+    std::string outputFilename      = "output/readWrite.h5";
     bool        createDir = true;
     size_t      logLevel  = 0;
-    h5pp::File file(outputFilename, outputDir,h5pp::AccessMode::TRUNCATE,createDir,logLevel);
+    h5pp::File file(outputFilename, h5pp::AccessMode::TRUNCATE,createDir,logLevel);
 
 
     // Generate dummy data
@@ -47,16 +46,16 @@ int main()
 
 
     std::cout << "Writing vectorDouble      : \n" <<  vectorDouble   << std::endl;
-    file.write_dataset(vectorDouble,"vectorDouble");
+    file.writeDataset(vectorDouble, "vectorDouble");
 
     std::cout << "Writing vectorComplex     : \n" <<  vectorComplex  << std::endl;
-    file.write_dataset(vectorComplex,"vectorComplex");
+    file.writeDataset(vectorComplex, "vectorComplex");
 
     std::cout << "Writing tensorComplex     : \n" <<  tensorComplex  << std::endl;
-    file.write_dataset(tensorComplex,"tensorComplex");
+    file.writeDataset(tensorComplex, "tensorComplex");
 
     std::cout << "Writing stringDummy       : \n" <<  stringDummy    << std::endl;
-    file.write_dataset(stringDummy,"stringDummy");
+    file.writeDataset(stringDummy, "stringDummy");
 
 
     // Read the data back
@@ -67,22 +66,22 @@ int main()
 
 
     std::cout << "Reading vectorDouble: " <<  vectorDoubleRead  << std::endl;
-    file.read_dataset(vectorDoubleRead,"vectorDouble");
+    file.readDataset(vectorDoubleRead, "vectorDouble");
     if (vectorDouble != vectorDoubleRead){throw std::runtime_error("vectorDouble != vectorDoubleRead");}
 
 
     std::cout << "Reading vectorComplex: " <<  vectorComplexRead  << std::endl;
-    file.read_dataset(vectorComplexRead,"vectorComplex");
+    file.readDataset(vectorComplexRead, "vectorComplex");
     if (vectorComplex != vectorComplexRead){throw std::runtime_error("vectorComplex != vectorComplexRead");}
 
 
     std::cout << "Reading stringDummy: " <<  stringDummyRead  << std::endl;
-    file.read_dataset(stringDummyRead,"stringDummy");
+    file.readDataset(stringDummyRead, "stringDummy");
     if (stringDummy != stringDummyRead){throw std::runtime_error("stringDummy != stringDummyRead");}
 
 
     std::cout << "Reading tensorComplex: " <<  tensorComplexRead  << std::endl;
-    file.read_dataset(tensorComplexRead,"tensorComplex");
+    file.readDataset(tensorComplexRead, "tensorComplex");
     //Tensor comparison isn't as straightforward if we want to properly test storage orders
     Eigen::Map<Eigen::VectorXcd> tensorMap(tensorComplex.data(), tensorComplex.size());
     Eigen::Map<Eigen::VectorXcd> tensorMapRead(tensorComplexRead.data(), tensorComplexRead.size());

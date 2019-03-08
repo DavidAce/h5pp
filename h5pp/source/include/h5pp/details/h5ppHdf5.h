@@ -13,7 +13,7 @@
 namespace h5pp{
     namespace Hdf5{
 
-        inline bool check_if_link_exists_recursively(hid_t file, std::string path){
+        inline bool checkIfLinkExistsRecursively(hid_t file, std::string path){
             std::stringstream path_stream(path);
             std::vector<std::string> split_path;
             std::string part;
@@ -34,7 +34,7 @@ namespace h5pp{
 
 
 
-        inline bool check_if_attribute_exists(hid_t file,const std::string &link_name, const std::string &attribute_name){
+        inline bool checkIfAttributeExists(hid_t file, const std::string &link_name, const std::string &attribute_name){
             hid_t dataset      = H5Dopen(file, link_name.c_str(), H5P_DEFAULT);
             bool exists = false;
             unsigned int num_attrs = H5Aget_num_attrs(dataset);
@@ -55,32 +55,32 @@ namespace h5pp{
             return exists;
         }
 
-        void set_extent_dataset(hid_t file, const DatasetProperties &props);
-        inline void set_extent_dataset(hid_t file,const DatasetProperties &props){
-            if (check_if_link_exists_recursively(file, props.dset_name)) {
-                hid_t dataset = H5Dopen(file, props.dset_name.c_str(), H5P_DEFAULT);
+        void setExtentDataset(hid_t file, const DatasetProperties &props);
+        inline void setExtentDataset(hid_t file, const DatasetProperties &props){
+            if (checkIfLinkExistsRecursively(file, props.dsetName)) {
+                hid_t dataset = H5Dopen(file, props.dsetName.c_str(), H5P_DEFAULT);
                 H5Dset_extent(dataset, props.dims.data());
                 H5Dclose(dataset);
             }else{
-                spdlog::critical("Link does not exist, yet the extent is being set.");
+                h5pp::Logger::log->critical("Link does not exist, yet the extent is being set.");
                 exit(1);
             }
         }
 
 
 
-        inline void extendDataset(hid_t file, const std::string & dataset_relative_name, const int dim, const int extent){
-            if (H5Lexists(file, dataset_relative_name.c_str(), H5P_DEFAULT)) {
-                hid_t dataset = H5Dopen(file, dataset_relative_name.c_str(), H5P_DEFAULT);
-                // Retrieve the current size of the memspace (act as if you don't know it's size and want to append)
+        inline void extendDataset(hid_t file, const std::string & datasetRelativeName, const int dim, const int extent){
+            if (H5Lexists(file, datasetRelativeName.c_str(), H5P_DEFAULT)) {
+                hid_t dataset = H5Dopen(file, datasetRelativeName.c_str(), H5P_DEFAULT);
+                // Retrieve the current size of the memSpace (act as if you don't know it's size and want to append)
                 hid_t filespace = H5Dget_space(dataset);
                 const int ndims = H5Sget_simple_extent_ndims(filespace);
-                std::vector<hsize_t> old_dims(ndims);
-                std::vector<hsize_t> new_dims(ndims);
-                H5Sget_simple_extent_dims(filespace, old_dims.data(), nullptr);
-                new_dims = old_dims;
-                new_dims[dim] += extent;
-                H5Dset_extent(dataset, new_dims.data());
+                std::vector<hsize_t> oldDims(ndims);
+                std::vector<hsize_t> newDims(ndims);
+                H5Sget_simple_extent_dims(filespace, oldDims.data(), nullptr);
+                newDims = oldDims;
+                newDims[dim] += extent;
+                H5Dset_extent(dataset, newDims.data());
                 H5Dclose(dataset);
                 H5Sclose(filespace);
                 H5Fflush(file,H5F_SCOPE_LOCAL);
@@ -89,25 +89,24 @@ namespace h5pp{
         }
 
         template<typename DataType>
-        void extendDataset(hid_t file, const DataType &data, const std::string & dataset_relative_name){
+        void extendDataset(hid_t file, const DataType &data, const std::string & datasetRelativeName){
             namespace tc = h5pp::Type::Check;
             if constexpr (tc::is_eigen_core<DataType>::value){
-//                hid_t file = h5ppFile.open_file();
-                extend_dataset(dataset_relative_name, 0, data.rows());
-                hid_t dataset   = H5Dopen(file, dataset_relative_name.c_str(), H5P_DEFAULT);
-                hid_t filespace = H5Dget_space(dataset);
-                int ndims = H5Sget_simple_extent_ndims(filespace);
+                extendDataset(datasetRelativeName, 0, data.rows());
+                hid_t dataSet   = H5Dopen(file, datasetRelativeName.c_str(), H5P_DEFAULT);
+                hid_t fileSpace = H5Dget_space(dataSet);
+                int ndims = H5Sget_simple_extent_ndims(fileSpace);
                 std::vector<hsize_t> dims(ndims);
-                H5Sget_simple_extent_dims(filespace,dims.data(),NULL);
-                H5Dclose(dataset);
-                H5Sclose(filespace);
+                H5Sget_simple_extent_dims(fileSpace,dims.data(),NULL);
+                H5Dclose(dataSet);
+                H5Sclose(fileSpace);
                 if (dims[1] < (hsize_t) data.cols()){
-                    extend_dataset(dataset_relative_name, 1, data.cols());
+                    extendDataset(datasetRelativeName, 1, data.cols());
                 }
 //                h5ppFile.close(file);
             }
             else{
-                extend_dataset(dataset_relative_name, 0, h5pp::Utils::get_Size(data));
+                extendDataset(datasetRelativeName, 0, h5pp::Utils::getSize(data));
             }
         }
 
@@ -115,7 +114,7 @@ namespace h5pp{
 
         inline void create_group_link(hid_t file, hid_t plist_lncr, const std::string &group_relative_name) {
             //Check if group exists already
-            spdlog::trace("Creating group link: {}", group_relative_name);
+            h5pp::Logger::log->trace("Creating group link: {}", group_relative_name);
             std::stringstream path_stream(group_relative_name);
             std::vector<std::string> split_path;
             std::string head;
@@ -126,7 +125,7 @@ namespace h5pp{
             }
 
             for(auto &group_name : split_path){
-                if (not h5pp::Hdf5::check_if_link_exists_recursively(file, group_name)) {
+                if (not h5pp::Hdf5::checkIfLinkExistsRecursively(file, group_name)) {
                     hid_t group = H5Gcreate(file, group_name.c_str(), plist_lncr, H5P_DEFAULT, H5P_DEFAULT);
                     H5Gclose(group);
                 }
@@ -134,22 +133,22 @@ namespace h5pp{
         }
 
         inline void write_symbolic_link(hid_t file ,const std::string &src_path, const std::string &tgt_path){
-            bool exists = h5pp::Hdf5::check_if_link_exists_recursively(file, src_path);
+            bool exists = h5pp::Hdf5::checkIfLinkExistsRecursively(file, src_path);
             if (not exists)throw std::runtime_error("Trying to write soft link to non-existing path: " + src_path);
-            herr_t retval = H5Lcreate_soft(src_path.c_str(), file, tgt_path.c_str(), H5P_DEFAULT, H5P_DEFAULT);
+            [[maybe_unused]] herr_t retval = H5Lcreate_soft(src_path.c_str(), file, tgt_path.c_str(), H5P_DEFAULT, H5P_DEFAULT);
         }
 
 
-        inline void create_dataset_link(hid_t file,hid_t plist_lncr, const DatasetProperties &props){
-            if (not h5pp::Hdf5::check_if_link_exists_recursively(file, props.dset_name)){
-                hid_t dataspace = h5pp::Utils::get_DataSpace_unlimited(props.ndims);
+        inline void createDatasetLink(hid_t file, hid_t plist_lncr, const DatasetProperties &props){
+            if (not h5pp::Hdf5::checkIfLinkExistsRecursively(file, props.dsetName)){
+                hid_t dataspace = h5pp::Utils::getDataSpaceUnlimited(props.ndims);
                 hid_t dset_cpl  = H5Pcreate(H5P_DATASET_CREATE);
                 H5Pset_layout(dset_cpl, H5D_CHUNKED);
-                H5Pset_chunk(dset_cpl, props.ndims, props.chunk_size.data());
-                // H5Pset_deflate (dset_cpl ,props.compression_level);
+                H5Pset_chunk(dset_cpl, props.ndims, props.chunkSize.data());
+                // H5Pset_deflate (dset_cpl ,props.compressionLevel);
                 hid_t dataset = H5Dcreate(file,
-                                          props.dset_name.c_str(),
-                                          props.datatype,
+                                          props.dsetName.c_str(),
+                                          props.dataType,
                                           dataspace,
                                           plist_lncr,
                                           dset_cpl,
@@ -161,18 +160,60 @@ namespace h5pp{
         }
 
 
-        inline void select_hyperslab(const hid_t &filespace, const hid_t &memspace){
-            const int ndims = H5Sget_simple_extent_ndims(filespace);
-            std::vector<hsize_t> mem_dims(ndims);
-            std::vector<hsize_t> file_dims(ndims);
+        inline void select_hyperslab(const hid_t &fileSpace, const hid_t &memSpace){
+            const int ndims = H5Sget_simple_extent_ndims(fileSpace);
+            std::vector<hsize_t> memDims(ndims);
+            std::vector<hsize_t> fileDims(ndims);
             std::vector<hsize_t> start(ndims);
-            H5Sget_simple_extent_dims(memspace , mem_dims.data(), nullptr);
-            H5Sget_simple_extent_dims(filespace, file_dims.data(), nullptr);
+            H5Sget_simple_extent_dims(memSpace , memDims.data(), nullptr);
+            H5Sget_simple_extent_dims(fileSpace, fileDims.data(), nullptr);
             for(int i = 0; i < ndims; i++){
-                start[i] = file_dims[i] - mem_dims[i];
+                start[i] = fileDims[i] - memDims[i];
             }
-            H5Sselect_hyperslab(filespace, H5S_SELECT_SET, start.data(), nullptr, mem_dims.data(), nullptr);
+            H5Sselect_hyperslab(fileSpace, H5S_SELECT_SET, start.data(), nullptr, memDims.data(), nullptr);
         }
+
+
+
+        inline herr_t fileInfo(hid_t loc_id, const char *name, const H5L_info_t *linfo, void *opdata){
+            try{
+
+//                hid_t group;
+                auto linkNames=reinterpret_cast< std::vector<std::string>* >(opdata);
+//                group = H5Gopen2(loc_id, name, H5P_DEFAULT);
+                //do stuff with group object, if needed
+                linkNames->push_back(name);
+                std::cout << "Name : " << name << std::endl;
+//                H5Gclose(group);
+                return 0;
+
+
+
+
+        //        hid_t group = H5Gopen2(loc_id, name, H5P_DEFAULT);
+                std::cout << " " << name << std::endl; // Display the group name.
+        //        H5Gclose(group);
+
+            }catch(...){
+                throw(std::logic_error("Not a group: " + std::string(name)));
+            }
+            return 0;
+        }
+
+        inline std::vector<std::string> getContentsOfGroup(hid_t file,std::string groupName){
+            h5pp::Logger::log->trace("Getting contents of group: {}",groupName);
+            std::vector<std::string> linkNames;
+            try{
+                herr_t idx = H5Literate_by_name (file, groupName.c_str(), H5_INDEX_NAME,
+                                                 H5_ITER_NATIVE, NULL, fileInfo, &linkNames,
+                                                 H5P_DEFAULT);
+            }
+            catch(std::exception &ex){
+                h5pp::Logger::log->debug("Failed to get contents --  {}",ex.what());
+            }
+            return linkNames;
+        }
+
 
 
 
@@ -180,8 +221,8 @@ namespace h5pp{
 //        void extendDataset(h5pp::File &h5ppFile, const DataType &data, const std::string & dataset_relative_name){
 //            namespace tc = h5pp::Type::Check;
 //            if constexpr (tc::is_eigen_core<DataType>::value){
-//                hid_t file = h5ppFile.open_file();
-//                extend_dataset(dataset_relative_name, 0, data.rows());
+//                hid_t file = h5ppFile.openFile();
+//                extendDataset(dataset_relative_name, 0, data.rows());
 //                hid_t dataset   = H5Dopen(file, dataset_relative_name.c_str(), H5P_DEFAULT);
 //                hid_t filespace = H5Dget_space(dataset);
 //                int ndims = H5Sget_simple_extent_ndims(filespace);
@@ -190,12 +231,12 @@ namespace h5pp{
 //                H5Dclose(dataset);
 //                H5Sclose(filespace);
 //                if (dims[1] < (hsize_t) data.cols()){
-//                    extend_dataset(dataset_relative_name, 1, data.cols());
+//                    extendDataset(dataset_relative_name, 1, data.cols());
 //                }
 //                h5ppFile.close(file);
 //            }
 //            else{
-//                extend_dataset(dataset_relative_name, 0, h5pp::Utils::get_Size(data));
+//                extendDataset(dataset_relative_name, 0, h5pp::Utils::getSize(data));
 //            }
 //        }
 

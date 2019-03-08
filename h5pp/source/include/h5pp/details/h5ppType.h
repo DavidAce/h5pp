@@ -13,7 +13,7 @@
 namespace h5pp{
     namespace Type{
         template<typename DataType>
-        constexpr hid_t get_DataType() {
+        constexpr hid_t getDataType() {
             namespace tc = h5pp::Type::Check;
             if constexpr (std::is_same<DataType, int>::value)                                           {return  H5Tcopy(H5T_NATIVE_INT);}
             if constexpr (std::is_same<DataType, long>::value)                                          {return  H5Tcopy(H5T_NATIVE_LONG);}
@@ -45,12 +45,12 @@ namespace h5pp{
             if constexpr (std::is_same<DataType, std::string>::value)                                   {return  H5Tcopy(H5T_C_S1);}
             if constexpr (std::is_same<DataType, char>::value)                                          {return  H5Tcopy(H5T_C_S1);}
             if constexpr (std::is_same<DataType, const char *>::value)                                  {return  H5Tcopy(H5T_C_S1);}
-            if constexpr (tc::is_eigen_type<DataType>::value)                                           {return  get_DataType<typename DataType::Scalar>();}
-            if constexpr (tc::is_vector<DataType>::value)                                               {return  get_DataType<typename DataType::value_type>();}
-            if constexpr (tc::has_member_scalar <DataType>::value)                                      {return  get_DataType<typename DataType::Scalar>();}
-            if constexpr (tc::has_member_value_type <DataType>::value)                                  {return  get_DataType<typename DataType::value_type>();}
-            spdlog::critical("get_DataType could not match the type provided");
-            throw(std::logic_error("get_DataType could not match the type provided"));
+            if constexpr (tc::is_eigen_type<DataType>::value)                                           {return getDataType<typename DataType::Scalar>();}
+            if constexpr (tc::is_vector<DataType>::value)                                               {return getDataType<typename DataType::value_type>();}
+            if constexpr (tc::hasMember_scalar <DataType>::value)                                      {return getDataType<typename DataType::Scalar>();}
+            if constexpr (tc::hasMember_value_type <DataType>::value)                                  {return getDataType<typename DataType::value_type>();}
+            spdlog::critical("getDataType could not match the type provided");
+            throw(std::logic_error("getDataType could not match the type provided"));
         }
 
 
@@ -58,8 +58,8 @@ namespace h5pp{
             template<typename T>
             hid_t createComplexType(){
                 hid_t NEW_COMPLEX_TYPE = H5Tcreate (H5T_COMPOUND, sizeof(H5T_COMPLEX_STRUCT<T>));
-                H5Tinsert (NEW_COMPLEX_TYPE, "real", HOFFSET(H5T_COMPLEX_STRUCT<T>,real), get_DataType<T>());
-                H5Tinsert (NEW_COMPLEX_TYPE, "imag", HOFFSET(H5T_COMPLEX_STRUCT<T>,imag), get_DataType<T>());
+                H5Tinsert (NEW_COMPLEX_TYPE, "real", HOFFSET(H5T_COMPLEX_STRUCT<T>,real), getDataType<T>());
+                H5Tinsert (NEW_COMPLEX_TYPE, "imag", HOFFSET(H5T_COMPLEX_STRUCT<T>,imag), getDataType<T>());
                 return H5Tcopy(NEW_COMPLEX_TYPE);
             }
 

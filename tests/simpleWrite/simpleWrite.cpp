@@ -4,11 +4,10 @@
 
 int main(){
 
-    std::string outputFilename      = "simpleWrite.h5";
-    std::string outputDir           = "output";
+    std::string outputFilename      = "output/simpleWrite.h5";
     bool        createDir = true;
     size_t      logLevel  = 0;
-    h5pp::File file(outputFilename, outputDir,h5pp::AccessMode::TRUNCATE,createDir,logLevel);
+    h5pp::File file(outputFilename, h5pp::AccessMode::TRUNCATE,createDir,logLevel);
 
 
     using namespace std::complex_literals;
@@ -32,25 +31,25 @@ int main(){
     matrixInt           << 1,2,3,4;
     matrixDouble        << 1.5,2.5,3.5,4.5;
     matrixComplexDouble << 1.0 + 2.0i,  3.0 + 4.0i, 5.0+6.0i , 7.0+8.0i;
-    file.write_dataset(String             ,"simpleWriteGroup/String");
-    file.write_dataset(Char               ,"simpleWriteGroup/Char");
-    file.write_dataset(Double             ,"simpleWriteGroup/Double");
-    file.write_dataset(ComplexDouble      ,"simpleWriteGroup/ComplexDouble");
-    file.write_dataset(arrayInt           ,"simpleWriteGroup/arrayInt");
-    file.write_dataset(vectorInt          ,"simpleWriteGroup/vectorInt");
-    file.write_dataset(vectorLong         ,"simpleWriteGroup/vectorLong");
-    file.write_dataset(vectorUint         ,"simpleWriteGroup/vectorUint");
-    file.write_dataset(vectorUlong        ,"simpleWriteGroup/vectorUlong");
-    file.write_dataset(vectorFloat        ,"simpleWriteGroup/vectorFloat");
-    file.write_dataset(vectorDouble       ,"simpleWriteGroup/vectorDouble");
-    file.write_dataset(vectorComplexInt   ,"simpleWriteGroup/vectorComplexInt");
-    file.write_dataset(vectorComplexDouble,"simpleWriteGroup/vectorComplexDouble");
-    file.write_dataset(matrixInt          ,"simpleWriteGroup/matrixInt");
-    file.write_dataset(matrixDouble       ,"simpleWriteGroup/matrixDouble");
-    file.write_dataset(matrixComplexDouble,"simpleWriteGroup/matrixComplexDouble");
+    file.writeDataset(String, "simpleWriteGroup/String");
+    file.writeDataset(Char, "simpleWriteGroup/Char");
+    file.writeDataset(Double, "simpleWriteGroup/Double");
+    file.writeDataset(ComplexDouble, "simpleWriteGroup/ComplexDouble");
+    file.writeDataset(arrayInt, "simpleWriteGroup/arrayInt");
+    file.writeDataset(vectorInt, "simpleWriteGroup/vectorInt");
+    file.writeDataset(vectorLong, "simpleWriteGroup/vectorLong");
+    file.writeDataset(vectorUint, "simpleWriteGroup/vectorUint");
+    file.writeDataset(vectorUlong, "simpleWriteGroup/vectorUlong");
+    file.writeDataset(vectorFloat, "simpleWriteGroup/vectorFloat");
+    file.writeDataset(vectorDouble, "simpleWriteGroup/vectorDouble");
+    file.writeDataset(vectorComplexInt, "simpleWriteGroup/vectorComplexInt");
+    file.writeDataset(vectorComplexDouble, "simpleWriteGroup/vectorComplexDouble");
+    file.writeDataset(matrixInt, "simpleWriteGroup/matrixInt");
+    file.writeDataset(matrixDouble, "simpleWriteGroup/matrixDouble");
+    file.writeDataset(matrixComplexDouble, "simpleWriteGroup/matrixComplexDouble");
 
     Eigen::Matrix<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<double>,Eigen::Dynamic,Eigen::Dynamic> test =  matrixComplexDouble.transpose().cast<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<double>>();
-    file.write_dataset(test,"simpleWriteGroup/test");
+    file.writeDataset(test, "simpleWriteGroup/test");
 
 
     return 0;

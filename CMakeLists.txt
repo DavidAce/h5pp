@@ -229,11 +229,13 @@ if(ENABLE_TESTS)
         add_subdirectory(tests/simpleWrite          EXCLUDE_FROM_ALL)
         add_subdirectory(tests/readWrite            EXCLUDE_FROM_ALL)
         add_subdirectory(tests/readWriteAttributes  EXCLUDE_FROM_ALL)
+        add_subdirectory(tests/copySwap             EXCLUDE_FROM_ALL)
 
         add_custom_target(all_tests ALL
                 DEPENDS simpleWrite
                 DEPENDS readWrite
                 DEPENDS readWriteAttributes
+                DEPENDS copySwap
                 )
 #        add_dependencies(${PROJECT_NAME} all_tests h5pp::h5pp)
 #        add_custom_command(TARGET ${PROJECT_NAME}

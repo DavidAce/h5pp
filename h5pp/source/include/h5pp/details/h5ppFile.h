@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <experimental/filesystem>
 #include <experimental/type_traits>
+#include "h5ppFileCounter.h"
 #include "h5ppTypeCheck.h"
 #include "h5ppTextra.h"
 #include "h5ppLogger.h"
@@ -35,19 +36,20 @@ namespace h5pp{
     class File {
     private:
         herr_t      retval;
-        fs::path    outputFilename;
-        fs::path    outputDir;
-        fs::path    outputFileFullPath;
+        fs::path    FileName;       /*!< Filename (possibly relative) and extension, e.g. ../files/output.h5 */
+//        fs::path    FileDir;        /*!< Directory where  */
+        fs::path    FilePath;       /*!< Full path to the file */
         bool        createDir;
         size_t      logLevel;
+//        std::shared_ptr<spdlog::logger> h5ppLogger;
+//        ActiveFileCounter counter;
         //Mpi related constants
         hid_t plist_facc;
         hid_t plist_xfer;
         hid_t plist_lncr;
         hid_t plist_lapl;
-        hid_t open_file(){return H5Fopen(outputFileFullPath.c_str(), H5F_ACC_RDWR, plist_facc);}
-        herr_t close_file(hid_t file){return H5Fclose(file);}
-
+        hid_t openFile(){return H5Fopen(FilePath.c_str(), H5F_ACC_RDWR, plist_facc);}
+        herr_t closeFile(hid_t file){return H5Fclose(file);}
     public:
 //    hid_t       file;
 
@@ -55,28 +57,55 @@ namespace h5pp{
         bool        hasInitialized = false;
         File()=default;
 
-        explicit File(const std::string outputFilename_):File(outputFilename_,""){}
+        explicit File(const File & other){
+            *this = other;
+        }
 
-
-        File(const std::string outputFilename_, const std::string outputDir_="", AccessMode accessMode_ = AccessMode::TRUNCATE, bool createOutDir_=true, size_t logLevel_ = 3) {
+        File(const std::string FileName_, AccessMode accessMode_ = AccessMode::TRUNCATE, bool createDir_=true, size_t logLevel_ = 3) {
             logLevel = logLevel_;
-            h5pp::Logger::setLogger("h5pp",logLevel,false);
             accessMode          = accessMode_;
-            outputFilename      = outputFilename_;
-            outputDir           = outputDir_;
-            createDir           = createOutDir_;
+            FileName            = FileName_;
+//            FileDir           = outputDir_;
+            createDir           = createDir_;
+            h5pp::Logger::setLogger("h5pp",logLevel,false);
+            setCompression();
             initialize();
-
         }
 
 
         ~File(){
-            H5Pclose(plist_facc);
-            H5Pclose(plist_xfer);
-            H5Pclose(plist_lncr);
-            h5pp::Type::Complex::closeTypes();
+            h5pp::Logger::setLogger("h5pp-exit",logLevel,false);
+            try{
+                if(h5pp::Counter::ActiveFileCounter::getCount() == 1){
+                    H5Pclose(plist_facc);
+                    H5Pclose(plist_xfer);
+                    H5Pclose(plist_lncr);
+                    h5pp::Type::Complex::closeTypes();
+                }
+                h5pp::Counter::ActiveFileCounter::decrementCounter(FileName.string());
+                h5pp::Logger::log->debug("Closing file: {}. Remaining {} are: {}", FileName.string(), h5pp::Counter::ActiveFileCounter::getCount(), h5pp::Counter::ActiveFileCounter::OpenFileNames());
+            }
+            catch (...){
+                h5pp::Logger::log->warn("Failed to properly close file: ", get_file_path());
+            }
         }
 
+        File & operator= (const File & rhs) {
+            if (&rhs != this){
+                if(this->hasInitialized){
+                    this->~File();
+                }
+                if(rhs.hasInitialized){
+                    this->logLevel            = rhs.logLevel;
+                    this->accessMode          = AccessMode::OPEN;
+                    this->FileName            = rhs.FilePath;
+                    this->createDir           = rhs.createDir;
+                    this->setCompression();
+                    this->initialize();
+                }
+            }
+            return *this;
+        }
 
 
         void setCompression(){
@@ -87,18 +116,19 @@ namespace h5pp{
             * case we will make an exception because this filter is an
             * optional part of the hdf5 library.
             */
-            herr_t          status;
-            htri_t          avail;
-            H5Z_filter_t    filter_type;
-            unsigned int    flags, filter_info;
+            [[maybe_unused]] herr_t          status;
+            [[maybe_unused]] htri_t          avail;
+            [[maybe_unused]] H5Z_filter_t    filter_type;
+            [[maybe_unused]] unsigned int    flags, filter_info;
+
             avail = H5Zfilter_avail(H5Z_FILTER_DEFLATE);
             if (!avail) {
-                spdlog::warn("zlib filter not available");
+                h5pp::Logger::log->warn("zlib filter not available");
             }
             status = H5Zget_filter_info (H5Z_FILTER_DEFLATE, &filter_info);
             if ( !(filter_info & H5Z_FILTER_CONFIG_ENCODE_ENABLED) ||
                  !(filter_info & H5Z_FILTER_CONFIG_DECODE_ENABLED) ) {
-                spdlog::warn("zlib filter not available for encoding and decoding");
+                h5pp::Logger::log->warn("zlib filter not available for encoding and decoding");
             }
         }
 
@@ -109,48 +139,49 @@ namespace h5pp{
 
 
 
-        std::string get_file_name(){return outputFileFullPath.filename().string();}
-        std::string get_file_path(){return outputFileFullPath.string();}
+        std::string get_file_name()const{return FilePath.filename().string();}
+        std::string get_file_path()const{return FilePath.string();}
 
 
         template <typename DataType>
-        void read_dataset(DataType &data, const std::string &dataset_relative_name);
+        void readDataset(DataType &data, const std::string &datasetRelativeName);
 
         template <typename DataType>
-        void write_dataset(const DataType &data, const std::string &dataset_relative_name);
+        void writeDataset(const DataType &data, const std::string &datasetRelativeName);
 
         template <typename DataType>
-        void write_dataset(const DataType &data, const DatasetProperties &props);
+        void writeDataset(const DataType &data, const DatasetProperties &props);
 
         template <typename AttrType>
-        void write_attribute_to_link(const AttrType &attribute, const AttributeProperties &aprops);
+        void writeAttributeToLink(const AttrType &attribute, const AttributeProperties &aprops);
 
         template <typename AttrType>
-        void write_attribute_to_link(const AttrType &attribute, const std::string &attribute_name,  const std::string &link_name);
+        void writeAttributeToLink(const AttrType &attribute, const std::string &attributeName,
+                                  const std::string &linkName);
 
         template <typename AttrType>
-        void write_attribute_to_file(const AttrType &attribute, const std::string attribute_name);
+        void writeAttributeToFile(const AttrType &attribute, const std::string attributeName);
 
 
 
         inline void create_group_link(const std::string &group_relative_name){
-            hid_t file = open_file();
+            hid_t file = openFile();
             h5pp::Hdf5::create_group_link(file,plist_lncr,group_relative_name);
-            close_file(file);
+            closeFile(file);
         }
 
 //        void create_group_link(const std::string &group_relative_name);
         inline void write_symbolic_link(const std::string &src_path, const std::string &tgt_path){
-            hid_t file = open_file();
+            hid_t file = openFile();
             h5pp::Hdf5::write_symbolic_link(file,src_path, tgt_path);
-            close_file(file);
+            closeFile(file);
         }
 
 
         bool check_if_link_exists_recursively(std::string link){
-            hid_t file = open_file();
-            bool exists = h5pp::Hdf5::check_if_link_exists_recursively(file, link);
-            H5Fclose(file);
+            hid_t file = openFile();
+            bool exists = h5pp::Hdf5::checkIfLinkExistsRecursively(file, link);
+            closeFile(file);
             return exists;
         }
 
@@ -158,23 +189,27 @@ namespace h5pp{
 
 //
 //        template <typename AttrType>
-//        void write_attribute_to_group(const AttrType &attribute, const std::string &attribute_name, const std::string &link_name);
+//        void write_attribute_to_group(const AttrType &attribute, const std::string &attribute_name, const std::string &linkName);
 //
 
 
-        std::vector<std::string> print_contents_of_group(std::string group_name);
+        std::vector<std::string> getContentsOfGroup(std::string groupName){
+            hid_t file = openFile();
+            h5pp::Hdf5::getContentsOfGroup(file,groupName);
+            closeFile(file);
+        }
 
 
 
     private:
 
-        bool file_is_valid(){
-            return file_is_valid(outputFileFullPath);
+        bool fileIsValid(){
+            return fileIsValid(FilePath);
         }
 
-        bool file_is_valid(fs::path some_hdf5_filename) {
-            if (fs::exists(some_hdf5_filename)){
-                if (H5Fis_hdf5(outputFileFullPath.c_str()) > 0) {
+        bool fileIsValid(fs::path fileName) {
+            if (fs::exists(fileName)){
+                if (H5Fis_hdf5(FilePath.c_str()) > 0) {
                     return true;
                 } else {
                     return false;
@@ -186,21 +221,21 @@ namespace h5pp{
 
 
 
-        fs::path get_new_filename(fs::path some_hdf5_filename){
+        fs::path getNewFileName(fs::path fileName){
             int i=1;
-            fs::path some_new_hdf5_filename = some_hdf5_filename;
-            while (fs::exists(some_new_hdf5_filename)){
-                some_new_hdf5_filename.replace_filename(some_hdf5_filename.stem().string() + "-" + std::to_string(i++) + some_hdf5_filename.extension().string() );
+            fs::path newFileName = fileName;
+            while (fs::exists(newFileName)){
+                newFileName.replace_filename(fileName.stem().string() + "-" + std::to_string(i++) + fileName.extension().string() );
             }
-            return some_new_hdf5_filename;
+            return newFileName;
         }
 
 
-        void create_dataset_link(hid_t file, const DatasetProperties &props){
-            h5pp::Hdf5::create_dataset_link(file,plist_lncr,props);
+        void createDatasetLink(hid_t file, const DatasetProperties &props){
+            h5pp::Hdf5::createDatasetLink(file, plist_lncr, props);
         }
 
-        void select_hyperslab(const hid_t &filespace, const hid_t &memspace){
+        void selectHyperslab(const hid_t &filespace, const hid_t &memspace){
             h5pp::Hdf5::select_hyperslab(filespace,memspace);
         }
 
@@ -214,96 +249,110 @@ namespace h5pp{
 
         void initialize(){
             h5pp::Logger::setLogger("h5pp-init",logLevel,false);
-            spdlog::debug("outputDir     : {}", outputDir.string() );
             plist_facc = H5Pcreate(H5P_FILE_ACCESS);
             plist_lncr = H5Pcreate(H5P_LINK_CREATE);   //Create missing intermediate group if they don't exist
             plist_xfer = H5Pcreate(H5P_DATASET_XFER);
             plist_lapl = H5Pcreate(H5P_LINK_ACCESS);
             H5Pset_create_intermediate_group(plist_lncr, 1);
-            set_output_file_path();
+            setOutputFilePath();
             h5pp::Type::Complex::initTypes();
             hasInitialized = true;
+//            fileCount++;
+            h5pp::Counter::ActiveFileCounter::incrementCounter(FileName.string());
         }
 
 
 
-        void set_output_file_path() {
-            if (outputDir.empty()) {
-                if (outputFilename.is_relative()) {
-                    outputDir = fs::current_path();
-                } else if (outputFilename.is_absolute()) {
-                    outputDir = outputDir.stem();
-                    outputFilename = outputFilename.filename();
-                }
+        void setOutputFilePath() {
+//            if (FileName.is_relative()) {
+//                FileDir = fs::current_path();
+//            } else if (FileName.is_absolute()) {
+//                FileDir = FileDir.stem();
+//                FileName = FileName.filename();
+//            }
+
+
+            fs::path FileDirAbs;
+            if (FileName.is_relative()) {
+                FileDirAbs = fs::current_path() / FileName.parent_path();
+            } else if (FileName.is_absolute()) {
+                FileDirAbs = FileName.parent_path();
             }
 
-
-            fs::path currentDir             = fs::current_path();
-            fs::path outputDirAbs           = fs::system_complete(outputDir);
-            spdlog::debug("currentDir        : {}", currentDir.string() );
-            spdlog::debug("outputDir         : {}", outputDir.string() );
-            spdlog::debug("outputDirAbs      : {}", outputDirAbs.string() );
-            spdlog::debug("outputFilename    : {}", outputFilename.string() );
+            FileName = FileName.filename();
+            FilePath = fs::system_complete(FileDirAbs / FileName);
 
 
-            if(createDir){
-                if (fs::create_directories(outputDirAbs)){
-                    outputDirAbs = fs::canonical(outputDirAbs);
-                    spdlog::info("Created directory: {}",outputDirAbs.string());
+            fs::path currentDir           = fs::current_path();
+            h5pp::Logger::log->debug("currentDir   : {}", currentDir.string() );
+            h5pp::Logger::log->debug("FileDirAbs   : {}", FileDirAbs.string() );
+            h5pp::Logger::log->debug("FileName     : {}", FileName.string() );
+
+            try{
+                if(createDir){
+                    if (fs::create_directories(FileDirAbs)){
+                        FileDirAbs = fs::canonical(FileDirAbs);
+                        h5pp::Logger::log->debug("Created directory: {}",FileDirAbs.string());
+                    }else{
+                        h5pp::Logger::log->debug("Directory already exists: {}",FileDirAbs.string());
+                    }
                 }else{
-                    spdlog::info("Directory already exists: {}",outputDirAbs.string());
+                    h5pp::Logger::log->critical("Target folder does not exist and creation of directory is disabled in settings");
                 }
-            }else{
-                spdlog::critical("Target folder does not exist and creation of directory is disabled in settings");
+
             }
-            outputFileFullPath = fs::system_complete(outputDirAbs / outputFilename);
 
 
+
+
+            catch (std::exception &ex){
+                throw std::runtime_error("Failed to create directory: " + FileDirAbs.string() + "\n" + ex.what());
+            }
             switch (accessMode){
                 case AccessMode::OPEN: {
-                    spdlog::debug("File mode OPEN: {}", outputFileFullPath.string());
+                    h5pp::Logger::log->debug("File mode OPEN: {}", FilePath.string());
                     try{
-                        if(file_is_valid(outputFileFullPath)){
-                            hid_t file = open_file();
-                            close_file(file);
+                        if(fileIsValid(FilePath)){
+                            hid_t file = openFile();
+                            closeFile(file);
                         }
                     }catch(std::exception &ex){
-                        throw std::runtime_error("Failed to open hdf5 file :" + outputFileFullPath.string() );
+                        throw std::runtime_error("Failed to open hdf5 file :" + FilePath.string() );
 
                     }
                     break;
                 }
                 case AccessMode::TRUNCATE: {
-                    spdlog::debug("File mode TRUNCATE: {}", outputFileFullPath.string());
+                    h5pp::Logger::log->debug("File mode TRUNCATE: {}", FilePath.string());
                     try{
-                        hid_t file = H5Fcreate(outputFileFullPath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
+                        hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
                         H5Fclose(file);
-                        file = open_file();
-                        herr_t close_file(file);
+                        file = openFile();
+                        closeFile(file);
                     }catch(std::exception &ex){
-                        throw std::runtime_error("Failed to create hdf5 file :" + outputFileFullPath.string() );
+                        throw std::runtime_error("Failed to create hdf5 file :" + FilePath.string() );
                     }
                     break;
                 }
                 case AccessMode::RENAME: {
                     try{
-                        spdlog::debug("File mode RENAME: {}", outputFileFullPath.string());
-                        if(file_is_valid(outputFileFullPath)) {
-                            outputFileFullPath =  get_new_filename(outputFileFullPath);
-                            spdlog::info("Renamed output file: {} ---> {}", outputFilename.string(),outputFileFullPath.filename().string());
-                            spdlog::info("File mode RENAME: {}", outputFileFullPath.string());
+                        h5pp::Logger::log->debug("File mode RENAME: {}", FilePath.string());
+                        if(fileIsValid(FilePath)) {
+                            FilePath = getNewFileName(FilePath);
+                            h5pp::Logger::log->info("Renamed output file: {} ---> {}", FileName.string(),FilePath.filename().string());
+                            h5pp::Logger::log->info("File mode RENAME: {}", FilePath.string());
                         }
-                        hid_t file = H5Fcreate(outputFileFullPath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
+                        hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
                         H5Fclose(file);
-                        file = open_file();
-                        close_file(file);
+                        file = openFile();
+                        closeFile(file);
                     }catch(std::exception &ex){
-                        throw std::runtime_error("Failed to create renamed hdf5 file :" + outputFileFullPath.string() );
+                        throw std::runtime_error("Failed to create renamed hdf5 file :" + FilePath.string() );
                     }
                     break;
                 }
                 default:{
-                    spdlog::error("File Mode not set. Choose  AccessMode:: |OPEN|TRUNCATE|RENAME|");
+                    h5pp::Logger::log->error("File Mode not set. Choose  AccessMode:: |OPEN|TRUNCATE|RENAME|");
                     throw std::runtime_error("File Mode not set. Choose  AccessMode::  |OPEN|TRUNCATE|RENAME|");
                 }
             }
@@ -319,25 +368,25 @@ namespace h5pp{
 
 
 template <typename DataType>
-void h5pp::File::write_dataset(const DataType &data, const DatasetProperties &props){
-    hid_t file = open_file();
-    create_dataset_link(file,props);
-    h5pp::Hdf5::set_extent_dataset(file,props);
-    hid_t dataset   = H5Dopen(file,props.dset_name.c_str(), H5P_DEFAULT);
+void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &props){
+    hid_t file = openFile();
+    createDatasetLink(file, props);
+    h5pp::Hdf5::setExtentDataset(file, props);
+    hid_t dataset   = H5Dopen(file,props.dsetName.c_str(), H5P_DEFAULT);
     hid_t filespace = H5Dget_space(dataset);
-    select_hyperslab(filespace,props.memspace);
-    if constexpr (tc::has_member_c_str<DataType>::value){
-//        retval = H5Dwrite(dataset, props.datatype, H5S_ALL, filespace,
+    selectHyperslab(filespace, props.memSpace);
+    if constexpr (tc::hasMember_c_str<DataType>::value){
+//        retval = H5Dwrite(dataset, props.dataType, H5S_ALL, filespace,
 //                       H5P_DEFAULT, data.c_str());
-        retval = H5Dwrite(dataset, props.datatype, props.memspace, filespace, H5P_DEFAULT, data.c_str());
+        retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, data.c_str());
         if(retval < 0) throw std::runtime_error("Failed to write text to file");
     }
-    else if constexpr(tc::has_member_data<DataType>::value){
-        retval = H5Dwrite(dataset, props.datatype, props.memspace, filespace, H5P_DEFAULT, data.data());
+    else if constexpr(tc::hasMember_data<DataType>::value){
+        retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, data.data());
         if(retval < 0) throw std::runtime_error("Failed to write data to file");
     }
     else{
-        retval = H5Dwrite(dataset, props.datatype, props.memspace, filespace, H5P_DEFAULT, &data);
+        retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, &data);
         if(retval < 0) throw std::runtime_error("Failed to write number to file");
     }
     H5Dclose(dataset);
@@ -346,42 +395,42 @@ void h5pp::File::write_dataset(const DataType &data, const DatasetProperties &pr
 }
 
 template <typename DataType>
-void h5pp::File::write_dataset(const DataType &data, const std::string &dataset_relative_name){
+void h5pp::File::writeDataset(const DataType &data, const std::string &datasetRelativeName){
     DatasetProperties props;
-    props.datatype   = h5pp::Type::get_DataType<DataType>();
-    props.memspace   = h5pp::Utils::get_MemSpace(data);
-    props.size       = h5pp::Utils::get_Size<DataType>(data);
-    props.ndims      = h5pp::Utils::get_Rank<DataType>();
-    props.dims       = h5pp::Utils::get_Dimensions<DataType>(data);
-    props.chunk_size = props.dims;
-    props.dset_name  = dataset_relative_name;
+    props.dataType   = h5pp::Type::getDataType<DataType>();
+    props.memSpace   = h5pp::Utils::getMemSpace(data);
+    props.size       = h5pp::Utils::getSize<DataType>(data);
+    props.ndims      = h5pp::Utils::getRank<DataType>();
+    props.dims       = h5pp::Utils::getDimensions<DataType>(data);
+    props.chunkSize = props.dims;
+    props.dsetName  = datasetRelativeName;
 
 
 
-    if constexpr(h5pp::Type::Check::hasStdComplex<DataType>() or h5pp::Type::Check::isStdComplex<DataType>()) {
+    if constexpr(h5pp::Type::Check::hasStdComplex<DataType>() or h5pp::Type::Check::is_StdComplex<DataType>()) {
         if constexpr(tc::is_eigen_type<DataType>::value) {
             auto temp_rowm = Textra::to_RowMajor(data); //Convert to Row Major first;
             auto temp_cplx = h5pp::Utils::convertComplexDataToH5T(temp_rowm); // Convert to vector<H5T_COMPLEX_STRUCT<>>
-            write_dataset(temp_cplx, props);
+            writeDataset(temp_cplx, props);
         } else {
             auto temp_cplx = h5pp::Utils::convertComplexDataToH5T(data);
-            write_dataset(temp_cplx, props);
+            writeDataset(temp_cplx, props);
         }
     }
 
     else{
         if constexpr(tc::is_eigen_type<DataType>::value) {
-            auto temp_rowm = Textra::to_RowMajor(data); //Convert to Row Major first;
-            write_dataset(temp_rowm, props);
+            auto tempRowm = Textra::to_RowMajor(data); //Convert to Row Major first;
+            writeDataset(tempRowm, props);
         } else {
-            if(H5Tequal(props.datatype, H5T_C_S1)){
+            if(H5Tequal(props.dataType, H5T_C_S1)){
                 // Read more about this step here
                 //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
-                retval = H5Tset_size  (props.datatype, props.size);
-                retval = H5Tset_strpad(props.datatype,H5T_STR_NULLPAD);
-                write_dataset(data, props);
+                retval = H5Tset_size  (props.dataType, props.size);
+                retval = H5Tset_strpad(props.dataType,H5T_STR_NULLPAD);
+                writeDataset(data, props);
             }else{
-                write_dataset(data, props);
+                writeDataset(data, props);
             }
         }
     }
@@ -390,58 +439,58 @@ void h5pp::File::write_dataset(const DataType &data, const std::string &dataset_
 
 
 template <typename DataType>
-void h5pp::File::read_dataset(DataType &data, const std::string &dataset_relative_name){
-    hid_t file = open_file();
-    if (h5pp::Hdf5::check_if_link_exists_recursively(file, dataset_relative_name)) {
+void h5pp::File::readDataset(DataType &data, const std::string &datasetRelativeName){
+    hid_t file = openFile();
+    if (h5pp::Hdf5::checkIfLinkExistsRecursively(file, datasetRelativeName)) {
         try{
-            hid_t dataset   = H5Dopen(file, dataset_relative_name.c_str(), H5P_DEFAULT);
+            hid_t dataset   = H5Dopen(file, datasetRelativeName.c_str(), H5P_DEFAULT);
             hid_t memspace  = H5Dget_space(dataset);
             hid_t datatype  = H5Dget_type(dataset);
             int ndims       = H5Sget_simple_extent_ndims(memspace);
             std::vector<hsize_t> dims(ndims);
             H5Sget_simple_extent_dims(memspace, dims.data(), NULL);
             if constexpr(tc::is_eigen_core<DataType>::value) {
-                Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic,Eigen::RowMajor> matrix_rowmajor;
-                matrix_rowmajor.resize(dims[0], dims[1]); // Data is transposed in HDF5!
-                H5LTread_dataset(file, dataset_relative_name.c_str(), datatype, matrix_rowmajor.data());
-                data = matrix_rowmajor;
+                Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic,Eigen::RowMajor> matrixRowmajor;
+                matrixRowmajor.resize(dims[0], dims[1]); // Data is transposed in HDF5!
+                H5LTread_dataset(file, datasetRelativeName.c_str(), datatype, matrixRowmajor.data());
+                data = matrixRowmajor;
             }
             else if constexpr(tc::is_eigen_tensor<DataType>()){
                 Eigen::DSizes<long, DataType::NumDimensions> test;
                 // Data is rowmajor in HDF5, so we need to convert back to ColMajor.
-                Eigen::Tensor<typename DataType::Scalar,DataType::NumIndices, Eigen::RowMajor> tensor_rowmajor;
+                Eigen::Tensor<typename DataType::Scalar,DataType::NumIndices, Eigen::RowMajor> tensorRowmajor;
                 std::copy(dims.begin(),dims.end(),test.begin());
-                tensor_rowmajor.resize(test);
-                H5LTread_dataset(file, dataset_relative_name.c_str(), datatype, tensor_rowmajor.data());
-                data = Textra::to_ColMajor(tensor_rowmajor);
+                tensorRowmajor.resize(test);
+                H5LTread_dataset(file, datasetRelativeName.c_str(), datatype, tensorRowmajor.data());
+                data = Textra::to_ColMajor(tensorRowmajor);
             }
 
             else if constexpr(tc::is_vector<DataType>::value) {
                 assert(ndims == 1 and "Vector cannot take 2D datasets");
                 data.resize(dims[0]);
-                H5LTread_dataset(file, dataset_relative_name.c_str(), datatype, data.data());
+                H5LTread_dataset(file, datasetRelativeName.c_str(), datatype, data.data());
             }
             else if constexpr(std::is_same<std::string,DataType>::value) {
                 assert(ndims == 1 and "std string needs to have 1 dimension");
                 hsize_t stringsize  = H5Dget_storage_size(dataset);
                 data.resize(stringsize);
-                H5LTread_dataset(file, dataset_relative_name.c_str(), datatype, data.data());
+                H5LTread_dataset(file, datasetRelativeName.c_str(), datatype, data.data());
             }
             else if constexpr(std::is_arithmetic<DataType>::value){
-                H5LTread_dataset(file, dataset_relative_name.c_str(), datatype, &data);
+                H5LTread_dataset(file, datasetRelativeName.c_str(), datatype, &data);
             }else{
-                std::cerr << "Attempted to read dataset of unknown type: " << dataset_relative_name << "[" << typeid(data).name() << "]" << std::endl;
+                std::cerr << "Attempted to read dataset of unknown type: " << datasetRelativeName << "[" << typeid(data).name() << "]" << std::endl;
                 exit(1);
             }
             H5Dclose(dataset);
             H5Sclose(memspace);
             H5Tclose(datatype);
         }catch(std::exception &ex){
-            throw std::runtime_error("Failed to read dataset [ " + dataset_relative_name + " ] :" + std::string(ex.what()) );
+            throw std::runtime_error("Failed to read dataset [ " + datasetRelativeName + " ] :" + std::string(ex.what()) );
         }
     }
     else{
-        std::cerr << "Attempted to read dataset that doesn't exist: " << dataset_relative_name << std::endl;
+        std::cerr << "Attempted to read dataset that doesn't exist: " << datasetRelativeName << std::endl;
     }
     H5Fclose(file);
 }
@@ -451,85 +500,86 @@ void h5pp::File::read_dataset(DataType &data, const std::string &dataset_relativ
 
 
 template <typename AttrType>
-void h5pp::File::write_attribute_to_file(const AttrType &attribute, const std::string attribute_name){
-    hid_t file = open_file();
-    hid_t datatype          = h5pp::Type::get_DataType<AttrType>();
-    hid_t memspace          = h5pp::Utils::get_MemSpace(attribute);
-    auto size               = h5pp::Utils::get_Size(attribute);
-    if constexpr (tc::has_member_c_str<AttrType>::value){
+void h5pp::File::writeAttributeToFile(const AttrType &attribute, const std::string attributeName){
+    hid_t file = openFile();
+    hid_t datatype          = h5pp::Type::getDataType<AttrType>();
+    hid_t memspace          = h5pp::Utils::getMemSpace(attribute);
+    auto size               = h5pp::Utils::getSize(attribute);
+    if constexpr (tc::hasMember_c_str<AttrType>::value){
         retval                  = H5Tset_size(datatype, size);
         retval                  = H5Tset_strpad(datatype,H5T_STR_NULLTERM);
     }
 
-    hid_t attribute_id      = H5Acreate(file, attribute_name.c_str(), datatype, memspace, H5P_DEFAULT, H5P_DEFAULT );
-    if constexpr (tc::has_member_c_str<AttrType>::value){
-        retval                  = H5Awrite(attribute_id, datatype, attribute.c_str());
+    hid_t attributeId      = H5Acreate(file, attributeName.c_str(), datatype, memspace, H5P_DEFAULT, H5P_DEFAULT );
+    if constexpr (tc::hasMember_c_str<AttrType>::value){
+        retval                  = H5Awrite(attributeId, datatype, attribute.c_str());
     }
-    else if constexpr (tc::has_member_data<AttrType>::value){
-        retval                  = H5Awrite(attribute_id, datatype, attribute.data());
+    else if constexpr (tc::hasMember_data<AttrType>::value){
+        retval                  = H5Awrite(attributeId, datatype, attribute.data());
     }
     else{
-        retval                  = H5Awrite(attribute_id, datatype, &attribute);
+        retval                  = H5Awrite(attributeId, datatype, &attribute);
     }
 
     H5Sclose(memspace);
     H5Tclose(datatype);
-    H5Aclose(attribute_id);
+    H5Aclose(attributeId);
     H5Fclose(file);
 }
 
 
 
 template <typename AttrType>
-void h5pp::File::write_attribute_to_link(const AttrType &attribute, const AttributeProperties &aprops){
-    hid_t file = open_file();
-    if (h5pp::Hdf5::check_if_link_exists_recursively(file, aprops.link_name) ) {
-        if (not h5pp::Hdf5::check_if_attribute_exists(file,aprops.link_name,aprops.attr_name)) {
-//            hid_t linkObject = H5Dopen(file, aprops.link_name.c_str(), H5P_DEFAULT);
-            hid_t linkObject = H5Oopen(file, aprops.link_name.c_str(), H5P_DEFAULT);
-            hid_t attribute_id = H5Acreate(linkObject, aprops.attr_name.c_str(), aprops.datatype, aprops.memspace,
+void h5pp::File::writeAttributeToLink(const AttrType &attribute, const AttributeProperties &aprops){
+    hid_t file = openFile();
+    if (h5pp::Hdf5::checkIfLinkExistsRecursively(file, aprops.linkName) ) {
+        if (not h5pp::Hdf5::checkIfAttributeExists(file, aprops.linkName, aprops.attrName)) {
+//            hid_t linkObject = H5Dopen(file, aprops.linkName.c_str(), H5P_DEFAULT);
+            hid_t linkObject = H5Oopen(file, aprops.linkName.c_str(), H5P_DEFAULT);
+            hid_t attributeId = H5Acreate(linkObject, aprops.attrName.c_str(), aprops.dataType, aprops.memSpace,
                                            H5P_DEFAULT, H5P_DEFAULT);
 
-            if constexpr (tc::has_member_c_str<AttrType>::value) {
-                retval = H5Awrite(attribute_id, aprops.datatype, attribute.c_str());
-            } else if constexpr (tc::has_member_data<AttrType>::value) {
-                retval = H5Awrite(attribute_id, aprops.datatype, attribute.data());
+            if constexpr (tc::hasMember_c_str<AttrType>::value) {
+                retval = H5Awrite(attributeId, aprops.dataType, attribute.c_str());
+            } else if constexpr (tc::hasMember_data<AttrType>::value) {
+                retval = H5Awrite(attributeId, aprops.dataType, attribute.data());
             } else {
-                retval = H5Awrite(attribute_id, aprops.datatype, &attribute);
+                retval = H5Awrite(attributeId, aprops.dataType, &attribute);
             }
 
             H5Dclose(linkObject);
-            H5Aclose(attribute_id);
+            H5Aclose(attributeId);
             H5Fflush(file, H5F_SCOPE_GLOBAL);
             H5Fclose(file);
         }
     }
     else{
         H5Fclose(file);
-        std::string error = "Link " + aprops.link_name + " does not exist, yet attribute is being written.";
-        spdlog::critical(error);
+        std::string error = "Link " + aprops.linkName + " does not exist, yet attribute is being written.";
+        h5pp::Logger::log->critical(error);
         throw(std::logic_error(error));
     }
 }
 
 
 template <typename AttrType>
-void h5pp::File::write_attribute_to_link(const AttrType &attribute, const std::string &attribute_name,  const std::string &link_name){
+void h5pp::File::writeAttributeToLink(const AttrType &attribute, const std::string &attributeName,
+                                      const std::string &linkName){
     AttributeProperties aprops;
-    aprops.datatype  = h5pp::Type::get_DataType<AttrType>();
-    aprops.memspace  = h5pp::Utils::get_MemSpace(attribute);
-    aprops.size      = h5pp::Utils::get_Size(attribute);
-    aprops.ndims     = h5pp::Utils::get_Rank<AttrType>();
-    aprops.dims      = h5pp::Utils::get_Dimensions(attribute);
-    aprops.attr_name = attribute_name;
-    aprops.link_name = link_name;
-    if constexpr (tc::has_member_c_str<AttrType>::value
+    aprops.dataType  = h5pp::Type::getDataType<AttrType>();
+    aprops.memSpace  = h5pp::Utils::getMemSpace(attribute);
+    aprops.size      = h5pp::Utils::getSize(attribute);
+    aprops.ndims     = h5pp::Utils::getRank<AttrType>();
+    aprops.dims      = h5pp::Utils::getDimensions(attribute);
+    aprops.attrName = attributeName;
+    aprops.linkName = linkName;
+    if constexpr (tc::hasMember_c_str<AttrType>::value
                   or std::is_same<char * , typename std::decay<AttrType>::type>::value
     ){
-        retval                  = H5Tset_size(aprops.datatype, aprops.size);
-        retval                  = H5Tset_strpad(aprops.datatype,H5T_STR_NULLTERM);
+        retval                  = H5Tset_size(aprops.dataType, aprops.size);
+        retval                  = H5Tset_strpad(aprops.dataType,H5T_STR_NULLTERM);
     }
-    write_attribute_to_link(attribute,aprops);
+    writeAttributeToLink(attribute, aprops);
 }
 
 

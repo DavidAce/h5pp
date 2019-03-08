@@ -19,12 +19,12 @@ namespace h5pp{
             template <typename T> using Scal_t          = typename T::Scalar;
             template <typename T> using Valt_t          = typename T::value_type;
 
-            template <typename T> using has_member_data         = std::experimental::is_detected<Data_t, T>;
-            template <typename T> using has_member_size         = std::experimental::is_detected<Size_t, T>;
-            template <typename T> using has_member_scalar       = std::experimental::is_detected<Scal_t , T>;
-            template <typename T> using has_member_value_type   = std::experimental::is_detected<Valt_t , T>;
-            template <typename T> using has_member_c_str        = std::experimental::is_detected<Cstr_t , T>;
-            template <typename T> using has_member_imag         = std::experimental::is_detected<Imag_t , T>;
+            template <typename T> using hasMember_data         = std::experimental::is_detected<Data_t, T>;
+            template <typename T> using hasMember_size         = std::experimental::is_detected<Size_t, T>;
+            template <typename T> using hasMember_scalar       = std::experimental::is_detected<Scal_t , T>;
+            template <typename T> using hasMember_value_type   = std::experimental::is_detected<Valt_t , T>;
+            template <typename T> using hasMember_c_str        = std::experimental::is_detected<Cstr_t , T>;
+            template <typename T> using hasMember_imag         = std::experimental::is_detected<Imag_t , T>;
 
 
 
@@ -91,15 +91,15 @@ namespace h5pp{
             }
 
             template<typename T>
-            constexpr bool isStdComplex(){
+            constexpr bool is_StdComplex(){
                 return is_specialization<T,std::complex>::value;
             }
 
             template<typename T>
             constexpr bool hasStdComplex(){
-                if constexpr (isStdComplex<T>())                         {return false;}
-                else if constexpr (has_member_scalar <T>::value)         {return isStdComplex<typename T::Scalar>();}
-                else if constexpr (has_member_value_type <T>::value)     {return isStdComplex<typename T::value_type>();}
+                if constexpr (is_StdComplex<T>())                         {return false;}
+                else if constexpr (hasMember_scalar <T>::value)         {return is_StdComplex<typename T::Scalar>();}
+                else if constexpr (hasMember_value_type <T>::value)     {return is_StdComplex<typename T::value_type>();}
                 return false;
             }
 

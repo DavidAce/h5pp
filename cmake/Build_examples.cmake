@@ -16,5 +16,5 @@ function(build_example example_name example_src_dir example_tgt_dir)
 endfunction()
 
 
-build_example(example_helloworld  examples/00_helloworld  ${INSTALL_DIRECTORY_EXAMPLES}/00_helloworld)
-build_example(example_writescalar examples/01_writescalar ${INSTALL_DIRECTORY_EXAMPLES}/01_writescalar)
+build_example(example_helloworld  h5pp/examples/00_helloworld  ${INSTALL_DIRECTORY_EXAMPLES}/00_helloworld)
+build_example(example_writescalar h5pp/examples/01_writescalar ${INSTALL_DIRECTORY_EXAMPLES}/01_writescalar)

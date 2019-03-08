@@ -12,16 +12,16 @@
 namespace h5pp{
     class AttributeProperties {
     public:
-        hid_t                   datatype;
-        hid_t                   memspace;
+        hid_t                   dataType;
+        hid_t                   memSpace;
         hsize_t                 size;
         int                     ndims;
         std::vector<hsize_t>    dims;
-        std::string             attr_name;
-        std::string             link_name;
+        std::string             attrName;
+        std::string             linkName;
         ~AttributeProperties(){
-            H5Tclose(datatype);
-            H5Sclose(memspace);
+            H5Tclose(dataType);
+            H5Sclose(memSpace);
         }
     };
 }

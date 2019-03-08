@@ -10,26 +10,33 @@
 namespace h5pp{
     namespace Logger{
 
-    inline void setLogLevel(size_t level_zero_to_six){
-        if (level_zero_to_six > 6) {
-            throw std::runtime_error( "ERROR: Expected verbosity level integer in [0-6]. Got: " + std::to_string(level_zero_to_six));
+    inline static std::shared_ptr<spdlog::logger> log;
+
+    inline void setLogLevel(size_t levelZeroToSix){
+        if (levelZeroToSix > 6) {
+            throw std::runtime_error( "ERROR: Expected verbosity level integer in [0-6]. Got: " + std::to_string(levelZeroToSix));
         }
-        spdlog::level::level_enum lvl_enum = static_cast<spdlog::level::level_enum>(level_zero_to_six);
+        auto lvlEnum = static_cast<spdlog::level::level_enum>(levelZeroToSix);
 
         // Set console settings
-        spdlog::set_level(lvl_enum);
-        spdlog::debug("Verbosity level: {}", spdlog::level::to_string_view(lvl_enum));
+        log->set_level(lvlEnum);
+        log->debug("Verbosity level: {}", spdlog::level::to_string_view(lvlEnum));
 
     }
 
-        inline void setLogger(std::string name, size_t level_zero_to_six, bool timestamp = false){
-            spdlog::set_default_logger(spdlog::stdout_color_mt(name));
-            if (timestamp){
-                spdlog::set_pattern("[%Y-%m-%d %H:%M:%S][%n]%^[%=8l]%$ %v");
+        inline void setLogger(std::string name, size_t levelZeroToSix, bool timestamp = false){
+            if(spdlog::get(name) == nullptr){
+                log = spdlog::stdout_color_mt(name);
             }else{
-                spdlog::set_pattern("[%n]%^[%=8l]%$ %v");
+                log = spdlog::get(name);
             }
-            setLogLevel(level_zero_to_six);
+
+            if (timestamp){
+                log->set_pattern("[%Y-%m-%d %H:%M:%S][%n]%^[%=8l]%$ %v");
+            }else{
+                log->set_pattern("[%n]%^[%=8l]%$ %v");
+            }
+            setLogLevel(levelZeroToSix);
         }
     }
 }
