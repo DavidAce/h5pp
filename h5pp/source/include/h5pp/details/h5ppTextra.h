@@ -2,8 +2,8 @@
 // Created by david on 6/7/17.
 //
 
-#ifndef TENSOR_EXTRA_H
-#define TENSOR_EXTRA_H
+#ifndef H5PP_TEXTRA_H
+#define H5PP_TEXTRA_H
 
 #include <Eigen/Core>
 #include <Eigen/Sparse>
@@ -305,4 +305,4 @@ std::ostream& operator<< (std::ostream& out, const Eigen::array<T,L>& v) {
 }
 
 
-#endif //TENSOR_EXTRA_H
+#endif //H5PP_TEXTRA_H

@@ -12,7 +12,7 @@
 #include <experimental/filesystem>
 #include <experimental/type_traits>
 #include "h5ppTypeCheck.h"
-#include "nmspc_tensor_extra.h"
+#include "h5ppTextra.h"
 #include "h5ppLogger.h"
 #include "h5ppUtils.h"
 #include "h5ppType.h"
