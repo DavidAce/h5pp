@@ -3,7 +3,7 @@ if(NOT HDF5_ROOT)
     set(HDF5_ROOT ${INSTALL_DIRECTORY_THIRD_PARTY}/hdf5)
 endif()
 if(NOT HDF5_DIR)
-    set(HDF5_DIR ${INSTALL_DIR}/share/cmake/hdf5)
+    set(HDF5_DIR ${INSTALL_DIRECTORY_THIRD_PARTY}/share/cmake/hdf5)
 endif()
 
 

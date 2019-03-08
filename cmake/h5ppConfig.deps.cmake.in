@@ -24,9 +24,16 @@ set(HDF5_WANT_VERSION               "@HDF5_WANT_VERSION@")
 set(INSTALL_DIRECTORY_THIRD_PARTY   "@PACKAGE_INSTALL_DIRECTORY_THIRD_PARTY@")
 
 include(CMakeFindDependencyMacro)
-find_dependency(Eigen3 3.3.4 PATHS ${Eigen3_DIR} ${EIGEN3_INCLUDE_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3)
-find_dependency(spdlog PATHS ${spdlog_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog)
-find_dependency(HDF5 ${HDF5_WANT_VERSION} COMPONENTS C HL PATHS ${HDF5_DIR} ${HDF5_ROOT})
+if (NOT Eigen3_FOUND OR NOT TARGET Eigen3::Eigen)
+    find_dependency(Eigen3 3.3.4 PATHS ${Eigen3_DIR} ${EIGEN3_INCLUDE_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3)
+endif()
+if (NOT spdlog_FOUND OR NOT TARGET spdlog::spdlog)
+    find_dependency(spdlog PATHS ${spdlog_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog)
+endif()
+if (NOT HDF5_FOUND)
+    find_dependency(HDF5 ${HDF5_WANT_VERSION} COMPONENTS C HL)
+endif()
+
 include(${H5PP_DIR}/h5ppTargets.cmake)
 
 
