@@ -98,7 +98,7 @@ target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 target_compile_options (${PROJECT_NAME} INTERFACE -std=c++17)
 target_link_libraries  (${PROJECT_NAME} INTERFACE -lstdc++fs)
 if(DEPENDENCIES_FOUND)
-    target_link_libraries(h5pp INTERFACE hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
+#    target_link_libraries(h5pp INTERFACE hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
 endif()
 
 
@@ -133,7 +133,7 @@ if (DEPENDENCIES_FOUND)
     add_library(h5pp::deps ALIAS deps)
     add_dependencies(deps hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
     target_link_libraries(deps INTERFACE hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
-    target_link_libraries(${PROJECT_NAME} INTERFACE h5pp::deps)
+#    target_link_libraries(${PROJECT_NAME} INTERFACE h5pp::deps)
 #    add_dependencies(h5pp-builder h5pp::h5pp h5pp::deps)
 endif()
 
