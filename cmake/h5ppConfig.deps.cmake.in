@@ -1,0 +1,31 @@
+@PACKAGE_INIT@
+
+#################################################################
+### Set default policies if CMake is new enough               ###
+#################################################################
+if (CMAKE_VERSION VERSION_LESS 3.12)
+    message(STATUS "Not setting policies")
+else()
+    cmake_policy(SET CMP0074 NEW)
+    cmake_policy(SET CMP0075 NEW)
+endif()
+
+
+set(H5PP_DIR                        "@PACKAGE_H5PP_DIR@")
+set(H5PP_ROOT                       "@PACKAGE_H5PP_ROOT@")
+set(H5PP_INCLUDE_DIR                "@PACKAGE_H5PP_INCLUDE_DIR@")
+set(Eigen3_DIR                      "@PACKAGE_Eigen3_DIR@")
+set(EIGEN3_INCLUDE_DIR              "@PACKAGE_EIGEN3_INCLUDE_DIR@")
+set(spdlog_DIR                      "@PACKAGE_spdlog_DIR@")
+set(HDF5_DIR                        "@PACKAGE_HDF5_DIR@")
+set(HDF5_ROOT                       "@PACKAGE_HDF5_ROOT@")
+set(HDF5_WANT_VERSION               "@HDF5_WANT_VERSION@")
+set(INSTALL_DIRECTORY_THIRD_PARTY   "@PACKAGE_INSTALL_DIRECTORY_THIRD_PARTY@")
+
+include(CMakeFindDependencyMacro)
+find_dependency(Eigen3 3.3.4 PATHS ${Eigen3_DIR} ${EIGEN3_INCLUDE_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3)
+find_dependency(spdlog PATHS ${spdlog_DIR} ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog)
+find_dependency(HDF5 ${HDF5_WANT_VERSION} COMPONENTS C HL PATHS ${HDF5_DIR} ${HDF5_ROOT})
+include(${H5PP_DIR}/h5ppTargets.cmake)
+
+

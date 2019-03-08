@@ -53,9 +53,11 @@ int main() {
     - [**spdlog**](https://github.com/gabime/spdlog) (tested with version >= 1.3.1)
 
 The build process will attempt to find the libraries above installed on the system.
-By default, CMake will emit an error if it can't find the dependencies. For convenience, CMake is able to download and install these dependencies for you into the given install-directory (default: `install-dir/third-party`),
-and add these dependencies to the exported target `h5pp::h5pp`.
-To enable this automated behavior, see the available build options below.
+By default, CMake will warn if it can't find the dependencies, and the installation step will simply copy the headers to `install-dir` and generate a target `h5pp::h5pp` for linking.
+
+For convenience, `h5pp` is also able to download and install the missing dependencies for you into the given install-directory (default: `install-dir/third-party`),
+and add these dependencies to the exported target `h5pp::deps`. To enable this automated behavior read more about [build options](#build-options) and [linking](#linking) targets below.
+ 
 
 
 ## Installation
@@ -64,13 +66,14 @@ Build the library just as any CMake project:
 ```bash
     mkdir build
     cd build
-    cmake -DDOWNLOAD_ALL=ON ../
+    cmake -DCMAKE_INSTALL_PREFIX=<install-dir> -DDOWNLOAD_ALL=ON ../
     make
     make install
+    make examples
 ```
 
 By passing the variable `DOWNLOAD_ALL=ON` CMake will download all the dependencies and install them under `install-dir/third-party` if not found in the system. 
-By default `ìnstall-dir` will be `project-dir/install`, where `project-dir` is the directory containing the main `CMakeLists.txt` file.
+By default `ìnstall-dir` will be `project-dir/install`, where `project-dir` is the directory containing the main `CMakeLists.txt` file. And of course, making the examples is optional.
 
 ### Build options
 
@@ -82,8 +85,6 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 * `-DCMAKE_BUILD_TYPE=Release/Debug` to specify build type (default: `Release`)
 * `-DBUILD_SHARED_LIBS:BOOL=<ON/OFF>` to link dependencies with static or shared libraries (default: `OFF`)
 * `-DENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (default: `ON`).
-* `-DBUILD_EXAMPLES:BOOL=<ON/OFF>` to compile the examples after build (default: `OFF`).
-* `-DMARCH=<micro-architecture>` to specify compiler micro-architecture (default: `native`)
 
 
 In addition, the following variables can be set to help guide CMake's `find_package()` to your preinstalled software (no defaults):
@@ -92,6 +93,7 @@ In addition, the following variables can be set to help guide CMake's `find_pack
 * `-DEigen3_ROOT_DIR:PATH=<path to Eigen3 install-dir>` 
 * `-DEIGEN3_INCLUDE_DIR:PATH=<path to Eigen3 include-dir>`
 * `-DHDF5_DIR:PATH=<path to HDF5Config.cmake>` 
+* `-DHDF5_ROOT:PATH=<path to HDF5 install-dir>` 
 * `-Dspdlog_DIR:PATH=<path to spdlogConfig.cmake>` 
 
 

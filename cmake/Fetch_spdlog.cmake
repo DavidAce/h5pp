@@ -1,11 +1,12 @@
 
 
-find_package(spdlog 1.3 NO_DEFAULT_PATH HINTS ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog/lib/cmake/spdlog ${spdlog_DIR} )
+find_package(spdlog 1.3 NO_DEFAULT_PATH PATHS ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog/lib/cmake/spdlog ${spdlog_DIR} )
 
 if(spdlog_FOUND)
     message(STATUS "SPDLOG FOUND IN SYSTEM: ${spdlog_DIR}")
     add_library(spdlog INTERFACE)
     target_link_libraries(spdlog INTERFACE spdlog::spdlog)
+
 elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
     message(STATUS "Spdlog will be installed into ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog on first build.")
     include(ExternalProject)
@@ -35,6 +36,6 @@ elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
             $<INSTALL_INTERFACE:third-party/spdlog/include>
     )
 else()
-    message("WARNING: Dependency spdlog not found and DOWNLOAD_SPDLOG is OFF. Build will fail.")
+    message(STATUS "Dependency spdlog not found and DOWNLOAD_SPDLOG is OFF")
 
 endif()

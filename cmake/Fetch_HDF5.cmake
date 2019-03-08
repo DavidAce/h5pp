@@ -13,7 +13,7 @@ include(cmake/FindPackageHDF5.cmake)
 
 
 if(TARGET hdf5)
-        message(STATUS "HDF5 FOUND IN SYSTEM: ${HDF5_BUILD_DIR} ${HDF5_CXX_INCLUDE_DIRS}")
+        message(STATUS "HDF5 FOUND IN SYSTEM: ${HDF5_BUILD_DIR} ${HDF5_LIBRARIES}")
 elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
     message(STATUS "HDF5 will be installed into ${INSTALL_DIRECTORY_THIRD_PARTY}/hdf5 on first build.")
 
@@ -44,7 +44,8 @@ elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
 
     ExternalProject_Get_Property(external_HDF5 INSTALL_DIR)
     add_library(hdf5 INTERFACE)
-    add_dependencies(hdf5          external_HDF5)
+    add_library(hdf5::hdf5 ALIAS hdf5)
+    add_dependencies(hdf5      external_HDF5)
     set(HDF5_DIR              ${INSTALL_DIR}/share/cmake/hdf5)
     set(HDF5_ROOT             ${INSTALL_DIR})
 
@@ -71,7 +72,7 @@ elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
     )
 
 else()
-    message("WARNING: Dependency HDF5 not found and DOWNLOAD_HDF5 is OFF. Build will fail.")
+    message(STATUS "Dependency HDF5 not found and DOWNLOAD_HDF5 is OFF")
 endif()
 
 

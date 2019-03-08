@@ -1,6 +1,6 @@
  
 cmake_minimum_required(VERSION 3.10)
-project(libh5pp  VERSION 1.0.0)
+project(h5pp  VERSION 0.1.1)
 
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -11,7 +11,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 ### Set options for compilation                              ###
 ################################################################
 option(BUILD_SHARED_LIBS  "Builds shared libraries"                             OFF)
-option(BUILD_EXAMPLES     "Build examples"                                      OFF)
 option(ENABLE_TESTS       "Enable testing"                                      ON)
 option(DOWNLOAD_HDF5      "Download and install HDF5 if not found"              OFF)
 option(DOWNLOAD_SPDLOG    "Download and install spdlog if not found"            OFF)
@@ -51,7 +50,7 @@ endif()
 
 
 ##################################################################
-### Get operating system properties into a variable            ###
+### Print operating system                                     ###
 ##################################################################
 set(GET_OS_INFO_CMD lsb_release -a)
 if(${CMAKE_HOST_APPLE})
@@ -66,6 +65,10 @@ message("===============================")
 
 
 
+##################################################################
+### Try to fetch all dependencies                              ###
+##################################################################
+
 set(INSTALL_DIRECTORY_H5PP             ${CMAKE_INSTALL_PREFIX})
 set(BUILD_DIRECTORY_H5PP               ${CMAKE_BINARY_DIR}/h5pp)
 set(INSTALL_DIRECTORY_THIRD_PARTY      ${CMAKE_INSTALL_PREFIX}/third-party)
@@ -73,17 +76,43 @@ set(BUILD_DIRECTORY_THIRD_PARTY        ${CMAKE_BINARY_DIR}/third-party-build)
 include(cmake/Fetch_Eigen3.cmake)
 include(cmake/Fetch_spdlog.cmake)
 include(cmake/Fetch_HDF5.cmake)
-include(cmake/Fetch_h5pp.cmake)
+#include(cmake/Fetch_h5pp.cmake)
+if(TARGET hdf5::hdf5 AND TARGET Eigen3::Eigen AND TARGET spdlog::spdlog)
+    set(DEPENDENCIES_FOUND TRUE)
+else()
+    set(DEPENDENCIES_FOUND FALSE)
+endif()
+
+#########################################################################
+### Define an interface library and establish its needs for the user  ###
+#########################################################################
+add_library(h5pp INTERFACE)
+add_library(h5pp::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+target_include_directories(
+        h5pp
+        INTERFACE
+        $<BUILD_INTERFACE:${INSTALL_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+target_compile_options (${PROJECT_NAME} INTERFACE -std=c++17)
+target_link_libraries  (${PROJECT_NAME} INTERFACE -lstdc++fs)
+if(DEPENDENCIES_FOUND)
+    target_link_libraries(h5pp INTERFACE hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
+endif()
 
 
 
 
-get_target_property(EIGEN_INFO Eigen3 INTERFACE_LINK_LIBRARIES)
-get_target_property(SPDLOG_INFO spdlog INTERFACE_LINK_LIBRARIES)
-get_target_property(HDF5_INFO hdf5 INTERFACE_LINK_LIBRARIES)
 
+
+if(DEPENDENCIES_FOUND)
+    get_target_property(EIGEN_INFO Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(SPDLOG_INFO spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(HDF5_INFO hdf5::hdf5 INTERFACE_LINK_LIBRARIES)
+endif()
 message("=============================================================================")
-message("===            SUMMARY OF CMAKE CONFIGURATION FOR libh5pp                 ===")
+message("===            SUMMARY OF DEPENDENCIES FOUND BY H5PP                      ===")
 message("=============================================================================")
 message("    EIGEN3   :   ${EIGEN_INFO}")
 message("    SPDLOG   :   ${SPDLOG_INFO}")
@@ -91,14 +120,27 @@ message("    HDF5     :   ${HDF5_INFO}")
 message("=============================================================================")
 message("")
 
+if(NOT DEPENDENCIES_FOUND)
+message(WARNING "Dependencies missing.\nTo use h5pp headers, link to hdf5, Eigen3 and spdlog manually from your project")
+endif()
+
+
 
 # Bind projects together
-add_custom_target(${PROJECT_NAME})
-add_library(deps INTERFACE)
-add_dependencies(${PROJECT_NAME} h5pp hdf5 Eigen3 spdlog)
-add_dependencies(deps hdf5 Eigen3 spdlog)
-#target_link_libraries(h5pp INTERFACE hdf5 Eigen3 spdlog)
-target_link_libraries(deps INTERFACE hdf5 Eigen3 spdlog)
+if (DEPENDENCIES_FOUND)
+#    add_custom_target(h5pp-builder ALL)
+    add_library(deps INTERFACE)
+    add_library(h5pp::deps ALIAS deps)
+    add_dependencies(deps hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
+    target_link_libraries(deps INTERFACE hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
+    target_link_libraries(${PROJECT_NAME} INTERFACE h5pp::deps)
+#    add_dependencies(h5pp-builder h5pp::h5pp h5pp::deps)
+endif()
+
+
+
+
+
 
 
 
@@ -114,24 +156,28 @@ include(GNUInstallDirs)
 set(INSTALL_CONFIGDIR share/cmake/h5pp)
 set(H5PP_ROOT ${CMAKE_INSTALL_PREFIX})
 set(H5PP_DIR  ${INSTALL_CONFIGDIR})
+install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
-install(TARGETS h5pp deps Eigen3 hdf5 spdlog
-        EXPORT        h5ppTargets
-        )
+if (DEPENDENCIES_FOUND)
+    install(TARGETS h5pp deps hdf5 spdlog EXPORT h5ppTargets )
+else()
+    install(TARGETS h5pp EXPORT h5ppTargets )
+endif()
 
 #Export the targets to a script
 install(EXPORT
         h5ppTargets
         FILE h5ppTargets.cmake
         NAMESPACE h5pp::
-        EXPORT_LINK_INTERFACE_LIBRARIES
         DESTINATION ${INSTALL_CONFIGDIR})
 
 #Create a ConfigVersion.cmake file
 include(CMakePackageConfigHelpers)
+
+if (DEPENDENCIES_FOUND)
 configure_package_config_file(
-        cmake/h5ppConfig.cmake.in
+        cmake/h5ppConfig.deps.cmake.in
         ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
         INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
         PATH_VARS
@@ -141,7 +187,14 @@ configure_package_config_file(
         HDF5_DIR HDF5_ROOT HDF5_WANT_VERSION
         INSTALL_DIRECTORY_THIRD_PARTY
 )
-
+else()
+    configure_package_config_file(
+            cmake/h5ppConfig.cmake.in
+            ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
+            INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
+            PATH_VARS H5PP_DIR H5PP_ROOT
+    )
+endif()
 
 
 write_basic_package_version_file(
@@ -157,60 +210,66 @@ install(FILES
         )
 
 
-##Register package in user's package registry
-#export(PACKAGE h5pp)
-
-
-
-
-
-
-
-
-############################
-# UNIT TEST
-############################
+###Register package in user's package registry
+##export(PACKAGE h5pp)
+#
+#
+#
+#
+#
+#
+#
+#
+#############################
+## UNIT TEST
+#############################
 if(ENABLE_TESTS)
-    enable_testing()
-    add_subdirectory(tests/simpleWrite          EXCLUDE_FROM_ALL)
-    add_subdirectory(tests/readWrite            EXCLUDE_FROM_ALL)
-    add_subdirectory(tests/readWriteAttributes  EXCLUDE_FROM_ALL)
+    if(DEPENDENCIES_FOUND)
+        enable_testing()
+        add_subdirectory(tests/simpleWrite          EXCLUDE_FROM_ALL)
+        add_subdirectory(tests/readWrite            EXCLUDE_FROM_ALL)
+        add_subdirectory(tests/readWriteAttributes  EXCLUDE_FROM_ALL)
 
-    add_custom_target(all_tests ALL
-            DEPENDS simpleWrite
-            DEPENDS readWrite
-            DEPENDS readWriteAttributes
-            DEPENDS h5pp
-            )
-    add_dependencies(${PROJECT_NAME} all_tests h5pp)
-    add_custom_command(TARGET ${PROJECT_NAME}
-            POST_BUILD
-            COMMENT "Running Tests"
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            DEPENDS all_tests
-            COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
-#    add_custom_command(TARGET all_tests
-#            POST_BUILD
-#            COMMENT "Running Tests"
-#            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#            DEPENDS ${PROJECT_NAME}
-#            COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
+        add_custom_target(all_tests ALL
+                DEPENDS simpleWrite
+                DEPENDS readWrite
+                DEPENDS readWriteAttributes
+                )
+#        add_dependencies(${PROJECT_NAME} all_tests h5pp::h5pp)
+#        add_custom_command(TARGET ${PROJECT_NAME}
+#                POST_BUILD
+#                COMMENT "Running Tests"
+#                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+#                DEPENDS all_tests
+#                COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
+        add_custom_command(TARGET all_tests
+                POST_BUILD
+                COMMENT "Running Tests"
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                DEPENDS h5pp::h5pp h5pp::deps
+                COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
+    else()
+        message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
+    endif()
 endif()
 
-
-
+#
+#
 
 ############################
-# BUILD EXAMPLES
+# ADD TARGETS FOR  EXAMPLES
 ############################
-if(BUILD_EXAMPLES)
-    add_subdirectory(examples/00_helloworld)
-    add_subdirectory(examples/01_writescalar)
 
-    add_custom_target(all_examples ALL
-            DEPENDS helloworld
-            DEPENDS writescalar
-            )
-    add_dependencies(${PROJECT_NAME} all_examples)
+if(DEPENDENCIES_FOUND)
+    set(INSTALL_DIRECTORY_EXAMPLES            ${CMAKE_INSTALL_PREFIX}/examples)
+    set(BUILD_DIRECTORY_EXAMPLES              ${CMAKE_BINARY_DIR}/examples)
+    include(cmake/Build_examples.cmake)
+    add_custom_target(examples
+            DEPENDS example_helloworld
+            DEPENDS example_writescalar
+            DEPENDS ${PROJECT_NAME})
+#    add_dependencies(examples ${PROJECT_NAME})
+
+else()
+    message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
 endif()
-
