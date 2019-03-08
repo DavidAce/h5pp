@@ -45,16 +45,28 @@ if(HDF5_FOUND)
         set(HDF5_DIR              ${HDF5_BUILD_DIR}/share/cmake/hdf5)
         set(HDF5_ROOT             ${HDF5_BUILD_DIR})
 
-
         target_link_libraries(hdf5
                 INTERFACE
-                hdf5::hdf5-${HDF5_TARGET_SUFFIX}
-                hdf5::hdf5_hl-${HDF5_TARGET_SUFFIX}
-                hdf5::hdf5_cpp-${HDF5_TARGET_SUFFIX}
-                hdf5::hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
+                ${HDF5_CXX_HL_LIBRARY}
+                ${HDF5_C_HL_LIBRARY}
+                ${HDF5_CXX_HL_LIBRARY}
+                ${HDF5_C_LIBRARY}
+                $<LINK_ONLY:-ldl -lm>
+#                -Wl,--no-as-needed -ldl  -lm -Wl,--as-needed
+                ${PTHREAD_LIBRARY}
+
+#                hdf5::hdf5-${HDF5_TARGET_SUFFIX}
+#                hdf5::hdf5_hl-${HDF5_TARGET_SUFFIX}
+#                hdf5::hdf5_cpp-${HDF5_TARGET_SUFFIX}
+#                hdf5::hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
                 )
-
-
+        if(HDF5_ENABLE_Z_LIB_SUPPORT)
+            target_link_libraries(hdf5 INTERFACE $<LINK_ONLY:-lz>  )
+        endif()
+        target_include_directories(hdf5
+            INTERFACE
+            ${HDF5_INCLUDE_DIR}
+            )
 
     else()
         add_dependencies(hdf5  SZIP)
