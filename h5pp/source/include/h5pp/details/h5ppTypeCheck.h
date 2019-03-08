@@ -2,8 +2,8 @@
 // Created by david on 2018-02-06.
 //
 
-#ifndef NMSPC_TYPE_CHECK_H
-#define NMSPC_TYPE_CHECK_H
+#ifndef H5PP_TYPECHECK_H
+#define H5PP_TYPECHECK_H
 #include <experimental/type_traits>
 #include <Eigen/Core>
 #include <unsupported/Eigen/CXX11/Tensor>
@@ -119,5 +119,5 @@ namespace h5pp{
         }
     }
 }
-#endif //PT_NMSPC_TYPE_CHECK_H
+#endif //H5PP_TYPECHECK_H
 

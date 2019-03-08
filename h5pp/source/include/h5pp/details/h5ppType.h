@@ -2,8 +2,8 @@
 // Created by david on 2019-03-03.
 //
 
-#ifndef H5PP_DATATYPE_H
-#define H5PP_DATATYPE_H
+#ifndef H5PP_TYPE_H
+#define H5PP_TYPE_H
 
 #include "h5ppTypeCheck.h"
 #include "h5ppTypeComplex.h"
@@ -87,4 +87,4 @@ namespace h5pp{
     }
 }
 
-#endif //H5PP_H5PPDATATYPE_H
+#endif //H5PP_TYPE_H

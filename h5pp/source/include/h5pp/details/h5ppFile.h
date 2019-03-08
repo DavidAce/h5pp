@@ -2,8 +2,8 @@
 // Created by david on 2019-03-01.
 //
 
-#ifndef H5PP_H5PPFILE_H
-#define H5PP_H5PPFILE_H
+#ifndef H5PP_FILE_H
+#define H5PP_FILE_H
 #include <hdf5.h>
 #include <hdf5_hl.h>
 #include <iostream>
@@ -20,7 +20,6 @@
 #include "h5ppDatasetProperties.h"
 #include "h5ppAttributeProperties.h"
 #include "h5ppHdf5.h"
-#include "h5ppInit.h"
 
 
 
@@ -543,4 +542,4 @@ void h5pp::File::write_attribute_to_link(const AttrType &attribute, const std::s
 
 
 
-#endif //H5PP_H5PPFILE_H
+#endif //H5PP_FILE_H
