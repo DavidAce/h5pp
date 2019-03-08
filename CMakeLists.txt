@@ -160,7 +160,7 @@ install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
 if (DEPENDENCIES_FOUND)
-    install(TARGETS h5pp deps hdf5 spdlog EXPORT h5ppTargets )
+    install(TARGETS h5pp deps hdf5 Eigen3 spdlog EXPORT h5ppTargets )
 else()
     install(TARGETS h5pp EXPORT h5ppTargets )
 endif()
