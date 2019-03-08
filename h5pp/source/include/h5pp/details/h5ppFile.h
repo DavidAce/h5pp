@@ -41,7 +41,6 @@ namespace h5pp{
         fs::path    outputFileFullPath;
         bool        createDir;
         size_t      logLevel;
-
         //Mpi related constants
         hid_t plist_facc;
         hid_t plist_xfer;
@@ -54,7 +53,11 @@ namespace h5pp{
 //    hid_t       file;
 
         AccessMode accessMode;
-//        explicit File(const std::string output_filename_, const std::string output_dirname_ ="", bool overwrite_ = false, bool resume_ = true,bool create_dir_ = true);
+        bool        hasInitialized = false;
+        File()=default;
+
+        explicit File(const std::string outputFilename_):File(outputFilename_,""){}
+
 
         File(const std::string outputFilename_, const std::string outputDir_="", AccessMode accessMode_ = AccessMode::TRUNCATE, bool createOutDir_=true, size_t logLevel_ = 3) {
             logLevel = logLevel_;
@@ -63,8 +66,21 @@ namespace h5pp{
             outputFilename      = outputFilename_;
             outputDir           = outputDir_;
             createDir           = createOutDir_;
+            initialize();
+
+        }
 
 
+        ~File(){
+            H5Pclose(plist_facc);
+            H5Pclose(plist_xfer);
+            H5Pclose(plist_lncr);
+            h5pp::Type::Complex::closeTypes();
+        }
+
+
+
+        void setCompression(){
             /*
             * Check if zlib compression is available and can be used for both
             * compression and decompression.  Normally we do not perform error
@@ -85,17 +101,6 @@ namespace h5pp{
                  !(filter_info & H5Z_FILTER_CONFIG_DECODE_ENABLED) ) {
                 spdlog::warn("zlib filter not available for encoding and decoding");
             }
-
-            initialize();
-
-        }
-
-
-        ~File(){
-            H5Pclose(plist_facc);
-            H5Pclose(plist_xfer);
-            H5Pclose(plist_lncr);
-            h5pp::Type::Complex::closeTypes();
         }
 
         void setLogLevel(size_t logLevelZeroToSix){
@@ -218,6 +223,7 @@ namespace h5pp{
             H5Pset_create_intermediate_group(plist_lncr, 1);
             set_output_file_path();
             h5pp::Type::Complex::initTypes();
+            hasInitialized = true;
         }
 
 
