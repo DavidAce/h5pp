@@ -124,7 +124,6 @@ manually, omit `h5pp::deps` above.
 You will have to manually link the dependencies `hdf5`, `Eigen3` and `spdlog` to your project.
 
 
-
 ### Pro-tip: load into Python using h5py
 Complex types are not supported natively by HDF5. Still, the storage layout used in `h5pp` makes it easy to read complex types within Python using `h5py`.
 As an example, this is how you would load a complex double array:
