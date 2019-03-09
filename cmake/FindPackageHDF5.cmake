@@ -36,13 +36,13 @@ else()
 endif()
 
 # To print all variables, use the code below:
-#
-get_cmake_property(_variableNames VARIABLES)
-foreach (_variableName ${_variableNames})
-    if("${_variableName}" MATCHES "HDF5" OR "${_variableName}" MATCHES "hdf5" OR "${_variableName}" MATCHES "h5")
-        message(STATUS "${_variableName}=${${_variableName}}")
-    endif()
-endforeach()
+##
+#get_cmake_property(_variableNames VARIABLES)
+#foreach (_variableName ${_variableNames})
+#    if("${_variableName}" MATCHES "HDF5" OR "${_variableName}" MATCHES "hdf5" OR "${_variableName}" MATCHES "h5")
+#        message(STATUS "${_variableName}=${${_variableName}}")
+#    endif()
+#endforeach()
 
 
 if(HDF5_FOUND)

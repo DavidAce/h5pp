@@ -1,5 +1,4 @@
 
-#find_package(Eigen3 3.3.4 HINTS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3)
 find_package(Eigen3 3.3.4  PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/Eigen3 NO_DEFAULT_PATH)
 find_package(Eigen3 3.3.4  PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/Eigen3 NO_CMAKE_PACKAGE_REGISTRY)
 find_package(Eigen3 3.3.4  PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/Eigen3)
@@ -26,7 +25,6 @@ if(EIGEN3_FOUND)
     message(STATUS "EIGEN FOUND IN SYSTEM: ${EIGEN3_INCLUDE_DIR}")
     add_library(Eigen3 INTERFACE)
     get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
-#    target_link_libraries(Eigen3 INTERFACE Eigen3::Eigen)
     target_include_directories(Eigen3 INTERFACE ${EIGEN3_INCLUDE_DIR})
     target_compile_options(Eigen3::Eigen INTERFACE ${EIGEN3_COMPILER_FLAGS})
 elseif (DOWNLOAD_EIGEN3 OR DOWNLOAD_ALL)

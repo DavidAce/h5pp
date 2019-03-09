@@ -134,7 +134,7 @@ message("=======================================================================
 message("")
 
 if(NOT DEPENDENCIES_FOUND)
-message(WARNING "Dependencies missing.\nTo use h5pp headers, link to hdf5, Eigen3 and spdlog manually from your project")
+message(WARNING "Dependencies missing.\nTo use h5pp headers, link the missing dependencies manually from your project")
 endif()
 
 
