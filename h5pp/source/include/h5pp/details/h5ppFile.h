@@ -180,7 +180,7 @@ namespace h5pp{
         }
 
 
-        bool check_if_link_exists_recursively(std::string link){
+        bool linkExists(std::string link){
             hid_t file = openFileHandle();
             bool exists = h5pp::Hdf5::checkIfLinkExistsRecursively(file, link);
             closeFileHandle(file);
