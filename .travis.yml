@@ -93,8 +93,7 @@ matrix:
         - ./miniconda.sh -b -p $HOME/miniconda
         - export PATH=$HOME/miniconda/bin:$PATH
         - conda update --yes conda
-        - conda install --yes hdf5
-        - conda install --yes eigen
+        - conda install --yes hdf5 eigen
 
 
 

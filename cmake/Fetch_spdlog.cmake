@@ -6,7 +6,7 @@ if(spdlog_FOUND)
     message(STATUS "SPDLOG FOUND IN SYSTEM: ${spdlog_DIR}")
     add_library(spdlog INTERFACE)
     get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
-    target_link_libraries(spdlog INTERFACE spdlog::spdlog)
+#    target_link_libraries(spdlog INTERFACE spdlog::spdlog)
     target_include_directories(spdlog INTERFACE ${SPDLOG_INCLUDE_DIR})
 
 elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)

@@ -77,7 +77,7 @@ include(cmake/Fetch_Eigen3.cmake)
 include(cmake/Fetch_spdlog.cmake)
 include(cmake/Fetch_HDF5.cmake)
 #include(cmake/Fetch_h5pp.cmake)
-if(TARGET hdf5::hdf5 AND TARGET Eigen3::Eigen AND TARGET spdlog::spdlog)
+if(TARGET hdf5::hdf5 AND TARGET Eigen3 AND TARGET spdlog)
     set(DEPENDENCIES_FOUND TRUE)
 else()
     set(DEPENDENCIES_FOUND FALSE)
@@ -97,20 +97,33 @@ target_include_directories(
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 target_compile_options (${PROJECT_NAME} INTERFACE -std=c++17)
 target_link_libraries  (${PROJECT_NAME} INTERFACE -lstdc++fs)
-if(DEPENDENCIES_FOUND)
-#    target_link_libraries(h5pp INTERFACE hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
+
+
+add_library(deps INTERFACE)
+add_library(h5pp::deps ALIAS deps)
+install(TARGETS h5pp deps EXPORT h5ppTargets )
+if(TARGET Eigen3)
+    add_dependencies(deps Eigen3)
+    target_link_libraries(deps INTERFACE Eigen3)
+    get_target_property(EIGEN_INFO Eigen3 INTERFACE_INCLUDE_DIRECTORIES)
+    install(TARGETS Eigen3 EXPORT h5ppTargets )
 endif()
+if(TARGET spdlog)
+    add_dependencies(deps spdlog)
+    target_link_libraries(deps INTERFACE spdlog)
+    get_target_property(SPDLOG_INFO spdlog INTERFACE_INCLUDE_DIRECTORIES)
+    install(TARGETS spdlog EXPORT h5ppTargets )
 
-
-
-
-
-
-if(DEPENDENCIES_FOUND)
-    get_target_property(EIGEN_INFO Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
-    get_target_property(SPDLOG_INFO spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
+endif()
+if(TARGET hdf5::hdf5)
+    add_dependencies(deps hdf5::hdf5)
+    target_link_libraries(deps INTERFACE hdf5::hdf5)
     get_target_property(HDF5_INFO hdf5::hdf5 INTERFACE_LINK_LIBRARIES)
+    install(TARGETS hdf5 EXPORT h5ppTargets )
 endif()
+
+
+
 message("=============================================================================")
 message("===            SUMMARY OF DEPENDENCIES FOUND BY H5PP                      ===")
 message("=============================================================================")
@@ -126,16 +139,22 @@ endif()
 
 
 
-# Bind projects together
-if (DEPENDENCIES_FOUND)
+
+    # Bind projects together
+#if (DEPENDENCIES_FOUND)
 #    add_custom_target(h5pp-builder ALL)
-    add_library(deps INTERFACE)
-    add_library(h5pp::deps ALIAS deps)
-    add_dependencies(deps hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
-    target_link_libraries(deps INTERFACE hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
+#    add_library(deps INTERFACE)
+#    add_library(h5pp::deps ALIAS deps)
+#    add_dependencies(deps hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
+#    target_link_libraries(deps INTERFACE hdf5::hdf5 Eigen3 spdlog)
+
+#    add_dependencies(deps hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
+#    target_link_libraries(deps INTERFACE hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
+
+
 #    target_link_libraries(${PROJECT_NAME} INTERFACE h5pp::deps)
 #    add_dependencies(h5pp-builder h5pp::h5pp h5pp::deps)
-endif()
+#endif()
 
 
 
@@ -159,11 +178,6 @@ set(H5PP_DIR  ${H5PP_INSTALL_CONFIGDIR})
 install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
-if (DEPENDENCIES_FOUND)
-    install(TARGETS h5pp deps hdf5 Eigen3 spdlog EXPORT h5ppTargets )
-else()
-    install(TARGETS h5pp EXPORT h5ppTargets )
-endif()
 
 #Export the targets to a script
 install(EXPORT
@@ -175,27 +189,13 @@ install(EXPORT
 #Create a ConfigVersion.cmake file
 include(CMakePackageConfigHelpers)
 
-if (DEPENDENCIES_FOUND)
 configure_package_config_file(
-        cmake/h5ppConfig.deps.cmake.in
+        cmake/h5ppConfig.cmake.in
         ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
         INSTALL_DESTINATION ${H5PP_INSTALL_CONFIGDIR}
-        PATH_VARS
-        H5PP_DIR H5PP_ROOT
+        PATH_VARS H5PP_DIR H5PP_ROOT
         H5PP_INSTALL_DIR_THIRD_PARTY
-        Eigen3_DIR EIGEN3_INCLUDE_DIR EIGEN3_ROOT_DIR
-        spdlog_DIR
-        HDF5_DIR HDF5_ROOT HDF5_WANT_VERSION
 )
-else()
-    configure_package_config_file(
-            cmake/h5ppConfig.cmake.in
-            ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
-            INSTALL_DESTINATION ${H5PP_INSTALL_CONFIGDIR}
-            PATH_VARS H5PP_DIR H5PP_ROOT
-    )
-endif()
-
 
 write_basic_package_version_file(
         ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake

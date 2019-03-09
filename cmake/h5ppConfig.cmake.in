@@ -13,7 +13,8 @@ set(h5pp_FOUND TRUE)
 set(H5PP_FOUND TRUE)
 set(H5PP_DIR                        "@PACKAGE_H5PP_DIR@")
 set(H5PP_ROOT                       "@PACKAGE_H5PP_ROOT@")
-
+set(H5PP_INCLUDE_DIR                ${H5PP_ROOT}/include)
+set(H5PP_INSTALL_DIR_THIRD_PARTY    "@PACKAGE_H5PP_INSTALL_DIR_THIRD_PARTY@")
 include(${H5PP_DIR}/h5ppTargets.cmake)
 
 

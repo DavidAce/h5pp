@@ -117,8 +117,12 @@ A minimal `CMakeLists.txt` looks like:
 ```
 
 The target `h5pp::h5pp` will import the `h5pp` headers and set the compile flags that you need to compile with `h5pp`. These flags enable C++17 and experimental headers.
-The target `h5pp::deps` will import the dependencies needed for `h5pp` to work. If you want to link the dependencies
-manually, omit `h5pp::deps` above.
+
+If you want to link the dependencies manually, omit `h5pp::deps` above.
+
+The target `h5pp::deps` will import those dependencies for `h5pp` that were found or downloaded automatically during install. For each dependency found,
+a target will be made available, i.e., `h5pp::Eigen3`, `h5pp::spdlog` and `h5pp::hdf5`. In fact, `h5pp::deps` is simply an alias for these targets.
+ 
 
 #### Without install method (i.e. just copying the header folder)
 You will have to manually link the dependencies `hdf5`, `Eigen3` and `spdlog` to your project.
