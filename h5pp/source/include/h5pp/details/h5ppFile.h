@@ -31,28 +31,25 @@ namespace h5pp{
 /*!
  \brief Writes and reads data to a binary hdf5-file.
 */
-    enum class AccessMode {OPEN,TRUNCATE,RENAME};
+    enum class CreateMode {OPEN,TRUNCATE,RENAME};
+    enum class AccessMode {READONLY,READWRITE};
 
     class File {
     private:
         herr_t      retval;
         fs::path    FileName;       /*!< Filename (possibly relative) and extension, e.g. ../files/output.h5 */
-//        fs::path    FileDir;        /*!< Directory where  */
         fs::path    FilePath;       /*!< Full path to the file */
-        bool        createDir;
-        size_t      logLevel;
-//        std::shared_ptr<spdlog::logger> h5ppLogger;
-//        ActiveFileCounter counter;
+        bool        createDir = true;
+        size_t      logLevel  = 0;
         //Mpi related constants
         hid_t plist_facc;
         hid_t plist_xfer;
         hid_t plist_lncr;
         hid_t plist_lapl;
-
-    public:
-//    hid_t       file;
-
+        CreateMode createMode;
         AccessMode accessMode;
+    public:
+
         bool        hasInitialized = false;
         File()=default;
 
@@ -60,13 +57,23 @@ namespace h5pp{
             *this = other;
         }
 
-        File(const std::string FileName_, AccessMode accessMode_ = AccessMode::TRUNCATE, bool createDir_=true, size_t logLevel_ = 3) {
-            logLevel = logLevel_;
-            accessMode          = accessMode_;
-            FileName            = FileName_;
-//            FileDir           = outputDir_;
-            createDir           = createDir_;
+
+
+        File(const std::string FileName_,
+                AccessMode accessMode_ = AccessMode::READWRITE,
+                CreateMode createMode_ = CreateMode::RENAME,
+                size_t logLevel_ = 3)
+            :
+            FileName(FileName_),
+            createMode(createMode_),
+            accessMode(accessMode_),
+            logLevel(logLevel_)
+            {
             h5pp::Logger::setLogger("h5pp",logLevel,false);
+            if (accessMode_ == AccessMode::READONLY and createMode_ == CreateMode::TRUNCATE){
+                Logger::log->error("Options READONLY and TRUNCATE are incompatible.");
+                return;
+            }
             setCompression();
             initialize();
         }
@@ -96,7 +103,8 @@ namespace h5pp{
                 }
                 if(rhs.hasInitialized){
                     this->logLevel            = rhs.logLevel;
-                    this->accessMode          = AccessMode::OPEN;
+                    this->accessMode          = rhs.getAccessMode();
+                    this->createMode          = CreateMode::OPEN;
                     this->FileName            = rhs.FilePath;
                     this->createDir           = rhs.createDir;
                     this->setCompression();
@@ -106,7 +114,12 @@ namespace h5pp{
             return *this;
         }
 
-        hid_t openFileHandle(){return H5Fopen(FilePath.c_str(), H5F_ACC_RDWR, plist_facc);}
+        hid_t openFileHandle(){
+            switch(accessMode){
+                case(AccessMode::READONLY)  : {return H5Fopen(FilePath.c_str(), H5F_ACC_RDONLY, plist_facc);}
+                case(AccessMode::READWRITE) : {return H5Fopen(FilePath.c_str(), H5F_ACC_RDWR  , plist_facc);}
+            }
+        }
         herr_t closeFileHandle(hid_t file){return H5Fclose(file);}
 
 
@@ -133,6 +146,13 @@ namespace h5pp{
                 h5pp::Logger::log->warn("zlib filter not available for encoding and decoding");
             }
         }
+
+        void setCreateMode(CreateMode createMode_){createMode = createMode_;}
+        void setAccessMode(AccessMode accessMode_){accessMode = accessMode_;}
+        CreateMode getCreateMode()const{return createMode;}
+        AccessMode getAccessMode()const{return accessMode;}
+
+
 
         void setLogLevel(size_t logLevelZeroToSix){
             logLevel = logLevelZeroToSix;
@@ -310,8 +330,8 @@ namespace h5pp{
             catch (std::exception &ex){
                 throw std::runtime_error("Failed to create directory: " + FileDirAbs.string() + "\n" + ex.what());
             }
-            switch (accessMode){
-                case AccessMode::OPEN: {
+            switch (createMode){
+                case CreateMode::OPEN: {
                     h5pp::Logger::log->debug("File mode OPEN: {}", FilePath.string());
                     try{
                         if(fileIsValid(FilePath)){
@@ -324,7 +344,7 @@ namespace h5pp{
                     }
                     break;
                 }
-                case AccessMode::TRUNCATE: {
+                case CreateMode::TRUNCATE: {
                     h5pp::Logger::log->debug("File mode TRUNCATE: {}", FilePath.string());
                     try{
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
@@ -336,7 +356,7 @@ namespace h5pp{
                     }
                     break;
                 }
-                case AccessMode::RENAME: {
+                case CreateMode::RENAME: {
                     try{
                         h5pp::Logger::log->debug("File mode RENAME: {}", FilePath.string());
                         if(fileIsValid(FilePath)) {
@@ -355,8 +375,8 @@ namespace h5pp{
                     break;
                 }
                 default:{
-                    h5pp::Logger::log->error("File Mode not set. Choose  AccessMode:: |OPEN|TRUNCATE|RENAME|");
-                    throw std::runtime_error("File Mode not set. Choose  AccessMode::  |OPEN|TRUNCATE|RENAME|");
+                    h5pp::Logger::log->error("File Mode not set. Choose  CreateMode:: |OPEN|TRUNCATE|RENAME|");
+                    throw std::runtime_error("File Mode not set. Choose  CreateMode::  |OPEN|TRUNCATE|RENAME|");
                 }
             }
 

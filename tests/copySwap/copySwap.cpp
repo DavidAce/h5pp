@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <complex>
 #include <h5pp/h5pp.h>
 
 /*! \brief Prints the content of a vector nicely */
@@ -30,10 +31,9 @@ int main()
     std::string outputFilenameA      = "outputA/copySwapA.h5";
     std::string outputFilenameB      = "outputB/copySwapB.h5";
 
-    bool        createDir = true;
     size_t      logLevel  = 0;
-    h5pp::File fileA(outputFilenameA,h5pp::AccessMode::TRUNCATE,createDir,logLevel);
-    h5pp::File fileB(outputFilenameB,h5pp::AccessMode::TRUNCATE,createDir,logLevel);
+    h5pp::File fileA(outputFilenameA,h5pp::AccessMode::READWRITE,h5pp::CreateMode::TRUNCATE,logLevel);
+    h5pp::File fileB(outputFilenameB,h5pp::AccessMode::READWRITE,h5pp::CreateMode::TRUNCATE,logLevel);
 
     fileA.writeDataset("A", "groupA/A");
     fileB.writeDataset("B", "groupB/B");

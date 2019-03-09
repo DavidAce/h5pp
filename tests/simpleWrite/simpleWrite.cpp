@@ -1,13 +1,13 @@
 
 #include <iostream>
+#include <complex>
 #include <h5pp/h5pp.h>
 
 int main(){
 
     std::string outputFilename      = "output/simpleWrite.h5";
-    bool        createDir = true;
     size_t      logLevel  = 0;
-    h5pp::File file(outputFilename, h5pp::AccessMode::TRUNCATE,createDir,logLevel);
+    h5pp::File file(outputFilename,h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE,logLevel);
 
 
     using namespace std::complex_literals;

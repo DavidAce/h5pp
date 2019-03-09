@@ -1,7 +1,7 @@
 
 #include <iostream>
+#include <complex>
 #include <h5pp/h5pp.h>
-
 /*! \brief Prints the content of a vector nicely */
 template<typename T>
 std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
@@ -30,9 +30,8 @@ int main()
 
 
     std::string outputFilename      = "output/readWriteAttributes.h5";
-    bool        createDir = true;
     size_t      logLevel  = 0;
-    h5pp::File file(outputFilename, h5pp::AccessMode::TRUNCATE,createDir,logLevel);
+    h5pp::File file(outputFilename,h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE,logLevel);
 
 
     std::cout << "Writing vectorDouble      : \n" <<  vectorDouble   << std::endl;

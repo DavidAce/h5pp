@@ -28,9 +28,8 @@ int main()
     static_assert(h5pp::Type::Check::hasMember_data<std::vector<double>>() and "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     std::string outputFilename      = "output/readWrite.h5";
-    bool        createDir = true;
     size_t      logLevel  = 0;
-    h5pp::File file(outputFilename, h5pp::AccessMode::TRUNCATE,createDir,logLevel);
+    h5pp::File file(outputFilename,h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE,logLevel);
 
 
     // Generate dummy data
