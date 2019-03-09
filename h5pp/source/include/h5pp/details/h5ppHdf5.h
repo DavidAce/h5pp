@@ -221,7 +221,7 @@ namespace h5pp{
 //        void extendDataset(h5pp::File &h5ppFile, const DataType &data, const std::string & dataset_relative_name){
 //            namespace tc = h5pp::Type::Check;
 //            if constexpr (tc::is_eigen_core<DataType>::value){
-//                hid_t file = h5ppFile.openFile();
+//                hid_t file = h5ppFile.openFileHandle();
 //                extendDataset(dataset_relative_name, 0, data.rows());
 //                hid_t dataset   = H5Dopen(file, dataset_relative_name.c_str(), H5P_DEFAULT);
 //                hid_t filespace = H5Dget_space(dataset);

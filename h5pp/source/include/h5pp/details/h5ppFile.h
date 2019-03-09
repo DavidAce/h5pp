@@ -48,8 +48,7 @@ namespace h5pp{
         hid_t plist_xfer;
         hid_t plist_lncr;
         hid_t plist_lapl;
-        hid_t openFile(){return H5Fopen(FilePath.c_str(), H5F_ACC_RDWR, plist_facc);}
-        herr_t closeFile(hid_t file){return H5Fclose(file);}
+
     public:
 //    hid_t       file;
 
@@ -106,6 +105,9 @@ namespace h5pp{
             }
             return *this;
         }
+
+        hid_t openFileHandle(){return H5Fopen(FilePath.c_str(), H5F_ACC_RDWR, plist_facc);}
+        herr_t closeFileHandle(hid_t file){return H5Fclose(file);}
 
 
         void setCompression(){
@@ -165,23 +167,23 @@ namespace h5pp{
 
 
         inline void create_group_link(const std::string &group_relative_name){
-            hid_t file = openFile();
+            hid_t file = openFileHandle();
             h5pp::Hdf5::create_group_link(file,plist_lncr,group_relative_name);
-            closeFile(file);
+            closeFileHandle(file);
         }
 
 //        void create_group_link(const std::string &group_relative_name);
         inline void write_symbolic_link(const std::string &src_path, const std::string &tgt_path){
-            hid_t file = openFile();
+            hid_t file = openFileHandle();
             h5pp::Hdf5::write_symbolic_link(file,src_path, tgt_path);
-            closeFile(file);
+            closeFileHandle(file);
         }
 
 
         bool check_if_link_exists_recursively(std::string link){
-            hid_t file = openFile();
+            hid_t file = openFileHandle();
             bool exists = h5pp::Hdf5::checkIfLinkExistsRecursively(file, link);
-            closeFile(file);
+            closeFileHandle(file);
             return exists;
         }
 
@@ -194,9 +196,9 @@ namespace h5pp{
 
 
         std::vector<std::string> getContentsOfGroup(std::string groupName){
-            hid_t file = openFile();
+            hid_t file = openFileHandle();
             h5pp::Hdf5::getContentsOfGroup(file,groupName);
-            closeFile(file);
+            closeFileHandle(file);
         }
 
 
@@ -313,8 +315,8 @@ namespace h5pp{
                     h5pp::Logger::log->debug("File mode OPEN: {}", FilePath.string());
                     try{
                         if(fileIsValid(FilePath)){
-                            hid_t file = openFile();
-                            closeFile(file);
+                            hid_t file = openFileHandle();
+                            closeFileHandle(file);
                         }
                     }catch(std::exception &ex){
                         throw std::runtime_error("Failed to open hdf5 file :" + FilePath.string() );
@@ -327,8 +329,8 @@ namespace h5pp{
                     try{
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
                         H5Fclose(file);
-                        file = openFile();
-                        closeFile(file);
+                        file = openFileHandle();
+                        closeFileHandle(file);
                     }catch(std::exception &ex){
                         throw std::runtime_error("Failed to create hdf5 file :" + FilePath.string() );
                     }
@@ -345,8 +347,8 @@ namespace h5pp{
                         }
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
                         H5Fclose(file);
-                        file = openFile();
-                        closeFile(file);
+                        file = openFileHandle();
+                        closeFileHandle(file);
                     }catch(std::exception &ex){
                         throw std::runtime_error("Failed to create renamed hdf5 file :" + FilePath.string() );
                     }
@@ -370,7 +372,7 @@ namespace h5pp{
 
 template <typename DataType>
 void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &props){
-    hid_t file = openFile();
+    hid_t file = openFileHandle();
     createDatasetLink(file, props);
     h5pp::Hdf5::setExtentDataset(file, props);
     hid_t dataset   = H5Dopen(file,props.dsetName.c_str(), H5P_DEFAULT);
@@ -441,7 +443,7 @@ void h5pp::File::writeDataset(const DataType &data, const std::string &datasetRe
 
 template <typename DataType>
 void h5pp::File::readDataset(DataType &data, const std::string &datasetRelativeName){
-    hid_t file = openFile();
+    hid_t file = openFileHandle();
     if (h5pp::Hdf5::checkIfLinkExistsRecursively(file, datasetRelativeName)) {
         try{
             hid_t dataset   = H5Dopen(file, datasetRelativeName.c_str(), H5P_DEFAULT);
@@ -502,7 +504,7 @@ void h5pp::File::readDataset(DataType &data, const std::string &datasetRelativeN
 
 template <typename AttrType>
 void h5pp::File::writeAttributeToFile(const AttrType &attribute, const std::string attributeName){
-    hid_t file = openFile();
+    hid_t file = openFileHandle();
     hid_t datatype          = h5pp::Type::getDataType<AttrType>();
     hid_t memspace          = h5pp::Utils::getMemSpace(attribute);
     auto size               = h5pp::Utils::getSize(attribute);
@@ -532,7 +534,7 @@ void h5pp::File::writeAttributeToFile(const AttrType &attribute, const std::stri
 
 template <typename AttrType>
 void h5pp::File::writeAttributeToLink(const AttrType &attribute, const AttributeProperties &aprops){
-    hid_t file = openFile();
+    hid_t file = openFileHandle();
     if (h5pp::Hdf5::checkIfLinkExistsRecursively(file, aprops.linkName) ) {
         if (not h5pp::Hdf5::checkIfAttributeExists(file, aprops.linkName, aprops.attrName)) {
 //            hid_t linkObject = H5Dopen(file, aprops.linkName.c_str(), H5P_DEFAULT);
