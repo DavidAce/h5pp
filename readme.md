@@ -15,6 +15,12 @@ h5pp is a C++ wrapper for HDF5 that focuses on simplicity for the end-user.
 
 ## Usage
 
+To write a file simply pass any supported object and a dataset name to `writeDataset`.
+
+Reading works similarly, with the caveat that you need to give a container of the correct type beforehand. There is no support (yet?)
+for querying the type in advance. The container will be resized appropriately by `h5pp`.
+ 
+
 ```c++
 
 #include <iostream>
@@ -26,14 +32,22 @@ int main() {
     // Initialize a file
     h5pp::File file("myDir/someFile.h5");
 
-    // Write a vector with std::complex<double>
-    std::vector<std::complex<double>> testvector (5, 10.0 + 5.0i);
+    // Write a vector with doubles
+    std::vector<double> testVector (5, 10.0);
     file.writeDataset(testvector, "testvector");
 
     // Write an Eigen matrix with std::complex<double>
     Eigen::MatrixXcd testmatrix (2, 2);
     testmatrix << 1.0 + 2.0i,  3.0 + 4.0i, 5.0 + 6.0i , 7.0 + 8.0i;
     file.writeDataset(testmatrix, "someGroup/testmatrix");
+
+    // Read a vector with doubles
+    std::vector<double> readVector;
+    file.readDataset(readvector, "testvector")
+
+    // Read an Eigen matrix with std::complex<double>
+    Eigen::MatrixXcd readMatrix;
+    file.readDataset(readMatrix, "someGroup/testmatrix")
 
 
     return 0;
