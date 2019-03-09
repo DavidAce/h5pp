@@ -13,50 +13,6 @@ h5pp is a C++ wrapper for HDF5 that focuses on simplicity for the end-user.
     - `std::string`
     - `Eigen` types such as `Matrix`, `Array` and `Tensor` (from the unsupported module), with automatic conversion to/from row-major storage.
 
-## Usage
-
-To write a file simply pass any supported object and a dataset name to `writeDataset`.
-
-Reading works similarly, with the caveat that you need to give a container of the correct type beforehand. There is no support (yet?)
-for querying the type in advance. The container will be resized appropriately by `h5pp`.
- 
-
-```c++
-
-#include <iostream>
-#include <h5pp/h5pp.h>
-using namespace std::complex_literals;
-
-int main() {
-    
-    // Initialize a file
-    h5pp::File file("myDir/someFile.h5");
-
-    // Write a vector with doubles
-    std::vector<double> testVector (5, 10.0);
-    file.writeDataset(testvector, "testvector");
-
-    // Write an Eigen matrix with std::complex<double>
-    Eigen::MatrixXcd testmatrix (2, 2);
-    testmatrix << 1.0 + 2.0i,  3.0 + 4.0i, 5.0 + 6.0i , 7.0 + 8.0i;
-    file.writeDataset(testmatrix, "someGroup/testmatrix");
-
-    // Read a vector with doubles
-    std::vector<double> readVector;
-    file.readDataset(readvector, "testvector")
-
-    // Read an Eigen matrix with std::complex<double>
-    Eigen::MatrixXcd readMatrix;
-    file.readDataset(readMatrix, "someGroup/testmatrix")
-
-
-    return 0;
-}
-
-```
-
-Writing attributes of any type to a group or dataset (in general "links") works similarly with the method `writeAttributesToLink(someObject,attributeName,targetLink)`.
-
 
 ## Requirements
 * C++17 capable compiler with experimental headers. (tested with GCC version >= 7.3 and CLang version >= 6.0)
@@ -142,9 +98,71 @@ a target will be made available, i.e., `h5pp::Eigen3`, `h5pp::spdlog` and `h5pp:
 You will have to manually link the dependencies `hdf5`, `Eigen3` and `spdlog` to your project.
 
 
-### Pro-tip: load into Python using h5py
+
+## Usage
+
+To write a file simply pass any supported object and a dataset name to `writeDataset`.
+
+Reading works similarly with `readDataset`, with the only exception that you need to give a container of the correct type beforehand. There is no support (yet?)
+for querying the type in advance. The container will be resized appropriately by `h5pp`.
+
+
+```c++
+
+#include <iostream>
+#include <h5pp/h5pp.h>
+using namespace std::complex_literals;
+
+int main() {
+    
+    // Initialize a file
+    h5pp::File file("myDir/someFile.h5");
+
+    // Write a vector with doubles
+    std::vector<double> testVector (5, 10.0);
+    file.writeDataset(testvector, "testvector");
+
+    // Write an Eigen matrix with std::complex<double>
+    Eigen::MatrixXcd testmatrix (2, 2);
+    testmatrix << 1.0 + 2.0i,  3.0 + 4.0i, 5.0 + 6.0i , 7.0 + 8.0i;
+    file.writeDataset(testmatrix, "someGroup/testmatrix");
+
+    // Read a vector with doubles
+    std::vector<double> readVector;
+    file.readDataset(readvector, "testvector")
+
+    // Read an Eigen matrix with std::complex<double>
+    Eigen::MatrixXcd readMatrix;
+    file.readDataset(readMatrix, "someGroup/testmatrix")
+
+
+    return 0;
+}
+
+```
+
+Writing attributes of any type to a group or dataset (in general "links") works similarly with the method `writeAttributeToLink(someObject,attributeName,targetLink)`.
+
+### File permissions
+To handle permissions there pass optional `AccessMode::<mode>` and/or `CreateMode::<mode>` settings as an argument when initializing the file. The possible options are
+* `AccessMode::`
+    - `READONLY`  Read permission to the file.
+    - `READWRITE` **(default)** Read and write permission to the file.
+* `CreateMode::`
+    - `OPEN` Open the file with the given name. Throws an error when file does not exist.
+    - `RENAME` **(default)** File is created with an available file name. If `myFile.h5` already exists, `myFile-1.h5` is created instead. The appended integer is increased until an available name is found
+    - `TRUNCATE` File is created with the given name and erases any pre-existing file. 
+
+The defaults are chosen to avoid loss of data.
+To give a concrete example, the syntax works as follows
+```c++
+    h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE);
+```
+
+
+## Pro-tip: load into Python using h5py
 Complex types are not supported natively by HDF5. Still, the storage layout used in `h5pp` makes it easy to read complex types within Python using `h5py`.
-As an example, this is how you would load a complex double array:
+Here is an example for loading a complex double array:
 
 ```python
 import h5py
