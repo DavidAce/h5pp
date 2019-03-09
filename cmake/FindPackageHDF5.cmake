@@ -30,9 +30,9 @@ if(NOT HDF5_WANT_VERSION)
 endif()
 
 if(HDF5_REQUIRED)
-    find_package(HDF5 ${HDF5_WANT_VERSION} COMPONENTS C CXX HL REQUIRED)
+    find_package(HDF5 ${HDF5_WANT_VERSION} COMPONENTS C HL REQUIRED)
 else()
-    find_package(HDF5 ${HDF5_WANT_VERSION} COMPONENTS C CXX HL)
+    find_package(HDF5 ${HDF5_WANT_VERSION} COMPONENTS C HL)
 endif()
 
 # To print all variables, use the code below:
