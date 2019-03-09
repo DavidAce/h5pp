@@ -175,7 +175,7 @@ namespace h5pp{
 
 
 
-        inline herr_t fileInfo(hid_t loc_id, const char *name, const H5L_info_t *linfo, void *opdata){
+        inline herr_t fileInfo([[maybe_unused]]  hid_t loc_id, const char *name, [[maybe_unused]]  const H5L_info_t *linfo, void *opdata){
             try{
 
 //                hid_t group;
@@ -183,7 +183,7 @@ namespace h5pp{
 //                group = H5Gopen2(loc_id, name, H5P_DEFAULT);
                 //do stuff with group object, if needed
                 linkNames->push_back(name);
-                std::cout << "Name : " << name << std::endl;
+//                std::cout << "Name : " << name << std::endl;
 //                H5Gclose(group);
                 return 0;
 
@@ -204,7 +204,7 @@ namespace h5pp{
             h5pp::Logger::log->trace("Getting contents of group: {}",groupName);
             std::vector<std::string> linkNames;
             try{
-                herr_t idx = H5Literate_by_name (file, groupName.c_str(), H5_INDEX_NAME,
+                [[maybe_unused]]  herr_t idx = H5Literate_by_name (file, groupName.c_str(), H5_INDEX_NAME,
                                                  H5_ITER_NATIVE, NULL, fileInfo, &linkNames,
                                                  H5P_DEFAULT);
             }

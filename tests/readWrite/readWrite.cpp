@@ -56,6 +56,10 @@ int main()
     std::cout << "Writing stringDummy       : \n" <<  stringDummy    << std::endl;
     file.writeDataset(stringDummy, "stringDummy");
 
+    auto foundLinksInRoot = file.getContentsOfGroup("/");
+    for (auto & link : foundLinksInRoot){
+        std::cout << "Found Link: " << link << std::endl;
+    }
 
     // Read the data back
     std::vector<double>     vectorDoubleRead;

@@ -40,14 +40,19 @@ namespace h5pp{
         fs::path    FileName;       /*!< Filename (possibly relative) and extension, e.g. ../files/output.h5 */
         fs::path    FilePath;       /*!< Full path to the file */
         bool        createDir = true;
+
+        AccessMode accessMode;
+        CreateMode createMode;
+
+
         size_t      logLevel  = 0;
+
         //Mpi related constants
         hid_t plist_facc;
         hid_t plist_xfer;
         hid_t plist_lncr;
         hid_t plist_lapl;
-        CreateMode createMode;
-        AccessMode accessMode;
+
     public:
 
         bool        hasInitialized = false;
@@ -65,8 +70,8 @@ namespace h5pp{
                 size_t logLevel_ = 3)
             :
             FileName(FileName_),
-            createMode(createMode_),
             accessMode(accessMode_),
+            createMode(createMode_),
             logLevel(logLevel_)
             {
             h5pp::Logger::setLogger("h5pp",logLevel,false);
@@ -116,8 +121,9 @@ namespace h5pp{
 
         hid_t openFileHandle(){
             switch(accessMode){
-                case(AccessMode::READONLY)  : {return H5Fopen(FilePath.c_str(), H5F_ACC_RDONLY, plist_facc);}
-                case(AccessMode::READWRITE) : {return H5Fopen(FilePath.c_str(), H5F_ACC_RDWR  , plist_facc);}
+                case(AccessMode::READONLY)  : return H5Fopen(FilePath.c_str(), H5F_ACC_RDONLY, plist_facc);
+                case(AccessMode::READWRITE) : return H5Fopen(FilePath.c_str(), H5F_ACC_RDWR  , plist_facc);
+                default: throw std::runtime_error("Invalid access mode");
             }
         }
         herr_t closeFileHandle(hid_t file){return H5Fclose(file);}
@@ -161,7 +167,7 @@ namespace h5pp{
 
 
 
-        std::string get_file_name()const{return FilePath.filename().string();}
+        std::string get_file_name()const{return FileName.string();}
         std::string get_file_path()const{return FilePath.string();}
 
 
@@ -217,8 +223,9 @@ namespace h5pp{
 
         std::vector<std::string> getContentsOfGroup(std::string groupName){
             hid_t file = openFileHandle();
-            h5pp::Hdf5::getContentsOfGroup(file,groupName);
+            auto foundLinks = h5pp::Hdf5::getContentsOfGroup(file,groupName);
             closeFileHandle(file);
+            return foundLinks;
         }
 
 

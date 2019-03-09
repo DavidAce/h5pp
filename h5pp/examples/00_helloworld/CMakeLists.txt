@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(helloworld)
 add_executable(${PROJECT_NAME} helloworld.cpp)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wpedantic -Wextra -O0)
 find_package(h5pp PATHS ${H5PP_INSTALL_DIR} REQUIRED)
 if (h5pp_FOUND)
     get_target_property(EIGEN_INFO h5pp::Eigen3      INTERFACE_INCLUDE_DIRECTORIES)

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(writescalar)
 add_executable(${PROJECT_NAME} writescalar.cpp)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wpedantic -Wextra -O0)
 message("H5PP_INSTALL_DIR ${H5PP_INSTALL_DIR}")
 find_package(h5pp PATHS ${H5PP_INSTALL_DIR} REQUIRED)
 if (h5pp_FOUND)
