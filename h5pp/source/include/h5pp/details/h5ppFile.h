@@ -56,10 +56,16 @@ namespace h5pp{
     public:
 
         bool        hasInitialized = false;
-        File()=default;
+//        File()=default;
+        File(){
+            h5pp::Logger::setLogger("h5pp",0,false);
+            h5pp::Logger::log->trace("Default constructor called.");
+        }
 
         explicit File(const File & other){
+            h5pp::Logger::log->trace("Copy constructor. File {} previously initialized: {}. Other file {} previously initialized {}", FileName.string(), hasInitialized, other.get_file_name(), other.hasInitialized);
             *this = other;
+
         }
 
 
@@ -74,14 +80,16 @@ namespace h5pp{
             createMode(createMode_),
             logLevel(logLevel_)
             {
-            h5pp::Logger::setLogger("h5pp",logLevel,false);
-            if (accessMode_ == AccessMode::READONLY and createMode_ == CreateMode::TRUNCATE){
-                Logger::log->error("Options READONLY and TRUNCATE are incompatible.");
-                return;
+                h5pp::Logger::setLogger("h5pp",logLevel,false);
+                h5pp::Logger::log->trace("Full constructor. File {}", FileName.string());
+
+                if (accessMode_ == AccessMode::READONLY and createMode_ == CreateMode::TRUNCATE){
+                    Logger::log->error("Options READONLY and TRUNCATE are incompatible.");
+                    return;
+                }
+                setCompression();
+                initialize();
             }
-            setCompression();
-            initialize();
-        }
 
 
         ~File(){
@@ -105,18 +113,20 @@ namespace h5pp{
         }
 
         File & operator= (const File & rhs) {
+            h5pp::Logger::log->trace("Assignment called. RHS: name [{}] | path [{}]", rhs.FileName.string(),rhs.FilePath.string());
             if (&rhs != this){
-                if(this->hasInitialized){
-                    this->~File();
+                if(hasInitialized){
+                    h5pp::Counter::ActiveFileCounter::decrementCounter(FileName.string());
                 }
                 if(rhs.hasInitialized){
-                    this->logLevel            = rhs.logLevel;
-                    this->accessMode          = rhs.getAccessMode();
-                    this->createMode          = CreateMode::OPEN;
-                    this->FileName            = rhs.FilePath;
-                    this->createDir           = rhs.createDir;
-                    this->setCompression();
-                    this->initialize();
+                    logLevel            = rhs.logLevel;
+                    h5pp::Logger::setLogger("h5pp",logLevel,false);
+                    accessMode          = rhs.getAccessMode();
+                    createMode          = CreateMode::OPEN;
+                    FileName            = rhs.FileName;
+                    FilePath            = rhs.FilePath;
+                    setCompression();
+                    initialize();
                 }
             }
             return *this;
@@ -316,43 +326,53 @@ namespace h5pp{
 //                FileName = FileName.filename();
 //            }
 
+            h5pp::Logger::log->trace("Setting file path. File name [{}] path [{}]. Has initialized: {}", FileName.string(), FilePath.string(), hasInitialized);
 
-            fs::path FileDirAbs;
-            if (FileName.is_relative()) {
-                FileDirAbs = fs::current_path() / FileName.parent_path();
-            } else if (FileName.is_absolute()) {
-                FileDirAbs = FileName.parent_path();
+            // There are different possibilities:
+            // 1) File is being initialized from another h5pp File (e.g. by copy or assignment) In that case the following applies:
+            //      a) FileName =  just a filename such as myfile.h5 without parent path.
+            //      b) FilePath =  an absolute path to the file such as /home/yada/yada/myFile.h5
+            // 2) File did not exist previously
+            //      a) FileName = a filename possibly with parent path or not, such as ../myDir/myFile.h5 or just myFile
+            //      b) FilePath = empty
+
+
+            //Take case 2 first and make it into a case 1
+            if (FilePath.empty()){
+                FilePath = fs::system_complete(FileName);
+                FileName = FilePath.filename();
             }
 
-            FileName = FileName.filename();
-            FilePath = fs::system_complete(FileDirAbs / FileName);
+            //Now we expect case 1 to hold.
+
+//            fs::path FileDirAbs;
+//            if (FileName.is_relative()) {
+//                FileDirAbs = fs::current_path() / FileName.parent_path();
+//            } else if (FileName.is_absolute()) {
+//                FileDirAbs = FileName.parent_path();
+//            }
+//
+//            FileName = FileName.filename();
+//            FilePath = fs::system_complete(FileDirAbs / FileName);
 
 
             fs::path currentDir           = fs::current_path();
-            h5pp::Logger::log->debug("currentDir   : {}", currentDir.string() );
-            h5pp::Logger::log->debug("FileDirAbs   : {}", FileDirAbs.string() );
-            h5pp::Logger::log->debug("FileName     : {}", FileName.string() );
+            h5pp::Logger::log->debug("FileName      : {}",  FileName.string() );
+            h5pp::Logger::log->debug("FilePath      : {}",  FilePath.string() );
+            h5pp::Logger::log->debug("current dir   : {}", fs::current_path().string() );
 
             try{
-                if(createDir){
-                    if (fs::create_directories(FileDirAbs)){
-                        FileDirAbs = fs::canonical(FileDirAbs);
-                        h5pp::Logger::log->debug("Created directory: {}",FileDirAbs.string());
-                    }else{
-                        h5pp::Logger::log->debug("Directory already exists: {}",FileDirAbs.string());
-                    }
+                if (fs::create_directories(FilePath.parent_path())){
+                    h5pp::Logger::log->debug("Created directory: {}",FilePath.parent_path().string());
                 }else{
-                    h5pp::Logger::log->critical("Target folder does not exist and creation of directory is disabled in settings");
+                    h5pp::Logger::log->debug("Directory already exists: {}",FilePath.parent_path().string());
                 }
-
+            }
+            catch(std::exception & ex){
+                throw std::runtime_error ("Failed to create directory: " + std::string(ex.what()));
             }
 
 
-
-
-            catch (std::exception &ex){
-                throw std::runtime_error("Failed to create directory: " + FileDirAbs.string() + "\n" + ex.what());
-            }
             switch (createMode){
                 case CreateMode::OPEN: {
                     h5pp::Logger::log->debug("File mode OPEN: {}", FilePath.string());
@@ -365,6 +385,7 @@ namespace h5pp{
                                 default: throw std::runtime_error("Invalid access mode");
                             }
                             H5Fclose(file);
+                            FilePath = fs::canonical(FilePath);
                         }else{
                             throw std::runtime_error("Invalid file");
                         }
@@ -379,6 +400,7 @@ namespace h5pp{
                     try{
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
                         H5Fclose(file);
+                        FilePath = fs::canonical(FilePath);
                     }catch(std::exception &ex){
                         throw std::runtime_error("Failed to create hdf5 file [" + FilePath.string() + "]: " + std::string(ex.what()));
                     }
@@ -395,6 +417,7 @@ namespace h5pp{
                         }
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
                         H5Fclose(file);
+                        FilePath = fs::canonical(FilePath);
                     }catch(std::exception &ex){
                         throw std::runtime_error("Failed to create renamed hdf5 file :" + FilePath.string() );
                     }
