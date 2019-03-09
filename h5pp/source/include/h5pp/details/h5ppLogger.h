@@ -10,7 +10,7 @@
 namespace h5pp{
     namespace Logger{
 
-    inline static std::shared_ptr<spdlog::logger> log;
+    inline std::shared_ptr<spdlog::logger> log = spdlog::default_logger();
 
     inline void setLogLevel(size_t levelZeroToSix){
         if (levelZeroToSix > 6) {
@@ -20,11 +20,11 @@ namespace h5pp{
 
         // Set console settings
         log->set_level(lvlEnum);
-        log->debug("Verbosity level: {}", spdlog::level::to_string_view(lvlEnum));
+//        log->trace("Verbosity level: {}", spdlog::level::to_string_view(lvlEnum));
 
     }
 
-        inline void setLogger(std::string name, size_t levelZeroToSix, bool timestamp = false){
+        inline void setLogger(std::string name, size_t levelZeroToSix = 3, bool timestamp = false){
             if(spdlog::get(name) == nullptr){
                 log = spdlog::stdout_color_mt(name);
             }else{

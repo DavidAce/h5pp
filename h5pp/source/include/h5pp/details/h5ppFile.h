@@ -85,6 +85,7 @@ namespace h5pp{
 
 
         ~File(){
+            auto savedLog = h5pp::Logger::log->name();
             h5pp::Logger::setLogger("h5pp-exit",logLevel,false);
             try{
                 if(h5pp::Counter::ActiveFileCounter::getCount() == 1){
@@ -99,6 +100,8 @@ namespace h5pp{
             catch (...){
                 h5pp::Logger::log->warn("Failed to properly close file: ", get_file_path());
             }
+            h5pp::Logger::setLogger(savedLog,logLevel,false);
+
         }
 
         File & operator= (const File & rhs) {
@@ -119,13 +122,23 @@ namespace h5pp{
             return *this;
         }
 
-        hid_t openFileHandle(){
-            switch(accessMode){
-                case(AccessMode::READONLY)  : return H5Fopen(FilePath.c_str(), H5F_ACC_RDONLY, plist_facc);
-                case(AccessMode::READWRITE) : return H5Fopen(FilePath.c_str(), H5F_ACC_RDWR  , plist_facc);
-                default: throw std::runtime_error("Invalid access mode");
+        hid_t openFileHandle() {
+            try {
+                if(hasInitialized){
+                    switch (accessMode) {
+                        case (AccessMode::READONLY)  :return H5Fopen(FilePath.c_str(), H5F_ACC_RDONLY, plist_facc);
+                        case (AccessMode::READWRITE) :return H5Fopen(FilePath.c_str(), H5F_ACC_RDWR, plist_facc);
+                        default: throw std::runtime_error("Invalid access mode");
+                    }
+                }else{
+                    throw std::runtime_error("File hasn't initialized");
+                }
+
+            }catch(std::exception &ex){
+                throw std::runtime_error("Could not open file handle: "  + std::string(ex.what()));
             }
         }
+
         herr_t closeFileHandle(hid_t file){return H5Fclose(file);}
 
 
@@ -277,6 +290,7 @@ namespace h5pp{
 //
 
         void initialize(){
+            auto savedLog = h5pp::Logger::log->name();
             h5pp::Logger::setLogger("h5pp-init",logLevel,false);
             plist_facc = H5Pcreate(H5P_FILE_ACCESS);
             plist_lncr = H5Pcreate(H5P_LINK_CREATE);   //Create missing intermediate group if they don't exist
@@ -288,6 +302,8 @@ namespace h5pp{
             hasInitialized = true;
 //            fileCount++;
             h5pp::Counter::ActiveFileCounter::incrementCounter(FileName.string());
+            h5pp::Logger::setLogger(savedLog,logLevel,false);
+
         }
 
 
@@ -342,11 +358,18 @@ namespace h5pp{
                     h5pp::Logger::log->debug("File mode OPEN: {}", FilePath.string());
                     try{
                         if(fileIsValid(FilePath)){
-                            hid_t file = openFileHandle();
-                            closeFileHandle(file);
+                            hid_t file;
+                            switch (accessMode) {
+                                case (AccessMode::READONLY)  : file = H5Fopen(FilePath.c_str(), H5F_ACC_RDONLY, plist_facc); break;
+                                case (AccessMode::READWRITE) : file = H5Fopen(FilePath.c_str(), H5F_ACC_RDWR, plist_facc); break;
+                                default: throw std::runtime_error("Invalid access mode");
+                            }
+                            H5Fclose(file);
+                        }else{
+                            throw std::runtime_error("Invalid file");
                         }
                     }catch(std::exception &ex){
-                        throw std::runtime_error("Failed to open hdf5 file :" + FilePath.string() );
+                        throw std::runtime_error("Failed to open hdf5 file [" + FilePath.string() + "]: " + std::string(ex.what()) );
 
                     }
                     break;
@@ -356,10 +379,8 @@ namespace h5pp{
                     try{
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
                         H5Fclose(file);
-                        file = openFileHandle();
-                        closeFileHandle(file);
                     }catch(std::exception &ex){
-                        throw std::runtime_error("Failed to create hdf5 file :" + FilePath.string() );
+                        throw std::runtime_error("Failed to create hdf5 file [" + FilePath.string() + "]: " + std::string(ex.what()));
                     }
                     break;
                 }
@@ -374,8 +395,6 @@ namespace h5pp{
                         }
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
                         H5Fclose(file);
-                        file = openFileHandle();
-                        closeFileHandle(file);
                     }catch(std::exception &ex){
                         throw std::runtime_error("Failed to create renamed hdf5 file :" + FilePath.string() );
                     }
