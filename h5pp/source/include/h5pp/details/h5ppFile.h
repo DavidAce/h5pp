@@ -45,7 +45,7 @@ namespace h5pp{
         CreateMode createMode;
 
 
-        size_t      logLevel  = 0;
+        size_t      logLevel  = 3;
 
         //Mpi related constants
         hid_t plist_facc;
@@ -58,8 +58,7 @@ namespace h5pp{
         bool        hasInitialized = false;
 //        File()=default;
         File(){
-            h5pp::Logger::setLogger("h5pp",0,false);
-            h5pp::Logger::log->trace("Default constructor called.");
+            h5pp::Logger::setLogger("h5pp",logLevel,false);
         }
 
         explicit File(const File & other){
