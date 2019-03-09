@@ -341,6 +341,7 @@ namespace h5pp{
                             FilePath = getNewFileName(FilePath);
                             h5pp::Logger::log->info("Renamed output file: {} ---> {}", FileName.string(),FilePath.filename().string());
                             h5pp::Logger::log->info("File mode RENAME: {}", FilePath.string());
+                            FileName = FilePath.filename();
                         }
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
                         H5Fclose(file);
