@@ -69,10 +69,10 @@ message("===============================")
 ### Try to fetch all dependencies                              ###
 ##################################################################
 
-set(INSTALL_DIRECTORY_H5PP             ${CMAKE_INSTALL_PREFIX})
-set(BUILD_DIRECTORY_H5PP               ${CMAKE_BINARY_DIR}/h5pp)
-set(INSTALL_DIRECTORY_THIRD_PARTY      ${CMAKE_INSTALL_PREFIX}/third-party)
-set(BUILD_DIRECTORY_THIRD_PARTY        ${CMAKE_BINARY_DIR}/third-party-build)
+set(H5PP_INSTALL_DIR                   ${CMAKE_INSTALL_PREFIX})
+set(H5PP_BUILD_DIR                     ${CMAKE_BINARY_DIR}/h5pp)
+set(H5PP_INSTALL_DIR_THIRD_PARTY       ${CMAKE_INSTALL_PREFIX}/third-party)
+set(H5PP_BUILD_DIR_THIRD_PARTY         ${CMAKE_BINARY_DIR}/third-party-build)
 include(cmake/Fetch_Eigen3.cmake)
 include(cmake/Fetch_spdlog.cmake)
 include(cmake/Fetch_HDF5.cmake)
@@ -153,9 +153,9 @@ endif()
 
 
 include(GNUInstallDirs)
-set(INSTALL_CONFIGDIR share/cmake/h5pp)
+set(H5PP_INSTALL_CONFIGDIR share/cmake/h5pp)
 set(H5PP_ROOT ${CMAKE_INSTALL_PREFIX})
-set(H5PP_DIR  ${INSTALL_CONFIGDIR})
+set(H5PP_DIR  ${H5PP_INSTALL_CONFIGDIR})
 install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
@@ -170,7 +170,7 @@ install(EXPORT
         h5ppTargets
         FILE h5ppTargets.cmake
         NAMESPACE h5pp::
-        DESTINATION ${INSTALL_CONFIGDIR})
+        DESTINATION ${H5PP_INSTALL_CONFIGDIR})
 
 #Create a ConfigVersion.cmake file
 include(CMakePackageConfigHelpers)
@@ -179,19 +179,19 @@ if (DEPENDENCIES_FOUND)
 configure_package_config_file(
         cmake/h5ppConfig.deps.cmake.in
         ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
-        INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
+        INSTALL_DESTINATION ${H5PP_INSTALL_CONFIGDIR}
         PATH_VARS
         H5PP_DIR H5PP_ROOT
+        H5PP_INSTALL_DIR_THIRD_PARTY
         Eigen3_DIR EIGEN3_INCLUDE_DIR EIGEN3_ROOT_DIR
         spdlog_DIR
         HDF5_DIR HDF5_ROOT HDF5_WANT_VERSION
-        INSTALL_DIRECTORY_THIRD_PARTY
 )
 else()
     configure_package_config_file(
             cmake/h5ppConfig.cmake.in
             ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
-            INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
+            INSTALL_DESTINATION ${H5PP_INSTALL_CONFIGDIR}
             PATH_VARS H5PP_DIR H5PP_ROOT
     )
 endif()
@@ -206,7 +206,7 @@ write_basic_package_version_file(
 install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
         ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
-        DESTINATION ${INSTALL_CONFIGDIR}
+        DESTINATION ${H5PP_INSTALL_CONFIGDIR}
         )
 
 
@@ -263,8 +263,8 @@ endif()
 ############################
 
 if(DEPENDENCIES_FOUND)
-    set(INSTALL_DIRECTORY_EXAMPLES            ${CMAKE_INSTALL_PREFIX}/examples)
-    set(BUILD_DIRECTORY_EXAMPLES              ${CMAKE_BINARY_DIR}/examples)
+    set(H5PP_INSTALL_DIR_EXAMPLES  ${CMAKE_INSTALL_PREFIX}/examples)
+    set(H5PP_BUILD_DIR_EXAMPLES    ${CMAKE_BINARY_DIR}/examples)
     include(cmake/Build_examples.cmake)
     add_custom_target(examples
             DEPENDS example_helloworld

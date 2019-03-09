@@ -1,8 +1,8 @@
 
 #find_package(Eigen3 3.3.4 HINTS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3)
-find_package(Eigen3 3.3.4  PATHS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 NO_DEFAULT_PATH)
-find_package(Eigen3 3.3.4  PATHS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 NO_CMAKE_PACKAGE_REGISTRY)
-find_package(Eigen3 3.3.4  PATHS ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3)
+find_package(Eigen3 3.3.4  PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/Eigen3 NO_DEFAULT_PATH)
+find_package(Eigen3 3.3.4  PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/Eigen3 NO_CMAKE_PACKAGE_REGISTRY)
+find_package(Eigen3 3.3.4  PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/Eigen3)
 
 if(BLAS_LIBRARIES)
     set(EIGEN3_COMPILER_FLAGS  -Wno-parentheses) # -Wno-parentheses
@@ -37,8 +37,8 @@ elseif (DOWNLOAD_EIGEN3 OR DOWNLOAD_ALL)
             GIT_REPOSITORY https://github.com/eigenteam/eigen-git-mirror.git
             GIT_TAG 3.3.7
             GIT_PROGRESS 1
-            PREFIX      ${BUILD_DIRECTORY_THIRD_PARTY}/Eigen3
-            INSTALL_DIR ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3
+            PREFIX      ${H5PP_BUILD_DIR_THIRD_PARTY}/Eigen3
+            INSTALL_DIR ${H5PP_INSTALL_DIR_THIRD_PARTY}/Eigen3
             CMAKE_ARGS
             -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
             UPDATE_COMMAND ""

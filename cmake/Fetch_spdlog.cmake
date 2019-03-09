@@ -1,14 +1,16 @@
 
 
-find_package(spdlog 1.3 NO_DEFAULT_PATH PATHS ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog/lib/cmake/spdlog ${spdlog_DIR} )
+find_package(spdlog 1.3 NO_DEFAULT_PATH PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog/lib/cmake/spdlog ${spdlog_DIR} )
 
 if(spdlog_FOUND)
     message(STATUS "SPDLOG FOUND IN SYSTEM: ${spdlog_DIR}")
     add_library(spdlog INTERFACE)
+    get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
     target_link_libraries(spdlog INTERFACE spdlog::spdlog)
+    target_include_directories(spdlog INTERFACE ${SPDLOG_INCLUDE_DIR})
 
 elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
-    message(STATUS "Spdlog will be installed into ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog on first build.")
+    message(STATUS "Spdlog will be installed into ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog on first build.")
     include(ExternalProject)
     ExternalProject_Add(external_SPDLOG
             GIT_REPOSITORY https://github.com/gabime/spdlog.git
@@ -16,8 +18,8 @@ elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
             GIT_PROGRESS 1
             UPDATE_COMMAND ""
             TEST_COMMAND ""
-            PREFIX      ${BUILD_DIRECTORY_THIRD_PARTY}/spdlog
-            INSTALL_DIR ${INSTALL_DIRECTORY_THIRD_PARTY}/spdlog
+            PREFIX      ${H5PP_BUILD_DIR_THIRD_PARTY}/spdlog
+            INSTALL_DIR ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog
             CMAKE_ARGS
             -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
             )

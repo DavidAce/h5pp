@@ -18,8 +18,7 @@ matrix:
         - GCC_VERSION=7
         - CC=gcc-7
         - CXX=g++-7
-        - FC=gfortran-7
-        - MATRIX_EVAL="CXX=g++-7 && CC=gcc-7 && FC=gfortran-7"
+        - MATRIX_EVAL="CXX=g++-7 && CC=gcc-7"
       cache:
         apt: true
       addons:
@@ -30,7 +29,6 @@ matrix:
           packages:
             - gcc-7
             - g++-7
-            - gfortran-7
     - os: linux
       compiler: gcc-8
       env:
@@ -38,8 +36,7 @@ matrix:
         - GCC_VERSION=8
         - CC=gcc-8
         - CXX=g++-8
-        - FC=gfortran-8
-        - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8 && FC=gfortran-8"
+        - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
       cache:
         apt: true
       addons:
@@ -50,7 +47,6 @@ matrix:
           packages:
             - gcc-8
             - g++-8
-            - gfortran-8
     - os: linux
       compiler: clang-7
       env:
@@ -58,8 +54,7 @@ matrix:
         - CXX=clang++-7
         - CC=clang-7
         - CLANG_VERSION=7
-        - FC=gfortran-8
-        - MATRIX_EVAL="CXX=clang++-7 && CC=clang-7 && FC=gfortran-8"
+        - MATRIX_EVAL="CXX=clang++-7 && CC=clang-7"
       cache:
         apt: true
       addons:
@@ -73,7 +68,6 @@ matrix:
             - llvm-7-dev
             - clang-7
             - libstdc++-8-dev
-            - gfortran-8
     - os: linux
       compiler: gcc-7 (preinstalled libs)
       env:
@@ -81,8 +75,7 @@ matrix:
         - GCC_VERSION=7
         - CC=gcc-7
         - CXX=g++-7
-        - FC=gfortran-7
-        - MATRIX_EVAL="CXX=g++-7 && CC=gcc-7 && FC=gfortran-7"
+        - MATRIX_EVAL="CXX=g++-7 && CC=gcc-7"
       cache:
         apt: true
       addons:
@@ -93,12 +86,17 @@ matrix:
           packages:
             - gcc-7
             - g++-7
-            - libhdf5-dev
-            - libhdf5-serial-dev
-            - hdf5-helpers
-            - hdf5-tools
-            - libsz2
-            - zlibc
+      before_install:
+        # Here we just install Miniconda, which you shouldn't have to change.
+        - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+        - chmod +x miniconda.sh
+        - ./miniconda.sh -b
+        - export PATH=/home/travis/miniconda/bin:$PATH
+        - conda update --yes conda
+      install:
+        - conda install --yes hdf5
+        - conda install --yes eigen
+
 
 before_install:
   - eval "${MATRIX_EVAL}"
@@ -107,6 +105,6 @@ script:
   - cmake -E make_directory build/Debug
   - cd build/Debug
   - cmake -DDOWNLOAD_ALL:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
-  - cmake --build .  -j 2
+  - cmake --build .
 
 
