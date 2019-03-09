@@ -55,7 +55,7 @@ int main() {
 
 ```
 
-
+Writing attributes of any type to a group or dataset (in general "links") works similarly with the method `writeAttributesToLink(someObject,attributeName,targetLink)`.
 
 
 ## Requirements
