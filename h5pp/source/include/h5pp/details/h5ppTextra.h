@@ -248,6 +248,7 @@ namespace h5pp{
 
         template<typename Derived>
         Eigen::Matrix<typename Derived::Scalar,Eigen::Dynamic,Eigen::Dynamic, Eigen::RowMajor> to_RowMajor(const Eigen::MatrixBase<Derived> &matrix){
+            if(matrix.IsRowMajor) {return matrix;}
             Eigen::Matrix<typename Derived::Scalar,Eigen::Dynamic,Eigen::Dynamic, Eigen::RowMajor> matrowmajor = matrix;
             return matrowmajor;
         }
@@ -262,6 +263,7 @@ namespace h5pp{
 
         template<typename Derived>
         Eigen::Matrix<typename Derived::Scalar,Eigen::Dynamic,Eigen::Dynamic, Eigen::ColMajor> to_ColMajor(const Eigen::MatrixBase<Derived> &matrix){
+            if(not matrix.IsRowMajor) {return matrix;}
             Eigen::Matrix<typename Derived::Scalar,Eigen::Dynamic,Eigen::Dynamic, Eigen::ColMajor> matrowmajor = matrix;
             return matrowmajor;
         }
@@ -272,37 +274,47 @@ namespace h5pp{
     }
 
 
-
-}
-
-
-
 //******************************************************//
 //std::cout overloads for dimension() and array objects //
 //******************************************************//
 
 
 
-template <typename T, int L>
-std::ostream& operator<< (std::ostream& out, const Eigen::DSizes<T,L>& v) {
-    if ( !v.empty() ) {
-        out << "[ ";
-        std::copy (v.begin(), v.end(), std::ostream_iterator<T>(out, " "));
-        out << "]";
+    template <typename T, int L>
+    std::ostream& operator<< (std::ostream& out, const Eigen::DSizes<T,L>& v) {
+        if ( !v.empty() ) {
+            out << "[ ";
+            std::copy (v.begin(), v.end(), std::ostream_iterator<T>(out, " "));
+            out << "]";
+        }
+        return out;
     }
-    return out;
+
+
+    template <typename T, int L>
+    std::ostream& operator<< (std::ostream& out, const Eigen::array<T,L>& v) {
+        if ( !v.empty() ) {
+            out << "[ ";
+            std::copy (v.begin(), v.end(), std::ostream_iterator<T>(out, " "));
+            out << "]";
+        }
+        return out;
+    }
+
+    template <typename T>
+    std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
+        if ( !v.empty() ) {
+            out << "[ ";
+            std::copy (v.begin(), v.end(), std::ostream_iterator<T>(out, " "));
+            out << "]";
+        }
+        return out;
+    }
+
 }
 
 
-template <typename T, int L>
-std::ostream& operator<< (std::ostream& out, const Eigen::array<T,L>& v) {
-    if ( !v.empty() ) {
-        out << "[ ";
-        std::copy (v.begin(), v.end(), std::ostream_iterator<T>(out, " "));
-        out << "]";
-    }
-    return out;
-}
+
 
 
 #endif //H5PP_TEXTRA_H

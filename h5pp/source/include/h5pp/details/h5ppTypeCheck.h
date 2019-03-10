@@ -27,7 +27,6 @@ namespace h5pp{
             template <typename T> using hasMember_imag         = std::experimental::is_detected<Imag_t , T>;
 
 
-
             template<typename Test, template<typename...> class Ref>
             struct is_specialization : std::false_type {};
             template<template<typename...> class Ref, typename... Args>

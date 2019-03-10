@@ -1,7 +1,12 @@
 [![Build Status](https://travis-ci.org/DavidAce/h5pp.svg?branch=master)](https://travis-ci.org/DavidAce/h5pp)
 
 # h5pp
-h5pp is a C++ wrapper for HDF5 that focuses on simplicity for the end-user. 
+`h5pp` is a C++17 wrapper for HDF5 that focuses on simplicity for the end-user.
+
+With a simple and unified syntax, `h5pp` lets users read and write to disk in binary format. It supports complex data types in possibly multidimensional containers that are common in scientific computing.
+In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.org) matrices and tensors.
+
+
 ## Features
 * Standard CMake build, install and linking.
 * Automated install and linking of dependencies if desired.
@@ -11,7 +16,8 @@ h5pp is a C++ wrapper for HDF5 that focuses on simplicity for the end-user.
     - any of the above in C-style arrays.
     - `std::vector`
     - `std::string`
-    - `Eigen` types such as `Matrix`, `Array` and `Tensor` (from the unsupported module), with automatic conversion to/from row-major storage.
+    - `Eigen` types such as `Matrix`, `Array` and `Tensor` (from the unsupported module), with automatic conversion to/from row major storage layout.
+    - Other containers with a contiguous buffer (without conversion to/from row major).
 
 
 ## Requirements
