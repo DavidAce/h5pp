@@ -150,7 +150,8 @@ int main() {
 Writing attributes of any type to a group or dataset (in general "links") works similarly with the method `writeAttributeToLink(someObject,attributeName,targetLink)`.
 
 ### File permissions
-To handle permissions there pass optional `AccessMode::<mode>` and/or `CreateMode::<mode>` settings as an argument when initializing the file. The possible options are
+To define permissions use the settings `AccessMode::<mode>` and/or `CreateMode::<mode>` as arguments when initializing the file.
+The possible modes are
 * `AccessMode::`
     - `READONLY`  Read permission to the file.
     - `READWRITE` **(default)** Read and write permission to the file.
