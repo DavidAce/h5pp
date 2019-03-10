@@ -552,7 +552,7 @@ void h5pp::File::readDataset(DataType &data, const std::string &datasetPath){
 
             if constexpr(tc::is_eigen_core<DataType>::value) {
                 // Data is row major in HDF5, convert to the storage given in DataType
-                if constexpr(data.IsRowMajor){
+                if (data.IsRowMajor){
                     data.resize(dims[0], dims[1]);
                     H5LTread_dataset(file, datasetPath.c_str(), datatype, data.data());
                 }else{
