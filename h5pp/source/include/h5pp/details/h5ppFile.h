@@ -45,7 +45,7 @@ namespace h5pp{
         CreateMode createMode;
 
 
-        size_t      logLevel  = 3;
+        size_t      logLevel  = 2;
 
         //Mpi related constants
         hid_t plist_facc;
@@ -73,7 +73,7 @@ namespace h5pp{
         File(const std::string FileName_,
                 AccessMode accessMode_ = AccessMode::READWRITE,
                 CreateMode createMode_ = CreateMode::RENAME,
-                size_t logLevel_ = 3)
+                size_t logLevel_ = 2)
             :
             FileName(FileName_),
             accessMode(accessMode_),
