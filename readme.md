@@ -83,12 +83,12 @@ A minimal `CMakeLists.txt` looks like:
     cmake_minimum_required(VERSION 3.10)
     project(FooProject)
     
-    add_executable(${PROJECT_NAME} foo.cpp)
+    add_executable(fooExecutable foo.cpp)
     
-    find_package(h5pp HINTS <path to h5pp-install-dir> REQUIRED)
+    find_package(h5pp PATHS <path to h5pp-install-dir> REQUIRED)
     
     if (h5pp_FOUND)
-        target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::h5pp h5pp::deps)
+        target_link_libraries(fooExecutable PRIVATE h5pp::h5pp h5pp::deps)
     endif()
 ```
 
