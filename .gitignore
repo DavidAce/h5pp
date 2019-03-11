@@ -7,3 +7,4 @@
 *tmp/
 *libs/
 doxygen_log.txt
+*__pycache__/
