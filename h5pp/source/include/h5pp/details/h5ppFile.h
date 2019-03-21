@@ -368,14 +368,15 @@ namespace h5pp{
                                 case (AccessMode::READWRITE) : file = H5Fopen(FilePath.c_str(), H5F_ACC_RDWR, plist_facc); break;
                                 default: throw std::runtime_error("Invalid access mode");
                             }
+                            if(file < 0) throw std::runtime_error("Failed to open file: [" + FilePath.string() + "]");
+
                             H5Fclose(file);
                             FilePath = fs::canonical(FilePath);
                         }else{
-                            throw std::runtime_error("Invalid file");
+                            throw std::runtime_error("Invalid file: [" + FilePath.string() + "]");
                         }
                     }catch(std::exception &ex){
-                        throw std::runtime_error("Failed to open hdf5 file [" + FilePath.string() + "]: " + std::string(ex.what()) );
-
+                        throw std::runtime_error("Failed to open hdf5 file: " + std::string(ex.what()) );
                     }
                     break;
                 }
@@ -383,10 +384,11 @@ namespace h5pp{
                     h5pp::Logger::log->debug("File mode TRUNCATE: {}", FilePath.string());
                     try{
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
+                        if(file < 0) throw std::runtime_error("Failed to create file: [" + FilePath.string() + "]");
                         H5Fclose(file);
                         FilePath = fs::canonical(FilePath);
                     }catch(std::exception &ex){
-                        throw std::runtime_error("Failed to create hdf5 file [" + FilePath.string() + "]: " + std::string(ex.what()));
+                        throw std::runtime_error("Failed to create hdf5 file: " + std::string(ex.what()));
                     }
                     break;
                 }
@@ -400,10 +402,11 @@ namespace h5pp{
                             FileName = FilePath.filename();
                         }
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
+                        if(file < 0) throw std::runtime_error("Failed to create file: [" + FilePath.string() + "]");
                         H5Fclose(file);
                         FilePath = fs::canonical(FilePath);
                     }catch(std::exception &ex){
-                        throw std::runtime_error("Failed to create renamed hdf5 file :" + FilePath.string() );
+                        throw std::runtime_error("Failed to create renamed hdf5 file : " + std::string(ex.what()) );
                     }
                     break;
                 }
