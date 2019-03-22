@@ -10,7 +10,8 @@
 namespace h5pp{
     namespace Logger{
 
-    inline std::shared_ptr<spdlog::logger> log = spdlog::default_logger();
+        inline std::shared_ptr<spdlog::logger> log;
+//        inline std::shared_ptr<spdlog::logger> log = spdlog::default_logger();
 
     inline void setLogLevel(size_t levelZeroToSix){
         if (levelZeroToSix > 6) {
@@ -24,7 +25,7 @@ namespace h5pp{
 
     }
 
-        inline void setLogger(std::string name, size_t levelZeroToSix = 3, bool timestamp = false){
+        inline void setLogger(std::string name, size_t levelZeroToSix = 2, bool timestamp = false){
             if(spdlog::get(name) == nullptr){
                 log = spdlog::stdout_color_mt(name);
             }else{

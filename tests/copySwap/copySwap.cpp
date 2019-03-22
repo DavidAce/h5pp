@@ -41,14 +41,11 @@ int main()
     h5pp::File fileC;
     fileC = fileB;
     fileC.writeDataset("C", "groupC/C");
-    std::cerr << "Now begins the copy constructor " << std::endl << std::flush;
     h5pp::File fileD(fileC);
     fileD.writeDataset("D", "groupD/D");
 
-    std::cerr << "Now begins the weird part " << std::endl << std::flush;
     h5pp::File fileE(h5pp::File("copySwapE.h5"));
     fileE.writeDataset("E", "groupE/E");
-    std::cerr << "Weird part over" << std::endl << std::flush;
 
     fileD = fileB;
 
