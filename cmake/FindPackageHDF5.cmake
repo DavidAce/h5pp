@@ -78,7 +78,7 @@ if(HDF5_FOUND)
                 INTERFACE
                 ${HDF5_C_LIBRARY_hdf5_hl}
                 ${HDF5_C_LIBRARY_hdf5}
-                $<LINK_ONLY:-ldl -lm -lpthread>
+                $<LINK_ONLY:-ldl -lm>
                 ${PTHREAD_LIBRARY}
                 )
         if(HDF5_C_LIBRARY_sz)
