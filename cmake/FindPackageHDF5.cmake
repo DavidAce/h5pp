@@ -13,8 +13,8 @@
 
 
 
-find_file(HDF5_C_COMPILER_EXECUTABLE        NAMES h5cc  PATHS $ENV{PATH} /usr/bin /usr/local/bin )
-find_file(HDF5_CXX_COMPILER_EXECUTABLE      NAMES h5c++ PATHS $ENV{PATH} /usr/bin /usr/local/bin )
+find_file(HDF5_C_COMPILER_EXECUTABLE        NAMES h5cc  PATHS $ENV{PATH} /usr/bin /usr/local/bin $ENV{HOME}/.conda/bin  $ENV{HOME}/anaconda3/bin)
+find_file(HDF5_CXX_COMPILER_EXECUTABLE      NAMES h5c++ PATHS $ENV{PATH} /usr/bin /usr/local/bin $ENV{HOME}/.conda/bin  $ENV{HOME}/anaconda3/bin)
 if(BUILD_SHARED_LIBS)
     set(HDF5_TARGET_SUFFIX "shared")
     set(HDF5_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
