@@ -17,7 +17,7 @@ option(DOWNLOAD_SPDLOG    "Download and install spdlog if not found"            
 option(DOWNLOAD_EIGEN3    "Download and install Eigen3 if not found"            OFF)
 option(DOWNLOAD_ALL       "Download and install all dependencies if not found"  OFF)
 
-set(PTHREAD_LIBRARY  -Wl,--whole-archive -lpthread -Wl,--no-whole-archive) # This is needed with static linking!
+set(PTHREAD_LIBRARY "-Wl,--whole-archive  -lpthread -Wl,--no-whole-archive") # This is needed with static linking!
 
 #################################################################
 ### Set default build type for compilation if none was given  ###
