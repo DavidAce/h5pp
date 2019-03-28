@@ -52,6 +52,7 @@ namespace h5pp{
         hid_t plist_xfer;
         hid_t plist_lncr;
         hid_t plist_lapl;
+        hid_t error_stack;
 
     public:
 
@@ -136,8 +137,16 @@ namespace h5pp{
             try {
                 if(hasInitialized){
                     switch (accessMode) {
-                        case (AccessMode::READONLY)  :return H5Fopen(FilePath.c_str(), H5F_ACC_RDONLY, plist_facc);
-                        case (AccessMode::READWRITE) :return H5Fopen(FilePath.c_str(), H5F_ACC_RDWR, plist_facc);
+                        case (AccessMode::READONLY)  :{
+                            hid_t  fileHandle = H5Fopen(FilePath.c_str(), H5F_ACC_RDONLY, plist_facc);
+                            if (fileHandle < 0){H5Eprint(H5E_DEFAULT, stderr);throw std::runtime_error("Failed to open file in read-only mode: " + FilePath.string());}
+                            else{return fileHandle;}
+                        }
+                        case (AccessMode::READWRITE) :{
+                            hid_t  fileHandle = H5Fopen(FilePath.c_str(), H5F_ACC_RDWR, plist_facc);
+                            if (fileHandle < 0){H5Eprint(H5E_DEFAULT, stderr);throw std::runtime_error("Failed to open file in read-write mode: " + FilePath.string());}
+                            else{return fileHandle;}
+                        }
                         default: throw std::runtime_error("Invalid access mode");
                     }
                 }else{
@@ -149,7 +158,15 @@ namespace h5pp{
             }
         }
 
-        herr_t closeFileHandle(hid_t file){return H5Fclose(file);}
+        herr_t closeFileHandle(hid_t file){
+            herr_t fileClose = H5Fclose(file);
+            if (fileClose < 0){
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to close file handle");
+            }else{
+                return fileClose;
+            }
+        }
 
 
         void setCompression(){
@@ -304,6 +321,10 @@ namespace h5pp{
         void initialize(){
             auto savedLog = h5pp::Logger::log->name();
             h5pp::Logger::setLogger("h5pp-init",logLevel,false);
+            /* Turn off error handling permanently */
+            error_stack = H5Eget_current_stack();
+            herr_t  turnOffAutomaticErrorPrinting = H5Eset_auto (error_stack, NULL, NULL);
+            if(turnOffAutomaticErrorPrinting < 0){H5Eprint(H5E_DEFAULT, stderr);throw std::runtime_error("Failed to turn off H5E error printing");}
             plist_facc = H5Pcreate(H5P_FILE_ACCESS);
             plist_lncr = H5Pcreate(H5P_LINK_CREATE);   //Create missing intermediate group if they don't exist
             plist_xfer = H5Pcreate(H5P_DATASET_XFER);
@@ -368,7 +389,7 @@ namespace h5pp{
                                 case (AccessMode::READWRITE) : file = H5Fopen(FilePath.c_str(), H5F_ACC_RDWR, plist_facc); break;
                                 default: throw std::runtime_error("Invalid access mode");
                             }
-                            if(file < 0) throw std::runtime_error("Failed to open file: [" + FilePath.string() + "]");
+                            if(file < 0) {H5Eprint(H5E_DEFAULT, stderr);throw std::runtime_error("Failed to open file: [" + FilePath.string() + "]");}
 
                             H5Fclose(file);
                             FilePath = fs::canonical(FilePath);
@@ -384,7 +405,7 @@ namespace h5pp{
                     h5pp::Logger::log->debug("File mode TRUNCATE: {}", FilePath.string());
                     try{
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
-                        if(file < 0) throw std::runtime_error("Failed to create file: [" + FilePath.string() + "]");
+                        if(file < 0){H5Eprint(H5E_DEFAULT, stderr);throw std::runtime_error("Failed to create file: [" + FilePath.string() + "]");}
                         H5Fclose(file);
                         FilePath = fs::canonical(FilePath);
                     }catch(std::exception &ex){
@@ -402,7 +423,7 @@ namespace h5pp{
                             FileName = FilePath.filename();
                         }
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
-                        if(file < 0) throw std::runtime_error("Failed to create file: [" + FilePath.string() + "]");
+                        if(file < 0){H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to create file: [" + FilePath.string() + "]");}
                         H5Fclose(file);
                         FilePath = fs::canonical(FilePath);
                     }catch(std::exception &ex){
@@ -436,15 +457,15 @@ void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &pro
     selectHyperslab(filespace, props.memSpace);
     if constexpr (tc::hasMember_c_str<DataType>::value){
         retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, data.c_str());
-        if(retval < 0) throw std::runtime_error("Failed to write text to file");
+        if(retval < 0){H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to write text to file");}
     }
     else if constexpr(tc::hasMember_data<DataType>::value){
         retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, data.data());
-        if(retval < 0) throw std::runtime_error("Failed to write data to file");
+        if(retval < 0){H5Eprint(H5E_DEFAULT, stderr);throw std::runtime_error("Failed to write data to file");}
     }
     else{
         retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, &data);
-        if(retval < 0) throw std::runtime_error("Failed to write number to file");
+        if(retval < 0){H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to write number to file");}
     }
     H5Dclose(dataset);
     H5Fflush(file,H5F_SCOPE_GLOBAL);

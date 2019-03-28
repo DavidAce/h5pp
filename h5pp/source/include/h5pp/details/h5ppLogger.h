@@ -15,7 +15,7 @@ namespace h5pp{
 
     inline void setLogLevel(size_t levelZeroToSix){
         if (levelZeroToSix > 6) {
-            throw std::runtime_error( "ERROR: Expected verbosity level integer in [0-6]. Got: " + std::to_string(levelZeroToSix));
+            throw std::runtime_error( "Expected verbosity level integer in [0-6]. Got: " + std::to_string(levelZeroToSix));
         }
         auto lvlEnum = static_cast<spdlog::level::level_enum>(levelZeroToSix);
 
