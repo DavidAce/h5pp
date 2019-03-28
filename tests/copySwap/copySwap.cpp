@@ -44,7 +44,7 @@ int main()
     h5pp::File fileD(fileC);
     fileD.writeDataset("D", "groupD/D");
 
-    h5pp::File fileE(h5pp::File("copySwapE.h5"));
+    h5pp::File fileE(h5pp::File("outputE/copySwapE.h5",h5pp::AccessMode::READWRITE,h5pp::CreateMode::TRUNCATE,logLevel));
     fileE.writeDataset("E", "groupE/E");
 
     fileD = fileB;
