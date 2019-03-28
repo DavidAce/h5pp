@@ -62,8 +62,8 @@ namespace h5pp{
                 H5Dset_extent(dataset, props.dims.data());
                 H5Dclose(dataset);
             }else{
-                h5pp::Logger::log->critical("Link does not exist, yet the extent is being set.");
-                exit(1);
+                h5pp::Logger::log->error("Link does not exist, yet the extent is being set.");
+                throw std::runtime_error("Link does not exist, yet the extent is being set.");
             }
         }
 

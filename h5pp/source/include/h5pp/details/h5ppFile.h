@@ -615,8 +615,8 @@ void h5pp::File::readDataset(DataType &data, const std::string &datasetPath){
             else if constexpr(std::is_arithmetic<DataType>::value){
                 H5LTread_dataset(file, datasetPath.c_str(), datatype, &data);
             }else{
-                std::cerr << "Attempted to read dataset of unknown type: " << datasetPath << "[" << typeid(data).name() << "]" << std::endl;
-                exit(1);
+                Logger::log->error("Attempted to read dataset of unknown type. Name: [{}] | Type: [{}]",datasetPath, typeid(data).name());
+                throw std::runtime_error("Attempted to read dataset of unknown type: " + datasetPath +"[" + typeid(data).name() + "]");
             }
             H5Dclose(dataset);
             H5Sclose(memspace);
@@ -626,7 +626,7 @@ void h5pp::File::readDataset(DataType &data, const std::string &datasetPath){
         }
     }
     else{
-        std::cerr << "Attempted to read dataset that doesn't exist: " << datasetPath << std::endl;
+        Logger::log->error("Attempted to read dataset that doesn't exist: [ {} ]",datasetPath);
     }
     H5Fclose(file);
 }
