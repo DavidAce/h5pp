@@ -61,8 +61,9 @@ namespace h5pp{
             if (closeHandle < 0){
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error("Failed to close link.");
+            }else{
+                return closeHandle;
             }
-            return closeHandle;
         }
 
         inline bool checkIfAttributeExists(hid_t file, const std::string &linkName, const std::string &attributename){
