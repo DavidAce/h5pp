@@ -551,6 +551,7 @@ void h5pp::File::writeDataset(const DataType &data,const T (&dims)[N],  const st
                 // Read more about this step here
                 //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
                 h5pp::Utils::setStringSize(props.dataType,props.size);
+
                 writeDataset(data, props);
             }else{
                 writeDataset(data, props);
