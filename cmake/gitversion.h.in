@@ -1,0 +1,13 @@
+#ifndef GITVERSION_H
+#define GITVERSION_H
+
+#include <string>
+namespace GIT{
+	inline std::string BRANCH 		= "@GIT_BRANCH@";
+	inline std::string REVISION		= "@GIT_REVISION@";
+	inline std::string COMMIT_HASH 	= "@GIT_COMMIT_HASH@";
+
+}
+
+
+#endif

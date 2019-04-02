@@ -2,6 +2,7 @@
 #include <iostream>
 #include <complex>
 #include <h5pp/h5pp.h>
+#include <gitversion.h>
 /*! \brief Prints the content of a vector nicely */
 template<typename T>
 std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
@@ -52,6 +53,13 @@ int main()
     std::cout << "Reading testGroup/vectorDouble: " <<  vectorDoubleRead  << std::endl;
     file.readDataset(vectorDoubleRead, "testGroup/vectorDouble");
     if (vectorDouble != vectorDoubleRead){throw std::runtime_error("vectorDouble != vectorDoubleRead");}
+
+
+    //Write file attribute, the git version
+    file.writeAttributeToFile(GIT::BRANCH      , "GIT BRANCH");
+    file.writeAttributeToFile(GIT::COMMIT_HASH , "GIT COMMIT");
+    file.writeAttributeToFile(GIT::REVISION    , "GIT REVISION");
+
 
     return 0;
 }

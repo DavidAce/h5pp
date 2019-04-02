@@ -504,16 +504,7 @@ void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPa
             if(H5Tequal(props.dataType, H5T_C_S1)){
                 // Read more about this step here
                 //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
-                retval                  = H5Tset_size(props.dataType, props.size);
-                if(retval < 0){
-                    H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to set size: " + props.size);
-                }
-                retval                  = H5Tset_strpad(props.dataType,H5T_STR_NULLTERM);
-                if(retval < 0){
-                    H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to set strpad");
-                }
+                h5pp::Utils::setStringSize(props.dataType,props.size);
 
                 writeDataset(data, props);
             }else{
@@ -559,17 +550,7 @@ void h5pp::File::writeDataset(const DataType &data,const T (&dims)[N],  const st
             if(H5Tequal(props.dataType, H5T_C_S1)){
                 // Read more about this step here
                 //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
-                retval                  = H5Tset_size(props.dataType, props.size);
-                if(retval < 0){
-                    H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to set size: " + props.size);
-                }
-                retval                  = H5Tset_strpad(props.dataType,H5T_STR_NULLTERM);
-                if(retval < 0){
-                    H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to set strpad");
-                }
-
+                h5pp::Utils::setStringSize(props.dataType,props.size);
                 writeDataset(data, props);
             }else{
                 writeDataset(data, props);
@@ -665,17 +646,10 @@ void h5pp::File::writeAttributeToFile(const AttrType &attribute, const std::stri
     hid_t datatype          = h5pp::Type::getDataType<AttrType>();
     hid_t memspace          = h5pp::Utils::getMemSpace(attribute);
     auto size               = h5pp::Utils::getSize(attribute);
-    if constexpr (tc::hasMember_c_str<AttrType>::value){
-        retval                  = H5Tset_size(datatype, size);
-        if(retval < 0){
-            H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to set size: " + size);
-        }
-        retval                  = H5Tset_strpad(datatype,H5T_STR_NULLTERM);
-        if(retval < 0){
-            H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to set strpad");
-        }
+    if constexpr (tc::hasMember_c_str<AttrType>::value
+                  or std::is_same<char * , typename std::decay<AttrType>::type>::value)
+    {
+        h5pp::Utils::setStringSize(datatype,size);
     }
 
     hid_t attributeId      = H5Acreate(file, attributeName.c_str(), datatype, memspace, H5P_DEFAULT, H5P_DEFAULT );
@@ -773,16 +747,7 @@ void h5pp::File::writeAttributeToLink(const AttrType &attribute, const std::stri
     if constexpr (tc::hasMember_c_str<AttrType>::value
                   or std::is_same<char * , typename std::decay<AttrType>::type>::value
     ){
-        retval                  = H5Tset_size(aprops.dataType, aprops.size);
-        if(retval < 0){
-            H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to set size: " + aprops.size);
-        }
-        retval                  = H5Tset_strpad(aprops.dataType,H5T_STR_NULLTERM);
-        if(retval < 0){
-            H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to set strpad");
-        }
+        h5pp::Utils::setStringSize(aprops.dataType,aprops.size);
     }
     writeAttributeToLink(attribute, aprops);
 }

@@ -6,6 +6,13 @@ project(h5pp  VERSION 0.2.2)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
+################################################################
+### Get git version number                                   ###
+### Generates a header gitversion/gitversion.h               ###
+### Include it using #include <gitversion.h>                 ###
+### Gives a namespace GIT:: with several git version numbers.###
+################################################################
+include(cmake/gitversion.cmake)
 
 ################################################################
 ### Set options for compilation                              ###

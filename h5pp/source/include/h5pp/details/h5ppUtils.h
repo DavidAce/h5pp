@@ -15,6 +15,23 @@ namespace h5pp{
         template <typename DataType, size_t Size>
         constexpr size_t getArraySize(const DataType (&arr)[Size]){return Size;}
 
+        herr_t setStringSize(hid_t datatype, hsize_t size){
+            size = std::max((hsize_t) 1, size);
+            herr_t retval = H5Tset_size(datatype, size);
+            if(retval < 0){
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to set size: " + std::to_string(size));
+            }
+            retval                  = H5Tset_strpad(datatype,H5T_STR_NULLTERM);
+            if(retval < 0){
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to set strpad");
+            }
+
+        }
+
+
+
 
         template<typename DataType>
         hsize_t getSize(const DataType &data){
