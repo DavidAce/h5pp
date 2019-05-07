@@ -22,7 +22,7 @@ namespace h5pp{
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error("Failed to set size: " + std::to_string(size));
             }
-            retval                  = H5Tset_strpad(datatype,H5T_STR_NULLTERM);
+            retval  = H5Tset_strpad(datatype,H5T_STR_NULLTERM);
             if(retval < 0){
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error("Failed to set strpad");
