@@ -24,8 +24,6 @@ using namespace std::complex_literals;
 
 int main()
 {
-    using cplx = std::complex<double>;
-
     static_assert(h5pp::Type::Check::hasMember_data<std::vector<double>>() and "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     std::string outputFilenameA      = "outputA/copySwapA.h5";

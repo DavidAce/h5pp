@@ -13,7 +13,7 @@
 namespace h5pp{
     namespace Utils{
         template <typename DataType, size_t Size>
-        constexpr size_t getArraySize(const DataType (&arr)[Size]){return Size;}
+        constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[Size]){return Size;}
 
         inline herr_t setStringSize(hid_t datatype, hsize_t size){
             size = std::max((hsize_t) 1, size);
@@ -27,7 +27,7 @@ namespace h5pp{
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error("Failed to set strpad");
             }
-
+            return retval;
         }
 
 
