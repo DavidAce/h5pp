@@ -36,10 +36,9 @@ namespace h5pp{
 
     class File {
     private:
-        herr_t      retval;
+        mutable herr_t      retval;
         fs::path    FileName;       /*!< Filename (possibly relative) and extension, e.g. ../files/output.h5 */
         fs::path    FilePath;       /*!< Full path to the file */
-        bool        createDir = true;
 
         AccessMode accessMode;
         CreateMode createMode;
@@ -57,7 +56,6 @@ namespace h5pp{
     public:
 
         bool        hasInitialized = false;
-//        File()=default;
         File(){
             h5pp::Logger::setLogger("h5pp",logLevel,false);
         }
@@ -133,7 +131,7 @@ namespace h5pp{
             return *this;
         }
 
-        hid_t openFileHandle() {
+        hid_t openFileHandle() const{
             try {
                 if(hasInitialized){
                     switch (accessMode) {
@@ -158,7 +156,7 @@ namespace h5pp{
             }
         }
 
-        herr_t closeFileHandle(hid_t file){
+        herr_t closeFileHandle(hid_t file)const{
             herr_t fileClose = H5Fclose(file);
             if (fileClose < 0){
                 H5Eprint(H5E_DEFAULT, stderr);
@@ -210,7 +208,10 @@ namespace h5pp{
 
 
         template <typename DataType>
-        void readDataset(DataType &data, const std::string &datasetPath);
+        void readDataset(DataType &data, const std::string &datasetPath) const;
+
+        template <typename DataType>
+        DataType readDataset(const std::string &datasetPath) const;
 
         template <typename DataType>
         void writeDataset(const DataType &data, const std::string &datasetPath);
@@ -257,13 +258,7 @@ namespace h5pp{
 
 
 
-//
-//        template <typename AttrType>
-//        void write_attribute_to_group(const AttrType &attribute, const std::string &attribute_name, const std::string &linkName);
-//
-
-
-        std::vector<std::string> getContentsOfGroup(std::string groupName){
+        std::vector<std::string> getContentsOfGroup(std::string groupName)const{
             hid_t file = openFileHandle();
             auto foundLinks = h5pp::Hdf5::getContentsOfGroup(file,groupName);
             closeFileHandle(file);
@@ -274,11 +269,11 @@ namespace h5pp{
 
     private:
 
-        bool fileIsValid(){
+        bool fileIsValid()const{
             return fileIsValid(FilePath);
         }
 
-        bool fileIsValid(fs::path fileName) {
+        bool fileIsValid(fs::path fileName) const{
             if (fs::exists(fileName)){
                 if (H5Fis_hdf5(FilePath.c_str()) > 0) {
                     return true;
@@ -292,7 +287,7 @@ namespace h5pp{
 
 
 
-        fs::path getNewFileName(fs::path fileName){
+        fs::path getNewFileName(fs::path fileName)const{
             int i=1;
             fs::path newFileName = fileName;
             while (fs::exists(newFileName)){
@@ -563,7 +558,7 @@ void h5pp::File::writeDataset(const DataType &data,const T (&dims)[N],  const st
 
 
 template <typename DataType>
-void h5pp::File::readDataset(DataType &data, const std::string &datasetPath){
+void h5pp::File::readDataset(DataType &data, const std::string &datasetPath)const{
     hid_t file = openFileHandle();
     try{
         hid_t dataset   = h5pp::Hdf5::openLink(file, datasetPath);
@@ -640,6 +635,13 @@ void h5pp::File::readDataset(DataType &data, const std::string &datasetPath){
 }
 
 
+
+template <typename DataType>
+DataType h5pp::File::readDataset(const std::string &datasetPath) const {
+    DataType data;
+    readDataset(data,datasetPath);
+    return data;
+}
 
 template <typename AttrType>
 void h5pp::File::writeAttributeToFile(const AttrType &attribute, const std::string attributeName){
