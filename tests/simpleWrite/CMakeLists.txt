@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(simpleWrite)
 add_executable(${PROJECT_NAME} simpleWrite.cpp )
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/h5pp/source/include)
 ################################
 ### Compiler-dependent linker flags ###
 ################################
@@ -11,7 +10,6 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set(COMMON_OPTIONS -stdlib=libstdc++  -std=c++17 -g -Wall -Wno-ignored-attributes)
     set(COMMON_LFLAGS  -stdlib=libstdc++  -lstdc++fs)
-    message("GCC_TOOLCHAIN: ${GCC_TOOLCHAIN}")
     if(GCC_TOOLCHAIN)
         list(APPEND COMMON_OPTIONS --gcc-toolchain=${GCC_TOOLCHAIN})
     endif()
@@ -19,12 +17,12 @@ endif()
 
 set(DEBUG_OPTIONS       -Wpedantic -Wextra -O0)
 set(RELEASE_OPTIONS     -DNDEBUG -O3)
-target_compile_features (${PROJECT_NAME} PRIVATE cxx_std_17)
-target_compile_options (${PROJECT_NAME} PRIVATE "${COMMON_OPTIONS}")                                 ### Common options
-target_compile_options (${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${DEBUG_OPTIONS}>")               ### Debug build options
-target_compile_options (${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:${RELEASE_OPTIONS}>")           ### Release build options
+target_compile_options  (${PROJECT_NAME} PRIVATE "${COMMON_OPTIONS}")                                 ### Common options
+target_compile_options  (${PROJECT_NAME} PRIVATE "$<$<CONFIG:DEBUG>:${DEBUG_OPTIONS}>")               ### Debug build options
+target_compile_options  (${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:${RELEASE_OPTIONS}>")           ### Release build options
 target_link_libraries   (${PROJECT_NAME} PRIVATE  ${COMMON_LFLAGS})
+target_compile_features (${PROJECT_NAME} PRIVATE cxx_std_17)
 
-
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/h5pp/source/include)
 target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::h5pp h5pp::deps)
 add_test(NAME simpleWriteTest WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND ${PROJECT_NAME})

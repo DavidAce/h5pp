@@ -105,6 +105,24 @@ target_include_directories(
 
 
 
+################################
+### Compiler-dependent linker flags ###
+################################
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
+    target_compile_option(${PROJECT_NAME} INTERFACE -std=c++17)
+    target_link_libraries(${PROJECT_NAME} INTERFACE -lstdc++fs)
+elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    target_compile_option(${PROJECT_NAME} INTERFACE -stdlib=libstdc++ -std=c++17)
+    target_link_libraries(${PROJECT_NAME} INTERFACE -stdlib=libstdc++ -lstdc++fs)
+    if(GCC_TOOLCHAIN)
+        list(APPEND COMMON_OPTIONS --gcc-toolchain=${GCC_TOOLCHAIN})
+    endif()
+endif()
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+
+
+
+
 add_library(deps INTERFACE)
 add_library(h5pp::deps ALIAS deps)
 install(TARGETS h5pp deps EXPORT h5ppTargets )
@@ -216,22 +234,16 @@ install(FILES
         )
 
 
-################################
-### Compiler-dependent linker flags ###
-################################
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
-    set(COMMON_OPTIONS -lstdc++fs -Wno-ignored-attributes )
-    set(COMMON_LFLAGS  -lstdc++fs )
-elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    set(COMMON_OPTIONS -stdlib=libstdc++  -lstdc++fs -Wno-ignored-attributes)
-    set(COMMON_LFLAGS  -stdlib=libstdc++  -lstdc++fs)
-    if(GCC_TOOLCHAIN)
-    list(APPEND COMMON_OPTIONS --gcc-toolchain=${GCC_TOOLCHAIN})
-    endif()
-endif()
-
-
-
+###Register package in user's package registry
+##export(PACKAGE h5pp)
+#
+#
+#
+#
+#
+#
+#
+#
 #############################
 ## UNIT TEST
 #############################
