@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(simpleWrite)
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 add_executable(${PROJECT_NAME} simpleWrite.cpp )
 ################################
 ### Compiler-dependent linker flags ###
