@@ -14,5 +14,5 @@ target_compile_options (${PROJECT_NAME} PRIVATE "$<$<CONFIG:RELEASE>:${RELEASE_O
 target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::h5pp h5pp::deps)
 target_compile_features (${PROJECT_NAME} PRIVATE cxx_std_17)
 target_compile_options  (${PROJECT_NAME} PRIVATE -std=c++17)
-target_link_libraries   (${PROJECT_NAME} PRIVATE -lstdc++fs)
+target_link_libraries   (${PROJECT_NAME} PRIVATE  ${COMMON_LFLAGS})
 add_test(NAME readWriteAttributesTest WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND ${PROJECT_NAME})

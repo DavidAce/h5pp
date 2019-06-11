@@ -102,9 +102,6 @@ target_include_directories(
         $<BUILD_INTERFACE:${INSTALL_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
-target_compile_options (${PROJECT_NAME} INTERFACE -std=c++17)
-target_link_libraries  (${PROJECT_NAME} INTERFACE -lstdc++fs)
 
 
 
@@ -219,16 +216,27 @@ install(FILES
         )
 
 
-###Register package in user's package registry
-##export(PACKAGE h5pp)
-#
-#
-#
-#
-#
-#
-#
-#
+################################
+### Compiler-dependent linker flags ###
+################################
+set(COMPILE_OPTIONS)
+set(COMPILE_LFLAGS)
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
+    list(APPEND COMMON_OPTIONS -Wno-implicit-fallthrough -Wno-deprecated-declarations -Wno-ignored-attributes -Wno-int-in-bool-context -Wno-maybe-uninitialized -Wno-enum-compare)
+elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    list(APPEND COMMON_OPTIONS --gcc-toolchain=${GCC_TOOLCHAIN})
+    list(APPEND COMMON_OPTIONS -stdlib=libstdc++ -Wno-deprecated-declarations -Wno-ignored-attributes -Wno-invalid-partial-specialization -Wno-missing-braces -Wno-overloaded-virtual -Wno-uninitialized)
+endif()
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
+    list(APPEND COMPILER_LFLAGS -lstdc++fs)     ### For experimental::filesystem
+    list(APPEND COMPILER_LFLAGS -flto)          ### Link time optimization flag
+elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    list(APPEND COMPILER_LFLAGS -stdlib=libstdc++)
+    list(APPEND COMPILER_LFLAGS -lstdc++fs)        ### For experimental::filesystem
+endif()
+
+
+
 #############################
 ## UNIT TEST
 #############################
