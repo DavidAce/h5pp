@@ -108,15 +108,17 @@ target_include_directories(
 ################################
 ### Compiler-dependent linker flags ###
 ################################
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+add_library(flags INTERFACE)
+add_library(h5pp::flags ALIAS flags)
+target_compile_features(flags INTERFACE cxx_std_17)
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
-    target_compile_options(${PROJECT_NAME} INTERFACE -std=c++17)
-    target_link_libraries (${PROJECT_NAME} INTERFACE -lstdc++fs)
+    target_compile_options(flags INTERFACE -std=c++17)
+    target_link_libraries (flags INTERFACE -lstdc++fs)
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options(${PROJECT_NAME} INTERFACE -stdlib=libstdc++ -std=c++17)
-    target_link_libraries (${PROJECT_NAME} INTERFACE -stdlib=libstdc++ -lstdc++fs)
+    target_compile_options(flags INTERFACE -stdlib=libstdc++ -std=c++17)
+    target_link_libraries (flags INTERFACE -stdlib=libstdc++ -lstdc++fs)
     if(GCC_TOOLCHAIN)
-        target_compile_options(${PROJECT_NAME} INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
+        target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
     endif()
 endif()
 
@@ -125,7 +127,7 @@ endif()
 
 add_library(deps INTERFACE)
 add_library(h5pp::deps ALIAS deps)
-install(TARGETS h5pp deps EXPORT h5ppTargets )
+install(TARGETS h5pp deps flags EXPORT h5ppTargets )
 if(TARGET Eigen3)
     add_dependencies(deps Eigen3)
     target_link_libraries(deps INTERFACE Eigen3)
