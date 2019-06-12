@@ -138,9 +138,9 @@ target_include_directories(
         $<BUILD_INTERFACE:${INSTALL_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
-
-
-
+if (NOT BUILD_SHARED_LIBS)
+    target_link_libraries (h5pp INTERFACE -static)
+endif()
 
 
 add_library(deps INTERFACE)
@@ -275,25 +275,19 @@ if(ENABLE_TESTS)
         add_subdirectory(tests/readWriteAttributes  EXCLUDE_FROM_ALL)
         add_subdirectory(tests/copySwap             EXCLUDE_FROM_ALL)
 
-        add_custom_target(all_tests
+        add_custom_target(all_tests ALL
                 DEPENDS simpleWrite
                 DEPENDS readWrite
                 DEPENDS readWriteAttributes
                 DEPENDS copySwap
                 )
-#        add_dependencies(${PROJECT_NAME} all_tests h5pp::h5pp)
-#        add_custom_command(TARGET ${PROJECT_NAME}
-#                POST_BUILD
-#                COMMENT "Running Tests"
-#                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#                DEPENDS all_tests
-#                COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
+
         add_custom_command(TARGET all_tests
                 POST_BUILD
-                COMMENT "Running Tests"
+                COMMENT "Running Tests:"
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                DEPENDS h5pp::h5pp h5pp::deps
-                COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
+                DEPENDS h5pp::deps all_tests
+                COMMAND ${CMAKE_CTEST_COMMAND} --build-config $<CONFIG> --output-on-failures)
     else()
         message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
     endif()
