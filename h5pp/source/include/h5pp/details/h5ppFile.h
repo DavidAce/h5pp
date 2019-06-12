@@ -469,6 +469,7 @@ void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &pro
 
 template <typename DataType>
 void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPath){
+    if(accessMode == AccessMode::READONLY){throw std::runtime_error("Attempted to write to read-only file");}
     DatasetProperties props;
     props.dataType   = h5pp::Type::getDataType<DataType>();
     props.memSpace   = h5pp::Utils::getMemSpace(data);
@@ -512,6 +513,7 @@ void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPa
 
 template <typename DataType,typename T, std::size_t N>
 void h5pp::File::writeDataset(const DataType &data,const T (&dims)[N],  const std::string &datasetPath){
+    if(accessMode == AccessMode::READONLY){throw std::runtime_error("Attempted to write to read-only file");}
     static_assert(std::is_integral_v<T>);
     static_assert(N > 0 , "Dimensions of given data are too few, N == 0");
     DatasetProperties props;
