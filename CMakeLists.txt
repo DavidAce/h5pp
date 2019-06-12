@@ -281,19 +281,13 @@ if(ENABLE_TESTS)
                 DEPENDS readWriteAttributes
                 DEPENDS copySwap
                 )
-#        add_dependencies(${PROJECT_NAME} all_tests h5pp::h5pp)
-#        add_custom_command(TARGET ${PROJECT_NAME}
+
+#        add_custom_command(TARGET all_tests
 #                POST_BUILD
 #                COMMENT "Running Tests"
 #                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#                DEPENDS all_tests
+#                DEPENDS h5pp::h5pp h5pp::deps
 #                COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
-        add_custom_command(TARGET all_tests
-                POST_BUILD
-                COMMENT "Running Tests"
-                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                DEPENDS h5pp::h5pp h5pp::deps
-                COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
     else()
         message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
     endif()
