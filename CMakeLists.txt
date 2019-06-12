@@ -306,7 +306,7 @@ endif()
 # ADD TARGETS FOR  EXAMPLES
 ############################
 
-if(DEPENDENCIES_FOUND AND BUILD_EXAMPLES)
+if(DEPENDENCIES_FOUND)
     set(H5PP_INSTALL_DIR_EXAMPLES  ${CMAKE_INSTALL_PREFIX}/examples)
     set(H5PP_BUILD_DIR_EXAMPLES    ${CMAKE_BINARY_DIR}/examples)
     include(cmake/Build_examples.cmake)

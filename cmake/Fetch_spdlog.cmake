@@ -6,7 +6,6 @@ if(spdlog_FOUND)
     message(STATUS "SPDLOG FOUND IN SYSTEM: ${spdlog_DIR}")
     add_library(spdlog INTERFACE)
     get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
-#    target_link_libraries(spdlog INTERFACE spdlog::spdlog)
     target_include_directories(spdlog INTERFACE ${SPDLOG_INCLUDE_DIR})
 
 elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
@@ -37,6 +36,7 @@ elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
             $<BUILD_INTERFACE:${INSTALL_DIR}/include>
             $<INSTALL_INTERFACE:third-party/spdlog/include>
     )
+
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     find_package(Threads)
