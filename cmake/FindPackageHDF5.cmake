@@ -58,8 +58,8 @@ if(HDF5_FOUND)
                 ${HDF5_C_HL_LIBRARY}
                 ${HDF5_C_LIBRARY}
                 $<LINK_ONLY:-ldl -lm>
-                ${PTHREAD_LIBRARY}
                 )
+        target_compile_options(hdf5 INTERFACE -pthread)
         if(HDF5_ENABLE_Z_LIB_SUPPORT)
             target_link_libraries(hdf5 INTERFACE $<LINK_ONLY:-lz>  )
         endif()
@@ -81,6 +81,8 @@ if(HDF5_FOUND)
                 $<LINK_ONLY:-ldl -lm>
                 ${PTHREAD_LIBRARY}
                 )
+        target_compile_options(hdf5 INTERFACE -pthread)
+
         if(HDF5_C_LIBRARY_sz)
             target_link_libraries(hdf5 INTERFACE $<LINK_ONLY:-lsz>  )
         endif()
