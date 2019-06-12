@@ -48,20 +48,16 @@ elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
     add_dependencies(hdf5      external_HDF5)
     set(HDF5_DIR              ${INSTALL_DIR}/share/cmake/hdf5)
     set(HDF5_ROOT             ${INSTALL_DIR})
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads)
 
-    #    if (HDF5_IS_PARALLEL)
-    #        list(APPEND HDF5_LINKER_FLAGS ${MPI_LIBRARIES})
-    #        list(APPEND HDF5_INCLUDE_DIR  ${MPI_INCLUDE_PATH})
-    #    endif()
     target_link_libraries(hdf5
             INTERFACE
             ${INSTALL_DIR}/lib/libhdf5_hl${HDF5_LIBRARY_SUFFIX}
             ${INSTALL_DIR}/lib/libhdf5${HDF5_LIBRARY_SUFFIX}
             $<LINK_ONLY:-ldl -lm -lz>
             ${PTHREAD_LIBRARY}
-#            $<LINK_ONLY:-lm>
-#            $<LINK_ONLY:-lz>
-#            $<LINK_ONLY:${PTHREAD_LIBRARY}>
             )
     target_include_directories(
             hdf5
@@ -69,6 +65,7 @@ elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
             "$<BUILD_INTERFACE:${INSTALL_DIR}/include>"
             "$<INSTALL_INTERFACE:third-party/hdf5/include>"
     )
+    target_link_libraries (hdf5 INTERFACE Threads::Threads)
 
 else()
     message(STATUS "Dependency HDF5 not found and DOWNLOAD_HDF5 is OFF")

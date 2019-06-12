@@ -25,17 +25,16 @@ option(DOWNLOAD_EIGEN3    "Download and install Eigen3 if not found"            
 option(DOWNLOAD_ALL       "Download and install all dependencies if not found"  OFF)
 
 
-message(STATUS "######## h5pp build options #########")
-message("BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
-message("ENABLE_TESTS       : ${ENABLE_TESTS}")
-message("DOWNLOAD_HDF5      : ${DOWNLOAD_HDF5}")
-message("DOWNLOAD_SPDLOG    : ${DOWNLOAD_SPDLOG}")
-message("DOWNLOAD_EIGEN3    : ${DOWNLOAD_EIGEN3}")
-message("DOWNLOAD_ALL       : ${DOWNLOAD_ALL}")
-message(STATUS "#####################################")
+message("######## h5pp build options #########")
+message(STATUS "BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
+message(STATUS "ENABLE_TESTS       : ${ENABLE_TESTS}")
+message(STATUS "DOWNLOAD_HDF5      : ${DOWNLOAD_HDF5}")
+message(STATUS "DOWNLOAD_SPDLOG    : ${DOWNLOAD_SPDLOG}")
+message(STATUS "DOWNLOAD_EIGEN3    : ${DOWNLOAD_EIGEN3}")
+message(STATUS "DOWNLOAD_ALL       : ${DOWNLOAD_ALL}")
+message("#####################################")
 
 
-set(PTHREAD_LIBRARY -Wl,--whole-archive  -lpthread -Wl,--no-whole-archive) # This is needed with static linking!
 
 #################################################################
 ### Set default build type for compilation if none was given  ###
@@ -45,8 +44,7 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE "Release" CACHE
             STRING "Choose the type of build." FORCE)
     # Set the possible values of build type for cmake-gui
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-            "Debug" "Release")
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif ()
 
 
@@ -84,6 +82,34 @@ message("===============================")
 
 
 
+
+#################################
+### Compiler and linker flags ###
+#################################
+add_library(flags INTERFACE)
+add_library(h5pp::flags ALIAS flags)
+
+target_compile_features(flags INTERFACE cxx_std_17)
+if (NOT BUILD_SHARED_LIBS)
+    target_link_libraries (flags INTERFACE -static)
+endif()
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
+    target_compile_options(flags INTERFACE -std=c++17)
+    target_link_libraries (flags INTERFACE -lstdc++fs)
+elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    target_compile_options(flags INTERFACE -stdlib=libstdc++ -std=c++17)
+    target_link_libraries (flags INTERFACE -stdlib=libstdc++ -lstdc++fs)
+    if(GCC_TOOLCHAIN)
+        target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
+    endif()
+endif()
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads)
+target_link_libraries (flags INTERFACE Threads::Threads)
+
+
+
 ##################################################################
 ### Try to fetch all dependencies                              ###
 ##################################################################
@@ -95,7 +121,6 @@ set(H5PP_BUILD_DIR_THIRD_PARTY         ${CMAKE_BINARY_DIR}/third-party-build)
 include(cmake/Fetch_Eigen3.cmake)
 include(cmake/Fetch_spdlog.cmake)
 include(cmake/Fetch_HDF5.cmake)
-#include(cmake/Fetch_h5pp.cmake)
 if(TARGET hdf5::hdf5 AND TARGET Eigen3 AND TARGET spdlog)
     set(DEPENDENCIES_FOUND TRUE)
 else()
@@ -116,28 +141,6 @@ target_include_directories(
 
 
 
-################################
-### Compiler-dependent linker flags ###
-################################
-add_library(flags INTERFACE)
-add_library(h5pp::flags ALIAS flags)
-target_compile_features(flags INTERFACE cxx_std_17)
-if (NOT BUILD_SHARED_LIBS)
-    target_link_libraries (flags INTERFACE -static)
-    target_link_libraries (flags INTERFACE ${PTHREAD_LIBRARY})
-else()
-    target_link_libraries (flags INTERFACE -lpthread)
-endif()
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
-    target_compile_options(flags INTERFACE -std=c++17)
-    target_link_libraries (flags INTERFACE -lstdc++fs)
-elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options(flags INTERFACE -stdlib=libstdc++ -std=c++17)
-    target_link_libraries (flags INTERFACE -stdlib=libstdc++ -lstdc++fs)
-    if(GCC_TOOLCHAIN)
-        target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
-    endif()
-endif()
 
 
 add_library(deps INTERFACE)
@@ -303,7 +306,7 @@ endif()
 # ADD TARGETS FOR  EXAMPLES
 ############################
 
-if(DEPENDENCIES_FOUND)
+if(DEPENDENCIES_FOUND AND BUILD_EXAMPLES)
     set(H5PP_INSTALL_DIR_EXAMPLES  ${CMAKE_INSTALL_PREFIX}/examples)
     set(H5PP_BUILD_DIR_EXAMPLES    ${CMAKE_BINARY_DIR}/examples)
     include(cmake/Build_examples.cmake)

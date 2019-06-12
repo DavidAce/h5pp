@@ -35,6 +35,9 @@ else()
     find_package(HDF5 ${HDF5_WANT_VERSION} COMPONENTS C HL)
 endif()
 
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads)
 # To print all variables, use the code below:
 ##
 #get_cmake_property(_variableNames VARIABLES)
@@ -58,7 +61,7 @@ if(HDF5_FOUND)
                 ${HDF5_C_HL_LIBRARY}
                 ${HDF5_C_LIBRARY}
                 $<LINK_ONLY:-ldl -lm>
-                ${PTHREAD_LIBRARY}
+                Threads::Threads
                 )
         if(HDF5_ENABLE_Z_LIB_SUPPORT)
             target_link_libraries(hdf5 INTERFACE $<LINK_ONLY:-lz>  )
@@ -79,7 +82,7 @@ if(HDF5_FOUND)
                 ${HDF5_C_LIBRARY_hdf5_hl}
                 ${HDF5_C_LIBRARY_hdf5}
                 $<LINK_ONLY:-ldl -lm>
-                ${PTHREAD_LIBRARY}
+                Threads::Threads
                 )
         if(HDF5_C_LIBRARY_sz)
             target_link_libraries(hdf5 INTERFACE $<LINK_ONLY:-lsz>  )

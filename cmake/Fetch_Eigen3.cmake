@@ -2,24 +2,6 @@ find_package(Eigen3 3.3.4  PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/Eigen3 $ENV{HOM
 find_package(Eigen3 3.3.4  PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/Eigen3 $ENV{HOME}/.conda  $ENV{HOME}/anaconda3 NO_CMAKE_PACKAGE_REGISTRY)
 find_package(Eigen3 3.3.4  PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/Eigen3)
 
-if(BLAS_LIBRARIES)
-    set(EIGEN3_COMPILER_FLAGS  -Wno-parentheses) # -Wno-parentheses
-    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
-        list(APPEND EIGEN3_COMPILER_FLAGS -Wno-unused-but-set-variable)
-    endif()
-    if(MKL_FOUND)
-        list(APPEND EIGEN3_COMPILER_FLAGS -DEIGEN_USE_MKL_ALL)
-        list(APPEND EIGEN3_COMPILER_FLAGS -DEIGEN_USE_LAPACKE_STRICT)
-        list(APPEND EIGEN3_INCLUDE_DIR ${MKL_INCLUDE_DIR})
-        message(STATUS "Eigen3 will use MKL")
-    elseif (BLAS_FOUND)
-        list(APPEND EIGEN3_COMPILER_FLAGS -DEIGEN_USE_BLAS)
-        list(APPEND EIGEN3_COMPILER_FLAGS -DEIGEN_USE_LAPACKE)
-        message(STATUS "Eigen3 will use BLAS and LAPACKE")
-    endif()
-endif()
-
-
 if(EIGEN3_FOUND)
     message(STATUS "EIGEN FOUND IN SYSTEM: ${EIGEN3_INCLUDE_DIR}")
     add_library(Eigen3 INTERFACE)
@@ -39,9 +21,6 @@ elseif (DOWNLOAD_EIGEN3 OR DOWNLOAD_ALL)
             CMAKE_ARGS
             -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
             UPDATE_COMMAND ""
-            TEST_COMMAND ""
-#            INSTALL_COMMAND ""
-#            CONFIGURE_COMMAND ""
         )
 
 
@@ -52,7 +31,6 @@ elseif (DOWNLOAD_EIGEN3 OR DOWNLOAD_ALL)
     set(EIGEN3_INCLUDE_DIR ${INSTALL_DIR}/include/eigen3)
     set(Eigen3_DIR ${INSTALL_DIR}/share/eigen3/cmake)
     add_dependencies(Eigen3 external_EIGEN3)
-    target_compile_options(Eigen3 INTERFACE ${EIGEN3_COMPILER_FLAGS})
     target_include_directories(
             Eigen3
             INTERFACE

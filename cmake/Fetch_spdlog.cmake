@@ -37,6 +37,10 @@ elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
             $<BUILD_INTERFACE:${INSTALL_DIR}/include>
             $<INSTALL_INTERFACE:third-party/spdlog/include>
     )
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads)
+    target_link_libraries (spdlog INTERFACE Threads::Threads)
 else()
     message(STATUS "Dependency spdlog not found and DOWNLOAD_SPDLOG is OFF")
 
