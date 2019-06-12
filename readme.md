@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/DavidAce/h5pp.svg?branch=master)](https://travis-ci.org/DavidAce/h5pp)
 
 # h5pp
-`h5pp` is a C++17 wrapper for HDF5 that focuses on simplicity for the end-user.
+`h5pp` is a C++17 wrapper for HDF5 that focuses on simplicity of installation and usage.
 
 With a simple and unified syntax, `h5pp` lets users read and write to disk in binary format. It supports complex data types in possibly multidimensional containers that are common in scientific computing.
 In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.org) matrices and tensors.
@@ -74,9 +74,14 @@ In addition, the following variables can be set to help guide CMake's `find_pack
 
 
 
-### Linking 
-#### Using install method
-After installing the library it is easily imported using CMake's `find_package()`, just point it to the install directory.
+### Linking
+
+#### Header only
+Copy the headers folder `h5pp/source/include/h5pp` to your project, and link your project to the dependencies `hdf5`, `Eigen3` and `spdlog` manually.
+
+#### With CMake-generated targets.
+After installing the library using CMake, it is easily imported again using CMake's `find_package()`, just point it to the install directory.
+When found, targets are made available to import everything correctly.
 A minimal `CMakeLists.txt` looks like:
 
 ```cmake
@@ -88,20 +93,17 @@ A minimal `CMakeLists.txt` looks like:
     find_package(h5pp PATHS <path to h5pp-install-dir> REQUIRED)
     
     if (h5pp_FOUND)
-        target_link_libraries(fooExecutable PRIVATE h5pp::h5pp h5pp::deps)
+        target_link_libraries(fooExecutable PRIVATE h5pp::h5pp h5pp::deps h5pp::flags)
     endif()
 ```
 
-The target `h5pp::h5pp` will import the `h5pp` headers and set the compile flags that you need to compile with `h5pp`. These flags enable C++17 and experimental headers.
+The target `h5pp::h5pp` will import the `h5pp` headers.
+The target `h5pp::deps` will import dependencies.
+The target `h5pp::flags` sets the compile flags that you need to compile with `h5pp`. These flags enable C++17 and experimental filesystem headers, i.e. `-std=c++17 -lstdc++fs`, as well as `-stdlib=libstdc++` when using Clang.
 
-If you want to link the dependencies manually, omit `h5pp::deps` above.
-
-The target `h5pp::deps` will import those dependencies for `h5pp` that were found or downloaded automatically during install. For each dependency found,
-a target will be made available, i.e., `h5pp::Eigen3`, `h5pp::spdlog` and `h5pp::hdf5`. In fact, `h5pp::deps` is simply an alias for these targets.
+**Note** If you want to link the dependencies manually, omit `h5pp::deps` above. The target `h5pp::deps` will import those dependencies for `h5pp` that were found or downloaded automatically during install. For each dependency found,
+a target will be made available, i.e., `h5pp::Eigen3`, `h5pp::spdlog` and `h5pp::hdf5`. In fact, `h5pp::deps` is simply an alias for those three targets, which can be used individually.
  
-
-#### Without install method (i.e. just copying the header folder)
-You will have to manually link the dependencies `hdf5`, `Eigen3` and `spdlog` to your project.
 
 
 
@@ -137,9 +139,13 @@ int main() {
     std::vector<double> readVector;
     file.readDataset(readvector, "testvector")
 
+    // Read in one line
+    auto altReadVector = file.readDataset<std::vector<double>> ("testvector");
+
     // Read an Eigen matrix with std::complex<double>
     Eigen::MatrixXcd readMatrix;
     file.readDataset(readMatrix, "someGroup/testmatrix")
+
 
 
     return 0;
