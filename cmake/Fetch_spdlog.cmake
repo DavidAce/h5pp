@@ -36,7 +36,8 @@ elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
             $<BUILD_INTERFACE:${INSTALL_DIR}/include>
             $<INSTALL_INTERFACE:third-party/spdlog/include>
     )
-    target_compile_options(spdlog INTERFACE -pthread)
+
+    target_link_libraries (spdlog INTERFACE ${PTHREAD_LIBRARY})
 else()
     message(STATUS "Dependency spdlog not found and DOWNLOAD_SPDLOG is OFF")
 

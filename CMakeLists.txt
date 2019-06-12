@@ -105,12 +105,8 @@ elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 endif()
 
 
-#set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-#set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-#find_package(Threads)
-#set(PTHREAD_LIBRARY "-Wl,--whole-archive ${CMAKE_THREAD_LIBS_INIT} -Wl,--no-whole-archive")
-#target_link_libraries (flags INTERFACE ${PTHREAD_LIBRARY})
-target_compile_options(flags INTERFACE -pthread)
+set(PTHREAD_LIBRARY "-Wl,--whole-archive -lpthread -Wl,--no-whole-archive")
+
 #########################################################################
 ### Define an interface library and establish its needs for the user  ###
 #########################################################################
