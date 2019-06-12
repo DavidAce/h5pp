@@ -121,11 +121,12 @@ elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
     endif()
 endif()
+target_link_libraries (flags INTERFACE ${PTHREAD_LIBRARY})
 
 
 
 
-add_library(deps INTERFACE)
+    add_library(deps INTERFACE)
 add_library(h5pp::deps ALIAS deps)
 install(TARGETS h5pp deps flags EXPORT h5ppTargets )
 if(TARGET Eigen3)
