@@ -38,6 +38,8 @@ endif()
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads)
+find_package(ZLIB)
+
 # To print all variables, use the code below:
 ##
 #get_cmake_property(_variableNames VARIABLES)
@@ -64,7 +66,7 @@ if(HDF5_FOUND)
                 Threads::Threads
                 )
         if(HDF5_ENABLE_Z_LIB_SUPPORT)
-            target_link_libraries(hdf5 INTERFACE $<LINK_ONLY:-lz>  )
+            target_link_libraries(hdf5 INTERFACE ZLIB::ZLIB)
         endif()
         target_include_directories(hdf5
             INTERFACE
@@ -72,7 +74,6 @@ if(HDF5_FOUND)
             )
 
     else()
-#        add_dependencies(hdf5  SZIP)
         if (_HDF5_LPATH)
             set(HDF5_ROOT ${_HDF5_LPATH})
         endif()
@@ -88,7 +89,7 @@ if(HDF5_FOUND)
             target_link_libraries(hdf5 INTERFACE $<LINK_ONLY:-lsz>  )
         endif()
         if(HDF5_C_LIBRARY_z)
-            target_link_libraries(hdf5 INTERFACE $<LINK_ONLY:-lz>  )
+            target_link_libraries(hdf5 INTERFACE ZLIB::ZLIB )
         endif()
         target_include_directories(
                 hdf5
