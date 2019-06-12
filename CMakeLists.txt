@@ -26,7 +26,7 @@ option(DOWNLOAD_ALL       "Download and install all dependencies if not found"  
 
 
 message("######## h5pp build options #########")
-message(STATUS "BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
+message(STATUS "BUILD_SHARED_LIBS  : ${BUILD_SHARED_LIBS}")
 message(STATUS "ENABLE_TESTS       : ${ENABLE_TESTS}")
 message(STATUS "DOWNLOAD_HDF5      : ${DOWNLOAD_HDF5}")
 message(STATUS "DOWNLOAD_SPDLOG    : ${DOWNLOAD_SPDLOG}")
