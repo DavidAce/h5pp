@@ -24,6 +24,17 @@ option(DOWNLOAD_SPDLOG    "Download and install spdlog if not found"            
 option(DOWNLOAD_EIGEN3    "Download and install Eigen3 if not found"            OFF)
 option(DOWNLOAD_ALL       "Download and install all dependencies if not found"  OFF)
 
+
+message(STATUS "######## h5pp build options #########")
+message("BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
+message("ENABLE_TESTS       : ${ENABLE_TESTS}")
+message("DOWNLOAD_HDF5      : ${DOWNLOAD_HDF5}")
+message("DOWNLOAD_SPDLOG    : ${DOWNLOAD_SPDLOG}")
+message("DOWNLOAD_EIGEN3    : ${DOWNLOAD_EIGEN3}")
+message("DOWNLOAD_ALL       : ${DOWNLOAD_ALL}")
+message(STATUS "#####################################")
+
+
 set(PTHREAD_LIBRARY -Wl,--whole-archive  -lpthread -Wl,--no-whole-archive) # This is needed with static linking!
 
 #################################################################
