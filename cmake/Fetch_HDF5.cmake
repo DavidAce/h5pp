@@ -61,7 +61,6 @@ elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
             "$<BUILD_INTERFACE:${INSTALL_DIR}/include>"
             "$<INSTALL_INTERFACE:third-party/hdf5/include>"
     )
-    target_link_libraries (hdf5 INTERFACE Threads::Threads)
 
 else()
     message(STATUS "Dependency HDF5 not found and DOWNLOAD_HDF5 is OFF")
