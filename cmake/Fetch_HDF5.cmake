@@ -48,15 +48,12 @@ elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
     add_dependencies(hdf5      external_HDF5)
     set(HDF5_DIR              ${INSTALL_DIR}/share/cmake/hdf5)
     set(HDF5_ROOT             ${INSTALL_DIR})
-    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-    find_package(Threads)
-
     target_link_libraries(hdf5
             INTERFACE
             ${INSTALL_DIR}/lib/libhdf5_hl${HDF5_LIBRARY_SUFFIX}
             ${INSTALL_DIR}/lib/libhdf5${HDF5_LIBRARY_SUFFIX}
             $<LINK_ONLY:-ldl -lm -lz>
+            ${PTHREAD_LIBRARY}
             )
     target_include_directories(
             hdf5

@@ -106,8 +106,23 @@ endif()
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads)
-target_link_libraries (flags INTERFACE Threads::Threads)
+set(PTHREAD_LIBRARY "-Wl,--whole-archive ${CMAKE_THREAD_LIBS_INIT} -Wl,--no-whole-archive")
+target_link_libraries (flags INTERFACE ${PTHREAD_LIBRARY})
 
+#########################################################################
+### Define an interface library and establish its needs for the user  ###
+#########################################################################
+add_library(h5pp INTERFACE)
+add_library(h5pp::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+target_include_directories(
+        h5pp
+        INTERFACE
+        $<BUILD_INTERFACE:${INSTALL_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+if (NOT BUILD_SHARED_LIBS)
+    target_link_libraries (h5pp INTERFACE -static)
+endif()
 
 
 ##################################################################
@@ -127,20 +142,9 @@ else()
     set(DEPENDENCIES_FOUND FALSE)
 endif()
 
-#########################################################################
-### Define an interface library and establish its needs for the user  ###
-#########################################################################
-add_library(h5pp INTERFACE)
-add_library(h5pp::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-target_include_directories(
-        h5pp
-        INTERFACE
-        $<BUILD_INTERFACE:${INSTALL_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-)
-if (NOT BUILD_SHARED_LIBS)
-    target_link_libraries (h5pp INTERFACE -static)
-endif()
+##################################################################
+### Define interface libraries for the dependencies            ###
+##################################################################
 
 
 add_library(deps INTERFACE)
