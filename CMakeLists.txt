@@ -122,6 +122,12 @@ target_include_directories(
 add_library(flags INTERFACE)
 add_library(h5pp::flags ALIAS flags)
 target_compile_features(flags INTERFACE cxx_std_17)
+if (NOT BUILD_SHARED_LIBS)
+    target_link_libraries (flags INTERFACE -static)
+    target_link_libraries (flags INTERFACE ${PTHREAD_LIBRARY})
+else()
+    target_link_libraries (flags INTERFACE -lpthread)
+endif()
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
     target_compile_options(flags INTERFACE -std=c++17)
     target_link_libraries (flags INTERFACE -lstdc++fs)
@@ -132,12 +138,9 @@ elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
     endif()
 endif()
-target_link_libraries (flags INTERFACE ${PTHREAD_LIBRARY})
 
 
-
-
-    add_library(deps INTERFACE)
+add_library(deps INTERFACE)
 add_library(h5pp::deps ALIAS deps)
 install(TARGETS h5pp deps flags EXPORT h5ppTargets )
 if(TARGET Eigen3)
