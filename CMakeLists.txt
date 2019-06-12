@@ -275,19 +275,25 @@ if(ENABLE_TESTS)
         add_subdirectory(tests/readWriteAttributes  EXCLUDE_FROM_ALL)
         add_subdirectory(tests/copySwap             EXCLUDE_FROM_ALL)
 
-        add_custom_target(all_tests ALL
+        add_custom_target(all_tests
                 DEPENDS simpleWrite
                 DEPENDS readWrite
                 DEPENDS readWriteAttributes
                 DEPENDS copySwap
                 )
-
-#        add_custom_command(TARGET all_tests
+#        add_dependencies(${PROJECT_NAME} all_tests h5pp::h5pp)
+#        add_custom_command(TARGET ${PROJECT_NAME}
 #                POST_BUILD
 #                COMMENT "Running Tests"
 #                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#                DEPENDS h5pp::h5pp h5pp::deps
+#                DEPENDS all_tests
 #                COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
+        add_custom_command(TARGET all_tests
+                POST_BUILD
+                COMMENT "Running Tests"
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                DEPENDS h5pp::h5pp h5pp::deps
+                COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
     else()
         message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
     endif()
