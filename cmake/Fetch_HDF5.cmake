@@ -51,14 +51,12 @@ elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     find_package(Threads)
-    find_package(ZLIB)
 
     target_link_libraries(hdf5
             INTERFACE
             ${INSTALL_DIR}/lib/libhdf5_hl${HDF5_LIBRARY_SUFFIX}
             ${INSTALL_DIR}/lib/libhdf5${HDF5_LIBRARY_SUFFIX}
-            $<LINK_ONLY:-ldl -lm>
-            ${PTHREAD_LIBRARY}
+            $<LINK_ONLY:-ldl -lm -lz>
             )
     target_include_directories(
             hdf5
@@ -67,7 +65,6 @@ elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
             "$<INSTALL_INTERFACE:third-party/hdf5/include>"
     )
     target_link_libraries (hdf5 INTERFACE Threads::Threads)
-    target_link_libraries (hdf5 INTERFACE ZLIB::ZLIB)
 
 else()
     message(STATUS "Dependency HDF5 not found and DOWNLOAD_HDF5 is OFF")
