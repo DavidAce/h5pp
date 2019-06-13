@@ -7,7 +7,7 @@ if(EIGEN3_FOUND)
     add_library(Eigen3 INTERFACE)
     get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
     target_include_directories(Eigen3 INTERFACE ${EIGEN3_INCLUDE_DIR})
-    target_compile_options(Eigen3::Eigen INTERFACE ${EIGEN3_COMPILER_FLAGS})
+    target_compile_options    (Eigen3 INTERFACE ${EIGEN3_COMPILER_FLAGS})
 elseif (DOWNLOAD_EIGEN3 OR DOWNLOAD_ALL)
     message(STATUS "Eigen3 will be installed into ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 on first build.")
 
