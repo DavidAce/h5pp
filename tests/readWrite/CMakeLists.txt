@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(readWrite)
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 add_executable(${PROJECT_NAME} readWrite.cpp )
 
