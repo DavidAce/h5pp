@@ -159,7 +159,7 @@ endif()
 if(TARGET spdlog)
     add_dependencies(deps spdlog)
     target_link_libraries(deps INTERFACE spdlog)
-    get_target_property(SPDLOG_INFO spdlog   INTERFACE_LINK_LIBRARIES)
+    get_target_property(SPDLOG_INFO spdlog   INTERFACE_INCLUDE_DIRECTORIES)
     install(TARGETS spdlog EXPORT h5ppTargets )
 
 endif()
