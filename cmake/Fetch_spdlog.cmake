@@ -1,7 +1,7 @@
 
 include(GNUInstallDirs)
 message(STATUS "Fetch spdlog given directory spdlog_DIR: ${spdlog_DIR}")
-find_package(spdlog 1.3 NO_DEFAULT_PATH PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog/lib/cmake/spdlog ${spdlog_DIR} )
+find_package(spdlog 1.3 NO_DEFAULT_PATH PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog/${CMAKE_INSTALL_LIBDIR}/cmake/spdlog ${spdlog_DIR} )
 
 if(spdlog_FOUND)
     add_library(spdlog INTERFACE)
