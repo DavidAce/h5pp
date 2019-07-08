@@ -1,6 +1,7 @@
 
 
-find_package(spdlog 1.3 NO_DEFAULT_PATH PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog/lib/spdlog/cmake ${spdlog_DIR} )
+include(GNUInstallDirs)
+find_package(spdlog 1.3 NO_DEFAULT_PATH PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog/${CMAKE_INSTALL_LIBDIR}/spdlog/cmake ${spdlog_DIR} )
 if(spdlog_FOUND)
     get_target_property(spdlog_lib     spdlog::spdlog   INTERFACE_LINK_LIBRARIES)
     message(STATUS "SPDLOG FOUND IN SYSTEM: ${spdlog_lib}")
