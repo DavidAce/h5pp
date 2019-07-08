@@ -44,8 +44,8 @@ elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
     target_link_libraries(
             spdlog 
             INTERFACE
-            $<BUILD_INTERFACE:${INSTALL_DIR}/lib/spdlog/libspdlog${SPDLOG_LIBRARY_SUFFIX}>
-            $<INSTALL_INTERFACE:third-party/spdlog/lib/spdlog/libspdlog${SPDLOG_LIBRARY_SUFFIX}>
+            $<BUILD_INTERFACE:${INSTALL_DIR}/${CMAKE_INSTALL_LIBDIR}/spdlog/libspdlog${SPDLOG_LIBRARY_SUFFIX}>
+            $<INSTALL_INTERFACE:third-party/spdlog/${CMAKE_INSTALL_LIBDIR}/spdlog/libspdlog${SPDLOG_LIBRARY_SUFFIX}>
     )
     target_link_libraries (spdlog INTERFACE ${PTHREAD_LIBRARY})
 else()
