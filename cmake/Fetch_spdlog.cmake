@@ -1,6 +1,5 @@
-
-
 include(GNUInstallDirs)
+message("Fetch spdlog given directory spdlog_DIR: ${spdlog_DIR}")
 find_package(spdlog 1.3 NO_DEFAULT_PATH PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog/${CMAKE_INSTALL_LIBDIR}/spdlog/cmake ${spdlog_DIR} )
 if(spdlog_FOUND)
     get_target_property(spdlog_lib     spdlog::spdlog   INTERFACE_LINK_LIBRARIES)
@@ -25,7 +24,7 @@ elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
     ExternalProject_Get_Property(external_SPDLOG INSTALL_DIR)
     add_library(spdlog INTERFACE)
     add_library(spdlog::spdlog ALIAS spdlog)
-    set(spdlog_DIR ${INSTALL_DIR}/lib/cmake/spdlog)
+    set(spdlog_DIR ${INSTALL_DIR}/${CMAKE_INSTALL_LIBDIR}/spdlog/cmake)
     add_dependencies(spdlog external_SPDLOG)
 
     target_include_directories(
@@ -34,18 +33,12 @@ elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
             $<BUILD_INTERFACE:${INSTALL_DIR}/include>
             $<INSTALL_INTERFACE:third-party/spdlog/include>
     )
-    if(BUILD_SHARED_LIBS)
-        set(SPDLOG_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
-    else()
-        set(SPDLOG_LIBRARY_SUFFIX ${CMAKE_STATIC_LIBRARY_SUFFIX})
-    endif()
-
 
     target_link_libraries(
             spdlog 
             INTERFACE
-            $<BUILD_INTERFACE:${INSTALL_DIR}/${CMAKE_INSTALL_LIBDIR}/spdlog/libspdlog${SPDLOG_LIBRARY_SUFFIX}>
-            $<INSTALL_INTERFACE:third-party/spdlog/${CMAKE_INSTALL_LIBDIR}/spdlog/libspdlog${SPDLOG_LIBRARY_SUFFIX}>
+            $<BUILD_INTERFACE:${INSTALL_DIR}/${CMAKE_INSTALL_LIBDIR}/spdlog/libspdlog${CMAKE_STATIC_LIBRARY_SUFFIX}>
+            $<INSTALL_INTERFACE:third-party/spdlog/${CMAKE_INSTALL_LIBDIR}/spdlog/libspdlog${CMAKE_STATIC_LIBRARY_SUFFIX}>
     )
     target_link_libraries (spdlog INTERFACE ${PTHREAD_LIBRARY})
 else()
