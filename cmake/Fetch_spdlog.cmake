@@ -1,3 +1,6 @@
+
+include(GNUInstallDirs)
+message(STATUS "Fetch spdlog given directory spdlog_DIR: ${spdlog_DIR}")
 find_package(spdlog 1.3 NO_DEFAULT_PATH PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog/lib/cmake/spdlog ${spdlog_DIR} )
 
 if(spdlog_FOUND)
@@ -28,14 +31,14 @@ elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
     ExternalProject_Get_Property(external_SPDLOG INSTALL_DIR)
     add_library(spdlog INTERFACE)
     add_library(spdlog::spdlog ALIAS spdlog)
-    set(spdlog_DIR ${INSTALL_DIR}/lib/cmake/spdlog)
+    set(spdlog_DIR ${INSTALL_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/spdlog)
     add_dependencies(spdlog external_SPDLOG)
 
     target_include_directories(
             spdlog
             INTERFACE
-            $<BUILD_INTERFACE:${INSTALL_DIR}/include>
-            $<INSTALL_INTERFACE:third-party/spdlog/include>
+            $<BUILD_INTERFACE:${INSTALL_DIR}/${CMAKE_INSTALL_INCLUDEDIR}>
+            $<INSTALL_INTERFACE:third-party/spdlog/${CMAKE_INSTALL_INCLUDEDIR}>
     )
 else()
     message(STATUS "Dependency spdlog not found and DOWNLOAD_SPDLOG is OFF")
