@@ -3,13 +3,13 @@ message(STATUS "Fetch spdlog given directory spdlog_DIR: ${spdlog_DIR}")
 find_package(spdlog 1.3 NO_DEFAULT_PATH PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog/${CMAKE_INSTALL_LIBDIR}/spdlog/cmake ${spdlog_DIR} )
 if(spdlog_FOUND)
     get_target_property(spdlog_LIBRARIES        spdlog::spdlog   IMPORTED_LOCATION_RELEASE)
-    get_target_property(spdlog_INCLUDE_DIRS     spdlog::spdlog   INTERFACE_INCLUDE_DIRECTORIES)
-    target_link_libraries(spdlog::spdlog INTERFACE ${spdlog_LIBRARIES})
-
+    set_target_properties(spdlog::spdlog PROPERTIES INTERFACE_LINK_LIBRARIES "${spdlog_LIBRARIES}")
     add_library(spdlog INTERFACE)
-    target_link_libraries(spdlog INTERFACE ${spdlog_LIBRARIES})
-    target_include_directories(spdlog INTERFACE ${spdlog_INCLUDE_DIRS})
+    target_link_libraries(spdlog INTERFACE spdlog::spdlog)
     message(STATUS "SPDLOG FOUND IN SYSTEM: ${spdlog_LIBRARIES}")
+    get_target_property(spdlog_LIBRARIES        spdlog::spdlog   INTERFACE_LINK_LIBRARIES)
+    message(STATUS "SPDLOG FOUND IN SYSTEM: ${spdlog_LIBRARIES}")
+
 
 elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
     message(STATUS "Spdlog will be installed into ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog on first build.")
