@@ -14,6 +14,22 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 ################################################################
 include(cmake/gitversion.cmake)
 
+
+##################################################################
+### Print operating system                                     ###
+##################################################################
+set(GET_OS_INFO_CMD lsb_release -a)
+if(${CMAKE_HOST_APPLE})
+    set(GET_OS_INFO_CMD "sw_vers")
+endif()
+execute_process(COMMAND ${GET_OS_INFO_CMD}
+        OUTPUT_VARIABLE OS_PROPERTIES
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+message("=============================== DETECTED OS =================================")
+message("${OS_PROPERTIES}")
+message("=============================================================================")
+
+
 ################################################################
 ### Set options for compilation                              ###
 ################################################################
@@ -25,14 +41,16 @@ option(DOWNLOAD_EIGEN3    "Download and install Eigen3 if not found"            
 option(DOWNLOAD_ALL       "Download and install all dependencies if not found"  OFF)
 
 
-message("######## h5pp build options #########")
+
+
+message("=========================== h5pp build options ==============================")
 message(STATUS "BUILD_SHARED_LIBS  : ${BUILD_SHARED_LIBS}")
 message(STATUS "ENABLE_TESTS       : ${ENABLE_TESTS}")
 message(STATUS "DOWNLOAD_HDF5      : ${DOWNLOAD_HDF5}")
 message(STATUS "DOWNLOAD_SPDLOG    : ${DOWNLOAD_SPDLOG}")
 message(STATUS "DOWNLOAD_EIGEN3    : ${DOWNLOAD_EIGEN3}")
 message(STATUS "DOWNLOAD_ALL       : ${DOWNLOAD_ALL}")
-message("#####################################")
+message("=============================================================================")
 
 
 
@@ -63,22 +81,6 @@ else()
     cmake_policy(SET CMP0074 NEW)
     cmake_policy(SET CMP0075 NEW)
 endif()
-
-
-
-##################################################################
-### Print operating system                                     ###
-##################################################################
-set(GET_OS_INFO_CMD lsb_release -a)
-if(${CMAKE_HOST_APPLE})
-    set(GET_OS_INFO_CMD "sw_vers")
-endif()
-execute_process(COMMAND ${GET_OS_INFO_CMD}
-        OUTPUT_VARIABLE OS_PROPERTIES
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-message("========= DETECTED OS =========")
-message("${OS_PROPERTIES}")
-message("===============================")
 
 
 
