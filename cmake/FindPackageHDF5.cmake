@@ -11,10 +11,10 @@
 #       HDF5_WANT_VERSION           sets the required version (default 1.10)
 #
 
+set(HDF5_ROOT ${HDF5_ROOT} $ENV{HDF5_ROOT} $ENV{HDF5_DIR} $ENV{EBROOTHDF5} $ENV{HOME}/.conda $ENV{HOME}/anaconda3 $ENV{HOME}/miniconda3 /usr /usr/local $ENV{PATH})
+set(HDF5_DIR  ${HDF5_ROOT})
+find_file(HDF5_CXX_COMPILER_EXECUTABLE      NAMES h5c++ PATH_SUFFIXES bin PATHS ${HDF5_ROOT})
 
-
-find_file(HDF5_C_COMPILER_EXECUTABLE        NAMES h5cc  PATHS $ENV{PATH} /usr/bin /usr/local/bin $ENV{HOME}/.conda/bin  $ENV{HOME}/anaconda3/bin)
-find_file(HDF5_CXX_COMPILER_EXECUTABLE      NAMES h5c++ PATHS $ENV{PATH} /usr/bin /usr/local/bin $ENV{HOME}/.conda/bin  $ENV{HOME}/anaconda3/bin)
 if(BUILD_SHARED_LIBS)
     set(HDF5_TARGET_SUFFIX "shared")
     set(HDF5_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})

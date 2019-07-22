@@ -92,9 +92,6 @@ add_library(flags INTERFACE)
 add_library(h5pp::flags ALIAS flags)
 
 target_compile_features(flags INTERFACE cxx_std_17)
-if (NOT BUILD_SHARED_LIBS)
-    target_link_libraries (flags INTERFACE -static)
-endif()
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
     target_compile_options(flags INTERFACE -std=c++17)
     target_link_libraries (flags INTERFACE -lstdc++fs)
@@ -107,7 +104,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 endif()
 
 
-set(PTHREAD_LIBRARY "-Wl,--whole-archive -lpthread -Wl,--no-whole-archive")
+
 
 #########################################################################
 ### Define an interface library and establish its needs for the user  ###
@@ -120,8 +117,12 @@ target_include_directories(
         $<BUILD_INTERFACE:${INSTALL_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
-if (NOT BUILD_SHARED_LIBS)
-    target_link_libraries (h5pp INTERFACE -static)
+
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG FALSE)
+find_package(Threads REQUIRED)
+if(NOT BUILD_SHARED_LIBS)
+    set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES "-Wl,--whole-archive ${CMAKE_THREAD_LIBS_INIT} -Wl,--no-whole-archive")
 endif()
 
 
