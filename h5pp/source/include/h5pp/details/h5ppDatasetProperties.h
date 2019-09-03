@@ -13,8 +13,10 @@ namespace h5pp{
 
     class DatasetProperties {
     public:
+        bool                    extendable = false;
         hid_t                   dataType;
         hid_t                   memSpace;
+        hid_t                   dataSpace;
         hsize_t                 size;
         int                     ndims;
         std::vector<hsize_t>    chunkSize;
@@ -25,6 +27,7 @@ namespace h5pp{
         ~DatasetProperties(){
             H5Tclose(dataType);
             H5Sclose(memSpace);
+            H5Sclose(dataSpace);
         }
     };
 

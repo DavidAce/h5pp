@@ -214,11 +214,11 @@ namespace h5pp{
         DataType readDataset(const std::string &datasetPath) const;
 
         template <typename DataType>
-        void writeDataset(const DataType &data, const std::string &datasetPath);
+        void writeDataset(const DataType &data, const std::string &datasetPath, bool extendable = false);
 
 
         template <typename DataType,typename T, std::size_t N>
-        void writeDataset(const DataType &data,const T (&dims)[N],  const std::string &datasetPath);
+        void writeDataset(const T (&dims)[N],const DataType &data,  const std::string &datasetPath, bool extendable = false);
 
         template <typename DataType>
         void writeDataset(const DataType &data, const DatasetProperties &props);
@@ -446,10 +446,12 @@ template <typename DataType>
 void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &props){
     hid_t file = openFileHandle();
     createDatasetLink(file, props);
-    h5pp::Hdf5::setExtentDataset(file, props);
     hid_t dataset   = h5pp::Hdf5::openLink(file, props.dsetName);
     hid_t filespace = H5Dget_space(dataset);
     selectHyperslab(filespace, props.memSpace);
+    if (props.extendable){
+        h5pp::Hdf5::setExtentDataset(file, props);
+    }
     if constexpr (tc::hasMember_c_str<DataType>::value){
         retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, data.c_str());
         if(retval < 0){H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to write text to file");}
@@ -468,17 +470,18 @@ void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &pro
 }
 
 template <typename DataType>
-void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPath){
+void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPath, bool extendable){
     if(accessMode == AccessMode::READONLY){throw std::runtime_error("Attempted to write to read-only file");}
     DatasetProperties props;
+    props.extendable = extendable;
     props.dataType   = h5pp::Type::getDataType<DataType>();
-    props.memSpace   = h5pp::Utils::getMemSpace(data);
     props.size       = h5pp::Utils::getSize<DataType>(data);
     props.ndims      = h5pp::Utils::getRank<DataType>();
     props.dims       = h5pp::Utils::getDimensions<DataType>(data);
     props.chunkSize  = props.dims;
     props.dsetName   = datasetPath;
-
+    props.memSpace   = h5pp::Utils::getMemSpace(props.ndims,props.dims);
+    props.dataSpace  = h5pp::Utils::getDataSpace(props.ndims,props.dims,props.extendable);
 
 
     if constexpr(h5pp::Type::Check::hasStdComplex<DataType>() or h5pp::Type::Check::is_StdComplex<DataType>()) {
@@ -512,19 +515,21 @@ void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPa
 }
 
 template <typename DataType,typename T, std::size_t N>
-void h5pp::File::writeDataset(const DataType &data,const T (&dims)[N],  const std::string &datasetPath){
+void h5pp::File::writeDataset(const T (&dims)[N],const DataType &data, const std::string &datasetPath, bool extendable){
     if(accessMode == AccessMode::READONLY){throw std::runtime_error("Attempted to write to read-only file");}
     static_assert(std::is_integral_v<T>);
     static_assert(N > 0 , "Dimensions of given data are too few, N == 0");
     DatasetProperties props;
+    props.extendable = extendable;
     props.dataType   = h5pp::Type::getDataType<DataType>();
     props.dims       = std::vector<hsize_t>(dims, dims+N);
     props.ndims      = (int)props.dims.size();
-    props.memSpace   = H5Screate_simple(props.ndims, props.dims.data(), nullptr);
     props.chunkSize  = props.dims;
     props.dsetName   = datasetPath;
     props.size = 1;
     for (const auto& dim: dims) props.size *= dim;
+    props.memSpace   = h5pp::Utils::getMemSpace(props.ndims,props.dims);
+    props.dataSpace  = h5pp::Utils::getDataSpace(props.ndims,props.dims,props.extendable);
 
     if (props.size == 0) throw std::runtime_error("Writing empty object. Size: " + std::to_string(props.size));
 
@@ -649,8 +654,11 @@ template <typename AttrType>
 void h5pp::File::writeAttributeToFile(const AttrType &attribute, const std::string attributeName){
     hid_t file = openFileHandle();
     hid_t datatype          = h5pp::Type::getDataType<AttrType>();
-    hid_t memspace          = h5pp::Utils::getMemSpace(attribute);
     auto size               = h5pp::Utils::getSize(attribute);
+    auto ndims              = h5pp::Utils::getRank<AttrType>();
+    auto dims               = h5pp::Utils::getDimensions(attribute);
+    hid_t memspace          = h5pp::Utils::getMemSpace(ndims,dims);
+
     if constexpr (tc::hasMember_c_str<AttrType>::value
                   or std::is_same<char * , typename std::decay<AttrType>::type>::value)
     {
@@ -743,12 +751,12 @@ void h5pp::File::writeAttributeToLink(const AttrType &attribute, const std::stri
                                       const std::string &linkName){
     AttributeProperties aprops;
     aprops.dataType  = h5pp::Type::getDataType<AttrType>();
-    aprops.memSpace  = h5pp::Utils::getMemSpace(attribute);
     aprops.size      = h5pp::Utils::getSize(attribute);
     aprops.ndims     = h5pp::Utils::getRank<AttrType>();
     aprops.dims      = h5pp::Utils::getDimensions(attribute);
     aprops.attrName = attributeName;
     aprops.linkName = linkName;
+    aprops.memSpace  = h5pp::Utils::getMemSpace(aprops.ndims, aprops.dims);
     if constexpr (tc::hasMember_c_str<AttrType>::value
                   or std::is_same<char * , typename std::decay<AttrType>::type>::value
     ){

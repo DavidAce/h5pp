@@ -66,15 +66,6 @@ namespace h5pp{
         }
 
 
-        inline hid_t getDataSpaceUnlimited(int rank){
-            std::vector<hsize_t> dims(rank);
-            std::vector<hsize_t> max_dims(rank);
-            std::fill_n(dims.begin(), rank, 0);
-            std::fill_n(max_dims.begin(), rank, H5S_UNLIMITED);
-            return H5Screate_simple(rank, dims.data(), max_dims.data());
-        }
-
-
         template <typename DataType>
         std::vector<hsize_t> getDimensions(const DataType &data) {
             namespace tc = h5pp::Type::Check;
@@ -118,10 +109,24 @@ namespace h5pp{
 
         }
 
-        template<typename DataType>
-        hid_t getMemSpace(const DataType &data) {
-            auto rank = getRank<DataType>();
-            auto dims = getDimensions<DataType>(data);
+
+
+
+
+        inline hid_t getDataSpace(const int rank, const std::vector<hsize_t> &dims, const bool unlimited = false){
+            if (unlimited){
+                std::vector<hsize_t> max_dims(rank);
+                std::fill_n(max_dims.begin(), rank, H5S_UNLIMITED);
+                return H5Screate_simple(rank, dims.data(), max_dims.data());
+            }else{
+                std::vector<hsize_t> max_dims = dims;
+                return H5Screate_simple(rank, dims.data(), max_dims.data());
+            }
+        }
+
+
+
+        inline hid_t getMemSpace(const int rank, const std::vector<hsize_t> &dims) {
             return H5Screate_simple(rank, dims.data(), nullptr);
         }
 

@@ -90,8 +90,13 @@ namespace h5pp{
         void setExtentDataset(hid_t file, const DatasetProperties &props);
         inline void setExtentDataset(hid_t file, const DatasetProperties &props){
             try{
+                if (not props.extendable) {
+                    h5pp::Logger::log->critical("Called setExtentDataset for non-extendable dataset");
+                    return;
+                }
                 hid_t dataset = openLink(file, props.dsetName);
-                H5Dset_extent(dataset, props.dims.data());
+                herr_t err = H5Dset_extent(dataset, props.dims.data());
+                if (err < 0) throw std::runtime_error("Error while setting extent");
                 closeLink(dataset);
             }catch(std::exception &ex){
                 H5Eprint(H5E_DEFAULT, stderr);
@@ -185,21 +190,62 @@ namespace h5pp{
         }
 
 
+        inline void setSizeDependentLayout(hid_t dset_cpl, const DatasetProperties &props){
+            /*! Depending on the size of this dataset we may benefint from using either
+                a contiguous layout (for big non-extendable non-compressible datasets),
+                a chunked layout (for extendable and compressible datasets)
+                or a compact layout (for tiny datasets).
+
+                Contiguous
+                For big non-extendable non-compressible datasets
+
+                Chunked
+                Chunking is required for enabling compression and other filters, as well as for
+                creating extendible or unlimited dimension datasets. Note that a chunk always has
+                the same rank as the dataset and the chunk's dimensions do not need to be factors
+                of the dataset dimensions.
+
+                Compact
+                A compact dataset is one in which the raw data is stored in the object header of the dataset.
+                This layout is for very small datasets that can easily fit in the object header.
+                The compact layout can improve storage and access performance for files that have many very
+                tiny datasets. With one I/O access both the header and data values can be read.
+                The compact layout reduces the size of a file, as the data is stored with the header which
+                will always be allocated for a dataset. However, the object header is 64 KB in size,
+                so this layout can only be used for very small datasets.
+             */
+
+            // First, we check if the user explicitly asked for an extendable dataset.
+            if(props.extendable) {
+                if (props.chunkSize.empty() or props.chunkSize.data() == nullptr)
+                    throw std::runtime_error("ChunkSize has not been set. Can't call H5Pset_chunk(...)");
+                H5Pset_layout(dset_cpl, H5D_COMPACT);
+                H5Pset_chunk(dset_cpl, props.ndims, props.chunkSize.data());
+            }else {
+                hsize_t dsetsize = props.size * H5Tget_size(props.dataType); // Get size of dataset in bytes
+                if (dsetsize <= 1024) {
+                    // We use an upper limit of 1024 bytes for compact sets
+                    H5Pset_layout(dset_cpl, H5D_COMPACT);
+                } else {
+                    H5Pset_layout(dset_cpl, H5D_CONTIGUOUS);
+                }
+            }
+
+
+        }
+
         inline void createDatasetLink(hid_t file, hid_t plist_lncr, const DatasetProperties &props){
             if (not h5pp::Hdf5::checkIfLinkExistsRecursively(file, props.dsetName)){
-                hid_t dataspace = h5pp::Utils::getDataSpaceUnlimited(props.ndims);
                 hid_t dset_cpl  = H5Pcreate(H5P_DATASET_CREATE);
-                H5Pset_layout(dset_cpl, H5D_CHUNKED);
-                H5Pset_chunk(dset_cpl, props.ndims, props.chunkSize.data());
+                setSizeDependentLayout(dset_cpl,props);
                 // H5Pset_deflate (dset_cpl ,props.compressionLevel);
                 hid_t dataset = H5Dcreate(file,
                                           props.dsetName.c_str(),
                                           props.dataType,
-                                          dataspace,
+                                          props.dataSpace,
                                           plist_lncr,
                                           dset_cpl,
                                           H5P_DEFAULT);
-                H5Sclose(dataspace);
                 H5Pclose(dset_cpl);
                 closeLink(dataset);
             }
