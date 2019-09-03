@@ -114,20 +114,28 @@ namespace h5pp{
 
 
         inline hid_t getDataSpace(const int rank, const std::vector<hsize_t> &dims, const bool unlimited = false){
+            std::vector<hsize_t> max_dims(rank);
             if (unlimited){
-                std::vector<hsize_t> max_dims(rank);
                 std::fill_n(max_dims.begin(), rank, H5S_UNLIMITED);
                 return H5Screate_simple(rank, dims.data(), max_dims.data());
             }else{
-                std::vector<hsize_t> max_dims = dims;
-                return H5Screate_simple(rank, dims.data(), max_dims.data());
+                if(rank == 0){
+                    return H5Screate(H5S_SCALAR);
+                }else{
+                    max_dims = dims;
+                    return H5Screate_simple(rank, dims.data(), max_dims.data());
+                }
             }
         }
 
 
 
         inline hid_t getMemSpace(const int rank, const std::vector<hsize_t> &dims) {
-            return H5Screate_simple(rank, dims.data(), nullptr);
+            if(rank == 0){
+                return H5Screate(H5S_SCALAR);
+            }else{
+                return H5Screate_simple(rank, dims.data(), nullptr);
+            }
         }
 
 
@@ -158,6 +166,8 @@ namespace h5pp{
         }
 
     }
+
+
 }
 
 

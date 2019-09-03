@@ -92,7 +92,6 @@ namespace h5pp{
             try{
                 if (not props.extendable) {
                     h5pp::Logger::log->critical("Called setExtentDataset for non-extendable dataset");
-                    return;
                 }
                 hid_t dataset = openLink(file, props.dsetName);
                 herr_t err = H5Dset_extent(dataset, props.dims.data());
@@ -190,6 +189,8 @@ namespace h5pp{
         }
 
 
+
+
         inline void setSizeDependentLayout(hid_t dset_cpl, const DatasetProperties &props){
             /*! Depending on the size of this dataset we may benefint from using either
                 a contiguous layout (for big non-extendable non-compressible datasets),
@@ -223,15 +224,13 @@ namespace h5pp{
                 H5Pset_chunk(dset_cpl, props.ndims, props.chunkSize.data());
             }else {
                 hsize_t dsetsize = props.size * H5Tget_size(props.dataType); // Get size of dataset in bytes
-                if (dsetsize <= 1024) {
-                    // We use an upper limit of 1024 bytes for compact sets
+                if (dsetsize <= h5pp::Constants::max_size_compact) {
                     H5Pset_layout(dset_cpl, H5D_COMPACT);
-                } else {
+                }
+                else{
                     H5Pset_layout(dset_cpl, H5D_CONTIGUOUS);
                 }
             }
-
-
         }
 
         inline void createDatasetLink(hid_t file, hid_t plist_lncr, const DatasetProperties &props){
@@ -239,6 +238,11 @@ namespace h5pp{
                 hid_t dset_cpl  = H5Pcreate(H5P_DATASET_CREATE);
                 setSizeDependentLayout(dset_cpl,props);
                 // H5Pset_deflate (dset_cpl ,props.compressionLevel);
+
+                if(props.dsetName.empty())  throw std::runtime_error("props.dsetName is empty");
+                if(props.dataSpace < 0)     throw std::runtime_error("props.dataSpace is not set, dataSpace < 0");
+
+
                 hid_t dataset = H5Dcreate(file,
                                           props.dsetName.c_str(),
                                           props.dataType,

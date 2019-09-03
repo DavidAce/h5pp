@@ -9,8 +9,10 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <optional>
 #include <experimental/filesystem>
 #include <experimental/type_traits>
+#include "h5ppConstants.h"
 #include "h5ppFileCounter.h"
 #include "h5ppTypeCheck.h"
 #include "h5ppTextra.h"
@@ -45,6 +47,7 @@ namespace h5pp{
 
 
         size_t      logLevel  = 2;
+        bool defaultExtendable = false;   /*!< New datasets with rank >= can be set to extendable by default. For small datasets, setting this true results in larger file size */
 
         //Mpi related constants
         hid_t plist_facc;
@@ -193,6 +196,9 @@ namespace h5pp{
 
         void setCreateMode(CreateMode createMode_){createMode = createMode_;}
         void setAccessMode(AccessMode accessMode_){accessMode = accessMode_;}
+        void enableDefaultExtendable(){defaultExtendable = true;}
+        void disableDefaultExtendable(){defaultExtendable = false;}
+
         CreateMode getCreateMode()const{return createMode;}
         AccessMode getAccessMode()const{return accessMode;}
 
@@ -214,11 +220,11 @@ namespace h5pp{
         DataType readDataset(const std::string &datasetPath) const;
 
         template <typename DataType>
-        void writeDataset(const DataType &data, const std::string &datasetPath, bool extendable = false);
+        void writeDataset(const DataType &data, const std::string &datasetPath, std::optional<bool> extendable = std::nullopt);
 
 
         template <typename DataType,typename T, std::size_t N>
-        void writeDataset(const T (&dims)[N],const DataType &data,  const std::string &datasetPath, bool extendable = false);
+        void writeDataset(const T (&dims)[N],const DataType &data,  const std::string &datasetPath, std::optional<bool> extendable = std::nullopt);
 
         template <typename DataType>
         void writeDataset(const DataType &data, const DatasetProperties &props);
@@ -305,6 +311,8 @@ namespace h5pp{
             h5pp::Hdf5::select_hyperslab(filespace,memspace);
         }
 
+        template<typename DataType>
+        bool determineIfExtendable(const DataType &data, const std::string &dsetName, std::optional<bool> userPrefersExtendable);
 
 
 //
@@ -446,34 +454,96 @@ template <typename DataType>
 void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &props){
     hid_t file = openFileHandle();
     createDatasetLink(file, props);
-    hid_t dataset   = h5pp::Hdf5::openLink(file, props.dsetName);
-    hid_t filespace = H5Dget_space(dataset);
-    selectHyperslab(filespace, props.memSpace);
     if (props.extendable){
         h5pp::Hdf5::setExtentDataset(file, props);
     }
-    if constexpr (tc::hasMember_c_str<DataType>::value){
-        retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, data.c_str());
-        if(retval < 0){H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to write text to file");}
+    hid_t dataset   = h5pp::Hdf5::openLink(file, props.dsetName);
+    hid_t filespace = H5Dget_space(dataset);
+    selectHyperslab(filespace, props.memSpace);
+
+    try{
+        if (props.linkExists and not props.extendable){
+            hsize_t old_dsetSize = H5Dget_storage_size(dataset);
+            hsize_t new_dsetSize = props.size * H5Tget_size(props.dataType);
+            if (old_dsetSize != new_dsetSize){
+                Logger::log->critical("The non-extendable dataset [{}] is being overwritten with a different size.\n\t Old size = {} bytes. New size = {} bytes",props.dsetName, old_dsetSize,new_dsetSize);
+                throw std::runtime_error("Overwriting non-extendable dataset with different size");
+            }
+        }
+
+        if constexpr (tc::hasMember_c_str<DataType>::value){
+            retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, data.c_str());
+            if(retval < 0){H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to write text to file");}
+        }
+        else if constexpr(tc::hasMember_data<DataType>::value){
+            retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, data.data());
+            if(retval < 0){H5Eprint(H5E_DEFAULT, stderr);throw std::runtime_error("Failed to write data to file");}
+        }
+        else{
+            retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, &data);
+            if(retval < 0){H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to write number to file");}
+        }
     }
-    else if constexpr(tc::hasMember_data<DataType>::value){
-        retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, data.data());
-        if(retval < 0){H5Eprint(H5E_DEFAULT, stderr);throw std::runtime_error("Failed to write data to file");}
-    }
-    else{
-        retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, &data);
-        if(retval < 0){H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to write number to file");}
+    catch (std::exception &ex){
+        h5pp::Hdf5::closeLink(dataset);
+        H5Fflush(file,H5F_SCOPE_GLOBAL);
+        closeFileHandle(file);
+        throw std::runtime_error("Write to file failed [" + props.dsetName +"]: " + std::string(ex.what()));
     }
     h5pp::Hdf5::closeLink(dataset);
     H5Fflush(file,H5F_SCOPE_GLOBAL);
     closeFileHandle(file);
 }
 
+
+template<typename DataType>
+bool h5pp::File::determineIfExtendable(const DataType &data, const std::string &dsetName, std::optional<bool> userPrefersExtendable){
+    hsize_t  size       = h5pp::Utils::getSize<DataType>(data);
+    hsize_t  rank       = h5pp::Utils::getRank<DataType>();
+    hid_t    datatype   = h5pp::Type::getDataType<DataType>();
+    bool isLarge        = size * H5Tget_size(datatype) >= h5pp::Constants::max_size_contiguous;
+    bool exists         = linkExists(dsetName);
+    bool isUnlimited    = false;
+    H5Tclose(datatype);
+
+    if (exists){
+        hid_t file              = openFileHandle();
+        hid_t dataSet           = h5pp::Hdf5::openLink(file, dsetName);
+        hid_t dataSpace         = H5Dget_space(dataSet);
+        hsize_t ndims           = H5Sget_simple_extent_ndims(dataSpace);
+        std::vector<hsize_t> old_dims(ndims);
+        std::vector<hsize_t> max_dims(ndims);
+        H5Sget_simple_extent_dims(dataSpace,old_dims.data(),max_dims.data());
+        if ( std::any_of(old_dims.begin(), old_dims.end(), [](int i){return i<0;}) ) {isUnlimited = true;}
+        if ( std::any_of(max_dims.begin(), max_dims.end(), [](int i){return i<0;}) ) {isUnlimited = true;}
+        H5Sclose(dataSpace);
+        H5Dclose(dataSet);
+        closeFileHandle(file);
+    }
+    if(userPrefersExtendable){
+        if(userPrefersExtendable.value() and exists and not isUnlimited){
+            Logger::log->warn("User asks for an extendable dataset, but a non-extendable dataset already exists: [{}]. Conversion is not supported!", dsetName);
+        }
+
+        if (userPrefersExtendable.value() and not exists) return true;
+
+    }
+
+    if  (exists and isUnlimited)       return true;
+    if  (exists and not isUnlimited)   return false;
+    if  (not exists and defaultExtendable and rank >= 1)    return true;
+    if  (not exists and isLarge and rank >= 1)              return true;
+    return false;
+}
+
+
+
 template <typename DataType>
-void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPath, bool extendable){
+void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPath, std::optional<bool> extendable){
     if(accessMode == AccessMode::READONLY){throw std::runtime_error("Attempted to write to read-only file");}
     DatasetProperties props;
-    props.extendable = extendable;
+    props.extendable = determineIfExtendable(data,datasetPath, extendable);
+    props.linkExists = linkExists(datasetPath);
     props.dataType   = h5pp::Type::getDataType<DataType>();
     props.size       = h5pp::Utils::getSize<DataType>(data);
     props.ndims      = h5pp::Utils::getRank<DataType>();
@@ -482,6 +552,7 @@ void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPa
     props.dsetName   = datasetPath;
     props.memSpace   = h5pp::Utils::getMemSpace(props.ndims,props.dims);
     props.dataSpace  = h5pp::Utils::getDataSpace(props.ndims,props.dims,props.extendable);
+
 
 
     if constexpr(h5pp::Type::Check::hasStdComplex<DataType>() or h5pp::Type::Check::is_StdComplex<DataType>()) {
@@ -515,12 +586,13 @@ void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPa
 }
 
 template <typename DataType,typename T, std::size_t N>
-void h5pp::File::writeDataset(const T (&dims)[N],const DataType &data, const std::string &datasetPath, bool extendable){
+void h5pp::File::writeDataset(const T (&dims)[N],const DataType &data, const std::string &datasetPath, std::optional<bool> extendable){
     if(accessMode == AccessMode::READONLY){throw std::runtime_error("Attempted to write to read-only file");}
     static_assert(std::is_integral_v<T>);
     static_assert(N > 0 , "Dimensions of given data are too few, N == 0");
     DatasetProperties props;
-    props.extendable = extendable;
+    props.extendable = determineIfExtendable(data,datasetPath, extendable);
+    props.linkExists = linkExists(datasetPath);
     props.dataType   = h5pp::Type::getDataType<DataType>();
     props.dims       = std::vector<hsize_t>(dims, dims+N);
     props.ndims      = (int)props.dims.size();
@@ -628,7 +700,7 @@ void h5pp::File::readDataset(DataType &data, const std::string &datasetPath)cons
             Logger::log->error("Attempted to read dataset of unknown type. Name: [{}] | Type: [{}]",datasetPath, typeid(data).name());
             throw std::runtime_error("Attempted to read dataset of unknown type");
         }
-        H5Sclose(memspace);
+//        H5Sclose(memspace);
         H5Tclose(datatype);
         h5pp::Hdf5::closeLink(dataset);
 
@@ -688,7 +760,7 @@ void h5pp::File::writeAttributeToFile(const AttrType &attribute, const std::stri
         }
     }
 
-    H5Sclose(memspace);
+//    H5Sclose(memspace);
     H5Tclose(datatype);
     H5Aclose(attributeId);
     closeFileHandle(file);

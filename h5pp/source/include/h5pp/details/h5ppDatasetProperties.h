@@ -14,6 +14,7 @@ namespace h5pp{
     class DatasetProperties {
     public:
         bool                    extendable = false;
+        bool                    linkExists = false;
         hid_t                   dataType;
         hid_t                   memSpace;
         hid_t                   dataSpace;

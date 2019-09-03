@@ -276,12 +276,16 @@ if(ENABLE_TESTS)
     if(DEPENDENCIES_FOUND)
         enable_testing()
         add_subdirectory(tests/simpleWrite          EXCLUDE_FROM_ALL)
+        add_subdirectory(tests/largeWrite           EXCLUDE_FROM_ALL)
+        add_subdirectory(tests/overWrite           EXCLUDE_FROM_ALL)
         add_subdirectory(tests/readWrite            EXCLUDE_FROM_ALL)
         add_subdirectory(tests/readWriteAttributes  EXCLUDE_FROM_ALL)
         add_subdirectory(tests/copySwap             EXCLUDE_FROM_ALL)
 
         add_custom_target(all_tests ALL
                 DEPENDS simpleWrite
+                DEPENDS largeWrite
+                DEPENDS overWrite
                 DEPENDS readWrite
                 DEPENDS readWriteAttributes
                 DEPENDS copySwap
