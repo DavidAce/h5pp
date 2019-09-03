@@ -464,6 +464,7 @@ void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &pro
     try{
         if (props.linkExists and not props.extendable){
             hsize_t old_dsetSize = H5Dget_storage_size(dataset);
+
             hsize_t new_dsetSize = props.size * H5Tget_size(props.dataType);
             if (old_dsetSize != new_dsetSize){
                 Logger::log->critical("The non-extendable dataset [{}] is being overwritten with a different size.\n\t Old size = {} bytes. New size = {} bytes",props.dsetName, old_dsetSize,new_dsetSize);
@@ -524,9 +525,11 @@ bool h5pp::File::determineIfExtendable(const DataType &data, const std::string &
         if(userPrefersExtendable.value() and exists and not isUnlimited){
             Logger::log->warn("User asks for an extendable dataset, but a non-extendable dataset already exists: [{}]. Conversion is not supported!", dsetName);
         }
+        if(not userPrefersExtendable.value() and exists and isUnlimited){
+            Logger::log->warn("User asks for a non-extendable dataset, but an extendable dataset already exists: [{}]. Conversion is not supported!", dsetName);
+        }
 
-        if (userPrefersExtendable.value() and not exists) return true;
-
+        if (not exists) return userPrefersExtendable.value();
     }
 
     if  (exists and isUnlimited)       return true;
@@ -574,7 +577,7 @@ void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPa
             if(H5Tequal(props.dataType, H5T_C_S1)){
                 // Read more about this step here
                 //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
-                h5pp::Utils::setStringSize(props.dataType,props.size);
+                props.size = h5pp::Utils::setStringSize(props.dataType,props.size);
 
                 writeDataset(data, props);
             }else{
@@ -832,7 +835,7 @@ void h5pp::File::writeAttributeToLink(const AttrType &attribute, const std::stri
     if constexpr (tc::hasMember_c_str<AttrType>::value
                   or std::is_same<char * , typename std::decay<AttrType>::type>::value
     ){
-        h5pp::Utils::setStringSize(aprops.dataType,aprops.size);
+        aprops.size = h5pp::Utils::setStringSize(aprops.dataType,aprops.size);
     }
     writeAttributeToLink(attribute, aprops);
 }
