@@ -15,7 +15,7 @@ int main(){
     Eigen::MatrixXi                     matrixInt           = Eigen::MatrixXi::Random (100,100);
     Eigen::MatrixXd                     matrixDouble        = Eigen::MatrixXd::Random (100,100);
     Eigen::MatrixXcd                    matrixComplexDouble = Eigen::MatrixXcd::Random(100,100);
-    std::string                         somestring = "selfdual_tf_rf_ising";
+    std::string                         somestring = "this is a teststring";
 
 
     file.enableDefaultExtendable();
@@ -76,6 +76,12 @@ int main(){
     }catch (std::exception &ex){
         std::cout << "THIS IS AN EXPECTED ERROR: " << ex.what() << std::endl;
     }
+
+    // Strings are a special case that shouldn't fail for non-e
+    somestring          = "this is a teststring";
+    file.writeDataset(somestring,          "overWriteGroup_ext_disabled/somestring");
+    file.writeDataset(somestring,          "overWriteGroup_ext_disabled/somestring");
+
 
 
     // This time we should check that making large enough dataset defaults to extendable even if

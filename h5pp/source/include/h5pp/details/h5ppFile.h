@@ -464,8 +464,8 @@ void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &pro
     try{
         if (props.linkExists and not props.extendable){
             hsize_t old_dsetSize = H5Dget_storage_size(dataset);
-            hsize_t new_dsetSize = props.size * H5Tget_size(props.dataType);
-            if (old_dsetSize != new_dsetSize and not H5Tequal(props.dataType,H5T_C_S1)){
+            hsize_t new_dsetSize = h5pp::Utils::getByteSize(data);
+            if (old_dsetSize != new_dsetSize){
                 Logger::log->critical("The non-extendable dataset [{}] is being overwritten with a different size.\n\t Old size = {} bytes. New size = {} bytes",props.dsetName, old_dsetSize,new_dsetSize);
                 throw std::runtime_error("Overwriting non-extendable dataset with different size");
             }

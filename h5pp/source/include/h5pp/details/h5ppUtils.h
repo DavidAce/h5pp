@@ -165,6 +165,18 @@ namespace h5pp{
             }
         }
 
+
+        template<typename DataType>
+        auto getByteSize(const DataType &data){
+            hsize_t num_elems = getSize(data);
+            hsize_t typesize = sizeof(data);
+            if constexpr (h5pp::Type::Check::hasMember_data<DataType>::value){typesize = sizeof(data.data()[0]);}
+            if constexpr (h5pp::Type::Check::hasMember_c_str<DataType>::value){typesize = sizeof(data.c_str()[0]);}
+            if constexpr (h5pp::Type::Check::hasMember_scalar<DataType>::value){typesize = sizeof(typename DataType::Scalar);}
+            if constexpr (std::is_array<DataType>::value){typesize = sizeof(data[0]);}
+            return num_elems*typesize;
+        }
+
     }
 
 
