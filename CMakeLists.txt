@@ -287,12 +287,12 @@ if(ENABLE_TESTS)
                 DEPENDS copySwap
                 )
 
-#        add_custom_command(TARGET all_tests
-#                POST_BUILD
-#                COMMENT "Running Tests:"
-#                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#                DEPENDS h5pp::deps all_tests
-#                COMMAND ${CMAKE_CTEST_COMMAND} --build-config $<CONFIG> --output-on-failures)
+        add_custom_command(TARGET all_tests
+                POST_BUILD
+                COMMENT "Running Tests:"
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                DEPENDS h5pp::deps all_tests
+                COMMAND ${CMAKE_CTEST_COMMAND} --build-config $<CONFIG> --output-on-failures)
     else()
         message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
     endif()

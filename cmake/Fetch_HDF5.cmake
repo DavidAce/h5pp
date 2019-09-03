@@ -1,33 +1,25 @@
 
-if(NOT HDF5_ROOT)
-    set(HDF5_ROOT ${H5PP_INSTALL_DIR_THIRD_PARTY}/hdf5)
-endif()
-if(NOT HDF5_DIR)
-    set(HDF5_DIR ${H5PP_INSTALL_DIR_THIRD_PARTY}/share/cmake/hdf5)
-endif()
-
 
 include(cmake/FindPackageHDF5.cmake)
 
-
-
-
-if(TARGET hdf5)
-        message(STATUS "HDF5 FOUND IN SYSTEM: ${HDF5_BUILD_DIR} ${HDF5_LIBRARIES}")
+if(HDF5_FOUND AND TARGET hdf5)
+    message(STATUS "HDF5 FOUND IN SYSTEM: ${HDF5_BUILD_DIR} ${HDF5_CXX_INCLUDE_DIRS} ${HDF5_hdf5_LIBRARY}")
+    return()
 elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
-    message(STATUS "HDF5 will be installed into ${INSTALL_DIRECTORY_THIRD_PARTY}/hdf5 on first build.")
-
+    message(STATUS "HDF5 will be installed into ${INSTALL_DIRECTORY}/hdf5 on first build.")
     include(ExternalProject)
     set(HDF5_IS_PARALLEL OFF)
     ExternalProject_Add(external_HDF5
-            URL     https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.3/src/hdf5-1.10.3.tar.bz2 # version 1.10.2
-            PREFIX      ${H5PP_BUILD_DIR_THIRD_PARTY}/hdf5
-            INSTALL_DIR ${H5PP_INSTALL_DIR_THIRD_PARTY}/hdf5
+            URL     https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.3/src/hdf5-1.10.3.tar.bz2
+            PREFIX      ${BUILD_DIRECTORY}/hdf5
+            INSTALL_DIR ${INSTALL_DIRECTORY}/hdf5
             UPDATE_DISCONNECTED 1
             TEST_COMMAND ""
             CMAKE_ARGS
             -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+            -DCMAKE_BUILD_TYPE=Release
             -DCMAKE_ANSI_CFLAGS:STRING=-fPIC
+            -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
             -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=OFF
             -DHDF5_ENABLE_PARALLEL=${HDF5_IS_PARALLEL}
             -DALLOW_UNSUPPORTED=ON
@@ -39,31 +31,34 @@ elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
             -DHDF5_BUILD_JAVA:BOOL=OFF
             -DCMAKE_INSTALL_MESSAGE=NEVER #Avoid unnecessary output to console
             -DCMAKE_C_FLAGS=-w
-
             )
 
     ExternalProject_Get_Property(external_HDF5 INSTALL_DIR)
     add_library(hdf5 INTERFACE)
     add_library(hdf5::hdf5 ALIAS hdf5)
-    add_dependencies(hdf5      external_HDF5)
-    set(HDF5_DIR              ${INSTALL_DIR}/share/cmake/hdf5)
+    add_dependencies(hdf5          external_HDF5)
     set(HDF5_ROOT             ${INSTALL_DIR})
+    set(HDF5_DIR              ${INSTALL_DIR}/share/cmake/hdf5)
+
+    #    if (HDF5_IS_PARALLEL)
+    #        list(APPEND HDF5_LINKER_FLAGS ${MPI_LIBRARIES})
+    #        list(APPEND HDF5_INCLUDE_DIR  ${MPI_INCLUDE_PATH})
+    #    endif()
     target_link_libraries(hdf5
             INTERFACE
             ${INSTALL_DIR}/lib/libhdf5_hl${HDF5_LIBRARY_SUFFIX}
             ${INSTALL_DIR}/lib/libhdf5${HDF5_LIBRARY_SUFFIX}
             $<LINK_ONLY:-ldl -lm -lz>
+            ${PTHREAD_LIBRARY}
             )
-    target_link_libraries (hdf5 INTERFACE ${PTHREAD_LIBRARY})
     target_include_directories(
             hdf5
             INTERFACE
             "$<BUILD_INTERFACE:${INSTALL_DIR}/include>"
-            "$<INSTALL_INTERFACE:third-party/hdf5/include>"
     )
 
 else()
-    message(STATUS "Dependency HDF5 not found and DOWNLOAD_HDF5 is OFF")
+    message("WARNING: Dependency HDF5 not found and DOWNLOAD_HDF5 is OFF. Build will fail.")
 endif()
 
 
