@@ -1,9 +1,16 @@
 
+if(NOT HDF5_ROOT)
+    set(HDF5_ROOT ${H5PP_INSTALL_DIR_THIRD_PARTY}/hdf5)
+endif()
+if(NOT HDF5_DIR)
+    set(HDF5_DIR ${H5PP_INSTALL_DIR_THIRD_PARTY}/share/cmake/hdf5)
+endif()
+
 
 include(cmake/FindPackageHDF5.cmake)
 
 if(HDF5_FOUND AND TARGET hdf5)
-    message(STATUS "HDF5 FOUND IN SYSTEM: ${HDF5_BUILD_DIR} ${HDF5_CXX_INCLUDE_DIRS} ${HDF5_hdf5_LIBRARY}")
+    message(STATUS "HDF5 FOUND IN SYSTEM: ${HDF5_LIBRARIES} ${HDF5_BUILD_DIR} ${HDF5_CXX_INCLUDE_DIRS} ${HDF5_hdf5_LIBRARY}")
     return()
 elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
     message(STATUS "HDF5 will be installed into ${INSTALL_DIRECTORY}/hdf5 on first build.")
@@ -11,8 +18,8 @@ elseif (DOWNLOAD_HDF5 OR DOWNLOAD_ALL)
     set(HDF5_IS_PARALLEL OFF)
     ExternalProject_Add(external_HDF5
             URL     https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.3/src/hdf5-1.10.3.tar.bz2
-            PREFIX      ${BUILD_DIRECTORY}/hdf5
-            INSTALL_DIR ${INSTALL_DIRECTORY}/hdf5
+            PREFIX      ${H5PP_BUILD_DIR_THIRD_PARTY}/hdf5
+            INSTALL_DIR ${H5PP_INSTALL_DIR_THIRD_PARTY}/hdf5
             UPDATE_DISCONNECTED 1
             TEST_COMMAND ""
             CMAKE_ARGS
