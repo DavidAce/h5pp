@@ -220,7 +220,7 @@ namespace h5pp{
             if(props.extendable) {
                 if (props.chunkSize.empty() or props.chunkSize.data() == nullptr)
                     throw std::runtime_error("ChunkSize has not been set. Can't call H5Pset_chunk(...)");
-                H5Pset_layout(dset_cpl, H5D_COMPACT);
+                H5Pset_layout(dset_cpl, H5D_CHUNKED);
                 H5Pset_chunk(dset_cpl, props.ndims, props.chunkSize.data());
             }else {
                 hsize_t dsetsize = props.size * H5Tget_size(props.dataType); // Get size of dataset in bytes
