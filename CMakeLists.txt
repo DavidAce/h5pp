@@ -125,7 +125,7 @@ endif()
 ##################################################################
 ### Try to fetch all dependencies                              ###
 ##################################################################
-
+include(GNUInstallDirs)
 set(H5PP_INSTALL_DIR                   ${CMAKE_INSTALL_PREFIX})
 set(H5PP_BUILD_DIR                     ${CMAKE_BINARY_DIR}/h5pp)
 set(H5PP_INSTALL_DIR_THIRD_PARTY       ${CMAKE_INSTALL_PREFIX}/third-party)

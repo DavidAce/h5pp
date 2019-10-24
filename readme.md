@@ -154,22 +154,20 @@ Build the library just as any CMake project:
 ```bash
     mkdir build
     cd build
-    cmake -DCMAKE_INSTALL_PREFIX=<install-dir> -DDOWNLOAD_ALL=ON ../
+    cmake -DCMAKE_INSTALL_PREFIX=<install-dir> -DDOWNLOAD_MISSING=ON ../
     make
     make install
     make examples
 ```
 
-By passing the variable `DOWNLOAD_ALL=ON` CMake will download all the dependencies and install them under `install-dir/third-party` if not found in the system. 
+By passing the variable `DOWNLOAD_MISSING=ON` CMake will download all the dependencies and install them under `install-dir/third-party` if not found in the system. 
 By default `ìnstall-dir` will be `project-dir/install`, where `project-dir` is the directory containing the main `CMakeLists.txt` file. And of course, making the examples is optional.
 
 ### Build options
 
 The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 * `-DCMAKE_INSTALL_PREFIX:PATH=<install-dir>` to specify install directory (default: `project-dir/install/`).
-* `-DDOWNLOAD_HDF5:BOOL=<ON/OFF>` to toggle automatic installation of HDF5 (default: `OFF`).
-* `-DDOWNLOAD_EIGEN3:BOOL=<ON/OFF>` to toggle automatic installation of Eigen3 (default: `OFF`).
-* `-DDOWNLOAD_ALL:BOOL=<ON/OFF>` to toggle automatic installation of all third-party dependencies (default: `OFF`).
+* `-DDOWNLOAD_MISSING:BOOL=<ON/OFF>` to toggle automatic installation of all third-party dependencies (default: `OFF`).
 * `-DCMAKE_BUILD_TYPE=Release/Debug` to specify build type (default: `Release`)
 * `-DBUILD_SHARED_LIBS:BOOL=<ON/OFF>` to link dependencies with static or shared libraries (default: `OFF`)
 * `-DENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (default: `ON`).

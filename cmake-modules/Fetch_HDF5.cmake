@@ -7,7 +7,7 @@ if(NOT TARGET hdf5::hdf5)
         message(STATUS "HDF5 FOUND IN SYSTEM: ${HDF5_BUILD_DIR} ${HDF5_CXX_INCLUDE_DIRS} ${HDF5_hdf5_LIBRARY}")
         return()
     elseif (DOWNLOAD_MISSING)
-        message(STATUS "HDF5 will be installed into ${INSTALL_DIRECTORY}/hdf5 on first build.")
+        message(STATUS "HDF5 will be installed into ${H5PP_INSTALL_DIR_THIRD_PARTY}/hdf5 on first build.")
         include(ExternalProject)
         set(HDF5_IS_PARALLEL OFF)
         ExternalProject_Add(external_HDF5
