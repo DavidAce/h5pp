@@ -105,9 +105,6 @@ script:
   - cd build/Debug
   - cmake   -DDOWNLOAD_MISSING:BOOL=ON \
             -DENABLE_TESTS:BOOL=ON \
-            -DENABLE_HDF5:BOOL=ON \
-            -DENABLE_SPDLOG:BOOL=ON \
-            -DENABLE_EIGEN3:BOOL=ON \
             -DBUILD_EXAMPLES:BOOL=ON \
             -DBUILD_SHARED_LIBS:BOOL=ON \
             -G "CodeBlocks - Unix Makefiles" ../../

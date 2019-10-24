@@ -12,7 +12,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake-modules)
 ### Include it using #include <gitversion.h>                 ###
 ### Gives a namespace GIT:: with several git version numbers.###
 ################################################################
-include(cmake/gitversion.cmake)
+include(cmake-modules/gitversion.cmake)
 
 
 ##################################################################
@@ -34,10 +34,8 @@ message("=======================================================================
 ### Set options for compilation                              ###
 ################################################################
 option(BUILD_SHARED_LIBS  "Builds shared libraries"                             OFF)
+option(BUILD_EXAMPLES     "Builds examples"                                     OFF)
 option(ENABLE_TESTS       "Enable testing"                                      ON)
-option(ENABLE_HDF5        "Download and install HDF5 if not found"              OFF)
-option(ENABLE_SPDLOG      "Download and install spdlog if not found"            OFF)
-option(ENABLE_EIGEN3      "Download and install Eigen3 if not found"            OFF)
 option(DOWNLOAD_MISSING   "Download and install all dependencies if not found"  OFF)
 
 
@@ -45,10 +43,8 @@ option(DOWNLOAD_MISSING   "Download and install all dependencies if not found"  
 
 message("=========================== h5pp build options ==============================")
 message(STATUS "BUILD_SHARED_LIBS  : ${BUILD_SHARED_LIBS}")
+message(STATUS "BUILD_EXAMPLES     : ${BUILD_EXAMPLES}")
 message(STATUS "ENABLE_TESTS       : ${ENABLE_TESTS}")
-message(STATUS "ENABLE_HDF5        : ${ENABLE_HDF5}")
-message(STATUS "ENABLE_SPDLOG      : ${ENABLE_SPDLOG}")
-message(STATUS "ENABLE_EIGEN3      : ${ENABLE_EIGEN3}")
 message(STATUS "DOWNLOAD_MISSING   : ${DOWNLOAD_MISSING}")
 message("=============================================================================")
 
@@ -135,18 +131,9 @@ set(H5PP_BUILD_DIR                     ${CMAKE_BINARY_DIR}/h5pp)
 set(H5PP_INSTALL_DIR_THIRD_PARTY       ${CMAKE_INSTALL_PREFIX}/third-party)
 set(H5PP_BUILD_DIR_THIRD_PARTY         ${CMAKE_BINARY_DIR}/third-party-build)
 
-if(ENABLE_EIGEN3)
-    include(cmake-modules/Fetch_Eigen3.cmake)
-endif()
-
-if(ENABLE_SPDLOG)
-    include(cmake-modules/Fetch_spdlog.cmake)
-endif()
-
-if(ENABLE_HDF5)
-    include(cmake-modules/Fetch_HDF5.cmake)
-endif()
-
+include(cmake-modules/Fetch_Eigen3.cmake)
+include(cmake-modules/Fetch_spdlog.cmake)
+include(cmake-modules/Fetch_HDF5.cmake)
 
 if(TARGET hdf5::hdf5 AND TARGET Eigen3::Eigen AND TARGET spdlog::spdlog)
     set(DEPENDENCIES_FOUND TRUE)
@@ -250,7 +237,7 @@ install(EXPORT
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
-        cmake/h5ppConfig.cmake.in
+        cmake-modules/h5ppConfig.cmake.in
         ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
         INSTALL_DESTINATION ${H5PP_INSTALL_CONFIGDIR}
         PATH_VARS H5PP_DIR H5PP_ROOT
@@ -323,7 +310,7 @@ endif()
 if(DEPENDENCIES_FOUND)
     set(H5PP_INSTALL_DIR_EXAMPLES  ${CMAKE_INSTALL_PREFIX}/examples)
     set(H5PP_BUILD_DIR_EXAMPLES    ${CMAKE_BINARY_DIR}/examples)
-    include(cmake/Build_examples.cmake)
+    include(cmake-modules/Build_examples.cmake)
     add_custom_target(examples
             DEPENDS example_helloworld
             DEPENDS example_writescalar
