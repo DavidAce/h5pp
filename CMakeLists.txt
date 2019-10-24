@@ -134,9 +134,20 @@ set(H5PP_INSTALL_DIR                   ${CMAKE_INSTALL_PREFIX})
 set(H5PP_BUILD_DIR                     ${CMAKE_BINARY_DIR}/h5pp)
 set(H5PP_INSTALL_DIR_THIRD_PARTY       ${CMAKE_INSTALL_PREFIX}/third-party)
 set(H5PP_BUILD_DIR_THIRD_PARTY         ${CMAKE_BINARY_DIR}/third-party-build)
-include(cmake-modules/Fetch_Eigen3.cmake)
-include(cmake-modules/Fetch_spdlog.cmake)
-include(cmake-modules/Fetch_HDF5.cmake)
+
+if(ENABLE_EIGEN3)
+    include(cmake-modules/Fetch_Eigen3.cmake)
+endif()
+
+if(ENABLE_SPDLOG)
+    include(cmake-modules/Fetch_spdlog.cmake)
+endif()
+
+if(ENABLE_HDF5)
+    include(cmake-modules/Fetch_HDF5.cmake)
+endif()
+
+
 if(TARGET hdf5::hdf5 AND TARGET Eigen3::Eigen AND TARGET spdlog::spdlog)
     set(DEPENDENCIES_FOUND TRUE)
 else()
