@@ -128,7 +128,7 @@ if (NOT HDF5_REQUIRED)
     set(HDF5_REQUIRED OFF)
 endif()
 
-set(HDF5_ROOT ${HDF5_ROOT} ${HDF5_DIR} $ENV{HDF5_ROOT} $ENV{HDF5_DIR} $ENV{EBROOTHDF5} $ENV{HOME}/.conda $ENV{HOME}/anaconda3 $ENV{HOME}/miniconda3 /usr /usr/local)
+set(HDF5_ROOT ${HDF5_ROOT} ${HDF5_DIR} ${DIRECTORY_HINTS} $ENV{HDF5_ROOT} $ENV{HDF5_DIR} $ENV{EBROOTHDF5} $ENV{HOME}/.conda $ENV{HOME}/anaconda3 $ENV{HOME}/miniconda3 /usr /usr/local)
 
 find_package_hdf5("${HDF5_ROOT}" "${HDF5_MODULES}" "${HDF5_ATLEAST_VERSION}" "${HDF5_USE_STATIC_LIBRARIES}" "${HDF5_PREFER_PARALLEL}" "${HDF5_REQUIRED}")
 
@@ -145,19 +145,20 @@ find_package_hdf5("${HDF5_ROOT}" "${HDF5_MODULES}" "${HDF5_ATLEAST_VERSION}" "${
 
 if(HDF5_FOUND)
     # Add convenience libraries to collect all the hdf5 libraries
-    add_library(hdf5    INTERFACE)
-    add_library(hdf5::hdf5 ALIAS hdf5)
-    target_link_libraries(hdf5
+    add_library(hdf5::hdf5 IMPORTED INTERFACE)
+    target_link_libraries(hdf5::hdf5
             INTERFACE
             ${HDF5_LIBRARIES}
             $<LINK_ONLY:-ldl -lm -lz>
-            Threads::Threads
             )
-    target_include_directories(hdf5 INTERFACE  ${HDF5_INCLUDE_DIR})
+    target_include_directories(hdf5::hdf5 INTERFACE  ${HDF5_INCLUDE_DIR})
+    if(TARGET Threads::Threads)
+        target_link_libraries(hdf5::hdf5 INTERFACE  Threads::Threads)
+    endif()
     if(HDF5_C_LIBRARY_sz)
-        target_link_libraries(hdf5 INTERFACE $<LINK_ONLY:-lsz>)
+        target_link_libraries(hdf5::hdf5 INTERFACE $<LINK_ONLY:-lsz>)
         if (NOT BUILD_SHARED_LIBS)
-            target_link_libraries(hdf5 INTERFACE $<LINK_ONLY: -laec>)
+            target_link_libraries(hdf5::hdf5 INTERFACE $<LINK_ONLY: -laec>)
         endif()
     endif()
 

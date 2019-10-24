@@ -39,13 +39,12 @@ option(ENABLE_TESTS       "Enable testing"                                      
 option(DOWNLOAD_MISSING   "Download and install all dependencies if not found"  OFF)
 
 
-
-
 message("=========================== h5pp build options ==============================")
 message(STATUS "BUILD_SHARED_LIBS  : ${BUILD_SHARED_LIBS}")
 message(STATUS "BUILD_EXAMPLES     : ${BUILD_EXAMPLES}")
 message(STATUS "ENABLE_TESTS       : ${ENABLE_TESTS}")
 message(STATUS "DOWNLOAD_MISSING   : ${DOWNLOAD_MISSING}")
+message(STATUS "THIRD_PARTY_DIR    : ${THIRD_PARTY_DIR}")
 message("=============================================================================")
 
 
@@ -121,16 +120,48 @@ if(NOT BUILD_SHARED_LIBS)
     set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES "-Wl,--whole-archive ${CMAKE_THREAD_LIBS_INIT} -Wl,--no-whole-archive")
 endif()
 
+##################################################################
+### Adapt pthread for static/dynamic linking                   ###
+##################################################################
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG FALSE)
+find_package(Threads)
+if(TARGET Threads::Threads AND NOT BUILD_SHARED_LIBS)
+    set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES "-Wl,--whole-archive ${CMAKE_THREAD_LIBS_INIT} -Wl,--no-whole-archive")
+endif()
+
+
+
 
 ##################################################################
-### Try to fetch all dependencies                              ###
+### Setup dependency paths                                     ###
 ##################################################################
 include(GNUInstallDirs)
 set(H5PP_INSTALL_DIR                   ${CMAKE_INSTALL_PREFIX})
 set(H5PP_BUILD_DIR                     ${CMAKE_BINARY_DIR}/h5pp)
+if(THIRD_PARTY_DIR)
+    set(H5PP_INSTALL_DIR_THIRD_PARTY       ${THIRD_PARTY_DIR})
+else()
+    set(H5PP_INSTALL_DIR_THIRD_PARTY       ${CMAKE_INSTALL_PREFIX}/third-party)
+endif()
 set(H5PP_INSTALL_DIR_THIRD_PARTY       ${CMAKE_INSTALL_PREFIX}/third-party)
 set(H5PP_BUILD_DIR_THIRD_PARTY         ${CMAKE_BINARY_DIR}/third-party-build)
+set(H5PP_CONFIG_DIR_THIRD_PARTY        ${CMAKE_BINARY_DIR}/third-party-config)
+set(DIRECTORY_HINTS
+        ${THIRD_PARTY_DIR}
+        ${H5PP_INSTALL_DIR_THIRD_PARTY}
+        ${CMAKE_INSTALL_PREFIX}
+        ${CMAKE_INSTALL_PREFIX}/third-party
+        ${H5PP_INSTALL_DIR_THIRD_PARTY}
+        $ENV{HOME}/.conda
+        $ENV{HOME}/anaconda3
+        $ENV{HOME}/miniconda
+)
 
+
+##################################################################
+### Try to fetch all dependencies                              ###
+##################################################################
 include(cmake-modules/Fetch_Eigen3.cmake)
 include(cmake-modules/Fetch_spdlog.cmake)
 include(cmake-modules/Fetch_HDF5.cmake)
@@ -148,26 +179,26 @@ endif()
 
 add_library(deps INTERFACE)
 add_library(h5pp::deps ALIAS deps)
-install(TARGETS h5pp deps flags EXPORT h5ppTargets )
-if(TARGET Eigen3)
-    add_dependencies(deps Eigen3)
-    target_link_libraries(deps INTERFACE Eigen3)
-    get_target_property(EIGEN_INFO Eigen3 INTERFACE_INCLUDE_DIRECTORIES)
-    install(TARGETS Eigen3 EXPORT h5ppTargets )
+if(TARGET Eigen3::Eigen)
+    add_dependencies(deps Eigen3::Eigen)
+    target_link_libraries(deps INTERFACE Eigen3::Eigen)
+    get_target_property(EIGEN_INFO Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+#    install(TARGETS Eigen3 EXPORT h5ppTargets )
 endif()
-if(TARGET spdlog)
-    add_dependencies(deps spdlog)
-    target_link_libraries(deps INTERFACE spdlog)
-    get_target_property(SPDLOG_INFO spdlog   INTERFACE_INCLUDE_DIRECTORIES)
-    install(TARGETS spdlog EXPORT h5ppTargets )
+if(TARGET spdlog::spdlog)
+    add_dependencies(deps spdlog::spdlog)
+    target_link_libraries(deps INTERFACE spdlog::spdlog)
+    get_target_property(SPDLOG_INFO spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
+#    install(TARGETS spdlog EXPORT h5ppTargets )
 
 endif()
-if(TARGET hdf5)
-    add_dependencies(deps hdf5)
-    target_link_libraries(deps INTERFACE hdf5)
-    get_target_property(HDF5_INFO hdf5 INTERFACE_LINK_LIBRARIES)
-    install(TARGETS hdf5 EXPORT h5ppTargets )
+if(TARGET hdf5::hdf5)
+    add_dependencies(deps hdf5::hdf5)
+    target_link_libraries(deps INTERFACE hdf5::hdf5)
+    get_target_property(HDF5_INFO hdf5::hdf5 INTERFACE_LINK_LIBRARIES)
+#    install(TARGETS hdf5 EXPORT h5ppTargets )
 endif()
+install(TARGETS h5pp deps flags EXPORT h5ppTargets )
 
 
 
@@ -240,9 +271,23 @@ configure_package_config_file(
         cmake-modules/h5ppConfig.cmake.in
         ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
         INSTALL_DESTINATION ${H5PP_INSTALL_CONFIGDIR}
-        PATH_VARS H5PP_DIR H5PP_ROOT
+        PATH_VARS H5PP_ROOT H5PP_DIR
         H5PP_INSTALL_DIR_THIRD_PARTY
+        H5PP_INSTALL_CONFIGDIR
+        DIRECTORY_HINTS
 )
+
+configure_package_config_file(
+        cmake-modules/h5ppConfig.deps.cmake.in
+        ${PROJECT_BINARY_DIR}/h5ppConfig.deps.cmake
+        INSTALL_DESTINATION ${H5PP_INSTALL_CONFIGDIR}
+        PATH_VARS H5PP_ROOT H5PP_DIR
+        H5PP_INSTALL_DIR_THIRD_PARTY
+        H5PP_INSTALL_CONFIGDIR
+        DIRECTORY_HINTS
+)
+
+
 
 write_basic_package_version_file(
         ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
@@ -252,7 +297,10 @@ write_basic_package_version_file(
 ##Install the config, configversion and custom find modules
 install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps.cmake
         ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
+        cmake-modules/FindEigen3.cmake
+        cmake-modules/FindPackageHDF5.cmake
         DESTINATION ${H5PP_INSTALL_CONFIGDIR}
         )
 

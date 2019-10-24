@@ -9,12 +9,19 @@ else()
     cmake_policy(SET CMP0074 NEW)
     cmake_policy(SET CMP0075 NEW)
 endif()
+
 set(h5pp_FOUND TRUE)
 set(H5PP_FOUND TRUE)
 set(H5PP_DIR                        "@PACKAGE_H5PP_DIR@")
 set(H5PP_ROOT                       "@PACKAGE_H5PP_ROOT@")
 set(H5PP_INCLUDE_DIR                ${H5PP_ROOT}/include)
 set(H5PP_INSTALL_DIR_THIRD_PARTY    "@PACKAGE_H5PP_INSTALL_DIR_THIRD_PARTY@")
+set(H5PP_INSTALL_CONFIGDIR          "@PACKAGE_H5PP_INSTALL_CONFIGDIR@")
+set(DIRECTORY_HINTS                 @PACKAGE_DIRECTORY_HINTS@)
+set(PACKAGE_PREFIX_DIR_SAVED        ${PACKAGE_PREFIX_DIR}) # The variable can get changed inside of find_dependency calls! So we need to save it.
+set(CMAKE_MODULE_PATH               ${CMAKE_MODULE_PATH} ${H5PP_INSTALL_CONFIGDIR})
+
+include(${H5PP_DIR}/h5ppConfig.deps.cmake)
 include(${H5PP_DIR}/h5ppTargets.cmake)
 
 

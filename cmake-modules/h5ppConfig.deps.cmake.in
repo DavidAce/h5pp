@@ -1,46 +1,38 @@
 @PACKAGE_INIT@
 
-#################################################################
-### Set default policies if CMake is new enough               ###
-#################################################################
-if (CMAKE_VERSION VERSION_LESS 3.12)
-    message(STATUS "Not setting policies")
-else()
-    cmake_policy(SET CMP0074 NEW)
-    cmake_policy(SET CMP0075 NEW)
-endif()
-
-set(h5pp_FOUND TRUE)
-set(H5PP_FOUND TRUE)
-set(H5PP_DIR                        "@PACKAGE_H5PP_DIR@")
-set(H5PP_ROOT                       "@PACKAGE_H5PP_ROOT@")
-set(H5PP_INCLUDE_DIR                "@PACKAGE_H5PP_INCLUDE_DIR@")
-set(H5PP_INSTALL_DIR_THIRD_PARTY    "@PACKAGE_H5PP_INSTALL_DIR_THIRD_PARTY@")
-set(PACKAGE_PREFIX_DIR_SAVED        ${PACKAGE_PREFIX_DIR}) # The variable can get changed inside of find_dependency calls! So we need to save it.
-
 include(CMakeFindDependencyMacro)
 if (NOT Eigen3_FOUND OR NOT TARGET Eigen3::Eigen)
     set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
-    set(Eigen3_DIR                      "@PACKAGE_Eigen3_DIR@")
-    set(EIGEN3_ROOT_DIR                 "@PACKAGE_EIGEN3_ROOT_DIR@")
-    set(EIGEN3_INCLUDE_DIR              "@PACKAGE_EIGEN3_INCLUDE_DIR@")
-    find_dependency(Eigen3 3.3.4 PATHS ${Eigen3_DIR} ${EIGEN3_ROOT_DIR} ${EIGEN3_INCLUDE_DIR} ${H5PP_INSTALL_DIR_THIRD_PARTY}/Eigen3)
+    find_dependency(Eigen3 3.3.4
+        PATHS ${DIRECTORY_HINTS} ${Eigen3_DIR} ${EIGEN3_ROOT_DIR} ${EIGEN3_INCLUDE_DIR}
+        PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3
+        NO_CMAKE_PACKAGE_REGISTRY)
+
 endif()
 if (NOT spdlog_FOUND OR NOT TARGET spdlog::spdlog)
+    include(GNUInstallDirs)
     set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
     set(spdlog_DIR                      "@PACKAGE_spdlog_DIR@")
-    find_dependency(spdlog PATHS ${spdlog_DIR} ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog)
-endif()
-if (NOT HDF5_FOUND)
-    find_file(HDF5_C_COMPILER_EXECUTABLE        NAMES h5cc  PATHS $ENV{PATH} /usr/bin /usr/local/bin )
-    find_file(HDF5_CXX_COMPILER_EXECUTABLE      NAMES h5c++ PATHS $ENV{PATH} /usr/bin /usr/local/bin )
-    set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
-    set(HDF5_DIR                        "@PACKAGE_HDF5_DIR@")
-    set(HDF5_ROOT                       "@PACKAGE_HDF5_ROOT@")
-    set(HDF5_WANT_VERSION               "@HDF5_WANT_VERSION@")
-    find_dependency(HDF5 ${HDF5_WANT_VERSION} COMPONENTS C HL)
+    find_dependency(spdlog 1.3
+            PATHS ${spdlog_DIR} ${DIRECTORY_HINTS}
+            PATH_SUFFIXES spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog/share spdlog/cmake
+            NO_DEFAULT_PATH)
 endif()
 
-include(${H5PP_DIR}/h5ppTargets.cmake)
+if (NOT HDF5_FOUND OR NOT hdf5::hdf5)
+    set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
+    ##################################################################
+    ### Adapt pthread for static/dynamic linking                   ###
+    ##################################################################
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG FALSE)
+    find_package(Threads)
+    if(TARGET Threads::Threads AND NOT BUILD_SHARED_LIBS)
+        set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES "-Wl,--whole-archive ${CMAKE_THREAD_LIBS_INIT} -Wl,--no-whole-archive")
+    endif()
+
+    enable_language(C)
+    include(${H5PP_INSTALL_CONFIGDIR}/FindPackageHDF5.cmake)
+endif()
 
 
