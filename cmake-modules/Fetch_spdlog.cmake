@@ -9,7 +9,7 @@ if(spdlog_FOUND)
     target_include_directories(spdlog INTERFACE ${SPDLOG_INCLUDE_DIR})
     message(STATUS "SPDLOG FOUND IN SYSTEM: ${SPDLOG_INCLUDE_DIR}")
 
-elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
+elseif (DOWNLOAD_MISSING)
     message(STATUS "Spdlog will be installed into ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog on first build.")
     include(ExternalProject)
     ExternalProject_Add(external_SPDLOG
@@ -41,6 +41,6 @@ elseif (DOWNLOAD_SPDLOG OR DOWNLOAD_ALL)
             $<INSTALL_INTERFACE:third-party/spdlog/${CMAKE_INSTALL_INCLUDEDIR}>
     )
 else()
-    message(STATUS "Dependency spdlog not found and DOWNLOAD_SPDLOG is OFF")
+    message(STATUS "Dependency spdlog not found and DOWNLOAD_MISSING is OFF")
 
 endif()

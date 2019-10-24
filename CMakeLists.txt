@@ -4,7 +4,7 @@ project(h5pp  VERSION 0.2.2)
 
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake-modules)
 
 ################################################################
 ### Get git version number                                   ###
@@ -35,10 +35,10 @@ message("=======================================================================
 ################################################################
 option(BUILD_SHARED_LIBS  "Builds shared libraries"                             OFF)
 option(ENABLE_TESTS       "Enable testing"                                      ON)
-option(DOWNLOAD_HDF5      "Download and install HDF5 if not found"              OFF)
-option(DOWNLOAD_SPDLOG    "Download and install spdlog if not found"            OFF)
-option(DOWNLOAD_EIGEN3    "Download and install Eigen3 if not found"            OFF)
-option(DOWNLOAD_ALL       "Download and install all dependencies if not found"  OFF)
+option(ENABLE_HDF5        "Download and install HDF5 if not found"              OFF)
+option(ENABLE_SPDLOG      "Download and install spdlog if not found"            OFF)
+option(ENABLE_EIGEN3      "Download and install Eigen3 if not found"            OFF)
+option(DOWNLOAD_MISSING   "Download and install all dependencies if not found"  OFF)
 
 
 
@@ -46,10 +46,10 @@ option(DOWNLOAD_ALL       "Download and install all dependencies if not found"  
 message("=========================== h5pp build options ==============================")
 message(STATUS "BUILD_SHARED_LIBS  : ${BUILD_SHARED_LIBS}")
 message(STATUS "ENABLE_TESTS       : ${ENABLE_TESTS}")
-message(STATUS "DOWNLOAD_HDF5      : ${DOWNLOAD_HDF5}")
-message(STATUS "DOWNLOAD_SPDLOG    : ${DOWNLOAD_SPDLOG}")
-message(STATUS "DOWNLOAD_EIGEN3    : ${DOWNLOAD_EIGEN3}")
-message(STATUS "DOWNLOAD_ALL       : ${DOWNLOAD_ALL}")
+message(STATUS "ENABLE_HDF5        : ${ENABLE_HDF5}")
+message(STATUS "ENABLE_SPDLOG      : ${ENABLE_SPDLOG}")
+message(STATUS "ENABLE_EIGEN3      : ${ENABLE_EIGEN3}")
+message(STATUS "DOWNLOAD_MISSING   : ${DOWNLOAD_MISSING}")
 message("=============================================================================")
 
 
@@ -134,9 +134,9 @@ set(H5PP_INSTALL_DIR                   ${CMAKE_INSTALL_PREFIX})
 set(H5PP_BUILD_DIR                     ${CMAKE_BINARY_DIR}/h5pp)
 set(H5PP_INSTALL_DIR_THIRD_PARTY       ${CMAKE_INSTALL_PREFIX}/third-party)
 set(H5PP_BUILD_DIR_THIRD_PARTY         ${CMAKE_BINARY_DIR}/third-party-build)
-include(cmake/Fetch_Eigen3.cmake)
-include(cmake/Fetch_spdlog.cmake)
-include(cmake/Fetch_HDF5.cmake)
+include(cmake-modules/Fetch_Eigen3.cmake)
+include(cmake-modules/Fetch_spdlog.cmake)
+include(cmake-modules/Fetch_HDF5.cmake)
 if(TARGET hdf5::hdf5 AND TARGET Eigen3::Eigen AND TARGET spdlog::spdlog)
     set(DEPENDENCIES_FOUND TRUE)
 else()

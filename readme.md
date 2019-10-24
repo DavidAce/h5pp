@@ -35,7 +35,7 @@ By default, CMake will warn if it can't find the dependencies, and the installat
 
 For convenience, `h5pp` is also able to download and install the missing dependencies for you into the given install-directory (default: `install-dir/third-party`),
 and add these dependencies to the exported target `h5pp::deps`. To enable this automated behavior read more about [build options](#build-options) and [linking](#linking) targets below.
- 
+
 
 
 ## Usage
@@ -109,7 +109,7 @@ To give a concrete example, the syntax works as follows
 
 ### Extendable and non-extendable datasets (new)
 By default, datasets in h5pp are created as non-extendable. This means that a dataset has a fixed size and can only be overwritten if the new data has the same size and shape.
-In contrast, extendable datasets do not have fixed size and can be overwritten to contain more data. Keep in mind that overwriting with smaller data does not shrink the file size.
+In contrast, extendable datasets have dynamic size and can be overwritten by a larger dataset. Keep in mind that overwriting with a smaller dataset does not shrink the file size.
 
 To swap the default behavior, use one of the methods below
 ```c++
@@ -131,7 +131,7 @@ You can also optionally pass a true/false argument when writing a new dataset to
 - A non-extendable dataset smaller than 32 KB will be created as `H5D_COMPACT`, meaning it can fit in the metadata header.
 - A non-extendable dataset between 32 KB and 512 KB will be created as `H5D_CONTIGUOUS`.
 - A non-extendable dataset larger than 512 KB will be made into an extendable dataset unless explicitly specified. 
-   
+
 
 ### Pro-tip: load into Python using h5py
 Complex types are not supported natively by HDF5. Still, the storage layout used in `h5pp` makes it easy to read complex types within Python using `h5py`.
@@ -213,8 +213,8 @@ The target `h5pp::h5pp` will import the `h5pp` headers.
 The target `h5pp::deps` will import dependencies.
 The target `h5pp::flags` sets the compile flags that you need to compile with `h5pp`. These flags enable C++17 and experimental filesystem headers, i.e. `-std=c++17 -lstdc++fs`, as well as `-stdlib=libstdc++` when using Clang.
 
-**Note** If you want to link the dependencies manually, omit `h5pp::deps` above. The target `h5pp::deps` will import those dependencies for `h5pp` that were found or downloaded automatically during install. For each dependency found,
-a target will be made available, i.e., `h5pp::Eigen3`, `h5pp::spdlog` and `h5pp::hdf5`. In fact, `h5pp::deps` is simply an alias for those three targets, which can be used individually.
- 
+**Note** If you want to link the dependencies manually, omit `h5pp::deps` above. The target `h5pp::deps` will import each dependency for `h5pp` that was found (or automatically downloaded) during install. For each dependency found,
+a target is defined: `h5pp::Eigen3`, `h5pp::spdlog` and `h5pp::hdf5`. In fact, `h5pp::deps` is just an alias for these three targets together, but they can of course be used independently.
+
 
 

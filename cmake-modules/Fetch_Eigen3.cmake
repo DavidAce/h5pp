@@ -8,7 +8,7 @@ if(EIGEN3_FOUND)
     get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
     target_include_directories(Eigen3 INTERFACE ${EIGEN3_INCLUDE_DIR})
     target_compile_options    (Eigen3 INTERFACE ${EIGEN3_COMPILER_FLAGS})
-elseif (DOWNLOAD_EIGEN3 OR DOWNLOAD_ALL)
+elseif (DOWNLOAD_MISSING)
     message(STATUS "Eigen3 will be installed into ${INSTALL_DIRECTORY_THIRD_PARTY}/Eigen3 on first build.")
 
     include(ExternalProject)
@@ -38,7 +38,7 @@ elseif (DOWNLOAD_EIGEN3 OR DOWNLOAD_ALL)
             $<INSTALL_INTERFACE:third-party/Eigen3/include/eigen3>
     )
 else()
-    message(STATUS "Dependency Eigen3 not found and DOWNLOAD_EIGEN3 is OFF")
+    message(STATUS "Dependency Eigen3 not found and DOWNLOAD_MISSING is OFF")
 endif()
 
 
