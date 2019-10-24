@@ -15,10 +15,7 @@ if(NOT TARGET hdf5::hdf5)
                 "${H5PP_CONFIG_DIR_THIRD_PARTY}"
                 "${H5PP_BUILD_DIR_THIRD_PARTY}"
                 "${H5PP_INSTALL_DIR_THIRD_PARTY}"
-                "-DCMAKE_BUILD_TYPE=Release
-                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                 -DHDF5_ENABLE_PARALLEL:BOOL=OFF
-                "
+                "-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} -DHDF5_ENABLE_PARALLEL:BOOL=OFF"
         )
         include(cmake-modules/FindPackageHDF5.cmake)
         if(HDF5_FOUND AND TARGET hdf5::hdf5)

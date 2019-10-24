@@ -28,20 +28,14 @@ function(find_package_hdf5 hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE
         unset(HDF5_FOUND CACHE)
         unset(HDF5_FOUND PARENT_SCOPE)
 
-        find_file(HDF5_C_COMPILER_EXECUTABLE    NAMES h5cc  PATH_SUFFIXES bin envs/bin dmrg/bin envs/dmrg/bin PATHS ${hdf5_root} )
-        find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ PATH_SUFFIXES bin envs/bin dmrg/bin envs/dmrg/bin PATHS ${hdf5_root} )
+        find_file(HDF5_C_COMPILER_EXECUTABLE    NAMES h5cc  PATH_SUFFIXES bin envs/bin dmrg/bin envs/dmrg/bin PATHS ${hdf5_root} NO_DEFAULT_PATH )
+        find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ PATH_SUFFIXES bin envs/bin dmrg/bin envs/dmrg/bin PATHS ${hdf5_root} NO_DEFAULT_PATH )
         if (HDF5_C_COMPILER_EXECUTABLE OR HDF5_CXX_COMPILER_EXECUTABLE)
             message(STATUS "Searching for hdf5 execs in ${hdf5_root} - Success -- C:  ${HDF5_C_COMPILER_EXECUTABLE}  CXX: ${HDF5_CXX_COMPILER_EXECUTABLE}" )
             set(HDF5_FIND_DEBUG OFF)
             set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE ON)
             find_package(HDF5 ${HDF5_ATLEAST_VERSION} COMPONENTS ${HDF5_MODULES})
 
-            #            get_cmake_property(_variableNames VARIABLES)
-            #            foreach (_variableName ${_variableNames})
-            #                if("${_variableName}" MATCHES "HDF5" OR "${_variableName}" MATCHES "hdf5" OR "${_variableName}" MATCHES "h5")
-            #                    message(STATUS "${_variableName}=${${_variableName}}")
-            #                endif()
-            #            endforeach()
             if(HDF5_FOUND)
                 set(ACCEPT_PACKAGE FALSE)
                 if(HDF5_PREFER_PARALLEL AND HDF5_IS_PARALLEL)
@@ -94,7 +88,6 @@ function(find_package_hdf5 hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE
         else()
             message(STATUS "Searching for hdf5 execs in ${hdf5_root} - failed:" )
             set(HDF5_FOUND FALSE PARENT_SCOPE)
-            #            return()
         endif()
     endforeach()
     if(HDF5_REQUIRED)
@@ -131,17 +124,6 @@ endif()
 set(HDF5_ROOT ${HDF5_ROOT} ${HDF5_DIR} ${DIRECTORY_HINTS} $ENV{HDF5_ROOT} $ENV{HDF5_DIR} $ENV{EBROOTHDF5} $ENV{HOME}/.conda $ENV{HOME}/anaconda3 $ENV{HOME}/miniconda3 /usr /usr/local)
 
 find_package_hdf5("${HDF5_ROOT}" "${HDF5_MODULES}" "${HDF5_ATLEAST_VERSION}" "${HDF5_USE_STATIC_LIBRARIES}" "${HDF5_PREFER_PARALLEL}" "${HDF5_REQUIRED}")
-
-# To print all variables, use the code below:
-##
-#get_cmake_property(_variableNames VARIABLES)
-#foreach (_variableName ${_variableNames})
-#    string( TOLOWER "${_variableName}" _variableName_low )
-#    if("${_variableName_low}" MATCHES "hdf5" OR "${_variableName_low}" MATCHES "h5")
-#        message(STATUS "${_variableName}=${${_variableName}}")
-#    endif()
-#endforeach()
-
 
 if(HDF5_FOUND)
     # Add convenience libraries to collect all the hdf5 libraries
