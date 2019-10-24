@@ -12,8 +12,8 @@ if(NOT TARGET hdf5::hdf5)
         set(HDF5_IS_PARALLEL OFF)
         ExternalProject_Add(external_HDF5
                 URL     https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.3/src/hdf5-1.10.3.tar.bz2
-                PREFIX      ${BUILD_DIRECTORY}/hdf5
-                INSTALL_DIR ${INSTALL_DIRECTORY}/hdf5
+                PREFIX      ${H5PP_BUILD_DIR_THIRD_PARTY}/hdf5
+                INSTALL_DIR ${H5PP_INSTALL_DIR_THIRD_PARTY}/hdf5
                 UPDATE_DISCONNECTED 1
                 TEST_COMMAND ""
                 CMAKE_ARGS
