@@ -15,8 +15,13 @@ if(NOT TARGET hdf5::hdf5)
                 "${H5PP_CONFIG_DIR_THIRD_PARTY}"
                 "${H5PP_BUILD_DIR_THIRD_PARTY}"
                 "${H5PP_INSTALL_DIR_THIRD_PARTY}"
-                "-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} -DHDF5_ENABLE_PARALLEL:BOOL=OFF"
+                "-DCMAKE_BUILD_TYPE=Release"
+#                "-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} -DHDF5_ENABLE_PARALLEL:BOOL=OFF"
         )
+#        set(ENV{PKG_CONFIG_PATH}  "$ENV{PKG_CONFIG_PATH}:${H5PP_INSTALL_DIR_THIRD_PARTY}/hdf5/lib/pkgconfig")
+
+#        find_package(PkgConfig REQUIRED)
+#        pkg_search_module(HDF5 REQUIRED hdf5-1.10.3.pc)  # this looks for opencv.pc file
         include(cmake-modules/FindPackageHDF5.cmake)
         if(HDF5_FOUND AND TARGET hdf5::hdf5)
             message(STATUS "hdf5 installed successfully: ${HDF5_BUILD_DIR} ${HDF5_CXX_INCLUDE_DIRS} ${HDF5_hdf5_LIBRARY}")

@@ -8,8 +8,8 @@ ExternalProject_Add(external_eigen3
         GIT_PROGRESS 1
         BUILD_ALWAYS 1
         PATCH_COMMAND git apply ${PROJECT_SOURCE_DIR}/Eigen_3.3.7.patch
-        PREFIX      ${BUILD_DIR}/Eigen3
-        INSTALL_DIR ${INSTALL_DIR}/Eigen3
+        PREFIX      ${BUILD_DIRECTORY}/Eigen3
+        INSTALL_DIR ${INSTALL_DIRECTORY}/Eigen3
         CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         UPDATE_COMMAND ""

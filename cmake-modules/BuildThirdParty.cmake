@@ -12,8 +12,8 @@ function(build_third_party library_name config_dir build_dir install_dir extra_f
     execute_process( COMMAND  ${CMAKE_COMMAND} -E make_directory ${config_dir}/${library_name})
     execute_process(
             COMMAND  ${CMAKE_COMMAND}
-            -DBUILD_DIR:PATH=${build_dir}
-            -DINSTALL_DIR:PATH=${install_dir}
+            -DBUILD_DIRECTORY:PATH=${build_dir}
+            -DINSTALL_DIRECTORY:PATH=${install_dir}
             ${extra_flags}
             -G "CodeBlocks - Unix Makefiles"
             ${CMAKE_SOURCE_DIR}/cmake-modules/external_${library_name}
