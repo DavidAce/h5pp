@@ -152,9 +152,11 @@ set(DIRECTORY_HINTS
         ${CMAKE_INSTALL_PREFIX}
         ${CMAKE_INSTALL_PREFIX}/third-party
         ${H5PP_INSTALL_DIR_THIRD_PARTY}
+        ${CMAKE_SOURCE_DIR}
         $ENV{HOME}/.conda
         $ENV{HOME}/anaconda3
         $ENV{HOME}/miniconda
+
 )
 
 

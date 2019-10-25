@@ -31,8 +31,8 @@ function(find_package_hdf5 hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE
         set(HDF5_FIND_DEBUG OFF)
         set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE ON)
 
-        find_file(HDF5_C_COMPILER_EXECUTABLE    NAMES h5cc  PATHS ${HDF5_ROOT} PATH_SUFFIXES libs/hdf5/bin third-party/hdf5/bin bin  envs/bin dmrg/bin envs/dmrg/bin NO_DEFAULT_PATH )
-        find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ PATHS ${HDF5_ROOT} PATH_SUFFIXES libs/hdf5/bin third-party/hdf5/bin bin  envs/bin dmrg/bin envs/dmrg/bin NO_DEFAULT_PATH )
+        find_file(HDF5_C_COMPILER_EXECUTABLE    NAMES h5cc  PATHS ${HDF5_ROOT} PATH_SUFFIXES  hdf5/bin envs/bin dmrg/bin envs/dmrg/bin NO_DEFAULT_PATH )
+        find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ PATHS ${HDF5_ROOT} PATH_SUFFIXES  hdf5/bin envs/bin dmrg/bin envs/dmrg/bin NO_DEFAULT_PATH )
         if (HDF5_C_COMPILER_EXECUTABLE OR HDF5_CXX_COMPILER_EXECUTABLE)
             message(STATUS "Searching for hdf5 execs in ${HDF5_ROOT} - Success -- C:  ${HDF5_C_COMPILER_EXECUTABLE}  CXX: ${HDF5_CXX_COMPILER_EXECUTABLE}" )
             find_package(HDF5 ${HDF5_ATLEAST_VERSION} COMPONENTS  ${HDF5_MODULES} )
@@ -121,7 +121,7 @@ if (NOT HDF5_REQUIRED)
     set(HDF5_REQUIRED OFF)
 endif()
 
-set(HDF5_ROOT  ${HDF5_ROOT} ${HDF5_DIR} ${CMAKE_SOURCE_DIR} ${DIRECTORY_HINTS} $ENV{HDF5_ROOT} $ENV{HDF5_DIR} $ENV{EBROOTHDF5} $ENV{HOME}/.conda $ENV{HOME}/anaconda3 $ENV{HOME}/miniconda3 /usr /usr/local)
+set(HDF5_ROOT  ${HDF5_ROOT} ${HDF5_DIR} ${DIRECTORY_HINTS} $ENV{HDF5_ROOT} $ENV{HDF5_DIR} $ENV{EBROOTHDF5} /usr /usr/local)
 
 find_package_hdf5("${HDF5_ROOT}" "${HDF5_MODULES}" "${HDF5_ATLEAST_VERSION}" "${HDF5_USE_STATIC_LIBRARIES}" "${HDF5_PREFER_PARALLEL}" "${HDF5_REQUIRED}")
 
