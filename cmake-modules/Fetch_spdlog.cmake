@@ -21,7 +21,6 @@ elseif (DOWNLOAD_MISSING)
             "${H5PP_INSTALL_DIR_THIRD_PARTY}"
             ""
     )
-    message("Looking in: ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog/${CMAKE_INSTALL_LIBDIR}/cmake/spdlog")
     find_package(spdlog 1.3 NO_DEFAULT_PATH PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog/${CMAKE_INSTALL_LIBDIR}/cmake/spdlog)
     if(spdlog_FOUND AND TARGET spdlog::spdlog)
         message(STATUS "spdlog installed successfully in : ${SPDLOG_INCLUDE_DIR}")
