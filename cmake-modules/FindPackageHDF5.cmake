@@ -27,7 +27,7 @@ function(find_package_hdf5 hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE
         unset(HDF5_FOUND CACHE)
         unset(HDF5_FOUND PARENT_SCOPE)
 
-        message(STATUS "Searching for hdf5 in ${HDF5_ROOT}" )
+        message(STATUS "Searching for hdf5 execs in ${HDF5_ROOT}" )
         set(HDF5_FIND_DEBUG OFF)
         set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE ON)
 
@@ -86,7 +86,7 @@ function(find_package_hdf5 hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE
                 endif()
             endif()
         else()
-            message(STATUS "Searching for hdf5 execs in ${HDF5_ROOT} - failed:" )
+#            message(STATUS "Searching for hdf5 execs in ${HDF5_ROOT} - failed" )
             set(HDF5_FOUND FALSE PARENT_SCOPE)
         endif()
     endforeach()
