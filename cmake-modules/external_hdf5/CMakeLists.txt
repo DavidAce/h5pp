@@ -9,7 +9,7 @@ ExternalProject_Add(external_hdf5
         PREFIX      ${BUILD_DIRECTORY}/hdf5
         INSTALL_DIR ${INSTALL_DIRECTORY}/hdf5
 #        UPDATE_DISCONNECTED 1
-        BUILD_ALWAYS 1
+        BUILD_ALWAYS OFF
 #        BINARY_DIR ${BUILD_DIR}/hdf5
         CONFIGURE_COMMAND  pwd && CFLAGS=-fPIC && sh <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-cxx --enable-hl --enable-silent-rules
         BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j
