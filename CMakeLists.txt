@@ -99,6 +99,15 @@ elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 endif()
 
 
+######################################
+###  Check  C++17 compiles         ###
+######################################
+include(cmake-modules/CheckCXX17Compiles.cmake)
+get_target_property(CXX17TEST_REQUIRED_LIBRARIES flags INTERFACE_LINK_LIBRARIES)
+get_target_property(CXX17TEST_REQUIRED_FLAGS     flags INTERFACE_COMPILE_OPTIONS)
+CheckCXX17Compiles("${CXX17TEST_REQUIRED_FLAGS}" "${CXX17TEST_REQUIRED_LIBRARIES}")
+
+
 
 
 #########################################################################
