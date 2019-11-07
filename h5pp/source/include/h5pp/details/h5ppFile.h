@@ -213,21 +213,43 @@ namespace h5pp{
 
 
 
+        // Functions related datasets
+
+        template <typename DataType>
+        void writeDataset(const DataType &data, const std::string &datasetPath, std::optional<bool> extendable = std::nullopt);
+
+
+        template <typename DataType,typename T, size_t N>
+        void writeDataset(const DataType &data, const T (&dims)[N], const std::string &datasetPath, std::optional<bool> extendable = std::nullopt);
+
+        template <typename DataType>
+        void writeDataset(const DataType &data, const DatasetProperties &props);
+
+        template <typename DataType,typename T, size_t N>
+        void writeDataset(const DataType * data, const T (&dims)[N], const std::string &datasetPath, std::optional<bool> extendable = std::nullopt);
+
+        template <typename DataType,typename T, typename = std::enable_if_t<std::is_integral<T>::value>>
+        void writeDataset(const DataType * data, T size, const std::string &datasetPath, std::optional<bool> extendable = std::nullopt){
+            return writeDataset(data,{size},datasetPath,extendable);
+        }
+
+
         template <typename DataType>
         void readDataset(DataType &data, const std::string &datasetPath) const;
 
         template <typename DataType>
         DataType readDataset(const std::string &datasetPath) const;
 
-        template <typename DataType>
-        void writeDataset(const DataType &data, const std::string &datasetPath, std::optional<bool> extendable = std::nullopt);
 
 
-        template <typename DataType,typename T, std::size_t N>
-        void writeDataset(const T (&dims)[N],const DataType &data,  const std::string &datasetPath, std::optional<bool> extendable = std::nullopt);
+        // Functions related to tables
 
-        template <typename DataType>
-        void writeDataset(const DataType &data, const DatasetProperties &props);
+
+
+
+
+        // Functions related to attributes
+
 
         template <typename AttrType>
         void writeAttributeToLink(const AttrType &attribute, const AttributeProperties &aprops);
@@ -588,7 +610,7 @@ void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPa
 }
 
 template <typename DataType,typename T, std::size_t N>
-void h5pp::File::writeDataset(const T (&dims)[N],const DataType &data, const std::string &datasetPath, std::optional<bool> extendable){
+void h5pp::File::writeDataset(const DataType &data,const T (&dims)[N], const std::string &datasetPath, std::optional<bool> extendable){
     if(accessMode == AccessMode::READONLY){throw std::runtime_error("Attempted to write to read-only file");}
     static_assert(std::is_integral_v<T>);
     static_assert(N > 0 , "Dimensions of given data are too few, N == 0");
@@ -635,6 +657,20 @@ void h5pp::File::writeDataset(const T (&dims)[N],const DataType &data, const std
         }
     }
 }
+
+
+template <typename DataType,typename T, size_t N>
+void h5pp::File::writeDataset(const DataType * data, const T (&dims)[N], const std::string &datasetPath, std::optional<bool> extendable){
+    // This function takes a pointer and a specifiation of dimensions. Easiest thing to do
+    // is to wrap this in an Eigen::Tensor and send to writeDataset
+    Eigen::DSizes<long,N> dimsizes;
+    std::copy_n(std::begin(dims), N, dimsizes.begin());
+    auto tensorWrap = Eigen::TensorMap<const Eigen::Tensor<const DataType,N>>(data,dimsizes);
+    writeDataset(tensorWrap, datasetPath,extendable);
+}
+
+
+
 
 
 
@@ -838,13 +874,6 @@ void h5pp::File::writeAttributeToLink(const AttrType &attribute, const std::stri
     }
     writeAttributeToLink(attribute, aprops);
 }
-
-
-
-
-
-
-
 
 
 

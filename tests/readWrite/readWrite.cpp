@@ -63,11 +63,11 @@ int main()
     file.writeDataset(vectorComplex, "vectorComplex");
 
     std::cout << "Writing matrixDouble     : \n" <<  matrixDouble  << std::endl;
-    file.writeDataset({matrixDouble.rows(), matrixDouble.cols()}, matrixDouble, "matrixDouble");
+    file.writeDataset(matrixDouble,{matrixDouble.rows(), matrixDouble.cols()}, "matrixDouble");
 
 
     std::cout << "Writing matrixIntRowMajor     : \n" <<  matrixIntRowMajor  << std::endl;
-    file.writeDataset( {matrixIntRowMajor.rows(), matrixIntRowMajor.cols()} , matrixIntRowMajor, "matrixIntRowMajor");
+    file.writeDataset(matrixIntRowMajor,{matrixIntRowMajor.rows(), matrixIntRowMajor.cols()} , "matrixIntRowMajor");
 
 
     std::cout << "Writing tensorComplex     : \n" <<  tensorComplex  << std::endl;

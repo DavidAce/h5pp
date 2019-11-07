@@ -40,9 +40,11 @@ namespace h5pp{
             template<typename T> struct is_eigen_tensor : public std::false_type {};
             template<typename Scalar, int rank, int storage, typename IndexType>
             struct is_eigen_tensor<Eigen::Tensor<Scalar, rank, storage,IndexType>> : public std::true_type{};
-
-
-        //////
+            template<typename Derived>
+            struct is_eigen_tensor<Eigen::TensorMap<Derived>> : public std::true_type{};
+            template<typename Derived>
+            struct is_eigen_tensor<Eigen::TensorBase<Derived,Eigen::ReadOnlyAccessors>> : public std::true_type{};
+            //////
 
             template<typename T> struct is_eigen_matrix : public std::false_type {};
             template<typename T, int rows, int cols, int StorageOrder> struct is_eigen_matrix<Eigen::Matrix<T,rows,cols,StorageOrder>> : public std::true_type {};

@@ -31,6 +31,8 @@ int main(){
     matrixInt           << 1,2,3,4;
     matrixDouble        << 1.5,2.5,3.5,4.5;
     matrixComplexDouble << 1.0 + 2.0i,  3.0 + 4.0i, 5.0+6.0i , 7.0+8.0i;
+
+    //Test normal write usage
     file.writeDataset(String, "simpleWriteGroup/String");
     file.writeDataset(Char, "simpleWriteGroup/Char");
     file.writeDataset(Double, "simpleWriteGroup/Double");
@@ -47,6 +49,11 @@ int main(){
     file.writeDataset(matrixInt, "simpleWriteGroup/matrixInt");
     file.writeDataset(matrixDouble, "simpleWriteGroup/matrixDouble");
     file.writeDataset(matrixComplexDouble, "simpleWriteGroup/matrixComplexDouble");
+
+    //Test passing pointers
+    file.writeDataset(vectorInt.data(),vectorInt.size(), "simpleWriteGroup/vectorInt");
+
+
 
     Eigen::Matrix<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<double>,Eigen::Dynamic,Eigen::Dynamic> test =  matrixComplexDouble.transpose().cast<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<double>>();
     file.writeDataset(test, "simpleWriteGroup/test");
