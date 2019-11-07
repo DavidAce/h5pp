@@ -59,23 +59,23 @@ int main() {
 
     // Write a vector with doubles
     std::vector<double> testVector (5, 10.0);
-    file.writeDataset(testvector, "testvector");
+    file.writeDataset(testVector, "testVector");
 
     // Write an Eigen matrix with std::complex<double>
-    Eigen::MatrixXcd testmatrix (2, 2);
-    testmatrix << 1.0 + 2.0i,  3.0 + 4.0i, 5.0 + 6.0i , 7.0 + 8.0i;
-    file.writeDataset(testmatrix, "someGroup/testmatrix");
+    Eigen::MatrixXcd testMatrix (2, 2);
+    testMatrix << 1.0 + 2.0i,  3.0 + 4.0i, 5.0 + 6.0i , 7.0 + 8.0i;
+    file.writeDataset(testMatrix, "someGroup/testMatrix");
 
     // Read a vector with doubles
     std::vector<double> readVector;
-    file.readDataset(readvector, "testvector")
+    file.readDataset(readVector, "testVector");
 
     // Read in one line
-    auto altReadVector = file.readDataset<std::vector<double>> ("testvector");
+    auto altReadVector = file.readDataset<std::vector<double>> ("testVector");
 
     // Read an Eigen matrix with std::complex<double>
     Eigen::MatrixXcd readMatrix;
-    file.readDataset(readMatrix, "someGroup/testmatrix")
+    file.readDataset(readMatrix, "someGroup/testMatrix");
 
 
 
