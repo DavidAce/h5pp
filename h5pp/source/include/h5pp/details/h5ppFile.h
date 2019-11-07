@@ -486,12 +486,12 @@ void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &pro
     }
     catch (std::exception &ex){
         h5pp::Hdf5::closeLink(dataset);
-        H5Fflush(file,H5F_SCOPE_GLOBAL);
+//        H5Fflush(file,H5F_SCOPE_GLOBAL);
         closeFileHandle(file);
         throw std::runtime_error("Write to file failed [" + props.dsetName +"]: " + std::string(ex.what()));
     }
     h5pp::Hdf5::closeLink(dataset);
-    H5Fflush(file,H5F_SCOPE_GLOBAL);
+//    H5Fflush(file,H5F_SCOPE_GLOBAL);
     closeFileHandle(file);
 }
 
@@ -798,7 +798,7 @@ void h5pp::File::writeAttributeToLink(const AttrType &attribute, const Attribute
             }
             catch(std::exception &ex){
                 H5Aclose(attributeId);
-                H5Fflush(file, H5F_SCOPE_GLOBAL);
+//                H5Fflush(file, H5F_SCOPE_GLOBAL);
                 h5pp::Hdf5::closeLink(linkObject);
                 closeFileHandle(file);
                 H5Eprint(H5E_DEFAULT, stderr);
@@ -806,7 +806,7 @@ void h5pp::File::writeAttributeToLink(const AttrType &attribute, const Attribute
             }
 
             H5Aclose(attributeId);
-            H5Fflush(file, H5F_SCOPE_GLOBAL);
+//            H5Fflush(file, H5F_SCOPE_GLOBAL);
             h5pp::Hdf5::closeLink(linkObject);
             closeFileHandle(file);
         }
