@@ -7,7 +7,6 @@
 
 #include "h5ppTypeCheck.h"
 #include "h5ppTypeComplex.h"
-//namespace fs = std::experimental::filesystem;
 
 
 namespace h5pp{

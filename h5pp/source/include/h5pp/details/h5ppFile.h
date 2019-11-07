@@ -2,16 +2,15 @@
 // Created by david on 2019-03-01.
 //
 
-#ifndef H5PP_FILE_H
-#define H5PP_FILE_H
+#pragma once
+
 #include <hdf5.h>
 #include <hdf5_hl.h>
 #include <iostream>
 #include <string>
 #include <iomanip>
 #include <optional>
-#include <experimental/filesystem>
-#include <experimental/type_traits>
+#include <filesystem>
 #include "h5ppConstants.h"
 #include "h5ppFileCounter.h"
 #include "h5ppTypeCheck.h"
@@ -28,7 +27,7 @@
 
 namespace h5pp{
 
-    namespace fs = std::experimental::filesystem;
+    namespace fs = std::filesystem;
     namespace tc = h5pp::Type::Check;
 /*!
  \brief Writes and reads data to a binary hdf5-file.
@@ -380,7 +379,7 @@ namespace h5pp{
 
             //Take case 2 first and make it into a case 1
             if (FilePath.empty()){
-                FilePath = fs::system_complete(FileName);
+                FilePath = fs::canonical(FileName);
                 FileName = FilePath.filename();
             }
 
@@ -876,6 +875,3 @@ void h5pp::File::writeAttributeToLink(const AttrType &attribute, const std::stri
 }
 
 
-
-
-#endif //H5PP_FILE_H

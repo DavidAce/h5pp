@@ -12,24 +12,6 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      compiler: gcc-7
-      env:
-        - COMPILER_NAME=gcc
-        - GCC_VERSION=7
-        - CC=gcc-7
-        - CXX=g++-7
-        - MATRIX_EVAL="CXX=g++-7 && CC=gcc-7"
-      cache:
-        apt: true
-      addons:
-        apt:
-          update: true
-          sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
-          packages:
-            - gcc-7
-            - g++-7
-    - os: linux
       compiler: gcc-8
       env:
         - COMPILER_NAME=gcc
@@ -69,13 +51,13 @@ matrix:
             - clang-7
             - libstdc++-8-dev
     - os: linux
-      compiler: gcc-7 (preinstalled libs)
+      compiler: gcc-8 (preinstalled libs)
       env:
         - COMPILER_NAME=gcc
-        - GCC_VERSION=7
-        - CC=gcc-7
-        - CXX=g++-7
-        - MATRIX_EVAL="CXX=g++-7 && CC=gcc-7"
+        - GCC_VERSION=8
+        - CC=gcc-8
+        - CXX=g++-8
+        - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
       cache:
         apt: true
       addons:
@@ -84,8 +66,8 @@ matrix:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
           packages:
-            - gcc-7
-            - g++-7
+            - gcc-8
+            - g++-8
       before_install:
         # Here we just install Miniconda, which you shouldn't have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh

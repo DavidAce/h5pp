@@ -12,6 +12,7 @@
 namespace h5pp{
     namespace Type{
         namespace Check{
+
             template <typename T> using Data_t          = decltype(std::declval<T>().data());
             template <typename T> using Size_t          = decltype(std::declval<T>().size());
             template <typename T> using Cstr_t          = decltype(std::declval<T>().c_str());

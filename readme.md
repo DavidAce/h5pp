@@ -23,7 +23,7 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
 
 
 ## Requirements
-* C++17 capable compiler with experimental headers. (tested with GCC version >= 7.3 and CLang version >= 6.0)
+* C++17 capable compiler with experimental headers. (tested with GCC version >= 8 and CLang version >= 7.0)
 * CMake (tested with version >= 3.10)
 * Automated dependencies:
     - [**HDF5**](https://support.hdfgroup.org/HDF5/) (tested with version >= 1.10).
