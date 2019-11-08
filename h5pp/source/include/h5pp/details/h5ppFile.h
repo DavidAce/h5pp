@@ -379,7 +379,7 @@ namespace h5pp{
 
             //Take case 2 first and make it into a case 1
             if (FilePath.empty()){
-                FilePath = fs::canonical(FileName);
+                FilePath = fs::absolute(FileName);
                 FileName = FilePath.filename();
             }
 
