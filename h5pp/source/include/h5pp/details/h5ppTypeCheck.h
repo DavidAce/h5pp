@@ -71,13 +71,14 @@ namespace h5pp{
 
 
             template <class T>
-            std::string
+            constexpr
+            std::string_view
             type_name()
             {
                 using namespace std;
                 #ifdef __clang__
-                std::string p = __PRETTY_FUNCTION__;
-                return std::string(p.data() + 34, p.size() - 34 - 1);
+                string_view p = __PRETTY_FUNCTION__;
+                return string_view(p.data() + 34, p.size() - 34 - 1);
                 #elif defined(__GNUC__)
                 string_view p = __PRETTY_FUNCTION__;
                 #  if __cplusplus < 201402
