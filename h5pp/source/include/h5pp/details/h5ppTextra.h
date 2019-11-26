@@ -12,8 +12,6 @@
 #include <iostream>
 
 
-
-
 namespace h5pp{
 /*! \brief **Textra** stands for "Tensor Extra". Provides extra functionality to Eigen::Tensor.*/
 

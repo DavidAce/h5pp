@@ -10,7 +10,7 @@ function(build_example example_name example_src_dir example_tgt_dir)
             CMAKE_ARGS
             -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
             -DH5PP_INSTALL_DIR:PATH=${H5PP_INSTALL_DIR}
-            DEPENDS h5pp::h5pp h5pp::deps h5pp::flags
+            DEPENDS h5pp deps flags
             EXCLUDE_FROM_ALL TRUE
             )
 endfunction()

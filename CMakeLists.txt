@@ -1,5 +1,5 @@
  
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 project(h5pp  VERSION 0.2.2)
 
 
@@ -84,28 +84,26 @@ endif()
 ### Compiler and linker flags ###
 #################################
 add_library(flags INTERFACE)
-add_library(h5pp::flags ALIAS flags)
 
-target_compile_features(flags INTERFACE cxx_std_17)
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" )
-    target_compile_options(flags INTERFACE -std=c++17)
-    target_link_libraries (flags INTERFACE -lstdc++fs)
-elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options(flags INTERFACE -stdlib=libstdc++ -std=c++17)
-    target_link_libraries (flags INTERFACE -stdlib=libstdc++ -lstdc++fs)
-    if(GCC_TOOLCHAIN)
-        target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
-    endif()
+target_compile_options(flags INTERFACE -std=c++17)
+target_link_libraries (flags INTERFACE -lstdc++fs)
+if(GCC_TOOLCHAIN)
+    target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
 endif()
 
 
-######################################
-###  Check  C++17 compiles         ###
-######################################
-include(cmake-modules/CheckCXX17Compiles.cmake)
-get_target_property(CXX17TEST_REQUIRED_LIBRARIES flags INTERFACE_LINK_LIBRARIES)
-get_target_property(CXX17TEST_REQUIRED_FLAGS     flags INTERFACE_COMPILE_OPTIONS)
-CheckCXX17Compiles("${CXX17TEST_REQUIRED_FLAGS}" "${CXX17TEST_REQUIRED_LIBRARIES}")
+#######################################################
+###  Check  #include<filesystem> or                 ###
+###  or     #include<experimental/filesystem>       ###
+#######################################################
+include(cmake-modules/CheckFilesystemCompiles.cmake)
+CheckFilesystemCompiles(flags)
+
+#######################################################
+###  Check  #include<experimental/type_traits>      ###
+#######################################################
+include(cmake-modules/CheckTypeTraitsCompiles.cmake)
+CheckTypeTraitsCompiles(flags)
 
 
 
@@ -113,10 +111,9 @@ CheckCXX17Compiles("${CXX17TEST_REQUIRED_FLAGS}" "${CXX17TEST_REQUIRED_LIBRARIES
 #########################################################################
 ### Define an interface library and establish its needs for the user  ###
 #########################################################################
-add_library(h5pp INTERFACE)
-add_library(h5pp::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(
-        h5pp
+        ${PROJECT_NAME}
         INTERFACE
         $<BUILD_INTERFACE:${INSTALL_DIR}/include>
         $<INSTALL_INTERFACE:include>
@@ -182,44 +179,39 @@ else()
     set(DEPENDENCIES_FOUND FALSE)
 endif()
 
+
 ##################################################################
 ### Define interface libraries for the dependencies            ###
 ##################################################################
-
-
 add_library(deps INTERFACE)
-add_library(h5pp::deps ALIAS deps)
 if(TARGET Eigen3::Eigen)
-    add_dependencies(deps Eigen3::Eigen)
     target_link_libraries(deps INTERFACE Eigen3::Eigen)
-    get_target_property(EIGEN_INFO Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
-#    install(TARGETS Eigen3 EXPORT h5ppTargets )
 endif()
 if(TARGET spdlog::spdlog)
-    add_dependencies(deps spdlog::spdlog)
     target_link_libraries(deps INTERFACE spdlog::spdlog)
-    get_target_property(SPDLOG_INFO spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
-#    install(TARGETS spdlog EXPORT h5ppTargets )
-
 endif()
 if(TARGET hdf5::hdf5)
-    add_dependencies(deps hdf5::hdf5)
     target_link_libraries(deps INTERFACE hdf5::hdf5)
-    get_target_property(HDF5_INFO hdf5::hdf5 INTERFACE_LINK_LIBRARIES)
-#    install(TARGETS hdf5 EXPORT h5ppTargets )
 endif()
-install(TARGETS h5pp deps flags EXPORT h5ppTargets )
 
 
-
+##################################################################
+### Print summary of CMake configuration                       ###
+##################################################################
 message("=============================================================================")
-message("===            SUMMARY OF DEPENDENCIES FOUND BY H5PP                      ===")
+message("===                  SUMMARY OF CMAKE CONFIGURATION                       ===")
 message("=============================================================================")
-message("    EIGEN3   :   ${EIGEN_INFO}")
-message("    SPDLOG   :   ${SPDLOG_INFO}")
-message("    HDF5     :   ${HDF5_INFO}")
+include(cmake-modules/PrintTargetInfo.cmake)
+print_target_info(h5pp)
+print_target_info(deps)
+print_target_info(flags)
+print_target_info(spdlog::spdlog)
+print_target_info(Eigen3::Eigen)
+print_target_info(hdf5::hdf5)
 message("=============================================================================")
 message("")
+
+
 
 if(NOT DEPENDENCIES_FOUND)
 message(WARNING "Dependencies missing.\nTo use h5pp headers, link the missing dependencies manually from your project")
@@ -227,28 +219,8 @@ endif()
 
 
 
-
-    # Bind projects together
-#if (DEPENDENCIES_FOUND)
-#    add_custom_target(h5pp-builder ALL)
-#    add_library(deps INTERFACE)
-#    add_library(h5pp::deps ALIAS deps)
-#    add_dependencies(deps hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
-#    target_link_libraries(deps INTERFACE hdf5::hdf5 Eigen3 spdlog)
-
-#    add_dependencies(deps hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
-#    target_link_libraries(deps INTERFACE hdf5::hdf5 Eigen3::Eigen spdlog::spdlog)
-
-
-#    target_link_libraries(${PROJECT_NAME} INTERFACE h5pp::deps)
-#    add_dependencies(h5pp-builder h5pp::h5pp h5pp::deps)
-#endif()
-
-
-
-
-
-
+#install(TARGETS test DESTINATION wildtest/myproj EXPORT myproj-targets)
+#install(EXPORT myproj-targets DESTINATION lib/myproj)
 
 
 #######################################################
@@ -266,6 +238,7 @@ set(H5PP_DIR  ${H5PP_INSTALL_CONFIGDIR})
 install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
+install(TARGETS h5pp deps flags EXPORT h5ppTargets)
 
 #Export the targets to a script
 install(EXPORT
@@ -274,8 +247,10 @@ install(EXPORT
         NAMESPACE h5pp::
         DESTINATION ${H5PP_INSTALL_CONFIGDIR})
 
+
 #Create a ConfigVersion.cmake file
 include(CMakePackageConfigHelpers)
+
 
 configure_package_config_file(
         cmake-modules/h5ppConfig.cmake.in
@@ -304,6 +279,8 @@ write_basic_package_version_file(
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
 )
+
+
 ##Install the config, configversion and custom find modules
 install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
@@ -315,51 +292,12 @@ install(FILES
         )
 
 
-###Register package in user's package registry
-##export(PACKAGE h5pp)
-#
-#
-#
-#
-#
-#
-#
-#
-#############################
-## UNIT TEST
-#############################
-if(ENABLE_TESTS)
-    if(DEPENDENCIES_FOUND)
-        enable_testing()
-        add_subdirectory(tests/simpleWrite          EXCLUDE_FROM_ALL)
-        add_subdirectory(tests/largeWrite           EXCLUDE_FROM_ALL)
-        add_subdirectory(tests/overWrite            EXCLUDE_FROM_ALL)
-        add_subdirectory(tests/readWrite            EXCLUDE_FROM_ALL)
-        add_subdirectory(tests/readWriteAttributes  EXCLUDE_FROM_ALL)
-        add_subdirectory(tests/copySwap             EXCLUDE_FROM_ALL)
 
-        add_custom_target(all_tests ALL
-                DEPENDS simpleWrite
-                DEPENDS largeWrite
-                DEPENDS overWrite
-                DEPENDS readWrite
-                DEPENDS readWriteAttributes
-                DEPENDS copySwap
-                )
+##################################################################
+### Unit testing                                               ###
+##################################################################
+include(tests/all-tests.cmake)
 
-        add_custom_command(TARGET all_tests
-                POST_BUILD
-                COMMENT "Running Tests:"
-                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                DEPENDS h5pp::deps all_tests
-                COMMAND ${CMAKE_CTEST_COMMAND} --build-config $<CONFIG> --output-on-failures)
-    else()
-        message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
-    endif()
-endif()
-
-#
-#
 
 ############################
 # ADD TARGETS FOR  EXAMPLES

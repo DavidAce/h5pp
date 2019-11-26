@@ -10,7 +10,6 @@
 #include <string>
 #include <iomanip>
 #include <optional>
-#include <filesystem>
 #include "h5ppConstants.h"
 #include "h5ppFileCounter.h"
 #include "h5ppTypeCheck.h"
@@ -22,6 +21,7 @@
 #include "h5ppDatasetProperties.h"
 #include "h5ppAttributeProperties.h"
 #include "h5ppHdf5.h"
+#include <filesystem>
 
 
 
