@@ -4,7 +4,7 @@ if(NOT TARGET hdf5::hdf5)
     include(cmake-modules/FindPackageHDF5.cmake)
 
     if(HDF5_FOUND AND TARGET hdf5::hdf5)
-        message(STATUS "hdf5 found in system: ${HDF5_BUILD_DIR} ${HDF5_CXX_INCLUDE_DIRS} ${HDF5_hdf5_LIBRARY}")
+        message(STATUS "hdf5 found")
 #        include(cmake-modules/PrintTargetProperties.cmake)
 #        print_target_properties(hdf5::hdf5)
     elseif (DOWNLOAD_MISSING)
