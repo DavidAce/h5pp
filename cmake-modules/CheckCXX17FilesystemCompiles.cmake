@@ -1,8 +1,10 @@
-function(CheckTypeTraitsCompiles)
-    set(CMAKE_REQUIRED_FLAGS     "-std=c++17")
+function(CheckCXX17FilesystemCompiles)
+    set(CMAKE_REQUIRED_FLAGS     "-lstdc++fs -std=c++17")
+    set(CMAKE_REQUIRED_LIBRARIES "-lstdc++fs" )
+
     include(CheckIncludeFileCXX)
-    check_include_file_cxx(experimental/type_traits    has_type_traits  )
-    if(NOT has_type_traits)
+    check_include_file_cxx(filesystem    has_filesystem  )
+    if(NOT has_filesystem)
         message(FATAL_ERROR "\n\
                 Missing one or more C++17 headers.\n\
                 Consider using a newer compiler (GCC 8 or above, Clang 7 or above),\n\
@@ -15,12 +17,14 @@ function(CheckTypeTraitsCompiles)
 
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
-        #include<experimental/type_traits>
+        #include<filesystem>
+        namespace fs = std::filesystem;
         int main(){
+            fs::path testpath;
             return 0;
         }
-        " TYPETRAITS_COMPILES)
-    if(NOT TYPETRAITS_COMPILES)
-        message(FATAL_ERROR "Unable to compile with experimental/type_traits header")
+        " FILESYSTEM_COMPILES)
+    if(NOT FILESYSTEM_COMPILES)
+        message(FATAL_ERROR "Unable to compile with filesystem headers")
     endif()
 endfunction()

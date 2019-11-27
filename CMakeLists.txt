@@ -84,8 +84,7 @@ endif()
 ### Compiler and linker flags ###
 #################################
 add_library(flags INTERFACE)
-
-target_compile_options(flags INTERFACE -std=c++17)
+target_compile_options(flags INTERFACE  $<$<COMPILE_LANGUAGE:CXX>: -lstdc++fs -std=c++17>)
 target_link_libraries (flags INTERFACE -lstdc++fs)
 if(GCC_TOOLCHAIN)
     target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
@@ -96,14 +95,14 @@ endif()
 ###  Check  #include<filesystem> or                 ###
 ###  or     #include<experimental/filesystem>       ###
 #######################################################
-include(cmake-modules/CheckFilesystemCompiles.cmake)
-CheckFilesystemCompiles(flags)
+include(cmake-modules/CheckCXX17FilesystemCompiles.cmake)
+CheckCXX17FilesystemCompiles()
 
 #######################################################
 ###  Check  #include<experimental/type_traits>      ###
 #######################################################
 include(cmake-modules/CheckTypeTraitsCompiles.cmake)
-CheckTypeTraitsCompiles(flags)
+CheckTypeTraitsCompiles()
 
 
 
