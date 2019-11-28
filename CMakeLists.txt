@@ -35,7 +35,7 @@ message("=======================================================================
 ################################################################
 option(BUILD_SHARED_LIBS  "Builds shared libraries"                             OFF)
 option(BUILD_EXAMPLES     "Builds examples"                                     OFF)
-option(ENABLE_TESTS       "Enable testing"                                      ON)
+option(ENABLE_TESTS       "Enable testing"                                      OFF)
 option(DOWNLOAD_MISSING   "Download and install all dependencies if not found"  OFF)
 
 
