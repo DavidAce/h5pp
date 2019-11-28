@@ -144,11 +144,13 @@ namespace h5pp{
                 if(hasInitialized){
                     switch (accessMode) {
                         case (AccessMode::READONLY)  :{
+                            h5pp::Logger::log->trace("Opening file handle in READONLY mode");
                             hid_t  fileHandle = H5Fopen(FilePath.c_str(), H5F_ACC_RDONLY, plist_facc);
                             if (fileHandle < 0){H5Eprint(H5E_DEFAULT, stderr);throw std::runtime_error("Failed to open file in read-only mode: " + FilePath.string());}
                             else{return fileHandle;}
                         }
                         case (AccessMode::READWRITE) :{
+                            h5pp::Logger::log->trace("Opening file handle in READWRITE mode");
                             hid_t  fileHandle = H5Fopen(FilePath.c_str(), H5F_ACC_RDWR, plist_facc);
                             if (fileHandle < 0){H5Eprint(H5E_DEFAULT, stderr);throw std::runtime_error("Failed to open file in read-write mode: " + FilePath.string());}
                             else{return fileHandle;}
@@ -165,6 +167,7 @@ namespace h5pp{
         }
 
         herr_t closeFileHandle(hid_t file)const{
+            h5pp::Logger::log->trace("Closing file handle");
             herr_t fileClose = H5Fclose(file);
             if (fileClose < 0){
                 H5Eprint(H5E_DEFAULT, stderr);
@@ -293,6 +296,7 @@ namespace h5pp{
 
         bool linkExists(std::string link){
             hid_t file = openFileHandle();
+            h5pp::Logger::log->trace("Checking if link exists: [{}]",link);
             bool exists = h5pp::Hdf5::checkIfLinkExistsRecursively(file, link);
             closeFileHandle(file);
             return exists;
@@ -302,6 +306,7 @@ namespace h5pp{
 
         std::vector<std::string> getContentsOfGroup(std::string groupName)const{
             hid_t file = openFileHandle();
+            h5pp::Logger::log->trace("Getting contents of group: [{}]",groupName);
             auto foundLinks = h5pp::Hdf5::getContentsOfGroup(file,groupName);
             closeFileHandle(file);
             return foundLinks;
@@ -330,12 +335,14 @@ namespace h5pp{
 
         inline void create_group_link(const std::string &group_relative_name){
             hid_t file = openFileHandle();
+            h5pp::Logger::log->trace("Creating group: [{}]",group_relative_name);
             h5pp::Hdf5::create_group_link(file,plist_lncr,group_relative_name);
             closeFileHandle(file);
         }
 
         inline void write_symbolic_link(const std::string &src_path, const std::string &tgt_path){
             hid_t file = openFileHandle();
+            h5pp::Logger::log->trace("Creating symbolik link: [{}] --> [{}]",src_path, tgt_path);
             h5pp::Hdf5::write_symbolic_link(file,src_path, tgt_path);
             closeFileHandle(file);
         }
@@ -360,7 +367,7 @@ namespace h5pp{
         }
 
         template<typename DataType>
-        bool determineIfExtendable(const DataType &data, const std::string &dsetName, std::optional<bool> userPrefersExtendable);
+        bool determineIfExtendable(const DataType &data, const std::string &dsetName, std::optional<bool> userPrefersExtendable, std::optional<bool> dsetExists = std::nullopt);
 
 
 //
@@ -501,8 +508,8 @@ namespace h5pp{
 
 template <typename DataType>
 void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &props){
-    h5pp::Logger::log->debug("Writing dataset: [{}] | size {} | rank {} | dimensions {}", props.dsetName, props.size, props.ndims,props.dims);
     hid_t file = openFileHandle();
+    h5pp::Logger::log->debug("Writing dataset: [{}] | size {} | rank {} | dimensions {}", props.dsetName, props.size, props.ndims,props.dims);
     createDatasetLink(file, props);
     if (props.extendable){
         h5pp::Hdf5::setExtentDataset(file, props);
@@ -553,8 +560,8 @@ template <typename DataType>
 void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPath, std::optional<bool> extendable){
     if(accessMode == AccessMode::READONLY){throw std::runtime_error("Attempted to write to read-only file");}
     DatasetProperties props;
-    props.extendable = determineIfExtendable(data,datasetPath, extendable);
     props.linkExists = linkExists(datasetPath);
+    props.extendable = determineIfExtendable(data,datasetPath, extendable,props.linkExists);
     props.dataType   = h5pp::Type::getDataType<DataType>();
     props.size       = h5pp::Utils::getSize<DataType>(data);
     props.ndims      = h5pp::Utils::getRank<DataType>();
@@ -602,8 +609,8 @@ void h5pp::File::writeDataset(const DataType &data,const T (&dims)[N], const std
     static_assert(std::is_integral_v<T>);
     static_assert(N > 0 , "Dimensions of given data are too few, N == 0");
     DatasetProperties props;
-    props.extendable = determineIfExtendable(data,datasetPath, extendable);
     props.linkExists = linkExists(datasetPath);
+    props.extendable = determineIfExtendable(data,datasetPath, extendable);
     props.dataType   = h5pp::Type::getDataType<DataType>();
     props.dims       = std::vector<hsize_t>(dims, dims+N);
     props.ndims      = (int)props.dims.size();
@@ -781,25 +788,18 @@ void h5pp::File::writeAttributeToFile(const AttrType &attribute, const std::stri
     hid_t attributeId      = H5Acreate(file, attributeName.c_str(), datatype, memspace, H5P_DEFAULT, H5P_DEFAULT );
     if constexpr (tc::hasMember_c_str<AttrType>::value){
         retval                  = H5Awrite(attributeId, datatype, attribute.c_str());
-        if(retval < 0){
-            H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to write attribute. Attribute name: [ " + attributeName + " ]");
-        }
     }
     else if constexpr (tc::hasMember_data<AttrType>::value){
         retval                  = H5Awrite(attributeId, datatype, attribute.data());
-        if(retval < 0){
-            H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to write attribute. Attribute name: [ " + attributeName + " ]");
-        }
     }
     else{
         retval                  = H5Awrite(attributeId, datatype, &attribute);
-        if(retval < 0){
-            H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to write attribute. Attribute name: [ " + attributeName + " ]");
-        }
     }
+    if(retval < 0){
+        H5Eprint(H5E_DEFAULT, stderr);
+        throw std::runtime_error("Failed to write attribute [ " + attributeName + " ] to file");
+    }
+
 
 //    H5Sclose(memspace);
     H5Tclose(datatype);
@@ -821,32 +821,24 @@ void h5pp::File::writeAttributeToLink(const AttrType &attribute, const Attribute
             try{
                 if constexpr (tc::hasMember_c_str<AttrType>::value) {
                     retval = H5Awrite(attributeId, aprops.dataType, attribute.c_str());
-                    if(retval < 0){
-                        throw std::runtime_error("Failed to write text attribute. Attribute name: [ " + aprops.attrName + " ]");
-                    }
                 } else if constexpr (tc::hasMember_data<AttrType>::value) {
                     retval = H5Awrite(attributeId, aprops.dataType, attribute.data());
-                    if(retval < 0){
-                        throw std::runtime_error("Failed to write data attribute. Attribute name: [ " + aprops.attrName + " ]");
-                    }
                 } else {
                     retval = H5Awrite(attributeId, aprops.dataType, &attribute);
-                    if(retval < 0){
-                        throw std::runtime_error("Failed to write attribute. Attribute name: [ " + aprops.attrName + " ]");
-                    }
+                }
+                if(retval < 0){
+                    throw std::runtime_error("Failed to write attribute. Attribute name: [ " + aprops.attrName + " ]");
                 }
             }
             catch(std::exception &ex){
                 H5Aclose(attributeId);
-//                H5Fflush(file, H5F_SCOPE_GLOBAL);
                 h5pp::Hdf5::closeLink(linkObject);
                 closeFileHandle(file);
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Link [ " + aprops.linkName + " ]: ");
+                throw std::runtime_error("Link [ " + aprops.linkName + " ]: " + std::string(ex.what()));
             }
 
             H5Aclose(attributeId);
-//            H5Fflush(file, H5F_SCOPE_GLOBAL);
             h5pp::Hdf5::closeLink(linkObject);
             closeFileHandle(file);
         }
@@ -883,17 +875,17 @@ void h5pp::File::writeAttributeToLink(const AttrType &attribute, const std::stri
 
 
 template<typename DataType>
-bool h5pp::File::determineIfExtendable(const DataType &data, const std::string &dsetName, std::optional<bool> userPrefersExtendable){
+bool h5pp::File::determineIfExtendable(const DataType &data, const std::string &dsetName, std::optional<bool> userPrefersExtendable, std::optional<bool> dsetExists){
     hsize_t  size       = h5pp::Utils::getSize<DataType>(data);
     hsize_t  rank       = h5pp::Utils::getRank<DataType>();
     hid_t    datatype   = h5pp::Type::getDataType<DataType>();
     bool isLarge        = size * H5Tget_size(datatype) >= h5pp::Constants::max_size_contiguous;
-    bool exists         = linkExists(dsetName);
+    if(not dsetExists.has_value()) dsetExists = linkExists(dsetName);
     bool isUnlimited    = false;
     H5Tclose(datatype);
 
-    if (exists){
-        hid_t file              = openFileHandle();
+    if (dsetExists.value()){
+        hid_t file          = openFileHandle();
         hid_t dataSet           = h5pp::Hdf5::openLink(file, dsetName);
         hid_t dataSpace         = H5Dget_space(dataSet);
         hsize_t ndims           = H5Sget_simple_extent_ndims(dataSpace);
@@ -902,26 +894,28 @@ bool h5pp::File::determineIfExtendable(const DataType &data, const std::string &
         H5Sget_simple_extent_dims(dataSpace,old_dims.data(),max_dims.data());
         if ( std::any_of(old_dims.begin(), old_dims.end(), [](int i){return i<0;}) ) {isUnlimited = true;}
         if ( std::any_of(max_dims.begin(), max_dims.end(), [](int i){return i<0;}) ) {isUnlimited = true;}
+        h5pp::Logger::log->trace("Checking existing if dataset is extendable: [{}] ... {}", dsetName,isUnlimited);
         H5Sclose(dataSpace);
         H5Dclose(dataSet);
         closeFileHandle(file);
     }
-    h5pp::Logger::log->trace("Checking if dataset is extendable: [{}] ... {}", dsetName,isUnlimited);
+
+
     if(userPrefersExtendable){
-        if(userPrefersExtendable.value() and exists and not isUnlimited){
+        if(userPrefersExtendable.value() and dsetExists.value() and not isUnlimited){
             Logger::log->warn("Asked for an extendable dataset, but a non-extendable dataset already exists: [{}]. Conversion is not supported!", dsetName);
         }
-        if(not userPrefersExtendable.value() and exists and isUnlimited){
+        if(not userPrefersExtendable.value() and dsetExists.value() and isUnlimited){
             Logger::log->warn("Asked for a non-extendable dataset, but an extendable dataset already exists: [{}]. Conversion is not supported!", dsetName);
         }
 
-        if (not exists) return userPrefersExtendable.value();
+        if (not dsetExists.value()) return userPrefersExtendable.value();
     }
 
-    if  (exists and isUnlimited)       return true;
-    if  (exists and not isUnlimited)   return false;
-    if  (not exists and defaultExtendable and rank >= 1)    return true;
-    if  (not exists and isLarge and rank >= 1)              return true;
+    if  (dsetExists.value() and isUnlimited)                            {h5pp::Logger::log->trace("Dataset [{}] is extendable: {}",dsetName,true) ; return true;}
+    if  (dsetExists.value() and not isUnlimited)                        {h5pp::Logger::log->trace("Dataset [{}] is extendable: {}",dsetName,false); return false;}
+    if  (not dsetExists.value() and defaultExtendable and rank >= 1)    {h5pp::Logger::log->trace("Dataset [{}] is extendable: {}",dsetName,true) ; return true;}
+    if  (not dsetExists.value() and isLarge and rank >= 1)              {h5pp::Logger::log->trace("Dataset [{}] is extendable: {}",dsetName,true) ; return true;}
     return false;
 }
 

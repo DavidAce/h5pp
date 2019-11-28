@@ -6,7 +6,7 @@
 int main(){
 
     std::string outputFilename      = "output/largeWrite.h5";
-    size_t      logLevel  = 0;
+    size_t      logLevel  = 1;
     h5pp::File file(outputFilename,h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE,logLevel);
 
 

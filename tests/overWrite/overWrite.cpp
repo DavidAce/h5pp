@@ -6,7 +6,7 @@
 int main(){
 
     std::string outputFilename      = "output/overWrite.h5";
-    size_t      logLevel  = 0;
+    size_t      logLevel  = 1;
     h5pp::File file(outputFilename,h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE,logLevel);
 
 
@@ -74,7 +74,7 @@ int main(){
         vectorComplexDouble = std::vector<std::complex<double>> (10000, 10.0 + 5.0i);
         file.writeDataset(vectorComplexDouble, "overWriteGroup_ext_disabled/vectorComplexDouble");
     }catch (std::exception &ex){
-        std::cout << "THIS IS AN EXPECTED ERROR: " << ex.what() << std::endl;
+        std::cout << "\n \t THE ERROR ABOVE IS PART OF THE TEST AND WAS EXPECTED: " << ex.what() << std::endl;
     }
 
     // Strings are a special case that shouldn't fail for non-e

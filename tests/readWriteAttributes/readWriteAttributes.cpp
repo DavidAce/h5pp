@@ -49,8 +49,8 @@ int main()
 
     // Read the data back
     std::vector<double>     vectorDoubleRead;
-    std::cout << "Reading testGroup/vectorDouble: " <<  vectorDoubleRead  << std::endl;
     file.readDataset(vectorDoubleRead, "testGroup/vectorDouble");
+    std::cout << "Reading testGroup/vectorDouble: \n" <<  vectorDoubleRead  << std::endl;
     if (vectorDouble != vectorDoubleRead){throw std::runtime_error("vectorDouble != vectorDoubleRead");}
 
 
