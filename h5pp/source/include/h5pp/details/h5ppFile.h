@@ -198,12 +198,35 @@ namespace h5pp{
         void enableDefaultExtendable(){defaultExtendable = true;}
         void disableDefaultExtendable(){defaultExtendable = false;}
 
+        // Functions for querying the file
+
         CreateMode getCreateMode()const{return createMode;}
         AccessMode getAccessMode()const{return accessMode;}
 
         std::string getFileName()const{return FileName.string();}
         std::string getFilePath()const{return FilePath.string();}
 
+        //Functions for querying datasets
+        std::vector<size_t> getDatasetDims(const std::string & datasetPath){
+            hid_t file = openFileHandle();
+            std::vector<hsize_t> dims;
+            try{
+                hid_t dataset   = h5pp::Hdf5::openLink(file, datasetPath);
+                hid_t memspace  = H5Dget_space(dataset);
+                int ndims       = H5Sget_simple_extent_ndims(memspace);
+                dims.resize(ndims);
+                H5Sget_simple_extent_dims(memspace, dims.data(), NULL);
+                h5pp::Hdf5::closeLink(dataset);
+                closeFileHandle(file);
+            }catch(std::exception &ex){
+                closeFileHandle(file);
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("getDatasetDims failed. Dataset name [" + datasetPath +"]  | reason: " + std::string(ex.what()));
+            }
+            std::vector<size_t> retdims;
+            std::copy (dims.begin(),dims.end(),back_inserter(retdims));
+            return retdims;
+        }
 
         void setLogLevel(size_t logLevelZeroToSix){
             logLevel = logLevelZeroToSix;
@@ -240,16 +263,16 @@ namespace h5pp{
         DataType readDataset(const std::string &datasetPath) const;
 
 
+        template <typename DataType,typename T, size_t N>
+        void readDataset(DataType * data, const T (&dims)[N], const std::string &datasetPath);
 
-        // Functions related to tables
-
-
-
+        template <typename DataType,typename T, typename = std::enable_if_t<std::is_integral<T>::value>>
+        void readDataset(DataType * data, T size, const std::string &datasetPath){
+            return readDataset(data,{size},datasetPath);
+        }
 
 
         // Functions related to attributes
-
-
         template <typename AttrType>
         void writeAttributeToLink(const AttrType &attribute, const AttributeProperties &aprops);
 
@@ -260,20 +283,6 @@ namespace h5pp{
         template <typename AttrType>
         void writeAttributeToFile(const AttrType &attribute, const std::string attributeName);
 
-
-
-        inline void create_group_link(const std::string &group_relative_name){
-            hid_t file = openFileHandle();
-            h5pp::Hdf5::create_group_link(file,plist_lncr,group_relative_name);
-            closeFileHandle(file);
-        }
-
-//        void create_group_link(const std::string &group_relative_name);
-        inline void write_symbolic_link(const std::string &src_path, const std::string &tgt_path){
-            hid_t file = openFileHandle();
-            h5pp::Hdf5::write_symbolic_link(file,src_path, tgt_path);
-            closeFileHandle(file);
-        }
 
 
         bool linkExists(std::string link){
@@ -294,15 +303,14 @@ namespace h5pp{
 
 
 
-    private:
 
         bool fileIsValid()const{
             return fileIsValid(FilePath);
         }
 
-        bool fileIsValid(fs::path fileName) const{
+        static bool fileIsValid(fs::path fileName){
             if (fs::exists(fileName)){
-                if (H5Fis_hdf5(FilePath.c_str()) > 0) {
+                if (H5Fis_hdf5(fileName.c_str()) > 0) {
                     return true;
                 } else {
                     return false;
@@ -312,6 +320,19 @@ namespace h5pp{
             }
         }
 
+    private:
+
+        inline void create_group_link(const std::string &group_relative_name){
+            hid_t file = openFileHandle();
+            h5pp::Hdf5::create_group_link(file,plist_lncr,group_relative_name);
+            closeFileHandle(file);
+        }
+
+        inline void write_symbolic_link(const std::string &src_path, const std::string &tgt_path){
+            hid_t file = openFileHandle();
+            h5pp::Hdf5::write_symbolic_link(file,src_path, tgt_path);
+            closeFileHandle(file);
+        }
 
 
         fs::path getNewFileName(fs::path fileName)const{
@@ -749,6 +770,18 @@ void h5pp::File::readDataset(DataType &data, const std::string &datasetPath)cons
 
     closeFileHandle(file);
 }
+
+
+template <typename DataType,typename T, size_t N>
+void h5pp::File::readDataset(DataType * data, const T (&dims)[N], const std::string &datasetPath){
+    // This function takes a pointer and a specifiation of dimensions. Easiest thing to do
+    // is to wrap this in an Eigen::Tensor and send to readDataset
+    Eigen::DSizes<long,N> dimsizes;
+    std::copy_n(std::begin(dims), N, dimsizes.begin());
+    auto tensorWrap = Eigen::TensorMap<Eigen::Tensor<DataType,N>>(data,dimsizes);
+    readDataset(tensorWrap, datasetPath);
+}
+
 
 
 

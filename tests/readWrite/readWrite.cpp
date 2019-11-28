@@ -162,6 +162,9 @@ int main()
     if (tensorMap2 != tensorMapRead2){throw std::runtime_error("tensorDoubleRowMajor != tensorDoubleRowMajorRead");}
 
 
+    auto dims        = file.getDatasetDims("vectorDouble");
+    double * preAllocatedDouble = new double [dims[0]];
+    file.readDataset(preAllocatedDouble,dims[0], "vectorDouble");
 
     return 0;
 }
