@@ -1,16 +1,17 @@
 [![Build Status](https://travis-ci.org/DavidAce/h5pp.svg?branch=master)](https://travis-ci.org/DavidAce/h5pp)
 
 # h5pp
-`h5pp` is a C++17 wrapper for HDF5 with focus on simplicity.
+`h5pp` is a C++17 header-only wrapper for HDF5 with focus on simplicity.
 
-In just a few steps, `h5pp` lets users read and write to disk in binary format. It supports complex data types in possibly multidimensional containers that are common in scientific computing.
+
+In just a few lines of code, `h5pp` lets users read and write to disk in binary format. It supports complex data types in possibly multidimensional containers that are common in scientific computing.
 In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.org) matrices and tensors.
 
 
 ## Features
-* Standard CMake build, install and linking.
+* Standard CMake build, install and linking using targets.
+* Supports Clang and GNU GCC.
 * Automated install and linking of dependencies, if desired.
-* Simple usage.
 * Support for common data types:
     - `char`,`int`, `float`, `double` in unsigned and long versions.
     - any of the above in std::complex<> form.
@@ -25,7 +26,7 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
 ## Requirements
 * C++17 capable compiler with experimental headers. (tested with GCC version >= 8 and CLang version >= 7.0)
 * CMake (tested with version >= 3.10)
-* Automated dependencies:
+* Dependencies (optional automated install available through CMake):
     - [**HDF5**](https://support.hdfgroup.org/HDF5/) (tested with version >= 1.10).
     - [**Eigen**](http://eigen.tuxfamily.org) (tested with version >= 3.3.4).
     - [**spdlog**](https://github.com/gabime/spdlog) (tested with version >= 1.3.1)
@@ -134,17 +135,24 @@ You can also optionally pass a true/false argument when writing a new dataset to
 
 
 ### Pro-tip: load into Python using h5py
-Complex types are not supported natively by HDF5. Still, the storage layout used in `h5pp` makes it easy to read complex types within Python using `h5py`.
-Here is an example for loading a complex double array:
+HDF5 data is easy to load into Python. Loading integer and floating point data is straightforward. Complex data is almost as simple to use.
+HDF5 does not support complex types specifically, but `h5pp`enables this through compound HDF5 types. Here is a python example which uses `h5py`
+to load 1D arrays from an HDF5 file generated with `h5pp`:
 
 
 ```python
 import h5py
 import numpy as np
 file  = h5py.File('myFile.h5', 'r')
-myComplexArray = np.asarray(file['path-to-Complex-Array'].value.view(dtype=np.complex128))
+
+# Originally written as std::vector<double> in h5pp
+myDoubleArray = np.asarray(file['double-array-dataset'])                                     
+
+# Originally written as std::vector<std::complex<double>> in h5pp
+myComplexArray = np.asarray(file['complex-double-array-dataset'].value.view(dtype=np.complex128)) 
 ```
 
+Pay attention to the cast to `dtype=np.complex128` which interprets each elements of the array as two `doubles`, i.e. the real and imaginary parts are `2 * 64 = 128` bits.  
 
 
 
