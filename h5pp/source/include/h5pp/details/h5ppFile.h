@@ -380,7 +380,8 @@ namespace h5pp{
             hasInitialized = true;
 //            fileCount++;
             h5pp::Counter::ActiveFileCounter::incrementCounter(FileName.string());
-            h5pp::Logger::setLogger(savedLog,logLevel,false);
+            h5pp::Logger::setLogger("h5pp|"+FileName.string(),logLevel,false);
+//            h5pp::Logger::setLogger(savedLog,logLevel,false);
 
         }
 
@@ -494,6 +495,7 @@ namespace h5pp{
 
 template <typename DataType>
 void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &props){
+    h5pp::Logger::log->trace("Writing dataset: [{}] | size {} | rank {} | dimensions {}", props.dsetName, props.size, props.ndims,props.dims);
     hid_t file = openFileHandle();
     createDatasetLink(file, props);
     if (props.extendable){
