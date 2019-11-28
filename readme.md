@@ -63,7 +63,7 @@ int main() {
     std::vector<double> testVector (5, 10.0);
     file.writeDataset(testVector, "testVector");
 
-    // Or, write it using C-style array pointers together with its size
+    // Or write it using C-style array pointers together with its size
     file.writeDataset(testVector.data(),testVector.size(),"testVector" )
 
 
@@ -78,7 +78,7 @@ int main() {
     std::vector<double> readVector;
     file.readDataset(readVector, "testVector");
 
-    // Or, read it by assignment in one line
+    // Or read it by assignment in one line
     readVector = file.readDataset<std::vector<double>> ("testVector");
 
 
