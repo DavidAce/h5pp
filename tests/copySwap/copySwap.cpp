@@ -29,7 +29,7 @@ int main()
     std::string outputFilenameA      = "outputA/copySwapA.h5";
     std::string outputFilenameB      = "outputB/copySwapB.h5";
 
-    size_t      logLevel  = 0;
+    size_t      logLevel  = 1;
     h5pp::File fileA(outputFilenameA,h5pp::AccessMode::READWRITE,h5pp::CreateMode::TRUNCATE,logLevel);
     h5pp::File fileB(outputFilenameB,h5pp::AccessMode::READWRITE,h5pp::CreateMode::TRUNCATE,logLevel);
 

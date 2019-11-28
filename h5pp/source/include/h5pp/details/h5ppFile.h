@@ -63,8 +63,7 @@ namespace h5pp{
         }
 
         explicit File(const File & other){
-            h5pp::Logger::log->trace("Copy constructor. File {} previously initialized: {}. Other file {} previously initialized {}", FileName.string(), hasInitialized,
-                                     other.getFileName(), other.hasInitialized);
+            h5pp::Logger::log->debug("Copy-constructing this file [{}] from given file: [{}]. Previously initialized (this): {}. Previously initialized (other): {}", FileName.string(),other.getFileName(), hasInitialized,other.hasInitialized);
             *this = other;
 
         }
@@ -82,7 +81,7 @@ namespace h5pp{
             logLevel(logLevel_)
             {
                 h5pp::Logger::setLogger("h5pp",logLevel,false);
-                h5pp::Logger::log->trace("Full constructor. File {}", FileName.string());
+                h5pp::Logger::log->debug("Constructing h5pp file. Given path: [{}]", FileName.string());
 
                 if (accessMode_ == AccessMode::READONLY and createMode_ == CreateMode::TRUNCATE){
                     Logger::log->error("Options READONLY and TRUNCATE are incompatible.");
@@ -104,7 +103,12 @@ namespace h5pp{
                     h5pp::Type::Complex::closeTypes();
                 }
                 h5pp::Counter::ActiveFileCounter::decrementCounter(FileName.string());
-                h5pp::Logger::log->debug("Closing file: {}. Remaining {} are: {}", FileName.string(), h5pp::Counter::ActiveFileCounter::getCount(), h5pp::Counter::ActiveFileCounter::OpenFileNames());
+                if(h5pp::Counter::ActiveFileCounter::getCount() == 0){
+                    h5pp::Logger::log->debug("Closing file: {}.", FileName.string(), h5pp::Counter::ActiveFileCounter::getCount(), h5pp::Counter::ActiveFileCounter::OpenFileNames());
+
+                }else{
+                    h5pp::Logger::log->debug("Closing file: {}. There are still {} files open: {}", FileName.string(), h5pp::Counter::ActiveFileCounter::getCount(), h5pp::Counter::ActiveFileCounter::OpenFileNames());
+                }
             }
             catch (...){
                 h5pp::Logger::log->warn("Failed to properly close file: ", getFilePath());
@@ -113,19 +117,21 @@ namespace h5pp{
 
         }
 
-        File & operator= (const File & rhs) {
-            h5pp::Logger::log->trace("Assignment called. RHS: name [{}] | path [{}]", rhs.FileName.string(),rhs.FilePath.string());
-            if (&rhs != this){
+        File & operator= (const File & other) {
+            h5pp::Logger::log->debug("Assign-constructing this file [{}] from given file: [{}]. Previously initialized (this): {}. Previously initialized (other): {}", FileName.string(),other.getFileName(), hasInitialized,other.hasInitialized);
+//            h5pp::Logger::log->trace("Assignment called. RHS: name [{}] | path [{}]", other.FileName.string(), other.FilePath.string());
+//            h5pp::Logger::log->trace("Assignment called. RHS: name [{}] | path [{}]", other.FileName.string(), other.FilePath.string());
+            if (&other != this){
                 if(hasInitialized){
                     h5pp::Counter::ActiveFileCounter::decrementCounter(FileName.string());
                 }
-                if(rhs.hasInitialized){
-                    logLevel            = rhs.logLevel;
+                if(other.hasInitialized){
+                    logLevel            = other.logLevel;
                     h5pp::Logger::setLogger("h5pp",logLevel,false);
-                    accessMode          = rhs.getAccessMode();
+                    accessMode          = other.getAccessMode();
                     createMode          = CreateMode::OPEN;
-                    FileName            = rhs.FileName;
-                    FilePath            = rhs.FilePath;
+                    FileName            = other.FileName;
+                    FilePath            = other.FilePath;
                     setCompression();
                     initialize();
                 }
@@ -388,7 +394,7 @@ namespace h5pp{
 
 
         void setOutputFilePath() {
-            h5pp::Logger::log->trace("Setting file path. File name [{}] path [{}]. Has initialized: {}", FileName.string(), FilePath.string(), hasInitialized);
+            h5pp::Logger::log->trace("Attempting to set file name and path. File name [{}] path [{}]. Has initialized: {}", FileName.string(), FilePath.string(), hasInitialized);
 
             // There are different possibilities:
             // 1) File is being initialized from another h5pp File (e.g. by copy or assignment) In that case the following applies:
@@ -401,6 +407,7 @@ namespace h5pp{
 
             //Take case 2 first and make it into a case 1
             if (FilePath.empty()){
+                h5pp::Logger::log->trace("File path empty. Detecting path...");
                 FilePath = fs::absolute(FileName);
                 FileName = FilePath.filename();
             }
@@ -408,15 +415,15 @@ namespace h5pp{
             //Now we expect case 1 to hold.
 
             fs::path currentDir           = fs::current_path();
-            h5pp::Logger::log->debug("FileName      : {}",  FileName.string() );
-            h5pp::Logger::log->debug("FilePath      : {}",  FilePath.string() );
-            h5pp::Logger::log->debug("current dir   : {}", fs::current_path().string() );
+            h5pp::Logger::log->trace("Current path        : {}",  fs::current_path().string() );
+            h5pp::Logger::log->debug("Detected file name  : {}",  FileName.string() );
+            h5pp::Logger::log->debug("Detected file path  : {}",  FilePath.string() );
 
             try{
                 if (fs::create_directories(FilePath.parent_path())){
-                    h5pp::Logger::log->debug("Created directory: {}",FilePath.parent_path().string());
+                    h5pp::Logger::log->trace("Created directory: {}",FilePath.parent_path().string());
                 }else{
-                    h5pp::Logger::log->debug("Directory already exists: {}",FilePath.parent_path().string());
+                    h5pp::Logger::log->trace("Directory already exists: {}",FilePath.parent_path().string());
                 }
             }
             catch(std::exception & ex){
@@ -426,7 +433,7 @@ namespace h5pp{
 
             switch (createMode){
                 case CreateMode::OPEN: {
-                    h5pp::Logger::log->debug("File mode OPEN: {}", FilePath.string());
+                    h5pp::Logger::log->debug("File mode [OPEN]: Opening file [{}]", FilePath.string());
                     try{
                         if(fileIsValid(FilePath)){
                             hid_t file;
@@ -448,7 +455,7 @@ namespace h5pp{
                     break;
                 }
                 case CreateMode::TRUNCATE: {
-                    h5pp::Logger::log->debug("File mode TRUNCATE: {}", FilePath.string());
+                    h5pp::Logger::log->debug("File mode [TRUNCATE]: Overwriting file if it exists: [{}]", FilePath.string());
                     try{
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
                         if(file < 0){H5Eprint(H5E_DEFAULT, stderr);throw std::runtime_error("Failed to create file: [" + FilePath.string() + "]");}
@@ -461,11 +468,10 @@ namespace h5pp{
                 }
                 case CreateMode::RENAME: {
                     try{
-                        h5pp::Logger::log->debug("File mode RENAME: {}", FilePath.string());
+                        h5pp::Logger::log->debug("File mode [RENAME]: Finding new file name if previous file exists: [{}]", FilePath.string());
                         if(fileIsValid(FilePath)) {
                             FilePath = getNewFileName(FilePath);
-                            h5pp::Logger::log->info("Renamed output file: {} ---> {}", FileName.string(),FilePath.filename().string());
-                            h5pp::Logger::log->info("File mode RENAME: {}", FilePath.string());
+                            h5pp::Logger::log->info("Previous file exists. Choosing new file name: [{}] ---> [{}]", FileName.string(),FilePath.filename().string());
                             FileName = FilePath.filename();
                         }
                         hid_t file = H5Fcreate(FilePath.c_str(), H5F_ACC_TRUNC,  H5P_DEFAULT, plist_facc);
@@ -478,8 +484,8 @@ namespace h5pp{
                     break;
                 }
                 default:{
-                    h5pp::Logger::log->error("File Mode not set. Choose  CreateMode:: |OPEN|TRUNCATE|RENAME|");
-                    throw std::runtime_error("File Mode not set. Choose  CreateMode::  |OPEN|TRUNCATE|RENAME|");
+                    h5pp::Logger::log->error("File Mode not set. Choose  CreateMode::<OPEN|TRUNCATE|RENAME>");
+                    throw std::runtime_error("File Mode not set. Choose  CreateMode::<OPEN|TRUNCATE|RENAME>");
                 }
             }
 
@@ -495,7 +501,7 @@ namespace h5pp{
 
 template <typename DataType>
 void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &props){
-    h5pp::Logger::log->trace("Writing dataset: [{}] | size {} | rank {} | dimensions {}", props.dsetName, props.size, props.ndims,props.dims);
+    h5pp::Logger::log->debug("Writing dataset: [{}] | size {} | rank {} | dimensions {}", props.dsetName, props.size, props.ndims,props.dims);
     hid_t file = openFileHandle();
     createDatasetLink(file, props);
     if (props.extendable){
@@ -540,47 +546,6 @@ void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &pro
 }
 
 
-template<typename DataType>
-bool h5pp::File::determineIfExtendable(const DataType &data, const std::string &dsetName, std::optional<bool> userPrefersExtendable){
-    hsize_t  size       = h5pp::Utils::getSize<DataType>(data);
-    hsize_t  rank       = h5pp::Utils::getRank<DataType>();
-    hid_t    datatype   = h5pp::Type::getDataType<DataType>();
-    bool isLarge        = size * H5Tget_size(datatype) >= h5pp::Constants::max_size_contiguous;
-    bool exists         = linkExists(dsetName);
-    bool isUnlimited    = false;
-    H5Tclose(datatype);
-
-    if (exists){
-        hid_t file              = openFileHandle();
-        hid_t dataSet           = h5pp::Hdf5::openLink(file, dsetName);
-        hid_t dataSpace         = H5Dget_space(dataSet);
-        hsize_t ndims           = H5Sget_simple_extent_ndims(dataSpace);
-        std::vector<hsize_t> old_dims(ndims);
-        std::vector<hsize_t> max_dims(ndims);
-        H5Sget_simple_extent_dims(dataSpace,old_dims.data(),max_dims.data());
-        if ( std::any_of(old_dims.begin(), old_dims.end(), [](int i){return i<0;}) ) {isUnlimited = true;}
-        if ( std::any_of(max_dims.begin(), max_dims.end(), [](int i){return i<0;}) ) {isUnlimited = true;}
-        H5Sclose(dataSpace);
-        H5Dclose(dataSet);
-        closeFileHandle(file);
-    }
-    if(userPrefersExtendable){
-        if(userPrefersExtendable.value() and exists and not isUnlimited){
-            Logger::log->warn("User asks for an extendable dataset, but a non-extendable dataset already exists: [{}]. Conversion is not supported!", dsetName);
-        }
-        if(not userPrefersExtendable.value() and exists and isUnlimited){
-            Logger::log->warn("User asks for a non-extendable dataset, but an extendable dataset already exists: [{}]. Conversion is not supported!", dsetName);
-        }
-
-        if (not exists) return userPrefersExtendable.value();
-    }
-
-    if  (exists and isUnlimited)       return true;
-    if  (exists and not isUnlimited)   return false;
-    if  (not exists and defaultExtendable and rank >= 1)    return true;
-    if  (not exists and isLarge and rank >= 1)              return true;
-    return false;
-}
 
 
 
@@ -706,6 +671,9 @@ void h5pp::File::readDataset(DataType &data, const std::string &datasetPath)cons
         int ndims       = H5Sget_simple_extent_ndims(memspace);
         std::vector<hsize_t> dims(ndims);
         H5Sget_simple_extent_dims(memspace, dims.data(), NULL);
+        hsize_t size = 1;
+        for (const auto& dim: dims) size *= dim;
+        h5pp::Logger::log->debug("Reading dataset: [{}] | size {} | rank {} | dimensions {}", datasetPath, size, ndims,dims);
 
         if constexpr(tc::is_eigen_core<DataType>::value) {
             // Data is row major in HDF5, convert to the storage given in DataType
@@ -802,6 +770,7 @@ void h5pp::File::writeAttributeToFile(const AttrType &attribute, const std::stri
     auto ndims              = h5pp::Utils::getRank<AttrType>();
     auto dims               = h5pp::Utils::getDimensions(attribute);
     hid_t memspace          = h5pp::Utils::getMemSpace(ndims,dims);
+    h5pp::Logger::log->debug("Writing attribute to file: [{}] | size {} | rank {} | dimensions {}", attributeName, size, ndims,dims);
 
     if constexpr (tc::hasMember_c_str<AttrType>::value
                   or std::is_same<char * , typename std::decay<AttrType>::type>::value)
@@ -848,6 +817,7 @@ void h5pp::File::writeAttributeToLink(const AttrType &attribute, const Attribute
             hid_t linkObject = h5pp::Hdf5::openLink(file, aprops.linkName);
             hid_t attributeId = H5Acreate(linkObject, aprops.attrName.c_str(), aprops.dataType, aprops.memSpace,
                                            H5P_DEFAULT, H5P_DEFAULT);
+            h5pp::Logger::log->trace("Writing attribute: [{}] | size {} | rank {} | dimensions {}", aprops.attrName, aprops.size, aprops.ndims,aprops.dims);
             try{
                 if constexpr (tc::hasMember_c_str<AttrType>::value) {
                     retval = H5Awrite(attributeId, aprops.dataType, attribute.c_str());
@@ -909,4 +879,49 @@ void h5pp::File::writeAttributeToLink(const AttrType &attribute, const std::stri
     writeAttributeToLink(attribute, aprops);
 }
 
+
+
+
+template<typename DataType>
+bool h5pp::File::determineIfExtendable(const DataType &data, const std::string &dsetName, std::optional<bool> userPrefersExtendable){
+    hsize_t  size       = h5pp::Utils::getSize<DataType>(data);
+    hsize_t  rank       = h5pp::Utils::getRank<DataType>();
+    hid_t    datatype   = h5pp::Type::getDataType<DataType>();
+    bool isLarge        = size * H5Tget_size(datatype) >= h5pp::Constants::max_size_contiguous;
+    bool exists         = linkExists(dsetName);
+    bool isUnlimited    = false;
+    H5Tclose(datatype);
+
+    if (exists){
+        hid_t file              = openFileHandle();
+        hid_t dataSet           = h5pp::Hdf5::openLink(file, dsetName);
+        hid_t dataSpace         = H5Dget_space(dataSet);
+        hsize_t ndims           = H5Sget_simple_extent_ndims(dataSpace);
+        std::vector<hsize_t> old_dims(ndims);
+        std::vector<hsize_t> max_dims(ndims);
+        H5Sget_simple_extent_dims(dataSpace,old_dims.data(),max_dims.data());
+        if ( std::any_of(old_dims.begin(), old_dims.end(), [](int i){return i<0;}) ) {isUnlimited = true;}
+        if ( std::any_of(max_dims.begin(), max_dims.end(), [](int i){return i<0;}) ) {isUnlimited = true;}
+        H5Sclose(dataSpace);
+        H5Dclose(dataSet);
+        closeFileHandle(file);
+    }
+    h5pp::Logger::log->trace("Checking if dataset is extendable: [{}] ... {}", dsetName,isUnlimited);
+    if(userPrefersExtendable){
+        if(userPrefersExtendable.value() and exists and not isUnlimited){
+            Logger::log->warn("Asked for an extendable dataset, but a non-extendable dataset already exists: [{}]. Conversion is not supported!", dsetName);
+        }
+        if(not userPrefersExtendable.value() and exists and isUnlimited){
+            Logger::log->warn("Asked for a non-extendable dataset, but an extendable dataset already exists: [{}]. Conversion is not supported!", dsetName);
+        }
+
+        if (not exists) return userPrefersExtendable.value();
+    }
+
+    if  (exists and isUnlimited)       return true;
+    if  (exists and not isUnlimited)   return false;
+    if  (not exists and defaultExtendable and rank >= 1)    return true;
+    if  (not exists and isLarge and rank >= 1)              return true;
+    return false;
+}
 
