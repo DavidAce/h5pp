@@ -24,7 +24,7 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
 
 
 ## Requirements
-* C++17 capable compiler (tested with GCC version >= 8 and CLang version >= 7.0)
+* C++17 capable compiler (tested with GCC version >= 8 and Clang version >= 7.0)
 * CMake (tested with version >= 3.10)
 * Dependencies (optional automated install available through CMake):
     - [**HDF5**](https://support.hdfgroup.org/HDF5/) (tested with version >= 1.10).
@@ -225,7 +225,7 @@ A minimal `CMakeLists.txt` looks like:
 
 The target `h5pp::h5pp` will import the `h5pp` headers.
 The target `h5pp::deps` will import dependencies.
-The target `h5pp::flags` sets the compile flags that you need to compile with `h5pp`. These flags enable C++17 and experimental filesystem headers, i.e. `-std=c++17 -lstdc++fs`, as well as `-stdlib=libstdc++` when using Clang.
+The target `h5pp::flags` sets the compile flags that you need to compile with `h5pp`. These flags enable C++17 and filesystem headers, i.e. `-std=c++17 -lstdc++fs`.
 
 **Note** If you want to link the dependencies manually, omit `h5pp::deps` above. The target `h5pp::deps` will import each dependency for `h5pp` that was found (or automatically downloaded) during install. For each dependency found,
 a target is defined: `h5pp::Eigen3`, `h5pp::spdlog` and `h5pp::hdf5`. In fact, `h5pp::deps` is just an alias for these three targets together, but they can of course be used independently.
