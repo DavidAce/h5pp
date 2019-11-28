@@ -24,7 +24,7 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
 
 
 ## Requirements
-* C++17 capable compiler with experimental headers. (tested with GCC version >= 8 and CLang version >= 7.0)
+* C++17 capable compiler (tested with GCC version >= 8 and CLang version >= 7.0)
 * CMake (tested with version >= 3.10)
 * Dependencies (optional automated install available through CMake):
     - [**HDF5**](https://support.hdfgroup.org/HDF5/) (tested with version >= 1.10).
@@ -43,8 +43,8 @@ and add these dependencies to the exported target `h5pp::deps`. To enable this a
 
 To write a file simply pass any supported object and a dataset name to `writeDataset`.
 
-Reading works similarly with `readDataset`, with the only exception that you need to give a container of the correct type beforehand. There is no support (yet?)
-for querying the type in advance. The container will be resized appropriately by `h5pp`.
+Reading works similarly with `readDataset`, with the only exception that you need to give a container of the correct type beforehand. You can query the *size* in advance, but there is no support (yet?)
+for querying the *type* in advance. The container will be resized appropriately by `h5pp`.
 
 
 ```c++
@@ -58,21 +58,29 @@ int main() {
     // Initialize a file
     h5pp::File file("myDir/someFile.h5");
 
+
     // Write a vector with doubles
     std::vector<double> testVector (5, 10.0);
     file.writeDataset(testVector, "testVector");
+
+    // Or, write it using C-style array pointers together with its size
+    file.writeDataset(testVector.data(),testVector.size(),"testVector" )
+
 
     // Write an Eigen matrix with std::complex<double>
     Eigen::MatrixXcd testMatrix (2, 2);
     testMatrix << 1.0 + 2.0i,  3.0 + 4.0i, 5.0 + 6.0i , 7.0 + 8.0i;
     file.writeDataset(testMatrix, "someGroup/testMatrix");
 
+
+
     // Read a vector with doubles
     std::vector<double> readVector;
     file.readDataset(readVector, "testVector");
 
-    // Read in one line
-    auto altReadVector = file.readDataset<std::vector<double>> ("testVector");
+    // Or, read it by assignment in one line
+    readVector = file.readDataset<std::vector<double>> ("testVector");
+
 
     // Read an Eigen matrix with std::complex<double>
     Eigen::MatrixXcd readMatrix;
