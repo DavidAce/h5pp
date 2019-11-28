@@ -163,8 +163,8 @@ int main()
 
 
     auto dims        = file.getDatasetDims("vectorDouble");
-    double * preAllocatedDouble = new double [dims[0]];
+    auto * preAllocatedDouble = new double [dims[0]];
     file.readDataset(preAllocatedDouble,dims[0], "vectorDouble");
-
+    delete[] preAllocatedDouble;
     return 0;
 }
