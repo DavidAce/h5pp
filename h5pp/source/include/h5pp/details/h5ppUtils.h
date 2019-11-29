@@ -165,6 +165,32 @@ namespace h5pp{
             }
         }
 
+        template<typename DataType>
+        auto convertScalar2DataToH5T(const DataType &data){
+            static_assert(h5pp::Type::Check::hasScalar2<DataType>() or h5pp::Type::Check::is_Scalar2<DataType>(),
+                          "Data must be a struct of two scalars for conversion to H5T_SCALAR2");
+            if constexpr(h5pp::Type::Check::is_eigen_type<DataType>::value){
+                using internalType  = decltype(DataType::x);
+                std::vector<h5pp::Type::Complex::H5T_SCALAR2<internalType>> newData;
+                newData.insert(newData.end(), data.data(), data.data()+data.size());
+                return newData;
+            }
+            else if constexpr(h5pp::Type::Check::is_vector<DataType>::value) {
+                using scalarType  = typename DataType::value_type;
+                using internalType  = decltype(scalarType::x);
+                std::vector<h5pp::Type::Complex::H5T_SCALAR2<internalType>> newData;
+                newData.insert(newData.end(), data.data(), data.data()+data.size());
+                return newData;
+            }
+            else if  constexpr (h5pp::Type::Check::is_Scalar2<DataType>()){
+                using internalType  = decltype(DataType::x);
+                return h5pp::Type::Complex::H5T_SCALAR2<internalType>(data);
+            }else{
+                //This should never happen.
+                throw::std::runtime_error("Unrecognized Scalar2 type: " +  std::string(typeid(data).name() ));
+            }
+        }
+
 
         template<typename DataType>
         auto getByteSize(const DataType &data){

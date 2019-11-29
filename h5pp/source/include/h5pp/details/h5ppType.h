@@ -39,6 +39,14 @@ namespace h5pp{
             if constexpr (std::is_same<typename std::decay<DataType>::type, Complex::H5T_COMPLEX_STRUCT<unsigned long>>::value)    {return  H5Tcopy(Complex::H5T_COMPLEX_ULONG);}
             if constexpr (std::is_same<typename std::decay<DataType>::type, Complex::H5T_COMPLEX_STRUCT<double>>::value)           {return  H5Tcopy(Complex::H5T_COMPLEX_DOUBLE);}
             if constexpr (std::is_same<typename std::decay<DataType>::type, Complex::H5T_COMPLEX_STRUCT<float>>::value)            {return  H5Tcopy(Complex::H5T_COMPLEX_FLOAT);}
+
+            if constexpr (tc::is_Scalar2_of_type<typename std::decay<DataType>::type, int>())                                      {return  H5Tcopy(Complex::H5T_SCALAR2_INT);}
+            if constexpr (tc::is_Scalar2_of_type<typename std::decay<DataType>::type, long>())                                     {return  H5Tcopy(Complex::H5T_SCALAR2_LONG);}
+            if constexpr (tc::is_Scalar2_of_type<typename std::decay<DataType>::type, unsigned int>())                             {return  H5Tcopy(Complex::H5T_SCALAR2_UINT);}
+            if constexpr (tc::is_Scalar2_of_type<typename std::decay<DataType>::type, unsigned long>())                            {return  H5Tcopy(Complex::H5T_SCALAR2_ULONG);}
+            if constexpr (tc::is_Scalar2_of_type<typename std::decay<DataType>::type, double>())                                   {return  H5Tcopy(Complex::H5T_SCALAR2_DOUBLE);}
+            if constexpr (tc::is_Scalar2_of_type<typename std::decay<DataType>::type, float>())                                    {return  H5Tcopy(Complex::H5T_SCALAR2_FLOAT);}
+
             if constexpr (std::is_array<DataType>::value)                                               {return getDataType<typename std::remove_all_extents<DataType>::type>();}
             if constexpr (std::is_array<typename std::decay<DataType>::type>::value)                    {return getDataType<typename std::remove_all_extents<DataType>::type>();}
             if constexpr (tc::is_eigen_type<DataType>::value)                                           {return getDataType<typename DataType::Scalar>();}
@@ -59,6 +67,14 @@ namespace h5pp{
                 return H5Tcopy(NEW_COMPLEX_TYPE);
             }
 
+            template<typename T>
+            hid_t createScalar2Type(){
+                hid_t NEW_SCALAR2_TYPE = H5Tcreate (H5T_COMPOUND, sizeof(H5T_SCALAR2<T>));
+                H5Tinsert (NEW_SCALAR2_TYPE, "x", HOFFSET(H5T_SCALAR2<T>,x), getDataType<T>());
+                H5Tinsert (NEW_SCALAR2_TYPE, "y", HOFFSET(H5T_SCALAR2<T>,y), getDataType<T>());
+                return H5Tcopy(NEW_SCALAR2_TYPE);
+            }
+
             inline void initTypes(){
                 H5T_COMPLEX_INT        = createComplexType<int>();
                 H5T_COMPLEX_LONG       = createComplexType<long>();
@@ -66,6 +82,14 @@ namespace h5pp{
                 H5T_COMPLEX_ULONG      = createComplexType<unsigned long>();
                 H5T_COMPLEX_DOUBLE     = createComplexType<double>();
                 H5T_COMPLEX_FLOAT      = createComplexType<float>();
+
+                H5T_SCALAR2_INT        = createScalar2Type<int>();
+                H5T_SCALAR2_LONG       = createScalar2Type<long>();
+                H5T_SCALAR2_UINT       = createScalar2Type<unsigned int>();
+                H5T_SCALAR2_ULONG      = createScalar2Type<unsigned long>();
+                H5T_SCALAR2_DOUBLE     = createScalar2Type<double>();
+                H5T_SCALAR2_FLOAT      = createScalar2Type<float>();
+
             }
 
             inline void closeTypes(){
@@ -75,6 +99,13 @@ namespace h5pp{
                 H5Tclose(H5T_COMPLEX_ULONG );
                 H5Tclose(H5T_COMPLEX_DOUBLE);
                 H5Tclose(H5T_COMPLEX_FLOAT );
+
+                H5Tclose(H5T_SCALAR2_INT   );
+                H5Tclose(H5T_SCALAR2_LONG  );
+                H5Tclose(H5T_SCALAR2_UINT  );
+                H5Tclose(H5T_SCALAR2_ULONG );
+                H5Tclose(H5T_SCALAR2_DOUBLE);
+                H5Tclose(H5T_SCALAR2_FLOAT );
             }
 
 

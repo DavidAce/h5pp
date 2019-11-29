@@ -32,6 +32,12 @@ int main(){
     matrixDouble        << 1.5,2.5,3.5,4.5;
     matrixComplexDouble << 1.0 + 2.0i,  3.0 + 4.0i, 5.0+6.0i , 7.0+8.0i;
 
+    struct Field2{
+        double x ;
+        double y ;
+    };
+    std::vector<Field2> field2array (10,{0.3,0.8});
+
     //Test normal write usage
     file.writeDataset(String, "simpleWriteGroup/String");
     file.writeDataset(Char, "simpleWriteGroup/Char");
@@ -49,6 +55,7 @@ int main(){
     file.writeDataset(matrixInt, "simpleWriteGroup/matrixInt");
     file.writeDataset(matrixDouble, "simpleWriteGroup/matrixDouble");
     file.writeDataset(matrixComplexDouble, "simpleWriteGroup/matrixComplexDouble");
+    file.writeDataset(field2array, "simpleWriteGroup/field2array");
 
     //Test passing pointers
     file.writeDataset(vectorInt.data(),vectorInt.size(), "simpleWriteGroup/vectorInt");

@@ -166,5 +166,23 @@ int main()
     auto * preAllocatedDouble = new double [dims[0]];
     file.readDataset(preAllocatedDouble,dims[0], "vectorDouble");
     delete[] preAllocatedDouble;
+
+    struct Field2{
+        double x ;
+        double y ;
+    };
+    std::vector<Field2> field2array (10,{0.3,0.8});
+    file.writeDataset(field2array, "field2array");
+    auto field2ReadArray = file.readDataset<std::vector<Field2>>("field2array");
+    for(auto &elem:field2ReadArray) std::cout << "elem: " << elem.x << " " << elem.y << std::endl;
+
+    Eigen::Matrix<Field2,Eigen::Dynamic,Eigen::Dynamic> field2Matrix (10,10);
+    for(int row = 0; row < field2Matrix.rows(); row++){
+        for(int col = 0; col < field2Matrix.cols(); col++){
+            field2Matrix(row,col) = {(double)row,(double)col};
+        }
+    }
+    file.writeDataset(field2Matrix, "field2Matrix");
+
     return 0;
 }

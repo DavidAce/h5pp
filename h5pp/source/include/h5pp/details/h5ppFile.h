@@ -633,7 +633,16 @@ void h5pp::File::writeDataset(const DataType &data,const T (&dims)[N], const std
             writeDataset(temp_cplx, props);
         }
     }
-
+    else if constexpr(h5pp::Type::Check::hasScalar2<DataType>() or h5pp::Type::Check::is_Scalar2<DataType>()) {
+        if constexpr(tc::is_eigen_type<DataType>::value) {
+            auto temp_rowm = Textra::to_RowMajor(data); //Convert to Row Major first;
+            auto temp_cplx = h5pp::Utils::convertScalar2DataToH5T(temp_rowm); // Convert to vector<H5T_COMPLEX_STRUCT<>>
+            writeDataset(temp_cplx, props);
+        } else {
+            auto temp_scalar2 = h5pp::Utils::convertScalar2DataToH5T(data);
+            writeDataset(temp_scalar2, props);
+        }
+    }
     else{
         if constexpr(tc::is_eigen_type<DataType>::value) {
             auto tempRowm = Textra::to_RowMajor(data); //Convert to Row Major first;
