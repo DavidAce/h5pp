@@ -183,10 +183,11 @@ By default `ìnstall-dir` will be `project-dir/install`, where `project-dir` is 
 
 The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 * `-DCMAKE_INSTALL_PREFIX:PATH=<install-dir>` to specify install directory (default: `project-dir/install/`).
-* `-DDOWNLOAD_MISSING:BOOL=<ON/OFF>` to toggle automatic installation of all third-party dependencies (default: `OFF`).
-* `-DCMAKE_BUILD_TYPE=Release/Debug` to specify build type (default: `Release`)
 * `-DBUILD_SHARED_LIBS:BOOL=<ON/OFF>` to link dependencies with static or shared libraries (default: `OFF`)
-* `-DENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (default: `ON`).
+* `-DCMAKE_BUILD_TYPE=Release/Debug` to specify build type of tests and examples (default: `Release`)
+* `-DENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (recommended!) (default: `OFF`).
+* `-DBUILD_EXAMPLES:BOOL=<ON/OFF>` to build example programs (default: `OFF`)
+* `-DDOWNLOAD_MISSING:BOOL=<ON/OFF>` to toggle automatic installation of all third-party dependencies (default: `OFF`).
 
 
 In addition, the following variables can be set to help guide CMake's `find_package()` to your preinstalled software (no defaults):
