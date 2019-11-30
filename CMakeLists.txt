@@ -36,7 +36,6 @@ message("=======================================================================
 option(BUILD_SHARED_LIBS        "Builds shared libraries"                             OFF)
 option(BUILD_EXAMPLES           "Builds examples"                                     OFF)
 option(ENABLE_TESTS             "Enable testing"                                      OFF)
-option(ENABLE_TESTS_POST_BUILD  "Enable testing directly after build"                 OFF)
 option(DOWNLOAD_MISSING         "Download and install all dependencies if not found"  OFF)
 
 
@@ -61,12 +60,6 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif ()
 
-#################################################################
-### To do automatic tests after build, tests need to be on    ###
-#################################################################
-if(ENABLE_TESTS_POST_BUILD)
-    set(ENABLE_TESTS ON)
-endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "..." FORCE)
