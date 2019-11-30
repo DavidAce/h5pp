@@ -1,6 +1,6 @@
  
 cmake_minimum_required(VERSION 3.12)
-project(h5pp  VERSION 0.2.2)
+project(h5pp  VERSION 0.3.3)
 
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -61,7 +61,12 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif ()
 
-
+#################################################################
+### To do automatic tests after build, tests need to be on    ###
+#################################################################
+if(ENABLE_TESTS_POST_BUILD)
+    set(ENABLE_TESTS ON)
+endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "..." FORCE)
@@ -217,10 +222,6 @@ if(NOT DEPENDENCIES_FOUND)
 message(WARNING "Dependencies missing.\nTo use h5pp headers, link the missing dependencies manually from your project")
 endif()
 
-
-
-#install(TARGETS test DESTINATION wildtest/myproj EXPORT myproj-targets)
-#install(EXPORT myproj-targets DESTINATION lib/myproj)
 
 
 #######################################################
