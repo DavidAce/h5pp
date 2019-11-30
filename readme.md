@@ -253,8 +253,8 @@ A minimal `CMakeLists.txt` could be:
 
 The trickiest part is linking to HDF5 libraries. 
 When installing `h5pp` this is handled with a helper function defined in `cmake-modules/FindPackageHDF5.cmake` which finds HDF5 installed
-somewhere on your system (conda installs work as well!) and defines a CMake targets with everything you need to link correctly.
-You can use it as well. If you copy `cmake-modules/FindPackageHDF5.cmake` to your project, you can find HDF5 by simply including it:
+somewhere on your system (e.g. installed via `conda`,`apt`, `Easybuild`,etc) and defines a CMake target `hdf5::hdf5` with everything you need to link correctly.
+You can use it too! If you copy `cmake-modules/FindPackageHDF5.cmake` to your project, find HDF5 by simply including it:
 
 ```cmake
 include(FindPackageHDF5.cmake)
