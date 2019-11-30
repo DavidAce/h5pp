@@ -160,7 +160,7 @@ myDoubleArray = np.asarray(file['double-array-dataset'])
 myComplexArray = np.asarray(file['complex-double-array-dataset'].value.view(dtype=np.complex128)) 
 ```
 
-Pay attention to the cast to `dtype=np.complex128` which interprets each elements of the array as two `doubles`, i.e. the real and imaginary parts are `2 * 64 = 128` bits.  
+Pay attention to the cast to `dtype=np.complex128` which interprets each element of the array as two `doubles`, i.e. the real and imaginary parts are `2 * 64 = 128` bits.  
 
 
 
