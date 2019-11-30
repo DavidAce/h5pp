@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(simpleWrite)
+project(test-simpleWrite)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 add_executable(${PROJECT_NAME} simpleWrite.cpp )
@@ -18,4 +18,4 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE h5pp deps flags)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/h5pp/source/include)
-add_test(NAME simpleWriteTest WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND ${PROJECT_NAME})
+add_test(NAME test-simpleWrite WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND ${PROJECT_NAME})

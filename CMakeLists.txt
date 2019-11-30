@@ -33,10 +33,11 @@ message("=======================================================================
 ################################################################
 ### Set options for compilation                              ###
 ################################################################
-option(BUILD_SHARED_LIBS  "Builds shared libraries"                             OFF)
-option(BUILD_EXAMPLES     "Builds examples"                                     OFF)
-option(ENABLE_TESTS       "Enable testing"                                      OFF)
-option(DOWNLOAD_MISSING   "Download and install all dependencies if not found"  OFF)
+option(BUILD_SHARED_LIBS        "Builds shared libraries"                             OFF)
+option(BUILD_EXAMPLES           "Builds examples"                                     OFF)
+option(ENABLE_TESTS             "Enable testing"                                      OFF)
+option(ENABLE_TESTS_POST_BUILD  "Enable testing directly after build"                 OFF)
+option(DOWNLOAD_MISSING         "Download and install all dependencies if not found"  OFF)
 
 
 message("=========================== h5pp build options ==============================")
