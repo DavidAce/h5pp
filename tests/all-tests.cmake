@@ -26,12 +26,12 @@ if(ENABLE_TESTS)
 
         if(ENABLE_TESTS_POST_BUILD)
             #Run all tests as soon as the tests have been built
-            add_custom_command(TARGET all-tests
-                    POST_BUILD
-                    COMMENT "Running Tests"
-                    DEPENDS h5pp deps flags
-                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                    COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
+#            add_custom_command(TARGET all-tests
+#                    POST_BUILD
+#                    COMMENT "Running Tests"
+#                    DEPENDS h5pp deps flags
+#                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+#                    COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
         endif()
 
 #
