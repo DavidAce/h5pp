@@ -1,6 +1,5 @@
 
 if(NOT TARGET hdf5::hdf5)
-    enable_language(C)
     include(cmake-modules/FindPackageHDF5.cmake)
 
     if(HDF5_FOUND AND TARGET hdf5::hdf5)

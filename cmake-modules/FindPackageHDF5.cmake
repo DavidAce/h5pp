@@ -35,6 +35,7 @@ function(find_package_hdf5 hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE
         find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ PATHS ${HDF5_ROOT} PATH_SUFFIXES  hdf5/bin envs/bin dmrg/bin envs/dmrg/bin NO_DEFAULT_PATH )
         if (HDF5_C_COMPILER_EXECUTABLE OR HDF5_CXX_COMPILER_EXECUTABLE)
             message(STATUS "Searching for hdf5 execs in ${HDF5_ROOT} - Success -- C:  ${HDF5_C_COMPILER_EXECUTABLE}  CXX: ${HDF5_CXX_COMPILER_EXECUTABLE}" )
+            enable_language(C)
             find_package(HDF5 ${HDF5_ATLEAST_VERSION} COMPONENTS  ${HDF5_MODULES} )
             if(HDF5_FOUND)
                 set(ACCEPT_PACKAGE FALSE)

@@ -201,35 +201,66 @@ In addition, the following variables can be set to help guide CMake's `find_pack
 
 
 
-### Linking
+### Linking to your CMake project
 
-#### Header only
-Copy the headers folder `h5pp/source/include/h5pp` to your project, and link your project to the dependencies `hdf5`, `Eigen3` and `spdlog` manually.
+#### By using CMake targets (easy)
+`h5pp` is easily imported into your project using CMake's `find_package()`. Just point it to the `h5pp` install directory.
+When found, targets are made available to compile and link to dependencies correctly.
+A minimal `CMakeLists.txt` to use `h5pp` would look like:
 
-#### With CMake-generated targets.
-After installing the library using CMake, it is easily imported again using CMake's `find_package()`, just point it to the install directory.
-When found, targets are made available to import everything correctly.
-A minimal `CMakeLists.txt` looks like:
 
 ```cmake
     cmake_minimum_required(VERSION 3.10)
-    project(FooProject)
+    project(myProject)
+    add_executable(myExecutable main.cpp)
+    find_package(h5pp PATHS <path-to-h5pp-install-dir> REQUIRED)
+    target_link_libraries(myExecutable PRIVATE h5pp::h5pp h5pp::deps h5pp::flags)
+
+```
+**Targets**
+
+-  `h5pp::h5pp` includes the `h5pp` headers.
+-  `h5pp::deps` includes dependencies and link corresponding libraries. This target is an alias for the set of libraries that were found/downloaded during the install
+    of `h5pp`. These are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, which can of course be used independently.
+-  `h5pp::flags` sets compile flags that you need to compile with `h5pp`. These flags enable C++17 and filesystem headers, i.e. `-std=c++17 -lstdc++fs`.
+
+
+#### By copying the headers manually (not as easy)
+Copy the headers in the folder `h5pp/source/include/h5pp` somewhere, and link your project to the dependencies `hdf5`, `Eigen3` and `spdlog` in the way you prefer. 
+For instance you can use CMake's `find_package(...)` mechanism to find relevant paths.
+A minimal `CMakeLists.txt` could be:
+
+```cmake
+    cmake_minimum_required(VERSION 3.10)
+    project(myProject)
     
-    add_executable(fooExecutable foo.cpp)
+    add_executable(myExecutable main.cpp)
+    target_include_directories(myExecutable PRIVATE <path-to-h5pp-headers>)
+    # Setup h5pp
+    target_compile_options(myExecutable PRIVATE -lstdc++fs -std=c++17 )
+    target_link_libraries(myExecutable PRIVATE  -lstdc++fs)
     
-    find_package(h5pp PATHS <path to h5pp-install-dir> REQUIRED)
-    
-    if (h5pp_FOUND)
-        target_link_libraries(fooExecutable PRIVATE h5pp::h5pp h5pp::deps h5pp::flags)
-    endif()
+    # Possibly use find_package() here
+
+    # Link dependencies (this is the tricky part)
+    target_include_directories(myExecutable PRIVATE <path-to-Eigen3-include-dir>) 
+    target_include_directories(myExecutable PRIVATE <path-to-spdlog-include-dir>) 
+    target_include_directories(myExecutable PRIVATE <path-to-hdf5-include-dir>) 
+    # Link dependencies (this is the trickiest part). Note that you only need the C libs.
+    target_link_libraries(myExecutable PRIVATE  <path-to-libhdf5_hl> <path-to-libhdf5> -ldl -lm -lz -lpthread) # Possibly more -l libs
+
 ```
 
-The target `h5pp::h5pp` will import the `h5pp` headers.
-The target `h5pp::deps` will import dependencies.
-The target `h5pp::flags` sets the compile flags that you need to compile with `h5pp`. These flags enable C++17 and filesystem headers, i.e. `-std=c++17 -lstdc++fs`.
+The trickiest part is linking to HDF5 libraries. 
+When installing `h5pp` this is handled with a helper function defined in `cmake-modules/FindPackageHDF5.cmake` which finds HDF5 installed
+somewhere on your system (conda installs work as well!) and defines a CMake targets with everything you need to link correctly.
+You can use it as well. If you copy `cmake-modules/FindPackageHDF5.cmake` to your project, you can find HDF5 by simply including it:
 
-**Note** If you want to link the dependencies manually, omit `h5pp::deps` above. The target `h5pp::deps` will import each dependency for `h5pp` that was found (or automatically downloaded) during install. For each dependency found,
-a target is defined: `h5pp::Eigen3`, `h5pp::spdlog` and `h5pp::hdf5`. In fact, `h5pp::deps` is just an alias for these three targets together, but they can of course be used independently.
+```cmake
+include(FindPackageHDF5.cmake)
 
+if(HDF5_FOUND AND TARGET hdf5::hdf5)
+        target_link_libraries(myProject PRIVATE hdf5::hdf5)
+endif()
 
-
+```

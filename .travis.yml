@@ -85,7 +85,10 @@ before_install:
 script:
   - cmake -E make_directory build/Debug
   - cd build/Debug
-  - cmake -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
+  - cmake -DCMAKE_BUILD_TYPE=Debug -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
+  - cmake --build .
+  - cd .. && cmake -E make_directory Release && cd Release
+  - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
   - cmake --build .
 
 

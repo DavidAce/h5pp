@@ -7,7 +7,7 @@ find_package(spdlog 1.3
         NO_DEFAULT_PATH  )
 
 if(spdlog_FOUND AND TARGET spdlog::spdlog)
-    message(STATUS "spdlog found in system: ${SPDLOG_INCLUDE_DIR}")
+    message(STATUS "spdlog found in system")
 #    include(cmake-modules/PrintTargetProperties.cmake)
 #    print_target_properties(spdlog::spdlog)
 
