@@ -14,7 +14,7 @@ if(ENABLE_TESTS)
         add_subdirectory(tests/readWriteAttributes  EXCLUDE_FROM_ALL)
         add_subdirectory(tests/copySwap             EXCLUDE_FROM_ALL)
 
-        add_custom_target(all-tests ALL
+        add_custom_target(all-tests
                 DEPENDS
                 test-simpleWrite
                 test-largeWrite
