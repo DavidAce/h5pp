@@ -62,7 +62,7 @@ namespace h5pp{
             h5pp::Logger::setLogger("h5pp",logLevel,false);
         }
 
-        explicit File(const File & other){
+        File(const File & other){
             h5pp::Logger::log->debug("Copy-constructing this file [{}] from given file: [{}]. Previously initialized (this): {}. Previously initialized (other): {}", FileName.string(),other.getFileName(), hasInitialized,other.hasInitialized);
             *this = other;
 
@@ -70,7 +70,7 @@ namespace h5pp{
 
 
 
-        File(const std::string FileName_,
+        explicit File(const std::string FileName_,
                 AccessMode accessMode_ = AccessMode::READWRITE,
                 CreateMode createMode_ = CreateMode::RENAME,
                 size_t logLevel_ = 2)
@@ -90,6 +90,8 @@ namespace h5pp{
                 setCompression();
                 initialize();
             }
+
+        explicit File(const std::string FileName_,CreateMode createMode_,size_t logLevel_ = 2):File(FileName_,AccessMode::READWRITE, createMode_,logLevel_){}
 
 
         ~File(){
