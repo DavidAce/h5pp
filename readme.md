@@ -260,7 +260,7 @@ You can use it too! If you copy `cmake-modules/FindPackageHDF5.cmake` to your pr
 include(FindPackageHDF5.cmake)
 
 if(HDF5_FOUND AND TARGET hdf5::hdf5)
-        target_link_libraries(myProject PRIVATE hdf5::hdf5)
+        target_link_libraries(myExecutable PRIVATE hdf5::hdf5)
 endif()
 
 ```
