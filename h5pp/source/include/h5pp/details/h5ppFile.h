@@ -333,21 +333,23 @@ namespace h5pp{
             }
         }
 
-    private:
-
-        inline void create_group_link(const std::string &group_relative_name){
+        inline void createGroupLink(const std::string &group_relative_name){
             hid_t file = openFileHandle();
             h5pp::Logger::log->trace("Creating group: [{}]",group_relative_name);
             h5pp::Hdf5::create_group_link(file,plist_lncr,group_relative_name);
             closeFileHandle(file);
         }
 
-        inline void write_symbolic_link(const std::string &src_path, const std::string &tgt_path){
+        inline void writeSymbolicLink(const std::string &src_path, const std::string &tgt_path){
             hid_t file = openFileHandle();
             h5pp::Logger::log->trace("Creating symbolik link: [{}] --> [{}]",src_path, tgt_path);
             h5pp::Hdf5::write_symbolic_link(file,src_path, tgt_path);
             closeFileHandle(file);
         }
+
+
+    private:
+
 
 
         fs::path getNewFileName(fs::path fileName)const{

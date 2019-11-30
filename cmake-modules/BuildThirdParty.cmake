@@ -21,7 +21,7 @@ function(build_third_party library_name config_dir build_dir install_dir extra_f
             RESULT_VARIABLE config_result
     )
 
-    execute_process(COMMAND  ${CMAKE_COMMAND} --build . --target all
+    execute_process(COMMAND  ${CMAKE_COMMAND} --build . --target all  --parallel
             WORKING_DIRECTORY "${config_dir}/${library_name}"
             RESULT_VARIABLE build_result
     )

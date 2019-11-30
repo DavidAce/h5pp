@@ -198,7 +198,7 @@ endif()
 ### Print summary of CMake configuration                       ###
 ##################################################################
 message("=============================================================================")
-message("===                  SUMMARY OF CMAKE CONFIGURATION                       ===")
+message("===                H5PP: SUMMARY OF CMAKE CONFIGURATION                   ===")
 message("=============================================================================")
 include(cmake-modules/PrintTargetInfo.cmake)
 print_target_info(h5pp)
