@@ -84,7 +84,7 @@ endif()
 ### Compiler and linker flags ###
 #################################
 add_library(flags INTERFACE)
-target_compile_options(flags INTERFACE  $<$<COMPILE_LANGUAGE:CXX>: -lstdc++fs -std=c++17>)
+target_compile_options(flags INTERFACE  $<$<COMPILE_LANGUAGE:CXX>:-std=c++17 -lstdc++fs>)
 target_link_libraries (flags INTERFACE -lstdc++fs)
 if(GCC_TOOLCHAIN)
     target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
