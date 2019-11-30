@@ -135,11 +135,12 @@ You can also optionally pass a true/false argument when writing a new dataset to
 
 **Technical details:** 
 - Extendability only applies for datasets with one or more dimensions. Zero-dimensional or "scalar" datasets are always as non-extendable (as `H5S_SCALAR`).
-- A dataset with one or more dimensions is non-extendable by default, stored under the hood as `H5S_CONTIGUOUS`.
-- Extendable datasets are created as `H5D_CHUNKED` datasets.
+- Extendable datasets are "chunked" (as in `H5D_CHUNKED`), which means they can be read into memory in smaller chunks. This makes sense for large enough datasets.
+- A dataset with one or more dimensions is **non-extendable by default, unless it is very large**.
 - A non-extendable dataset smaller than 32 KB will be created as `H5D_COMPACT`, meaning it can fit in the metadata header.
-- A non-extendable dataset between 32 KB and 512 KB will be created as `H5D_CONTIGUOUS`.
-- A non-extendable dataset larger than 512 KB will be made into an extendable dataset unless explicitly specified. 
+- A non-extendable dataset between 32 KB and 512 KB will be created as `H5D_CONTIGUOUS`, meaning it is not "chunked" and can be read entirely at once.
+- A non-extendable dataset larger than 512 KB will be **made into an extendable dataset** unless explicitly specified, because it makes sense to read large datasets in chunks.
+
 
 
 ### Pro-tip: load into Python using h5py
