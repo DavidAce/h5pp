@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(test-readWriteAttributes)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 add_executable(${PROJECT_NAME} readWriteAttributes.cpp )
 

@@ -150,17 +150,14 @@ else()
 endif()
 set(H5PP_BUILD_DIR_THIRD_PARTY         ${CMAKE_BINARY_DIR}/third-party-build)
 set(H5PP_CONFIG_DIR_THIRD_PARTY        ${CMAKE_BINARY_DIR}/third-party-config)
+
 set(DIRECTORY_HINTS
-        ${THIRD_PARTY_DIR}
         ${H5PP_INSTALL_DIR_THIRD_PARTY}
         ${CMAKE_INSTALL_PREFIX}
-        ${CMAKE_INSTALL_PREFIX}/third-party
-        ${H5PP_INSTALL_DIR_THIRD_PARTY}
         ${CMAKE_SOURCE_DIR}
         $ENV{HOME}/.conda
         $ENV{HOME}/anaconda3
         $ENV{HOME}/miniconda
-
 )
 
 

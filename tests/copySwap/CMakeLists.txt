@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(test-copySwap)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 add_executable(${PROJECT_NAME} copySwap.cpp)
 
