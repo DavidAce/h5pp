@@ -158,7 +158,7 @@ file  = h5py.File('myFile.h5', 'r')
 myDoubleArray = np.asarray(file['double-array-dataset'])                                     
 
 # Originally written as std::vector<std::complex<double>> in h5pp
-myComplexArray = np.asarray(file['complex-double-array-dataset'].value.view(dtype=np.complex128)) 
+myComplexArray = np.asarray(file['complex-double-array-dataset']).view(dtype=np.complex128) 
 ```
 
 Pay attention to the cast to `dtype=np.complex128` which interprets each element of the array as two `doubles`, i.e. the real and imaginary parts are `2 * 64 = 128` bits.  
