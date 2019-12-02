@@ -1,7 +1,7 @@
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
-if (NOT Eigen3_FOUND OR NOT TARGET Eigen3::Eigen)
+if (NOT TARGET Eigen3::Eigen)
     set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
     find_dependency(Eigen3 3.3.4
         PATHS ${DIRECTORY_HINTS} ${Eigen3_DIR} ${EIGEN3_ROOT_DIR} ${EIGEN3_INCLUDE_DIR}
@@ -9,17 +9,21 @@ if (NOT Eigen3_FOUND OR NOT TARGET Eigen3::Eigen)
         NO_CMAKE_PACKAGE_REGISTRY)
 
 endif()
-if (NOT spdlog_FOUND OR NOT TARGET spdlog::spdlog)
+
+
+if (NOT TARGET spdlog::spdlog)
     include(GNUInstallDirs)
     set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
     set(spdlog_DIR                      "@PACKAGE_spdlog_DIR@")
     find_dependency(spdlog 1.3
-            PATHS ${spdlog_DIR} ${DIRECTORY_HINTS}
-            PATH_SUFFIXES spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog/share spdlog/cmake
-            NO_DEFAULT_PATH)
+            PATHS ${DIRECTORY_HINTS} ${spdlog_DIR}
+            PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog/${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake
+            NO_DEFAULT_PATH  )
+
+
 endif()
 
-if (NOT HDF5_FOUND OR NOT hdf5::hdf5)
+if (TARGET hdf5::hdf5)
     set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
     ##################################################################
     ### Adapt pthread for static/dynamic linking                   ###
@@ -32,7 +36,7 @@ if (NOT HDF5_FOUND OR NOT hdf5::hdf5)
     endif()
 
     enable_language(C)
-    include(${H5PP_INSTALL_CONFIGDIR}/FindPackageHDF5.cmake)
+    include(${H5PP_CONFIG_DIR}/FindPackageHDF5.cmake)
 endif()
 
 

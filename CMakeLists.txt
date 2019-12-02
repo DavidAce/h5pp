@@ -247,7 +247,7 @@ else()
 
     include(GNUInstallDirs)
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    set(H5PP_CONFIG_DIR ${CMAKE_INSTALL_PREFIX}/${h5pp_suffix}/share/h5pp/cmake)
+    set(H5PP_CONFIG_DIR ${CMAKE_INSTALL_PREFIX}/${h5pp_suffix}share/h5pp/cmake)
     set(H5PP_DIR  ${H5PP_CONFIG_DIR})
     set(H5PP_ROOT ${CMAKE_INSTALL_PREFIX}/${h5pp_suffix})
     install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/${h5pp_suffix}${CMAKE_INSTALL_INCLUDEDIR})
