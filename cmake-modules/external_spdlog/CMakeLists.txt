@@ -6,9 +6,6 @@ ExternalProject_Add(external_spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog.git
         GIT_TAG v1.3.1
         GIT_PROGRESS 1
-        UPDATE_COMMAND ""
-        TEST_COMMAND ""
-        BUILD_ALWAYS 1
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         CMAKE_ARGS
