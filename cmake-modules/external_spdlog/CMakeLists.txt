@@ -9,8 +9,8 @@ ExternalProject_Add(external_spdlog
         UPDATE_COMMAND ""
         TEST_COMMAND ""
         BUILD_ALWAYS 1
-        PREFIX      ${BUILD_DIRECTORY}/spdlog
-        INSTALL_DIR ${INSTALL_DIRECTORY}/spdlog
+        PREFIX      ${CMAKE_BINARY_DIR}
+        INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DSPDLOG_BUILD_EXAMPLES:BOOL=OFF

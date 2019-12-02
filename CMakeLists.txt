@@ -37,14 +37,34 @@ option(BUILD_SHARED_LIBS        "Builds shared libraries"                       
 option(BUILD_EXAMPLES           "Builds examples"                                     OFF)
 option(ENABLE_TESTS             "Enable testing"                                      OFF)
 option(DOWNLOAD_MISSING         "Download and install all dependencies if not found"  OFF)
+option(H5PP_IS_SUBPROJECT       "Use h5pp with add_subdirectory()"                    OFF)
+
+
+# Used when h5pp is included as subproject (e.g., as Git submodule/subtree) in the source
+# tree of a project that uses it. Users may set the non-cached variable H5PP_IS_SUBPROJECT
+# before add_subdirectory(h5pp)
+if(NOT H5PP_IS_SUBPROJECT)
+    if("^${CMAKE_SOURCE_DIR}$" STREQUAL "^${PROJECT_SOURCE_DIR}$")
+        set (H5PP_IS_SUBPROJECT FALSE)
+    else()
+        message(STATUS "Detected usage as subproject")
+        set (H5PP_IS_SUBPROJECT TRUE)
+    endif()
+endif()
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
+    message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${PROJECT_SOURCE_DIR}/install")
+    set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "..." FORCE)
+endif()
 
 
 message("=========================== h5pp build options ==============================")
-message(STATUS "BUILD_SHARED_LIBS  : ${BUILD_SHARED_LIBS}")
-message(STATUS "BUILD_EXAMPLES     : ${BUILD_EXAMPLES}")
-message(STATUS "ENABLE_TESTS       : ${ENABLE_TESTS}")
-message(STATUS "DOWNLOAD_MISSING   : ${DOWNLOAD_MISSING}")
-message(STATUS "THIRD_PARTY_DIR    : ${THIRD_PARTY_DIR}")
+message(STATUS "BUILD_SHARED_LIBS       : ${BUILD_SHARED_LIBS}")
+message(STATUS "BUILD_EXAMPLES          : ${BUILD_EXAMPLES}")
+message(STATUS "ENABLE_TESTS            : ${ENABLE_TESTS}")
+message(STATUS "DOWNLOAD_MISSING        : ${DOWNLOAD_MISSING}")
+message(STATUS "THIRD_PARTY_DIR         : ${THIRD_PARTY_DIR}")
+message(STATUS "CMAKE_INSTALL_PREFIX    : ${CMAKE_INSTALL_PREFIX}")
 message("=============================================================================")
 
 
@@ -61,9 +81,6 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif ()
 
 
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "..." FORCE)
-endif()
 
 
 #################################################################
@@ -83,7 +100,8 @@ endif()
 ### Compiler and linker flags ###
 #################################
 add_library(flags INTERFACE)
-target_compile_options(flags INTERFACE  $<$<COMPILE_LANGUAGE:CXX>:-std=c++17 -lstdc++fs>)
+target_compile_options(flags INTERFACE  $<$<COMPILE_LANGUAGE:CXX>: -lstdc++fs>)
+target_compile_features(flags INTERFACE  $<$<COMPILE_LANGUAGE:CXX>: cxx_std_17>)
 target_link_libraries (flags INTERFACE -lstdc++fs)
 if(GCC_TOOLCHAIN)
     target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
@@ -94,13 +112,13 @@ endif()
 ###  Check  #include<filesystem> or                 ###
 ###  or     #include<experimental/filesystem>       ###
 #######################################################
-include(cmake-modules/CheckCXX17FilesystemCompiles.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake-modules/CheckCXX17FilesystemCompiles.cmake)
 CheckCXX17FilesystemCompiles()
 
 #######################################################
 ###  Check  #include<experimental/type_traits>      ###
 #######################################################
-include(cmake-modules/CheckTypeTraitsCompiles.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake-modules/CheckTypeTraitsCompiles.cmake)
 CheckTypeTraitsCompiles()
 
 
@@ -113,8 +131,8 @@ add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(
         ${PROJECT_NAME}
         INTERFACE
-        $<BUILD_INTERFACE:${INSTALL_DIR}/include>
-        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:h5pp/source/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
 )
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
@@ -141,32 +159,20 @@ endif()
 ### Setup dependency paths                                     ###
 ##################################################################
 include(GNUInstallDirs)
-set(H5PP_INSTALL_DIR                   ${CMAKE_INSTALL_PREFIX})
-set(H5PP_BUILD_DIR                     ${CMAKE_BINARY_DIR}/h5pp)
-if(THIRD_PARTY_DIR)
-    set(H5PP_INSTALL_DIR_THIRD_PARTY       ${THIRD_PARTY_DIR})
-else()
-    set(H5PP_INSTALL_DIR_THIRD_PARTY       ${CMAKE_INSTALL_PREFIX}/third-party)
-endif()
-set(H5PP_BUILD_DIR_THIRD_PARTY         ${CMAKE_BINARY_DIR}/third-party-build)
-set(H5PP_CONFIG_DIR_THIRD_PARTY        ${CMAKE_BINARY_DIR}/third-party-config)
-
 set(DIRECTORY_HINTS
-        ${H5PP_INSTALL_DIR_THIRD_PARTY}
         ${CMAKE_INSTALL_PREFIX}
-        ${CMAKE_SOURCE_DIR}
         $ENV{HOME}/.conda
         $ENV{HOME}/anaconda3
         $ENV{HOME}/miniconda
-)
+        )
 
 
 ##################################################################
 ### Try to fetch all dependencies                              ###
 ##################################################################
-include(cmake-modules/Fetch_Eigen3.cmake)
-include(cmake-modules/Fetch_spdlog.cmake)
-include(cmake-modules/Fetch_HDF5.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_Eigen3.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_spdlog.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_HDF5.cmake)
 
 if(TARGET hdf5::hdf5 AND TARGET Eigen3::Eigen AND TARGET spdlog::spdlog)
     set(DEPENDENCIES_FOUND TRUE)
@@ -196,7 +202,7 @@ endif()
 message("=============================================================================")
 message("===                H5PP: SUMMARY OF CMAKE CONFIGURATION                   ===")
 message("=============================================================================")
-include(cmake-modules/PrintTargetInfo.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake-modules/PrintTargetInfo.cmake)
 print_target_info(h5pp)
 print_target_info(deps)
 print_target_info(flags)
@@ -209,80 +215,82 @@ message("")
 
 
 if(NOT DEPENDENCIES_FOUND)
-message(WARNING "Dependencies missing.\nTo use h5pp headers, link the missing dependencies manually from your project")
+    message(WARNING "Dependencies missing.\nTo use h5pp headers, link the missing dependencies manually from your project")
 endif()
 
 
 
-#######################################################
-### Install library                                 ###
-### Default path is ${PROJECT_SOURCE_DIR}/install   ###
-### where ${PROJECT_SOURCE_DIR}  is the path of     ###
-### this CMakeLists.txt                             ###
-#######################################################
+if(H5PP_IS_SUBPROJECT)
+    add_library(h5pp::h5pp ALIAS h5pp)
+    add_library(h5pp::deps ALIAS deps)
+    add_library(h5pp::flags ALIAS h5pp)
+
+else()
+
+    #######################################################
+    ### Install library                                 ###
+    ### Default path is ${PROJECT_SOURCE_DIR}/install   ###
+    ### where ${PROJECT_SOURCE_DIR}  is the path of     ###
+    ### this CMakeLists.txt                             ###
+    #######################################################
 
 
-include(GNUInstallDirs)
-set(H5PP_INSTALL_CONFIGDIR share/cmake/h5pp)
-set(H5PP_ROOT ${CMAKE_INSTALL_PREFIX})
-set(H5PP_DIR  ${H5PP_INSTALL_CONFIGDIR})
-install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    include(GNUInstallDirs)
+    # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
+    set(H5PP_CONFIG_DIR share/h5pp/cmake)
+    set(H5PP_DIR  ${H5PP_CONFIG_DIR})
+    set(H5PP_ROOT ${CMAKE_INSTALL_PREFIX})
+    install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
-install(TARGETS h5pp deps flags EXPORT h5ppTargets)
+    install(TARGETS h5pp deps flags EXPORT h5ppTargets)
 
-#Export the targets to a script
-install(EXPORT
-        h5ppTargets
-        FILE h5ppTargets.cmake
-        NAMESPACE h5pp::
-        DESTINATION ${H5PP_INSTALL_CONFIGDIR})
-
-
-#Create a ConfigVersion.cmake file
-include(CMakePackageConfigHelpers)
+    #Export the targets to a script
+    install(EXPORT
+            h5ppTargets
+            FILE h5ppTargets.cmake
+            NAMESPACE h5pp::
+            DESTINATION ${H5PP_CONFIG_DIR})
 
 
-configure_package_config_file(
-        cmake-modules/h5ppConfig.cmake.in
-        ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
-        INSTALL_DESTINATION ${H5PP_INSTALL_CONFIGDIR}
-        PATH_VARS H5PP_ROOT H5PP_DIR
-        H5PP_INSTALL_DIR_THIRD_PARTY
-        H5PP_INSTALL_CONFIGDIR
-        DIRECTORY_HINTS
-)
+    #Create a ConfigVersion.cmake file
+    include(CMakePackageConfigHelpers)
 
-configure_package_config_file(
-        cmake-modules/h5ppConfig.deps.cmake.in
-        ${PROJECT_BINARY_DIR}/h5ppConfig.deps.cmake
-        INSTALL_DESTINATION ${H5PP_INSTALL_CONFIGDIR}
-        PATH_VARS H5PP_ROOT H5PP_DIR
-        H5PP_INSTALL_DIR_THIRD_PARTY
-        H5PP_INSTALL_CONFIGDIR
-        DIRECTORY_HINTS
-)
+
+    configure_package_config_file(
+            ${PROJECT_SOURCE_DIR}/cmake-modules/h5ppConfig.cmake.in
+            ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
+            INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
+            PATH_VARS H5PP_ROOT H5PP_DIR H5PP_CONFIG_DIR DIRECTORY_HINTS
+    )
+
+    configure_package_config_file(
+            ${PROJECT_SOURCE_DIR}/cmake-modules/h5ppConfig.deps.cmake.in
+            ${PROJECT_BINARY_DIR}/h5ppConfig.deps.cmake
+            INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
+            PATH_VARS H5PP_ROOT H5PP_DIR H5PP_CONFIG_DIR DIRECTORY_HINTS
+    )
 
 
 
-write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY AnyNewerVersion
-)
+    write_basic_package_version_file(
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
+            VERSION ${PROJECT_VERSION}
+            COMPATIBILITY AnyNewerVersion
+    )
 
 
-##Install the config, configversion and custom find modules
-install(FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
-        cmake-modules/FindEigen3.cmake
-        cmake-modules/FindPackageHDF5.cmake
-        DESTINATION ${H5PP_INSTALL_CONFIGDIR}
-        )
+    ##Install the config, configversion and custom find modules
+    install(FILES
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
+            ${PROJECT_SOURCE_DIR}/cmake-modules/FindEigen3.cmake
+            ${PROJECT_SOURCE_DIR}/cmake-modules/FindPackageHDF5.cmake
+            DESTINATION ${H5PP_CONFIG_DIR}
+            )
 
-
+endif()
 
 ##################################################################
 ### Unit testing                                               ###
@@ -297,12 +305,12 @@ include(tests/all-tests.cmake)
 if(DEPENDENCIES_FOUND)
     set(H5PP_INSTALL_DIR_EXAMPLES  ${CMAKE_INSTALL_PREFIX}/examples)
     set(H5PP_BUILD_DIR_EXAMPLES    ${CMAKE_BINARY_DIR}/examples)
-    include(cmake-modules/Build_examples.cmake)
+    include(${PROJECT_SOURCE_DIR}/cmake-modules/Build_examples.cmake)
     add_custom_target(examples
             DEPENDS example_helloworld
             DEPENDS example_writescalar
             DEPENDS ${PROJECT_NAME})
-#    add_dependencies(examples ${PROJECT_NAME})
+    #    add_dependencies(examples ${PROJECT_NAME})
 
 else()
     message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")

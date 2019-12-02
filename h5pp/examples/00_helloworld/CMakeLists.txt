@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(helloworld)
 add_executable(${PROJECT_NAME} helloworld.cpp)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wpedantic -Wextra -O0)
-find_package(h5pp PATHS ${H5PP_INSTALL_DIR} REQUIRED)
+find_package(h5pp PATHS ${CMAKE_INSTALL_PREFIX} PATH_SUFFIXES h5pp REQUIRED)
 
 
 if (h5pp_FOUND)
@@ -19,8 +19,6 @@ if (h5pp_FOUND)
     message("")
 
     target_link_libraries(${PROJECT_NAME} PRIVATE h5pp::h5pp h5pp::deps h5pp::flags )
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-
 endif()
 
 

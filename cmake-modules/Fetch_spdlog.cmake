@@ -2,8 +2,8 @@
 include(GNUInstallDirs)
 message(STATUS "Fetch spdlog given directory spdlog_DIR: ${spdlog_DIR}")
 find_package(spdlog 1.3
-        PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog/${CMAKE_INSTALL_LIBDIR}/cmake/spdlog ${spdlog_DIR} ${DIRECTORY_HINTS}
-        PATH_SUFFIXES spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake
+        PATHS ${CMAKE_INSTALL_PREFIX}/spdlog ${spdlog_DIR} ${DIRECTORY_HINTS}
+        PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake
         NO_DEFAULT_PATH  )
 
 if(spdlog_FOUND AND TARGET spdlog::spdlog)
@@ -12,16 +12,12 @@ if(spdlog_FOUND AND TARGET spdlog::spdlog)
 #    print_target_properties(spdlog::spdlog)
 
 elseif (DOWNLOAD_MISSING)
-    message(STATUS "Spdlog will be installed into ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog on first build.")
-    include(cmake-modules/BuildThirdParty.cmake)
-    build_third_party(
-            "spdlog"
-            "${H5PP_CONFIG_DIR_THIRD_PARTY}"
-            "${H5PP_BUILD_DIR_THIRD_PARTY}"
-            "${H5PP_INSTALL_DIR_THIRD_PARTY}"
-            ""
-    )
-    find_package(spdlog 1.3 NO_DEFAULT_PATH PATHS ${H5PP_INSTALL_DIR_THIRD_PARTY}/spdlog/${CMAKE_INSTALL_LIBDIR}/cmake/spdlog)
+    message(STATUS "Spdlog will be installed into ${CMAKE_INSTALL_PREFIX}/spdlog on first build./spdlog on first build.")
+    include(${PROJECT_SOURCE_DIR}/cmake-modules/BuildDependency.cmake)
+    build_third_party(spdlog "")
+    find_package(spdlog 1.3 NO_DEFAULT_PATH
+            PATHS ${CMAKE_INSTALL_PREFIX}/spdlog
+            PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR}/cmake/spdlog )
     if(spdlog_FOUND AND TARGET spdlog::spdlog)
         message(STATUS "spdlog installed successfully")
 #        include(cmake-modules/PrintTargetProperties.cmake)
