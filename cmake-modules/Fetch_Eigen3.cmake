@@ -1,4 +1,6 @@
-find_package(Eigen3 3.3.4  PATHS ${DIRECTORY_HINTS} PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_CMAKE_PACKAGE_REGISTRY)
+find_package(Eigen3 3.3.4
+        PATHS ${DIRECTORY_HINTS} ${Eigen3_DIR}
+        PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_CMAKE_PACKAGE_REGISTRY)
 
 if(TARGET Eigen3::Eigen)
     message(STATUS "Eigen3 found")
@@ -6,11 +8,13 @@ if(TARGET Eigen3::Eigen)
 #    print_target_properties(Eigen3::Eigen)
 
 elseif (DOWNLOAD_MISSING)
-    message(STATUS "Eigen3 will be installed into ${CMAKE_INSTALL_PREFIX}/Eigen3")
+    message(STATUS "Eigen3 will be installed into ${CMAKE_INSTALL_PREFIX}")
     include(${PROJECT_SOURCE_DIR}/cmake-modules/BuildDependency.cmake)
     build_dependency(Eigen3 "")
 #    message("Checking in ${CMAKE_INSTALL_PREFIX}/Eigen3")
-    find_package(Eigen3 3.3.4  PATHS ${CMAKE_INSTALL_PREFIX}/Eigen3 PATH_SUFFIXES Eigen3 eigen3 NO_DEFAULT_PATH NO_CMAKE_PACKAGE_REGISTRY)
+    find_package(Eigen3 3.3.4
+            PATHS ${DIRECTORY_HINTS} ${Eigen3_DIR}
+            PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_CMAKE_PACKAGE_REGISTRY NO_DEFAULT_PATH)
     if(TARGET Eigen3::Eigen)
         message(STATUS "Eigen3 installed successfully")
     else()

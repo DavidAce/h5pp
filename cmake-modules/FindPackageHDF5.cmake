@@ -33,8 +33,8 @@ function(find_package_hdf5 hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE
         message(STATUS "Searching for hdf5 execs in ${HDF5_ROOT}" )
         set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE ON)
 
-        find_file(HDF5_C_COMPILER_EXECUTABLE    NAMES h5cc  PATHS ${HDF5_ROOT} PATH_SUFFIXES  hdf5/bin envs/bin dmrg/bin envs/dmrg/bin NO_DEFAULT_PATH )
-        find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ PATHS ${HDF5_ROOT} PATH_SUFFIXES  hdf5/bin envs/bin dmrg/bin envs/dmrg/bin NO_DEFAULT_PATH )
+        find_file(HDF5_C_COMPILER_EXECUTABLE    NAMES h5cc  PATHS ${HDF5_ROOT} PATH_SUFFIXES bin hdf5/bin envs/bin dmrg/bin envs/dmrg/bin NO_DEFAULT_PATH )
+        find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ PATHS ${HDF5_ROOT} PATH_SUFFIXES bin hdf5/bin envs/bin dmrg/bin envs/dmrg/bin NO_DEFAULT_PATH )
         if (HDF5_C_COMPILER_EXECUTABLE OR HDF5_CXX_COMPILER_EXECUTABLE)
 
             if(HDF5_FIND_DEBUG)

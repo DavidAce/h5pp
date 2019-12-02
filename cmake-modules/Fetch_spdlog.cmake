@@ -2,8 +2,8 @@
 include(GNUInstallDirs)
 message(STATUS "Fetch spdlog given directory spdlog_DIR: ${spdlog_DIR}")
 find_package(spdlog 1.3
-        PATHS ${CMAKE_INSTALL_PREFIX}/spdlog ${spdlog_DIR} ${DIRECTORY_HINTS}
-        PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake
+        PATHS ${DIRECTORY_HINTS} ${spdlog_DIR}
+        PATH_SUFFIXES ${spdlog_suffix}${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake
         NO_DEFAULT_PATH  )
 
 if(spdlog_FOUND AND TARGET spdlog::spdlog)
@@ -12,12 +12,14 @@ if(spdlog_FOUND AND TARGET spdlog::spdlog)
 #    print_target_properties(spdlog::spdlog)
 
 elseif (DOWNLOAD_MISSING)
-    message(STATUS "Spdlog will be installed into ${CMAKE_INSTALL_PREFIX}/spdlog on first build./spdlog on first build.")
+    message(STATUS "Spdlog will be installed into ${CMAKE_INSTALL_PREFIX}")
     include(${PROJECT_SOURCE_DIR}/cmake-modules/BuildDependency.cmake)
     build_dependency(spdlog "")
-    find_package(spdlog 1.3 NO_DEFAULT_PATH
-            PATHS ${CMAKE_INSTALL_PREFIX}/spdlog
-            PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR}/cmake/spdlog )
+    find_package(spdlog 1.3
+            PATHS ${DIRECTORY_HINTS} ${spdlog_DIR}
+            PATH_SUFFIXES ${spdlog_suffix}${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake
+            NO_DEFAULT_PATH  )
+
     if(spdlog_FOUND AND TARGET spdlog::spdlog)
         message(STATUS "spdlog installed successfully")
 #        include(cmake-modules/PrintTargetProperties.cmake)

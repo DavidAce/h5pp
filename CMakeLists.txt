@@ -38,7 +38,7 @@ option(BUILD_EXAMPLES           "Builds examples"                               
 option(ENABLE_TESTS             "Enable testing"                                      OFF)
 option(DOWNLOAD_MISSING         "Download and install all dependencies if not found"  OFF)
 option(H5PP_IS_SUBPROJECT       "Use h5pp with add_subdirectory()"                    OFF)
-
+option(APPEND_LIBSUFFIX         "Append <libname> to CMAKE_INSTALL_PREFIX"            OFF)
 
 # Used when h5pp is included as subproject (e.g., as Git submodule/subtree) in the source
 # tree of a project that uses it. Users may set the non-cached variable H5PP_IS_SUBPROJECT
@@ -52,6 +52,17 @@ if(NOT H5PP_IS_SUBPROJECT)
     endif()
 endif()
 
+# Append directory to CMAKE_INSTALL_PREFIX
+# Useful if you want to have separate directories for each libs
+# and to easily delete them individually
+if(APPEND_LIBSUFFIX)
+    set(h5pp_suffix h5pp/)
+    set(eigen3_suffix Eigen3/)
+    set(hdf5_suffix hdf5/)
+    set(spdlog_suffix spdlog/)
+endif()
+
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
     message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${PROJECT_SOURCE_DIR}/install")
     set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "..." FORCE)
@@ -63,8 +74,8 @@ message(STATUS "BUILD_SHARED_LIBS       : ${BUILD_SHARED_LIBS}")
 message(STATUS "BUILD_EXAMPLES          : ${BUILD_EXAMPLES}")
 message(STATUS "ENABLE_TESTS            : ${ENABLE_TESTS}")
 message(STATUS "DOWNLOAD_MISSING        : ${DOWNLOAD_MISSING}")
-message(STATUS "THIRD_PARTY_DIR         : ${THIRD_PARTY_DIR}")
 message(STATUS "CMAKE_INSTALL_PREFIX    : ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "APPEND_LIBSUFFIX        : ${APPEND_LIBSUFFIX}")
 message("=============================================================================")
 
 
@@ -159,7 +170,6 @@ endif()
 ##################################################################
 include(GNUInstallDirs)
 set(DIRECTORY_HINTS
-        ${CMAKE_INSTALL_PREFIX}/h5pp
         ${CMAKE_INSTALL_PREFIX}
         $ENV{HOME}/.conda
         $ENV{HOME}/anaconda3
@@ -237,10 +247,10 @@ else()
 
     include(GNUInstallDirs)
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    set(H5PP_CONFIG_DIR ${CMAKE_INSTALL_PREFIX}/h5pp/share/h5pp/cmake)
+    set(H5PP_CONFIG_DIR ${CMAKE_INSTALL_PREFIX}/${h5pp_suffix}/share/h5pp/cmake)
     set(H5PP_DIR  ${H5PP_CONFIG_DIR})
-    set(H5PP_ROOT ${CMAKE_INSTALL_PREFIX}/h5pp)
-    install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/h5pp/${CMAKE_INSTALL_INCLUDEDIR})
+    set(H5PP_ROOT ${CMAKE_INSTALL_PREFIX}/${h5pp_suffix})
+    install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/${h5pp_suffix}${CMAKE_INSTALL_INCLUDEDIR})
 
 
     install(TARGETS h5pp deps flags EXPORT h5ppTargets)
@@ -328,7 +338,7 @@ endif()
 ############################
 if(NOT H5PP_IS_SUBPROJECT)
     if(DEPENDENCIES_FOUND)
-        set(H5PP_INSTALL_DIR_EXAMPLES  ${CMAKE_INSTALL_PREFIX}/h5pp/examples)
+        set(H5PP_INSTALL_DIR_EXAMPLES  ${CMAKE_INSTALL_PREFIX}/${h5pp_suffix}/examples)
         set(H5PP_BUILD_DIR_EXAMPLES    ${CMAKE_BINARY_DIR}/h5pp-examples)
         include(${PROJECT_SOURCE_DIR}/cmake-modules/Build_examples.cmake)
         add_custom_target(examples
