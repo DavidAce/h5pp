@@ -23,7 +23,7 @@ if (NOT TARGET spdlog::spdlog)
 
 endif()
 
-if (TARGET hdf5::hdf5)
+if (NOT TARGET hdf5::hdf5)
     set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
     ##################################################################
     ### Adapt pthread for static/dynamic linking                   ###
