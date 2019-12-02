@@ -43,7 +43,6 @@ int main()
     file.writeAttributeToLink(1, "AttributeInt", "testGroup/vectorDouble");
     file.writeAttributeToLink(1.0, "AttributeDouble", "testGroup/vectorDouble");
     file.writeAttributeToLink(std::complex<double>(2, 3), "AttributeComplexDouble", "testGroup/vectorDouble");
-    file.writeAttributeToLink((int[]) {1, 2, 3, 4, 5, 6}, "AttributeIntArray", "testGroup/vectorDouble");
     file.writeAttributeToLink(vectorDouble, "AttributeVectorDouble", "testGroup/vectorDouble");
 
 

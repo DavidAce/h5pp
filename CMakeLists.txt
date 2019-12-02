@@ -100,8 +100,7 @@ endif()
 ### Compiler and linker flags ###
 #################################
 add_library(flags INTERFACE)
-target_compile_options(flags INTERFACE  $<$<COMPILE_LANGUAGE:CXX>: -lstdc++fs>)
-target_compile_features(flags INTERFACE  $<$<COMPILE_LANGUAGE:CXX>: cxx_std_17>)
+target_compile_features(flags INTERFACE cxx_std_17)
 target_link_libraries (flags INTERFACE -lstdc++fs)
 if(GCC_TOOLCHAIN)
     target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
@@ -131,8 +130,8 @@ add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(
         ${PROJECT_NAME}
         INTERFACE
-        $<BUILD_INTERFACE:h5pp/source/include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/source/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/h5pp/include>
 )
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
@@ -160,6 +159,7 @@ endif()
 ##################################################################
 include(GNUInstallDirs)
 set(DIRECTORY_HINTS
+        ${CMAKE_INSTALL_PREFIX}/h5pp
         ${CMAKE_INSTALL_PREFIX}
         $ENV{HOME}/.conda
         $ENV{HOME}/anaconda3
@@ -237,10 +237,10 @@ else()
 
     include(GNUInstallDirs)
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    set(H5PP_CONFIG_DIR share/h5pp/cmake)
+    set(H5PP_CONFIG_DIR ${CMAKE_INSTALL_PREFIX}/h5pp/share/h5pp/cmake)
     set(H5PP_DIR  ${H5PP_CONFIG_DIR})
-    set(H5PP_ROOT ${CMAKE_INSTALL_PREFIX})
-    install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    set(H5PP_ROOT ${CMAKE_INSTALL_PREFIX}/h5pp)
+    install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/h5pp/${CMAKE_INSTALL_INCLUDEDIR})
 
 
     install(TARGETS h5pp deps flags EXPORT h5ppTargets)
@@ -295,23 +295,49 @@ endif()
 ##################################################################
 ### Unit testing                                               ###
 ##################################################################
-include(tests/all-tests.cmake)
+if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
+    if(DEPENDENCIES_FOUND)
+        enable_testing()
+        add_subdirectory(tests/simpleWrite          )
+        add_subdirectory(tests/largeWrite           )
+        add_subdirectory(tests/overWrite            )
+        add_subdirectory(tests/readWrite            )
+        add_subdirectory(tests/readWriteAttributes  )
+        add_subdirectory(tests/copySwap             )
+        add_custom_target(all-tests
+                DEPENDS test-simpleWrite
+                        test-largeWrite
+                        test-overWrite
+                        test-readWrite
+                        test-readWriteAttributes
+                        test-copySwap)
+        add_custom_command(
+            TARGET all-tests
+            POST_BUILD
+            COMMENT "Running Tests"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            DEPENDS h5pp deps flags
+            COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
 
-
+    else()
+        message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
+    endif()
+endif()
 ############################
 # ADD TARGETS FOR  EXAMPLES
 ############################
+if(NOT H5PP_IS_SUBPROJECT)
+    if(DEPENDENCIES_FOUND)
+        set(H5PP_INSTALL_DIR_EXAMPLES  ${CMAKE_INSTALL_PREFIX}/h5pp/examples)
+        set(H5PP_BUILD_DIR_EXAMPLES    ${CMAKE_BINARY_DIR}/h5pp-examples)
+        include(${PROJECT_SOURCE_DIR}/cmake-modules/Build_examples.cmake)
+        add_custom_target(examples
+                DEPENDS example_helloworld
+                DEPENDS example_writescalar
+                DEPENDS ${PROJECT_NAME})
+        #    add_dependencies(examples ${PROJECT_NAME})
 
-if(DEPENDENCIES_FOUND)
-    set(H5PP_INSTALL_DIR_EXAMPLES  ${CMAKE_INSTALL_PREFIX}/examples)
-    set(H5PP_BUILD_DIR_EXAMPLES    ${CMAKE_BINARY_DIR}/examples)
-    include(${PROJECT_SOURCE_DIR}/cmake-modules/Build_examples.cmake)
-    add_custom_target(examples
-            DEPENDS example_helloworld
-            DEPENDS example_writescalar
-            DEPENDS ${PROJECT_NAME})
-    #    add_dependencies(examples ${PROJECT_NAME})
-
-else()
-    message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
+    else()
+        message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
+    endif()
 endif()

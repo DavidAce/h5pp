@@ -14,7 +14,7 @@ if(spdlog_FOUND AND TARGET spdlog::spdlog)
 elseif (DOWNLOAD_MISSING)
     message(STATUS "Spdlog will be installed into ${CMAKE_INSTALL_PREFIX}/spdlog on first build./spdlog on first build.")
     include(${PROJECT_SOURCE_DIR}/cmake-modules/BuildDependency.cmake)
-    build_third_party(spdlog "")
+    build_dependency(spdlog "")
     find_package(spdlog 1.3 NO_DEFAULT_PATH
             PATHS ${CMAKE_INSTALL_PREFIX}/spdlog
             PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR}/cmake/spdlog )
