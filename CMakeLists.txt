@@ -1,6 +1,6 @@
  
 cmake_minimum_required(VERSION 3.12)
-project(h5pp  VERSION 0.3.3)
+project(h5pp  VERSION 0.3.4)
 
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -52,15 +52,6 @@ if(NOT H5PP_IS_SUBPROJECT)
     endif()
 endif()
 
-# Append directory to CMAKE_INSTALL_PREFIX
-# Useful if you want to have separate directories for each libs
-# and to easily delete them individually
-if(APPEND_LIBSUFFIX)
-    set(h5pp_suffix h5pp/)
-    set(eigen3_suffix Eigen3/)
-    set(hdf5_suffix hdf5/)
-    set(spdlog_suffix spdlog/)
-endif()
 
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
@@ -244,14 +235,37 @@ else()
     ### this CMakeLists.txt                             ###
     #######################################################
 
+    # Append directory to CMAKE_INSTALL_PREFIX
+    # Useful if you want to have separate directories for each libs
+    # and to easily delete them individually
+    if(APPEND_LIBSUFFIX)
+        set(h5pp_destination    ${CMAKE_INSTALL_PREFIX}/h5pp)
+        set(eigen3_destination  ${CMAKE_INSTALL_PREFIX}/Eigen3)
+        set(spdlog_destination  ${CMAKE_INSTALL_PREFIX}/spdlog)
+        set(hdf5_destination    ${CMAKE_INSTALL_PREFIX}/hdf5)
+    else()
+        set(h5pp_destination    ${CMAKE_INSTALL_PREFIX})
+        set(eigen3_destination  ${CMAKE_INSTALL_PREFIX})
+        set(spdlog_destination  ${CMAKE_INSTALL_PREFIX})
+        set(hdf5_destination    ${CMAKE_INSTALL_PREFIX})
+    endif()
+
 
     include(GNUInstallDirs)
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    set(H5PP_CONFIG_DIR ${CMAKE_INSTALL_PREFIX}/${h5pp_suffix}share/h5pp/cmake)
+    set(H5PP_CONFIG_DIR ${h5pp_destination}/share/h5pp/cmake)
     set(H5PP_DIR  ${H5PP_CONFIG_DIR})
-    set(H5PP_ROOT ${CMAKE_INSTALL_PREFIX}/${h5pp_suffix})
-    install(DIRECTORY h5pp/source/include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/${h5pp_suffix}${CMAKE_INSTALL_INCLUDEDIR})
-
+    set(H5PP_ROOT ${h5pp_destination})
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/source/include/ DESTINATION ${h5pp_destination}/${CMAKE_INSTALL_INCLUDEDIR} COMPONENT headers)
+    if(EXISTS ${CMAKE_BINARY_DIR}/h5pp-deps-install/Eigen3)
+        install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/Eigen3/ DESTINATION ${eigen3_destination} COMPONENT eigen3-dep)
+    endif()
+    if(EXISTS ${CMAKE_BINARY_DIR}/h5pp-deps-install/spdlog)
+        install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/spdlog/ DESTINATION ${spdlog_destination} COMPONENT spdlog-dep)
+    endif()
+    if(EXISTS ${CMAKE_BINARY_DIR}/h5pp-deps-install/hdf5)
+        install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/hdf5/ DESTINATION ${hdf5_destination}  COMPONENT hdf5-dep)
+    endif()
 
     install(TARGETS h5pp deps flags EXPORT h5ppTargets)
 
@@ -298,6 +312,7 @@ else()
             ${PROJECT_SOURCE_DIR}/cmake-modules/FindEigen3.cmake
             ${PROJECT_SOURCE_DIR}/cmake-modules/FindPackageHDF5.cmake
             DESTINATION ${H5PP_CONFIG_DIR}
+            COMPONENT config
             )
 
 endif()
@@ -333,21 +348,34 @@ if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
         message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
     endif()
 endif()
-############################
-# ADD TARGETS FOR  EXAMPLES
-############################
+
+
+
+
+#############################
+# ADD TARGETS FOR  EXAMPLES #
+#############################
 if(NOT H5PP_IS_SUBPROJECT)
     if(DEPENDENCIES_FOUND)
-        set(H5PP_INSTALL_DIR_EXAMPLES  ${CMAKE_INSTALL_PREFIX}/${h5pp_suffix}/examples)
-        set(H5PP_BUILD_DIR_EXAMPLES    ${CMAKE_BINARY_DIR}/h5pp-examples)
-        include(${PROJECT_SOURCE_DIR}/cmake-modules/Build_examples.cmake)
-        add_custom_target(examples
-                DEPENDS example_helloworld
-                DEPENDS example_writescalar
-                DEPENDS ${PROJECT_NAME})
-        #    add_dependencies(examples ${PROJECT_NAME})
-
+        set(H5PP_EXAMPLES_BINARY_DIR   ${CMAKE_BINARY_DIR}/h5pp-examples)
+        add_subdirectory(h5pp/examples/helloworld  ${CMAKE_BINARY_DIR}/h5pp-examples/helloworld)
+        add_subdirectory(h5pp/examples/writescalar ${CMAKE_BINARY_DIR}/h5pp-examples/writescalar)
+        install(TARGETS helloworld writescalar RUNTIME DESTINATION ${h5pp_destination}/examples COMPONENT examples)
     else()
         message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
     endif()
 endif()
+
+
+
+###############################################
+# Trying CPACK to generate .deb install file  #
+###############################################
+set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+set(CPACK_COMPONENTS_ALL headers config)
+# Define apt dependencies that work with this library
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libhdf5-dev (>=1.10), libeigen3-dev (>=3.3.4), libspdlog-dev (>=1.3)")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "DavidAce <aceituno@kth.se>")
+include(CPack)

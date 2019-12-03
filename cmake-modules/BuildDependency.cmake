@@ -1,10 +1,7 @@
 function(build_dependency dep_name extra_flags)
-    set(build_dir    ${CMAKE_BINARY_DIR}/h5pp-deps/${dep_name})
-    if(APPEND_LIBSUFFIX)
-        set(install_dir  ${CMAKE_INSTALL_PREFIX}/${dep_name})
-    else()
-        set(install_dir  ${CMAKE_INSTALL_PREFIX})
-    endif()
+    set(build_dir    ${CMAKE_BINARY_DIR}/h5pp-deps-build/${dep_name})
+    set(install_dir  ${CMAKE_BINARY_DIR}/h5pp-deps-install/${dep_name})
+
     message(STATUS "dependency name   : ${dep_name}")
     message(STATUS "build_dir         : ${build_dir}")
     message(STATUS "install_dir       : ${install_dir}")

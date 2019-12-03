@@ -21,24 +21,23 @@
 
 function(find_package_hdf5 hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE_STATIC_LIBRARIES HDF5_PREFER_PARALLEL HDF5_REQUIRED )
 
-    foreach(HDF5_ROOT ${hdf5_roots})
+    foreach(hdf5_root ${hdf5_roots})
         unset(HDF5_CXX_COMPILER_EXECUTABLE CACHE)
         unset(HDF5_C_COMPILER_EXECUTABLE   CACHE)
         unset(HDF5_FOUND CACHE)
         unset(HDF5_FOUND PARENT_SCOPE)
-        set(HDF5_FIND_DEBUG OFF)
+        option(HDF5_FIND_DEBUG OFF)
         if(HDF5_FIND_DEBUG)
             message(STATUS "Searching for hdf5 execs in ${hdf5_root}" )
         endif()
-        message(STATUS "Searching for hdf5 execs in ${HDF5_ROOT}" )
         set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE ON)
 
-        find_file(HDF5_C_COMPILER_EXECUTABLE    NAMES h5cc  PATHS ${HDF5_ROOT} PATH_SUFFIXES bin hdf5/bin envs/bin dmrg/bin envs/dmrg/bin NO_DEFAULT_PATH )
-        find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ PATHS ${HDF5_ROOT} PATH_SUFFIXES bin hdf5/bin envs/bin dmrg/bin envs/dmrg/bin NO_DEFAULT_PATH )
+        find_file(HDF5_C_COMPILER_EXECUTABLE    NAMES h5cc  PATHS ${hdf5_root} PATH_SUFFIXES bin hdf5/bin envs/bin dmrg/bin envs/dmrg/bin )
+        find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ PATHS ${hdf5_root} PATH_SUFFIXES bin hdf5/bin envs/bin dmrg/bin envs/dmrg/bin )
         if (HDF5_C_COMPILER_EXECUTABLE OR HDF5_CXX_COMPILER_EXECUTABLE)
 
             if(HDF5_FIND_DEBUG)
-                message(STATUS "Searching for hdf5 execs in ${HDF5_ROOT} - Success -- C:  ${HDF5_C_COMPILER_EXECUTABLE}  CXX: ${HDF5_CXX_COMPILER_EXECUTABLE}" )
+                message(STATUS "Searching for hdf5 execs in ${hdf5_root} - Success -- C:  ${HDF5_C_COMPILER_EXECUTABLE}  CXX: ${HDF5_CXX_COMPILER_EXECUTABLE}" )
             endif()
 #            enable_language(C)
             find_package(HDF5 ${HDF5_ATLEAST_VERSION} COMPONENTS  ${HDF5_MODULES} )
@@ -92,7 +91,6 @@ function(find_package_hdf5 hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE
                 endif()
             endif()
         else()
-#            message(STATUS "Searching for hdf5 execs in ${HDF5_ROOT} - failed" )
             set(HDF5_FOUND FALSE PARENT_SCOPE)
         endif()
     endforeach()
@@ -127,7 +125,7 @@ if (NOT HDF5_REQUIRED)
     set(HDF5_REQUIRED OFF)
 endif()
 
-set(HDF5_ROOT ${HDF5_ROOT} ${HDF5_DIR} ${CMAKE_INSTALL_PREFIX}/${hdf5-suffix} ${DIRECTORY_HINTS} $ENV{HDF5_ROOT} $ENV{HDF5_DIR} $ENV{EBROOTHDF5} /usr /usr/local)
+set(HDF5_ROOT ${HDF5_ROOT} ${HDF5_DIR} $ENV{HDF5_ROOT} $ENV{HDF5_DIR} $ENV{EBROOTHDF5} /usr /usr/local  ${DIRECTORY_HINTS} ${CMAKE_INSTALL_PREFIX}/${hdf5-suffix} )
 
 find_package_hdf5("${HDF5_ROOT}" "${HDF5_MODULES}" "${HDF5_ATLEAST_VERSION}" "${HDF5_USE_STATIC_LIBRARIES}" "${HDF5_PREFER_PARALLEL}" "${HDF5_REQUIRED}")
 
