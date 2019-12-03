@@ -19,7 +19,7 @@
 
 
 
-function(find_package_hdf5 hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE_STATIC_LIBRARIES HDF5_PREFER_PARALLEL HDF5_REQUIRED )
+function(find_package_hdf5_internal hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE_STATIC_LIBRARIES HDF5_PREFER_PARALLEL HDF5_REQUIRED )
 
     foreach(hdf5_root ${hdf5_roots})
         unset(HDF5_CXX_COMPILER_EXECUTABLE CACHE)
@@ -99,53 +99,54 @@ function(find_package_hdf5 hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE
     endif()
 endfunction()
 
-
-if(NOT HDF5_MODULES)
-    set(HDF5_MODULES C CXX HL)
-endif()
-
-
-if(BUILD_SHARED_LIBS)
-    set(HDF5_USE_STATIC_LIBRARIES OFF)
-    set(HDF5_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
-else()
-    set(HDF5_USE_STATIC_LIBRARIES ON)
-    set(HDF5_LIBRARY_SUFFIX ${CMAKE_STATIC_LIBRARY_SUFFIX})
-endif()
-
-if(NOT HDF5_ATLEAST_VERSION)
-    set(HDF5_ATLEAST_VERSION 1.10)
-endif()
-
-if(NOT HDF5_PREFER_PARALLEL)
-    set(HDF5_PREFER_PARALLEL OFF)
-endif()
-
-if (NOT HDF5_REQUIRED)
-    set(HDF5_REQUIRED OFF)
-endif()
-
-set(HDF5_ROOT ${HDF5_ROOT} ${HDF5_DIR} $ENV{HDF5_ROOT} $ENV{HDF5_DIR} $ENV{EBROOTHDF5} /usr /usr/local  ${DIRECTORY_HINTS} ${CMAKE_INSTALL_PREFIX}/${hdf5-suffix} )
-
-find_package_hdf5("${HDF5_ROOT}" "${HDF5_MODULES}" "${HDF5_ATLEAST_VERSION}" "${HDF5_USE_STATIC_LIBRARIES}" "${HDF5_PREFER_PARALLEL}" "${HDF5_REQUIRED}")
-
-if(HDF5_FOUND)
-    # Add convenience libraries to collect all the hdf5 libraries
-    add_library(hdf5::hdf5 IMPORTED INTERFACE)
-    target_link_libraries(hdf5::hdf5
-            INTERFACE
-            ${HDF5_LIBRARIES}
-            $<LINK_ONLY:-ldl -lm -lz>
-            )
-    target_include_directories(hdf5::hdf5 INTERFACE  ${HDF5_INCLUDE_DIR})
-    if(TARGET Threads::Threads)
-        target_link_libraries(hdf5::hdf5 INTERFACE  Threads::Threads)
+function(find_package_hdf5)
+    if(NOT HDF5_MODULES)
+        set(HDF5_MODULES C CXX HL)
     endif()
-    if(HDF5_C_LIBRARY_sz)
-        target_link_libraries(hdf5::hdf5 INTERFACE $<LINK_ONLY:-lsz>)
-        if (NOT BUILD_SHARED_LIBS)
-            target_link_libraries(hdf5::hdf5 INTERFACE $<LINK_ONLY: -laec>)
+
+
+    if(BUILD_SHARED_LIBS)
+        set(HDF5_USE_STATIC_LIBRARIES OFF)
+        set(HDF5_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
+    else()
+        set(HDF5_USE_STATIC_LIBRARIES ON)
+        set(HDF5_LIBRARY_SUFFIX ${CMAKE_STATIC_LIBRARY_SUFFIX})
+    endif()
+
+    if(NOT HDF5_ATLEAST_VERSION)
+        set(HDF5_ATLEAST_VERSION 1.10)
+    endif()
+
+    if(NOT HDF5_PREFER_PARALLEL)
+        set(HDF5_PREFER_PARALLEL OFF)
+    endif()
+
+    if (NOT HDF5_REQUIRED)
+        set(HDF5_REQUIRED OFF)
+    endif()
+
+    set(HDF5_ROOT ${HDF5_ROOT} ${HDF5_DIR} $ENV{HDF5_ROOT} $ENV{HDF5_DIR} $ENV{EBROOTHDF5} /usr /usr/local  ${DIRECTORY_HINTS} ${CMAKE_INSTALL_PREFIX}/${hdf5-suffix} )
+
+    find_package_hdf5_internal("${HDF5_ROOT}" "${HDF5_MODULES}" "${HDF5_ATLEAST_VERSION}" "${HDF5_USE_STATIC_LIBRARIES}" "${HDF5_PREFER_PARALLEL}" "${HDF5_REQUIRED}")
+
+    if(HDF5_FOUND)
+        # Add convenience libraries to collect all the hdf5 libraries
+        add_library(hdf5::hdf5 IMPORTED INTERFACE)
+        target_link_libraries(hdf5::hdf5
+                INTERFACE
+                ${HDF5_LIBRARIES}
+                $<LINK_ONLY:-ldl -lm -lz>
+                )
+        target_include_directories(hdf5::hdf5 INTERFACE  ${HDF5_INCLUDE_DIR})
+        if(TARGET Threads::Threads)
+            target_link_libraries(hdf5::hdf5 INTERFACE  Threads::Threads)
         endif()
-    endif()
+        if(HDF5_C_LIBRARY_sz)
+            target_link_libraries(hdf5::hdf5 INTERFACE $<LINK_ONLY:-lsz>)
+            if (NOT BUILD_SHARED_LIBS)
+                target_link_libraries(hdf5::hdf5 INTERFACE $<LINK_ONLY: -laec>)
+            endif()
+        endif()
 
-endif()
+    endif()
+endfunction()
