@@ -1,6 +1,6 @@
 find_package(Eigen3 3.3.4
         PATHS ${Eigen3_DIR} ${DIRECTORY_HINTS}
-        PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_CMAKE_PACKAGE_REGISTRY REQUIRED)
+        PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_CMAKE_PACKAGE_REGISTRY)
 
 if(TARGET Eigen3::Eigen)
     message(STATUS "Eigen3 found")
