@@ -1,4 +1,4 @@
-find_package(Eigen3 3.3.4
+find_package(Eigen3 3.3
         PATHS ${Eigen3_DIR} ${DIRECTORY_HINTS}
         PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_CMAKE_PACKAGE_REGISTRY)
 
@@ -12,7 +12,7 @@ elseif (DOWNLOAD_MISSING)
     include(${PROJECT_SOURCE_DIR}/cmake-modules/BuildDependency.cmake)
     build_dependency(Eigen3 "")
 #    message("Checking in ${CMAKE_INSTALL_PREFIX}/Eigen3")
-    find_package(Eigen3 3.3.4
+    find_package(Eigen3 3.3
             PATHS ${CMAKE_BINARY_DIR}/h5pp-deps-install
             PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_CMAKE_PACKAGE_REGISTRY NO_DEFAULT_PATH)
     if(TARGET Eigen3::Eigen)
