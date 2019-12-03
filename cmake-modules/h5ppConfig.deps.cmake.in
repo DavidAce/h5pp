@@ -3,7 +3,7 @@
 include(CMakeFindDependencyMacro)
 if (NOT TARGET Eigen3::Eigen)
     set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
-    find_dependency(Eigen3 3.3
+    find_dependency(Eigen3 3.3.4
         PATHS ${Eigen3_DIR} ${EIGEN3_ROOT_DIR} ${EIGEN3_INCLUDE_DIR} ${DIRECTORY_HINTS}
         PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3
         NO_CMAKE_PACKAGE_REGISTRY)
@@ -51,6 +51,7 @@ if (NOT TARGET hdf5::hdf5)
     enable_language(C)
     include(${H5PP_CONFIG_DIR}/FindPackageHDF5.cmake)
     find_package_hdf5()
+
 endif()
 
 
