@@ -355,7 +355,7 @@ endif()
 #############################
 # ADD TARGETS FOR  EXAMPLES #
 #############################
-if(NOT H5PP_IS_SUBPROJECT)
+if(NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES)
     if(DEPENDENCIES_FOUND)
         set(H5PP_EXAMPLES_BINARY_DIR   ${CMAKE_BINARY_DIR}/h5pp-examples)
         add_subdirectory(h5pp/examples/helloworld  ${CMAKE_BINARY_DIR}/h5pp-examples/helloworld)

@@ -8,4 +8,4 @@
 *libs/
 doxygen_log.txt
 *__pycache__/
-package.sh
+package*
