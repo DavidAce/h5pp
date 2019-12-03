@@ -11,45 +11,45 @@ branches:
 matrix:
   fast_finish: true
   include:
-#    - os: linux
-#      compiler: gcc-8
-#      env:
-#        - COMPILER_NAME=gcc
-#        - GCC_VERSION=8
-#        - CC=gcc-8
-#        - CXX=g++-8
-#        - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
-#      cache:
-#        apt: true
-#      addons:
-#        apt:
-#          update: true
-#          sources:
-#            - sourceline: 'ppa:ubuntu-toolchain-r/test'
-#          packages:
-#            - gcc-8
-#            - g++-8
-#    - os: linux
-#      compiler: clang-7
-#      env:
-#        - COMPILER_NAME=clang
-#        - CXX=clang++-7
-#        - CC=clang-7
-#        - CLANG_VERSION=7
-#        - MATRIX_EVAL="CXX=clang++-7 && CC=clang-7"
-#      cache:
-#        apt: true
-#      addons:
-#        apt:
-#          update: true
-#          sources:
-#            - sourceline:  'ppa:ubuntu-toolchain-r/test'
-#            - sourceline:  'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main'
-#              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
-#          packages:
-#            - llvm-7-dev
-#            - clang-7
-#            - libstdc++-8-dev
+    - os: linux
+      compiler: gcc-8
+      env:
+        - COMPILER_NAME=gcc
+        - GCC_VERSION=8
+        - CC=gcc-8
+        - CXX=g++-8
+        - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
+      cache:
+        apt: true
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+          packages:
+            - gcc-8
+            - g++-8
+    - os: linux
+      compiler: clang-7
+      env:
+        - COMPILER_NAME=clang
+        - CXX=clang++-7
+        - CC=clang-7
+        - CLANG_VERSION=7
+        - MATRIX_EVAL="CXX=clang++-7 && CC=clang-7"
+      cache:
+        apt: true
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline:  'ppa:ubuntu-toolchain-r/test'
+            - sourceline:  'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main'
+              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - llvm-7-dev
+            - clang-7
+            - libstdc++-8-dev
     - os: linux
       compiler: gcc-8 (conda libs)
       env:
