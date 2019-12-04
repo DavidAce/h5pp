@@ -163,7 +163,8 @@ myComplexArray = np.asarray(file['complex-double-array-dataset']).view(dtype=np.
 
 Pay attention to the cast to `dtype=np.complex128` which interprets each element of the array as two `doubles`, i.e. the real and imaginary parts are `2 * 64 = 128` bits.  
 
-
+## Download
+Install the [latest release](https://github.com/DavidAce/h5pp/releases) (.deb package) or `git clone https://github.com/DavidAce/h5pp.git`.
 
 ## Installation
 Build the library just as any CMake project:
