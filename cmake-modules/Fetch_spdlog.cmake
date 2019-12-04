@@ -1,6 +1,5 @@
 
 include(GNUInstallDirs)
-message(STATUS "Fetch spdlog given directory spdlog_DIR: ${spdlog_DIR}")
 find_package(spdlog 1.3
         PATHS  ${spdlog_DIR} ${DIRECTORY_HINTS}
         PATH_SUFFIXES ${spdlog_suffix}${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake)

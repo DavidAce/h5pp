@@ -35,10 +35,6 @@ endif()
 
 
 
-
-
-endif()
-
 if (NOT TARGET hdf5::hdf5)
     set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
     ##################################################################
