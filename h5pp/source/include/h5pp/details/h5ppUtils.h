@@ -193,6 +193,32 @@ namespace h5pp{
 
 
         template<typename DataType>
+        auto convertScalar3DataToH5T(const DataType &data){
+            static_assert(h5pp::Type::Check::hasScalar3<DataType>() or h5pp::Type::Check::is_Scalar3<DataType>(),
+                          "Data must be a struct of three scalars for conversion to H5T_SCALAR3");
+            if constexpr(h5pp::Type::Check::is_eigen_type<DataType>::value){
+                using internalType  = decltype(DataType::x);
+                std::vector<h5pp::Type::Complex::H5T_SCALAR3<internalType>> newData;
+                newData.insert(newData.end(), data.data(), data.data()+data.size());
+                return newData;
+            }
+            else if constexpr(h5pp::Type::Check::is_vector<DataType>::value) {
+                using scalarType  = typename DataType::value_type;
+                using internalType  = decltype(scalarType::x);
+                std::vector<h5pp::Type::Complex::H5T_SCALAR3<internalType>> newData;
+                newData.insert(newData.end(), data.data(), data.data()+data.size());
+                return newData;
+            }
+            else if  constexpr (h5pp::Type::Check::is_Scalar3<DataType>()){
+                using internalType  = decltype(DataType::x);
+                return h5pp::Type::Complex::H5T_SCALAR3<internalType>(data);
+            }else{
+                //This should never happen.
+                throw::std::runtime_error("Unrecognized Scalar3 type: " +  std::string(typeid(data).name() ));
+            }
+        }
+
+        template<typename DataType>
         auto getByteSize(const DataType &data){
             hsize_t num_elems = getSize(data);
             hsize_t typesize = sizeof(data);

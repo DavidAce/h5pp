@@ -47,6 +47,13 @@ namespace h5pp{
             if constexpr (tc::is_Scalar2_of_type<typename std::decay<DataType>::type, double>())                                   {return  H5Tcopy(Complex::H5T_SCALAR2_DOUBLE);}
             if constexpr (tc::is_Scalar2_of_type<typename std::decay<DataType>::type, float>())                                    {return  H5Tcopy(Complex::H5T_SCALAR2_FLOAT);}
 
+            if constexpr (tc::is_Scalar3_of_type<typename std::decay<DataType>::type, int>())                                      {return  H5Tcopy(Complex::H5T_SCALAR3_INT);}
+            if constexpr (tc::is_Scalar3_of_type<typename std::decay<DataType>::type, long>())                                     {return  H5Tcopy(Complex::H5T_SCALAR3_LONG);}
+            if constexpr (tc::is_Scalar3_of_type<typename std::decay<DataType>::type, unsigned int>())                             {return  H5Tcopy(Complex::H5T_SCALAR3_UINT);}
+            if constexpr (tc::is_Scalar3_of_type<typename std::decay<DataType>::type, unsigned long>())                            {return  H5Tcopy(Complex::H5T_SCALAR3_ULONG);}
+            if constexpr (tc::is_Scalar3_of_type<typename std::decay<DataType>::type, double>())                                   {return  H5Tcopy(Complex::H5T_SCALAR3_DOUBLE);}
+            if constexpr (tc::is_Scalar3_of_type<typename std::decay<DataType>::type, float>())                                    {return  H5Tcopy(Complex::H5T_SCALAR3_FLOAT);}
+
             if constexpr (std::is_array<DataType>::value)                                               {return getDataType<typename std::remove_all_extents<DataType>::type>();}
             if constexpr (std::is_array<typename std::decay<DataType>::type>::value)                    {return getDataType<typename std::remove_all_extents<DataType>::type>();}
             if constexpr (tc::is_eigen_type<DataType>::value)                                           {return getDataType<typename DataType::Scalar>();}
@@ -68,11 +75,20 @@ namespace h5pp{
             }
 
             template<typename T>
-            hid_t createScalar2Type(){
-                hid_t NEW_SCALAR2_TYPE = H5Tcreate (H5T_COMPOUND, sizeof(H5T_SCALAR2<T>));
-                H5Tinsert (NEW_SCALAR2_TYPE, "x", HOFFSET(H5T_SCALAR2<T>,x), getDataType<T>());
-                H5Tinsert (NEW_SCALAR2_TYPE, "y", HOFFSET(H5T_SCALAR2<T>,y), getDataType<T>());
+            hid_t createScalar2Type() {
+                hid_t NEW_SCALAR2_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(H5T_SCALAR2<T>));
+                H5Tinsert(NEW_SCALAR2_TYPE, "x", HOFFSET(H5T_SCALAR2<T>, x), getDataType<T>());
+                H5Tinsert(NEW_SCALAR2_TYPE, "y", HOFFSET(H5T_SCALAR2<T>, y), getDataType<T>());
                 return H5Tcopy(NEW_SCALAR2_TYPE);
+            }
+
+            template<typename T>
+            hid_t createScalar3Type(){
+                hid_t NEW_SCALAR3_TYPE = H5Tcreate (H5T_COMPOUND, sizeof(H5T_SCALAR3<T>));
+                H5Tinsert (NEW_SCALAR3_TYPE, "x", HOFFSET(H5T_SCALAR3<T>,x), getDataType<T>());
+                H5Tinsert (NEW_SCALAR3_TYPE, "y", HOFFSET(H5T_SCALAR3<T>,y), getDataType<T>());
+                H5Tinsert (NEW_SCALAR3_TYPE, "z", HOFFSET(H5T_SCALAR3<T>,z), getDataType<T>());
+                return H5Tcopy(NEW_SCALAR3_TYPE);
             }
 
             inline void initTypes(){
@@ -90,6 +106,13 @@ namespace h5pp{
                 H5T_SCALAR2_DOUBLE     = createScalar2Type<double>();
                 H5T_SCALAR2_FLOAT      = createScalar2Type<float>();
 
+                H5T_SCALAR3_INT        = createScalar3Type<int>();
+                H5T_SCALAR3_LONG       = createScalar3Type<long>();
+                H5T_SCALAR3_UINT       = createScalar3Type<unsigned int>();
+                H5T_SCALAR3_ULONG      = createScalar3Type<unsigned long>();
+                H5T_SCALAR3_DOUBLE     = createScalar3Type<double>();
+                H5T_SCALAR3_FLOAT      = createScalar3Type<float>();
+
             }
 
             inline void closeTypes(){
@@ -106,6 +129,13 @@ namespace h5pp{
                 H5Tclose(H5T_SCALAR2_ULONG );
                 H5Tclose(H5T_SCALAR2_DOUBLE);
                 H5Tclose(H5T_SCALAR2_FLOAT );
+
+                H5Tclose(H5T_SCALAR3_INT   );
+                H5Tclose(H5T_SCALAR3_LONG  );
+                H5Tclose(H5T_SCALAR3_UINT  );
+                H5Tclose(H5T_SCALAR3_ULONG );
+                H5Tclose(H5T_SCALAR3_DOUBLE);
+                H5Tclose(H5T_SCALAR3_FLOAT );
             }
 
 

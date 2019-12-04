@@ -167,6 +167,8 @@ int main()
     file.readDataset(preAllocatedDouble,dims[0], "vectorDouble");
     delete[] preAllocatedDouble;
 
+
+    // Test new field2 type
     struct Field2{
         double x ;
         double y ;
@@ -183,6 +185,28 @@ int main()
         }
     }
     file.writeDataset(field2Matrix, "field2Matrix");
+
+    // Test new field3 type
+
+    struct Field3{
+        double x ;
+        double y ;
+        double z ;
+    };
+    std::vector<Field3> field3array (10,{0.3,0.8,0.5});
+    file.writeDataset(field3array, "field3array");
+    auto field3ReadArray = file.readDataset<std::vector<Field3>>("field3array");
+    for(auto &elem:field3ReadArray) std::cout << "elem: " << elem.x << " " << elem.y << " " << elem.z << std::endl;
+
+    Eigen::Matrix<Field3,Eigen::Dynamic,Eigen::Dynamic> field3Matrix (10,10);
+    for(int row = 0; row < field3Matrix.rows(); row++){
+        for(int col = 0; col < field3Matrix.cols(); col++){
+            field3Matrix(row,col) = {(double)row,(double)col, (double)(col+row)};
+        }
+    }
+    file.writeDataset(field3Matrix, "field3Matrix");
+
+
 
     return 0;
 }

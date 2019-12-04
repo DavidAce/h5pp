@@ -21,6 +21,7 @@ namespace h5pp{
             template <typename T> using Valt_t          = typename T::value_type;
             template <typename T> using x_t             = decltype(std::declval<T>().x);
             template <typename T> using y_t             = decltype(std::declval<T>().y);
+            template <typename T> using z_t             = decltype(std::declval<T>().z);
 
             template <typename T> using hasMember_data         = std::experimental::is_detected<Data_t, T>;
             template <typename T> using hasMember_size         = std::experimental::is_detected<Size_t, T>;
@@ -30,6 +31,7 @@ namespace h5pp{
             template <typename T> using hasMember_imag         = std::experimental::is_detected<Imag_t , T>;
             template <typename T> using hasMember_x            = std::experimental::is_detected<x_t    , T>;
             template <typename T> using hasMember_y            = std::experimental::is_detected<y_t    , T>;
+            template <typename T> using hasMember_z            = std::experimental::is_detected<z_t    , T>;
 
 
             template<typename Test, template<typename...> class Ref>
@@ -139,6 +141,36 @@ namespace h5pp{
             }
 
 
+            // Scalar 3
+            template<typename T>
+            constexpr bool is_Scalar3(){
+                if constexpr(hasMember_x<T>::value and hasMember_y<T>::value and hasMember_z<T>::value){
+                    constexpr size_t t_size = sizeof(T);
+                    constexpr size_t x_size = sizeof(T::x);
+                    constexpr size_t y_size = sizeof(T::y);
+                    constexpr size_t z_size = sizeof(T::z);
+                    return t_size == x_size + y_size + z_size;
+                }else{
+                    return false;
+                }
+            }
+
+            template<typename T1, typename T2>
+            constexpr bool is_Scalar3_of_type(){
+                if constexpr(is_Scalar3<T1>()){
+                    return  std::is_same<decltype(T1::x),T2>::value;
+                }else{
+                    return false;
+                }
+            }
+
+            template<typename T>
+            constexpr bool hasScalar3(){
+                if constexpr (is_Scalar3<T>())                          {return false;}
+                else if constexpr (hasMember_scalar <T>::value)         {return is_Scalar3<typename T::Scalar>();}
+                else if constexpr (hasMember_value_type <T>::value)     {return is_Scalar3<typename T::value_type>();}
+                return false;
+            }
 
             template<typename T>
             constexpr bool is_H5T_COMPLEX_STRUCT(){
@@ -149,6 +181,12 @@ namespace h5pp{
             constexpr bool is_H5T_SCALAR2(){
                 return is_specialization<T,Complex::H5T_SCALAR2>::value;
             }
+
+            template<typename T>
+            constexpr bool is_H5T_SCALAR3(){
+                return is_specialization<T,Complex::H5T_SCALAR3>::value;
+            }
+
 
             template<typename T>
             constexpr bool isVectorOf_H5T_COMPLEX_STRUCT(){

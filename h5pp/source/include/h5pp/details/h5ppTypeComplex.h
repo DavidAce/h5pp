@@ -23,6 +23,13 @@ namespace h5pp{
             inline hid_t H5T_SCALAR2_DOUBLE;
             inline hid_t H5T_SCALAR2_FLOAT;
 
+            inline hid_t H5T_SCALAR3_INT;
+            inline hid_t H5T_SCALAR3_LONG;
+            inline hid_t H5T_SCALAR3_UINT;
+            inline hid_t H5T_SCALAR3_ULONG;
+            inline hid_t H5T_SCALAR3_DOUBLE;
+            inline hid_t H5T_SCALAR3_FLOAT;
+
             template <typename T>
             struct H5T_COMPLEX_STRUCT {
                 T real;   /*real part*/
@@ -61,6 +68,35 @@ namespace h5pp{
                     static_assert(std::is_same_v<T, decltype(rhs.y)>);
                     x = rhs.x;
                     y = rhs.y;
+                    return *this;
+                }
+            };
+
+
+            template <typename T>
+            struct H5T_SCALAR3 {
+                T x;
+                T y;
+                T z;
+                using value_type = double;
+                using Scalar = double;
+                H5T_SCALAR3() = default;
+                template<typename Scalar3Type>
+                explicit H5T_SCALAR3(const Scalar3Type &in){
+                    static_assert(std::is_same_v<T, decltype(in.x)>);
+                    static_assert(std::is_same_v<T, decltype(in.y)>);
+                    x = in.x;
+                    y = in.y;
+                    z = in.z;
+                }
+                template<typename Scalar3Type>
+                H5T_SCALAR3 & operator=(const Scalar3Type & rhs){
+                    static_assert(std::is_same_v<T, decltype(rhs.x)>);
+                    static_assert(std::is_same_v<T, decltype(rhs.y)>);
+                    static_assert(std::is_same_v<T, decltype(rhs.z)>);
+                    x = rhs.x;
+                    y = rhs.y;
+                    z = rhs.z;
                     return *this;
                 }
             };
