@@ -129,11 +129,18 @@ CheckTypeTraitsCompiles()
 ### Define an interface library and establish its needs for the user  ###
 #########################################################################
 add_library(${PROJECT_NAME} INTERFACE)
+
+
+if(APPEND_LIBSUFFIX)
+    set(h5pp_destination    ${CMAKE_INSTALL_PREFIX}/h5pp)
+else()
+    set(h5pp_destination    ${CMAKE_INSTALL_PREFIX})
+endif()
 target_include_directories(
         ${PROJECT_NAME}
         INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/source/include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/h5pp/include>
+        $<INSTALL_INTERFACE:${h5pp_destination}/include>
 )
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
