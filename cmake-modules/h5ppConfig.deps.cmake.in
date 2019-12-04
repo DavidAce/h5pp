@@ -31,7 +31,7 @@ if (NOT TARGET spdlog::spdlog)
             add_library(spdlog::spdlog INTERFACE IMPORTED)
             target_include_directories(spdlog::spdlog INTERFACE ${SPDLOG_INCLUDE_DIR})
         endif()
-    endif
+    endif()
 endif()
 
 
