@@ -1,6 +1,6 @@
  
 cmake_minimum_required(VERSION 3.12)
-project(h5pp  VERSION 0.3.5)
+project(h5pp  VERSION 0.4.0)
 
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
