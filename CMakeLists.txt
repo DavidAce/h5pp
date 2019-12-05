@@ -375,14 +375,18 @@ endif()
 
 
 
-###############################################
-# Trying CPACK to generate .deb install file  #
-###############################################
+############################################
+# Use CPACK to generate .deb install file  #
+############################################
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_ALL headers config)
 # Define apt dependencies that work with this library
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libhdf5-dev (>=1.10), libeigen3-dev (>=3.3.4), libspdlog-dev (>=1.3)")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "A C++ wrapper for HDF5")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/DavidAce/h5pp")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "DavidAce <aceituno@kth.se>")
+set(CPACK_DEBIAN_PACKAGE_NAME "h5pp")
+set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT" )
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_GENERATOR "DEB")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "DavidAce <aceituno@kth.se>")
 include(CPack)
