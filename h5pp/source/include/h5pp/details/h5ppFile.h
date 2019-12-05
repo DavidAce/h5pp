@@ -363,7 +363,10 @@ namespace h5pp{
 
 
         void createDatasetLink(hid_t file, const DatasetProperties &props){
-            h5pp::Hdf5::createDatasetLink(file, plist_lncr, props);
+            if(not props.linkExists){
+                h5pp::Logger::log->trace("Creating dataset link: [{}]",props.dsetName);
+                h5pp::Hdf5::createDatasetLink(file, plist_lncr, props);
+            }
         }
 
         void selectHyperslab(const hid_t &filespace, const hid_t &memspace){
@@ -513,8 +516,8 @@ namespace h5pp{
 template <typename DataType>
 void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &props){
     hid_t file = openFileHandle();
-    h5pp::Logger::log->debug("Writing dataset: [{}] | size {} | rank {} | dimensions {}", props.dsetName, props.size, props.ndims,props.dims);
     createDatasetLink(file, props);
+    h5pp::Logger::log->debug("Writing dataset: [{}] | size {} | rank {} | dimensions {}", props.dsetName, props.size, props.ndims,props.dims);
     if (props.extendable){
         h5pp::Hdf5::setExtentDataset(file, props);
     }
@@ -575,36 +578,20 @@ void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPa
     props.memSpace   = h5pp::Utils::getMemSpace(props.ndims,props.dims);
     props.dataSpace  = h5pp::Utils::getDataSpace(props.ndims,props.dims,props.extendable);
 
-
-
-    if constexpr(h5pp::Type::Check::hasStdComplex<DataType>() or h5pp::Type::Check::is_StdComplex<DataType>()) {
-        if constexpr(tc::is_eigen_type<DataType>::value) {
-            auto temp_rowm = Textra::to_RowMajor(data); //Convert to Row Major first;
-            auto temp_cplx = h5pp::Utils::convertComplexDataToH5T(temp_rowm); // Convert to vector<H5T_COMPLEX_STRUCT<>>
-            writeDataset(temp_cplx, props);
-        } else {
-            auto temp_cplx = h5pp::Utils::convertComplexDataToH5T(data);
-            writeDataset(temp_cplx, props);
+    if constexpr(tc::is_eigen_type<DataType>::value and not tc::is_eigen_1d<DataType>::value) {
+        h5pp::Logger::log->debug("Converting Eigen object to row-major storage order");
+        const auto tempRowm = Textra::to_RowMajor(data); //Convert to Row Major first;
+        writeDataset(tempRowm, props);
+    } else {
+        if(H5Tequal(props.dataType, H5T_C_S1)){
+            // Read more about this step here
+            //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
+            props.size = h5pp::Utils::setStringSize(props.dataType,props.size);
+            writeDataset(data, props);
+        }else{
+            writeDataset(data, props);
         }
     }
-
-    else{
-        if constexpr(tc::is_eigen_type<DataType>::value) {
-            auto tempRowm = Textra::to_RowMajor(data); //Convert to Row Major first;
-            writeDataset(tempRowm, props);
-        } else {
-            if(H5Tequal(props.dataType, H5T_C_S1)){
-                // Read more about this step here
-                //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
-                props.size = h5pp::Utils::setStringSize(props.dataType,props.size);
-
-                writeDataset(data, props);
-            }else{
-                writeDataset(data, props);
-            }
-        }
-    }
-
 }
 
 template <typename DataType,typename T, std::size_t N>
@@ -625,52 +612,18 @@ void h5pp::File::writeDataset(const DataType &data,const T (&dims)[N], const std
     props.memSpace   = h5pp::Utils::getMemSpace(props.ndims,props.dims);
     props.dataSpace  = h5pp::Utils::getDataSpace(props.ndims,props.dims,props.extendable);
 
-    if (props.size == 0) throw std::runtime_error("Writing empty object. Size: " + std::to_string(props.size));
-
-    if constexpr(h5pp::Type::Check::hasStdComplex<DataType>() or h5pp::Type::Check::is_StdComplex<DataType>()) {
-        if constexpr(tc::is_eigen_type<DataType>::value) {
-            auto temp_rowm = Textra::to_RowMajor(data); //Convert to Row Major first;
-            auto temp_cplx = h5pp::Utils::convertComplexDataToH5T(temp_rowm); // Convert to vector<H5T_COMPLEX_STRUCT<>>
-            writeDataset(temp_cplx, props);
+    if constexpr(tc::is_eigen_type<DataType>::value and not tc::is_eigen_1d<DataType>::value) {
+        h5pp::Logger::log->debug("Converting Eigen object to row-major storage order");
+        const auto temp_rowm = Textra::to_RowMajor(data); //Convert to Row Major first;
+        writeDataset(temp_rowm, props);
+    }else {
+        if(H5Tequal(props.dataType, H5T_C_S1)) {
+            // Read more about this step here
+            //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
+            h5pp::Utils::setStringSize(props.dataType, props.size);
+            writeDataset(data, props);
         } else {
-            auto temp_cplx = h5pp::Utils::convertComplexDataToH5T(data);
-            writeDataset(temp_cplx, props);
-        }
-    }
-    else if constexpr(h5pp::Type::Check::hasScalar2<DataType>() or h5pp::Type::Check::is_Scalar2<DataType>()) {
-        if constexpr(tc::is_eigen_type<DataType>::value) {
-            auto temp_rowm = Textra::to_RowMajor(data); //Convert to Row Major first;
-            auto temp_cplx = h5pp::Utils::convertScalar2DataToH5T(temp_rowm); // Convert to vector<H5T_COMPLEX_STRUCT<>>
-            writeDataset(temp_cplx, props);
-        } else {
-            auto temp_scalar2 = h5pp::Utils::convertScalar2DataToH5T(data);
-            writeDataset(temp_scalar2, props);
-        }
-    }
-    else if constexpr(h5pp::Type::Check::hasScalar3<DataType>() or h5pp::Type::Check::is_Scalar3<DataType>()) {
-        if constexpr(tc::is_eigen_type<DataType>::value) {
-            auto temp_rowm = Textra::to_RowMajor(data); //Convert to Row Major first;
-            auto temp_cplx = h5pp::Utils::convertScalar3DataToH5T(temp_rowm); // Convert to vector<H5T_COMPLEX_STRUCT<>>
-            writeDataset(temp_cplx, props);
-        } else {
-            auto temp_scalar3 = h5pp::Utils::convertScalar3DataToH5T(data);
-            writeDataset(temp_scalar3, props);
-        }
-    }
-    else{
-        if constexpr(tc::is_eigen_type<DataType>::value) {
-            auto tempRowm = Textra::to_RowMajor(data); //Convert to Row Major first;
-            writeDataset(tempRowm, props);
-        } else {
-            if(H5Tequal(props.dataType, H5T_C_S1)){
-                // Read more about this step here
-                //http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
-                h5pp::Utils::setStringSize(props.dataType,props.size);
-
-                writeDataset(data, props);
-            }else{
-                writeDataset(data, props);
-            }
+            writeDataset(data, props);
         }
     }
 }
@@ -680,9 +633,10 @@ template <typename DataType,typename T, size_t N>
 void h5pp::File::writeDataset(const DataType * data, const T (&dims)[N], const std::string &datasetPath, std::optional<bool> extendable){
     // This function takes a pointer and a specifiation of dimensions. Easiest thing to do
     // is to wrap this in an Eigen::Tensor and send to writeDataset
+    // Note that C-style arrays are generally row-major order already
     Eigen::DSizes<long,N> dimsizes;
-    std::copy_n(std::begin(dims), N, dimsizes.begin());
-    auto tensorWrap = Eigen::TensorMap<const Eigen::Tensor<const DataType,N>>(data,dimsizes);
+    std::copy_n(std::begin(dims), N, dimsizes.begin()); //Copy the dimensions (not the data)
+    auto tensorWrap = Eigen::TensorMap<const Eigen::Tensor<const DataType,N,Eigen::RowMajor>>(data,dimsizes);
     writeDataset(tensorWrap, datasetPath,extendable);
 }
 
