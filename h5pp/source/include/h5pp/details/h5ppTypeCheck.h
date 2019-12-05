@@ -70,6 +70,13 @@ namespace h5pp{
             template<typename T, int rows, int cols, int StorageOrder> struct is_eigen_type<Eigen::Array<T,rows,cols,StorageOrder>> : public std::true_type {};
             template<typename Scalar, int rank, int storage, typename IndexType> struct is_eigen_type<Eigen::Tensor<Scalar, rank, storage,IndexType>> : public std::true_type{};
 
+            template<typename T> struct is_eigen_1d : public std::false_type {};
+            template<typename T, int cols, int StorageOrder> struct is_eigen_1d<Eigen::Matrix<T,1,cols,StorageOrder>> : public std::true_type {};
+            template<typename T, int rows, int StorageOrder> struct is_eigen_1d<Eigen::Matrix<T,rows,1,StorageOrder>> : public std::true_type {};
+            template<typename T, int cols, int StorageOrder> struct is_eigen_1d<Eigen::Array<T,1,cols,StorageOrder>> : public std::true_type {};
+            template<typename T, int rows, int StorageOrder> struct is_eigen_1d<Eigen::Array<T,rows,1,StorageOrder>> : public std::true_type {};
+            template<typename Scalar, int storage, typename IndexType> struct is_eigen_1d<Eigen::Tensor<Scalar, 1, storage,IndexType>> : public std::true_type{};
+
 
 
 
