@@ -182,19 +182,21 @@ Build the library just as any CMake project:
     make examples
 ```
 
-By passing the variable `DOWNLOAD_MISSING=ON` CMake will download all the dependencies and install them under `install-dir/third-party` if not found in the system. 
-By default `ìnstall-dir` will be `project-dir/install`, where `project-dir` is the directory containing the main `CMakeLists.txt` file. And of course, making the examples is optional.
+By passing the variable `DOWNLOAD_MISSING=ON` CMake will download all the dependencies and install them under `${CMAKE_BINARY_DIR}/install` if not found in the system. Here `${CMAKE_BINARY_DIR}` is the 
+directory you are building from. Building the the examples is optional.
 
 ### Build options
 
 The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
-* `-DCMAKE_INSTALL_PREFIX:PATH=<install-dir>` to specify install directory (default: `project-dir/install/`).
+* `-DCMAKE_INSTALL_PREFIX:PATH=<install-dir>` to specify install directory (default: `${CMAKE_BINARY_DIR}/install`).
 * `-DBUILD_SHARED_LIBS:BOOL=<ON/OFF>` to link dependencies with static or shared libraries (default: `OFF`)
 * `-DCMAKE_BUILD_TYPE=Release/Debug` to specify build type of tests and examples (default: `Release`)
 * `-DENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (recommended!) (default: `OFF`).
 * `-DBUILD_EXAMPLES:BOOL=<ON/OFF>` to build example programs (default: `OFF`)
 * `-DDOWNLOAD_MISSING:BOOL=<ON/OFF>` to toggle automatic installation of all third-party dependencies (default: `OFF`).
-
+* `-DAPPEND_LIBSUFFIX:BOOL=<ON/OFF>` Append a directory with the library name to install directory, i.e. `CMAKE_INSTALL_PREFIX/<libname>/`. This
+    is useful when you want to install `h5pp`, `hdf5`, `Eigen3` and `spdlog` in separate folders (default: `OFF`).
+* 
 
 In addition, the following variables can be set to help guide CMake's `find_package()` to your preinstalled software (no defaults):
 
