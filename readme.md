@@ -7,6 +7,8 @@
 In just a few lines of code, `h5pp` lets users read and write to disk in binary format. It supports complex data types in possibly multidimensional containers that are common in scientific computing.
 In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.org) matrices and tensors.
 
+[Latest release](https://github.com/DavidAce/h5pp/releases) 
+
 
 ## Features
 * Standard CMake build, install and linking using targets.
@@ -20,6 +22,9 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
     - `std::string`
     - `Eigen` types such as `Matrix`, `Array` and `Tensor` (from the unsupported module), with automatic conversion to/from row major storage layout.
     - Other containers with a contiguous buffer (without conversion to/from row major).
+    - POD structs with x,y or x,y,z data members of any type above. In `h5pp` go by the name `Scalar2` and `Scalar3`. 
+      These work well together with `double2` or `float3` types found in CUDA.
+    - Containers like `std::vector` or `Eigen::Matrix` of Scalar2 and Scalar3. 
 
 
 
@@ -96,7 +101,23 @@ int main() {
 Writing attributes of any type to a group or dataset (in general "links") works similarly with the method `writeAttributeToLink(someObject,attributeName,targetLink)`.
 
 
-###
+#### Pro-tip: load into Python using h5py
+HDF5 data is easy to load into Python. Loading integer and floating point data is straightforward. Complex data is almost as simple to use.
+HDF5 does not support complex types specifically, but `h5pp`enables this through compound HDF5 types. Here is a python example which uses `h5py`
+to load 1D arrays from an HDF5 file generated with `h5pp`:
+
+```python
+import h5py
+import numpy as np
+file  = h5py.File('myFile.h5', 'r')
+
+# Originally written as std::vector<double> in h5pp
+myDoubleArray = np.asarray(file['double-array-dataset'])                                     
+
+# Originally written as std::vector<std::complex<double>> in h5pp
+myComplexArray = np.asarray(file['complex-double-array-dataset']).view(dtype=np.complex128) 
+```
+
 
 
 ### File permissions
@@ -143,23 +164,6 @@ You can also optionally pass a true/false argument when writing a new dataset to
 
 
 
-### Pro-tip: load into Python using h5py
-HDF5 data is easy to load into Python. Loading integer and floating point data is straightforward. Complex data is almost as simple to use.
-HDF5 does not support complex types specifically, but `h5pp`enables this through compound HDF5 types. Here is a python example which uses `h5py`
-to load 1D arrays from an HDF5 file generated with `h5pp`:
-
-
-```python
-import h5py
-import numpy as np
-file  = h5py.File('myFile.h5', 'r')
-
-# Originally written as std::vector<double> in h5pp
-myDoubleArray = np.asarray(file['double-array-dataset'])                                     
-
-# Originally written as std::vector<std::complex<double>> in h5pp
-myComplexArray = np.asarray(file['complex-double-array-dataset']).view(dtype=np.complex128) 
-```
 
 Pay attention to the cast to `dtype=np.complex128` which interprets each element of the array as two `doubles`, i.e. the real and imaginary parts are `2 * 64 = 128` bits.  
 
