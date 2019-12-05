@@ -22,7 +22,7 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
     - `std::string`
     - `Eigen` types such as `Matrix`, `Array` and `Tensor` (from the unsupported module), with automatic conversion to/from row major storage layout.
     - Other containers with a contiguous buffer (without conversion to/from row major).
-    - POD structs with x,y or x,y,z data members of any type above. In `h5pp` go by the name `Scalar2` and `Scalar3`. 
+    - POD structs with x,y or x,y,z data members of any type above. In `h5pp` these go by the name `Scalar2` and `Scalar3`. 
       These work well together with `double2` or `float3` types found in CUDA.
     - Containers like `std::vector` or `Eigen::Matrix` of Scalar2 and Scalar3. 
 
