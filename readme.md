@@ -39,7 +39,7 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
 The build process will attempt to find the libraries above in the usual system install paths.
 By default, CMake will warn if it can't find the dependencies, and the installation step will simply copy the headers to `install-dir` and generate a target `h5pp::h5pp` for linking.
 
-For convenience, `h5pp` is also able to download and install the missing dependencies for you into the given install-directory (default: `install-dir/third-party`),
+For convenience, `h5pp` is also able to download and install the missing dependencies for you into the given install-directory (default: `install` in build directory),
 and add these dependencies to the exported target `h5pp::deps`. To enable this automated behavior read more about [build options](#build-options) and [linking](#linking) targets below.
 
 
