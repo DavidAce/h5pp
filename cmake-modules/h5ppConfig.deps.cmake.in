@@ -38,6 +38,10 @@ if (NOT TARGET spdlog::spdlog)
             target_include_directories(spdlog::spdlog INTERFACE ${SPDLOG_INCLUDE_DIR})
         endif()
     endif()
+    if(TARGET spdlog::spdlog_header_only)
+            set_target_properties(spdlog::spdlog PROPERTIES IMPORTED_LOCATION_RELEASE "")
+    endif()
+
 endif()
 
 
