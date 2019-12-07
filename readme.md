@@ -15,16 +15,16 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
 * Supports Clang and GNU GCC.
 * Automated install and linking of dependencies, if desired.
 * Support for common data types:
-    - `char`,`int`, `float`, `double` in unsigned and long versions.
+    - `int`, `float`, `double` in unsigned and long versions.
     - any of the above in std::complex<> form.
+    - any of the above in `std::vector`
     - any of the above in C-style arrays.
-    - `std::vector`
-    - `std::string`
+    - `std::string` and `char` arrays
     - `Eigen` types such as `Matrix`, `Array` and `Tensor` (from the unsupported module), with automatic conversion to/from row major storage layout.
-    - Other containers with a contiguous buffer (without conversion to/from row major).
+    - Any multi-dimensional container with access to a C-style contiguous buffer (without conversion to/from row major).
     - POD structs with x,y or x,y,z data members of any type above. In `h5pp` these go by the name `Scalar2` and `Scalar3`. 
       These work well together with `double2` or `float3` types found in CUDA.
-    - Containers like `std::vector` or `Eigen::Matrix` of Scalar2 and Scalar3. 
+    - Containers like `std::vector`, `Eigen::Matrix` or `Eigen::Tensor` of Scalar2 and Scalar3. 
 
 
 
@@ -36,7 +36,7 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
     - [**Eigen**](http://eigen.tuxfamily.org) (tested with version >= 3.3.4).
     - [**spdlog**](https://github.com/gabime/spdlog) (tested with version >= 1.3.1)
 
-The build process will attempt to find the libraries above in the usual system install paths.
+The build process will attempt to find the libraries above in the usual system install paths, including anaconda installs.
 By default, CMake will warn if it can't find the dependencies, and the installation step will simply copy the headers to `install-dir` and generate a target `h5pp::h5pp` for linking.
 
 For convenience, `h5pp` is also able to download and install the missing dependencies for you into the given install-directory (default: `install` in build directory),
