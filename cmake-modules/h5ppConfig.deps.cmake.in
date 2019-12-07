@@ -1,9 +1,14 @@
 @PACKAGE_INIT@
 
+set(DIRECTORY_HINTS                 @PACKAGE_DIRECTORY_HINTS@)
+set(PREFER_CONDA_LIBS               @PACKAGE_PREFER_CONDA_LIBS@)
+set(CONDA_HINTS                     @PACKAGE_CONDA_HINTS@)
+
 include(CMakeFindDependencyMacro)
 if (NOT TARGET Eigen3::Eigen)
     set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
     find_dependency(Eigen3 3.3.4
+        HINTS ${Eigen3_DIR} ${CONDA_HINTS}
         PATHS ${Eigen3_DIR} ${EIGEN3_ROOT_DIR} ${EIGEN3_INCLUDE_DIR} ${DIRECTORY_HINTS}
         PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3
         NO_CMAKE_PACKAGE_REGISTRY)
@@ -21,6 +26,7 @@ if (NOT TARGET spdlog::spdlog)
     if(NOT TARGET spdlog::spdlog)
         find_path(SPDLOG_INCLUDE_DIR
                 NAMES spdlog/spdlog.h
+                HINTS ${spdlog_DIR} ${CONDA_HINTS}
                 PATHS /usr /usr/local ${spdlog_DIR} ${DIRECTORY_HINTS})
         # Check for a file in new enough spdlog versions
         find_path(SPDLOG_COLOR_SINKS
