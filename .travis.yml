@@ -75,7 +75,34 @@ matrix:
         - ./miniconda.sh -b -p $HOME/miniconda
         - export PATH=$HOME/miniconda/bin:$PATH
         - conda update --yes conda
-        - conda install --yes hdf5 hdf5-static eigen
+        - conda install --yes hdf5 eigen spdlog
+    - os: linux
+      compiler: gcc-8 (conda-forge libs)
+      env:
+        - COMPILER_NAME=gcc
+        - GCC_VERSION=8
+        - CC=gcc-8
+        - CXX=g++-8
+        - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
+      cache:
+        apt: true
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+          packages:
+            - gcc-8
+            - g++-8
+      before_install:
+        # Here we just install Miniconda, which you shouldn't have to change.
+        - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+        - chmod +x miniconda.sh
+        - ./miniconda.sh -b -p $HOME/miniconda
+        - export PATH=$HOME/miniconda/bin:$PATH
+        - conda update --yes conda
+        - conda config --add channels conda-forge
+        - conda install --yes hdf5 hdf5-static eigen spdlog
     - os: linux
       compiler: gcc-8 (apt libs)
       env:
