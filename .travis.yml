@@ -29,6 +29,12 @@ matrix:
           packages:
             - gcc-8
             - g++-8
+      script:
+        - cmake -E make_directory build/Release
+        - cd build/Release
+        - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
+        - cmake --build .
+
     - os: linux
       compiler: clang-7
       env:
@@ -50,6 +56,12 @@ matrix:
             - llvm-7-dev
             - clang-7
             - libstdc++-8-dev
+      script:
+        - cmake -E make_directory build/Release
+        - cd build/Release
+        - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
+        - cmake --build .
+
     - os: linux
       compiler: gcc-8 (conda libs)
       env:
@@ -76,6 +88,12 @@ matrix:
         - export PATH=$HOME/miniconda/bin:$PATH
         - conda update --yes conda
         - conda install --yes hdf5 eigen
+      script:
+        - cmake -E make_directory build/Release
+        - cd build/Release
+        - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
+        - cmake --build .
+
     - os: linux
       compiler: gcc-8 (conda-forge libs)
       env:
@@ -103,6 +121,12 @@ matrix:
         - conda update --yes conda
         - conda config --add channels conda-forge
         - conda install --yes hdf5 hdf5-static eigen spdlog
+      script:
+        - cmake -E make_directory build/Release
+        - cd build/Release
+        - cmake -DCMAKE_BUILD_TYPE=Release -DPREFER_CONDA_LIBS:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
+        - cmake --build .
+
     - os: linux
       compiler: gcc-8 (apt libs)
       env:
@@ -124,18 +148,22 @@ matrix:
             - libhdf5-dev
             - libeigen3-dev
             - libspdlog-dev
-
+      script:
+        - cmake -E make_directory build/Release
+        - cd build/Release
+        - cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
+        - cmake --build .
 
 before_install:
   - eval "${MATRIX_EVAL}"
 
-script:
-  - cmake -E make_directory build/Debug
-  - cd build/Debug
-  - cmake -DCMAKE_BUILD_TYPE=Debug -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
-  - cmake --build .
-  - cd .. && cmake -E make_directory Release && cd Release
-  - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
-  - cmake --build .
+#script:
+#  - cmake -E make_directory build/Debug
+#  - cd build/Debug
+#  - cmake -DCMAKE_BUILD_TYPE=Debug -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
+#  - cmake --build .
+#  - cd .. && cmake -E make_directory Release && cd Release
+#  - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
+#  - cmake --build .
 
 
