@@ -39,7 +39,7 @@ option(ENABLE_TESTS             "Enable testing"                                
 option(DOWNLOAD_MISSING         "Download and install all dependencies if not found"  OFF)
 option(H5PP_IS_SUBPROJECT       "Use h5pp with add_subdirectory()"                    OFF)
 option(APPEND_LIBSUFFIX         "Append <libname> to CMAKE_INSTALL_PREFIX"            OFF)
-option(PREFER_CONDA_LIBS        "Search for dependencies from anaconda first"         ON)
+option(PREFER_CONDA_LIBS        "Search for dependencies from anaconda first"         OFF)
 
 
 # Used when h5pp is included as subproject (e.g., as Git submodule/subtree) in the source
