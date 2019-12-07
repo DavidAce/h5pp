@@ -39,6 +39,8 @@ option(ENABLE_TESTS             "Enable testing"                                
 option(DOWNLOAD_MISSING         "Download and install all dependencies if not found"  OFF)
 option(H5PP_IS_SUBPROJECT       "Use h5pp with add_subdirectory()"                    OFF)
 option(APPEND_LIBSUFFIX         "Append <libname> to CMAKE_INSTALL_PREFIX"            OFF)
+option(PREFER_CONDA_LIBS        "Search for dependencies from anaconda first"         ON)
+
 
 # Used when h5pp is included as subproject (e.g., as Git submodule/subtree) in the source
 # tree of a project that uses it. Users may set the non-cached variable H5PP_IS_SUBPROJECT
@@ -52,8 +54,13 @@ if(NOT H5PP_IS_SUBPROJECT)
     endif()
 endif()
 
+# Find_package and find_library etc will take these high-priority hints
+# when searching in the system
+if(PREFER_CONDA_LIBS)
+    set(CONDA_HINTS $ENV{CONDA_PREFIX} $ENV{HOME}/anaconda3 $ENV{HOME}/miniconda )
+endif()
 
-
+# Give default install directory for h5pp and its dependencies.
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
     message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/install")
     set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "..." FORCE)
@@ -67,6 +74,7 @@ message(STATUS "ENABLE_TESTS            : ${ENABLE_TESTS}")
 message(STATUS "DOWNLOAD_MISSING        : ${DOWNLOAD_MISSING}")
 message(STATUS "CMAKE_INSTALL_PREFIX    : ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "APPEND_LIBSUFFIX        : ${APPEND_LIBSUFFIX}")
+message(STATUS "PREFER_CONDA_LIBS       : ${PREFER_CONDA_LIBS}")
 message("=============================================================================")
 
 
@@ -169,6 +177,7 @@ endif()
 include(GNUInstallDirs)
 set(DIRECTORY_HINTS
         ${CMAKE_INSTALL_PREFIX}
+        $ENV{CONDA_PREFIX}
         $ENV{HOME}/.conda
         $ENV{HOME}/anaconda3
         $ENV{HOME}/miniconda
@@ -292,14 +301,14 @@ else()
             ${PROJECT_SOURCE_DIR}/cmake-modules/h5ppConfig.cmake.in
             ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
-            PATH_VARS H5PP_ROOT H5PP_DIR H5PP_CONFIG_DIR DIRECTORY_HINTS
+            PATH_VARS H5PP_ROOT H5PP_DIR H5PP_CONFIG_DIR DIRECTORY_HINTS PREFER_CONDA_LIBS CONDA_HINTS
     )
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake-modules/h5ppConfig.deps.cmake.in
             ${PROJECT_BINARY_DIR}/h5ppConfig.deps.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
-            PATH_VARS H5PP_ROOT H5PP_DIR H5PP_CONFIG_DIR DIRECTORY_HINTS
+            PATH_VARS H5PP_ROOT H5PP_DIR H5PP_CONFIG_DIR DIRECTORY_HINTS PREFER_CONDA_LIBS CONDA_HINTS
     )
 
 
