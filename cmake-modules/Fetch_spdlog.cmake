@@ -42,7 +42,7 @@ elseif (DOWNLOAD_MISSING)
             PATH_SUFFIXES ${spdlog_suffix}${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake
             NO_DEFAULT_PATH NO_CMAKE_PACKAGE_REGISTRY )
 
-    if(TARGET spdlog::spdlog_header_only)
+    if(TARGET spdlog::spdlog)
         message(STATUS "spdlog installed successfully")
 #        include(cmake-modules/PrintTargetProperties.cmake)
 #        print_target_properties(spdlog::spdlog)

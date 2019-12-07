@@ -23,15 +23,20 @@ if (NOT TARGET spdlog::spdlog)
     #find_dependency(spdlog 1.3
     #        HINTS  ${spdlog_DIR} ${CONDA_HINTS}
     #        PATHS  ${spdlog_DIR} ${DIRECTORY_HINTS}
-    #        PATH_SUFFIXES ${spdlog_suffix}${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake)
+    #        PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake)
     find_path(SPDLOG_INCLUDE_DIR
-                NAMES spdlog/spdlog.h
-                HINTS ${spdlog_DIR} ${CONDA_HINTS}
-                PATHS /usr /usr/local ${spdlog_DIR} ${DIRECTORY_HINTS})
+            NAMES spdlog/spdlog.h
+            HINTS ${spdlog_DIR} ${CONDA_HINTS}
+            PATHS /usr /usr/local ${spdlog_DIR} ${DIRECTORY_HINTS}
+            PATH_SUFFIXES include spdlog/include
+            )
     # Check for a file in new enough spdlog versions
     find_path(SPDLOG_COLOR_SINKS
             NAMES spdlog/sinks/stdout_color_sinks.h
-            PATHS /usr /usr/local ${spdlog_DIR} ${DIRECTORY_HINTS} ${SPDLOG_INCLUDE_DIR})
+            HINTS ${spdlog_DIR} ${CONDA_HINTS}
+            PATHS /usr /usr/local ${spdlog_DIR} ${DIRECTORY_HINTS} ${SPDLOG_INCLUDE_DIR}
+            PATH_SUFFIXES include spdlog/include
+            )
     if(SPDLOG_INCLUDE_DIR AND SPDLOG_COLOR_SINKS)
         set(spdlog_FOUND TRUE)
         add_library(spdlog::spdlog INTERFACE IMPORTED)
