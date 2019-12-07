@@ -151,7 +151,7 @@ matrix:
       script:
         - cmake -E make_directory build/Release
         - cd build/Release
-        - cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
+        - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
         - cmake --build .
 
 before_install:

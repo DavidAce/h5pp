@@ -115,7 +115,8 @@ function(find_package_hdf5)
     endif()
 
     if(NOT HDF5_ATLEAST_VERSION)
-        set(HDF5_ATLEAST_VERSION 1.10)
+        set(HDF5_ATLEAST_VERSION 1.8)
+#        set(HDF5_ATLEAST_VERSION 1.10)
     endif()
 
     if(NOT HDF5_PREFER_PARALLEL)
