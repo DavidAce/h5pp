@@ -75,7 +75,7 @@ matrix:
         - ./miniconda.sh -b -p $HOME/miniconda
         - export PATH=$HOME/miniconda/bin:$PATH
         - conda update --yes conda
-        - conda install --yes hdf5 eigen spdlog
+        - conda install --yes hdf5 eigen
     - os: linux
       compiler: gcc-8 (conda-forge libs)
       env:

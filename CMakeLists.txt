@@ -56,7 +56,7 @@ endif()
 
 # Find_package and find_library etc will take these high-priority hints
 # when searching in the system
-set(CONDA_HINTS)
+set(CONDA_HINTS "")
 if(PREFER_CONDA_LIBS)
     list(APPEND CONDA_HINTS $ENV{CONDA_PREFIX} $ENV{HOME}/anaconda3 $ENV{HOME}/miniconda )
 endif()
