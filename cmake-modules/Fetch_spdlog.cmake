@@ -1,10 +1,9 @@
 
 include(GNUInstallDirs)
-
-find_package(spdlog 1.3
-        HINTS  ${spdlog_DIR} ${CONDA_HINTS}
-        PATHS  ${spdlog_DIR} ${DIRECTORY_HINTS}
-        PATH_SUFFIXES ${spdlog_suffix}${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake)
+#find_package(spdlog 1.3
+#        HINTS  ${spdlog_DIR} ${CONDA_HINTS}
+#        PATHS  ${spdlog_DIR} ${DIRECTORY_HINTS}
+#        PATH_SUFFIXES ${spdlog_suffix}${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake)
 
 if(NOT TARGET spdlog::spdlog)
     find_path(SPDLOG_INCLUDE_DIR
@@ -22,7 +21,7 @@ if(NOT TARGET spdlog::spdlog)
             )
     if(SPDLOG_INCLUDE_DIR AND SPDLOG_COLOR_SINKS)
         set(spdlog_FOUND TRUE)
-        add_library(spdlog::spdlog_header_only INTERFACE IMPORTED)
+        add_library(spdlog::spdlog INTERFACE IMPORTED)
         target_include_directories(spdlog::spdlog INTERFACE ${SPDLOG_INCLUDE_DIR})
     endif()
 endif()
@@ -30,12 +29,9 @@ endif()
 
 
 if(TARGET spdlog::spdlog)
-    message(STATUS "spdlog found in system")
-    if(TARGET spdlog::spdlog_header_only)
-        set_target_properties(spdlog::spdlog PROPERTIES IMPORTED_LOCATION_RELEASE "")
-    endif()
-#    include(cmake-modules/PrintTargetProperties.cmake)
-#    print_target_properties(spdlog::spdlog)
+    message(STATUS "spdlog found")
+    include(cmake-modules/PrintTargetProperties.cmake)
+    print_target_properties(spdlog::spdlog)
 
 elseif (DOWNLOAD_MISSING)
     message(STATUS "Spdlog will be installed into ${CMAKE_INSTALL_PREFIX}")
