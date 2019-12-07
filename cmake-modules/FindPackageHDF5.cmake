@@ -19,9 +19,9 @@
 
 
 
-function(find_package_hdf5_internal hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE_STATIC_LIBRARIES HDF5_PREFER_PARALLEL HDF5_REQUIRED )
+function(find_package_hdf5_internal hdf5_paths HDF5_MODULES HDF5_ATLEAST_VERSION HDF5_USE_STATIC_LIBRARIES HDF5_PREFER_PARALLEL HDF5_REQUIRED )
 
-    foreach(hdf5_root ${hdf5_roots})
+    foreach(hdf5_root ${hdf5_paths})
         unset(HDF5_CXX_COMPILER_EXECUTABLE CACHE)
         unset(HDF5_C_COMPILER_EXECUTABLE   CACHE)
         unset(HDF5_CXX_COMPILER_EXECUTABLE)
@@ -33,8 +33,8 @@ function(find_package_hdf5_internal hdf5_roots HDF5_MODULES HDF5_ATLEAST_VERSION
             message(STATUS "Searching for hdf5 execs in ${hdf5_root}" )
         endif()
         set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE ON)
-        find_file(HDF5_C_COMPILER_EXECUTABLE    NAMES h5cc  HINTS ${hdf5_root} PATH_SUFFIXES bin hdf5/bin envs/bin dmrg/bin envs/dmrg/bin )
-        find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ HINTS ${hdf5_root} PATH_SUFFIXES bin hdf5/bin envs/bin dmrg/bin envs/dmrg/bin )
+        find_file(HDF5_C_COMPILER_EXECUTABLE    NAMES h5cc  PATHS ${hdf5_root} PATH_SUFFIXES bin hdf5/bin NO_DEFAULT_PATH)
+        find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ PATHS ${hdf5_root} PATH_SUFFIXES bin hdf5/bin NO_DEFAULT_PATH)
         if (HDF5_C_COMPILER_EXECUTABLE OR HDF5_CXX_COMPILER_EXECUTABLE)
 
             if(HDF5_FIND_DEBUG)
@@ -102,7 +102,7 @@ endfunction()
 
 function(find_package_hdf5)
     if(NOT HDF5_MODULES)
-        set(HDF5_MODULES C CXX HL)
+        set(HDF5_MODULES C HL)
     endif()
 
 
@@ -126,9 +126,11 @@ function(find_package_hdf5)
         set(HDF5_REQUIRED OFF)
     endif()
 
-    set(HDF5_ROOT ${HDF5_ROOT} ${HDF5_DIR} $ENV{HDF5_ROOT} $ENV{HDF5_DIR} $ENV{EBROOTHDF5} /usr /usr/local  ${DIRECTORY_HINTS} ${CMAKE_INSTALL_PREFIX} )
-#    message("Checking in: ${HDF5_ROOT}")
-    find_package_hdf5_internal("${HDF5_ROOT}" "${HDF5_MODULES}" "${HDF5_ATLEAST_VERSION}" "${HDF5_USE_STATIC_LIBRARIES}" "${HDF5_PREFER_PARALLEL}" "${HDF5_REQUIRED}")
+    list(APPEND HDF5_PATHS ${HDF5_DIR} $ENV{hdf5_DIR} $ENV{HDF5_DIR} ${HDF5_ROOT} ${hdf5_DIR}  $ENV{HDF5_ROOT} $ENV{EBROOTHDF5} /usr /usr/local  ${DIRECTORY_HINTS} ${CMAKE_INSTALL_PREFIX} )
+    if(PREFER_CONDA_LIBS)
+        list(INSERT HDF5_PATHS 0 "${CONDA_HINTS}")
+    endif()
+    find_package_hdf5_internal("${HDF5_PATHS}" "${HDF5_MODULES}" "${HDF5_ATLEAST_VERSION}" "${HDF5_USE_STATIC_LIBRARIES}" "${HDF5_PREFER_PARALLEL}" "${HDF5_REQUIRED}")
 
     if(HDF5_FOUND)
         # Add convenience libraries to collect all the hdf5 libraries
