@@ -88,6 +88,16 @@ function(find_package_hdf5_internal hdf5_paths HDF5_MODULES HDF5_ATLEAST_VERSION
                             ${HDF5_C_LIBRARY}
                             ${HDF5_C_LIBRARY_hdf5}
                             PARENT_SCOPE)
+
+                    # To print all variables, use the code below:
+                    #
+                    get_cmake_property(_variableNames VARIABLES)
+                    foreach (_variableName ${_variableNames})
+                        if("${_variableName}" MATCHES "HDF5" OR "${_variableName}" MATCHES "hdf5")
+                            message(STATUS "${_variableName}=${${_variableName}}")
+                        endif()
+                    endforeach()
+
                     return()
                 endif()
             endif()
@@ -134,12 +144,13 @@ function(find_package_hdf5)
     find_package_hdf5_internal("${HDF5_PATHS}" "${HDF5_MODULES}" "${HDF5_ATLEAST_VERSION}" "${HDF5_USE_STATIC_LIBRARIES}" "${HDF5_PREFER_PARALLEL}" "${HDF5_REQUIRED}")
 
     if(HDF5_FOUND)
+
         # Add convenience libraries to collect all the hdf5 libraries
         add_library(hdf5::hdf5 IMPORTED INTERFACE)
         target_link_libraries(hdf5::hdf5
                 INTERFACE
                 ${HDF5_LIBRARIES}
-                $<LINK_ONLY:-ldl -lm -lz>
+                $<LINK_ONLY:-lrt -ldl -lm -lz>
                 )
         target_include_directories(hdf5::hdf5 INTERFACE  ${HDF5_INCLUDE_DIR})
         if(TARGET Threads::Threads)

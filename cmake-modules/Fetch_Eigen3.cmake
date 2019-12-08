@@ -5,6 +5,7 @@ find_package(Eigen3 3.3.4
 
 if(TARGET Eigen3::Eigen)
     message(STATUS "Eigen3 found")
+    target_link_libraries(Eigen3::Eigen INTERFACE -lrt)
 #    include(cmake-modules/PrintTargetProperties.cmake)
 #    print_target_properties(Eigen3::Eigen)
 
@@ -18,6 +19,7 @@ elseif (DOWNLOAD_MISSING)
             PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_CMAKE_PACKAGE_REGISTRY NO_DEFAULT_PATH)
     if(TARGET Eigen3::Eigen)
         message(STATUS "Eigen3 installed successfully")
+        target_link_libraries(Eigen3::Eigen INTERFACE -lrt)
     else()
         message(STATUS "cfg_result: ${cfg_result}")
         message(STATUS "bld_result: ${bld_result}")
