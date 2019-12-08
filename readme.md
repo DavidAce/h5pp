@@ -29,10 +29,10 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
 
 
 ## Requirements
-* C++17 capable compiler (tested with GCC version >= 8 and Clang version >= 7.0)
+* C++17 capable compiler (tested with GCC version >= 7 and Clang version >= 7.0)
 * CMake (tested with version >= 3.10)
 * Dependencies (optional automated install available through CMake):
-    - [**HDF5**](https://support.hdfgroup.org/HDF5/) (tested with version >= 1.10).
+    - [**HDF5**](https://support.hdfgroup.org/HDF5/) (tested with version >= 1.8).
     - [**Eigen**](http://eigen.tuxfamily.org) (tested with version >= 3.3.4).
     - [**spdlog**](https://github.com/gabime/spdlog) (tested with version >= 1.3.1)
 
