@@ -34,6 +34,7 @@ matrix:
         - cd build/Release
         - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
         - cmake --build . --target all  --parallel
+        - make test
         - make install
 
     - os: linux
@@ -62,6 +63,7 @@ matrix:
         - cd build/Release
         - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
         - cmake --build . --target all  --parallel
+        - make test
         - make install
 
     - os: linux
@@ -95,6 +97,7 @@ matrix:
         - cd build/Release
         - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
         - cmake --build . --target all  --parallel
+        - make test
         - make install
 
     - os: linux
@@ -129,6 +132,7 @@ matrix:
         - cd build/Release
         - cmake -DCMAKE_BUILD_TYPE=Release -DPREFER_CONDA_LIBS:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
         - cmake --build . --target all  --parallel
+        - make test
         - make install
 
     - os: linux
@@ -163,6 +167,7 @@ matrix:
         - cd build/Release
         - cmake -DCMAKE_BUILD_TYPE=Release -DPREFER_CONDA_LIBS:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
         - cmake --build . --target all  --parallel
+        - make test
         - make install
 
     - os: linux
@@ -191,6 +196,7 @@ matrix:
         - cd build/Release
         - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
         - cmake --build . --target all  --parallel
+        - make test
         - make install
 
 
