@@ -37,20 +37,20 @@ matrix:
       compiler: clang
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-#        - MATRIX_EVAL="CXX=clang++-7 && CC=clang-7"
-#      cache:
-#        apt: true
-#      addons:
-#        apt:
-#          update: true
-#          sources:
-#            - sourceline:  'ppa:ubuntu-toolchain-r/test'
+        - MATRIX_EVAL="CXX=clang++-7 && CC=clang-7"
+      cache:
+        apt: true
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline:  'ppa:ubuntu-toolchain-r/test'
 #            - sourceline:  'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main'
 #              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
-#          packages:
+          packages:
 #            - llvm-7-dev
 #            - clang-7
-#            - libstdc++-8-dev
+            - libstdc++-8-dev
 
 
     - name: "bionic gcc"

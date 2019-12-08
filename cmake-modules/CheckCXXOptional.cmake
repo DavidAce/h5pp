@@ -17,13 +17,16 @@ function(CheckCXXOptional)
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
         // Include optional or experimental/optional
+        namespace h5pp{}
         #if __has_include(<optional>)
         #include <optional>
         #elif __has_include(<experimental/optional>)
         #include <experimental/optional>
-        namespace std{
-            constexpr const std::experimental::nullopt_t &nullopt = std::experimental::nullopt ;
-            template<typename T> using optional = std::experimental::optional<T>;
+        namespace h5pp{
+            namespace std{
+                constexpr const std::experimental::nullopt_t &nullopt = std::experimental::nullopt ;
+                template<typename T> using std::optional = std::experimental::optional<T>;
+            }
         }
         #else
             #error Could not find <optional> or <experimental/optional>
@@ -31,6 +34,7 @@ function(CheckCXXOptional)
 
 
         int main(){
+            using namespace h5pp;
             std::optional<int> optVar = std::nullopt;
             return 0;
         }

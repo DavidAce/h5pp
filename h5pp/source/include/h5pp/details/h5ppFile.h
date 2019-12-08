@@ -67,7 +67,6 @@ namespace h5pp{
 
 namespace h5pp{
 
-//    namespace fs = std::filesystem;
     namespace tc = h5pp::Type::Check;
 /*!
  \brief Writes and reads data to a binary hdf5-file.

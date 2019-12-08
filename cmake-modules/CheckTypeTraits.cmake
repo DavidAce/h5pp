@@ -1,5 +1,5 @@
 function(CheckTypeTraits)
-    set(CMAKE_REQUIRED_FLAGS     "-std=c++17")
+    set(CMAKE_REQUIRED_FLAGS "-std=c++17")
     include(CheckIncludeFileCXX)
     check_include_file_cxx(experimental/type_traits    has_type_traits  )
     if(NOT has_type_traits)
