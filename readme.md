@@ -170,8 +170,8 @@ Pay attention to the cast to `dtype=np.complex128` which interprets each element
 ## Download
 There are currently three ways to obtain `h5pp`:
 - `git clone https://github.com/DavidAce/h5pp.git`
-- Install the [latest release](https://github.com/DavidAce/h5pp/releases) (deb/tar.gz/zip)
-- conda install -c davidace h5pp
+- (Debian only) Download the the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
+- Through anaconda: `conda install -c davidace h5pp`
 
 
 ## Installation
@@ -182,12 +182,14 @@ Build the library just as any CMake project:
     cd build
     cmake -DCMAKE_INSTALL_PREFIX=<install-dir> -DDOWNLOAD_MISSING=ON ../
     make
-    make install
+    make test
     make examples
+    make install
+
 ```
 
 By passing the variable `DOWNLOAD_MISSING=ON` CMake will download all the dependencies and install them under `${CMAKE_BINARY_DIR}/install` if not found in the system. Here `${CMAKE_BINARY_DIR}` is the 
-directory you are building from. Building the the examples is optional.
+directory you are building from. Building the the tests and examples is optional.
 
 ### Build options
 
@@ -200,7 +202,8 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 * `-DDOWNLOAD_MISSING:BOOL=<ON/OFF>` to toggle automatic installation of all third-party dependencies (default: `OFF`).
 * `-DAPPEND_LIBSUFFIX:BOOL=<ON/OFF>` Append a directory with the library name to install directory, i.e. `CMAKE_INSTALL_PREFIX/<libname>/`. This
     is useful when you want to install `h5pp`, `hdf5`, `Eigen3` and `spdlog` in separate folders (default: `OFF`).
-* 
+* `-DPREFER_CONDA_LIBS:BOOL=<ON/OFF>` to prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda (default: `OFF`).
+
 
 In addition, the following variables can be set to help guide CMake's `find_package()` to your preinstalled software (no defaults):
 
@@ -225,7 +228,7 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
     cmake_minimum_required(VERSION 3.10)
     project(myProject)
     add_executable(myExecutable main.cpp)
-    find_package(h5pp PATHS <path-to-h5pp-install-dir> REQUIRED)
+    find_package(h5pp PATHS <path-to-h5pp-install-dir> REQUIRED) # If h5pp is installed through conda the path may be $ENV{CONDA_PREFIX}
     target_link_libraries(myExecutable PRIVATE h5pp::h5pp h5pp::deps h5pp::flags)
 
 ```
