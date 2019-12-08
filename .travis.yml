@@ -11,24 +11,25 @@ matrix:
   fast_finish: true
   include:
     - name: "xenial gcc-8"
-        os: linux
-        dist: xenial
-        compiler: gcc
-        env:
-          - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
-          - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-        cache:
-          apt: true
-        addons:
-          apt:
-            update: true
-            sources:
-              - sourceline: 'ppa:ubuntu-toolchain-r/test'
-            packages:
-              - gcc-8
-              - g++-8
-        before_install:
-          eval "${MATRIX_EVAL}"
+      os: linux
+      dist: xenial
+      compiler: gcc
+      env:
+        - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+      before_install:
+        eval "${MATRIX_EVAL}"
+      cache:
+        apt: true
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+          packages:
+            - gcc-8
+            - g++-8
+
 
     - name: "xenial clang"
       os: linux
@@ -126,11 +127,14 @@ matrix:
 
 
     - name: "xenial gcc-8 apt libs"
-    - os: linux
+      dist: xenial
+      os: linux
       compiler: gcc
       env:
         - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+      before_install:
+        - eval "${MATRIX_EVAL}"
       cache:
         apt: true
       addons:
@@ -144,14 +148,16 @@ matrix:
             - libhdf5-dev
             - libeigen3-dev
             - libspdlog-dev
-      before_install:
-        - eval "${MATRIX_EVAL}"
+
 
     - name: "bionic gcc apt libs"
-    - os: linux
+      dist: bionic
+      os: linux
       compiler: gcc
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+      before_install:
+        - eval "${MATRIX_EVAL}"
       cache:
         apt: true
       addons:
@@ -163,10 +169,6 @@ matrix:
             - libhdf5-dev
             - libeigen3-dev
             - libspdlog-dev
-      before_install:
-        - eval "${MATRIX_EVAL}"
-
-
 
 
 script:
