@@ -37,20 +37,20 @@ matrix:
       compiler: clang
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - MATRIX_EVAL="CXX=clang++-7 && CC=clang-7"
-      cache:
-        apt: true
-      addons:
-        apt:
-          update: true
-          sources:
-            - sourceline:  'ppa:ubuntu-toolchain-r/test'
-            - sourceline:  'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main'
-              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
-          packages:
-            - llvm-7-dev
-            - clang-7
-            - libstdc++-8-dev
+#        - MATRIX_EVAL="CXX=clang++-7 && CC=clang-7"
+#      cache:
+#        apt: true
+#      addons:
+#        apt:
+#          update: true
+#          sources:
+#            - sourceline:  'ppa:ubuntu-toolchain-r/test'
+#            - sourceline:  'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main'
+#              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
+#          packages:
+#            - llvm-7-dev
+#            - clang-7
+#            - libstdc++-8-dev
 
 
     - name: "bionic gcc"
@@ -103,34 +103,6 @@ matrix:
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=OFF -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
       before_install:
-        # Here we just install Miniconda, which you shouldn't have to change.
-        - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-        - chmod +x miniconda.sh
-        - ./miniconda.sh -b -p $HOME/miniconda
-        - export PATH=$HOME/miniconda/bin:$PATH
-        - conda update --yes conda
-        - conda config --add channels conda-forge
-        - conda install --yes hdf5 hdf5-static eigen spdlog
-
-    - name: "xenial gcc-7 conda-forge libs"
-      dist: xenial
-      os: linux
-      compiler: gcc
-      env:
-        - MATRIX_EVAL="CXX=g++-7 && CC=gcc-7"
-        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=OFF -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-      cache:
-        apt: true
-      addons:
-        apt:
-          update: true
-          sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
-          packages:
-            - gcc-7
-            - g++-7
-      before_install:
-        - eval "${MATRIX_EVAL}"
         # Here we just install Miniconda, which you shouldn't have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh
