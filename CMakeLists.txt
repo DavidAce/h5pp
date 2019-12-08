@@ -112,7 +112,6 @@ endif()
 #################################
 add_library(flags INTERFACE)
 target_compile_features(flags INTERFACE cxx_std_17)
-target_compile_features(flags INTERFACE cxx_constexpr)
 target_link_libraries (flags INTERFACE -lstdc++fs)
 if(GCC_TOOLCHAIN)
     target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})

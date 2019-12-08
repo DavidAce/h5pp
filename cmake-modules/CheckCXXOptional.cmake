@@ -20,12 +20,15 @@ function(CheckCXXOptional)
         #if __has_include(<optional>)
         #include <optional>
         #elif __has_include(<experimental/optional>)
-            #include <experimental/optional>
+        #include <experimental/optional>
+        namespace std{
             constexpr const std::experimental::nullopt_t &nullopt = std::experimental::nullopt ;
             template<typename T> using optional = std::experimental::optional<T>;
+        }
         #else
             #error Could not find <optional> or <experimental/optional>
         #endif
+
 
         int main(){
             std::optional<int> optVar = std::nullopt;
