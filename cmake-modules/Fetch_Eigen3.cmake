@@ -1,8 +1,4 @@
-#find_package(Eigen3 3.3.4
-#        HINTS ${Eigen3_DIR} ${CONDA_HINTS}
-#        PATHS ${Eigen3_DIR} ${DIRECTORY_HINTS}
-#        PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_CMAKE_PACKAGE_REGISTRY)
-find_package(Eigen3
+find_package(Eigen3 3.3.4
         HINTS ${Eigen3_DIR} ${CONDA_HINTS}
         PATHS ${Eigen3_DIR} ${DIRECTORY_HINTS}
         PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_CMAKE_PACKAGE_REGISTRY)

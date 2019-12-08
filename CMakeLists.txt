@@ -179,7 +179,6 @@ include(GNUInstallDirs)
 set(DIRECTORY_HINTS
         ${CMAKE_INSTALL_PREFIX}
         $ENV{CONDA_PREFIX}
-        $ENV{HOME}/.conda
         $ENV{HOME}/anaconda3
         $ENV{HOME}/miniconda
         )
@@ -227,6 +226,8 @@ print_target_info(flags)
 print_target_info(spdlog::spdlog)
 print_target_info(Eigen3::Eigen)
 print_target_info(hdf5::hdf5)
+print_target_info(Threads::Threads)
+
 message("=============================================================================")
 message("")
 
