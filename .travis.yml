@@ -1,6 +1,6 @@
-dist: xenial
 sudo: false
 language: generic
+dist: xenial
 notifications:
   email: false
 branches:
@@ -12,6 +12,9 @@ matrix:
   fast_finish: true
   include:
     - os: linux
+      dist:
+        - xenial
+        - bionic
       compiler: gcc-8
       env:
         - COMPILER_NAME=gcc
