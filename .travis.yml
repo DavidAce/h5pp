@@ -33,7 +33,8 @@ matrix:
         - cmake -E make_directory build/Release
         - cd build/Release
         - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
-        - cmake --build .
+        - cmake --build . --target all  --parallel
+        - make install
 
     - os: linux
       compiler: clang-7
@@ -60,7 +61,8 @@ matrix:
         - cmake -E make_directory build/Release
         - cd build/Release
         - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
-        - cmake --build .
+        - cmake --build . --target all  --parallel
+        - make install
 
     - os: linux
       compiler: gcc-8 (conda libs)
@@ -92,7 +94,8 @@ matrix:
         - cmake -E make_directory build/Release
         - cd build/Release
         - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
-        - cmake --build .
+        - cmake --build . --target all  --parallel
+        - make install
 
     - os: linux
       compiler: gcc-8 (conda-forge libs)
@@ -125,7 +128,8 @@ matrix:
         - cmake -E make_directory build/Release
         - cd build/Release
         - cmake -DCMAKE_BUILD_TYPE=Release -DPREFER_CONDA_LIBS:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
-        - cmake --build .
+        - cmake --build . --target all  --parallel
+        - make install
 
     - os: linux
       compiler: gcc-7 (conda-forge libs)
@@ -158,7 +162,8 @@ matrix:
         - cmake -E make_directory build/Release
         - cd build/Release
         - cmake -DCMAKE_BUILD_TYPE=Release -DPREFER_CONDA_LIBS:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
-        - cmake --build .
+        - cmake --build . --target all  --parallel
+        - make install
 
     - os: linux
       compiler: gcc-8 (apt libs)
@@ -185,7 +190,9 @@ matrix:
         - cmake -E make_directory build/Release
         - cd build/Release
         - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
-        - cmake --build .
+        - cmake --build . --target all  --parallel
+        - make install
+
 
 before_install:
   - eval "${MATRIX_EVAL}"
