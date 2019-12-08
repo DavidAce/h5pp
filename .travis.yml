@@ -58,8 +58,7 @@ matrix:
       compiler: gcc
       env:
         - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
-        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=OFF -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
       cache:
         apt: true
       addons:
@@ -81,26 +80,13 @@ matrix:
         - conda install --yes hdf5 eigen
 
 
-    - name: "xenial gcc-8 conda-forge libs"
-      dist: xenial
+    - name: "bionic gcc conda-forge libs"
+      dist: bionic
       os: linux
       compiler: gcc
       env:
-        - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=OFF -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-      cache:
-        apt: true
-      addons:
-        apt:
-          update: true
-          sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
-          packages:
-            - gcc-8
-            - g++-8
       before_install:
-        - eval "${MATRIX_EVAL}"
-
         # Here we just install Miniconda, which you shouldn't have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh
@@ -155,6 +141,25 @@ matrix:
           packages:
             - gcc-8
             - g++-8
+            - libhdf5-dev
+            - libeigen3-dev
+            - libspdlog-dev
+      before_install:
+        - eval "${MATRIX_EVAL}"
+
+    - name: "bionic gcc apt libs"
+    - os: linux
+      compiler: gcc
+      env:
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+      cache:
+        apt: true
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+          packages:
             - libhdf5-dev
             - libeigen3-dev
             - libspdlog-dev
