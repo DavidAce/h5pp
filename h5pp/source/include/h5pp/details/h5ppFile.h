@@ -21,13 +21,18 @@
 #include "h5ppDatasetProperties.h"
 #include "h5ppAttributeProperties.h"
 #include "h5ppHdf5.h"
+
+#if    __cplusplus > 201103L // C++14 to C++17
+#include <experimental/filesystem>
+            namespace h5pp{namespace fs = std::experimental::filesystem;}
+#elif  __cplusplus > 201402L // C++17 or newer
 #include <filesystem>
-
-
+            namespace h5pp{namespace fs = std::filesystem;}
+#endif
 
 namespace h5pp{
 
-    namespace fs = std::filesystem;
+//    namespace fs = std::filesystem;
     namespace tc = h5pp::Type::Check;
 /*!
  \brief Writes and reads data to a binary hdf5-file.
