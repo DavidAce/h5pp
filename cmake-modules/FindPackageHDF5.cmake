@@ -91,12 +91,12 @@ function(find_package_hdf5_internal hdf5_paths HDF5_MODULES HDF5_ATLEAST_VERSION
 
                     # To print all variables, use the code below:
                     #
-                    get_cmake_property(_variableNames VARIABLES)
-                    foreach (_variableName ${_variableNames})
-                        if("${_variableName}" MATCHES "HDF5" OR "${_variableName}" MATCHES "hdf5")
-                            message(STATUS "${_variableName}=${${_variableName}}")
-                        endif()
-                    endforeach()
+#                    get_cmake_property(_variableNames VARIABLES)
+#                    foreach (_variableName ${_variableNames})
+#                        if("${_variableName}" MATCHES "HDF5" OR "${_variableName}" MATCHES "hdf5")
+#                            message(STATUS "${_variableName}=${${_variableName}}")
+#                        endif()
+#                    endforeach()
 
                     return()
                 endif()

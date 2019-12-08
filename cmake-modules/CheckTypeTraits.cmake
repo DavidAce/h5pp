@@ -1,22 +1,32 @@
-function(CheckTypeTraitsCompiles)
+function(CheckTypeTraits)
     set(CMAKE_REQUIRED_FLAGS     "-std=c++17")
     include(CheckIncludeFileCXX)
     check_include_file_cxx(experimental/type_traits    has_type_traits  )
     if(NOT has_type_traits)
         message(FATAL_ERROR "\n\
-                Missing one or more C++17 headers.\n\
+                Missing <experimental/type_traits> header.\n\
                 Consider using a newer compiler (GCC 8 or above, Clang 7 or above),\n\
                 or checking the compiler flags. If using Clang, pass the variable \n\
                 GCC_TOOLCHAIN=<path> \n\
-                where path is the install directory of a recent GCC installation (version > 8).
-                Also, don't forget to compile with flags:  [-lstdc++fs -std=c++17].
+                where path is the install directory of a recent GCC installation.
         ")
     endif()
 
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
+        #include<vector>
         #include<experimental/type_traits>
+        namespace tc{
+            template <typename T> using Data_t          = decltype(std::declval<T>().data());
+            template <typename T> using hasMember_data  = std::experimental::is_detected<Data_t, T>;
+        }
         int main(){
+            if constexpr(tc::hasMember_data<std::vector<int>>::value){
+                return 0;
+            }else{
+                return 1;
+            }
+
             return 0;
         }
         " TYPETRAITS_COMPILES)

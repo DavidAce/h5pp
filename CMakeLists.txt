@@ -112,6 +112,7 @@ endif()
 #################################
 add_library(flags INTERFACE)
 target_compile_features(flags INTERFACE cxx_std_17)
+target_compile_features(flags INTERFACE cxx_constexpr)
 target_link_libraries (flags INTERFACE -lstdc++fs)
 if(GCC_TOOLCHAIN)
     target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
@@ -122,15 +123,21 @@ endif()
 ###  Check  #include<filesystem> or                 ###
 ###  or     #include<experimental/filesystem>       ###
 #######################################################
-include(${PROJECT_SOURCE_DIR}/cmake-modules/CheckCXX17FilesystemCompiles.cmake)
-CheckCXX17FilesystemCompiles()
+include(${PROJECT_SOURCE_DIR}/cmake-modules/CheckCXXFilesystem.cmake)
+CheckCXXFilesystem()
 
 #######################################################
 ###  Check  #include<experimental/type_traits>      ###
 #######################################################
-include(${PROJECT_SOURCE_DIR}/cmake-modules/CheckTypeTraitsCompiles.cmake)
-CheckTypeTraitsCompiles()
+include(${PROJECT_SOURCE_DIR}/cmake-modules/CheckTypeTraits.cmake)
+CheckTypeTraits()
 
+#######################################################
+###  Check  #include<optional> or                   ###
+###  or     #include<experimental/optional>         ###
+#######################################################
+include(${PROJECT_SOURCE_DIR}/cmake-modules/CheckCXXOptional.cmake)
+CheckCXXOptional()
 
 
 

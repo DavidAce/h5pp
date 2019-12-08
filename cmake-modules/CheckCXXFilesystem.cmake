@@ -1,5 +1,5 @@
-function(CheckCXX17FilesystemCompiles)
-    set(CMAKE_REQUIRED_FLAGS     "-lstdc++fs -std=c++17")
+function(CheckCXXFilesystem)
+    set(CMAKE_REQUIRED_FLAGS     "-std=c++17")
     set(CMAKE_REQUIRED_LIBRARIES "-lstdc++fs" )
 
     include(CheckIncludeFileCXX)
@@ -8,11 +8,11 @@ function(CheckCXX17FilesystemCompiles)
 
     if(NOT has_filesystem AND NOT has_experimental_filesystem)
         message(FATAL_ERROR "\n\
-                Missing one or more C++17 headers.\n\
-                Consider using a newer compiler (GCC 7 or above, Clang 7 or above),\n\
+                Missing <filesystem> and/or <experimental/filesystem> headers.\n\
+                Consider using a newer compiler (GCC 6 or above, Clang 5 or above),\n\
                 or checking the compiler flags. If using Clang, pass the variable \n\
                 GCC_TOOLCHAIN=<path> \n\
-                where path is the install directory of a recent GCC installation (version > 8).
+                where path is the install directory of a recent GCC installation.
                 Also, don't forget to compile with flags:  [-lstdc++fs -std=c++17].
         ")
     endif()

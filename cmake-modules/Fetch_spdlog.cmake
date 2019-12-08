@@ -30,8 +30,8 @@ endif()
 
 if(TARGET spdlog::spdlog)
     message(STATUS "spdlog found")
-    include(cmake-modules/PrintTargetProperties.cmake)
-    print_target_properties(spdlog::spdlog)
+#    include(cmake-modules/PrintTargetProperties.cmake)
+#    print_target_properties(spdlog::spdlog)
 
 elseif (DOWNLOAD_MISSING)
     message(STATUS "Spdlog will be installed into ${CMAKE_INSTALL_PREFIX}")

@@ -22,26 +22,19 @@
 #include "h5ppAttributeProperties.h"
 #include "h5ppHdf5.h"
 
-//#if    __cplusplus > 201103L // C++14 to C++17
-//#include <experimental/filesystem>
-//            namespace h5pp{namespace fs = std::experimental::filesystem;}
-//#elif  __cplusplus > 201402L // C++17 or newer
-//#include <filesystem>
-//            namespace h5pp{namespace fs = std::filesystem;}
-//#endif
 
 
 #if __cplusplus > 201103L // C++14 to C++17
 #include <experimental/filesystem>
 #include <experimental/optional>
-namespace std {
-    namespace filesystem                = std::experimental::filesystem;
-    constexpr std::experimental::nullopt_t nullopt = std::experimental::nullopt ;
-    template<typename T> using optional = std::experimental::optional<T>;
-}
+    namespace std {
+        namespace filesystem                = std::experimental::filesystem;
+        constexpr std::experimental::nullopt_t nullopt = std::experimental::nullopt ;
+        template<typename T> using optional = std::experimental::optional<T>;
+    }
 
 #elif  __cplusplus > 201402L // C++17 or newer
-#include<filesystem>
+    #include<filesystem>
     #include <optional>
 #endif
 
