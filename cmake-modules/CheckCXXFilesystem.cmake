@@ -21,16 +21,19 @@ function(CheckCXXFilesystem)
         // Include filesystem or experimental/filesystem
         #if __has_include(<filesystem>)
         #include <filesystem>
+            namespace h5pp{
+                namespace fs =  std::filesystem;
+            }
         #elif __has_include(<experimental/filesystem>)
-        #include <experimental/filesystem>
-        namespace std {
-            namespace filesystem = std::experimental::filesystem;
-        }
+            #include <experimental/filesystem>
+            namespace h5pp {
+                namespace fs = std::experimental::filesystem;
+            }
         #else
             #error Could not find <filesystem> or <experimental/filesystem>
         #endif
-        namespace fs  = std::filesystem;
         int main(){
+            using namespace h5pp;
             fs::path testpath;
             return 0;
         }
