@@ -1,6 +1,5 @@
 sudo: false
-language: generic
-dist: xenial
+language: cpp
 notifications:
   email: false
 branches:
@@ -11,16 +10,39 @@ branches:
 matrix:
   fast_finish: true
   include:
-    - os: linux
-      dist:
-        - xenial
-        - bionic
-      compiler: gcc-8
+    - name: "xenial gcc"
+      os: linux
+      dist: xenial
+      compiler: gcc
       env:
-        - COMPILER_NAME=gcc
-        - GCC_VERSION=8
-        - CC=gcc-8
-        - CXX=g++-8
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+
+    - name: "xenial clang"
+      os: linux
+      dist: xenial
+      compiler: clang
+      env:
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+
+    - name: "bionic gcc"
+      os: linux
+      dist: bionic
+      compiler: gcc
+      env:
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+
+    - name: "bionic clang"
+      os: linux
+      dist: bionic
+      compiler: clang
+      env:
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+
+    - name: "xenial gcc-8"
+      os: linux
+      dist: xenial
+      compiler: gcc
+      env:
         - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
       cache:
         apt: true
@@ -32,22 +54,18 @@ matrix:
           packages:
             - gcc-8
             - g++-8
-      script:
-        - cmake -E make_directory build/Release
-        - cd build/Release
-        - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
-        - cmake --build . --target all  --parallel
-        - make test
-        - make install
-
-    - os: linux
-      compiler: clang-7
+      before_install:
+        eval "${MATRIX_EVAL}"
       env:
-        - COMPILER_NAME=clang
-        - CXX=clang++-7
-        - CC=clang-7
-        - CLANG_VERSION=7
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+
+    - name: "xenial clang-7"
+      os: linux
+      dist: xenial
+      compiler: clang
+      env:
         - MATRIX_EVAL="CXX=clang++-7 && CC=clang-7"
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
       cache:
         apt: true
       addons:
@@ -61,22 +79,17 @@ matrix:
             - llvm-7-dev
             - clang-7
             - libstdc++-8-dev
-      script:
-        - cmake -E make_directory build/Release
-        - cd build/Release
-        - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
-        - cmake --build . --target all  --parallel
-        - make test
-        - make install
+      before_install:
+        eval "${MATRIX_EVAL}"
 
-    - os: linux
-      compiler: gcc-8 (conda libs)
+    - name: "xenial gcc-8 conda libs"
+      os: linux
+      dist: xenial
+      compiler: gcc
       env:
-        - COMPILER_NAME=gcc
-        - GCC_VERSION=8
-        - CC=gcc-8
-        - CXX=g++-8
         - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=OFF -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+
       cache:
         apt: true
       addons:
@@ -88,6 +101,7 @@ matrix:
             - gcc-8
             - g++-8
       before_install:
+        - eval "${MATRIX_EVAL}"
         # Here we just install Miniconda, which you shouldn't have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh
@@ -95,22 +109,15 @@ matrix:
         - export PATH=$HOME/miniconda/bin:$PATH
         - conda update --yes conda
         - conda install --yes hdf5 eigen
-      script:
-        - cmake -E make_directory build/Release
-        - cd build/Release
-        - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
-        - cmake --build . --target all  --parallel
-        - make test
-        - make install
 
-    - os: linux
-      compiler: gcc-8 (conda-forge libs)
+
+    - name: "xenial gcc-8 conda-forge libs"
+      dist: xenial
+      os: linux
+      compiler: gcc
       env:
-        - COMPILER_NAME=gcc
-        - GCC_VERSION=8
-        - CC=gcc-8
-        - CXX=g++-8
         - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=OFF -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
       cache:
         apt: true
       addons:
@@ -122,6 +129,8 @@ matrix:
             - gcc-8
             - g++-8
       before_install:
+        - eval "${MATRIX_EVAL}"
+
         # Here we just install Miniconda, which you shouldn't have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh
@@ -130,22 +139,14 @@ matrix:
         - conda update --yes conda
         - conda config --add channels conda-forge
         - conda install --yes hdf5 hdf5-static eigen spdlog
-      script:
-        - cmake -E make_directory build/Release
-        - cd build/Release
-        - cmake -DCMAKE_BUILD_TYPE=Release -DPREFER_CONDA_LIBS:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
-        - cmake --build . --target all  --parallel
-        - make test
-        - make install
 
-    - os: linux
-      compiler: gcc-7 (conda-forge libs)
+    - name: "xenial gcc-7 conda-forge libs"
+      dist: xenial
+      os: linux
+      compiler: gcc
       env:
-        - COMPILER_NAME=gcc
-        - GCC_VERSION=7
-        - CC=gcc-7
-        - CXX=g++-7
         - MATRIX_EVAL="CXX=g++-7 && CC=gcc-7"
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=OFF -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
       cache:
         apt: true
       addons:
@@ -157,6 +158,7 @@ matrix:
             - gcc-7
             - g++-7
       before_install:
+        - eval "${MATRIX_EVAL}"
         # Here we just install Miniconda, which you shouldn't have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh
@@ -165,22 +167,14 @@ matrix:
         - conda update --yes conda
         - conda config --add channels conda-forge
         - conda install --yes hdf5 hdf5-static eigen spdlog
-      script:
-        - cmake -E make_directory build/Release
-        - cd build/Release
-        - cmake -DCMAKE_BUILD_TYPE=Release -DPREFER_CONDA_LIBS:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
-        - cmake --build . --target all  --parallel
-        - make test
-        - make install
 
+
+    - name: "xenial gcc-8 apt libs"
     - os: linux
-      compiler: gcc-8 (apt libs)
+      compiler: gcc
       env:
-        - COMPILER_NAME=gcc
-        - GCC_VERSION=8
-        - CC=gcc-8
-        - CXX=g++-8
         - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
       cache:
         apt: true
       addons:
@@ -194,24 +188,20 @@ matrix:
             - libhdf5-dev
             - libeigen3-dev
             - libspdlog-dev
-      script:
-        - cmake -E make_directory build/Release
-        - cd build/Release
-        - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
-        - cmake --build . --target all  --parallel
-        - make test
-        - make install
+      before_install:
+        - eval "${MATRIX_EVAL}"
 
 
-before_install:
-  - eval "${MATRIX_EVAL}"
 
-#script:
-#  - cmake -E make_directory build/Debug
-#  - cd build/Debug
-#  - cmake -DCMAKE_BUILD_TYPE=Debug -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON -G "CodeBlocks - Unix Makefiles" ../../
-#  - cmake --build .
-#  - cd .. && cmake -E make_directory Release && cd Release
+
+script:
+  - cmake -E make_directory build/Debug
+  - cd build/Debug
+  - cmake -DCMAKE_BUILD_TYPE=Debug $CMAKE_FLAGS -G "CodeBlocks - Unix Makefiles" ../../
+  - cmake --build . --target all  --parallel
+  - make test
+  - make install
+#    - cd .. && cmake -E make_directory Release && cd Release
 #  - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
 #  - cmake --build .
 
