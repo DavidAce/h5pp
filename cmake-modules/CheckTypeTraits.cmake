@@ -15,7 +15,12 @@ function(CheckTypeTraits)
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
         #include<vector>
-        #include<experimental/type_traits>
+        #if __has_include(<experimental/type_traits>)
+        #include <experimental/type_traits>)
+        #else
+            #error Could not find <experimental/type_traits>
+        #endif
+
         namespace tc{
             template <typename T> using Data_t          = decltype(std::declval<T>().data());
             template <typename T> using hasMember_data  = std::experimental::is_detected<Data_t, T>;

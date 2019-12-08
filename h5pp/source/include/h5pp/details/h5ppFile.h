@@ -23,22 +23,41 @@
 #include "h5ppHdf5.h"
 
 
-
-#if __cplusplus > 201103L // C++14 to C++17
+// Include filesystem or experimental/filesystem
+#if __has_include(<filesystem>)
+#include <filesystem>
+#elif __has_include(<experimental/filesystem>)
 #include <experimental/filesystem>
-#include <experimental/optional>
-    namespace std {
-        namespace filesystem                = std::experimental::filesystem;
-        constexpr std::experimental::nullopt_t nullopt = std::experimental::nullopt ;
-        template<typename T> using optional = std::experimental::optional<T>;
-    }
-
-#elif  __cplusplus > 201402L // C++17 or newer
-    #include<filesystem>
-    #include <optional>
+namespace std {
+    namespace filesystem = std::experimental::filesystem;
+}
+#else
+    #error Could not find <filesystem> or <experimental/filesystem>
 #endif
 
-namespace fs                   = std::filesystem;
+// Include experimental/type_traits
+#if __has_include(<experimental/type_traits>)
+#include <experimental/type_traits>)
+#else
+    #error Could not find <experimental/type_traits>
+#endif
+
+
+
+// Include optional or experimental/optional
+#if __has_include(<optional>)
+#include <optional>
+#elif __has_include(<experimental/optional>)
+    #include <experimental/optional>
+    constexpr const std::experimental::nullopt_t &nullopt = std::experimental::nullopt ;
+    template<typename T> using optional = std::experimental::optional<T>;
+#else
+    #error Could not find <optional> or <experimental/optional>
+#endif
+
+
+
+namespace fs  = std::filesystem;
 
 
 namespace h5pp{

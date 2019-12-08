@@ -1,5 +1,6 @@
 function(CheckCXXOptional)
     include(CheckIncludeFileCXX)
+    set(CMAKE_REQUIRED_FLAGS     "-std=c++17")
     check_include_file_cxx(optional    has_optional)
     check_include_file_cxx(experimental/optional has_experimental_optional )
 
@@ -15,14 +16,15 @@ function(CheckCXXOptional)
 
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
-        #if __cplusplus > 201103L // C++14 to C++17
-        #include <experimental/optional>
-        namespace std {
-            constexpr std::experimental::nullopt_t nullopt = std::experimental::nullopt ;
+        // Include optional or experimental/optional
+        #if __has_include(<optional>)
+        #include <optional>
+        #elif __has_include(<experimental/optional>)
+            #include <experimental/optional>
+            constexpr const std::experimental::nullopt_t &nullopt = std::experimental::nullopt ;
             template<typename T> using optional = std::experimental::optional<T>;
-        }
-        #elif  __cplusplus > 201402L // C++17 or newer
-            #include <optional>
+        #else
+            #error Could not find <optional> or <experimental/optional>
         #endif
 
         int main(){

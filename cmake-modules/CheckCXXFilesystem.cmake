@@ -1,7 +1,6 @@
 function(CheckCXXFilesystem)
     set(CMAKE_REQUIRED_FLAGS     "-std=c++17")
     set(CMAKE_REQUIRED_LIBRARIES "-lstdc++fs" )
-
     include(CheckIncludeFileCXX)
     check_include_file_cxx(filesystem    has_filesystem  )
     check_include_file_cxx(experimental/filesystem    has_experimental_filesystem  )
@@ -19,14 +18,18 @@ function(CheckCXXFilesystem)
 
     include(CheckCXXSourceCompiles)
     check_cxx_source_compiles("
-        #if    __cplusplus > 201103L // C++14 to C++17
-            #include<experimental/filesystem>
-            namespace fs = std::experimental::filesystem;
-        #elif  __cplusplus > 201402L // C++17 or newer
-            #include<filesystem>
-            namespace fs = std::filesystem;
+        // Include filesystem or experimental/filesystem
+        #if __has_include(<filesystem>)
+        #include <filesystem>
+        #elif __has_include(<experimental/filesystem>)
+        #include <experimental/filesystem>
+        namespace std {
+            namespace filesystem = std::experimental::filesystem;
+        }
+        #else
+            #error Could not find <filesystem> or <experimental/filesystem>
         #endif
-
+        namespace fs  = std::filesystem;
         int main(){
             fs::path testpath;
             return 0;
