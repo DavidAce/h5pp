@@ -16,7 +16,7 @@ function(CheckTypeTraits)
     check_cxx_source_compiles("
         #include<vector>
         #if __has_include(<experimental/type_traits>)
-        #include <experimental/type_traits>)
+        #include <experimental/type_traits>
         #else
             #error Could not find <experimental/type_traits>
         #endif
