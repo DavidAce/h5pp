@@ -7,7 +7,7 @@ set(CONDA_HINTS                     @PACKAGE_CONDA_HINTS@)
 include(CMakeFindDependencyMacro)
 if (NOT TARGET Eigen3::Eigen)
     set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
-    find_dependency(Eigen3
+    find_dependency(Eigen3 3.3.4
         HINTS ${Eigen3_DIR} ${CONDA_HINTS}
         PATHS ${Eigen3_DIR} ${EIGEN3_ROOT_DIR} ${EIGEN3_INCLUDE_DIR} ${DIRECTORY_HINTS}
         PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3
@@ -20,10 +20,6 @@ if (NOT TARGET spdlog::spdlog)
     include(GNUInstallDirs)
     set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
     set(spdlog_DIR                      "@PACKAGE_spdlog_DIR@")
-    #find_dependency(spdlog 1.3
-    #        HINTS  ${spdlog_DIR} ${CONDA_HINTS}
-    #        PATHS  ${spdlog_DIR} ${DIRECTORY_HINTS}
-    #        PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR}/cmake/spdlog spdlog spdlog/${CMAKE_INSTALL_LIBDIR} spdlog/share spdlog/cmake)
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h
             HINTS ${spdlog_DIR} ${CONDA_HINTS}
@@ -48,20 +44,9 @@ endif()
 
 if (NOT TARGET hdf5::hdf5)
     set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
-    ##################################################################
-    ### Adapt pthread for static/dynamic linking                   ###
-    ##################################################################
-    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-    set(THREADS_PREFER_PTHREAD_FLAG FALSE)
-    find_package(Threads)
-    #if(TARGET Threads::Threads AND NOT BUILD_SHARED_LIBS)
-    #    set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES "-Wl,--whole-archive ${CMAKE_THREAD_LIBS_INIT} -Wl,--no-whole-archive")
-    #endif()
-
     enable_language(C)
     include(${H5PP_CONFIG_DIR}/FindPackageHDF5.cmake)
     find_package_hdf5()
-
 endif()
 
 
