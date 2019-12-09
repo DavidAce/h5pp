@@ -158,21 +158,6 @@ target_include_directories(
         $<INSTALL_INTERFACE:${h5pp_destination}/include>
 )
 
-##################################################################
-### Adapt pthread for static/dynamic linking                   ###
-##################################################################
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-set(THREADS_PREFER_PTHREAD_FLAG FALSE)
-find_package(Threads REQUIRED)
-#include(cmake-modules/PrintTargetProperties.cmake)
-#print_target_properties(Threads::Threads)
-#if(NOT BUILD_SHARED_LIBS)
-#    set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES "-Wl,--whole-archive ${CMAKE_THREAD_LIBS_INIT} -Wl,--no-whole-archive")
-#endif()
-
-
-
-
 
 ##################################################################
 ### Setup dependency paths                                     ###
