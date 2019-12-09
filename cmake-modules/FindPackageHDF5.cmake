@@ -153,9 +153,23 @@ function(find_package_hdf5)
                 $<LINK_ONLY:-lrt -ldl -lm -lz>
                 )
         target_include_directories(hdf5::hdf5 INTERFACE  ${HDF5_INCLUDE_DIR})
+        if(NOT TARGET Threads::Threads)
+            ##################################################################
+            ### Adapt pthread for static/dynamic linking                   ###
+            ##################################################################
+            set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+            set(THREADS_PREFER_PTHREAD_FLAG FALSE)
+            find_package(Threads)
+            if(TARGET Threads::Threads)
+                if(NOT BUILD_SHARED_LIBS)
+                    set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES "-Wl,--whole-archive -lpthread -Wl,--no-whole-archive")
+                endif()
+            endif()
+        endif()
         if(TARGET Threads::Threads)
             target_link_libraries(hdf5::hdf5 INTERFACE  Threads::Threads)
         endif()
+
         if(HDF5_C_LIBRARY_sz)
             target_link_libraries(hdf5::hdf5 INTERFACE $<LINK_ONLY:-lsz>)
             if (NOT BUILD_SHARED_LIBS)
