@@ -169,12 +169,19 @@ Pay attention to the cast to `dtype=np.complex128` which interprets each element
 
 ## Download
 There are currently three ways to obtain `h5pp`:
-- `git clone https://github.com/DavidAce/h5pp.git`
+- `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
 - (Debian only) Download the the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
-- Through anaconda: `conda install -c davidace h5pp`
+- Through Anaconda: `conda install -c davidace h5pp`
 
 
-## Installation
+
+## Install
+
+### Option 1: Copy headers
+Copy the files under `h5pp/source/include` and add `#include<h5pp/h5pp.h>`.
+Make sure to compile with `-std=c++17 -lstdc++fs` and link the dependencies `hdf5`, `Eigen3` and `spdlog`.
+
+### Option 2: With CMake
 Build the library just as any CMake project:
 
 ```bash
@@ -188,10 +195,11 @@ Build the library just as any CMake project:
 
 ```
 
-By passing the variable `DOWNLOAD_MISSING=ON` CMake will download all the dependencies and install them under `${CMAKE_BINARY_DIR}/install` if not found in the system. Here `${CMAKE_BINARY_DIR}` is the 
-directory you are building from. Building the the tests and examples is optional.
+By passing the variable `DOWNLOAD_MISSING=ON` CMake will download all the dependencies and install them under `${CMAKE_INSTALL_PREFIX}`. If not given, 
+`CMAKE_INSTALL_PREFIX` defaults to `${CMAKE_BINARY_DIR}/install`, where `${CMAKE_BINARY_DIR}` is the directory you are building from. Building 
+the the tests and examples is optional.
 
-### Build options
+#### CMake build options
 
 The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 * `-DCMAKE_INSTALL_PREFIX:PATH=<install-dir>` to specify install directory (default: `${CMAKE_BINARY_DIR}/install`).
@@ -216,7 +224,7 @@ In addition, the following variables can be set to help guide CMake's `find_pack
 
 
 
-### Linking to your CMake project
+#### Linking to your CMake project
 
 #### By using CMake targets (easy)
 `h5pp` is easily imported into your project using CMake's `find_package()`. Just point it to the `h5pp` install directory.
@@ -232,7 +240,7 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
     target_link_libraries(myExecutable PRIVATE h5pp::h5pp h5pp::deps h5pp::flags)
 
 ```
-**Targets**
+**Targets explained**
 
 -  `h5pp::h5pp` includes the `h5pp` headers.
 -  `h5pp::deps` includes dependencies and link corresponding libraries. This target is an alias for the set of libraries that were found/downloaded during the install
@@ -240,9 +248,8 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 -  `h5pp::flags` sets compile flags that you need to compile with `h5pp`. These flags enable C++17 and filesystem headers, i.e. `-std=c++17 -lstdc++fs`.
 
 
-#### By copying the headers manually (not as easy)
-Copy the headers in the folder `h5pp/source/include/h5pp` somewhere, and link your project to the dependencies `hdf5`, `Eigen3` and `spdlog` in the way you prefer. 
-For instance you can use CMake's `find_package(...)` mechanism to find relevant paths.
+#### When copying the headers directly as in Option 1 (not as easy)
+You can use CMake's `find_package(...)` mechanism to find relevant paths.
 A minimal `CMakeLists.txt` could be:
 
 ```cmake
@@ -262,7 +269,7 @@ A minimal `CMakeLists.txt` could be:
     target_include_directories(myExecutable PRIVATE <path-to-spdlog-include-dir>) 
     target_include_directories(myExecutable PRIVATE <path-to-hdf5-include-dir>) 
     # Link dependencies (this is the trickiest part). Note that you only need the C libs.
-    target_link_libraries(myExecutable PRIVATE  <path-to-libhdf5_hl> <path-to-libhdf5> -ldl -lm -lz -lpthread) # Possibly more -l libs
+    target_link_libraries(myExecutable PRIVATE  <path-to-libhdf5_hl> <path-to-libhdf5> -lrt -ldl -lm -lz -lpthread) # Possibly more -l libs
 
 ```
 
