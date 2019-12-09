@@ -3,12 +3,6 @@
 #################################################################
 ### Set default policies if CMake is new enough               ###
 #################################################################
-if (CMAKE_VERSION VERSION_LESS 3.12)
-    message(STATUS "Not setting policies")
-else()
-    cmake_policy(SET CMP0074 NEW)
-    cmake_policy(SET CMP0075 NEW)
-endif()
 
 set(h5pp_FOUND TRUE)
 set(H5PP_FOUND TRUE)
