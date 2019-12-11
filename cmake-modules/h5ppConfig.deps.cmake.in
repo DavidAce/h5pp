@@ -1,15 +1,11 @@
 @PACKAGE_INIT@
 
-set(DIRECTORY_HINTS                 @PACKAGE_DIRECTORY_HINTS@)
-set(PREFER_CONDA_LIBS               @PACKAGE_PREFER_CONDA_LIBS@)
-set(CONDA_HINTS                     @PACKAGE_CONDA_HINTS@)
-
 include(CMakeFindDependencyMacro)
 if (NOT TARGET Eigen3::Eigen)
-    set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
+    set(PACKAGE_PREFIX_DIR              ${H5PP_PACKAGE_PREFIX_DIR_SAVED})
     find_dependency(Eigen3 3.3.4
-        HINTS ${Eigen3_DIR} ${CONDA_HINTS}
-        PATHS ${Eigen3_DIR} ${EIGEN3_ROOT_DIR} ${EIGEN3_INCLUDE_DIR} ${DIRECTORY_HINTS}
+        HINTS ${Eigen3_DIR} ${H5PP_DIRECTORY_HINTS}
+        PATHS ${EIGEN3_ROOT_DIR} ${EIGEN3_INCLUDE_DIR} ${H5PP_DIRECTORY_HINTS}
         PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3
         NO_CMAKE_PACKAGE_REGISTRY)
 
@@ -18,19 +14,19 @@ endif()
 
 if (NOT TARGET spdlog::spdlog)
     include(GNUInstallDirs)
-    set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
+    set(PACKAGE_PREFIX_DIR              ${H5PP_PACKAGE_PREFIX_DIR_SAVED})
     set(spdlog_DIR                      "@PACKAGE_spdlog_DIR@")
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h
-            HINTS ${spdlog_DIR} ${CONDA_HINTS}
-            PATHS /usr /usr/local ${spdlog_DIR} ${DIRECTORY_HINTS}
+            HINTS ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
+            PATHS /usr /usr/local
             PATH_SUFFIXES include spdlog/include
             )
     # Check for a file in new enough spdlog versions
     find_path(SPDLOG_COLOR_SINKS
             NAMES spdlog/sinks/stdout_color_sinks.h
-            HINTS ${spdlog_DIR} ${CONDA_HINTS}
-            PATHS /usr /usr/local ${spdlog_DIR} ${DIRECTORY_HINTS} ${SPDLOG_INCLUDE_DIR}
+            HINTS ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
+            PATHS /usr /usr/local ${SPDLOG_INCLUDE_DIR}
             PATH_SUFFIXES include spdlog/include
             )
     if(SPDLOG_INCLUDE_DIR AND SPDLOG_COLOR_SINKS)
@@ -42,7 +38,7 @@ endif()
 
 
 if (NOT TARGET hdf5::hdf5)
-    set(PACKAGE_PREFIX_DIR              ${PACKAGE_PREFIX_DIR_SAVED})
+    set(PACKAGE_PREFIX_DIR              ${H5PP_PACKAGE_PREFIX_DIR_SAVED})
     enable_language(C)
     include(${H5PP_DIR}/FindPackageHDF5.cmake)
     find_package_hdf5()

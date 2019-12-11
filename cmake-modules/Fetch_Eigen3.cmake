@@ -1,6 +1,6 @@
 find_package(Eigen3
-        HINTS ${Eigen3_DIR} ${CONDA_HINTS}
-        PATHS ${Eigen3_DIR} ${DIRECTORY_HINTS}
+        HINTS ${Eigen3_DIR} ${H5PP_DIRECTORY_HINTS}
+        PATHS ${CMAKE_BINARY_DIR}/h5pp-deps-install
         PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_CMAKE_PACKAGE_REGISTRY)
 
 if(TARGET Eigen3::Eigen)

@@ -54,12 +54,6 @@ if(NOT H5PP_IS_SUBPROJECT)
     endif()
 endif()
 
-# Find_package and find_library etc will take these high-priority hints
-# when searching in the system
-set(CONDA_HINTS "")
-if(PREFER_CONDA_LIBS)
-    list(APPEND CONDA_HINTS $ENV{CONDA_PREFIX} $ENV{HOME}/anaconda3 $ENV{HOME}/miniconda )
-endif()
 
 # Give default install directory for h5pp and its dependencies.
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
@@ -161,14 +155,21 @@ target_include_directories(
 
 ##################################################################
 ### Setup dependency paths                                     ###
+### Prepend conda dirs for hints when using find_package       ###
 ##################################################################
 include(GNUInstallDirs)
-set(DIRECTORY_HINTS
-        ${CMAKE_INSTALL_PREFIX}
-        $ENV{CONDA_PREFIX}
-        $ENV{HOME}/anaconda3
-        $ENV{HOME}/miniconda
-        )
+if(PREFER_CONDA_LIBS)
+    list(APPEND H5PP_DIRECTORY_HINTS
+            $ENV{CONDA_PREFIX}
+            $ENV{HOME}/anaconda3
+            $ENV{HOME}/miniconda
+            anaconda3 miniconda
+            )
+endif()
+list(APPEND H5PP_DIRECTORY_HINTS ${CMAKE_INSTALL_PREFIX})
+
+
+
 
 
 ##################################################################
@@ -290,14 +291,14 @@ else()
             ${PROJECT_SOURCE_DIR}/cmake-modules/h5ppConfig.cmake.in
             ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
-            PATH_VARS H5PP_ROOT H5PP_DIR H5PP_CONFIG_DIR DIRECTORY_HINTS PREFER_CONDA_LIBS CONDA_HINTS
+            PATH_VARS H5PP_ROOT H5PP_DIR H5PP_CONFIG_DIR H5PP_DIRECTORY_HINTS
     )
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake-modules/h5ppConfig.deps.cmake.in
             ${PROJECT_BINARY_DIR}/h5ppConfig.deps.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
-            PATH_VARS H5PP_ROOT H5PP_DIR H5PP_CONFIG_DIR DIRECTORY_HINTS PREFER_CONDA_LIBS CONDA_HINTS
+            PATH_VARS H5PP_ROOT H5PP_DIR H5PP_CONFIG_DIR H5PP_DIRECTORY_HINTS
     )
 
 
