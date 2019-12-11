@@ -163,6 +163,7 @@ if(PREFER_CONDA_LIBS)
             $ENV{CONDA_PREFIX}
             $ENV{HOME}/anaconda3
             $ENV{HOME}/miniconda
+            $ENV{HOME}/.conda
             anaconda3 miniconda
             )
 endif()
