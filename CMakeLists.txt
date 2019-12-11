@@ -164,7 +164,6 @@ if(PREFER_CONDA_LIBS)
             $ENV{HOME}/anaconda3
             $ENV{HOME}/miniconda
             $ENV{HOME}/.conda
-            anaconda3 miniconda
             )
 endif()
 list(APPEND H5PP_DIRECTORY_HINTS ${CMAKE_INSTALL_PREFIX})
