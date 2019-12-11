@@ -74,7 +74,7 @@ matrix:
       compiler: gcc
       env:
         - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
-        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DPREFER_CONDA_LIBS:BOOL=ON  -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
       cache:
         apt: true
       addons:
@@ -101,7 +101,7 @@ matrix:
       os: linux
       compiler: gcc
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=OFF -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=OFF -DPREFER_CONDA_LIBS:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
       before_install:
         # Here we just install Miniconda, which you shouldn't have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
