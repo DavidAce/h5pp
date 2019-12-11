@@ -5,14 +5,14 @@ if(NOT TARGET spdlog::spdlog)
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h
             HINTS ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
-            PATHS /usr /usr/local
+            PATHS /usr /usr/local $ENV{CONDA_PREFIX}
             PATH_SUFFIXES include spdlog/include
             )
     # Check for a file in new enough spdlog versions
     find_path(SPDLOG_COLOR_SINKS
             NAMES spdlog/sinks/stdout_color_sinks.h
             HINTS ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
-            PATHS  ${SPDLOG_INCLUDE_DIR} /usr /usr/local
+            PATHS  ${SPDLOG_INCLUDE_DIR} /usr /usr/local $ENV{CONDA_PREFIX}
             PATH_SUFFIXES include spdlog/include
             )
     if(SPDLOG_INCLUDE_DIR AND SPDLOG_COLOR_SINKS)
