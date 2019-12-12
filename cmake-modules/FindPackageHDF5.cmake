@@ -208,9 +208,7 @@ function(find_package_hdf5)
         target_include_directories(hdf5::hdf5 INTERFACE  ${HDF5_INCLUDE_DIR})
         target_link_libraries(hdf5::hdf5
                 INTERFACE
-                -Wl,--start-group
                 ${HDF5_LIBRARIES}
-                -Wl,--end-group
                 ${HDF5_LINK_LIBRARY_NAMES}
                 )
 
