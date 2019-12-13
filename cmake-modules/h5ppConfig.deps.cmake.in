@@ -93,7 +93,6 @@ if (NOT TARGET hdf5::hdf5 AND "HDF5" IN_LIST H5PP_CHOSEN_COMPONENTS)
     set(PACKAGE_PREFIX_DIR              ${H5PP_PACKAGE_PREFIX_DIR_SAVED})
     include(${H5PP_DIR}/FindPackageHDF5.cmake)
     find_package_hdf5()
-    target_link_libraries(h5pp::deps INTERFACE IMPORTED hdf5::hdf5)
     if(TARGET hdf5::hdf5)
         list(APPEND H5PP_FOUND_TARGETS  hdf5::hdf5)
     endif()
@@ -103,7 +102,6 @@ endif()
 # Create imported target h5pp::deps
 if(NOT TARGET h5pp::deps)
     add_library(h5pp::deps INTERFACE IMPORTED)
-
 endif()
 
 set_target_properties(h5pp::deps PROPERTIES
