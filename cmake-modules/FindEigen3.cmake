@@ -51,24 +51,6 @@ macro(_eigen3_check_version)
 endmacro()
 
 
-# First try finding a config file in a set of paths
-# Note that the variables <package_name>_ROOT  <package_name>_DIR
-# are special and should go first to allow overriding from environment
-# If found correctly, this should define a target Eigen3::Eigen
-#message("Looking in:
-#Eigen3_ROOT      : ${Eigen3_ROOT}
-#EIGEN3_ROOT      : ${EIGEN3_ROOT}
-#Eigen3_DIR       : ${Eigen3_DIR}
-#Eigen3_ROOT (env): $ENV{Eigen3_ROOT}
-#EIGEN3_ROOT (env): $ENV{EIGEN3_ROOT}
-#Eigen3_DIR  (env): $ENV{Eigen3_DIR}
-#H5PP_DIRECTORY_HINTS: ${H5PP_DIRECTORY_HINTS}
-#${CMAKE_INSTALL_PREFIX}
-#${CMAKE_INSTALL_PREFIX}/include
-#${CMAKE_BINARY_DIR}/h5pp-deps-install
-#$ENV{EBROOTEIGEN}
-#$ENV{CONDA_PREFIX}")
-
 if(EIGEN3_NO_DEFAULT_PATH)
     set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
 endif()
@@ -77,15 +59,11 @@ if(EIGEN3_NO_CMAKE_PACKAGE_REGISTRY)
 endif()
 
 
-message(STATUS "Looking for Eigen3")
-
 if(NOT EIGEN3_NO_CONFIG OR EIGEN3_CONFIG_ONLY)
-    message("Trying CONFIG MODE")
 find_package(Eigen3 ${Eigen3_FIND_VERSION}
         HINTS
         ${Eigen3_ROOT} $ENV{Eigen3_ROOT}
         ${EIGEN3_ROOT} $ENV{EIGEN3_ROOT}
-#        ${Eigen3_DIR}  $ENV{Eigen3_DIR}
         ${H5PP_DIRECTORY_HINTS}
         ${CMAKE_INSTALL_PREFIX}
         ${CMAKE_INSTALL_PREFIX}/include
@@ -108,7 +86,6 @@ endif()
 if(NOT TARGET Eigen3::Eigen OR NOT EIGEN3_INCLUDE_DIR AND NOT EIGEN3_CONFIG_ONLY)
     # If no config was found, try finding Eigen in a similar way as the original FindEigen3.cmake does it
     # This way we can avoid supplying the original file and allow more flexibility for overriding
-    message("Trying MODULE MODE")
 
     find_path(EIGEN3_INCLUDE_DIR NAMES signature_of_eigen3_matrix_library
             HINTS
@@ -134,12 +111,7 @@ if(NOT TARGET Eigen3::Eigen OR NOT EIGEN3_INCLUDE_DIR AND NOT EIGEN3_CONFIG_ONLY
         set(Eigen3_FOUND TRUE)
         set_target_properties(Eigen3::Eigen PROPERTIES
                 INTERFACE_INCLUDE_DIRECTORIES "${EIGEN3_INCLUDE_DIR}")
-
     endif()
-endif()
-
-if(Eigen3_FOUND)
-    message(STATUS "Looking for Eigen3 - found")
 endif()
 
 include(FindPackageHandleStandardArgs)
@@ -147,10 +119,8 @@ find_package_handle_standard_args(Eigen3
         FOUND_VAR Eigen3_FOUND
         REQUIRED_VARS EIGEN3_INCLUDE_DIR EIGEN3_VERSION_OK
         VERSION_VAR EIGEN3_VERSION
-        CONFIG_MODE
         FAIL_MESSAGE "Failed to find Eigen3"
         )
 
-#find_package_handle_standard_args(Eigen3 DEFAULT_MSG Eigen3_FOUND EIGEN3_INCLUDE_DIR EIGEN3_VERSION_OK)
 mark_as_advanced(EIGEN3_INCLUDE_DIR)
 mark_as_advanced(Eigen3_FOUND)
