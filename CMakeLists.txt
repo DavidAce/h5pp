@@ -1,6 +1,6 @@
  
 cmake_minimum_required(VERSION 3.10)
-project(h5pp  VERSION 0.4.3)
+project(h5pp  VERSION 0.4.4)
 
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -273,7 +273,7 @@ else()
         install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/hdf5/ DESTINATION ${hdf5_destination}  COMPONENT hdf5-dep)
     endif()
 
-    install(TARGETS h5pp deps flags EXPORT h5ppTargets)
+    install(TARGETS h5pp flags EXPORT h5ppTargets)
 
     #Export the targets to a script
     install(EXPORT

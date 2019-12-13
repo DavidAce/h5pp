@@ -1,18 +1,67 @@
 @PACKAGE_INIT@
 
+
+
+set(H5PP_VALID_COMPONENTS EIGEN3 SPDLOG HDF5 ALL NONE)
+
+if(NOT H5PP_FIND_COMPONENTS)
+    list(APPEND H5PP_FIND_COMPONENTS ALL)
+endif()
+
+foreach(component ${H5PP_FIND_COMPONENTS})
+    if(NOT "${component}" IN_LIST H5PP_VALID_COMPONENTS)
+        message(FATAL_ERROR "Given component [${component}] is not one of EIGEN3, SPDLOG, HDF5, NONE or ALL")
+    elseif("ALL" IN_LIST H5PP_VALID_COMPONENTS)
+        list(APPEND H5PP_CHOSEN_COMPONENTS EIGEN3 SPDLOG HDF5)
+        break()
+    elseif("NONE" IN_LIST H5PP_VALID_COMPONENTS)
+        set(H5PP_CHOSEN_COMPONENTS)
+        break()
+    elseif("${component}" IN_LIST H5PP_VALID_COMPONENTS)
+        list(APPEND H5PP_CHOSEN_COMPONENTS ${component})
+    endif()
+endforeach()
+
+
+if(H5PP_FIND_REQUIRED_EIGEN3)
+    set(EIGEN3_REQUIRED REQUIRED)
+endif()
+
+if(H5PP_FIND_REQUIRED_SPDLOG)
+    set(SPDLOG_REQUIRED REQUIRED)
+endif()
+
+if(H5PP_FIND_REQUIRED_HDF5)
+    set(HDF5_REQUIRED REQUIRED)
+endif()
+
+if(H5PP_FIND_REQUIRED_ALL)
+    set(EIGEN3_REQUIRED REQUIRED)
+    set(SPDLOG_REQUIRED REQUIRED)
+    set(HDF5_REQUIRED REQUIRED)
+endif()
+
+
+
+
+
 include(CMakeFindDependencyMacro)
-if (NOT TARGET Eigen3::Eigen)
+if (NOT TARGET Eigen3::Eigen AND "EIGEN3" IN_LIST H5PP_CHOSEN_COMPONENTS)
     set(PACKAGE_PREFIX_DIR              ${H5PP_PACKAGE_PREFIX_DIR_SAVED})
     find_dependency(Eigen3 3.3.4
         HINTS ${Eigen3_DIR} ${H5PP_DIRECTORY_HINTS}
         PATHS ${EIGEN3_ROOT_DIR} ${EIGEN3_INCLUDE_DIR} $ENV{CONDA_PREFIX}
         PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3
+        ${EIGEN3_REQUIRED}
         NO_CMAKE_PACKAGE_REGISTRY)
+    if(TARGET Eigen3::Eigen)
+        list(APPEND H5PP_FOUND_TARGETS  Eigen3::Eigen)
+    endif()
 
 endif()
 
 
-if (NOT TARGET spdlog::spdlog)
+if (NOT TARGET spdlog::spdlog AND "SPDLOG" IN_LIST H5PP_CHOSEN_COMPONENTS)
     include(GNUInstallDirs)
     set(PACKAGE_PREFIX_DIR              ${H5PP_PACKAGE_PREFIX_DIR_SAVED})
     set(spdlog_DIR                      "@PACKAGE_spdlog_DIR@")
@@ -21,6 +70,7 @@ if (NOT TARGET spdlog::spdlog)
             HINTS ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
             PATHS /usr /usr/local $ENV{CONDA_PREFIX}
             PATH_SUFFIXES include spdlog/include
+            ${SPDLOG_REQUIRED}
             )
     # Check for a file in new enough spdlog versions
     find_path(SPDLOG_COLOR_SINKS
@@ -30,18 +80,33 @@ if (NOT TARGET spdlog::spdlog)
             PATH_SUFFIXES include spdlog/include
             )
     if(SPDLOG_INCLUDE_DIR AND SPDLOG_COLOR_SINKS)
-        set(spdlog_FOUND TRUE)
         add_library(spdlog::spdlog INTERFACE IMPORTED)
         target_include_directories(spdlog::spdlog INTERFACE ${SPDLOG_INCLUDE_DIR})
+    endif()
+    if(TARGET spdlog::spdlog)
+        list(APPEND H5PP_FOUND_TARGETS  spdlog::spdlog)
     endif()
 endif()
 
 
-if (NOT TARGET hdf5::hdf5)
+if (NOT TARGET hdf5::hdf5 AND "HDF5" IN_LIST H5PP_CHOSEN_COMPONENTS)
     set(PACKAGE_PREFIX_DIR              ${H5PP_PACKAGE_PREFIX_DIR_SAVED})
-    enable_language(C)
     include(${H5PP_DIR}/FindPackageHDF5.cmake)
     find_package_hdf5()
+    target_link_libraries(h5pp::deps INTERFACE IMPORTED hdf5::hdf5)
+    if(TARGET hdf5::hdf5)
+        list(APPEND H5PP_FOUND_TARGETS  hdf5::hdf5)
+    endif()
 endif()
 
+
+# Create imported target h5pp::deps
+if(NOT TARGET h5pp::deps)
+    add_library(h5pp::deps INTERFACE IMPORTED)
+
+endif()
+
+set_target_properties(h5pp::deps PROPERTIES
+  INTERFACE_LINK_LIBRARIES "${H5PP_FOUND_TARGETS}"
+)
 
