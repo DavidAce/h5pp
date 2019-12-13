@@ -41,7 +41,9 @@ if(H5PP_FIND_REQUIRED_ALL)
     set(HDF5_REQUIRED REQUIRED)
 endif()
 
-
+if(NOT H5PP_FIND_QUIETLY)
+    message(STATUS "h5pp: Searching for dependencies [${H5PP_CHOSEN_COMPONENTS}]")
+endif()
 
 
 
@@ -50,12 +52,15 @@ if (NOT TARGET Eigen3::Eigen AND "EIGEN3" IN_LIST H5PP_CHOSEN_COMPONENTS)
     set(PACKAGE_PREFIX_DIR              ${H5PP_PACKAGE_PREFIX_DIR_SAVED})
     find_dependency(Eigen3 3.3.4
         HINTS ${Eigen3_DIR} ${H5PP_DIRECTORY_HINTS}
-        PATHS ${EIGEN3_ROOT_DIR} ${EIGEN3_INCLUDE_DIR} $ENV{CONDA_PREFIX}
+        PATHS ${EIGEN3_ROOT_DIR} ${EIGEN3_INCLUDE_DIR} ${CMAKE_INSTALL_PREFIX} $ENV{CONDA_PREFIX}
         PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3
         ${EIGEN3_REQUIRED}
         NO_CMAKE_PACKAGE_REGISTRY)
     if(TARGET Eigen3::Eigen)
-        list(APPEND H5PP_FOUND_TARGETS  Eigen3::Eigen)
+        list(APPEND H5PP_FOUND_TARGETS Eigen3::Eigen)
+        if(NOT H5PP_FIND_QUIETLY)
+            message(STATUS "h5pp: Found dependency [EIGEN3] -- Target: Eigen3::Eigen")
+        endif()
     endif()
 
 endif()
@@ -68,15 +73,15 @@ if (NOT TARGET spdlog::spdlog AND "SPDLOG" IN_LIST H5PP_CHOSEN_COMPONENTS)
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h
             HINTS ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
-            PATHS /usr /usr/local $ENV{CONDA_PREFIX}
+            PATHS /usr /usr/local ${CMAKE_INSTALL_PREFIX} $ENV{CONDA_PREFIX}
             PATH_SUFFIXES include spdlog/include
             ${SPDLOG_REQUIRED}
             )
     # Check for a file in new enough spdlog versions
     find_path(SPDLOG_COLOR_SINKS
             NAMES spdlog/sinks/stdout_color_sinks.h
-            HINTS ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
-            PATHS /usr /usr/local ${SPDLOG_INCLUDE_DIR} $ENV{CONDA_PREFIX}
+            HINTS ${SPDLOG_INCLUDE_DIR} ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
+            PATHS /usr /usr/local ${SPDLOG_INCLUDE_DIR}  ${CMAKE_INSTALL_PREFIX} $ENV{CONDA_PREFIX}
             PATH_SUFFIXES include spdlog/include
             )
     if(SPDLOG_INCLUDE_DIR AND SPDLOG_COLOR_SINKS)
@@ -85,6 +90,9 @@ if (NOT TARGET spdlog::spdlog AND "SPDLOG" IN_LIST H5PP_CHOSEN_COMPONENTS)
     endif()
     if(TARGET spdlog::spdlog)
         list(APPEND H5PP_FOUND_TARGETS  spdlog::spdlog)
+        if(NOT H5PP_FIND_QUIETLY)
+            message(STATUS "h5pp: Found dependency [SPDLOG] -- Target: spdlog::spdlog")
+        endif()
     endif()
 endif()
 
@@ -95,6 +103,9 @@ if (NOT TARGET hdf5::hdf5 AND "HDF5" IN_LIST H5PP_CHOSEN_COMPONENTS)
     find_package_hdf5()
     if(TARGET hdf5::hdf5)
         list(APPEND H5PP_FOUND_TARGETS  hdf5::hdf5)
+        if(NOT H5PP_FIND_QUIETLY)
+            message(STATUS "h5pp: Found dependency [HDF5]   -- Target: hdf5::hdf5")
+        endif()
     endif()
 endif()
 
