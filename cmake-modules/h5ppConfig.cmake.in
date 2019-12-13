@@ -15,7 +15,7 @@ set(H5PP_PACKAGE_PREFIX_DIR_SAVED       ${PACKAGE_PREFIX_DIR}) # The variable ca
 
 
 
-
+list(INSERT CMAKE_MODULE_PATH 0  ${H5PP_DIR})
 
 include(${H5PP_DIR}/h5ppConfig.deps.cmake)
 include(${H5PP_DIR}/h5ppTargets.cmake)
