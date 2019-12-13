@@ -107,9 +107,11 @@ if(NOT TARGET Eigen3::Eigen OR NOT EIGEN3_INCLUDE_DIR AND NOT EIGEN3_CONFIG_ONLY
         _eigen3_check_version()
     endif()
     if(EIGEN3_INCLUDE_DIR AND EIGEN3_VERSION_OK)
-        add_library(Eigen3::Eigen INTERFACE)
         set(Eigen3_FOUND TRUE)
-        set_target_properties(Eigen3::Eigen PROPERTIES
+        # Add a convenience target. This one may not have a namespace
+        # but you can create one yourself as an alias
+        add_library(Eigen3 INTERFACE)
+        set_target_properties(Eigen3 PROPERTIES
                 INTERFACE_INCLUDE_DIRECTORIES "${EIGEN3_INCLUDE_DIR}")
     endif()
 endif()
