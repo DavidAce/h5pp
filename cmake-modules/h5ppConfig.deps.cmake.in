@@ -50,12 +50,7 @@ endif()
 include(CMakeFindDependencyMacro)
 if (NOT TARGET Eigen3::Eigen AND "EIGEN3" IN_LIST H5PP_CHOSEN_COMPONENTS)
     set(PACKAGE_PREFIX_DIR              ${H5PP_PACKAGE_PREFIX_DIR_SAVED})
-    find_dependency(Eigen3 3.3.4
-        HINTS ${Eigen3_DIR} ${H5PP_DIRECTORY_HINTS}
-        PATHS ${EIGEN3_ROOT_DIR} ${EIGEN3_INCLUDE_DIR} ${CMAKE_INSTALL_PREFIX} $ENV{CONDA_PREFIX}
-        PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3
-        ${EIGEN3_REQUIRED}
-        NO_CMAKE_PACKAGE_REGISTRY)
+    find_dependency(Eigen3 3.3.4)
     if(TARGET Eigen3::Eigen)
         list(APPEND H5PP_FOUND_TARGETS Eigen3::Eigen)
         if(NOT H5PP_FIND_QUIETLY)
