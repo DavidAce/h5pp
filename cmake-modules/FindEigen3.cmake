@@ -128,10 +128,11 @@ if(NOT TARGET Eigen3::Eigen OR NOT EIGEN3_INCLUDE_DIR AND NOT EIGEN3_CONFIG_ONLY
         _eigen3_check_version()
     endif()
     if(EIGEN3_VERSION_OK)
-#        add_library(Eigen3::Eigen INTERFACE IMPORTED)
+        add_library(Eigen3 INTERFACE IMPORTED)
+        add_library(Eigen3::Eigen ALIAS Eigen)
         set(Eigen3_FOUND TRUE)
-#        set_target_properties(Eigen3::Eigen PROPERTIES
-#                INTERFACE_INCLUDE_DIRECTORIES "${EIGEN3_INCLUDE_DIR}")
+        set_target_properties(Eigen3 PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${EIGEN3_INCLUDE_DIR}")
 
     endif()
 endif()
@@ -145,7 +146,7 @@ find_package_handle_standard_args(Eigen3
         FOUND_VAR Eigen3_FOUND
         REQUIRED_VARS EIGEN3_INCLUDE_DIR EIGEN3_VERSION_OK
         VERSION_VAR EIGEN3_VERSION
-#        CONFIG_MODE
+        CONFIG_MODE
         FAIL_MESSAGE "Failed to find Eigen3"
         )
 
