@@ -80,6 +80,7 @@ endif()
 message(STATUS "Looking for Eigen3")
 
 if(NOT EIGEN3_NO_CONFIG OR EIGEN3_CONFIG_ONLY)
+    message("Trying CONFIG MODE")
 find_package(Eigen3 ${Eigen3_FIND_VERSION}
         HINTS
         ${Eigen3_ROOT} $ENV{Eigen3_ROOT}
@@ -107,6 +108,7 @@ endif()
 if(NOT TARGET Eigen3::Eigen OR NOT EIGEN3_INCLUDE_DIR AND NOT EIGEN3_CONFIG_ONLY)
     # If no config was found, try finding Eigen in a similar way as the original FindEigen3.cmake does it
     # This way we can avoid supplying the original file and allow more flexibility for overriding
+    message("Trying MODULE MODE")
 
     find_path(EIGEN3_INCLUDE_DIR NAMES signature_of_eigen3_matrix_library
             HINTS
@@ -128,10 +130,9 @@ if(NOT TARGET Eigen3::Eigen OR NOT EIGEN3_INCLUDE_DIR AND NOT EIGEN3_CONFIG_ONLY
         _eigen3_check_version()
     endif()
     if(EIGEN3_VERSION_OK)
-        add_library(Eigen3 INTERFACE)
-        add_library(Eigen3::Eigen ALIAS Eigen3)
+        add_library(Eigen3::Eigen UNKNOWN IMPORTED)
         set(Eigen3_FOUND TRUE)
-        set_target_properties(Eigen3 PROPERTIES
+        set_target_properties(Eigen3::Eigen PROPERTIES
                 INTERFACE_INCLUDE_DIRECTORIES "${EIGEN3_INCLUDE_DIR}")
 
     endif()
