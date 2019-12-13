@@ -33,14 +33,12 @@ matrix:
       compiler: clang
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CXX=clang++-7 CC=clang-7
+        - CXX=clang++ CC=clang
       addons:
         apt:
           update: true
           sources:
             - ubuntu-toolchain-r-test
-#            - sourceline:  'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main'
-#              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
             - libstdc++-8-dev
 
@@ -82,7 +80,7 @@ matrix:
         - ./miniconda.sh -b -p $HOME/miniconda
         - export PATH=$HOME/miniconda/bin:$PATH
         - conda update --yes conda
-        - conda install --yes hdf5 hdf5-static eigen spdlog
+        - conda install --yes hdf5 eigen
 
 
     - name: "bionic gcc conda-forge libs"
@@ -139,10 +137,11 @@ matrix:
 
 
 script:
+  - export MAKEFLAGS=-j2
   - cmake -E make_directory build/Debug
   - cd build/Debug
   - cmake -DCMAKE_BUILD_TYPE=Debug $CMAKE_FLAGS -G "CodeBlocks - Unix Makefiles" ../../
-  - cmake --build . --target all  --parallel
+  - cmake --build . --target all  -- -j2
   - make test
   - make install
 
