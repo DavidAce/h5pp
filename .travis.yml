@@ -15,12 +15,8 @@ matrix:
       dist: xenial
       compiler: gcc
       env:
-        - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
+        - CXX=g++-8 CC=gcc-8
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-      before_install:
-        eval "${MATRIX_EVAL}"
-      cache:
-        apt: true
       addons:
         apt:
           update: true
@@ -37,19 +33,15 @@ matrix:
       compiler: clang
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - MATRIX_EVAL="CXX=clang++-7 && CC=clang-7"
-      cache:
-        apt: true
+        - CXX=clang++-7 CC=clang-7
       addons:
         apt:
           update: true
           sources:
-            - sourceline:  'ppa:ubuntu-toolchain-r/test'
+            - ubuntu-toolchain-r-test
 #            - sourceline:  'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main'
 #              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-#            - llvm-7-dev
-#            - clang-7
             - libstdc++-8-dev
 
 
@@ -67,33 +59,30 @@ matrix:
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
 
-
     - name: "xenial gcc-8 conda libs"
       os: linux
       dist: xenial
       compiler: gcc
       env:
-        - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
+        - CXX=g++-8 CC=gcc-8
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DPREFER_CONDA_LIBS:BOOL=ON  -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-      cache:
-        apt: true
+
       addons:
         apt:
           update: true
           sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+            - ubuntu-toolchain-r-test
           packages:
             - gcc-8
             - g++-8
       before_install:
-        - eval "${MATRIX_EVAL}"
         # Here we just install Miniconda, which you shouldn't have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh
         - ./miniconda.sh -b -p $HOME/miniconda
         - export PATH=$HOME/miniconda/bin:$PATH
         - conda update --yes conda
-        - conda install --yes hdf5 eigen
+        - conda install --yes hdf5 hdf5-static eigen spdlog
 
 
     - name: "bionic gcc conda-forge libs"
@@ -118,17 +107,13 @@ matrix:
       os: linux
       compiler: gcc
       env:
-        - MATRIX_EVAL="CXX=g++-8 && CC=gcc-8"
+        - CXX=g++-8 CC=gcc-8
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-      before_install:
-        - eval "${MATRIX_EVAL}"
-      cache:
-        apt: true
       addons:
         apt:
           update: true
           sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+            - ubuntu-toolchain-r-test
           packages:
             - gcc-8
             - g++-8
@@ -142,15 +127,11 @@ matrix:
       compiler: gcc
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-      before_install:
-        - eval "${MATRIX_EVAL}"
-      cache:
-        apt: true
       addons:
         apt:
           update: true
           sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+            - ubuntu-toolchain-r-test
           packages:
             - libhdf5-dev
             - libeigen3-dev
@@ -164,8 +145,5 @@ script:
   - cmake --build . --target all  --parallel
   - make test
   - make install
-#    - cd .. && cmake -E make_directory Release && cd Release
-#  - cmake -DCMAKE_BUILD_TYPE=Release -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
-#  - cmake --build .
 
 
