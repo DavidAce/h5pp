@@ -63,7 +63,7 @@ if (NOT TARGET Eigen3::Eigen AND "EIGEN3" IN_LIST H5PP_CHOSEN_COMPONENTS)
         endif()
     endif()
 elseif(TARGET Eigen3::Eigen)
-    # Might just as well add it to h5pp::deps
+    # Just add it to h5pp::deps
     list(APPEND H5PP_FOUND_TARGETS Eigen3::Eigen)
 endif()
 
@@ -97,8 +97,8 @@ if (NOT TARGET spdlog::spdlog AND "SPDLOG" IN_LIST H5PP_CHOSEN_COMPONENTS)
         endif()
     endif()
 elseif(TARGET spdlog::spdlog)
-        # Might just as well add it to h5pp::deps
-        list(APPEND H5PP_FOUND_TARGETS Eigen3::Eigen)
+        # Just add it to h5pp::deps
+        list(APPEND H5PP_FOUND_TARGETS spdlog::spdlog)
 endif()
 
 
@@ -113,8 +113,8 @@ if (NOT TARGET hdf5::hdf5 AND "HDF5" IN_LIST H5PP_CHOSEN_COMPONENTS)
         endif()
     endif()
 elseif(TARGET hdf5::hdf5)
-        # Might just as well add it to h5pp::deps
-        list(APPEND H5PP_FOUND_TARGETS Eigen3::Eigen)
+        # Just add it to h5pp::deps
+        list(APPEND H5PP_FOUND_TARGETS hdf5::hdf5)
 endif()
 
 
