@@ -128,7 +128,7 @@ if(NOT TARGET Eigen3::Eigen OR NOT EIGEN3_INCLUDE_DIR AND NOT EIGEN3_CONFIG_ONLY
         _eigen3_check_version()
     endif()
     if(EIGEN3_VERSION_OK)
-        add_library(Eigen3 INTERFACE IMPORTED)
+        add_library(Eigen3 INTERFACE)
         add_library(Eigen3::Eigen ALIAS Eigen3)
         set(Eigen3_FOUND TRUE)
         set_target_properties(Eigen3 PROPERTIES
