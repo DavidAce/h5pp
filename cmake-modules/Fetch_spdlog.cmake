@@ -4,8 +4,8 @@ include(GNUInstallDirs)
 if(NOT TARGET spdlog::spdlog)
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h
-            HINTS ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
-            PATHS /usr /usr/local $ENV{CONDA_PREFIX}
+            HINTS ${spdlog_DIR} ${SPDLOG_DIR} ${H5PP_DIRECTORY_HINTS}
+            PATHS /usr /usr/local $ENV{EBROOTSPDLOG} $ENV{CONDA_PREFIX}
             PATH_SUFFIXES include spdlog/include
             )
     # Check for a file in new enough spdlog versions

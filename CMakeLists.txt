@@ -4,8 +4,7 @@ project(h5pp  VERSION 0.4.4)
 
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake-modules)
-
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
 ################################################################
 ### Get git version number                                   ###
 ### Generates a header gitversion/gitversion.h               ###
@@ -179,6 +178,7 @@ include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_Eigen3.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_spdlog.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_HDF5.cmake)
 
+
 if(TARGET hdf5::hdf5 AND TARGET Eigen3::Eigen AND TARGET spdlog::spdlog)
     set(DEPENDENCIES_FOUND TRUE)
 else()
@@ -192,6 +192,8 @@ endif()
 add_library(deps INTERFACE)
 if(TARGET Eigen3::Eigen)
     target_link_libraries(deps INTERFACE Eigen3::Eigen)
+    get_target_property(EIGEN3_ROOT_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+    list(APPEND H5PP_DIRECTORY_HINTS ${EIGEN3_ROOT_DIR})
 endif()
 if(TARGET spdlog::spdlog)
     target_link_libraries(deps INTERFACE spdlog::spdlog)

@@ -185,12 +185,12 @@ function(find_package_hdf5)
     endif()
 
     list(APPEND HDF5_PATHS
-            ${H5PP_DIRECTORY_HINTS}
+            ${hdf5_DIR}
             ${HDF5_DIR}
             $ENV{hdf5_DIR}
             $ENV{HDF5_DIR}
+            ${H5PP_DIRECTORY_HINTS}
             ${HDF5_ROOT}
-            ${hdf5_DIR}
             $ENV{HDF5_ROOT}
             $ENV{EBROOTHDF5}
             /usr /usr/local
