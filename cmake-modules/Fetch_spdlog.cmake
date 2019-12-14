@@ -1,25 +1,58 @@
 
 include(GNUInstallDirs)
 
+# First try finding a config somewhere in the system
 if(NOT TARGET spdlog::spdlog)
+    find_package(spdlog 1.3.1
+            HINTS ${spdlog_DIR} ${SPDLOG_DIR} ${H5PP_DIRECTORY_HINTS}
+            PATHS $ENV{EBROOTSPDLOG} $ENV{CONDA_PREFIX}
+            NO_CMAKE_PACKAGE_REGISTRY)
+endif()
+
+if(NOT TARGET spdlog::spdlog)
+    include(GNUInstallDirs)
+
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h
             HINTS ${spdlog_DIR} ${SPDLOG_DIR} ${H5PP_DIRECTORY_HINTS}
-            PATHS /usr /usr/local $ENV{EBROOTSPDLOG} $ENV{CONDA_PREFIX}
+            PATHS $ENV{EBROOTSPDLOG} $ENV{CONDA_PREFIX}
             PATH_SUFFIXES include spdlog/include
             )
     # Check for a file in new enough spdlog versions
     find_path(SPDLOG_COLOR_SINKS
             NAMES spdlog/sinks/stdout_color_sinks.h
-            HINTS ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
-            PATHS  ${SPDLOG_INCLUDE_DIR} /usr /usr/local $ENV{CONDA_PREFIX}
+            HINTS ${SPDLOG_INCLUDE_DIR} ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
+            PATHS ${SPDLOG_INCLUDE_DIR} $ENV{CONDA_PREFIX}
             PATH_SUFFIXES include spdlog/include
             )
+
     if(SPDLOG_INCLUDE_DIR AND SPDLOG_COLOR_SINKS)
         set(spdlog_FOUND TRUE)
         add_library(spdlog::spdlog INTERFACE IMPORTED)
         target_include_directories(spdlog::spdlog INTERFACE ${SPDLOG_INCLUDE_DIR})
+        find_path(SPDLOG_FMT_BUNDLED
+                spdlog/fmt/bundled/core.h
+                HINTS ${SPDLOG_INCLUDE_DIR} ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
+                PATHS ${SPDLOG_INCLUDE_DIR} $ENV{CONDA_PREFIX}
+                PATH_SUFFIXES include spdlog/include
+        )
+        find_library(SPDLOG_LIBRARY
+                NAMES spdlog
+                HINTS ${spdlog_DIR} ${SPDLOG_DIR} ${H5PP_DIRECTORY_HINTS}
+                PATHS $ENV{EBROOTSPDLOG} $ENV{CONDA_PREFIX}
+                PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR} spdlog/${CMAKE_INSTALL_LIBDIR}
+                )
+
+        if(NOT SPDLOG_FMT_BUNDLED)
+            target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_FMT_EXTERNAL)
+        endif()
+        if(SPDLOG_LIBRARY)
+            target_link_libraries(spdlog::spdlog INTERFACE ${SPDLOG_LIBRARY} )
+            target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_COMPILED_LIB )
+        endif()
     endif()
+
+
 endif()
 
 
