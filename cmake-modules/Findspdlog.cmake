@@ -4,7 +4,7 @@
 # SPDLOG_VERSION
 # spdlog_FOUND
 
-# as well as a target Eigen3::Eigen
+# as well as a target spdlog::spdlog
 #
 # To guide the find behavior the user can set the following variables to TRUE/FALSE:
 
@@ -13,8 +13,8 @@
 # SPDLOG_NO_CONFIG
 # SPDLOG_CONFIG_ONLY
 
-# As well as many search directory hints from CMake or environment, such as
-# EIGEN3_DIR, Eigen3_DIR, EIGEN3_ROOT Eigen3_ROOT, etc.
+# The user can set search directory hints from CMake or environment, such as
+# SPDLOG_DIR, spdlog_DIR, SPDLOG_ROOT spdlog_ROOT, etc.
 
 if(NOT spdlog_FIND_VERSION)
     if(NOT spdlog_FIND_VERSION_MAJOR)
@@ -66,7 +66,7 @@ endif()
 
 
 # First try finding a config somewhere in the system
-if(NOT EIGEN3_NO_CONFIG OR EIGEN3_CONFIG_ONLY)
+if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
     find_package(spdlog ${spdlog_FIND_VERSION}
             HINTS
                 ${spdlog_ROOT} $ENV{spdlog_ROOT}
