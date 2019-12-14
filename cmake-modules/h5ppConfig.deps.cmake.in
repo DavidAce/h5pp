@@ -64,27 +64,9 @@ endif()
 
 
 if (NOT TARGET spdlog::spdlog AND "SPDLOG" IN_LIST H5PP_CHOSEN_COMPONENTS)
-    include(GNUInstallDirs)
     set(PACKAGE_PREFIX_DIR              ${H5PP_PACKAGE_PREFIX_DIR_SAVED})
-    set(spdlog_DIR                      "@PACKAGE_spdlog_DIR@")
-    find_path(SPDLOG_INCLUDE_DIR
-            NAMES spdlog/spdlog.h
-            HINTS ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
-            PATHS /usr /usr/local ${CMAKE_INSTALL_PREFIX} $ENV{CONDA_PREFIX}
-            PATH_SUFFIXES include spdlog/include
-            ${SPDLOG_REQUIRED}
-            )
-    # Check for a file in new enough spdlog versions
-    find_path(SPDLOG_COLOR_SINKS
-            NAMES spdlog/sinks/stdout_color_sinks.h
-            HINTS ${SPDLOG_INCLUDE_DIR} ${spdlog_DIR} ${H5PP_DIRECTORY_HINTS}
-            PATHS /usr /usr/local ${SPDLOG_INCLUDE_DIR}  ${CMAKE_INSTALL_PREFIX} $ENV{CONDA_PREFIX}
-            PATH_SUFFIXES include spdlog/include
-            )
-    if(SPDLOG_INCLUDE_DIR AND SPDLOG_COLOR_SINKS)
-        add_library(spdlog::spdlog INTERFACE IMPORTED)
-        target_include_directories(spdlog::spdlog INTERFACE ${SPDLOG_INCLUDE_DIR})
-    endif()
+    find_dependency(spdlog 1.3.1)
+
     if(TARGET spdlog::spdlog)
         list(APPEND H5PP_FOUND_TARGETS  spdlog::spdlog)
         if(NOT H5PP_FIND_QUIETLY)
