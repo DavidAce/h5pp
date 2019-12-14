@@ -322,6 +322,7 @@ else()
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
             ${PROJECT_SOURCE_DIR}/cmake-modules/FindEigen3.cmake
+            ${PROJECT_SOURCE_DIR}/cmake-modules/Findspdlog.cmake
             ${PROJECT_SOURCE_DIR}/cmake-modules/FindPackageHDF5.cmake
             DESTINATION ${H5PP_CONFIG_DIR}
             COMPONENT config
