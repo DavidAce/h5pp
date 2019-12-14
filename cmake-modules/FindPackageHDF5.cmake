@@ -113,6 +113,7 @@ function(find_package_hdf5_isolator hdf5_root)
             foreach(lang ${HDF5_LANG})
                 foreach(lib ${HDF5_LIBNAMES})
                     if(${lib} MATCHES "hdf5")
+                        list(APPEND HDF5_LIBRARIES ${HDF5_${lib}_LIBRARY}) # For older versions of CMake
                         list(APPEND HDF5_LIBRARIES ${HDF5_${lang}_LIBRARY_${lib}})
                     endif()
                 endforeach()
@@ -124,6 +125,13 @@ function(find_package_hdf5_isolator hdf5_root)
             endforeach()
             list(REMOVE_DUPLICATES HDF5_LIBRARIES)
             list(REMOVE_DUPLICATES HDF5_LINK_LIBRARY_NAMES)
+            if(NOT HDF5_LIBRARIES)
+                message(WARNING "Could not pattern match HDF5_LIBRARIES")
+            endif()
+            if(NOT HDF5_LINK_LIBRARY_NAMES)
+                # Just append the usual suspects -- For older versions of CMake
+                list(APPEND HDF5_LINK_LIBRARY_NAMES -lz -ldl -lrt -lm)
+            endif()
 
             set(HDF5_LIBRARIES          ${HDF5_LIBRARIES}           PARENT_SCOPE)
             set(HDF5_LINK_LIBRARY_NAMES ${HDF5_LINK_LIBRARY_NAMES}  PARENT_SCOPE)
@@ -189,9 +197,9 @@ function(find_package_hdf5)
             ${HDF5_DIR}
             $ENV{hdf5_DIR}
             $ENV{HDF5_DIR}
-            ${H5PP_DIRECTORY_HINTS}
             ${HDF5_ROOT}
             $ENV{HDF5_ROOT}
+            ${H5PP_DIRECTORY_HINTS}
             $ENV{EBROOTHDF5}
             /usr /usr/local
             ${CMAKE_INSTALL_PREFIX}
