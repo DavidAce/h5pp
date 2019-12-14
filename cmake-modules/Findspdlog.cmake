@@ -31,23 +31,23 @@ endif()
 
 macro(_spdlog_check_version)
 
-    #define SPDLOG_VER_MAJOR 1
-    #define SPDLOG_VER_MINOR 4
-    #define SPDLOG_VER_PATCH 2
+    if(EXISTS ${SPDLOG_INCLUDE_DIR}/spdlog/version.h)
+        file(READ "${SPDLOG_INCLUDE_DIR}/spdlog/version.h" _spdlog_version_header)
+        string(REGEX MATCH "define[ \t]+SPDLOG_VER_MAJOR[ \t]+([0-9]+)" _spdlog_world_version_match "${_spdlog_version_header}")
+        set(SPDLOG_WORLD_VERSION "${CMAKE_MATCH_1}")
+        string(REGEX MATCH "define[ \t]+SPDLOG_VER_MINOR[ \t]+([0-9]+)" _spdlog_major_version_match "${_spdlog_version_header}")
+        set(SPDLOG_MAJOR_VERSION "${CMAKE_MATCH_1}")
+        string(REGEX MATCH "define[ \t]+SPDLOG_VER_PATCH[ \t]+([0-9]+)" _spdlog_minor_version_match "${_spdlog_version_header}")
+        set(SPDLOG_MINOR_VERSION "${CMAKE_MATCH_1}")
 
-    file(READ "${SPDLOG_INCLUDE_DIR}/spdlog/version.h" _spdlog_version_header)
-    string(REGEX MATCH "define[ \t]+SPDLOG_VER_MAJOR[ \t]+([0-9]+)" _spdlog_world_version_match "${_spdlog_version_header}")
-    set(SPDLOG_WORLD_VERSION "${CMAKE_MATCH_1}")
-    string(REGEX MATCH "define[ \t]+SPDLOG_VER_MINOR[ \t]+([0-9]+)" _spdlog_major_version_match "${_spdlog_version_header}")
-    set(SPDLOG_MAJOR_VERSION "${CMAKE_MATCH_1}")
-    string(REGEX MATCH "define[ \t]+SPDLOG_VER_PATCH[ \t]+([0-9]+)" _spdlog_minor_version_match "${_spdlog_version_header}")
-    set(SPDLOG_MINOR_VERSION "${CMAKE_MATCH_1}")
-
-    set(SPDLOG_VERSION ${SPDLOG_WORLD_VERSION}.${SPDLOG_MAJOR_VERSION}.${SPDLOG_MINOR_VERSION})
-    if(${SPDLOG_VERSION} VERSION_LESS ${spdlog_FIND_VERSION})
-        set(SPDLOG_VERSION_OK FALSE)
+        set(SPDLOG_VERSION ${SPDLOG_WORLD_VERSION}.${SPDLOG_MAJOR_VERSION}.${SPDLOG_MINOR_VERSION})
+        if(${SPDLOG_VERSION} VERSION_LESS ${spdlog_FIND_VERSION})
+            set(SPDLOG_VERSION_OK FALSE)
+        else()
+            set(SPDLOG_VERSION_OK TRUE)
+        endif()
     else()
-        set(SPDLOG_VERSION_OK TRUE)
+        set(SPDLOG_VERSION_OK FALSE)
     endif()
     if(NOT SPDLOG_VERSION_OK)
         message(STATUS "spdlog version ${SPDLOG_VERSION} found in ${SPDLOG_INCLUDE_DIR}, "
