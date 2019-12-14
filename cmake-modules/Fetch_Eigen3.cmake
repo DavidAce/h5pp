@@ -1,19 +1,12 @@
-#set(EIGEN3_ROOT /usr  /usr/lib /usr/include)
-#set(EIGEN3_NO_DEFAULT_PATH TRUE)
-#set(EIGEN3_NO_CMAKE_PACKAGE_REGISTRY TRUE)
-#set(EIGEN3_NO_CONFIG TRUE)
+
 find_package(Eigen3 3.3.4)
 
 
 if(TARGET Eigen3::Eigen)
-    message(STATUS "Eigen3 found")
-    target_link_libraries(Eigen3::Eigen INTERFACE -lrt)
-#    include(cmake-modules/PrintTargetProperties.cmake)
-#    print_target_properties(Eigen3::Eigen)
+#    message(STATUS "Eigen3 found")
+
 elseif(TARGET Eigen3)
     add_library(Eigen3::Eigen ALIAS Eigen3)
-#    target_link_libraries(Eigen3::Eigen INTERFACE ${EIGEN3_INCLUDE_DIR})
-
 elseif (DOWNLOAD_MISSING)
     message(STATUS "Eigen3 will be installed into ${CMAKE_INSTALL_PREFIX}")
     include(${PROJECT_SOURCE_DIR}/cmake-modules/BuildDependency.cmake)
