@@ -1,6 +1,9 @@
  
 cmake_minimum_required(VERSION 3.10)
-project(h5pp  VERSION 0.4.6)
+project(h5pp  VERSION 0.4.6
+        DESCRIPTION "A C++17 wrapper for HDF5"
+        HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
+        )
 
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -233,8 +236,6 @@ if(FIND_DEPENDENCIES)
 endif()
 
 
-
-
 ##################################################################
 ### Print summary of CMake configuration                       ###
 ##################################################################
@@ -270,23 +271,23 @@ else()
     set(H5PP_CONFIG_DIR ${h5pp_install_prefix}/share/h5pp/cmake)
     set(H5PP_DIR  ${H5PP_CONFIG_DIR})
     set(H5PP_ROOT ${h5pp_install_prefix})
-#    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/source/include/ DESTINATION ${h5pp_install_prefix}/${CMAKE_INSTALL_INCLUDEDIR} COMPONENT headers)
-    install(TARGETS h5pp
-            PUBLIC_HEADER
-            DESTINATION ${h5pp_install_prefix}/${CMAKE_INSTALL_INCLUDEDIR}
-            COMPONENT headers
-            )
-#    if(EXISTS ${CMAKE_BINARY_DIR}/h5pp-deps-install/Eigen3)
-#        install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/Eigen3/ DESTINATION ${eigen3_install_prefix} COMPONENT eigen3-dep)
-#    endif()
-#    if(EXISTS ${CMAKE_BINARY_DIR}/h5pp-deps-install/spdlog)
-#        install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/spdlog/ DESTINATION ${spdlog_install_prefix} COMPONENT spdlog-dep)
-#    endif()
-#    if(EXISTS ${CMAKE_BINARY_DIR}/h5pp-deps-install/hdf5)
-#        install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/hdf5/ DESTINATION ${hdf5_install_prefix}  COMPONENT hdf5-dep)
-#    endif()
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/source/include/ DESTINATION ${h5pp_install_prefix}/${CMAKE_INSTALL_INCLUDEDIR} COMPONENT headers)
+#    file(GLOB_RECURSE HEADERS "h5pp/source/include/*.h")
+#    message(headers: ${HEADERS})
+#    set_target_properties(h5pp PROPERTIES
+#            PUBLIC_HEADER
+#            "${HEADERS}")
+#
+#    install(TARGETS h5pp flags
+#            EXPORT h5ppTargets
+#            PUBLIC_HEADER
+#            DESTINATION ${h5pp_install_prefix}/${CMAKE_INSTALL_INCLUDEDIR}
+#            COMPONENT headers
+#            )
 
-    install(TARGETS h5pp flags EXPORT h5ppTargets)
+    install(TARGETS h5pp flags EXPORT h5ppTargets
+            INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            )
 
     #Export the targets to a script
     install(EXPORT
@@ -377,13 +378,12 @@ endif()
 #############################
 if(NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES)
     if(ALL_TARGETS_FOUND)
-        set(H5PP_EXAMPLES_BINARY_DIR   ${CMAKE_BINARY_DIR}/h5pp-examples)
         add_subdirectory(h5pp/examples/helloworld  ${CMAKE_BINARY_DIR}/h5pp-examples/helloworld)
         add_subdirectory(h5pp/examples/writescalar ${CMAKE_BINARY_DIR}/h5pp-examples/writescalar)
         install(PROGRAMS
                 ${CMAKE_BINARY_DIR}/h5pp-examples/helloworld/helloworld
                 ${CMAKE_BINARY_DIR}/h5pp-examples/writescalar/writescalar
-                DESTINATION ${h5pp_install_prefix}/examples
+                DESTINATION ${h5pp_install_prefix}/share/h5pp/examples
                 COMPONENT examples)
     elseif(FIND_DEPENDENCIES)
         message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
