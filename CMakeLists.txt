@@ -272,22 +272,7 @@ else()
     set(H5PP_DIR  ${H5PP_CONFIG_DIR})
     set(H5PP_ROOT ${h5pp_install_prefix})
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/source/include/ DESTINATION ${h5pp_install_prefix}/${CMAKE_INSTALL_INCLUDEDIR} COMPONENT headers)
-#    file(GLOB_RECURSE HEADERS "h5pp/source/include/*.h")
-#    message(headers: ${HEADERS})
-#    set_target_properties(h5pp PROPERTIES
-#            PUBLIC_HEADER
-#            "${HEADERS}")
-#
-#    install(TARGETS h5pp flags
-#            EXPORT h5ppTargets
-#            PUBLIC_HEADER
-#            DESTINATION ${h5pp_install_prefix}/${CMAKE_INSTALL_INCLUDEDIR}
-#            COMPONENT headers
-#            )
-
-    install(TARGETS h5pp flags EXPORT h5ppTargets
-            INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-            )
+    install(TARGETS h5pp flags EXPORT h5ppTargets)
 
     #Export the targets to a script
     install(EXPORT
