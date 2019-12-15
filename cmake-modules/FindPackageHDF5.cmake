@@ -24,8 +24,8 @@ function(find_package_hdf5_isolator hdf5_root)
     unset(HDF5_FOUND CACHE)
     unset(HDF5_FOUND PARENT_SCOPE)
     set(HDF5_FOUND False)
-    set(HDF5_FIND_DEBUG ON)
-    set(HDF5_FIND_VERBOSE ON)
+    set(HDF5_FIND_DEBUG OFF)
+    set(HDF5_FIND_VERBOSE OFF)
     if(HDF5_FIND_VERBOSE)
         message(STATUS "Searching for hdf5 execs in ${hdf5_root}" )
     endif()
@@ -102,11 +102,8 @@ function(find_package_hdf5_isolator hdf5_root)
             #  endforeach()
 
             set(HDF5_FOUND                  ${HDF5_FOUND}               PARENT_SCOPE)
-            set(HDF5_ROOT                   ${HDF5_ROOT}                PARENT_SCOPE)
-            set(HDF5_DIR                    ${HDF5_DIR}                 PARENT_SCOPE)
             set(HDF5_VERSION                ${HDF5_VERSION}             PARENT_SCOPE)
             set(HDF5_IS_PARALLEL            ${HDF5_IS_PARALLEL}         PARENT_SCOPE)
-
             set(HDF5_INCLUDE_DIR            ${HDF5_INCLUDE_DIR}         PARENT_SCOPE)
             set(HDF5_LIBRARIES "")
             set(HDF5_LINK_LIBRARY_NAMES "")
@@ -151,8 +148,6 @@ function(find_package_hdf5_internal hdf5_paths HDF5_MODULES HDF5_ATLEAST_VERSION
             set(HDF5_INCLUDE_DIR         ${HDF5_INCLUDE_DIR}            PARENT_SCOPE)
             set(HDF5_LINK_LIBRARY_NAMES  ${HDF5_LINK_LIBRARY_NAMES}     PARENT_SCOPE)
             set(HDF5_FOUND               ${HDF5_FOUND}                  PARENT_SCOPE)
-            set(HDF5_ROOT                ${HDF5_ROOT}                   PARENT_SCOPE)
-            set(HDF5_DIR                 ${HDF5_DIR}                    PARENT_SCOPE)
             set(HDF5_VERSION             ${HDF5_VERSION}                PARENT_SCOPE)
             set(HDF5_IS_PARALLEL         ${HDF5_IS_PARALLEL}            PARENT_SCOPE)
             return()
@@ -192,6 +187,9 @@ function(find_package_hdf5)
         set(HDF5_REQUIRED OFF)
     endif()
 
+    unset(HDF5_FOUND)
+    unset(HDF5_FOUND CACHE)
+
     list(APPEND HDF5_PATHS
             ${HDF5_ROOT}
             $ENV{HDF5_ROOT}
@@ -215,7 +213,7 @@ function(find_package_hdf5)
 #    endforeach()
     if(HDF5_FOUND)
         # Add convenience libraries to collect all the hdf5 libraries
-        add_library(hdf5::hdf5 IMPORTED INTERFACE GLOBAL)
+        add_library(hdf5::hdf5 IMPORTED INTERFACE)
         target_include_directories(hdf5::hdf5 INTERFACE  ${HDF5_INCLUDE_DIR})
         target_link_libraries(hdf5::hdf5
                 INTERFACE
@@ -229,7 +227,7 @@ function(find_package_hdf5)
                 target_link_libraries(hdf5::hdf5 INTERFACE -laec)
             endif()
         endif()
-        message(STATUS "Found HDF5 version ${HDF5_VERSION}: ${HDF5_ROOT}")
+        message(STATUS "Found HDF5 version ${HDF5_VERSION}: ${HDF5_INCLUDE_DIR}")
 
 #        if(NOT TARGET Threads::Threads)
 #            ##################################################################
