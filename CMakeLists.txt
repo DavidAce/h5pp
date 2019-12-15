@@ -159,12 +159,12 @@ CheckCXXOptional()
 ### Define an interface library and establish its needs for the user  ###
 #########################################################################
 add_library(${PROJECT_NAME} INTERFACE)
-
+include(GNUInstallDirs)
 target_include_directories(
         ${PROJECT_NAME}
         INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/source/include>
-        $<INSTALL_INTERFACE:${h5pp_install_prefix}/include>
+        $<INSTALL_INTERFACE:${h5pp_install_prefix}/${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 
@@ -266,7 +266,6 @@ else()
     ### where ${PROJECT_SOURCE_DIR}  is the path of     ###
     ### this CMakeLists.txt                             ###
     #######################################################
-    include(GNUInstallDirs)
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
     set(H5PP_CONFIG_DIR ${h5pp_install_prefix}/share/h5pp/cmake)
     set(H5PP_DIR  ${H5PP_CONFIG_DIR})
