@@ -24,9 +24,9 @@ endif()
 execute_process(COMMAND ${GET_OS_INFO_CMD}
         OUTPUT_VARIABLE OS_PROPERTIES
         OUTPUT_STRIP_TRAILING_WHITESPACE)
-message("=============================== DETECTED OS =================================")
+message("============================= detected system ===============================")
 message("${OS_PROPERTIES}")
-message("=============================================================================")
+message("")
 
 
 ################################################################
@@ -35,6 +35,7 @@ message("=======================================================================
 option(BUILD_SHARED_LIBS        "Builds shared libraries"                             OFF)
 option(BUILD_EXAMPLES           "Builds examples"                                     OFF)
 option(ENABLE_TESTS             "Enable testing"                                      OFF)
+option(FIND_DEPENDENCIES        "Attempt to find Eigen3,spdlog and HDF5 libraries"    ON)
 option(DOWNLOAD_MISSING         "Download and install all dependencies if not found"  OFF)
 option(H5PP_IS_SUBPROJECT       "Use h5pp with add_subdirectory()"                    OFF)
 option(APPEND_LIBSUFFIX         "Append <libname> to CMAKE_INSTALL_PREFIX"            OFF)
@@ -46,30 +47,49 @@ option(PREFER_CONDA_LIBS        "Search for dependencies from anaconda first"   
 # before add_subdirectory(h5pp)
 if(NOT H5PP_IS_SUBPROJECT)
     if("^${CMAKE_SOURCE_DIR}$" STREQUAL "^${PROJECT_SOURCE_DIR}$")
-        set (H5PP_IS_SUBPROJECT FALSE)
+        set (H5PP_IS_SUBPROJECT OFF)
     else()
         message(STATUS "Detected usage as subproject")
-        set (H5PP_IS_SUBPROJECT TRUE)
+        set (H5PP_IS_SUBPROJECT ON)
     endif()
 endif()
 
-
-# Give default install directory for h5pp and its dependencies.
+#####################################################################
+### Set default install directory for h5pp and its dependencies   ###
+### Append directory <libname> to CMAKE_INSTALL_PREFIX            ###
+### Useful if you want to have separate directories for each libs ###
+### and to easily delete them individually                        ###
+#####################################################################
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
     message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/install")
     set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "..." FORCE)
 endif()
+if(APPEND_LIBSUFFIX)
+    set(h5pp_install_prefix    ${CMAKE_INSTALL_PREFIX}/h5pp)
+    set(eigen3_install_prefix  ${CMAKE_INSTALL_PREFIX}/Eigen3)
+    set(spdlog_install_prefix  ${CMAKE_INSTALL_PREFIX}/spdlog)
+    set(hdf5_install_prefix    ${CMAKE_INSTALL_PREFIX}/hdf5)
+else()
+    set(h5pp_install_prefix    ${CMAKE_INSTALL_PREFIX})
+    set(eigen3_install_prefix  ${CMAKE_INSTALL_PREFIX})
+    set(spdlog_install_prefix  ${CMAKE_INSTALL_PREFIX})
+    set(hdf5_install_prefix    ${CMAKE_INSTALL_PREFIX})
+endif()
+
+
 
 
 message("=========================== h5pp build options ==============================")
 message(STATUS "BUILD_SHARED_LIBS       : ${BUILD_SHARED_LIBS}")
 message(STATUS "BUILD_EXAMPLES          : ${BUILD_EXAMPLES}")
 message(STATUS "ENABLE_TESTS            : ${ENABLE_TESTS}")
+message(STATUS "H5PP_IS_SUBPROJECT      : ${H5PP_IS_SUBPROJECT}")
+message(STATUS "FIND_DEPENDENCIES       : ${FIND_DEPENDENCIES}")
 message(STATUS "DOWNLOAD_MISSING        : ${DOWNLOAD_MISSING}")
-message(STATUS "CMAKE_INSTALL_PREFIX    : ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "APPEND_LIBSUFFIX        : ${APPEND_LIBSUFFIX}")
 message(STATUS "PREFER_CONDA_LIBS       : ${PREFER_CONDA_LIBS}")
-message("=============================================================================")
+message(STATUS "CMAKE_INSTALL_PREFIX    : ${CMAKE_INSTALL_PREFIX}")
+message("")
 
 
 
@@ -96,7 +116,6 @@ else()
     cmake_policy(SET CMP0074 NEW)
     cmake_policy(SET CMP0075 NEW)
 endif()
-
 
 
 
@@ -138,17 +157,11 @@ CheckCXXOptional()
 #########################################################################
 add_library(${PROJECT_NAME} INTERFACE)
 
-
-if(APPEND_LIBSUFFIX)
-    set(h5pp_destination    ${CMAKE_INSTALL_PREFIX}/h5pp)
-else()
-    set(h5pp_destination    ${CMAKE_INSTALL_PREFIX})
-endif()
 target_include_directories(
         ${PROJECT_NAME}
         INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/source/include>
-        $<INSTALL_INTERFACE:${h5pp_destination}/include>
+        $<INSTALL_INTERFACE:${h5pp_install_prefix}/include>
 )
 
 
@@ -169,50 +182,63 @@ list(APPEND H5PP_DIRECTORY_HINTS ${CMAKE_INSTALL_PREFIX})
 
 
 
-
-
 ##################################################################
-### Try to fetch all dependencies                              ###
-##################################################################
-include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_Eigen3.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_spdlog.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_HDF5.cmake)
-
-
-if(TARGET hdf5::hdf5 AND TARGET Eigen3::Eigen AND TARGET spdlog::spdlog)
-    set(DEPENDENCIES_FOUND TRUE)
-else()
-    set(DEPENDENCIES_FOUND FALSE)
-endif()
-
-
-##################################################################
-### Define interface libraries for the dependencies            ###
+### Try to find or fetch all dependencies                      ###
 ##################################################################
 add_library(deps INTERFACE)
-if(TARGET Eigen3::Eigen)
-    target_link_libraries(deps INTERFACE Eigen3::Eigen)
-    get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
-    list(APPEND H5PP_DIRECTORY_HINTS ${EIGEN3_INCLUDE_DIR})
+if(FIND_DEPENDENCIES)
+    include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_Eigen3.cmake)
+    include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_spdlog.cmake)
+    include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_HDF5.cmake)
+
+    if(TARGET Eigen3::Eigen)
+        target_link_libraries(deps INTERFACE Eigen3::Eigen)
+        get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+        list(APPEND H5PP_DIRECTORY_HINTS ${EIGEN3_INCLUDE_DIR})
+        list(APPEND TARGETS_FOUND Eigen3::Eigen)
+    else()
+        list(APPEND TARGETS_NOT_FOUND Eigen)
+    endif()
+
+
+    if(TARGET spdlog::spdlog)
+        target_link_libraries(deps INTERFACE spdlog::spdlog)
+        get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
+        list(APPEND H5PP_DIRECTORY_HINTS ${SPDLOG_INCLUDE_DIR})
+        list(APPEND TARGETS_FOUND spdlog::spdlog)
+    else()
+        list(APPEND TARGETS_NOT_FOUND spdlog)
+    endif()
+
+
+    if(TARGET hdf5::hdf5)
+        target_link_libraries(deps INTERFACE hdf5::hdf5)
+        get_target_property(HDF5_INCLUDE_DIR hdf5::hdf5 INTERFACE_INCLUDE_DIRECTORIES)
+        list(APPEND H5PP_DIRECTORY_HINTS ${HDF5_INCLUDE_DIR})
+        list(APPEND TARGETS_FOUND hdf5)
+    else()
+        list(APPEND TARGETS_NOT_FOUND hdf5::hdf5)
+    endif()
+
+
+    foreach(tgt ${TARGETS_NOT_FOUND})
+        message(STATUS "Dependency not found: [${tgt}] -- make sure to find and link to it manually before using h5pp")
+    endforeach()
+
+    if(TARGETS_NOT_FOUND)
+        set(ALL_TARGETS_FOUND FALSE)
+    else()
+        set(ALL_TARGETS_FOUND TRUE)
+    endif()
 endif()
-if(TARGET spdlog::spdlog)
-    target_link_libraries(deps INTERFACE spdlog::spdlog)
-    get_target_property(SPDLOG_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
-    list(APPEND H5PP_DIRECTORY_HINTS ${SPDLOG_INCLUDE_DIR})
-endif()
-if(TARGET hdf5::hdf5)
-    target_link_libraries(deps INTERFACE hdf5::hdf5)
-    get_target_property(HDF5_ROOT_DIR Eigen3::Eigen INTERFACE_LINK_LIBRARIES)
-    list(APPEND H5PP_DIRECTORY_HINTS ${HDF5_ROOT_DIR}/..)
-endif()
+
+
 
 
 ##################################################################
 ### Print summary of CMake configuration                       ###
 ##################################################################
-message("=============================================================================")
-message("===                H5PP: SUMMARY OF CMAKE CONFIGURATION                   ===")
-message("=============================================================================")
+message("========================== h5pp target summary ==============================")
 include(${PROJECT_SOURCE_DIR}/cmake-modules/PrintTargetInfo.cmake)
 print_target_info(h5pp)
 print_target_info(deps)
@@ -221,15 +247,8 @@ print_target_info(spdlog::spdlog)
 print_target_info(Eigen3::Eigen)
 print_target_info(hdf5::hdf5)
 print_target_info(Threads::Threads)
-
-message("=============================================================================")
 message("")
 
-
-
-if(NOT DEPENDENCIES_FOUND)
-    message(WARNING "Dependencies missing.\nTo use h5pp headers, link the missing dependencies manually from your project")
-endif()
 
 
 
@@ -246,38 +265,26 @@ else()
     ### where ${PROJECT_SOURCE_DIR}  is the path of     ###
     ### this CMakeLists.txt                             ###
     #######################################################
-
-    # Append directory to CMAKE_INSTALL_PREFIX
-    # Useful if you want to have separate directories for each libs
-    # and to easily delete them individually
-    if(APPEND_LIBSUFFIX)
-        set(h5pp_destination    ${CMAKE_INSTALL_PREFIX}/h5pp)
-        set(eigen3_destination  ${CMAKE_INSTALL_PREFIX}/Eigen3)
-        set(spdlog_destination  ${CMAKE_INSTALL_PREFIX}/spdlog)
-        set(hdf5_destination    ${CMAKE_INSTALL_PREFIX}/hdf5)
-    else()
-        set(h5pp_destination    ${CMAKE_INSTALL_PREFIX})
-        set(eigen3_destination  ${CMAKE_INSTALL_PREFIX})
-        set(spdlog_destination  ${CMAKE_INSTALL_PREFIX})
-        set(hdf5_destination    ${CMAKE_INSTALL_PREFIX})
-    endif()
-
-
     include(GNUInstallDirs)
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    set(H5PP_CONFIG_DIR ${h5pp_destination}/share/h5pp/cmake)
+    set(H5PP_CONFIG_DIR ${h5pp_install_prefix}/share/h5pp/cmake)
     set(H5PP_DIR  ${H5PP_CONFIG_DIR})
-    set(H5PP_ROOT ${h5pp_destination})
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/source/include/ DESTINATION ${h5pp_destination}/${CMAKE_INSTALL_INCLUDEDIR} COMPONENT headers)
-    if(EXISTS ${CMAKE_BINARY_DIR}/h5pp-deps-install/Eigen3)
-        install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/Eigen3/ DESTINATION ${eigen3_destination} COMPONENT eigen3-dep)
-    endif()
-    if(EXISTS ${CMAKE_BINARY_DIR}/h5pp-deps-install/spdlog)
-        install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/spdlog/ DESTINATION ${spdlog_destination} COMPONENT spdlog-dep)
-    endif()
-    if(EXISTS ${CMAKE_BINARY_DIR}/h5pp-deps-install/hdf5)
-        install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/hdf5/ DESTINATION ${hdf5_destination}  COMPONENT hdf5-dep)
-    endif()
+    set(H5PP_ROOT ${h5pp_install_prefix})
+#    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/source/include/ DESTINATION ${h5pp_install_prefix}/${CMAKE_INSTALL_INCLUDEDIR} COMPONENT headers)
+    install(TARGETS h5pp
+            PUBLIC_HEADER
+            DESTINATION ${h5pp_install_prefix}/${CMAKE_INSTALL_INCLUDEDIR}
+            COMPONENT headers
+            )
+#    if(EXISTS ${CMAKE_BINARY_DIR}/h5pp-deps-install/Eigen3)
+#        install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/Eigen3/ DESTINATION ${eigen3_install_prefix} COMPONENT eigen3-dep)
+#    endif()
+#    if(EXISTS ${CMAKE_BINARY_DIR}/h5pp-deps-install/spdlog)
+#        install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/spdlog/ DESTINATION ${spdlog_install_prefix} COMPONENT spdlog-dep)
+#    endif()
+#    if(EXISTS ${CMAKE_BINARY_DIR}/h5pp-deps-install/hdf5)
+#        install(DIRECTORY ${CMAKE_BINARY_DIR}/h5pp-deps-install/hdf5/ DESTINATION ${hdf5_install_prefix}  COMPONENT hdf5-dep)
+#    endif()
 
     install(TARGETS h5pp flags EXPORT h5ppTargets)
 
@@ -334,7 +341,7 @@ endif()
 ### Unit testing                                               ###
 ##################################################################
 if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
-    if(DEPENDENCIES_FOUND)
+    if(ALL_TARGETS_FOUND)
         enable_testing()
         add_subdirectory(tests/simpleWrite          )
         add_subdirectory(tests/largeWrite           )
@@ -357,7 +364,7 @@ if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
             DEPENDS h5pp deps flags
             COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
 
-    else()
+    elseif(FIND_DEPENDENCIES)
         message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
     endif()
 endif()
@@ -369,17 +376,19 @@ endif()
 # ADD TARGETS FOR  EXAMPLES #
 #############################
 if(NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES)
-    if(DEPENDENCIES_FOUND)
+    if(ALL_TARGETS_FOUND)
         set(H5PP_EXAMPLES_BINARY_DIR   ${CMAKE_BINARY_DIR}/h5pp-examples)
         add_subdirectory(h5pp/examples/helloworld  ${CMAKE_BINARY_DIR}/h5pp-examples/helloworld)
         add_subdirectory(h5pp/examples/writescalar ${CMAKE_BINARY_DIR}/h5pp-examples/writescalar)
-        install(PROGRAMS ${CMAKE_BINARY_DIR}/h5pp-examples/helloworld/helloworld ${CMAKE_BINARY_DIR}/h5pp-examples/writescalar/writescalar DESTINATION ${h5pp_destination}/examples COMPONENT examples)
-    else()
+        install(PROGRAMS
+                ${CMAKE_BINARY_DIR}/h5pp-examples/helloworld/helloworld
+                ${CMAKE_BINARY_DIR}/h5pp-examples/writescalar/writescalar
+                DESTINATION ${h5pp_install_prefix}/examples
+                COMPONENT examples)
+    elseif(FIND_DEPENDENCIES)
         message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
     endif()
 endif()
-
-
 
 ############################################
 # Use CPACK to generate .deb install file  #

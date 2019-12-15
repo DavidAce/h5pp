@@ -5,7 +5,8 @@ include(ExternalProject)
 set(HDF5_IS_PARALLEL OFF)
 set(HDF5_EXTERNALLY_CONFIGURED 1)
 ExternalProject_Add(external_hdf5
-        URL     https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.5/src/hdf5-1.10.5.tar.bz2
+        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.5/src/hdf5-1.10.5.tar.gz
+        URL_MD5     e115eeb66e944fa7814482415dd21cc4
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS OFF

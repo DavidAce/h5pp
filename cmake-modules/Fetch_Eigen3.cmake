@@ -10,17 +10,15 @@ elseif(TARGET Eigen3)
 elseif (DOWNLOAD_MISSING)
     message(STATUS "Eigen3 will be installed into ${CMAKE_INSTALL_PREFIX}")
     include(${PROJECT_SOURCE_DIR}/cmake-modules/BuildDependency.cmake)
-    build_dependency(Eigen3 "")
+    build_dependency(Eigen3 "${eigen3_install_prefix}" "" "")
 #    message("Checking in ${CMAKE_INSTALL_PREFIX}/Eigen3")
     find_package(Eigen3 3.3.7
-            HINTS ${CMAKE_BINARY_DIR}/h5pp-deps-install
-            PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_CMAKE_PACKAGE_REGISTRY NO_DEFAULT_PATH)
+            HINTS ${eigen3_install_prefix}
+            PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_DEFAULT_PATH)
     if(TARGET Eigen3::Eigen)
         message(STATUS "Eigen3 installed successfully")
         target_link_libraries(Eigen3::Eigen INTERFACE -lrt)
     else()
-        message(STATUS "cfg_result: ${cfg_result}")
-        message(STATUS "bld_result: ${bld_result}")
         message(FATAL_ERROR "Eigen3 could not be downloaded.")
     endif()
 

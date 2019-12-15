@@ -24,8 +24,8 @@ function(find_package_hdf5_isolator hdf5_root)
     unset(HDF5_FOUND CACHE)
     unset(HDF5_FOUND PARENT_SCOPE)
     set(HDF5_FOUND False)
-    set(HDF5_FIND_DEBUG OFF)
-    set(HDF5_FIND_VERBOSE OFF)
+    set(HDF5_FIND_DEBUG ON)
+    set(HDF5_FIND_VERBOSE ON)
     if(HDF5_FIND_VERBOSE)
         message(STATUS "Searching for hdf5 execs in ${hdf5_root}" )
     endif()
@@ -39,7 +39,7 @@ function(find_package_hdf5_isolator hdf5_root)
         if("C" IN_LIST HDF5_MODULES)
             enable_language(C)
         endif()
-        find_package(HDF5 ${HDF5_ATLEAST_VERSION} COMPONENTS  ${HDF5_MODULES})
+        find_package(HDF5 ${HDF5_ATLEAST_VERSION} COMPONENTS  ${HDF5_MODULES} QUIET)
     endif()
     if(HDF5_FOUND)
         # Add C_HL and CXX_HL to the language bindings
@@ -193,17 +193,18 @@ function(find_package_hdf5)
     endif()
 
     list(APPEND HDF5_PATHS
+            ${HDF5_ROOT}
+            $ENV{HDF5_ROOT}
             ${hdf5_DIR}
             ${HDF5_DIR}
             $ENV{hdf5_DIR}
             $ENV{HDF5_DIR}
-            ${HDF5_ROOT}
-            $ENV{HDF5_ROOT}
             ${H5PP_DIRECTORY_HINTS}
             $ENV{EBROOTHDF5}
             /usr /usr/local
             ${CMAKE_INSTALL_PREFIX}
-            $ENV{CONDA_PREFIX})
+            $ENV{CONDA_PREFIX}
+            $ENV{PATH})
     find_package_hdf5_internal("${HDF5_PATHS}" "${HDF5_MODULES}" "${HDF5_ATLEAST_VERSION}" "${HDF5_USE_STATIC_LIBRARIES}" "${HDF5_PREFER_PARALLEL}" "${HDF5_REQUIRED}")
     # To print all variables, use the code below:
 #    get_cmake_property(_variableNames VARIABLES)
@@ -213,7 +214,6 @@ function(find_package_hdf5)
 #        endif()
 #    endforeach()
     if(HDF5_FOUND)
-
         # Add convenience libraries to collect all the hdf5 libraries
         add_library(hdf5::hdf5 IMPORTED INTERFACE GLOBAL)
         target_include_directories(hdf5::hdf5 INTERFACE  ${HDF5_INCLUDE_DIR})
@@ -229,6 +229,8 @@ function(find_package_hdf5)
                 target_link_libraries(hdf5::hdf5 INTERFACE -laec)
             endif()
         endif()
+        message(STATUS "Found HDF5 version ${HDF5_VERSION}: ${HDF5_ROOT}")
+
 #        if(NOT TARGET Threads::Threads)
 #            ##################################################################
 #            ### Adapt pthread for static/dynamic linking                   ###
