@@ -3,8 +3,10 @@ project(external-eigen3)
 
 include(ExternalProject)
 ExternalProject_Add(external_eigen3
-        URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz
-        URL_MD5 9e30f67e8531477de4117506fe44669b
+        GIT_REPOSITORY https://github.com/eigenteam/eigen-git-mirror.git
+        GIT_TAG 3.3.7
+        GIT_PROGRESS 1
+        GIT_SHALLOW 1
         PATCH_COMMAND git apply ${PROJECT_SOURCE_DIR}/Eigen_3.3.7.patch
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
