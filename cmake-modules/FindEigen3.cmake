@@ -67,12 +67,13 @@ endif()
 if(NOT EIGEN3_NO_CONFIG OR EIGEN3_CONFIG_ONLY)
 find_package(Eigen3 ${Eigen3_FIND_VERSION}
         HINTS
-        ${Eigen3_ROOT} $ENV{Eigen3_ROOT}
-        ${EIGEN3_ROOT} $ENV{EIGEN3_ROOT}
+        ${CONAN_EIGEN3_ROOT}
+        $ENV{EBROOTEIGEN}
         ${H5PP_DIRECTORY_HINTS}
         ${CMAKE_INSTALL_PREFIX}
+        ${CMAKE_BINARY_DIR}/h5pp-deps-install
         ${CMAKE_INSTALL_PREFIX}/include
-        PATHS ${CMAKE_BINARY_DIR}/h5pp-deps-install  $ENV{EBROOTEIGEN} $ENV{CONDA_PREFIX}
+        PATHS $ENV{CONDA_PREFIX}
         PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3 Eigen3/include/eigen3
         ${NO_DEFAULT_PATH}
         ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -94,17 +95,14 @@ if(NOT TARGET Eigen3::Eigen OR NOT EIGEN3_INCLUDE_DIR AND NOT EIGEN3_CONFIG_ONLY
 
     find_path(EIGEN3_INCLUDE_DIR NAMES signature_of_eigen3_matrix_library
             HINTS
-            $ENV{EIGEN3_ROOT}
-            $ENV{EIGEN3_ROOT_DIR}
-            ${Eigen3_ROOT} $ENV{Eigen3_ROOT}
-            ${EIGEN3_ROOT} $ENV{EIGEN3_ROOT}
-            ${Eigen3_DIR}  $ENV{Eigen3_DIR}
+            ${CONAN_EIGEN3_ROOT}
+            $ENV{EBROOTEIGEN}
             ${H5PP_DIRECTORY_HINTS}
             ${CMAKE_INSTALL_PREFIX}
+            ${CMAKE_BINARY_DIR}/h5pp-deps-install
             ${CMAKE_INSTALL_PREFIX}/include
-            PATHS
-            ${KDE4_INCLUDE_DIR}
-            PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3 Eigen3/include/eigen3
+            PATHS $ENV{CONDA_PREFIX} ${KDE4_INCLUDE_DIR}
+            PATH_SUFFIXES include/eigen3 Eigen3 eigen3 include/Eigen3 Eigen3/include/eigen3
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
             )

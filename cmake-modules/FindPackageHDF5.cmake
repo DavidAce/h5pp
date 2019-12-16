@@ -190,19 +190,18 @@ function(find_package_hdf5)
     unset(HDF5_FOUND)
     unset(HDF5_FOUND CACHE)
 
+
     list(APPEND HDF5_PATHS
-            ${HDF5_ROOT}
-            $ENV{HDF5_ROOT}
-            ${hdf5_DIR}
-            ${HDF5_DIR}
-            $ENV{hdf5_DIR}
-            $ENV{HDF5_DIR}
-            ${H5PP_DIRECTORY_HINTS}
-            $ENV{EBROOTHDF5}
-            /usr /usr/local
-            ${CMAKE_INSTALL_PREFIX}
-            $ENV{CONDA_PREFIX}
-            $ENV{PATH})
+                ${HDF5_ROOT}
+                $ENV{HDF5_ROOT}
+                ${CONAN_HDF5_ROOT}
+                $ENV{EBROOTHDF5}
+                ${H5PP_DIRECTORY_HINTS}
+                ${CMAKE_BINARY_DIR}/h5pp-deps-install
+                /usr /usr/local
+                ${CMAKE_INSTALL_PREFIX}
+                $ENV{CONDA_PREFIX}
+                $ENV{PATH})
     find_package_hdf5_internal("${HDF5_PATHS}" "${HDF5_MODULES}" "${HDF5_ATLEAST_VERSION}" "${HDF5_USE_STATIC_LIBRARIES}" "${HDF5_PREFER_PARALLEL}" "${HDF5_REQUIRED}")
     # To print all variables, use the code below:
 #    get_cmake_property(_variableNames VARIABLES)

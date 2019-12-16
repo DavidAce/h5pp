@@ -63,20 +63,21 @@ if(SPDLOG_NO_CMAKE_PACKAGE_REGISTRY)
     set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
 endif()
 
-
+list(APPEND SPDLOG_DIRECTORY_HINTS
+        HINTS
+        ${CONAN_SPDLOG_ROOT}
+        $ENV{EBROOTSPDLOG}
+        ${H5PP_DIRECTORY_HINTS}
+        ${CMAKE_INSTALL_PREFIX}
+        ${CMAKE_BINARY_DIR}/h5pp-deps-install
+        ${CMAKE_INSTALL_PREFIX}/include
+        )
 
 # First try finding a config somewhere in the system
 if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
     find_package(spdlog ${spdlog_FIND_VERSION}
-            HINTS
-                ${spdlog_ROOT} $ENV{spdlog_ROOT}
-                ${SPDLOG_ROOT} $ENV{SPDLOG_ROOT}
-                ${H5PP_DIRECTORY_HINTS}
-                ${CMAKE_INSTALL_PREFIX}
-                ${CMAKE_INSTALL_PREFIX}/include
-                ${CMAKE_BINARY_DIR}/h5pp-deps-install
-            PATHS
-                $ENV{EBROOTSPDLOG} $ENV{CONDA_PREFIX}
+            HINTS ${SPDLOG_DIRECTORY_HINTS}
+            PATHS $ENV{CONDA_PREFIX}
             PATH_SUFFIXES include spdlog include/spdlog spdlog/include/spdlog
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -90,16 +91,8 @@ endif()
 if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h
-            HINTS
-                ${spdlog_ROOT} $ENV{spdlog_ROOT}
-                ${SPDLOG_ROOT} $ENV{SPDLOG_ROOT}
-                ${spdlog_DIR} ${SPDLOG_DIR}
-                ${H5PP_DIRECTORY_HINTS}
-                ${CMAKE_INSTALL_PREFIX}
-                ${CMAKE_INSTALL_PREFIX}/include
-                ${CMAKE_BINARY_DIR}/h5pp-deps-install
-            PATHS
-                $ENV{EBROOTSPDLOG} $ENV{CONDA_PREFIX}
+            HINTS ${SPDLOG_DIRECTORY_HINTS}
+            PATHS $ENV{CONDA_PREFIX}
             PATH_SUFFIXES spdlog/include include spdlog include/spdlog spdlog/include/spdlog
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -114,17 +107,8 @@ if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
             target_include_directories(spdlog INTERFACE ${SPDLOG_INCLUDE_DIR})
             find_path(SPDLOG_FMT_BUNDLED
                     spdlog/fmt/bundled/core.h
-                    HINTS
-                        ${SPDLOG_INCLUDE_DIR}
-                        ${spdlog_ROOT} $ENV{spdlog_ROOT}
-                        ${SPDLOG_ROOT} $ENV{SPDLOG_ROOT}
-                        ${spdlog_DIR} ${SPDLOG_DIR}
-                        ${H5PP_DIRECTORY_HINTS}
-                        ${CMAKE_INSTALL_PREFIX}
-                        ${CMAKE_INSTALL_PREFIX}/include
-                        ${CMAKE_BINARY_DIR}/h5pp-deps-install
-                    PATHS
-                        $ENV{EBROOTSPDLOG} $ENV{CONDA_PREFIX}
+                    HINTS ${SPDLOG_INCLUDE_DIR} ${SPDLOG_DIRECTORY_HINTS}
+                    PATHS $ENV{CONDA_PREFIX}
                     PATH_SUFFIXES spdlog/include include spdlog include/spdlog spdlog/include/spdlog
                     ${NO_DEFAULT_PATH}
                     ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -132,17 +116,8 @@ if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
             include(GNUInstallDirs)
             find_library(SPDLOG_LIBRARY
                     NAMES spdlog
-                    HINTS
-                        ${SPDLOG_INCLUDE_DIR}
-                        ${spdlog_ROOT} $ENV{spdlog_ROOT}
-                        ${SPDLOG_ROOT} $ENV{SPDLOG_ROOT}
-                        ${spdlog_DIR} ${SPDLOG_DIR}
-                        ${H5PP_DIRECTORY_HINTS}
-                        ${CMAKE_INSTALL_PREFIX}
-                        ${CMAKE_INSTALL_PREFIX}/include
-                        ${CMAKE_BINARY_DIR}/h5pp-deps-install
-                    PATHS
-                        $ENV{EBROOTSPDLOG} $ENV{CONDA_PREFIX}
+                    HINTS ${SPDLOG_INCLUDE_DIR} ${SPDLOG_DIRECTORY_HINTS}
+                    PATHS $ENV{CONDA_PREFIX}
                     PATH_SUFFIXES spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
                     ${NO_DEFAULT_PATH}
                     ${NO_CMAKE_PACKAGE_REGISTRY}
