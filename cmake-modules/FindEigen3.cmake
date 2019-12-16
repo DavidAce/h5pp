@@ -63,6 +63,8 @@ if(EIGEN3_NO_CMAKE_PACKAGE_REGISTRY)
     set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
 endif()
 
+# With this particular order we can manually override where we should look for Eigen first
+# Recall that H5PP_DIRECTORY_HINTS may have CONDA_PREFIX first inside if PREFER_CONDA_LIBS=ON
 list(APPEND EIGEN3_DIRECTORY_HINTS
         ${CONAN_EIGEN3_ROOT}
         $ENV{EBROOTEIGEN}

@@ -63,6 +63,9 @@ if(SPDLOG_NO_CMAKE_PACKAGE_REGISTRY)
     set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
 endif()
 
+
+# With this particular order we can manually override where we should look for spdlog first
+# Recall that H5PP_DIRECTORY_HINTS may have CONDA_PREFIX first inside if PREFER_CONDA_LIBS=ON
 list(APPEND SPDLOG_DIRECTORY_HINTS
         HINTS
         ${CONAN_SPDLOG_ROOT}

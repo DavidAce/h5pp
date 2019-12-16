@@ -1,5 +1,4 @@
 
-set(SPDLOG_NO_CMAKE_PACKAGE_REGISTRY TRUE)
 find_package(spdlog 1.3.1)
 
 
