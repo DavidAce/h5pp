@@ -9,3 +9,4 @@
 doxygen_log.txt
 *__pycache__/
 package*
+conan_package.sh
