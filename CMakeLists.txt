@@ -7,7 +7,7 @@ project(h5pp  VERSION 0.4.7
 
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
+list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake-modules)
 ################################################################
 ### Get git version number                                   ###
 ### Generates a header gitversion/gitversion.h               ###
