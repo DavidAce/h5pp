@@ -1,6 +1,6 @@
  
 cmake_minimum_required(VERSION 3.10)
-project(h5pp  VERSION 0.4.6
+project(h5pp  VERSION 0.4.7
         DESCRIPTION "A C++17 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         )
@@ -18,18 +18,20 @@ include(cmake-modules/gitversion.cmake)
 
 
 ##################################################################
-### Print operating system                                     ###
+### Print host properties                                      ###
 ##################################################################
-set(GET_OS_INFO_CMD lsb_release -a)
-if(${CMAKE_HOST_APPLE})
-    set(GET_OS_INFO_CMD "sw_vers")
-endif()
-execute_process(COMMAND ${GET_OS_INFO_CMD}
-        OUTPUT_VARIABLE OS_PROPERTIES
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-message("============================= detected system ===============================")
-message("${OS_PROPERTIES}")
-message("")
+cmake_host_system_information(RESULT _host_name   QUERY HOSTNAME)
+cmake_host_system_information(RESULT _proc_type   QUERY PROCESSOR_DESCRIPTION)
+cmake_host_system_information(RESULT _os_name     QUERY OS_NAME)
+cmake_host_system_information(RESULT _os_release  QUERY OS_RELEASE)
+cmake_host_system_information(RESULT _os_version  QUERY OS_VERSION)
+cmake_host_system_information(RESULT _os_platform QUERY OS_PLATFORM)
+message("========= HOST INFO =========")
+message("${_host_name}")
+message("${_os_name} ${_os_platform} ${_os_release}")
+message("${_proc_type}")
+message("${_os_version}")
+message("===============================")
 
 
 ################################################################

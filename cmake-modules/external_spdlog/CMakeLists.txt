@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 project(external-spdlog)
 include(../GetNumThreads.cmake)
 get_num_threads(NUM_THREADS)
+set(ENV{CMAKE_BUILD_PARALLEL_LEVEL} ${NUM_THREADS})
+
 include(ExternalProject)
 ExternalProject_Add(external_spdlog
         URL         https://github.com/gabime/spdlog/archive/v1.4.2.tar.gz
