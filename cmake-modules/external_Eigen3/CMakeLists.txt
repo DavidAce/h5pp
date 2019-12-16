@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(external-eigen3)
-
+include(../GetNumThreads.cmake)
+get_num_threads(NUM_THREADS)
 include(ExternalProject)
 ExternalProject_Add(external_eigen3
         GIT_REPOSITORY https://github.com/eigenteam/eigen-git-mirror.git
@@ -10,6 +11,7 @@ ExternalProject_Add(external_eigen3
         PATCH_COMMAND git apply ${PROJECT_SOURCE_DIR}/Eigen_3.3.7.patch
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+        BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j ${NUM_THREADS}
         CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_INSTALL_MESSAGE=NEVER #Avoid unnecessary output to console

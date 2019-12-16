@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(external-eigen3)
-
+include(../GetNumThreads.cmake)
+get_num_threads(NUM_THREADS)
 include(ExternalProject)
 set(HDF5_IS_PARALLEL OFF)
 set(HDF5_EXTERNALLY_CONFIGURED 1)
@@ -11,7 +12,7 @@ ExternalProject_Add(external_hdf5
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS OFF
         CONFIGURE_COMMAND  pwd && CFLAGS=-fPIC && sh <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-cxx --enable-hl --enable-silent-rules
-        BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j
+        BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j ${NUM_THREADS}
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
 
 #        CMAKE_ARGS
