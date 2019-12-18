@@ -17,6 +17,20 @@ set(H5PP_PACKAGE_PREFIX_DIR_SAVED       ${PACKAGE_PREFIX_DIR}) # The variable ca
 
 list(INSERT CMAKE_MODULE_PATH 0  ${H5PP_DIR})
 
+##################################################################
+### Preempt Threads::Threads                                   ###
+### It's looked for in dependencies, so we make it right       ###
+### before it's done wrong, i.e. with pthread instead of       ###
+### -lpthread. If this is undesirable you can preempt it       ###
+### yourself similarly                                         ###
+##################################################################
+if(NOT TARGET Threads::Threads)
+    set(CMAKE_THREAD_PREFER_PTHREAD FALSE)
+    set(THREADS_PREFER_PTHREAD_FLAG FALSE)
+    find_package(Threads)
+    set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES pthread)
+endif()
+
 include(${H5PP_DIR}/h5ppConfig.deps.cmake)
 include(${H5PP_DIR}/h5ppTargets.cmake)
 
