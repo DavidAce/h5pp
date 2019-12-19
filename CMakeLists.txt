@@ -199,8 +199,6 @@ if(NOT TARGET Threads::Threads)
     set(THREADS_PREFER_PTHREAD_FLAG FALSE)
     find_package(Threads)
     set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES pthread)
-    include(cmake-modules/PrintTargetProperties.cmake)
-    print_target_properties(Threads::Threads)
 endif()
 ##################################################################
 ### Try to find or fetch all dependencies                      ###
