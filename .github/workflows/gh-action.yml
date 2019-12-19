@@ -98,6 +98,8 @@ jobs:
           cd build/Debug
           cmake --build . --target all
       - name: Test
-        run: ctest
+        run: |
+          cd build/Debug
+          ctest
 
 
