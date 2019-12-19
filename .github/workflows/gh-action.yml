@@ -15,7 +15,7 @@ jobs:
       matrix:
         # Github Actions requires a single row to be added to the build matrix.
         # See https://help.github.com/en/articles/workflow-syntax-for-github-actions.
-        name: [ubuntu-18.04-gcc-8,ubuntu-18.04-gcc-9,ubuntu-18.04-clang-8,ubuntu-18.04-clang-9]
+        name: [ubuntu-18.04-gcc-8,ubuntu-18.04-gcc-9,ubuntu-18.04-clang-8,ubuntu-18.04-clang-9,windows-2019-clang,windows-2019-gcc]
         include:
           - name: ubuntu-18.04-gcc-8
             os: ubuntu-18.04
@@ -36,6 +36,14 @@ jobs:
             os: ubuntu-18.04
             compiler: clang
             version: "9"
+    
+          - name: windows-2019-clang
+            os: windows-2019
+            compiler: clang
+
+          - name: windows-2019-gcc
+            os: windows-2019
+            compiler: gcc  
     steps:
       - uses: actions/checkout@v1
       - name: Install (Linux)
@@ -55,16 +63,41 @@ jobs:
             echo "::set-env name=CC::clang-${{ matrix.version }}"
             echo "::set-env name=CXX::clang++-${{ matrix.version }}"
           fi
-      - name: configure
+      - name: Install (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
+          scoop install ninja --global
+          if ("${{ matrix.compiler }}".StartsWith("clang")) {
+            scoop install llvm --global
+          }
+          if ("${{ matrix.compiler }}" -eq "gcc") {
+            # Chocolatey GCC is broken on the windows-2019 image.
+            # See: https://github.com/DaanDeMeyer/doctest/runs/231595515
+            # See: https://github.community/t5/GitHub-Actions/Something-is-wrong-with-the-chocolatey-installed-version-of-gcc/td-p/32413
+            scoop install gcc --global
+            echo "::set-env name=CC::gcc"
+            echo "::set-env name=CXX::g++"
+          } elseif ("${{ matrix.compiler }}" -eq "clang") {
+            echo "::set-env name=CC::clang"
+            echo "::set-env name=CXX::clang++"
+          } else {
+            echo "::set-env name=CC::${{ matrix.compiler }}"
+            echo "::set-env name=CXX::${{ matrix.compiler }}"
+          }
+          # Scoop modifies the PATH so we make the modified PATH global.
+          echo "::set-env name=PATH::$env:PATH"
+      - name: Configure
         run: |
           cmake -E make_directory build/Debug
           cd build/Debug
           cmake -DCMAKE_BUILD_TYPE=Debug -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
-      - name: build
+      - name: Build
         run: |
           cd build/Debug
           cmake --build . --target all
-      - name: test
-        run: make test
+      - name: Test
+        run: ctest
 
 
