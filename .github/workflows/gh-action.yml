@@ -1,0 +1,39 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build-ubuntu:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: configure
+      run: 
+        cmake -E make_directory build/Debug
+        cd build/Debug
+        cmake -DCMAKE_BUILD_TYPE=Debug -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
+    - name: build
+      run: cmake --build . --target all
+    - name: test
+      run: make test
+
+  build-windows:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, windows-2016]
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: configure
+      run: 
+        cmake -E make_directory build/Debug
+        cd build/Debug
+        cmake -DCMAKE_BUILD_TYPE=Debug -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
+    - name: build
+      run: cmake --build . --target all
+    - name: test
+      run: make test
