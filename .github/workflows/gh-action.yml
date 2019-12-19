@@ -1,39 +1,53 @@
 name: C/C++ CI
 
 on: [push]
-
+# INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
 jobs:
-  build-ubuntu:
-
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v1
-    - name: configure
-      run: |
-        cmake -E make_directory build/Debug
-        cd build/Debug
-        cmake -DCMAKE_BUILD_TYPE=Debug -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
-    - name: build
-      run: cmake --build . --target all
-    - name: test
-      run: make test
-
-  build-windows:
-
+  ci:
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+
+    env:
+      CMAKE_GENERATOR: "CodeBlocks - Unix Makefiles"
+
     strategy:
+      fail-fast: false
       matrix:
-        os: [windows-latest, windows-2016]
-    
+        # Github Actions requires a single row to be added to the build matrix.
+        # See https://help.github.com/en/articles/workflow-syntax-for-github-actions.
+        name: [ubuntu-18.04-gcc-8,ubuntu-18.04-gcc-9,ubuntu-18.04-clang-8,ubuntu-18.04-clang-9]
+        include:
+          - name: ubuntu-18.04-gcc-8
+            os: ubuntu-18.04
+            compiler: gcc
+            version: "8"
+
+          - name: ubuntu-18.04-gcc-9
+            os: ubuntu-18.04
+            compiler: gcc
+            version: "9"
+          
+          - name: ubuntu-18.04-clang-8
+            os: ubuntu-18.04
+            compiler: clang
+            version: "8"
+
+          - name: ubuntu-18.04-clang-9
+            os: ubuntu-18.04
+            compiler: clang
+            version: "9"
     steps:
-    - uses: actions/checkout@v1
-    - name: configure
-      run: |
-        cmake -E make_directory build/Debug
-        cd build/Debug
-        cmake -DCMAKE_BUILD_TYPE=Debug -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
-    - name: build
-      run: cmake --build . --target all
-    - name: test
-      run: make test
+      - uses: actions/checkout@v1
+      - name: configure
+        run: |
+          cmake -E make_directory build/Debug
+          cd build/Debug
+          cmake -DCMAKE_BUILD_TYPE=Debug -DDOWNLOAD_MISSING:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -G "CodeBlocks - Unix Makefiles" ../../
+      - name: build
+        run: |
+          cd build/Debug
+          cmake --build . --target all
+      - name: test
+        run: make test
+
+
