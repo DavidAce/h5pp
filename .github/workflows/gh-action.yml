@@ -55,7 +55,7 @@ jobs:
             version: "9"
             sources: apt
             apt: libhdf5-dev libspdlog-dev libeigen3-dev
-            flags: -DDOWNLOAD_MISSING:BOOL=OFF -DPREFER_CONDA_LIBS:BOOL=OFF -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF
+            flags: -DDOWNLOAD_MISSING:BOOL=ON -DPREFER_CONDA_LIBS:BOOL=OFF -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF
           
           
           #- name: windows-2019-clang
@@ -84,7 +84,9 @@ jobs:
             echo "::set-env name=CC::clang-${{ matrix.version }}"
             echo "::set-env name=CXX::clang++-${{ matrix.version }}"
           fi
-          if [ "${{ matrix.sources }}" = *"conda"* ]; then
+          echo "Sources: ${{ matrix.sources }}"
+          echo "Conda install: ${{ matrix.conda }}"
+          if [[ "${{ matrix.sources }}" == *"conda"* ]]; then
             wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
             chmod +x miniconda.sh
             ./miniconda.sh -b -p $HOME/miniconda
