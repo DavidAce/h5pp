@@ -55,7 +55,7 @@ jobs:
             version: "9"
             sources: apt
             apt: libhdf5-dev libspdlog-dev libeigen3-dev
-            flags: -DDOWNLOAD_MISSING:BOOL=OFF -DPREFER_CONDA_LIBS:BOOL=OFF -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF
+            flags: -DDOWNLOAD_MISSING:BOOL=ON -DPREFER_CONDA_LIBS:BOOL=OFF -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF
           
           
           #- name: windows-2019-clang
