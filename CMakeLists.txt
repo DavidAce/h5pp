@@ -1,6 +1,6 @@
  
 cmake_minimum_required(VERSION 3.10)
-project(h5pp  VERSION 0.4.8
+project(h5pp  VERSION 0.5.0
         DESCRIPTION "A C++17 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         )
