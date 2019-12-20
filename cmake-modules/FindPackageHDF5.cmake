@@ -174,7 +174,7 @@ function(find_package_hdf5_isolator hdf5_root)
 #                        list(APPEND HDF5_LIBRARIES ${HDF5_${lib}_LIBRARY}) # For older versions of CMake
 #                        list(APPEND HDF5_LIBRARIES ${HDF5_${lang}_LIBRARY_${lib}})
 #                    endif()
-                endforeach()
+#                endforeach()
             endforeach()
 #
 #            set(HDF5_LINK_LIBRARY_NAMES ${HDF5_LINK_LIBNAMES})
