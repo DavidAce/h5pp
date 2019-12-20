@@ -93,6 +93,8 @@ int main()
     if(ReadAttributeCharArray                  != AttributeCharArray)               throw std::runtime_error("ReadAttributeCharArray                  != AttributeCharArray)              ");
 
 
+    auto allAttributes = file.getAttributeNames("testGroup/vectorDouble");
+    for(auto & attr : allAttributes)std::cout << attr << std::endl;
 
     return 0;
 }
