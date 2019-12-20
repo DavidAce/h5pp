@@ -66,13 +66,31 @@ namespace h5pp{
             }
         }
 
-        inline bool checkIfAttributeExists(hid_t file, const std::string &linkName, const std::string &attributename){
-            hid_t dataset      = openLink(file, linkName);
+        std::vector<std::string> getAttributeNames(hid_t file, const std::string &linkPath){
+            hid_t link              = openLink(file, linkPath);
+            unsigned int num_attrs  = H5Aget_num_attrs(link);
+            std::vector<std::string> attrNames;
+            for (unsigned int i = 0; i < num_attrs; i ++){
+                hid_t attr_id = H5Aopen_idx(link, i);
+                hsize_t buf_size = 0;
+                std::vector<char> buf;
+                buf_size = H5Aget_name (attr_id, buf_size, nullptr);
+                buf.resize(buf_size+1);
+                buf_size = H5Aget_name (attr_id, buf_size+1, buf.data());
+                attrNames.emplace_back(buf.data());
+                H5Aclose(attr_id);
+            }
+            closeLink(link);
+            return attrNames;
+        }
+
+        inline bool checkIfAttributeExists(hid_t file, const std::string &linkPath, const std::string &attributename){
+            hid_t link      = openLink(file, linkPath);
             bool exists = false;
-            unsigned int num_attrs = H5Aget_num_attrs(dataset);
+            unsigned int num_attrs = H5Aget_num_attrs(link);
 
             for (unsigned int i = 0; i < num_attrs; i ++){
-                hid_t attr_id = H5Aopen_idx(dataset, i);
+                hid_t attr_id = H5Aopen_idx(link, i);
                 hsize_t buf_size = 0;
                 std::vector<char> buf;
                 buf_size = H5Aget_name (attr_id, buf_size, nullptr);
@@ -83,7 +101,7 @@ namespace h5pp{
                 if (attributename == attr_name){exists  = true ; break;}
             }
 
-            closeLink(dataset);
+            closeLink(link);
             return exists;
         }
 
@@ -273,27 +291,12 @@ namespace h5pp{
 
         inline herr_t fileInfo([[maybe_unused]]  hid_t loc_id, const char *name, [[maybe_unused]]  const H5L_info_t *linfo, void *opdata){
             try{
-
-//                hid_t group;
                 auto linkNames=reinterpret_cast< std::vector<std::string>* >(opdata);
-//                group = H5Gopen2(loc_id, name, H5P_DEFAULT);
-                //do stuff with group object, if needed
                 linkNames->push_back(name);
-//                std::cout << "Name : " << name << std::endl;
-//                H5Gclose(group);
                 return 0;
-
-
-
-
-        //        hid_t group = H5Gopen2(loc_id, name, H5P_DEFAULT);
-                std::cout << " " << name << std::endl; // Display the group name.
-        //        H5Gclose(group);
-
             }catch(...){
                 throw(std::logic_error("Not a group: " + std::string(name)));
             }
-            return 0;
         }
 
         inline std::vector<std::string> getContentsOfGroup(hid_t file,std::string groupName){
