@@ -18,7 +18,7 @@ namespace h5pp{
         int                     ndims;
         std::vector<hsize_t>    dims;
         std::string             attrName;
-        std::string             linkName;
+        std::string             linkPath;
         ~AttributeProperties(){
             H5Tclose(dataType);
             H5Sclose(memSpace);
