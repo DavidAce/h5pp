@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/DavidAce/h5pp.svg?branch=master)](https://travis-ci.org/DavidAce/h5pp)
-[![Build Status]( https://github.com/DavidAce/h5pp/actions?query=workflow%3A%22C%2FC%2B%2B+CI%22 )](https://github.com/DavidAce/h5pp/workflows/C/C++%20CI/badge.svg)
+[![Build Status](https://github.com/DavidAce/h5pp/actions)](https://github.com/DavidAce/h5pp/workflows/C%2FC++%20CI/badge.svg)
 # h5pp
 `h5pp` is a C++17 header-only wrapper for HDF5 with focus on simplicity.
 
