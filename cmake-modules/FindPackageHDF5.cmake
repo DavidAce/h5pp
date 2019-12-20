@@ -198,6 +198,9 @@ function(find_package_hdf5_internal hdf5_paths HDF5_MODULES HDF5_ATLEAST_VERSION
 endfunction()
 
 function(find_package_hdf5)
+    if(TARGET hdf5::hdf5)
+        return()
+    endif()
     if(NOT HDF5_MODULES)
         set(HDF5_MODULES C CXX HL)
     endif()
@@ -252,6 +255,7 @@ function(find_package_hdf5)
 #        foreach(tgt ${HDF5_TARGETS})
 #            print_target_info(${tgt})
 #        endforeach()
+
         add_library(hdf5::hdf5 IMPORTED INTERFACE)
         target_link_libraries(hdf5::hdf5 INTERFACE ${HDF5_TARGETS})
 
@@ -274,3 +278,4 @@ function(find_package_hdf5)
 
     endif()
 endfunction()
+
