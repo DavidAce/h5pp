@@ -84,6 +84,8 @@ jobs:
             echo "::set-env name=CC::clang-${{ matrix.version }}"
             echo "::set-env name=CXX::clang++-${{ matrix.version }}"
           fi
+          echo "Sources: ${{ matrix.sources }}"
+          echo "Conda install: ${{ matrix.conda }}"
           if [ "${{ matrix.sources }}" = *"conda"* ]; then
             wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
             chmod +x miniconda.sh
