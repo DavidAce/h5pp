@@ -11,7 +11,7 @@ int main(){
 
 
     using namespace std::complex_literals;
-    std::vector<std::complex<double>>   vectorComplexDouble (10000, 10.0 + 5.0i);
+    std::vector<std::complex<double>>   vectorComplexDouble (10000, {10.0, 5.0});
     Eigen::MatrixXi                     matrixInt           = Eigen::MatrixXi::Random (100,100);
     Eigen::MatrixXd                     matrixDouble        = Eigen::MatrixXd::Random (100,100);
     Eigen::MatrixXcd                    matrixComplexDouble = Eigen::MatrixXcd::Random(100,100);
@@ -36,7 +36,7 @@ int main(){
 
 
     //Now increase size and overwrite again
-    vectorComplexDouble = std::vector<std::complex<double>> (15000, 10.0 + 5.0i);
+    vectorComplexDouble = std::vector<std::complex<double>> (15000, {10.0, 5.0});
     matrixInt           = Eigen::MatrixXi::Random (200,200);
     matrixDouble        = Eigen::MatrixXd::Random (200,200);
     matrixComplexDouble = Eigen::MatrixXcd::Random(200,200);
@@ -50,7 +50,7 @@ int main(){
 
 
     //Now decrease size and overwrite again
-    vectorComplexDouble = std::vector<std::complex<double>> (15000, 10.0 + 5.0i);
+    vectorComplexDouble = std::vector<std::complex<double>> (1500, {10.0, 5.0});
     matrixInt           = Eigen::MatrixXi::Random (20,20);
     matrixDouble        = Eigen::MatrixXd::Random (20,20);
     matrixComplexDouble = Eigen::MatrixXcd::Random(20,20);
@@ -67,11 +67,11 @@ int main(){
     // Now we'll try making some non-extendable datasets and check that overwriting actually fails
     file.disableDefaultExtendable();
 
-    vectorComplexDouble = std::vector<std::complex<double>> (1000, 10.0 + 5.0i);
+    vectorComplexDouble = std::vector<std::complex<double>>  (1000, {10.0, 5.0});
     file.writeDataset(vectorComplexDouble, "overWriteGroup_ext_disabled/vectorComplexDouble");
 
     try{
-        vectorComplexDouble = std::vector<std::complex<double>> (10000, 10.0 + 5.0i);
+        vectorComplexDouble = std::vector<std::complex<double>> (10000, {10.0, 5.0});
         file.writeDataset(vectorComplexDouble, "overWriteGroup_ext_disabled/vectorComplexDouble");
     }catch (std::exception &ex){
         std::cout << "\n \t THE ERROR ABOVE IS PART OF THE TEST AND WAS EXPECTED: " << ex.what() << std::endl;
@@ -86,10 +86,10 @@ int main(){
 
     // This time we should check that making large enough dataset defaults to extendable even if
     // we disabled default extendable
-    vectorComplexDouble = std::vector<std::complex<double>> (32*1024, 10.0 + 5.0i);
+    vectorComplexDouble = std::vector<std::complex<double>> (32*1024, {10.0, 5.0});
     file.writeDataset(vectorComplexDouble, "overWriteGroup_ext_disabled_chunked/vectorComplexDouble");
     try{
-        vectorComplexDouble = std::vector<std::complex<double>> (128*1024, 10.0 + 5.0i);
+        vectorComplexDouble = std::vector<std::complex<double>> (128*1024, {10.0, 5.0});
         file.writeDataset(vectorComplexDouble, "overWriteGroup_ext_disabled_chunked/vectorComplexDouble");
 
     }

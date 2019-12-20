@@ -10,7 +10,6 @@ int main(){
     h5pp::File file(outputFilename,h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE,logLevel);
 
 
-    using namespace std::complex_literals;
 
     std::string                         String         = "This is a string";
     char                                Char[100]      = "This is a char array";
@@ -24,19 +23,25 @@ int main(){
     std::vector<float >                 vectorFloat         (10, 42);
     std::vector<double>                 vectorDouble        (10, 42);
     std::vector<std::complex<int>>      vectorComplexInt    (10, std::complex<int>(42,7));
-    std::vector<std::complex<double>>   vectorComplexDouble (10, 10.0 + 5.0i);
+    std::vector<std::complex<double>>   vectorComplexDouble (10, {10.0, 5.0});
     Eigen::MatrixXi                     matrixInt           (2,2);
     Eigen::MatrixXd                     matrixDouble        (2,2);
     Eigen::MatrixXcd                    matrixComplexDouble (2,2);
     matrixInt           << 1,2,3,4;
     matrixDouble        << 1.5,2.5,3.5,4.5;
-    matrixComplexDouble << 1.0 + 2.0i,  3.0 + 4.0i, 5.0+6.0i , 7.0+8.0i;
+    matrixComplexDouble.setRandom();
 
     struct Field2{
         double x ;
         double y ;
     };
+    struct Field3{
+        float x ;
+        float y ;
+        float z ;
+    };
     std::vector<Field2> field2array (10,{0.3,0.8});
+    std::vector<Field3> field3array (10,{0.3,0.8,1.4});
 
     //Test normal write usage
     file.writeDataset(String, "simpleWriteGroup/String");
@@ -56,6 +61,7 @@ int main(){
     file.writeDataset(matrixDouble, "simpleWriteGroup/matrixDouble");
     file.writeDataset(matrixComplexDouble, "simpleWriteGroup/matrixComplexDouble");
     file.writeDataset(field2array, "simpleWriteGroup/field2array");
+    file.writeDataset(field3array, "simpleWriteGroup/field3array");
 
     //Test passing pointers
     file.writeDataset(vectorInt.data(),vectorInt.size(), "simpleWriteGroup/vectorInt");

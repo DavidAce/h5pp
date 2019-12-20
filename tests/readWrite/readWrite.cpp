@@ -13,13 +13,8 @@ std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
     return out;
 }
 
-using namespace std::complex_literals;
-
-
 
 // Store some dummy data to an hdf5 file
-
-
 
 int main()
 {
@@ -65,7 +60,7 @@ int main()
 
 
     // std::vector<std::complex<double>>
-    std::vector<cplx> vectorComplex = {-0.191154 + 0.326211i, 0.964728-0.712335i, -0.0351791-0.10264i,0.177544+0.99999i};
+    std::vector<cplx> vectorComplex = {{-0.191154, 0.326211}, {0.964728,-0.712335}, {-0.0351791,-0.10264},{0.177544,0.99999}};
     std::cout << "Writing vectorComplex     : \n" <<  vectorComplex  << std::endl;
     file.writeDataset(vectorComplex, "vectorComplex");
     std::vector<cplx>       vectorComplexRead;
