@@ -57,8 +57,8 @@ namespace h5pp{
             if constexpr (std::is_array<DataType>::value)                                               {return getDataType<typename std::remove_all_extents<DataType>::type>();}
             if constexpr (std::is_array<typename std::decay<DataType>::type>::value)                    {return getDataType<typename std::remove_all_extents<DataType>::type>();}
             if constexpr (tc::is_eigen_type<DataType>::value)                                           {return getDataType<typename DataType::Scalar>();}
-            if constexpr (tc::is_vector<DataType>::value)                                               {return getDataType<typename DataType::value_type>();}
-            if constexpr (tc::hasMember_scalar <DataType>::value)                                       {return getDataType<typename DataType::Scalar>();}
+            if constexpr (tc::is_std_vector<DataType>::value)                                           {return getDataType<typename DataType::value_type>();}
+            if constexpr (tc::hasMember_Scalar <DataType>::value)                                       {return getDataType<typename DataType::Scalar>();}
             if constexpr (tc::hasMember_value_type <DataType>::value)                                   {return getDataType<typename DataType::value_type>();}
             spdlog::critical("getDataType could not match the type provided");
             throw(std::logic_error("getDataType could not match the type provided"));
