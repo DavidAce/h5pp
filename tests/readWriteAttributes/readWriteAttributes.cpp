@@ -14,7 +14,6 @@ std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
     return out;
 }
 
-using namespace std::complex_literals;
 
 
 int main()
@@ -23,40 +22,76 @@ int main()
     static_assert(h5pp::Type::Check::hasMember_data<std::vector<double>>() and "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     // Generate dummy data
-    std::vector<double> vectorDouble = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-                                    0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                    -1.0, 0.0, 1.0, 0.0,-1.0, 0.0, 0.0,-1.0, 0.0, 1.0, 0.0, 1.0};
+    int                                 AttributeInt = 7;
+    double                              AttributeDouble = 47.4;
+    std::complex<int>                   AttributeComplexInt     = {47, -10};
+    std::complex<double>                AttributeComplexDouble  = {47.2, -10.2445};
+    std::array<long,4>                  AttributeArrayLong      = {1,2,3,4};
+    float                               AttributeCArrayFloat[4] = {1,2,3,4};
+    std::vector<double>                 AttributeVectorDouble =
+                                                       { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+                                                         0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                                        -1.0, 0.0, 1.0, 0.0,-1.0, 0.0, 0.0,-1.0, 0.0, 1.0, 0.0, 1.0};
 
-
-
+    std::vector<std::complex<double>>   AttributeVectorComplexDouble = { {2.0,5.0} , {3.1,-2.3}, 3.0,{-51.2, 5} };
+    Eigen::MatrixXd                     AttributeEigenMatrixDouble(10,10);             AttributeEigenMatrixDouble.setRandom();
+    Eigen::MatrixXcd                    AttributeEigenMatrixComplexDouble(10,10);      AttributeEigenMatrixComplexDouble.setRandom();
+    std::string                         AttributeString     = "This is a very long string that I am testing";
+    char                                AttributeCharArray[]= "This is a char array";
+    // define the file
     std::string outputFilename      = "output/readWriteAttributes.h5";
     size_t      logLevel  = 0;
     h5pp::File file(outputFilename,h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE,logLevel);
 
+    // Write dataset
+    file.writeDataset(std::vector<double>(10,5), "testGroup/vectorDouble");
+    // Write attributes
 
-    std::cout << "Writing vectorDouble      : \n" <<  vectorDouble   << std::endl;
 
-    file.writeDataset(vectorDouble, "testGroup/vectorDouble");
-
-    file.writeAttributeToLink(std::string("This is a string"), "AttributeString", "testGroup/vectorDouble");
-    file.writeAttributeToLink("This is a char array", "AttributeCharArray", "testGroup/vectorDouble");
-    file.writeAttributeToLink(1, "AttributeInt", "testGroup/vectorDouble");
-    file.writeAttributeToLink(1.0, "AttributeDouble", "testGroup/vectorDouble");
-    file.writeAttributeToLink(std::complex<double>(2, 3), "AttributeComplexDouble", "testGroup/vectorDouble");
-    file.writeAttributeToLink(vectorDouble, "AttributeVectorDouble", "testGroup/vectorDouble");
-
+    file.writeAttributeToLink(AttributeInt                        , "AttributeInt", "testGroup/vectorDouble");
+    file.writeAttributeToLink(AttributeDouble                     , "AttributeDouble", "testGroup/vectorDouble");
+    file.writeAttributeToLink(AttributeComplexInt                 , "AttributeComplexInt", "testGroup/vectorDouble");
+    file.writeAttributeToLink(AttributeComplexDouble              , "AttributeComplexDouble", "testGroup/vectorDouble");
+    file.writeAttributeToLink(AttributeArrayLong                  , "AttributeArrayLong", "testGroup/vectorDouble");
+    file.writeAttributeToLink(AttributeCArrayFloat                , "AttributeCArrayFloat", "testGroup/vectorDouble");
+    file.writeAttributeToLink(AttributeVectorDouble               , "AttributeVectorDouble", "testGroup/vectorDouble");
+    file.writeAttributeToLink(AttributeVectorComplexDouble        , "AttributeVectorComplexDouble", "testGroup/vectorDouble");
+    file.writeAttributeToLink(AttributeEigenMatrixDouble          , "AttributeEigenMatrixDouble", "testGroup/vectorDouble");
+    file.writeAttributeToLink(AttributeEigenMatrixComplexDouble   , "AttributeEigenMatrixComplexDouble", "testGroup/vectorDouble");
+    file.writeAttributeToLink(AttributeString                     , "AttributeString", "testGroup/vectorDouble");
+    file.writeAttributeToLink(AttributeCharArray                  , "AttributeCharArray", "testGroup/vectorDouble");
+//    return 0;
 
     // Read the data back
-    std::vector<double>     vectorDoubleRead;
-    file.readDataset(vectorDoubleRead, "testGroup/vectorDouble");
-    std::cout << "Reading testGroup/vectorDouble: \n" <<  vectorDoubleRead  << std::endl;
-    if (vectorDouble != vectorDoubleRead){throw std::runtime_error("vectorDouble != vectorDoubleRead");}
+    auto ReadAttributeInt                       = file.readAttribute<int>                               ("AttributeInt", "testGroup/vectorDouble");
+    auto ReadAttributeDouble                    = file.readAttribute<double>                            ("AttributeDouble", "testGroup/vectorDouble");
+    auto ReadAttributeComplexInt                = file.readAttribute<std::complex<int>>                 ("AttributeComplexInt", "testGroup/vectorDouble");
+    auto ReadAttributeComplexDouble             = file.readAttribute<std::complex<double>>              ("AttributeComplexDouble", "testGroup/vectorDouble");
+    auto ReadAttributeArrayLong                 = file.readAttribute<std::array<long,4>>                ("AttributeArrayLong", "testGroup/vectorDouble");
+    auto ReadAttributeCArrayFloat               = file.readAttribute<std::vector<float>>                ("AttributeCArrayFloat", "testGroup/vectorDouble");
+    auto ReadAttributeVectorDouble              = file.readAttribute<std::vector<double>>               ("AttributeVectorDouble", "testGroup/vectorDouble");
+    auto ReadAttributeVectorComplexDouble       = file.readAttribute<std::vector<std::complex<double>>> ("AttributeVectorComplexDouble", "testGroup/vectorDouble");
+    auto ReadAttributeEigenMatrixDouble         = file.readAttribute<Eigen::MatrixXd>                   ("AttributeEigenMatrixDouble", "testGroup/vectorDouble");
+    auto ReadAttributeEigenMatrixComplexDouble  = file.readAttribute<Eigen::MatrixXcd>                  ("AttributeEigenMatrixComplexDouble", "testGroup/vectorDouble");
+    auto ReadAttributeString                    = file.readAttribute<std::string>                       ("AttributeString", "testGroup/vectorDouble");
+    auto ReadAttributeCharArray                 = file.readAttribute<std::string>                       ("AttributeCharArray", "testGroup/vectorDouble");
 
+    if(ReadAttributeInt                        != AttributeInt)                     throw std::runtime_error("ReadAttributeInt                        != AttributeInt)                    ");
+    if(ReadAttributeDouble                     != AttributeDouble)                  throw std::runtime_error("ReadAttributeDouble                     != AttributeDouble)                 ");
+    if(ReadAttributeComplexInt                 != AttributeComplexInt)              throw std::runtime_error("ReadAttributeComplexInt                 != AttributeComplexInt)             ");
+    if(ReadAttributeComplexDouble              != AttributeComplexDouble)           throw std::runtime_error("ReadAttributeComplexDouble              != AttributeComplexDouble)          ");
+    if(ReadAttributeArrayLong                  != AttributeArrayLong)               throw std::runtime_error("ReadAttributeArrayLong                  != AttributeArrayLong)              ");
+    if(not std::equal(ReadAttributeCArrayFloat.begin(),ReadAttributeCArrayFloat.end(), std::begin(AttributeCArrayFloat))){
+        throw std::runtime_error("ReadAttributeCArrayFloat                != AttributeCArrayFloat)            ");
+    }
 
-    //Write file attribute, the git version
-    file.writeAttributeToFile(GIT::BRANCH      , "GIT BRANCH");
-    file.writeAttributeToFile(GIT::COMMIT_HASH , "GIT COMMIT");
-    file.writeAttributeToFile(GIT::REVISION    , "GIT REVISION");
+    if(ReadAttributeVectorDouble               != AttributeVectorDouble)            throw std::runtime_error("ReadAttributeVectorDouble               != AttributeVectorDouble)           ");
+    if(ReadAttributeVectorComplexDouble        != AttributeVectorComplexDouble)     throw std::runtime_error("ReadAttributeVectorComplexDouble        != AttributeVectorComplexDouble)    ");
+    if(ReadAttributeEigenMatrixDouble          != AttributeEigenMatrixDouble)       throw std::runtime_error("ReadAttributeEigenMatrixDouble          != AttributeEigenMatrixDouble)      ");
+    if(ReadAttributeEigenMatrixComplexDouble   != AttributeEigenMatrixComplexDouble)throw std::runtime_error("ReadAttributeEigenMatrixComplexDouble   != AttributeEigenMatrixComplexDouble");
+    if(ReadAttributeString                     != AttributeString)                  throw std::runtime_error("ReadAttributeString                     != AttributeString)                 ");
+    if(ReadAttributeCharArray                  != AttributeCharArray)               throw std::runtime_error("ReadAttributeCharArray                  != AttributeCharArray)              ");
+
 
 
     return 0;
