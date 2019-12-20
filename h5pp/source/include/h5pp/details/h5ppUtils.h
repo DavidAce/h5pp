@@ -12,8 +12,14 @@
 
 namespace h5pp{
     namespace Utils{
-        template <typename DataType, size_t Size>
-        constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[Size]){return Size;}
+        template <typename DataType, size_t size>
+        constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size]){
+            if constexpr (std::is_same<char, typename std::decay_t<DataType>>::value)  {
+                return strlen(arr);
+            }else{
+                return size;
+            }
+        }
 
         inline hsize_t setStringSize(hid_t datatype, hsize_t size){
             size = std::max((hsize_t) 1, size);
@@ -22,7 +28,8 @@ namespace h5pp{
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error("Failed to set size: " + std::to_string(size));
             }
-            retval  = H5Tset_strpad(datatype,H5T_STR_NULLTERM);
+//            retval  = H5Tset_strpad(datatype,H5T_STR_NULLTERM);
+//            retval  = H5Tset_strpad(datatype,H5T_STR_NULLPAD);
             if(retval < 0){
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error("Failed to set strpad");
@@ -36,11 +43,12 @@ namespace h5pp{
         template<typename DataType>
         hsize_t getSize(const DataType &data){
             namespace tc = h5pp::Type::Check;
-            if constexpr (tc::hasMember_size<DataType>::value)          {return data.size();} //Fails on clang?
-            else if constexpr (std::is_array<DataType>::value)          {return getArraySize(data);}
-            else if constexpr (std::is_arithmetic<DataType>::value)     {return 1;}
-            else if constexpr (std::is_pod<DataType>::value)            {return 1;}
-            else if constexpr (tc::is_StdComplex<DataType>())           {return 1;}
+            if constexpr (tc::hasMember_size<DataType>::value)                                              {return data.size();} //Fails on clang?
+//            else if constexpr (std::is_same<std::decay_t<char[]>, typename std::decay_t<DataType>>::value)  {return strlen(data);}
+            else if constexpr (std::is_array<DataType>::value)                                              {return getArraySize(data);}
+            else if constexpr (std::is_arithmetic<DataType>::value)                                         {return 1;}
+            else if constexpr (std::is_pod<DataType>::value)                                                {return 1;}
+            else if constexpr (tc::is_StdComplex<DataType>())                                               {return 1;}
             else{
                 spdlog::warn("WARNING: getSize can't match the type provided: " + std::string(typeid(data).name()));
                 return data.size();
@@ -54,7 +62,9 @@ namespace h5pp{
             if      constexpr(tc::is_eigen_tensor<DataType>::value){return (int) DataType::NumIndices;}
             else if constexpr(tc::is_eigen_core<DataType>::value){return 2; }
             else if constexpr(std::is_arithmetic<DataType>::value){return 1; }
-            else if constexpr(tc::is_vector<DataType>::value){return 1;}
+            else if constexpr(tc::is_std_vector<DataType>::value){return 1;}
+            else if constexpr(tc::is_std_array<DataType>::value){return 1;}
+            else if constexpr(tc::is_ScalarN<DataType>()){return 1;}
             else if constexpr(std::is_same<std::string, DataType>::value){return 1;}
             else if constexpr(std::is_same<const char *,DataType>::value){return 1;}
             else if constexpr(std::is_array<DataType>::value){return 1;}
@@ -65,11 +75,47 @@ namespace h5pp{
             }
         }
 
+        template<typename T>
+        size_t getSizeOf(){
+            namespace tc = h5pp::Type::Check;
+
+            // If userDataType is a container we should check that elements in the container have matching size as the hdf5DataType
+            if constexpr (tc::is_StdComplex<T>())               {return sizeof(T);}
+            if constexpr (tc::is_ScalarN<T>())                  {return sizeof(T);}
+            if constexpr (std::is_arithmetic<T>::value)         {return sizeof(T);}
+            if constexpr (tc::is_eigen_type<T>::value)          {return sizeof(typename T::Scalar);}
+            if constexpr (tc::is_std_vector<T>::value)          {return sizeof(typename T::value_type);}
+            if constexpr (tc::is_std_array<T>::value)           {return sizeof(typename T::value_type);}
+            if constexpr (std::is_array<T>::value )             {return sizeof(std::remove_all_extents_t<T>);}
+            if constexpr (std::is_same<T,std::string>::value )  {return sizeof(char);}
+            else return sizeof(std::remove_all_extents_t<T>);
+
+        }
+
+        template<typename userDataType>
+        bool typeSizesMatch( [[maybe_unused]]  hid_t hdf5Datatype){
+            size_t hdf5DataTypeSize;
+            size_t userDataTypeSize;
+            if constexpr (std::is_same<userDataType,std::string>::value or std::is_same<userDataType,char[]>::value){
+                hdf5DataTypeSize = sizeof(char);
+                userDataTypeSize = getSizeOf<userDataType>();
+            }else{
+                hdf5DataTypeSize = H5Tget_size(hdf5Datatype);
+                userDataTypeSize = getSizeOf<userDataType>();
+            }
+
+            if (userDataTypeSize != hdf5DataTypeSize){
+                h5pp::Logger::log->error("Type size mismatch: given {} bytes | inferred {} bytes", userDataTypeSize,hdf5DataTypeSize);
+                return false;
+            }else{
+                return true;
+            }
+        }
 
         template <typename DataType>
         std::vector<hsize_t> getDimensions(const DataType &data) {
             namespace tc = h5pp::Type::Check;
-            int rank = getRank<DataType>();
+            constexpr int rank = getRank<DataType>();
             std::vector<hsize_t> dims(rank);
             if constexpr (tc::is_eigen_tensor<DataType>::value){
                 std::copy(data.dimensions().begin(), data.dimensions().end(), dims.begin());
@@ -80,8 +126,12 @@ namespace h5pp{
                 dims[1] = (hsize_t) data.cols();
                 return dims;
             }
-            else if constexpr(tc::is_vector<DataType>::value){
+            else if constexpr(tc::is_std_vector<DataType>::value){
                 dims[0]={data.size()};
+                return dims;
+            }
+            else if constexpr(tc::is_std_array<DataType>::value){
+                dims[0] = data.size();
                 return dims;
             }
             else if constexpr(std::is_same<std::string, DataType>::value or std::is_same<char *, typename std::decay<DataType>::type>::value){
@@ -94,13 +144,17 @@ namespace h5pp{
                 dims[0] = getArraySize(data);
                 return dims;
             }
-
+            else if constexpr(tc::hasMember_size<DataType>::value and rank == 1){
+                dims[0] = 1;
+                return dims;
+            }
             else if constexpr (std::is_arithmetic<DataType>::value or tc::is_StdComplex<DataType>()){
                 dims[0]= 1;
                 return dims;
             }
 
             else{
+//                static_assert(false, "getDimensions can't match the type provided");
                 tc::print_type_and_exit_compile_time<DataType>();
                 std::string error = "getDimensions can't match the type provided: " + std::string(typeid(DataType).name());
                 spdlog::critical(error);
@@ -150,7 +204,7 @@ namespace h5pp{
                 newData.insert(newData.end(), data.data(), data.data()+data.size());
                 return newData;
             }
-            else if constexpr(h5pp::Type::Check::is_vector<DataType>::value) {
+            else if constexpr(h5pp::Type::Check::is_std_vector<DataType>::value) {
                 using scalarType  = typename DataType::value_type;
                 using complexType = typename scalarType::value_type;
                 std::vector<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<complexType>> newData;
@@ -175,7 +229,7 @@ namespace h5pp{
                 newData.insert(newData.end(), data.data(), data.data()+data.size());
                 return newData;
             }
-            else if constexpr(h5pp::Type::Check::is_vector<DataType>::value) {
+            else if constexpr(h5pp::Type::Check::is_std_vector<DataType>::value) {
                 using scalarType  = typename DataType::value_type;
                 using internalType  = decltype(scalarType::x);
                 std::vector<h5pp::Type::Complex::H5T_SCALAR2<internalType>> newData;
@@ -202,7 +256,7 @@ namespace h5pp{
                 newData.insert(newData.end(), data.data(), data.data()+data.size());
                 return newData;
             }
-            else if constexpr(h5pp::Type::Check::is_vector<DataType>::value) {
+            else if constexpr(h5pp::Type::Check::is_std_vector<DataType>::value) {
                 using scalarType  = typename DataType::value_type;
                 using internalType  = decltype(scalarType::x);
                 std::vector<h5pp::Type::Complex::H5T_SCALAR3<internalType>> newData;
@@ -224,7 +278,7 @@ namespace h5pp{
             hsize_t typesize = sizeof(data);
             if constexpr (h5pp::Type::Check::hasMember_data<DataType>::value){typesize = sizeof(data.data()[0]);}
             if constexpr (h5pp::Type::Check::hasMember_c_str<DataType>::value){typesize = sizeof(data.c_str()[0]);}
-            if constexpr (h5pp::Type::Check::hasMember_scalar<DataType>::value){typesize = sizeof(typename DataType::Scalar);}
+            if constexpr (h5pp::Type::Check::hasMember_Scalar<DataType>::value){ typesize = sizeof(typename DataType::Scalar);}
             if constexpr (std::is_array<DataType>::value){typesize = sizeof(data[0]);}
             return num_elems*typesize;
         }
