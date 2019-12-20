@@ -8,6 +8,7 @@
 #include <Eigen/Core>
 #include <unsupported/Eigen/CXX11/Tensor>
 #include "h5ppTypeComplex.h"
+#include "h5ppLogger.h"
 
 namespace h5pp{
     namespace Type{
@@ -25,7 +26,7 @@ namespace h5pp{
 
             template <typename T> using hasMember_data         = std::experimental::is_detected<Data_t, T>;
             template <typename T> using hasMember_size         = std::experimental::is_detected<Size_t, T>;
-            template <typename T> using hasMember_scalar       = std::experimental::is_detected<Scal_t , T>;
+            template <typename T> using hasMember_Scalar       = std::experimental::is_detected<Scal_t , T>;
             template <typename T> using hasMember_value_type   = std::experimental::is_detected<Valt_t , T>;
             template <typename T> using hasMember_c_str        = std::experimental::is_detected<Cstr_t , T>;
             template <typename T> using hasMember_imag         = std::experimental::is_detected<Imag_t , T>;
@@ -40,9 +41,13 @@ namespace h5pp{
             struct is_specialization<Ref<Args...>, Ref>: std::true_type {};
 
 
-            template<typename T> struct is_vector : public std::false_type {};
-            template<typename T> struct is_vector<std::vector<T>> : public std::true_type {};
-//            template<typename T> constexpr bool is_vector(){return is_specialization<T,std::vector>::value;}
+
+            template<typename T> struct is_std_vector : public std::false_type {};
+            template<typename T> struct is_std_vector<std::vector<T>> : public std::true_type {};
+            template<typename T> struct is_std_array : public std::false_type {};
+            template<typename T,auto N> struct is_std_array <std::array<T,N>> : public std::true_type {};
+
+
 
             template<typename T> struct is_eigen_tensor : public std::false_type {};
             template<typename Scalar, int rank, int storage, typename IndexType>
@@ -112,8 +117,8 @@ namespace h5pp{
 
             template<typename T>
             constexpr bool hasStdComplex(){
-                if constexpr (is_StdComplex<T>())                         {return false;}
-                else if constexpr (hasMember_scalar <T>::value)         {return is_StdComplex<typename T::Scalar>();}
+                if constexpr (is_StdComplex<T>())                       {return false;}
+                else if constexpr (hasMember_Scalar <T>::value)         {return is_StdComplex<typename T::Scalar>();}
                 else if constexpr (hasMember_value_type <T>::value)     {return is_StdComplex<typename T::value_type>();}
                 return false;
             }
@@ -142,7 +147,7 @@ namespace h5pp{
             template<typename T>
             constexpr bool hasScalar2(){
                 if constexpr (is_Scalar2<T>())                          {return false;}
-                else if constexpr (hasMember_scalar <T>::value)         {return is_Scalar2<typename T::Scalar>();}
+                else if constexpr (hasMember_Scalar <T>::value)         {return is_Scalar2<typename T::Scalar>();}
                 else if constexpr (hasMember_value_type <T>::value)     {return is_Scalar2<typename T::value_type>();}
                 return false;
             }
@@ -162,6 +167,13 @@ namespace h5pp{
                 }
             }
 
+
+
+            template<typename T>
+            constexpr bool is_ScalarN(){return is_Scalar2<T>() or is_Scalar3<T>();}
+
+
+
             template<typename T1, typename T2>
             constexpr bool is_Scalar3_of_type(){
                 if constexpr(is_Scalar3<T1>()){
@@ -174,7 +186,7 @@ namespace h5pp{
             template<typename T>
             constexpr bool hasScalar3(){
                 if constexpr (is_Scalar3<T>())                          {return false;}
-                else if constexpr (hasMember_scalar <T>::value)         {return is_Scalar3<typename T::Scalar>();}
+                else if constexpr (hasMember_Scalar <T>::value)         {return is_Scalar3<typename T::Scalar>();}
                 else if constexpr (hasMember_value_type <T>::value)     {return is_Scalar3<typename T::value_type>();}
                 return false;
             }
@@ -197,7 +209,7 @@ namespace h5pp{
 
             template<typename T>
             constexpr bool isVectorOf_H5T_COMPLEX_STRUCT(){
-                if constexpr (is_vector<T>::value and is_H5T_SCALAR2<T::value_type>()){return true;}
+                if constexpr (is_std_vector<T>::value and is_H5T_SCALAR2<T::value_type>()){return true;}
                 return false;
             }
 
