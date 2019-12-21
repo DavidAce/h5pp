@@ -116,6 +116,7 @@ matrix:
             - gcc-8
             - g++-8
             - libhdf5-dev
+            - libaec-dev
             - libeigen3-dev
             - libspdlog-dev
 
@@ -132,6 +133,7 @@ matrix:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
           packages:
             - libhdf5-dev
+            - libaec-dev
             - libeigen3-dev
             - libspdlog-dev
 
