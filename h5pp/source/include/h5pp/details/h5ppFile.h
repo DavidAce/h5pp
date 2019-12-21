@@ -333,7 +333,15 @@ namespace h5pp{
         template <typename DataType>
         void writeAttributeToFile(const DataType &attribute, const std::string attributeName);
 
-        std::vector<std::string> getAttributeNames(const std::string &linkPath) const;
+        inline std::vector<std::string> getAttributeNames(const std::string &linkPath) const{
+            hid_t file = openFileHandle();
+            std::vector<std::string> attributeNames;
+            if (h5pp::Hdf5::checkIfLinkExistsRecursively(file, linkPath)) {
+                attributeNames = h5pp::Hdf5::getAttributeNames(file, linkPath);
+            }
+            closeFileHandle(file);
+            return attributeNames;
+        }
 
         template <typename DataType>
         void readAttribute(DataType &attribute, const std::string &attributeName, const std::string &linkPath) const;
@@ -899,15 +907,7 @@ void h5pp::File::writeAttributeToLink(const DataType &attribute, const std::stri
     }
 }
 
-std::vector<std::string> h5pp::File::getAttributeNames(const std::string &linkPath) const {
-    hid_t file = openFileHandle();
-    std::vector<std::string> attributeNames;
-    if (h5pp::Hdf5::checkIfLinkExistsRecursively(file, linkPath)) {
-        attributeNames = h5pp::Hdf5::getAttributeNames(file, linkPath);
-    }
-    closeFileHandle(file);
-    return attributeNames;
-}
+
 
 template <typename DataType>
 void h5pp::File::readAttribute(DataType &data, const std::string &attributeName, const std::string &linkPath) const{
