@@ -13,9 +13,6 @@
 namespace h5pp{
     namespace Hdf5{
 
-
-
-
         inline bool checkIfLinkExistsRecursively(hid_t file, std::string path){
             std::stringstream path_stream(path);
             std::vector<std::string> split_path;
@@ -66,7 +63,7 @@ namespace h5pp{
             }
         }
 
-        std::vector<std::string> getAttributeNames(hid_t file, const std::string &linkPath){
+        inline std::vector<std::string> getAttributeNames(hid_t file, const std::string &linkPath){
             hid_t link              = openLink(file, linkPath);
             unsigned int num_attrs  = H5Aget_num_attrs(link);
             std::vector<std::string> attrNames;
@@ -105,7 +102,7 @@ namespace h5pp{
             return exists;
         }
 
-        void setExtentDataset(hid_t file, const DatasetProperties &props);
+
         inline void setExtentDataset(hid_t file, const DatasetProperties &props){
             try{
                 if (not props.extendable) {
