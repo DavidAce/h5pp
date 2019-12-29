@@ -7,7 +7,7 @@ if(TARGET Eigen3::Eigen)
 
 elseif(TARGET Eigen3)
     add_library(Eigen3::Eigen ALIAS Eigen3)
-elseif (DOWNLOAD_MISSING)
+elseif ("${DOWNLOAD_METHOD}" MATCHES "manual")
     message(STATUS "Eigen3 will be installed into ${CMAKE_INSTALL_PREFIX}")
     include(${PROJECT_SOURCE_DIR}/cmake-modules/BuildDependency.cmake)
     build_dependency(Eigen3 "${eigen3_install_prefix}" "" "")
@@ -23,7 +23,7 @@ elseif (DOWNLOAD_MISSING)
     endif()
 
 else()
-    message(STATUS "Dependency Eigen3 not found and DOWNLOAD_MISSING is OFF")
+    message(STATUS "Dependency Eigen3 not found and DOWNLOAD_METHOD != 'manual'")
 endif()
 
 
