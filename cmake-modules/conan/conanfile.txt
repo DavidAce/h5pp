@@ -1,0 +1,14 @@
+# Here you can specify desired software packages to be downloaded by conan.
+# To activate reading this file from CMakeLists.txt, enable the setting -DDOWNLOAD_METHOD=conan
+
+
+[requires]
+eigen/3.3.7@conan/stable
+spdlog/1.4.2@bincrafters/stable
+hdf5/1.10.5
+
+[generators]
+cmake
+
+[options]
+*:shared=False
