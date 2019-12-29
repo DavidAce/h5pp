@@ -6,7 +6,6 @@ project(h5pp  VERSION 0.5.0
         )
 
 
-set(CMAKE_VERBOSE_MAKEFILE OFF)
 list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake-modules) # This makes sure we use our modules!
 ################################################################
 ### Get git version number                                   ###
@@ -17,22 +16,6 @@ list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake-modules) # This make
 include(cmake-modules/gitversion.cmake)
 
 
-##################################################################
-### Print host properties                                      ###
-##################################################################
-cmake_host_system_information(RESULT _host_name   QUERY HOSTNAME)
-cmake_host_system_information(RESULT _proc_type   QUERY PROCESSOR_DESCRIPTION)
-cmake_host_system_information(RESULT _os_name     QUERY OS_NAME)
-cmake_host_system_information(RESULT _os_release  QUERY OS_RELEASE)
-cmake_host_system_information(RESULT _os_version  QUERY OS_VERSION)
-cmake_host_system_information(RESULT _os_platform QUERY OS_PLATFORM)
-message("========= HOST INFO =========")
-message("${_host_name}")
-message("${_os_name} ${_os_platform} ${_os_release}")
-message("${_proc_type}")
-message("${_os_version}")
-message("===============================")
-
 
 ################################################################
 ### Set options for compilation                              ###
@@ -41,10 +24,44 @@ option(BUILD_SHARED_LIBS        "Builds shared libraries"                       
 option(BUILD_EXAMPLES           "Builds examples"                                     OFF)
 option(ENABLE_TESTS             "Enable testing"                                      OFF)
 option(FIND_DEPENDENCIES        "Attempt to find Eigen3,spdlog and HDF5 libraries"    ON)
-option(DOWNLOAD_MISSING         "Download and install all dependencies if not found"  OFF)
 option(H5PP_IS_SUBPROJECT       "Use h5pp with add_subdirectory()"                    OFF)
 option(APPEND_LIBSUFFIX         "Append <libname> to CMAKE_INSTALL_PREFIX"            OFF)
 option(PREFER_CONDA_LIBS        "Search for dependencies from anaconda first"         OFF)
+option(H5PP_PRINT_INFO          "Print info during cmake configuration"               ON)
+
+#################################################################
+### Make an "enum" for valid download methods:                ###
+###     manual                                                ###
+###     conan                                                 ###
+###     hunter (not implemented yet)                          ###
+#################################################################
+set(VALID_DOWNLOAD_METHODS hunter conan manual none)
+set(DOWNLOAD_METHOD manual CACHE STRING "Download method for external dependencies")
+set_property(CACHE DOWNLOAD_METHOD  PROPERTY STRINGS ${VALID_DOWNLOAD_METHODS})
+if(NOT DOWNLOAD_METHOD IN_LIST VALID_DOWNLOAD_METHODS)
+    message(FATAL_ERROR "DOWNLOAD_METHOD must be one of ${VALID_DOWNLOAD_METHODS}")
+endif()
+
+
+
+##################################################################
+### Print host properties                                      ###
+##################################################################
+if(H5PP_PRINT_INFO)
+    cmake_host_system_information(RESULT _host_name   QUERY HOSTNAME)
+    cmake_host_system_information(RESULT _proc_type   QUERY PROCESSOR_DESCRIPTION)
+    cmake_host_system_information(RESULT _os_name     QUERY OS_NAME)
+    cmake_host_system_information(RESULT _os_release  QUERY OS_RELEASE)
+    cmake_host_system_information(RESULT _os_version  QUERY OS_VERSION)
+    cmake_host_system_information(RESULT _os_platform QUERY OS_PLATFORM)
+    message("========= HOST INFO =========")
+    message("${_host_name}")
+    message("${_os_name} ${_os_platform} ${_os_release}")
+    message("${_proc_type}")
+    message("${_os_version}")
+    message("===============================")
+endif()
+
 
 
 # Used when h5pp is included as subproject (e.g., as Git submodule/subtree) in the source
@@ -83,19 +100,19 @@ endif()
 
 
 
-
-message("=========================== h5pp build options ==============================")
-message(STATUS "BUILD_SHARED_LIBS       : ${BUILD_SHARED_LIBS}")
-message(STATUS "BUILD_EXAMPLES          : ${BUILD_EXAMPLES}")
-message(STATUS "ENABLE_TESTS            : ${ENABLE_TESTS}")
-message(STATUS "H5PP_IS_SUBPROJECT      : ${H5PP_IS_SUBPROJECT}")
-message(STATUS "FIND_DEPENDENCIES       : ${FIND_DEPENDENCIES}")
-message(STATUS "DOWNLOAD_MISSING        : ${DOWNLOAD_MISSING}")
-message(STATUS "APPEND_LIBSUFFIX        : ${APPEND_LIBSUFFIX}")
-message(STATUS "PREFER_CONDA_LIBS       : ${PREFER_CONDA_LIBS}")
-message(STATUS "CMAKE_INSTALL_PREFIX    : ${CMAKE_INSTALL_PREFIX}")
-message("")
-
+if(H5PP_PRINT_INFO)
+    message("=========================== h5pp build options ==============================")
+    message(STATUS "BUILD_SHARED_LIBS       : ${BUILD_SHARED_LIBS}")
+    message(STATUS "BUILD_EXAMPLES          : ${BUILD_EXAMPLES}")
+    message(STATUS "ENABLE_TESTS            : ${ENABLE_TESTS}")
+    message(STATUS "H5PP_IS_SUBPROJECT      : ${H5PP_IS_SUBPROJECT}")
+    message(STATUS "FIND_DEPENDENCIES       : ${FIND_DEPENDENCIES}")
+    message(STATUS "DOWNLOAD_METHOD         : ${DOWNLOAD_METHOD}")
+    message(STATUS "APPEND_LIBSUFFIX        : ${APPEND_LIBSUFFIX}")
+    message(STATUS "PREFER_CONDA_LIBS       : ${PREFER_CONDA_LIBS}")
+    message(STATUS "CMAKE_INSTALL_PREFIX    : ${CMAKE_INSTALL_PREFIX}")
+    message("")
+endif()
 
 
 #################################################################
@@ -200,53 +217,20 @@ if(NOT TARGET Threads::Threads)
     find_package(Threads)
     set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES pthread)
 endif()
+
+
+
 ##################################################################
 ### Try to find or fetch all dependencies                      ###
 ##################################################################
 add_library(deps INTERFACE)
 if(FIND_DEPENDENCIES)
-    include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_Eigen3.cmake)
-    include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_spdlog.cmake)
-    include(${PROJECT_SOURCE_DIR}/cmake-modules/Fetch_HDF5.cmake)
-
-    if(TARGET Eigen3::Eigen)
-        target_link_libraries(deps INTERFACE Eigen3::Eigen)
-        get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
-        list(APPEND H5PP_DIRECTORY_HINTS ${EIGEN3_INCLUDE_DIR})
-        list(APPEND TARGETS_FOUND Eigen3::Eigen)
-    else()
-        list(APPEND TARGETS_NOT_FOUND Eigen)
-    endif()
-
-
-    if(TARGET spdlog::spdlog)
-        target_link_libraries(deps INTERFACE spdlog::spdlog)
-        get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
-        list(APPEND H5PP_DIRECTORY_HINTS ${SPDLOG_INCLUDE_DIR})
-        list(APPEND TARGETS_FOUND spdlog::spdlog)
-    else()
-        list(APPEND TARGETS_NOT_FOUND spdlog)
-    endif()
-
-
-    if(TARGET hdf5::hdf5)
-        target_link_libraries(deps INTERFACE hdf5::hdf5)
-        get_target_property(HDF5_INCLUDE_DIR hdf5::hdf5 INTERFACE_INCLUDE_DIRECTORIES)
-        list(APPEND H5PP_DIRECTORY_HINTS ${HDF5_INCLUDE_DIR})
-        list(APPEND TARGETS_FOUND hdf5)
-    else()
-        list(APPEND TARGETS_NOT_FOUND hdf5::hdf5)
-    endif()
-
-
-    foreach(tgt ${TARGETS_NOT_FOUND})
-        message(STATUS "Dependency not found: [${tgt}] -- make sure to find and link to it manually before using h5pp")
-    endforeach()
-
-    if(TARGETS_NOT_FOUND)
-        set(ALL_TARGETS_FOUND FALSE)
-    else()
-        set(ALL_TARGETS_FOUND TRUE)
+    if("${DOWNLOAD_METHOD}" MATCHES "conan")
+        include(cmake-modules/SetupDependenciesConan.cmake)
+    elseif("${DOWNLOAD_METHOD}" MATCHES "manual")
+        include(cmake-modules/SetupDependenciesManual.cmake)
+    elseif("${DOWNLOAD_METHOD}" MATCHES "hunter")
+        message(FATAL_ERROR "Download method hunter is not implemented yet. Stay tuned!")
     endif()
 endif()
 
@@ -254,17 +238,23 @@ endif()
 ##################################################################
 ### Print summary of CMake configuration                       ###
 ##################################################################
-message("========================== h5pp target summary ==============================")
-include(${PROJECT_SOURCE_DIR}/cmake-modules/PrintTargetInfo.cmake)
-print_target_info(h5pp)
-print_target_info(deps)
-print_target_info(flags)
-print_target_info(spdlog::spdlog)
-print_target_info(Eigen3::Eigen)
-print_target_info(hdf5::hdf5)
-print_target_info(Threads::Threads)
-message("")
-
+if(H5PP_PRINT_INFO)
+    message("========================== h5pp target summary ==============================")
+    include(${PROJECT_SOURCE_DIR}/cmake-modules/PrintTargetInfo.cmake)
+    print_target_info(h5pp)
+    print_target_info(deps)
+    print_target_info(flags)
+    print_target_info(spdlog::spdlog)
+    print_target_info(Eigen3::Eigen)
+    print_target_info(hdf5::hdf5)
+    print_target_info(CONAN_PKG::spdlog)
+    print_target_info(CONAN_PKG::HDF5)
+    print_target_info(CONAN_PKG::Eigen3)
+    print_target_info(CONAN_PKG::fmt)
+    print_target_info(CONAN_PKG::ZLIB)
+    print_target_info(Threads::Threads)
+    message("")
+endif()
 
 
 
@@ -272,7 +262,6 @@ if(H5PP_IS_SUBPROJECT)
     add_library(h5pp::h5pp ALIAS h5pp)
     add_library(h5pp::deps ALIAS deps)
     add_library(h5pp::flags ALIAS h5pp)
-
 else()
 
     #######################################################
