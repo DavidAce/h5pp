@@ -7,6 +7,10 @@
 ###    hdf5/1.10.5                                            ###
 ##################################################################
 
+
+
+
+
 find_program (
         CONAN_COMMAND
         conan
@@ -15,8 +19,17 @@ find_program (
         PATH_SUFFIXES bin envs/dmrg/bin
 )
 
-include(cmake-modules/conan/conan.cmake)
-conan_cmake_run(CONANFILE cmake-modules/conan/conanfile.txt
+
+# Download automatically, you can also just copy the conan.cmake file
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+    file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.14/conan.cmake"
+            "${CMAKE_BINARY_DIR}/conan.cmake")
+endif()
+
+include(${CMAKE_BINARY_DIR}/conan.cmake)
+
+conan_cmake_run(CONANFILE ${PROJECT_SOURCE_DIR}/conanfile.txt
         CONAN_COMMAND ${CONAN_COMMAND}
         SETTINGS compiler.cppstd=17
         SETTINGS compiler.libcxx=libstdc++11
