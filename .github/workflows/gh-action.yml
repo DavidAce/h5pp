@@ -15,7 +15,7 @@ jobs:
       matrix:
         # Github Actions requires a single row to be added to the build matrix.
         # See https://help.github.com/en/articles/workflow-syntax-for-github-actions.
-        name: [ubuntu-16.04-gcc-7,ubuntu-18.04-gcc-9,ubuntu-16.04-clang-6.0,ubuntu-18.04-clang-9, ubuntu-18.04-clang-9-conda,ubuntu-18.04-clang-9-apt ubuntu-18.04-clang-6.0-conan] # windows-2019-clang,windows-2019-gcc
+        name: [ubuntu-16.04-gcc-7,ubuntu-18.04-gcc-9,ubuntu-16.04-clang-6.0,ubuntu-18.04-clang-9, ubuntu-18.04-clang-9-conda,ubuntu-18.04-clang-9-apt, ubuntu-18.04-clang-6.0-conan] # windows-2019-clang,windows-2019-gcc
         include:
           - name: ubuntu-16.04-gcc-7
             os: ubuntu-16.04
