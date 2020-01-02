@@ -82,20 +82,16 @@ endif()
 ### and to easily delete them individually                        ###
 #####################################################################
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
-    message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${CMAKE_CURRENT_BINARY_DIR}/install")
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "..." FORCE)
+    message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/install")
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "..." FORCE)
 endif()
 if(APPEND_LIBSUFFIX)
-    set(H5PP_INSTALL_DIR       h5pp/)
     set(H5PP_CONFIG_DIR        h5pp/share/h5pp/cmake)
-    set(H5PP_EXAMPLE_DIR       h5pp/share/h5pp/examples)
     set(eigen3_install_prefix  ${CMAKE_INSTALL_PREFIX}/Eigen3)
     set(spdlog_install_prefix  ${CMAKE_INSTALL_PREFIX}/spdlog)
     set(hdf5_install_prefix    ${CMAKE_INSTALL_PREFIX}/hdf5)
 else()
-    set(H5PP_INSTALL_DIR       "")
     set(H5PP_CONFIG_DIR        share/h5pp/cmake)
-    set(H5PP_EXAMPLE_DIR       share/h5pp/examples)
     set(eigen3_install_prefix  ${CMAKE_INSTALL_PREFIX})
     set(spdlog_install_prefix  ${CMAKE_INSTALL_PREFIX})
     set(hdf5_install_prefix    ${CMAKE_INSTALL_PREFIX})
@@ -163,13 +159,11 @@ CheckCXXOptional()
 
 
 
-
-include(GNUInstallDirs)
 target_include_directories(
         headers
         INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/source/include>
-        $<INSTALL_INTERFACE:${H5PP_INSTALL_DIR}${CMAKE_INSTALL_INCLUDEDIR}>
+        $<INSTALL_INTERFACE:${H5PP_INSTALL_DIR}include>
 )
 
 
@@ -177,7 +171,6 @@ target_include_directories(
 ### Setup dependency paths                                     ###
 ### Prepend conda dirs for hints when using find_package       ###
 ##################################################################
-include(GNUInstallDirs)
 if(PREFER_CONDA_LIBS)
     list(APPEND H5PP_DIRECTORY_HINTS
             $ENV{CONDA_PREFIX}
@@ -258,7 +251,7 @@ else()
     ### this CMakeLists.txt                             ###
     #######################################################
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/source/include/ DESTINATION ${H5PP_INSTALL_DIR}${CMAKE_INSTALL_INCLUDEDIR} COMPONENT headers)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/source/include/ DESTINATION ${H5PP_INSTALL_DIR}include COMPONENT headers)
     install(TARGETS h5pp headers deps flags EXPORT h5ppTargets)
 
     #Export the targets to a script
@@ -274,27 +267,27 @@ else()
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.cmake.in
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
+            ${CMAKE_BINARY_DIR}/h5ppConfig.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
             PATH_VARS H5PP_CONFIG_DIR H5PP_DIRECTORY_HINTS
     )
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-native.cmake.in
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-native.cmake
+            ${CMAKE_BINARY_DIR}/h5ppConfig.deps-native.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
             PATH_VARS H5PP_CONFIG_DIR H5PP_DIRECTORY_HINTS
     )
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-conan.cmake.in
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
+            ${CMAKE_BINARY_DIR}/h5ppConfig.deps-conan.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
             PATH_VARS H5PP_CONFIG_DIR H5PP_DIRECTORY_HINTS
     )
 
     write_basic_package_version_file(
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
+            ${CMAKE_BINARY_DIR}/h5ppConfigVersion.cmake
             VERSION ${PROJECT_VERSION}
             COMPATIBILITY AnyNewerVersion
     )
@@ -302,10 +295,10 @@ else()
 
     ##Install the config, configversion and custom find modules
     install(FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-native.cmake
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
+            ${CMAKE_BINARY_DIR}/h5ppConfig.cmake
+            ${CMAKE_BINARY_DIR}/h5ppConfig.deps-native.cmake
+            ${CMAKE_BINARY_DIR}/h5ppConfig.deps-conan.cmake
+            ${CMAKE_BINARY_DIR}/h5ppConfigVersion.cmake
             ${PROJECT_SOURCE_DIR}/cmake/FindEigen3.cmake
             ${PROJECT_SOURCE_DIR}/cmake/Findspdlog.cmake
             ${PROJECT_SOURCE_DIR}/cmake/FindPackageHDF5.cmake
@@ -320,9 +313,9 @@ else()
         # we've already done here.
         set(CONAN_INSTALL_FILES
                 ${PROJECT_SOURCE_DIR}/conanfile.txt
-                ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake
-                ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.txt
-                ${CMAKE_CURRENT_BINARY_DIR}/conaninfo.txt
+                ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake
+                ${CMAKE_BINARY_DIR}/conanbuildinfo.txt
+                ${CMAKE_BINARY_DIR}/conaninfo.txt
                 )
         foreach(conan_file ${CONAN_INSTALL_FILES})
             if(EXISTS "${conan_file}")
@@ -335,18 +328,21 @@ else()
     endif()
 endif()
 
+
+
+
 ##################################################################
 ### Unit testing                                               ###
 ##################################################################
 if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
     if(ALL_TARGETS_FOUND)
         enable_testing()
-        add_subdirectory(tests/simpleWrite)
-        add_subdirectory(tests/largeWrite)
-        add_subdirectory(tests/overWrite)
-        add_subdirectory(tests/readWrite)
-        add_subdirectory(tests/readWriteAttributes)
-        add_subdirectory(tests/copySwap)
+        add_subdirectory(tests/simpleWrite         h5pp-tests/simpleWrite        )
+        add_subdirectory(tests/largeWrite          h5pp-tests/largeWrite         )
+        add_subdirectory(tests/overWrite           h5pp-tests/overWrite          )
+        add_subdirectory(tests/readWrite           h5pp-tests/readWrite          )
+        add_subdirectory(tests/readWriteAttributes h5pp-tests/readWriteAttributes)
+        add_subdirectory(tests/copySwap            h5pp-tests/copySwap           )
         add_custom_target(all-tests
                 DEPENDS test-simpleWrite
                         test-largeWrite
@@ -358,7 +354,7 @@ if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
             TARGET all-tests
             POST_BUILD
             COMMENT "Running Tests"
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             DEPENDS h5pp deps flags
             COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
 
@@ -369,29 +365,17 @@ endif()
 
 
 
-
 #############################
 # ADD TARGETS FOR  EXAMPLES #
 #############################
 if(NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES)
     if(ALL_TARGETS_FOUND)
-        add_subdirectory(h5pp/examples/helloworld)
-        add_subdirectory(h5pp/examples/writescalar)
-        add_subdirectory(h5pp/examples/readme-example1)
-        add_subdirectory(h5pp/examples/readme-example2)
-        add_subdirectory(h5pp/examples/readme-example3)
-        add_subdirectory(h5pp/examples/readme-example4)
-
-
-        install(PROGRAMS
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/helloworld
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/writescalar
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/readme-example1
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/readme-example2
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/readme-example3
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/readme-example4
-                DESTINATION ${H5PP_EXAMPLE_DIR}
-                COMPONENT examples)
+        add_subdirectory(h5pp/examples/helloworld      h5pp-examples/helloworld     )
+        add_subdirectory(h5pp/examples/writescalar     h5pp-examples/writescalar    )
+        add_subdirectory(h5pp/examples/readme-example1 h5pp-examples/readme-example1)
+        add_subdirectory(h5pp/examples/readme-example2 h5pp-examples/readme-example2)
+        add_subdirectory(h5pp/examples/readme-example3 h5pp-examples/readme-example3)
+        add_subdirectory(h5pp/examples/readme-example4 h5pp-examples/readme-example4)
     elseif(NOT "${DOWNLOAD_METHOD}" MATCHES "none")
         message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
     endif()
