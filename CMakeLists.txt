@@ -324,7 +324,7 @@ else()
                 ${CMAKE_CURRENT_BINARY_DIR}/conaninfo.txt
                 )
         foreach(conan_file ${CONAN_INSTALL_FILES})
-            if(EXISTS ${conan_file})
+            if(EXISTS "${conan_file}")
                 install(FILES ${conan_file}
                         DESTINATION ${H5PP_CONFIG_DIR}
                         COMPONENT config)
