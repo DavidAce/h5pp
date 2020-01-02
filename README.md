@@ -337,11 +337,17 @@ The following variables can be set to help guide CMake's `find_package` to your 
 * `-DEigen3_DIR:PATH=<path to Eigen3Config.cmake>` 
 * `-DEigen3_ROOT_DIR:PATH=<path to Eigen3 install-dir>` 
 * `-DEIGEN3_INCLUDE_DIR:PATH=<path to Eigen3 include-dir>`
+* `-DEIGEN3_NO_CMAKE_PACKAGE_REGISTRY:BOOL=<ON/OFF>`
+* `-DEIGEN3_NO_DEFAULT_PATH:BOOL=<ON/OFF>`
+* `-DEIGEN3_NO_CONFIG:BOOL=<ON/OFF>`
+* `-DEIGEN3_CONFIG_ONLY:BOOL=<ON/OFF>`
+* `-Dspdlog_DIR:PATH=<path to spdlogConfig.cmake>` 
+* `-DSPDLOG_NO_CMAKE_PACKAGE_REGISTRY:BOOL=<ON/OFF>`
+* `-DSPDLOG_NO_DEFAULT_PATH:BOOL=<ON/OFF>`
+* `-DSPDLOG_NO_CONFIG:BOOL=<ON/OFF>`
+* `-DSPDLOG_CONFIG_ONLY:BOOL=<ON/OFF>`
 * `-DHDF5_DIR:PATH=<path to HDF5Config.cmake>` 
 * `-DHDF5_ROOT:PATH=<path to HDF5 install-dir>` 
-* `-Dspdlog_DIR:PATH=<path to spdlogConfig.cmake>` 
-
-
 
 
 ## Linking
