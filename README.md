@@ -55,46 +55,45 @@ To write data to file simply pass any supported object and a dataset name to `wr
 This example shows how to do this with a vector of doubles.
 
 ```c++
-#include <h5pp/h5pp.h>
-
-int main() {
+    #include <h5pp/h5pp.h>
     
-    // Initialize a file
-    h5pp::File file("myDir/someFile.h5");
-
-    // Initialize a vector with 10 doubles
-    std::vector<double> v (10, 3.14);
+    int main() {
+        
+        // Initialize a file
+        h5pp::File file("myDir/someFile.h5");
     
-    // Write the vector to file.
-    // Inside the file, the data will be stored in a dataset named "myStdVector"
-    file.writeDataset(v, "myStdVector");
-    return 0;
-}
-
+        // Initialize a vector with 10 doubles
+        std::vector<double> v (10, 3.14);
+        
+        // Write the vector to file.
+        // Inside the file, the data will be stored in a dataset named "myStdVector"
+        file.writeDataset(v, "myStdVector");
+        return 0;
+    }
 ```
 
 
 ### Example 2: Reading std::vector
 Reading from file works similarly with `readDataset`, with the only exception that you need to provide a container of the correct type.
 
-
 ```c++
-#include <h5pp/h5pp.h>
-
-int main() {
+    #include <h5pp/h5pp.h>
     
-    // Initialize a file
-    h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READONLY, h5pp::CreateMode::OPEN );
-
-    // Initialize an empty a vector of doubles
-    std::vector<double> v;
-
-    // Read data. The vector is resized automatically by h5pp.
-    file.readDataset(v, "myStdVector");
-
-    return 0;
-}
+    int main() {
+        
+        // Initialize a file
+        h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READONLY, h5pp::CreateMode::OPEN );
+    
+        // Initialize an empty a vector of doubles
+        std::vector<double> v;
+    
+        // Read data. The vector is resized automatically by h5pp.
+        file.readDataset(v, "myStdVector");
+    
+        return 0;
+    }
 ```
+
 **Notes** 
 * this time we make use of file permissions in the constructor of `h5pp::File`, read more under [File permissions](#file-permissions).
 * `h5pp` resizes `std` containers automatically. Resizing of C-style arrays is left to the user.
@@ -104,26 +103,26 @@ int main() {
 ### Example 3: Write and read an Eigen::Matrix
 
 ```c++
-#include <h5pp/h5pp.h>
-
-int main() {
-
-    // Initialize a file
-    h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE);
-
-    // Initialize a 10x10 Eigen matrix with random complex entries
-    Eigen::MatrixXcd m1 = Eigen::MatrixXcd::Random(10, 10);
+    #include <h5pp/h5pp.h>
     
-    // Write the matrix 
-    // Inside the file, the data will be stored in a dataset named "myEigenMatrix" under the group "myMatrixCollection"
-    file.writeDataset(m1, "myMatrixCollection/myEigenMatrix");
-
-
-    // Read it back in one line. Note that we pass the type as a template parameter
-    auto m2 = file.readDataset<Eigen::MatrixXcd> ("myMatrixCollection/myEigenMatrix");
-
-    return 0;
-}
+    int main() {
+    
+        // Initialize a file
+        h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE);
+    
+        // Initialize a 10x10 Eigen matrix with random complex entries
+        Eigen::MatrixXcd m1 = Eigen::MatrixXcd::Random(10, 10);
+        
+        // Write the matrix 
+        // Inside the file, the data will be stored in a dataset named "myEigenMatrix" under the group "myMatrixCollection"
+        file.writeDataset(m1, "myMatrixCollection/myEigenMatrix");
+    
+    
+        // Read it back in one line. Note that we pass the type as a template parameter
+        auto m2 = file.readDataset<Eigen::MatrixXcd> ("myMatrixCollection/myEigenMatrix");
+    
+        return 0;
+    }
 ```
 
 **Notes** 
@@ -139,31 +138,31 @@ In fact, an attribute is very similar to a dataset, with the main difference bei
 Writing attributes works similarly with the function `writeAttribute(someObject,attributeName,targetLink)`.
 
 ```c++
-#include <h5pp/h5pp.h>
-#include <iostream>
-int main() {
-
-    // Initialize a file
-    h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::OPEN);
-    // Write an integer to file
-    file.writeDataset(42, "intGroup/myInt");
-    // We can now write metadata, or "attributes" to the int.
-    file.writeAttribute("this is some info about my int", "myInt_stringAttribute", "intGroup/myInt");
-    file.writeAttribute(3.14, "myInt_doubleAttribute", "intGroup/myInt");
-
-    // List all attributes associated with our int.
-    // The following will print:
-    //      myInt_stringAttribute
-    //      myInt_doubleAttribute
-    auto allAttributes = file.getAttributeNames("intGroup/myInt");
-    for(auto & attr : allAttributes)std::cout << attr << std::endl; 
-
-    // Read the attribute data back
-    auto stringAttribute = file.readAttribute<std::string> ("myInt_stringAttribute", "intGroup/myInt");
-    auto doubleAttribute = file.readAttribute<double>      ("myInt_doubleAttribute", "intGroup/myInt");
-
-    return 0;
-}
+    #include <h5pp/h5pp.h>
+    #include <iostream>
+    int main() {
+    
+        // Initialize a file
+        h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::OPEN);
+        // Write an integer to file
+        file.writeDataset(42, "intGroup/myInt");
+        // We can now write metadata, or "attributes" to the int.
+        file.writeAttribute("this is some info about my int", "myInt_stringAttribute", "intGroup/myInt");
+        file.writeAttribute(3.14, "myInt_doubleAttribute", "intGroup/myInt");
+    
+        // List all attributes associated with our int.
+        // The following will print:
+        //      myInt_stringAttribute
+        //      myInt_doubleAttribute
+        auto allAttributes = file.getAttributeNames("intGroup/myInt");
+        for(auto & attr : allAttributes)std::cout << attr << std::endl; 
+    
+        // Read the attribute data back
+        auto stringAttribute = file.readAttribute<std::string> ("myInt_stringAttribute", "intGroup/myInt");
+        auto doubleAttribute = file.readAttribute<double>      ("myInt_doubleAttribute", "intGroup/myInt");
+    
+        return 0;
+    }
 ```
 
 **Notes** 
@@ -204,6 +203,7 @@ The possible modes are
 
 The defaults are chosen to avoid loss of data.
 To give a concrete example, the syntax works as follows
+
 ```c++
     h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE);
 ```
@@ -244,15 +244,15 @@ HDF5 does not support complex types specifically, but `h5pp`enables this through
 to load 1D arrays from an HDF5 file generated with `h5pp`:
 
 ```python
-import h5py
-import numpy as np
-file  = h5py.File('myFile.h5', 'r')
-
-# Originally written as std::vector<double> in h5pp
-myDoubleArray = np.asarray(file['double-array-dataset'])                                     
-
-# Originally written as std::vector<std::complex<double>> in h5pp
-myComplexArray = np.asarray(file['complex-double-array-dataset']).view(dtype=np.complex128) 
+    import h5py
+    import numpy as np
+    file  = h5py.File('myFile.h5', 'r')
+    
+    # Originally written as std::vector<double> in h5pp
+    myDoubleArray = np.asarray(file['double-array-dataset'])                                     
+    
+    # Originally written as std::vector<std::complex<double>> in h5pp
+    myComplexArray = np.asarray(file['complex-double-array-dataset']).view(dtype=np.complex128) 
 ```
 
 
@@ -262,7 +262,7 @@ There are currently 4 ways to obtain `h5pp`:
 - `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
 - (Debian only) Download the the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
 - From conda: `conda install -c davidace h5pp`
-- From [conan bintray repo](https://bintray.com/davidace/conan-dmrg/h5pp%3Adavidace)
+- From [conan bintray repo](https://bintray.com/davidace/conan-public/h5pp%3Adavidace)
 
 
 ## Requirements
@@ -406,10 +406,9 @@ somewhere on your system (e.g. installed via `conda`,`apt`, `Easybuild`,etc) and
 You can use it too! If you copy `cmake/FindPackageHDF5.cmake` to your project, find HDF5 by including it and using the function:
 
 ```cmake
-include(FindPackageHDF5.cmake)
-find_package_hdf5()
-if(TARGET hdf5::hdf5)
-        target_link_libraries(myExecutable PRIVATE hdf5::hdf5)
-endif()
-
+    include(FindPackageHDF5.cmake)
+    find_package_hdf5()
+    if(TARGET hdf5::hdf5)
+            target_link_libraries(myExecutable PRIVATE hdf5::hdf5)
+    endif()
 ```
