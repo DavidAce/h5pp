@@ -86,13 +86,16 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
     set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "..." FORCE)
 endif()
 if(APPEND_LIBSUFFIX)
-    set(h5pp_relative_prefix    h5pp/)
-    set(h5pp_install_prefix    ${CMAKE_INSTALL_PREFIX}/h5pp)
+    set(H5PP_INSTALL_DIR       h5pp/)
+    set(H5PP_CONFIG_DIR        h5pp/share/h5pp/cmake)
+    set(H5PP_EXAMPLE_DIR       h5pp/share/h5pp/examples)
     set(eigen3_install_prefix  ${CMAKE_INSTALL_PREFIX}/Eigen3)
     set(spdlog_install_prefix  ${CMAKE_INSTALL_PREFIX}/spdlog)
     set(hdf5_install_prefix    ${CMAKE_INSTALL_PREFIX}/hdf5)
 else()
-    set(h5pp_install_prefix    ${CMAKE_INSTALL_PREFIX})
+    set(H5PP_INSTALL_DIR       "")
+    set(H5PP_CONFIG_DIR        share/h5pp/cmake)
+    set(H5PP_EXAMPLE_DIR       share/h5pp/examples)
     set(eigen3_install_prefix  ${CMAKE_INSTALL_PREFIX})
     set(spdlog_install_prefix  ${CMAKE_INSTALL_PREFIX})
     set(hdf5_install_prefix    ${CMAKE_INSTALL_PREFIX})
@@ -166,7 +169,7 @@ target_include_directories(
         headers
         INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/source/include>
-        $<INSTALL_INTERFACE:${h5pp_relative_prefix}${CMAKE_INSTALL_INCLUDEDIR}>
+        $<INSTALL_INTERFACE:${H5PP_INSTALL_DIR}${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 
@@ -255,8 +258,7 @@ else()
     ### this CMakeLists.txt                             ###
     #######################################################
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    set(H5PP_CONFIG_DIR ${h5pp_relative_prefix}share/h5pp/cmake)
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/source/include/ DESTINATION ${h5pp_relative_prefix}${CMAKE_INSTALL_INCLUDEDIR} COMPONENT headers)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/source/include/ DESTINATION ${H5PP_INSTALL_DIR}${CMAKE_INSTALL_INCLUDEDIR} COMPONENT headers)
     install(TARGETS h5pp headers deps flags EXPORT h5ppTargets)
 
     #Export the targets to a script
@@ -388,7 +390,7 @@ if(NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES)
                 ${CMAKE_BINARY_DIR}/h5pp-examples/readme-example2/readme-example2
                 ${CMAKE_BINARY_DIR}/h5pp-examples/readme-example3/readme-example3
                 ${CMAKE_BINARY_DIR}/h5pp-examples/readme-example4/readme-example4
-                DESTINATION ${h5pp_install_prefix}/share/h5pp/examples
+                DESTINATION ${H5PP_EXAMPLE_DIR}
                 COMPONENT examples)
     elseif(NOT "${DOWNLOAD_METHOD}" MATCHES "none")
         message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
