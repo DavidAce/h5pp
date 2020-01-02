@@ -265,7 +265,7 @@ namespace h5pp{
                 hid_t memspace  = H5Dget_space(dataset);
                 int ndims       = H5Sget_simple_extent_ndims(memspace);
                 dims.resize(ndims);
-                H5Sget_simple_extent_dims(memspace, dims.data(), NULL);
+                H5Sget_simple_extent_dims(memspace, dims.data(), nullptr);
                 h5pp::Hdf5::closeLink(dataset);
                 closeFileHandle(file);
             }catch(std::exception &ex){
@@ -324,11 +324,11 @@ namespace h5pp{
 
         // Functions related to attributes
         template <typename DataType>
-        void writeAttributeToLink(const DataType &attribute, const AttributeProperties &aprops);
+        void writeAttribute(const DataType &attribute, const AttributeProperties &aprops);
 
         template <typename DataType>
-        void writeAttributeToLink(const DataType &attribute, const std::string &attributeName,
-                                  const std::string &linkPath);
+        void writeAttribute(const DataType &attribute, const std::string &attributeName,
+                            const std::string &linkPath);
 
         template <typename DataType>
         void writeAttributeToFile(const DataType &attribute, const std::string attributeName);
@@ -431,18 +431,13 @@ namespace h5pp{
         bool determineIfExtendable(const DataType &data, const std::string &dsetName, std::optional<bool> userPrefersExtendable, std::optional<bool> dsetExists = std::nullopt);
 
 
-//
-//        template <typename DataType>
-//        void write_attribute_to_group(const DataType &attribute, const AttributeProperties &aprops);
-//
-//
 
         void initialize(){
             auto savedLog = h5pp::Logger::log->name();
             h5pp::Logger::setLogger("h5pp-init",logLevel,false);
             /* Turn off error handling permanently */
             error_stack = H5Eget_current_stack();
-            herr_t  turnOffAutomaticErrorPrinting = H5Eset_auto (error_stack, NULL, NULL);
+            herr_t  turnOffAutomaticErrorPrinting = H5Eset_auto (error_stack, nullptr, nullptr);
             if(turnOffAutomaticErrorPrinting < 0){H5Eprint(H5E_DEFAULT, stderr);throw std::runtime_error("Failed to turn off H5E error printing");}
             plist_facc = H5Pcreate(H5P_FILE_ACCESS);
             plist_lncr = H5Pcreate(H5P_LINK_CREATE);   //Create missing intermediate group if they don't exist
@@ -604,12 +599,10 @@ void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &pro
     }
     catch (std::exception &ex){
         h5pp::Hdf5::closeLink(dataset);
-//        H5Fflush(file,H5F_SCOPE_GLOBAL);
         closeFileHandle(file);
         throw std::runtime_error("Write to file failed [" + props.dsetName +"]: " + std::string(ex.what()));
     }
     h5pp::Hdf5::closeLink(dataset);
-//    H5Fflush(file,H5F_SCOPE_GLOBAL);
     closeFileHandle(file);
 }
 
@@ -708,7 +701,7 @@ void h5pp::File::readDataset(DataType &data, const std::string &datasetPath)cons
         hid_t datatype  = H5Dget_type(dataset);
         int ndims       = H5Sget_simple_extent_ndims(memspace);
         std::vector<hsize_t> dims(ndims);
-        H5Sget_simple_extent_dims(memspace, dims.data(), NULL);
+        H5Sget_simple_extent_dims(memspace, dims.data(), nullptr);
         hsize_t size = 1;
         for (const auto& dim: dims) size *= dim;
         h5pp::Logger::log->debug("Reading dataset: [{}] | size {} | rank {} | dim extents {}", datasetPath, size, ndims,dims);
@@ -839,7 +832,7 @@ void h5pp::File::writeAttributeToFile(const DataType &attribute, const std::stri
 
 
 template <typename DataType>
-void h5pp::File::writeAttributeToLink(const DataType &attribute, const AttributeProperties &aprops){
+void h5pp::File::writeAttribute(const DataType &attribute, const AttributeProperties &aprops){
     hid_t file = openFileHandle();
     if (h5pp::Hdf5::checkIfLinkExistsRecursively(file, aprops.linkPath) ) {
         if (not h5pp::Hdf5::checkIfAttributeExists(file, aprops.linkPath, aprops.attrName)) {
@@ -882,8 +875,8 @@ void h5pp::File::writeAttributeToLink(const DataType &attribute, const Attribute
 
 
 template <typename DataType>
-void h5pp::File::writeAttributeToLink(const DataType &attribute, const std::string &attributeName,
-                                      const std::string &linkPath){
+void h5pp::File::writeAttribute(const DataType &attribute, const std::string &attributeName,
+                                const std::string &linkPath){
     AttributeProperties aprops;
     aprops.dataType  = h5pp::Type::getDataType<DataType>();
     aprops.size      = h5pp::Utils::getSize(attribute);
@@ -896,14 +889,14 @@ void h5pp::File::writeAttributeToLink(const DataType &attribute, const std::stri
     if constexpr(tc::is_eigen_type<DataType>::value and not tc::is_eigen_1d<DataType>::value) {
         h5pp::Logger::log->debug("Converting Eigen object to row-major storage order");
         const auto tempRowm = Textra::to_RowMajor(attribute); //Convert to Row Major first;
-        writeAttributeToLink(tempRowm, aprops);
+        writeAttribute(tempRowm, aprops);
     }
     else if constexpr (tc::hasMember_c_str<DataType>::value
                   or std::is_same<char * , typename std::decay<DataType>::type>::value){
         aprops.size = h5pp::Utils::setStringSize(aprops.dataType,aprops.size);
-        writeAttributeToLink(attribute, aprops);
+        writeAttribute(attribute, aprops);
     }else{
-        writeAttributeToLink(attribute, aprops);
+        writeAttribute(attribute, aprops);
     }
 }
 
