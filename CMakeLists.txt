@@ -82,8 +82,8 @@ endif()
 ### and to easily delete them individually                        ###
 #####################################################################
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
-    message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/install")
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "..." FORCE)
+    message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${CMAKE_CURRENT_BINARY_DIR}/install")
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/install" CACHE PATH "..." FORCE)
 endif()
 if(APPEND_LIBSUFFIX)
     set(H5PP_INSTALL_DIR       h5pp/)
@@ -274,21 +274,21 @@ else()
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.cmake.in
-            ${PROJECT_BINARY_DIR}/h5ppConfig.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
             PATH_VARS H5PP_CONFIG_DIR H5PP_DIRECTORY_HINTS
     )
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-native.cmake.in
-            ${PROJECT_BINARY_DIR}/h5ppConfig.deps-native.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-native.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
             PATH_VARS H5PP_CONFIG_DIR H5PP_DIRECTORY_HINTS
     )
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-conan.cmake.in
-            ${PROJECT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
             PATH_VARS H5PP_CONFIG_DIR H5PP_DIRECTORY_HINTS
     )
@@ -341,12 +341,12 @@ endif()
 if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
     if(ALL_TARGETS_FOUND)
         enable_testing()
-        add_subdirectory(tests/simpleWrite          )
-        add_subdirectory(tests/largeWrite           )
-        add_subdirectory(tests/overWrite            )
-        add_subdirectory(tests/readWrite            )
-        add_subdirectory(tests/readWriteAttributes  )
-        add_subdirectory(tests/copySwap             )
+        add_subdirectory(tests/simpleWrite)
+        add_subdirectory(tests/largeWrite)
+        add_subdirectory(tests/overWrite)
+        add_subdirectory(tests/readWrite)
+        add_subdirectory(tests/readWriteAttributes)
+        add_subdirectory(tests/copySwap)
         add_custom_target(all-tests
                 DEPENDS test-simpleWrite
                         test-largeWrite
@@ -358,7 +358,7 @@ if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
             TARGET all-tests
             POST_BUILD
             COMMENT "Running Tests"
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             DEPENDS h5pp deps flags
             COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
 
@@ -375,21 +375,21 @@ endif()
 #############################
 if(NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES)
     if(ALL_TARGETS_FOUND)
-        add_subdirectory(h5pp/examples/helloworld      ${CMAKE_BINARY_DIR}/h5pp-examples/helloworld)
-        add_subdirectory(h5pp/examples/writescalar     ${CMAKE_BINARY_DIR}/h5pp-examples/writescalar)
-        add_subdirectory(h5pp/examples/readme-example1 ${CMAKE_BINARY_DIR}/h5pp-examples/readme-example1)
-        add_subdirectory(h5pp/examples/readme-example2 ${CMAKE_BINARY_DIR}/h5pp-examples/readme-example2)
-        add_subdirectory(h5pp/examples/readme-example3 ${CMAKE_BINARY_DIR}/h5pp-examples/readme-example3)
-        add_subdirectory(h5pp/examples/readme-example4 ${CMAKE_BINARY_DIR}/h5pp-examples/readme-example4)
+        add_subdirectory(h5pp/examples/helloworld)
+        add_subdirectory(h5pp/examples/writescalar)
+        add_subdirectory(h5pp/examples/readme-example1)
+        add_subdirectory(h5pp/examples/readme-example2)
+        add_subdirectory(h5pp/examples/readme-example3)
+        add_subdirectory(h5pp/examples/readme-example4)
 
 
         install(PROGRAMS
-                ${CMAKE_BINARY_DIR}/h5pp-examples/helloworld/helloworld
-                ${CMAKE_BINARY_DIR}/h5pp-examples/writescalar/writescalar
-                ${CMAKE_BINARY_DIR}/h5pp-examples/readme-example1/readme-example1
-                ${CMAKE_BINARY_DIR}/h5pp-examples/readme-example2/readme-example2
-                ${CMAKE_BINARY_DIR}/h5pp-examples/readme-example3/readme-example3
-                ${CMAKE_BINARY_DIR}/h5pp-examples/readme-example4/readme-example4
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/helloworld
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/writescalar
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/readme-example1
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/readme-example2
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/readme-example3
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/readme-example4
                 DESTINATION ${H5PP_EXAMPLE_DIR}
                 COMPONENT examples)
     elseif(NOT "${DOWNLOAD_METHOD}" MATCHES "none")
