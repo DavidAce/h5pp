@@ -16,7 +16,7 @@ matrix:
       compiler: gcc
       env:
         - CXX=g++-8 CC=gcc-8
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
       addons:
         apt:
           update: true
@@ -32,7 +32,7 @@ matrix:
       dist: xenial
       compiler: clang
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CXX=clang++ CC=clang
       addons:
         apt:
@@ -48,14 +48,14 @@ matrix:
       dist: bionic
       compiler: gcc
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
 
     - name: "bionic clang"
       os: linux
       dist: bionic
       compiler: clang
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
 
     - name: "xenial gcc-8 conda libs"
       os: linux
@@ -63,7 +63,7 @@ matrix:
       compiler: gcc
       env:
         - CXX=g++-8 CC=gcc-8
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DPREFER_CONDA_LIBS:BOOL=ON  -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
 
       addons:
         apt:
@@ -88,7 +88,7 @@ matrix:
       os: linux
       compiler: gcc
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DPREFER_CONDA_LIBS:BOOL=ON -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
       before_install:
         # Here we just install Miniconda, which you shouldn't have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
@@ -106,7 +106,7 @@ matrix:
       compiler: gcc
       env:
         - CXX=g++-8 CC=gcc-8
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
       addons:
         apt:
           update: true
@@ -125,7 +125,7 @@ matrix:
       os: linux
       compiler: gcc
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native  -DBUILD_SHARED_LIBS:BOOL=OFF"
       addons:
         apt:
           update: true
@@ -142,7 +142,7 @@ matrix:
       os: linux
       compiler: clang
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan  -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CXX=clang++ CC=clang
       before_install:
         # Here we just install Miniconda, which you shouldn't have to change.
@@ -160,7 +160,7 @@ script:
   - export MAKEFLAGS=-j2
   - cmake -E make_directory build/Debug
   - cd build/Debug
-  - cmake -DCMAKE_BUILD_TYPE=Debug $CMAKE_FLAGS -G "CodeBlocks - Unix Makefiles" ../../
+  - cmake -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS -G "CodeBlocks - Unix Makefiles" ../../
   - cmake --build . --target all  -- -j2
   - make test
   - make install
