@@ -23,8 +23,11 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
     *   [Load data into Python](#load-data-into-python)
 *   [Download](#download)
 *   [Requirements](#requirements)
-*   [Build](#build)
-*   [Link](#link)
+*   [Build and Install](#build-and-install)
+    * [Option 1: Copy the headers](#option-1-copy-the-headers)
+    * [Option 2: Build and install with CMake](#option-2-build-and-install-with-cmake)
+    * [Opt-in automatic dependency installation](#opt-in-automatic-dependency-installation)
+*   [Linking](#linking)
 
 
 ## Features
@@ -33,7 +36,7 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
     - `int`, `float`, `double` in unsigned and long versions
         - any of the above in C-style arrays
         - any of the above in `std::complex<>` form
-        - any of the above in POD-structs with x,y or x,y,z data members. In `h5pp` these go by the name `Scalar2` and `Scalar3`
+        - any of the above in POD-structs with x,y or x,y,z data members. In `h5pp` these go by the name `Scalar2` and `Scalar3`.
             These work well together with `double2` or `float3` types found in CUDA
     - `std::string` and `char` arrays
     - Contiguous containers of types above, such as `std::vector`, with `.data()` methods
@@ -271,7 +274,7 @@ There are currently 4 ways to obtain `h5pp`:
     - [**spdlog**](https://github.com/gabime/spdlog) (tested with version >= 1.3.1)
 
 
-## Build
+## Build and install
 
 ### Option 1: Copy the headers
 Copy the files under `h5pp/source/include` and add `#include<h5pp/h5pp.h>`.
@@ -341,7 +344,7 @@ The following variables can be set to help guide CMake's `find_package` to your 
 
 
 
-## Link
+## Linking
 
 ### Link using CMake targets (easy)
 `h5pp` is easily imported into your project using CMake's `find_package`. Just point it to the `h5pp` install directory.
