@@ -48,18 +48,19 @@ int main()
     // Write attributes
 
 
-    file.writeAttributeToLink(AttributeInt                        , "AttributeInt", "testGroup/vectorDouble");
-    file.writeAttributeToLink(AttributeDouble                     , "AttributeDouble", "testGroup/vectorDouble");
-    file.writeAttributeToLink(AttributeComplexInt                 , "AttributeComplexInt", "testGroup/vectorDouble");
-    file.writeAttributeToLink(AttributeComplexDouble              , "AttributeComplexDouble", "testGroup/vectorDouble");
-    file.writeAttributeToLink(AttributeArrayLong                  , "AttributeArrayLong", "testGroup/vectorDouble");
-    file.writeAttributeToLink(AttributeCArrayFloat                , "AttributeCArrayFloat", "testGroup/vectorDouble");
-    file.writeAttributeToLink(AttributeVectorDouble               , "AttributeVectorDouble", "testGroup/vectorDouble");
-    file.writeAttributeToLink(AttributeVectorComplexDouble        , "AttributeVectorComplexDouble", "testGroup/vectorDouble");
-    file.writeAttributeToLink(AttributeEigenMatrixDouble          , "AttributeEigenMatrixDouble", "testGroup/vectorDouble");
-    file.writeAttributeToLink(AttributeEigenMatrixComplexDouble   , "AttributeEigenMatrixComplexDouble", "testGroup/vectorDouble");
-    file.writeAttributeToLink(AttributeString                     , "AttributeString", "testGroup/vectorDouble");
-    file.writeAttributeToLink(AttributeCharArray                  , "AttributeCharArray", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeInt, "AttributeInt", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeDouble, "AttributeDouble", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeComplexInt, "AttributeComplexInt", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeComplexDouble, "AttributeComplexDouble", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeArrayLong, "AttributeArrayLong", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeCArrayFloat, "AttributeCArrayFloat", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeVectorDouble, "AttributeVectorDouble", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeVectorComplexDouble, "AttributeVectorComplexDouble", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeEigenMatrixDouble, "AttributeEigenMatrixDouble", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeEigenMatrixComplexDouble, "AttributeEigenMatrixComplexDouble",
+                        "testGroup/vectorDouble");
+    file.writeAttribute(AttributeString, "AttributeString", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeCharArray, "AttributeCharArray", "testGroup/vectorDouble");
 //    return 0;
 
     // Read the data back
