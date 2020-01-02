@@ -1,16 +1,16 @@
 
-# This script attempts to find HDF5 installed from apt or from sources
-# In both cases, if HDF5 is found a target "hdf5" is generated so the user can simply do:
+# This script attempts to find HDF5 installed from apt,conda or specified directories
+# In all cases, if HDF5 is found a target "hdf5::hdf5" is generated so the user can simply do:
 #
-#  target_link_libraries(mylibrary INTERFACE hdf5)
+#  target_link_libraries(myExe INTERFACE hdf5::hdf5)
 #
 #
 #  The user can guide the find pattern with variables:
-#       HDF5_ROOT                   list of possible root directories to search in
+#       HDF5_PATHS                  list of possible root directories to search in
 #       HDF5_MODULES                list of modules, e.g, "C CXX HL"
 #       BUILD_SHARED_LIBS           ON/OFF for shared/static libs
 #       HDF5_REQUIRED               to require HDF5 to be found, set to ON
-#       HDF5_ATLEAST_VERSION        sets the required version (default 1.10)
+#       HDF5_ATLEAST_VERSION        sets the required version (default 1.8)
 #
 
 function(define_hdf5_target lang libnames target_list)
