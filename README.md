@@ -184,8 +184,10 @@ Set the level when constructing a h5pp::File or by calling the function `.setLog
 
 ```c++
     int logLevel = 0; // Highest verbosity
-    h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::OPEN, level);  //  <--- this way
-    file.setLogLevel(logLevel);                                                                        //  <--- or this way
+    // This way...
+    h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::OPEN, logLevel); 
+    // or this way
+    file.setLogLevel(logLevel);                                                                       
 ```
 
 
