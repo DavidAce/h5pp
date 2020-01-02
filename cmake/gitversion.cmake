@@ -28,7 +28,7 @@ execute_process(
 )
 
 configure_file(
-${CMAKE_SOURCE_DIR}/cmake-modules/gitversion.h.in
+${CMAKE_SOURCE_DIR}/cmake/gitversion.h.in
 ${CMAKE_BINARY_DIR}/gitversion/gitversion.h
 )
 

@@ -254,7 +254,7 @@ function(find_package_hdf5)
 
     if(HDF5_FOUND)
 
-#        include(cmake-modules/PrintTargetInfo.cmake)
+#        include(cmake/PrintTargetInfo.cmake)
 #        message("HDF5_TARGETS: ${HDF5_TARGETS}")
 #        foreach(tgt ${HDF5_TARGETS})
 #            print_target_info(${tgt})

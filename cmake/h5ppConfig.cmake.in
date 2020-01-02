@@ -1,29 +1,10 @@
 @PACKAGE_INIT@
 
-#################################################################
-### Set default policies if CMake is new enough               ###
-#################################################################
-
 set(h5pp_FOUND TRUE)
 set(H5PP_FOUND TRUE)
-set(H5PP_DIR                            @PACKAGE_H5PP_DIR@)
-set(H5PP_ROOT                           @PACKAGE_H5PP_ROOT@)
-set(H5PP_INCLUDE_DIR                    @PACKAGE_H5PP_ROOT@/include)
 set(H5PP_CONFIG_DIR                     @PACKAGE_H5PP_CONFIG_DIR@)
 set(H5PP_DIRECTORY_HINTS                @PACKAGE_H5PP_DIRECTORY_HINTS@)
-set(H5PP_PACKAGE_PREFIX_DIR_SAVED       ${PACKAGE_PREFIX_DIR}) # The variable can get changed inside of find_dependency calls! So we need to save it.
 
-
-
-list(INSERT CMAKE_MODULE_PATH 0  ${H5PP_DIR})
-if(PREFER_CONDA_LIBS)
-    list(INSERT H5PP_DIRECTORY_HINTS 0
-                    $ENV{CONDA_PREFIX}
-                    $ENV{HOME}/anaconda3
-                    $ENV{HOME}/miniconda
-                    $ENV{HOME}/.conda)
-
-endif()
 
 ##################################################################
 ### Preempt Threads::Threads                                   ###
@@ -39,7 +20,15 @@ if(NOT TARGET Threads::Threads)
     set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES pthread)
 endif()
 
-include(${H5PP_DIR}/h5ppConfig.deps.cmake)
-include(${H5PP_DIR}/h5ppTargets.cmake)
 
 
+
+
+include(${H5PP_CONFIG_DIR}/h5ppTargets.cmake)
+get_target_property(H5PP_DOWNLOAD_METHOD h5pp::deps INTERFACE_COMPILE_DEFINITIONS)
+
+if("${H5PP_DOWNLOAD_METHOD}" MATCHES "conan")
+    include(${H5PP_CONFIG_DIR}/h5ppConfig.deps-conan.cmake)
+elseif("${H5PP_DOWNLOAD_METHOD}" MATCHES "native")
+    include(${H5PP_CONFIG_DIR}/h5ppConfig.deps-native.cmake)
+endif()

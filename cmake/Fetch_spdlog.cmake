@@ -9,7 +9,7 @@ elseif(TARGET spdlog)
 #    return()
 elseif ("${DOWNLOAD_METHOD}" MATCHES "manual")
     message(STATUS "Spdlog will be installed into ${CMAKE_INSTALL_PREFIX}")
-    include(${PROJECT_SOURCE_DIR}/cmake-modules/BuildDependency.cmake)
+    include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)
     build_dependency(spdlog  "${spdlog_install_prefix}" "" "")
     find_package(spdlog 1.3
             HINTS ${spdlog_install_prefix}
@@ -18,7 +18,7 @@ elseif ("${DOWNLOAD_METHOD}" MATCHES "manual")
 
     if(TARGET spdlog::spdlog)
         message(STATUS "spdlog installed successfully")
-#        include(cmake-modules/PrintTargetProperties.cmake)
+#        include(cmake/PrintTargetProperties.cmake)
 #        print_target_properties(spdlog::spdlog)
     else()
         message(FATAL_ERROR "Spdlog could not be downloaded.")

@@ -1,4 +1,5 @@
 function(CheckCXXOptional)
+    cmake_policy(SET CMP0075 NEW)
     include(CheckIncludeFileCXX)
     set(CMAKE_REQUIRED_FLAGS     "-std=c++17")
     check_include_file_cxx(optional    has_optional)

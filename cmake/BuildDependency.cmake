@@ -8,7 +8,7 @@ function(build_dependency dep_name install_dir extra_flags)
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             ${extra_flags}
             -G "CodeBlocks - Unix Makefiles"
-            ${PROJECT_SOURCE_DIR}/cmake-modules/external_${dep_name}
+            ${PROJECT_SOURCE_DIR}/cmake/external_${dep_name}
             WORKING_DIRECTORY ${build_dir}
             RESULT_VARIABLE config_result
             ERROR_VARIABLE  config_error

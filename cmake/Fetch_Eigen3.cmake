@@ -9,7 +9,7 @@ elseif(TARGET Eigen3)
     add_library(Eigen3::Eigen ALIAS Eigen3)
 elseif ("${DOWNLOAD_METHOD}" MATCHES "manual")
     message(STATUS "Eigen3 will be installed into ${CMAKE_INSTALL_PREFIX}")
-    include(${PROJECT_SOURCE_DIR}/cmake-modules/BuildDependency.cmake)
+    include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)
     build_dependency(Eigen3 "${eigen3_install_prefix}" "" "")
 #    message("Checking in ${CMAKE_INSTALL_PREFIX}/Eigen3")
     find_package(Eigen3 3.3.7

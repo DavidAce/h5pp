@@ -1,4 +1,5 @@
 function(CheckCXXFilesystem)
+    cmake_policy(SET CMP0075 NEW)
     set(CMAKE_REQUIRED_FLAGS     "-std=c++17")
     set(CMAKE_REQUIRED_LIBRARIES "-lstdc++fs" )
     include(CheckIncludeFileCXX)
