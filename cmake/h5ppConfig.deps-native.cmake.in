@@ -1,0 +1,48 @@
+@PACKAGE_INIT@
+
+
+list(INSERT CMAKE_MODULE_PATH 0  ${H5PP_CONFIG_DIR})
+if(H5PP_PREFER_CONDA_LIBS)
+    list(INSERT H5PP_DIRECTORY_HINTS 0
+                    $ENV{CONDA_PREFIX}
+                    $ENV{HOME}/anaconda3
+                    $ENV{HOME}/miniconda
+                    $ENV{HOME}/.conda)
+
+endif()
+
+
+
+include(CMakeFindDependencyMacro)
+if (NOT TARGET Eigen3::Eigen)
+    find_dependency(Eigen3 3.3.4)
+    if(TARGET Eigen3 AND NOT TARGET Eigen3::Eigen)
+        add_library(Eigen3::Eigen ALIAS Eigen3)
+    endif()
+endif()
+if(TARGET Eigen3::Eigen)
+    list(APPEND H5PP_FOUND_TARGETS Eigen3::Eigen)
+endif()
+
+if (NOT TARGET spdlog::spdlog)
+    find_dependency(spdlog 1.3.1)
+    if(TARGET spdlog AND NOT TARGET spdlog::spdlog)
+        add_library(spdlog::spdlog ALIAS spdlog)
+    endif()
+endif()
+if(TARGET spdlog::spdlog)
+    list(APPEND H5PP_FOUND_TARGETS  spdlog::spdlog)
+endif()
+
+if (NOT TARGET hdf5::hdf5)
+    include(${H5PP_CONFIG_DIR}/FindPackageHDF5.cmake)
+    find_package_hdf5()
+endif()
+
+if(TARGET hdf5::hdf5)
+    list(APPEND H5PP_FOUND_TARGETS  hdf5::hdf5)
+endif()
+
+if(NOT H5PP_FIND_QUIETLY)
+    message(STATUS "h5pp: Found dependency targets: ${H5PP_FOUND_TARGETS}")
+endif()

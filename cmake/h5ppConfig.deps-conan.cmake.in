@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+
+
+include(${H5PP_CONFIG_DIR}/conanbuildinfo.cmake)
+conan_basic_setup(TARGETS)
