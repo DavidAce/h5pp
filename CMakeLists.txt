@@ -308,21 +308,29 @@ else()
             ${PROJECT_SOURCE_DIR}/cmake/FindEigen3.cmake
             ${PROJECT_SOURCE_DIR}/cmake/Findspdlog.cmake
             ${PROJECT_SOURCE_DIR}/cmake/FindPackageHDF5.cmake
-            ${PROJECT_SOURCE_DIR}/conanfile.txt
             DESTINATION ${H5PP_CONFIG_DIR}
             COMPONENT config
             )
 
-    # Install conan related files to define dependency targets the same way
-    # we've already done here.
+
+
     if(DOWNLOAD_METHOD MATCHES "conan")
-        install(FILES
+        # Install conan related files to define dependency targets the same way
+        # we've already done here.
+        set(CONAN_INSTALL_FILES
+                ${PROJECT_SOURCE_DIR}/conanfile.txt
                 ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake
                 ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.txt
                 ${CMAKE_CURRENT_BINARY_DIR}/conaninfo.txt
-                DESTINATION ${H5PP_CONFIG_DIR}
-                COMPONENT config
                 )
+        foreach(conan_file ${CONAN_INSTALL_FILES})
+            if(EXISTS ${conan_file})
+                install(FILES ${conan_file}
+                        DESTINATION ${H5PP_CONFIG_DIR}
+                        COMPONENT config)
+            endif()
+        endforeach()
+
     endif()
 endif()
 
