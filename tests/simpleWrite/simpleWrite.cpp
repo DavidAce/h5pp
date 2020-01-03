@@ -66,5 +66,11 @@ int main() {
         matrixComplexDouble.transpose().cast<h5pp::Type::Complex::H5T_COMPLEX_STRUCT<double>>();
     file.writeDataset(test, "simpleWriteGroup/test");
 
+    // Test compressed writes
+    file.setCompressionLevel(9);
+    Eigen::Tensor<double, 4> bigTensor(40, 180, 40, 5);
+    bigTensor.setConstant(1.0);
+    file.writeDataset(bigTensor, "compressedWriteGroup/bigTensor");
+
     return 0;
 }
