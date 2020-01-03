@@ -1,10 +1,4 @@
-//
-// Created by david on 2019-03-04.
-//
-
-#ifndef H5PP_TYPECOMPLEX_H
-#define H5PP_TYPECOMPLEX_H
-
+#pragma once
 
 namespace h5pp{
     namespace Type{
@@ -107,6 +101,3 @@ namespace h5pp{
 
 }
 
-
-
-#endif //H5PP_H5PPTYPECOMPLEX_H

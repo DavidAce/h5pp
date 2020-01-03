@@ -1,10 +1,4 @@
-//
-// Created by david on 2019-03-03.
-//
-
-#ifndef H5PP_TYPE_H
-#define H5PP_TYPE_H
-
+#pragma once
 #include "h5ppTypeCheck.h"
 #include "h5ppTypeComplex.h"
 
@@ -144,4 +138,3 @@ namespace h5pp{
     }
 }
 
-#endif //H5PP_TYPE_H

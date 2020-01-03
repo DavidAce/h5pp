@@ -1,9 +1,4 @@
-//
-// Created by david on 2018-02-06.
-//
-
-#ifndef H5PP_TYPECHECK_H
-#define H5PP_TYPECHECK_H
+#pragma once
 #include <experimental/type_traits>
 #include <Eigen/Core>
 #include <unsupported/Eigen/CXX11/Tensor>
@@ -219,5 +214,4 @@ namespace h5pp{
         }
     }
 }
-#endif //H5PP_TYPECHECK_H
 

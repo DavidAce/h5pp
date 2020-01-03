@@ -1,9 +1,4 @@
-//
-// Created by david on 2019-03-08.
-//
-
-#ifndef H5PP_COUNTER_H
-#define H5PP_COUNTER_H
+#pragma once
 #include <optional>
 #include <list>
 #include <algorithm>
@@ -64,4 +59,3 @@ namespace h5pp{
     }
 }
 
-#endif //H5PP_COUNTER_H

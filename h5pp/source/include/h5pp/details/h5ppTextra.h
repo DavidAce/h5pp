@@ -1,10 +1,4 @@
-//
-// Created by david on 6/7/17.
-//
-
-#ifndef H5PP_TEXTRA_H
-#define H5PP_TEXTRA_H
-
+#pragma once
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 #include <unsupported/Eigen/CXX11/Tensor>
@@ -327,4 +321,3 @@ namespace h5pp{
 
 
 
-#endif //H5PP_TEXTRA_H

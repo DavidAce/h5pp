@@ -1,9 +1,4 @@
-//
-// Created by david on 2019-03-04.
-//
-
-#ifndef H5PP_INFO_H
-#define H5PP_INFO_H
+#pragma once
 #include <spdlog/spdlog.h>
 #include "h5ppType.h"
 #include "h5ppTypeCheck.h"
@@ -289,4 +284,3 @@ namespace h5pp{
 }
 
 
-#endif //H5PP_INFO_H

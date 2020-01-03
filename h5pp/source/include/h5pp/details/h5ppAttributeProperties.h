@@ -1,9 +1,5 @@
-//
-// Created by david on 2019-03-01.
-//
 
-#ifndef H5PP_ATTRIBUTEPROPERTIES_H
-#define H5PP_ATTRIBUTEPROPERTIES_H
+#pragma once
 #include <hdf5.h>
 #include <hdf5_hl.h>
 #include <vector>
@@ -25,7 +21,6 @@ namespace h5pp{
         }
     };
 }
-#endif //H5PP_ATTRIBUTEPROPERTIES_H
 
 
 

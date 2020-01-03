@@ -1,9 +1,4 @@
-//
-// Created by david on 2019-03-03.
-//
-
-#ifndef H5PP_LOGGER_H
-#define H5PP_LOGGER_H
+#pragma once
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
@@ -50,4 +45,3 @@ namespace h5pp{
 
 
 
-#endif //H5PP_LOGGER_H
