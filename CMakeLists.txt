@@ -162,7 +162,7 @@ CheckCXXOptional()
 target_include_directories(
         headers
         INTERFACE
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/source/include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/include>
         $<INSTALL_INTERFACE:${H5PP_INSTALL_DIR}include>
 )
 
@@ -369,16 +369,16 @@ endif()
 # ADD TARGETS FOR  EXAMPLES #
 #############################
 if(NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES)
-    if(ALL_TARGETS_FOUND)
-        add_subdirectory(h5pp/examples/helloworld      h5pp-examples/helloworld     )
-        add_subdirectory(h5pp/examples/writescalar     h5pp-examples/writescalar    )
-        add_subdirectory(h5pp/examples/readme-example1 h5pp-examples/readme-example1)
-        add_subdirectory(h5pp/examples/readme-example2 h5pp-examples/readme-example2)
-        add_subdirectory(h5pp/examples/readme-example3 h5pp-examples/readme-example3)
-        add_subdirectory(h5pp/examples/readme-example4 h5pp-examples/readme-example4)
-    elseif(NOT "${DOWNLOAD_METHOD}" MATCHES "none")
+    if (ALL_TARGETS_FOUND)
+        add_subdirectory(examples/helloworld h5pp-examples/helloworld)
+        add_subdirectory(examples/writescalar h5pp-examples/writescalar)
+        add_subdirectory(examples/readme-example1 h5pp-examples/readme-example1)
+        add_subdirectory(examples/readme-example2 h5pp-examples/readme-example2)
+        add_subdirectory(examples/readme-example3 h5pp-examples/readme-example3)
+        add_subdirectory(examples/readme-example4 h5pp-examples/readme-example4)
+    elseif (NOT "${DOWNLOAD_METHOD}" MATCHES "none")
         message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
-    endif()
+    endif ()
 endif()
 
 ############################################
