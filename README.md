@@ -22,6 +22,7 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
     *   [Debug and logging](#debug-and-logging)
     *   [File permissions](#file-permissions)
     *   [Extendable and non-extendable datasets](#extendable-and-non-extendable-datasets)
+    *   [Compression](#compression)
     *   [Load data into Python](#load-data-into-python)
 *   [Download](#download)
 *   [Requirements](#requirements)
@@ -238,9 +239,16 @@ You can also optionally pass a true/false argument when writing a new dataset to
 - A non-extendable dataset larger than 512 KB will be **made into an extendable dataset** unless explicitly specified, because it makes sense to read large datasets in chunks.
 
 
+### Compression
+Extendable (or chunked) datasets can also be compressed with GZIP, if HDF5 was compiled with zlib support. Use these
+functions to set or check the compression level:
 
+```c++
+    file.setCompressionLevel(9);            // 0 to 9: 0 to disable compression, 9 is maximum compression.
+    file.getCompressionLevel();             // Gets the current compression level
+    h5pp::checkIfCompressionIsAvailable();  // True if your installation of HDF5 has zlib support 
+```
 
-Pay attention to the cast to `dtype=np.complex128` which interprets each element of the array as two `doubles`, i.e. the real and imaginary parts are `2 * 64 = 128` bits.  
 
 ### Load data into Python
 HDF5 data is easy to load into Python. Loading integer and floating point data is straightforward. Complex data is almost as simple.
@@ -258,6 +266,7 @@ to load 1D arrays from an HDF5 file generated with `h5pp`:
     # Originally written as std::vector<std::complex<double>> in h5pp
     myComplexArray = np.asarray(file['complex-double-array-dataset']).view(dtype=np.complex128) 
 ```
+Notice the cast to `dtype=np.complex128` which interprets each element of the array as two `doubles`, i.e. the real and imaginary parts are `2 * 64 = 128` bits.  
 
 
 
