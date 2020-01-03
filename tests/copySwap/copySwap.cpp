@@ -1,12 +1,11 @@
 
-#include <iostream>
 #include <complex>
 #include <h5pp/h5pp.h>
+#include <iostream>
 
 /*! \brief Prints the content of a vector nicely */
-template<typename T>
-std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
-    if (!v.empty()) {
+template<typename T> std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
+    if(!v.empty()) {
         out << "[ ";
         std::copy(v.begin(), v.end(), std::ostream_iterator<T>(out, " "));
         out << "]";
@@ -16,22 +15,18 @@ std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
 
 using namespace std::complex_literals;
 
-
-
 // Store some dummy data to an hdf5 file
 
+int main() {
+    static_assert(h5pp::Type::Check::hasMember_data<std::vector<double>>() and
+                  "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
+    std::string outputFilenameA = "outputA/copySwapA.h5";
+    std::string outputFilenameB = "outputB/copySwapB.h5";
 
-int main()
-{
-    static_assert(h5pp::Type::Check::hasMember_data<std::vector<double>>() and "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
-
-    std::string outputFilenameA      = "outputA/copySwapA.h5";
-    std::string outputFilenameB      = "outputB/copySwapB.h5";
-
-    size_t      logLevel  = 1;
-    h5pp::File fileA(outputFilenameA,h5pp::AccessMode::READWRITE,h5pp::CreateMode::TRUNCATE,logLevel);
-    h5pp::File fileB(outputFilenameB,h5pp::AccessMode::READWRITE,h5pp::CreateMode::TRUNCATE,logLevel);
+    size_t     logLevel = 1;
+    h5pp::File fileA(outputFilenameA, h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, logLevel);
+    h5pp::File fileB(outputFilenameB, h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, logLevel);
 
     fileA.writeDataset("A", "groupA/A");
     fileB.writeDataset("B", "groupB/B");
@@ -42,11 +37,10 @@ int main()
     h5pp::File fileD(fileC);
     fileD.writeDataset("D", "groupD/D");
 
-    h5pp::File fileE(h5pp::File("outputE/copySwapE.h5",h5pp::AccessMode::READWRITE,h5pp::CreateMode::TRUNCATE,logLevel));
+    h5pp::File fileE(h5pp::File("outputE/copySwapE.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, logLevel));
     fileE.writeDataset("E", "groupE/E");
 
     fileD = fileB;
-
 
     return 0;
 }
