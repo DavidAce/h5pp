@@ -137,7 +137,7 @@ namespace h5pp::Hdf5 {
                 H5Sget_simple_extent_dims(fileSpace, dims.data(), nullptr);
                 H5Sclose(fileSpace);
                 closeLink(dataSet);
-                if(dims[1] < (hsize_t) data.cols()) { extendDataset(file, datasetRelativeName, 1, data.cols()); }
+                if(dims[1] < (hsize_t) data.cols()) extendDataset(file, datasetRelativeName, 1, data.cols());
             } else {
                 extendDataset(file, datasetRelativeName, 0, h5pp::Utils::getSize(data));
             }
@@ -207,16 +207,18 @@ namespace h5pp::Hdf5 {
 
         // First, we check if the user explicitly asked for an extendable dataset.
         if(props.extendable) {
-            if(props.chunkSize.empty() or props.chunkSize.data() == nullptr) throw std::runtime_error("ChunkSize has not been set. Can't call H5Pset_chunk(...)");
+            if(props.chunkDims.empty() or props.chunkDims.data() == nullptr) throw std::runtime_error("ChunkSize has not been set. Can't call H5Pset_chunk(...)");
             H5Pset_layout(dset_cpl, H5D_CHUNKED);
-            H5Pset_chunk(dset_cpl, props.ndims, props.chunkSize.data());
+            H5Pset_chunk(dset_cpl, props.ndims, props.chunkDims.data());
+            if(props.compressionLevel > 0 and props.compressionLevel < 10) {
+                H5Pset_deflate(dset_cpl, props.compressionLevel); // Compression only available on chunked datasets
+            }
         } else {
             hsize_t dsetsize = props.size * H5Tget_size(props.dataType); // Get size of dataset in bytes
-            if(dsetsize <= h5pp::Constants::max_size_compact) {
+            if(dsetsize <= h5pp::Constants::max_size_compact)
                 H5Pset_layout(dset_cpl, H5D_COMPACT);
-            } else {
+            else
                 H5Pset_layout(dset_cpl, H5D_CONTIGUOUS);
-            }
         }
     }
 
@@ -224,7 +226,6 @@ namespace h5pp::Hdf5 {
         if(not h5pp::Hdf5::checkIfLinkExistsRecursively(file, props.dsetName)) {
             hid_t dset_cpl = H5Pcreate(H5P_DATASET_CREATE);
             setSizeDependentLayout(dset_cpl, props);
-            // H5Pset_deflate (dset_cpl ,props.compressionLevel);
 
             if(props.dsetName.empty()) throw std::runtime_error("props.dsetName is empty");
             if(props.dataSpace < 0) throw std::runtime_error("props.dataSpace is not set, dataSpace < 0");
@@ -242,7 +243,7 @@ namespace h5pp::Hdf5 {
         std::vector<hsize_t> start(ndims);
         H5Sget_simple_extent_dims(memSpace, memDims.data(), nullptr);
         H5Sget_simple_extent_dims(fileSpace, fileDims.data(), nullptr);
-        for(int i = 0; i < ndims; i++) { start[i] = fileDims[i] - memDims[i]; }
+        for(int i = 0; i < ndims; i++) start[i] = fileDims[i] - memDims[i];
         H5Sselect_hyperslab(fileSpace, H5S_SELECT_SET, start.data(), nullptr, memDims.data(), nullptr);
     }
 
@@ -259,7 +260,10 @@ namespace h5pp::Hdf5 {
         std::vector<std::string> linkNames;
         try {
             herr_t err = H5Literate_by_name(file, groupName.c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, fileInfo, &linkNames, H5P_DEFAULT);
-            if(err < 0) { throw std::runtime_error("Failed to iterate group: " + groupName); }
+            if(err < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to iterate group: " + groupName);
+            }
         } catch(std::exception &ex) { h5pp::Logger::log->debug("Failed to get contents --  {}", ex.what()); }
         return linkNames;
     }
