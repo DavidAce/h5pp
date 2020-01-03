@@ -251,7 +251,7 @@ else()
     ### this CMakeLists.txt                             ###
     #######################################################
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/source/include/ DESTINATION ${H5PP_INSTALL_DIR}include COMPONENT headers)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/include/ DESTINATION ${H5PP_INSTALL_DIR}include COMPONENT headers)
     install(TARGETS h5pp headers deps flags EXPORT h5ppTargets)
 
     #Export the targets to a script
