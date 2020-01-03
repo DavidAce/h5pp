@@ -15,11 +15,12 @@ int main() {
     //      myInt_stringAttribute
     //      myInt_doubleAttribute
     auto allAttributes = file.getAttributeNames("intGroup/myInt");
-    for(auto & attr : allAttributes)std::cout << attr << std::endl;
+    for(auto &attr : allAttributes) std::cout << attr << std::endl;
 
     // Read the attribute data back
-    auto stringAttribute = file.readAttribute<std::string> ("myInt_stringAttribute", "intGroup/myInt");
-    auto doubleAttribute = file.readAttribute<double>      ("myInt_doubleAttribute", "intGroup/myInt");
-
+    auto stringAttribute = file.readAttribute<std::string>("myInt_stringAttribute", "intGroup/myInt");
+    auto doubleAttribute = file.readAttribute<double>("myInt_doubleAttribute", "intGroup/myInt");
+    std::cout << "StringAttribute = " << stringAttribute << std::endl;
+    std::cout << "doubleAttribute = " << doubleAttribute << std::endl;
     return 0;
 }
