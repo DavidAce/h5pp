@@ -219,6 +219,10 @@ script:
   - cmake --build . --target all  -- -j2
   - make test
   - make install
+
+
+after_failure:
+  - cd build/Debug
   - cat CMakeFiles/CMakeError.log
   - cat Testing/Temporary/LastTest.log
-
+#  - cat Testing/Temporary/LastTest.log

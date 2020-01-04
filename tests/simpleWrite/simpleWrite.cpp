@@ -71,6 +71,5 @@ int main() {
     Eigen::Tensor<double, 4> bigTensor(40, 180, 40, 5);
     bigTensor.setConstant(1.0);
     file.writeDataset(bigTensor, "compressedWriteGroup/bigTensor");
-
     return 0;
 }

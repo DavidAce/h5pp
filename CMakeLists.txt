@@ -128,6 +128,21 @@ add_library(deps INTERFACE)
 add_library(flags INTERFACE)
 
 
+##################################################################
+### Preempt Threads::Threads                                   ###
+### It's looked for in dependencies, so we make it right       ###
+### before it's done wrong, i.e. with pthread instead of       ###
+### -lpthread. If this is undesirable you can preempt it       ###
+### yourself similarly                                         ###
+##################################################################
+if (NOT TARGET Threads::Threads)
+    set(CMAKE_THREAD_PREFER_PTHREAD FALSE)
+    set(THREADS_PREFER_PTHREAD_FLAG FALSE)
+    find_package(Threads)
+    set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES pthread)
+endif ()
+
+
 #######################################################
 ###  On some HPC clusters Clang needs path to gnu gcc #
 #######################################################
@@ -166,6 +181,7 @@ CheckCXXOptional()
 #################################
 target_compile_features(flags INTERFACE cxx_std_17)
 target_link_libraries(flags INTERFACE std::filesystem)
+target_link_libraries(flags INTERFACE pthread)
 
 
 target_include_directories(
@@ -191,20 +207,6 @@ endif()
 list(APPEND H5PP_DIRECTORY_HINTS ${CMAKE_INSTALL_PREFIX})
 
 
-
-##################################################################
-### Preempt Threads::Threads                                   ###
-### It's looked for in dependencies, so we make it right       ###
-### before it's done wrong, i.e. with pthread instead of       ###
-### -lpthread. If this is undesirable you can preempt it       ###
-### yourself similarly                                         ###
-##################################################################
-if(NOT TARGET Threads::Threads)
-    set(CMAKE_THREAD_PREFER_PTHREAD FALSE)
-    set(THREADS_PREFER_PTHREAD_FLAG FALSE)
-    find_package(Threads)
-    set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES pthread)
-endif()
 
 
 
