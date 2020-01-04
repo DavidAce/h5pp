@@ -74,6 +74,7 @@ function(define_hdf5_target lang libnames target_list)
 endfunction()
 
 function(find_package_hdf5_isolator hdf5_root)
+    cmake_policy(SET CMP0074 NEW)
     unset(HDF5_CXX_COMPILER_EXECUTABLE CACHE)
     unset(HDF5_C_COMPILER_EXECUTABLE   CACHE)
     unset(HDF5_CXX_COMPILER_EXECUTABLE)
