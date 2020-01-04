@@ -115,7 +115,6 @@ include(CheckIncludeFileCXX)
 include(CheckCXXSourceCompiles)
 
 cmake_push_check_state()
-
 set(CMAKE_REQUIRED_QUIET ${Filesystem_FIND_QUIETLY})
 
 # All of our tests required C++17 or later
@@ -144,6 +143,7 @@ if(NOT "Experimental" IN_LIST want_components)
     set(find_experimental FALSE)
 endif()
 
+cmake_policy(SET CMP0075 NEW)
 if(find_final)
     check_include_file_cxx("filesystem" _CXX_FILESYSTEM_HAVE_HEADER)
     ## HERE STARTS MODIFICATION 1
