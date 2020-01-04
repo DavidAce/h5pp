@@ -65,14 +65,20 @@ endif()
 # tree of a project that uses it. Users may set the option H5PP_IS_SUBPROJECT
 # before add_subdirectory(h5pp)
 #####################################################################
-if(NOT H5PP_IS_SUBPROJECT)
-    if("^${CMAKE_SOURCE_DIR}$" STREQUAL "^${PROJECT_SOURCE_DIR}$")
-        set (H5PP_IS_SUBPROJECT OFF)
-    else()
+if (NOT H5PP_IS_SUBPROJECT)
+    if ("^${CMAKE_SOURCE_DIR}$" STREQUAL "^${PROJECT_SOURCE_DIR}$")
+        set(H5PP_IS_SUBPROJECT OFF)
+    else ()
         message(STATUS "Detected usage as subproject")
-        set (H5PP_IS_SUBPROJECT ON)
-    endif()
-endif()
+        set(H5PP_IS_SUBPROJECT ON)
+    endif ()
+endif ()
+
+
+#####################################################################
+### Let cmake find our Find<package>.cmake modules                ###
+#####################################################################
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 
 #####################################################################
@@ -81,7 +87,7 @@ endif()
 ### Useful if you want to have separate directories for each libs ###
 ### and to easily delete them individually                        ###
 #####################################################################
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
     message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/install")
     set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "..." FORCE)
 endif()
@@ -113,8 +119,6 @@ if(H5PP_PRINT_INFO)
 endif()
 
 
-
-
 #########################################################################
 ### Define main target and auxiliary for partial consumption          ###
 #########################################################################
@@ -124,24 +128,24 @@ add_library(deps INTERFACE)
 add_library(flags INTERFACE)
 
 
-
-#################################
-### Compiler and linker flags ###
-#################################
-target_compile_features(flags INTERFACE cxx_std_17)
-target_link_libraries (flags INTERFACE stdc++fs)
-if(GCC_TOOLCHAIN)
+#######################################################
+###  On some HPC clusters Clang needs path to gnu gcc #
+#######################################################
+if (GCC_TOOLCHAIN AND ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
-endif()
+endif ()
 
+
+#######################################################
+### Add def for download method for use in configs  ###
+#######################################################
 target_compile_definitions(deps INTERFACE DOWNLOAD_METHOD=${DOWNLOAD_METHOD})
 
 #######################################################
-###  Check  #include<filesystem> or                 ###
-###  or     #include<experimental/filesystem>       ###
+###  h5pp requires the filesystem library           ###
 #######################################################
-include(${PROJECT_SOURCE_DIR}/cmake/CheckCXXFilesystem.cmake)
-CheckCXXFilesystem()
+find_package(Filesystem COMPONENTS Final Experimental REQUIRED)
+
 
 #######################################################
 ###  Check  #include<experimental/type_traits>      ###
@@ -157,6 +161,11 @@ include(${PROJECT_SOURCE_DIR}/cmake/CheckCXXOptional.cmake)
 CheckCXXOptional()
 
 
+#################################
+### Compiler and linker flags ###
+#################################
+target_compile_features(flags INTERFACE cxx_std_17)
+target_link_libraries(flags INTERFACE std::filesystem)
 
 
 target_include_directories(

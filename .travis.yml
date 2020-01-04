@@ -179,6 +179,7 @@ matrix:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
       install:
+        - choco install ninja
         - choco upgrade llvm -y
         - ${CC} --version
 
@@ -189,8 +190,8 @@ matrix:
         - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
-
-      install:
+      before_install:
+        - choco install ninja
         - choco upgrade mingw -y
         - ${CC} --version
 
@@ -202,7 +203,7 @@ matrix:
         - CXX=clang++
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
-      install:
+      before_install:
         - ${CC} --version
 
 
