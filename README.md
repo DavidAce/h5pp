@@ -383,7 +383,7 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 -  `h5pp::headers` links the `h5pp` headers only.
 -  `h5pp::deps` has targets to link all the dependencies that were found/downloaded when `h5pp` was built. If you used `DOWNLOAD_METHOD=native` these targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, which can of course be used independently.
     If you used `DOWNLOAD_METHOD=conan` these targets are `CONAN_PKG::Eigen3`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. If you used `DOWNLOAD_METHOD=none` this target is empty.
--  `h5pp::flags` sets compile flags that you need to compile with `h5pp`. These flags enable C++17 and filesystem headers, i.e. `-std=c++17` and `-lstdc++fs`.
+-  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`.
 
 
 ### Link manually (not as easy)
