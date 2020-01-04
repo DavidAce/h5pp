@@ -145,6 +145,17 @@ endif()
 
 if(find_final)
     check_include_file_cxx("filesystem" _CXX_FILESYSTEM_HAVE_HEADER)
+    if(NOT _CXX_FILESYSTEM_HAVE_HEADER)
+        unset(_CXX_FILESYSTEM_HAVE_HEADER)
+        set(CMAKE_REQUIRED_LIBRARIES stdc++fs)
+        check_include_file_cxx("filesystem" _CXX_FILESYSTEM_HAVE_HEADER)
+    endif()
+    if(NOT _CXX_FILESYSTEM_HAVE_HEADER)
+        set(CMAKE_REQUIRED_LIBRARIES c++fs)
+        unset(_CXX_FILESYSTEM_HAVE_HEADER)
+        check_include_file_cxx("filesystem" _CXX_FILESYSTEM_HAVE_HEADER)
+    endif()
+
     mark_as_advanced(_CXX_FILESYSTEM_HAVE_HEADER)
     if(_CXX_FILESYSTEM_HAVE_HEADER)
         # We found the non-experimental header. Don't bother looking for the
