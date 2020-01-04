@@ -17,7 +17,7 @@ matrix:
       env:
         - CXX=g++-8 CC=gcc-8
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="CodeBlocks - Unix Makefiles"
+        - CMAKE_GEN="-G \"CodeBlocks - Unix Makefiles\""
       addons:
         apt:
           update: true
@@ -34,7 +34,7 @@ matrix:
       compiler: clang
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="CodeBlocks - Unix Makefiles"
+        - CMAKE_GEN="-G \"CodeBlocks - Unix Makefiles\""
         - CXX=clang++ CC=clang
       addons:
         apt:
@@ -51,7 +51,7 @@ matrix:
       compiler: gcc
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="CodeBlocks - Unix Makefiles"
+        - CMAKE_GEN="-G \"CodeBlocks - Unix Makefiles\""
 
     - name: "bionic clang"
       os: linux
@@ -59,7 +59,7 @@ matrix:
       compiler: clang
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="CodeBlocks - Unix Makefiles"
+        - CMAKE_GEN="-G \"CodeBlocks - Unix Makefiles\""
 
     - name: "xenial gcc-8 conda libs"
       os: linux
@@ -68,7 +68,7 @@ matrix:
       env:
         - CXX=g++-8 CC=gcc-8
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="CodeBlocks - Unix Makefiles"
+        - CMAKE_GEN="-G \"CodeBlocks - Unix Makefiles\""
       addons:
         apt:
           update: true
@@ -93,7 +93,7 @@ matrix:
       compiler: gcc
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="CodeBlocks - Unix Makefiles"
+        - CMAKE_GEN="-G \"CodeBlocks - Unix Makefiles\""
       before_install:
         # Here we just install Miniconda, which you shouldn't have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
@@ -112,7 +112,7 @@ matrix:
       env:
         - CXX=g++-8 CC=gcc-8
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="CodeBlocks - Unix Makefiles"
+        - CMAKE_GEN="-G \"CodeBlocks - Unix Makefiles\""
       addons:
         apt:
           update: true
@@ -132,7 +132,7 @@ matrix:
       compiler: gcc
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native  -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="CodeBlocks - Unix Makefiles"
+        - CMAKE_GEN="-G \"CodeBlocks - Unix Makefiles\""
       addons:
         apt:
           update: true
@@ -150,7 +150,7 @@ matrix:
       compiler: clang
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan  -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="CodeBlocks - Unix Makefiles"
+        - CMAKE_GEN="-G \"CodeBlocks - Unix Makefiles\""
         - CXX=clang++ CC=clang
       before_install:
         # Here we just install Miniconda, which you shouldn't have to change.
@@ -164,19 +164,21 @@ matrix:
 
     - name: "Windows MSVC"
       os: windows
+      compiler: gcc
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="Ninja"
+        - CMAKE_GEN="-G Ninja"
       before_install:
         - ${CC} --version
 
     - name: "Windows clang"
       os: windows
+      compiler: clang
       env:
         - CC="/c/Program Files/LLVM/bin/clang"
         - CXX="/c/Program Files/LLVM/bin/clang++"
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="Ninja"
+        - CMAKE_GEN="-G Ninja"
       before_install:
         - choco install ninja
         - choco upgrade llvm -y
@@ -184,11 +186,12 @@ matrix:
 
     - name: "Windows gcc"
       os: windows
+      compiler: gcc
       env:
         - CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
         - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="Ninja"
+        - CMAKE_GEN="-G Ninja"
       before_install:
         - choco install ninja
         - choco upgrade mingw -y
@@ -196,12 +199,13 @@ matrix:
 
     - name: "macOS clang"
       os: osx
+      compiler: clang
       osx_image: xcode10.1
       env:
         - CC=clang
         - CXX=clang++
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="Ninja"
+        - CMAKE_GEN="-G Ninja"
       before_install:
         - ${CC} --version
 
@@ -210,7 +214,7 @@ script:
   - export MAKEFLAGS=-j2
   - cmake -E make_directory build/Debug
   - cd build/Debug
-  - cmake -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS -G $CMAKE_GEN ../../
+  - cmake -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS $CMAKE_GEN ../../
   - cmake --build . --target all  -- -j2
   - make test
   - make install
