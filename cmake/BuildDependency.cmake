@@ -23,10 +23,14 @@ function(build_dependency dep_name install_dir extra_flags)
         message(STATUS  "Output saved to ${build_dir}/stdout and ${build_dir}/stderr")
         file(APPEND ${build_dir}/stdout ${config_result})
         file(APPEND ${build_dir}/stderr ${config_error})
+        if(CMAKE_VERBOSE_MAKEFILE)
+            message(STATUS "Contents of stdout: \n  ${config_result} \n")
+            message(STATUS "Contents of stderr: \n  ${config_error}  \n")
+        endif()
     endif()
 
 
-    execute_process(COMMAND  ${CMAKE_COMMAND} --build . --target all  --parallel
+    execute_process(COMMAND  ${CMAKE_COMMAND} --build . --target all
             WORKING_DIRECTORY "${build_dir}"
             RESULT_VARIABLE build_result
             ERROR_VARIABLE  build_error
@@ -41,6 +45,10 @@ function(build_dependency dep_name install_dir extra_flags)
         message(STATUS  "Output saved to ${build_dir}/stdout and ${build_dir}/stderr")
         file(APPEND ${build_dir}/stdout ${build_result})
         file(APPEND ${build_dir}/stderr ${build_error})
+        if(CMAKE_VERBOSE_MAKEFILE)
+            message(STATUS "Contents of stdout: \n  ${build_result} \n")
+            message(STATUS "Contents of stderr: \n  ${build_error} \n")
+        endif()
     endif()
 
 endfunction()
