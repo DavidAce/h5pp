@@ -21,35 +21,35 @@ jobs:
             os: ubuntu-16.04
             compiler: gcc
             version: "7"
-            generator: -G "CodeBlocks - Unix Makefiles"
+            generator: -G 'Unix Makefiles'
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
           
           - name: ubuntu-18.04-gcc-9
             os: ubuntu-18.04
             compiler: gcc
             version: "9"
-            generator: -G "CodeBlocks - Unix Makefiles"
+            generator: -G 'Unix Makefiles'
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
           
           - name: ubuntu-16.04-clang-6.0
             os: ubuntu-16.04
             compiler: clang
             version: "6.0"
-            generator: -G "CodeBlocks - Unix Makefiles"
+            generator: -G 'Unix Makefiles'
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
 
           - name: ubuntu-18.04-clang-9
             os: ubuntu-18.04
             compiler: clang
             version: "9"
-            generator: -G "CodeBlocks - Unix Makefiles"
+            generator: -G 'Unix Makefiles'
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
 
           - name: ubuntu-18.04-clang-9-conda
             os: ubuntu-18.04
             compiler: clang
             version: "9"
-            generator: -G "CodeBlocks - Unix Makefiles"
+            generator: -G 'Unix Makefiles'
             sources: conda
             conda: spdlog hdf5 hdf5-static eigen
             flags: -DDOWNLOAD_METHOD:STRING=native -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF
@@ -58,7 +58,7 @@ jobs:
             os: ubuntu-18.04
             compiler: clang
             version: "9"
-            generator: -G "CodeBlocks - Unix Makefiles"
+            generator: -G 'Unix Makefiles'
             sources: apt
             apt: libhdf5-dev libspdlog-dev libeigen3-dev
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
@@ -67,7 +67,7 @@ jobs:
             os: ubuntu-18.04
             compiler: clang
             version: "6.0"
-            generator: -G "CodeBlocks - Unix Makefiles"
+            generator: -G 'Unix Makefiles'
             sources: conda conan
             conda: conan
             flags: -DDOWNLOAD_METHOD:STRING=conan -DBUILD_SHARED_LIBS:BOOL=OFF

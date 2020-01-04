@@ -6,7 +6,7 @@ function(CheckCXXOptional)
     check_include_file_cxx(experimental/optional has_experimental_optional )
 
     if(NOT has_optional AND NOT has_experimental_optional)
-        message(FATAL_ERROR "\n\
+        message(WARNING "\n\
                 Missing <optional> and/or <experimental/optional> headers.\n\
                 Consider using a newer compiler (GCC 6 or above, Clang 5 or above),\n\
                 or checking the compiler flags. If using Clang, pass the variable \n\

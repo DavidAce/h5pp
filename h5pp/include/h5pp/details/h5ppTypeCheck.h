@@ -1,8 +1,9 @@
 #pragma once
 #include "h5ppLogger.h"
+#include "h5ppStdIsDetected.h"
 #include "h5ppTypeComplex.h"
 #include <Eigen/Core>
-#include <experimental/type_traits>
+//#include <experimental/type_traits>
 #include <unsupported/Eigen/CXX11/Tensor>
 
 namespace h5pp::Type::Check {
