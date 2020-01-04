@@ -21,30 +21,35 @@ jobs:
             os: ubuntu-16.04
             compiler: gcc
             version: "7"
+            cmake-gen: "CodeBlocks - Unix Makefiles"
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
           
           - name: ubuntu-18.04-gcc-9
             os: ubuntu-18.04
             compiler: gcc
             version: "9"
+            cmake-gen: "CodeBlocks - Unix Makefiles"
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
           
           - name: ubuntu-16.04-clang-6.0
             os: ubuntu-16.04
             compiler: clang
             version: "6.0"
+            cmake-gen: "CodeBlocks - Unix Makefiles"
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
 
           - name: ubuntu-18.04-clang-9
             os: ubuntu-18.04
             compiler: clang
             version: "9"
+            cmake-gen: "CodeBlocks - Unix Makefiles"
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
 
           - name: ubuntu-18.04-clang-9-conda
             os: ubuntu-18.04
             compiler: clang
             version: "9"
+            cmake-gen: "CodeBlocks - Unix Makefiles"
             sources: conda
             conda: spdlog hdf5 hdf5-static eigen
             flags: -DDOWNLOAD_METHOD:STRING=native -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF
@@ -53,6 +58,7 @@ jobs:
             os: ubuntu-18.04
             compiler: clang
             version: "9"
+            cmake-gen: "CodeBlocks - Unix Makefiles"
             sources: apt
             apt: libhdf5-dev libspdlog-dev libeigen3-dev
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
@@ -61,6 +67,7 @@ jobs:
             os: ubuntu-18.04
             compiler: clang
             version: "6.0"
+            cmake-gen: "CodeBlocks - Unix Makefiles"
             sources: conda conan
             conda: conan
             flags: -DDOWNLOAD_METHOD:STRING=conan -DBUILD_SHARED_LIBS:BOOL=OFF
@@ -68,11 +75,13 @@ jobs:
           - name: windows-2019-clang
             os: windows-2019
             compiler: clang
+            cmake-gen: Ninja
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
 
           - name: windows-2019-gcc
             os: windows-2019
             compiler: gcc
+            cmake-gen: Ninja
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
 
     steps:
@@ -116,6 +125,7 @@ jobs:
           scoop install ninja --global
           if ("${{ matrix.compiler }}".StartsWith("clang")) {
             scoop install llvm --global
+            scoop install gcc --global
           }
           if ("${{ matrix.compiler }}" -eq "gcc") {
             # Chocolatey GCC is broken on the windows-2019 image.
@@ -137,7 +147,7 @@ jobs:
         run: |
           cmake -E make_directory build/Debug
           cd build/Debug
-          cmake -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON  ${{ matrix.flags }} -G "CodeBlocks - Unix Makefiles" ../../
+          cmake -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON  ${{ matrix.flags }} -G ${{ matrix.cmake-gen }} ../../
       - name: Build
         run: |
           cd build/Debug
