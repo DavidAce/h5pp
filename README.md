@@ -273,9 +273,9 @@ Notice the cast to `dtype=np.complex128` which interprets each element of the ar
 ## Download
 There are currently 4 ways to obtain `h5pp`:
 - `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
-- (Debian only) Download the the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
 - From conda: `conda install -c davidace h5pp`
 - From [conan bintray repo](https://bintray.com/davidace/conan-public/h5pp%3Adavidace)
+- (Debian only) Download the the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
 
 
 ## Requirements
@@ -307,12 +307,10 @@ Build the library just as any CMake project. For instance, from the project's ro
 
 ```
 
-By default, installing `h5pp` will install its headers under `CMAKE_INSTALL_PREFIX` and generate files
-such as `h5ppConfig.cmake` `h5ppConfig.cmake` which lets the you, the user, consume `h5pp` using `find_package(h5pp)` in your own projects. Doing so will
-define the target `h5pp::h5pp` which includes the headers and sets necessary compiler flags (e.g. -std=c++17). 
-If not given, `CMAKE_INSTALL_PREFIX` defaults to `${CMAKE_BINARY_DIR}/install`, where `${CMAKE_BINARY_DIR}` is the directory you are building from. Building 
-the.
-
+Headers will be installed under `<install-dir>/include` and config files under `<install-dir>/share/h5pp/cmake`.
+These config files allow you to use`find_package(h5pp)` in your own projects, which in turn defines the target `h5pp::h5pp` 
+with everything you need to link `h5pp` correctly (including dependencies, if you so choose). 
+If not set, `CMAKE_INSTALL_PREFIX` defaults to `${CMAKE_BINARY_DIR}/install`, where `${CMAKE_BINARY_DIR}` is the directory you are building from.
 
 
 
