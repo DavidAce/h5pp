@@ -15,6 +15,7 @@ ExternalProject_Add(external_eigen3
         BUILD_COMMAND ${CMAKE_COMMAND} --build . -- -j ${NUM_THREADS}
         CMAKE_ARGS
         -DEIGEN_TEST_CXX11:BOOL=ON
+        -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_INSTALL_MESSAGE=NEVER #Avoid unnecessary output to console
         )

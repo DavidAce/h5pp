@@ -282,11 +282,11 @@ function(find_package_hdf5)
 
     if(HDF5_FOUND)
 
-        include(cmake/PrintTargetInfo.cmake)
-        message("HDF5_TARGETS: ${HDF5_TARGETS}")
-        foreach(tgt ${HDF5_TARGETS})
-            print_target_info(${tgt})
-        endforeach()
+#        include(cmake/PrintTargetInfo.cmake)
+#        message("HDF5_TARGETS: ${HDF5_TARGETS}")
+#        foreach(tgt ${HDF5_TARGETS})
+#            print_target_info(${tgt})
+#        endforeach()
 
         add_library(hdf5::hdf5 IMPORTED INTERFACE)
         target_link_libraries(hdf5::hdf5 INTERFACE ${HDF5_TARGETS})

@@ -13,6 +13,7 @@ ExternalProject_Add(external_spdlog
         BUILD_COMMAND ${CMAKE_COMMAND} --build . -- -j ${NUM_THREADS}
         CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+        -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
         -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
         -DSPDLOG_BUILD_TESTS:BOOL=OFF
         -DCMAKE_INSTALL_MESSAGE=NEVER #Avoid unnecessary output to console
