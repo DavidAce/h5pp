@@ -266,7 +266,7 @@ namespace h5pp {
 
         void setCompressionLevel(size_t compressionLevelZeroToNine) {
             if(checkIfCompressionIsAvailable()) {
-                if(compressionLevelZeroToNine >= 0 and compressionLevelZeroToNine < 10) {
+                if(compressionLevelZeroToNine < 10) {
                     h5pp::Logger::log->debug("Compression level set to {}", compressionLevelZeroToNine);
                     compressionLevel = compressionLevelZeroToNine;
                 } else {

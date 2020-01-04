@@ -215,9 +215,11 @@ script:
   - export MAKEFLAGS=-j2
   - cmake -E make_directory build/Debug
   - cd build/Debug
-  - cmake -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS -G "$CMAKE_GEN" ../../
+  - cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS -G "$CMAKE_GEN" ../../
   - cmake --build . --target all  -- -j2
   - make test
   - make install
   - cat CMakeFiles/CMakeError.log
+  - cat Testing/LastTest.log
+  - cat LastTestsFailed.log
 
