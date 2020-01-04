@@ -155,7 +155,10 @@ jobs:
 
       - name: Errors
         shell: bash
-        run: cat build/Debug/CMakeFiles/CMakeError.log
+        run: |
+          cat build/Debug/CMakeFiles/CMakeError.log
+          cat build/Debug/Testing/LastTest.log
+          cat build/Debug/Testing/LastTestFailed.log
 
       - name: Test
         run: |
