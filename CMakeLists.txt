@@ -362,12 +362,12 @@ if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
                         test-readWriteAttributes
                         test-copySwap)
         add_custom_command(
-            TARGET all-tests
-            POST_BUILD
-            COMMENT "Running Tests"
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            DEPENDS h5pp deps flags
-            COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failures)
+                TARGET all-tests
+                POST_BUILD
+                COMMENT "Running Tests"
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                DEPENDS h5pp deps flags
+                COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failure)
 
     elseif(NOT "${DOWNLOAD_METHOD}" MATCHES "none")
         message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
