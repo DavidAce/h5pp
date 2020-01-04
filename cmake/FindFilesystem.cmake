@@ -143,23 +143,8 @@ if(NOT "Experimental" IN_LIST want_components)
     set(find_experimental FALSE)
 endif()
 
-cmake_policy(SET CMP0075 NEW)
 if(find_final)
     check_include_file_cxx("filesystem" _CXX_FILESYSTEM_HAVE_HEADER)
-    ## HERE STARTS MODIFICATION 1
-    if(NOT _CXX_FILESYSTEM_HAVE_HEADER)
-        unset(_CXX_FILESYSTEM_HAVE_HEADER)
-        set(CMAKE_REQUIRED_LIBRARIES stdc++fs)
-        set(CMAKE_REQUIRED_FLAGS -std=c++17)
-        check_include_file_cxx("filesystem" _CXX_FILESYSTEM_HAVE_HEADER)
-    endif()
-    if(NOT _CXX_FILESYSTEM_HAVE_HEADER)
-        set(CMAKE_REQUIRED_LIBRARIES c++fs)
-        set(CMAKE_REQUIRED_FLAGS -std=c++17)
-        unset(_CXX_FILESYSTEM_HAVE_HEADER)
-        check_include_file_cxx("filesystem" _CXX_FILESYSTEM_HAVE_HEADER)
-    endif()
-    ## HERE ENDS MODIFICATION 1
     mark_as_advanced(_CXX_FILESYSTEM_HAVE_HEADER)
     if(_CXX_FILESYSTEM_HAVE_HEADER)
         # We found the non-experimental header. Don't bother looking for the
@@ -209,12 +194,12 @@ if(CXX_FILESYSTEM_HAVE_FS)
         }
     ]] code @ONLY)
     # Try to compile a simple filesystem program with the libstdc++ flag
-    set(CMAKE_REQUIRED_LIBRARIES  stdc++fs)
+    set(CMAKE_REQUIRED_LIBRARIES  -lstdc++fs)
     check_cxx_source_compiles("${code}" CXX_FILESYSTEM_STDCPPFS_NEEDED)
     set(can_link ${CXX_FILESYSTEM_STDCPPFS_NEEDED})
     if(NOT CXX_FILESYSTEM_STDCPPFS_NEEDED)
         # Try to compile a simple filesystem program with the libc++ flag
-        set(CMAKE_REQUIRED_LIBRARIES c++fs)
+        set(CMAKE_REQUIRED_LIBRARIES -lc++fs)
         check_cxx_source_compiles("${code}" CXX_FILESYSTEM_CPPFS_NEEDED)
         set(can_link ${CXX_FILESYSTEM_CPPFS_NEEDED})
         if(NOT CXX_FILESYSTEM_CPPFS_NEEDED)
