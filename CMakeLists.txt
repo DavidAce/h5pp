@@ -90,18 +90,20 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
     message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/install")
     set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "..." FORCE)
-endif()
-if(APPEND_LIBSUFFIX)
-    set(H5PP_CONFIG_DIR        h5pp/share/h5pp/cmake)
-    set(eigen3_install_prefix  ${CMAKE_INSTALL_PREFIX}/Eigen3)
-    set(spdlog_install_prefix  ${CMAKE_INSTALL_PREFIX}/spdlog)
-    set(hdf5_install_prefix    ${CMAKE_INSTALL_PREFIX}/hdf5)
-else()
-    set(H5PP_CONFIG_DIR        share/h5pp/cmake)
-    set(eigen3_install_prefix  ${CMAKE_INSTALL_PREFIX})
-    set(spdlog_install_prefix  ${CMAKE_INSTALL_PREFIX})
-    set(hdf5_install_prefix    ${CMAKE_INSTALL_PREFIX})
-endif()
+endif ()
+if (APPEND_LIBSUFFIX)
+    set(H5PP_CONFIG_DIR h5pp/share/h5pp/cmake)
+    set(eigen3_install_prefix ${CMAKE_INSTALL_PREFIX}/Eigen3)
+    set(spdlog_install_prefix ${CMAKE_INSTALL_PREFIX}/spdlog)
+    set(hdf5_install_prefix ${CMAKE_INSTALL_PREFIX}/hdf5)
+    set(ghcfilesystem_install_prefix ${CMAKE_INSTALL_PREFIX}/ghcFilesystem)
+else ()
+    set(H5PP_CONFIG_DIR share/h5pp/cmake)
+    set(eigen3_install_prefix ${CMAKE_INSTALL_PREFIX})
+    set(spdlog_install_prefix ${CMAKE_INSTALL_PREFIX})
+    set(hdf5_install_prefix ${CMAKE_INSTALL_PREFIX})
+    set(ghcfilesystem_install_prefix ${CMAKE_INSTALL_PREFIX})
+endif ()
 
 
 
@@ -159,7 +161,15 @@ target_compile_definitions(deps INTERFACE DOWNLOAD_METHOD=${DOWNLOAD_METHOD})
 #######################################################
 ###  h5pp requires the filesystem library           ###
 #######################################################
-find_package(Filesystem COMPONENTS Final Experimental REQUIRED)
+find_package(Filesystem COMPONENTS Final Experimental)
+if (TARGET std::filesystem)
+    target_link_libraries(flags INTERFACE std::filesystem)
+elseif (NOT DOWNLOAD_METHOD MATCHES "none")
+    message(STATUS "Your compiler lacks std::filesystem. Using ghc::filesystem instead as a last resort")
+    message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
+    include(cmake/Fetch_ghcFilesystem.cmake)
+    target_link_libraries(flags INTERFACE ghcFilesystem::ghc_filesystem)
+endif ()
 
 
 #######################################################
@@ -180,7 +190,6 @@ CheckCXXOptional()
 ### Compiler and linker flags ###
 #################################
 target_compile_features(flags INTERFACE cxx_std_17)
-target_link_libraries(flags INTERFACE std::filesystem)
 target_link_libraries(flags INTERFACE pthread)
 
 
@@ -233,6 +242,8 @@ if(H5PP_PRINT_INFO)
     print_target_info(headers)
     print_target_info(deps)
     print_target_info(flags)
+    print_target_info(std::filesystem)
+    print_target_info(ghcFilesystem::ghc_filesystem)
     print_target_info(spdlog::spdlog)
     print_target_info(Eigen3::Eigen)
     print_target_info(hdf5::hdf5)

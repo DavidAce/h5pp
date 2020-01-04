@@ -6,7 +6,8 @@
 
 #[=======================================================================[.rst:
 
-# ... and modified lines 194 to 217 inspired by:
+# ... and modified lines 149 to 162 just in case
+# ... and modified lines 199 to 226 inspired by:
 #   https://gitlab.kitware.com/cmake/cmake/issues/17834
 
 
@@ -145,17 +146,20 @@ endif()
 
 if(find_final)
     check_include_file_cxx("filesystem" _CXX_FILESYSTEM_HAVE_HEADER)
+    ## HERE STARTS MODIFICATION 1
     if(NOT _CXX_FILESYSTEM_HAVE_HEADER)
         unset(_CXX_FILESYSTEM_HAVE_HEADER)
-        set(CMAKE_REQUIRED_LIBRARIES -lstdc++fs)
+        set(CMAKE_REQUIRED_LIBRARIES stdc++fs)
+        set(CMAKE_REQUIRED_FLAGS -std=c++17)
         check_include_file_cxx("filesystem" _CXX_FILESYSTEM_HAVE_HEADER)
     endif()
     if(NOT _CXX_FILESYSTEM_HAVE_HEADER)
-        set(CMAKE_REQUIRED_LIBRARIES -lc++fs)
+        set(CMAKE_REQUIRED_LIBRARIES c++fs)
+        set(CMAKE_REQUIRED_FLAGS -std=c++17)
         unset(_CXX_FILESYSTEM_HAVE_HEADER)
         check_include_file_cxx("filesystem" _CXX_FILESYSTEM_HAVE_HEADER)
     endif()
-
+    ## HERE ENDS MODIFICATION 1
     mark_as_advanced(_CXX_FILESYSTEM_HAVE_HEADER)
     if(_CXX_FILESYSTEM_HAVE_HEADER)
         # We found the non-experimental header. Don't bother looking for the
@@ -193,6 +197,7 @@ set(_found FALSE)
 
 if(CXX_FILESYSTEM_HAVE_FS)
     # We have some filesystem library available. Do link checks
+    ## HERE STARTS MODIFICATION 2
     string(CONFIGURE [[
         #include <@CXX_FILESYSTEM_HEADER@>
 
@@ -203,30 +208,23 @@ if(CXX_FILESYSTEM_HAVE_FS)
             return static_cast<int>(cwd.string().size());
         }
     ]] code @ONLY)
-    ## HERE STARTS MODIFICATION
     # Try to compile a simple filesystem program with the libstdc++ flag
-    set(CMAKE_REQUIRED_LIBRARIES  -lstdc++fs)
+    set(CMAKE_REQUIRED_LIBRARIES  stdc++fs)
     check_cxx_source_compiles("${code}" CXX_FILESYSTEM_STDCPPFS_NEEDED)
     set(can_link ${CXX_FILESYSTEM_STDCPPFS_NEEDED})
     if(NOT CXX_FILESYSTEM_STDCPPFS_NEEDED)
         # Try to compile a simple filesystem program with the libc++ flag
-        set(CMAKE_REQUIRED_LIBRARIES -lc++fs)
+        set(CMAKE_REQUIRED_LIBRARIES c++fs)
         check_cxx_source_compiles("${code}" CXX_FILESYSTEM_CPPFS_NEEDED)
         set(can_link ${CXX_FILESYSTEM_CPPFS_NEEDED})
         if(NOT CXX_FILESYSTEM_CPPFS_NEEDED)
-            # Try to compile a simple filesystem program with the libc++ and libc++experimental flag
-            set(CMAKE_REQUIRED_LIBRARIES -lc++fs -lc++experimental)
-            check_cxx_source_compiles("${code}" CXX_FILESYSTEM_CPPFS_CPPEXPERIMENTAL_NEEDED)
-            set(can_link ${CXX_FILESYSTEM_CPPFS_CPPEXPERIMENTAL_NEEDED})
-            if(NOT CXX_FILESYSTEM_CPPFS_CPPEXPERIMENTAL_NEEDED)
-                # Try to compile a simple filesystem program without any linker flags
-                check_cxx_source_compiles("${code}" CXX_FILESYSTEM_NO_LINK_NEEDED)
-                set(can_link ${CXX_FILESYSTEM_NO_LINK_NEEDED})
-            endif()
+            # Try to compile a simple filesystem program without any linker flags
+            check_cxx_source_compiles("${code}" CXX_FILESYSTEM_NO_LINK_NEEDED)
+            set(can_link ${CXX_FILESYSTEM_NO_LINK_NEEDED})
         endif()
 
     endif()
-    ## HERE ENDS MODIFICATION
+    ## HERE ENDS MODIFICATION 2
 
     if(can_link)
         add_library(std::filesystem INTERFACE IMPORTED)
@@ -236,11 +234,9 @@ if(CXX_FILESYSTEM_HAVE_FS)
         if(CXX_FILESYSTEM_NO_LINK_NEEDED)
             # Nothing to add...
         elseif(CXX_FILESYSTEM_STDCPPFS_NEEDED)
-            target_link_libraries(std::filesystem INTERFACE -lstdc++fs)
+            target_link_libraries(std::filesystem INTERFACE stdc++fs)
         elseif(CXX_FILESYSTEM_CPPFS_NEEDED)
-            target_link_libraries(std::filesystem INTERFACE -lc++fs)
-        elseif(CXX_FILESYSTEM_CPPFS_CPPEXPERIMENTAL_NEEDED)
-            target_link_libraries(std::filesystem INTERFACE -lc++fs -lc++experimental)
+            target_link_libraries(std::filesystem INTERFACE c++fs)
         endif()
     endif()
 endif()

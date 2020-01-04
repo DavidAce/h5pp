@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.10)
+project(external-ghcFilesystem)
+include(../GetNumThreads.cmake)
+get_num_threads(NUM_THREADS)
+set(ENV{CMAKE_BUILD_PARALLEL_LEVEL} ${NUM_THREADS})
+
+include(ExternalProject)
+ExternalProject_Add(external_ghcFilesystem
+    URL         https://github.com/gulrak/filesystem/archive/v1.2.10.tar.gz
+    PREFIX      ${CMAKE_BINARY_DIR}
+    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+    BUILD_COMMAND ${CMAKE_COMMAND} --build . -- -j ${NUM_THREADS}
+    CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+        -DGHC_FILESYSTEM_BUILD_TESTING:BOOL=OFF
+        -DGHC_FILESYSTEM_BUILD_EXAMPLES:BOOL=OFF
+        -DGHC_FILESYSTEM_WITH_INSTALL:BOOL=ON
+        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+        -DCMAKE_INSTALL_MESSAGE=NEVER #Avoid unnecessary output to console
+)

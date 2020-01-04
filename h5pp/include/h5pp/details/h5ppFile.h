@@ -18,7 +18,6 @@
 #include <optional>
 #include <string>
 
-// Include filesystem or experimental/filesystem
 #if __has_include(<filesystem>)
 #include <filesystem>
 namespace h5pp {
@@ -29,8 +28,14 @@ namespace h5pp {
 namespace h5pp {
     namespace fs = std::experimental::filesystem;
 }
+#elif __has_include(<ghc/filesystem.hpp>)
+// Last resort
+#include <ghc/filesystem.hpp>
+namespace h5pp {
+    namespace fs = ghc::filesystem;
+}
 #else
-#error Could not find <filesystem> or <experimental/filesystem>
+#error Could not find includes: <filesystem> or <experimental/filesystem> <ghc/filesystem>
 #endif
 
 // Include experimental/type_traits
