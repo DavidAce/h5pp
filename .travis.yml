@@ -155,6 +155,43 @@ matrix:
         - conda install --yes conan
 
 
+    - name: "Windows MSVC"
+      os: windows
+      env:
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+      install:
+        - ${CC} --version
+
+    - name: "Windows clang"
+      os: windows
+      env:
+        - CC="/c/Program Files/LLVM/bin/clang"
+        - CXX="/c/Program Files/LLVM/bin/clang++"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+      install:
+        - choco upgrade llvm -y
+        - ${CC} --version
+
+    - name: "Windows gcc"
+      os: windows
+      env:
+        - CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
+        - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+      install:
+        - choco upgrade mingw -y
+        - ${CC} --version
+
+    - name: "macOS clang"
+      os: osx
+      osx_image: xcode10.1
+      env:
+        - CC=clang
+        - CXX=clang++
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+      install:
+        - ${CC} --version
+
 
 script:
   - export MAKEFLAGS=-j2
