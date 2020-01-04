@@ -155,6 +155,7 @@ jobs:
         run: |
           cd build/Debug
           cmake --build . --target all
+          cmake --build . --target install
           cat CMakeFiles/CMakeError.log
           cat Testing/Temporary/LastTest.log
 

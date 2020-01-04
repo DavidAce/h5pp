@@ -217,8 +217,8 @@ script:
   - cd build/Debug
   - cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS -G "$CMAKE_GEN" ../../
   - cmake --build . --target all  -- -j2
-  - make test
-  - make install
+  - cmake --build . --target install
+  - ctest
 
 
 after_failure:
