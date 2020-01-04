@@ -187,35 +187,34 @@ if(CXX_FILESYSTEM_HAVE_FS)
 
         int main() {
             auto cwd = @CXX_FILESYSTEM_NAMESPACE@::current_path();
+            @CXX_FILESYSTEM_NAMESPACE@::path testpath;
             return static_cast<int>(cwd.string().size());
         }
     ]] code @ONLY)
-
-    # Try to compile a simple filesystem program without any linker flags
-    check_cxx_source_compiles("${code}" CXX_FILESYSTEM_NO_LINK_NEEDED)
-
-    set(can_link ${CXX_FILESYSTEM_NO_LINK_NEEDED})
-
-    if(NOT CXX_FILESYSTEM_NO_LINK_NEEDED)
-        ## HERE STARTS MODIFICATION
-        set(prev_libraries ${CMAKE_REQUIRED_LIBRARIES})
-        # Try to compile a simple filesystem program with the libstdc++ flag
-        set(CMAKE_REQUIRED_LIBRARIES ${prev_libraries} -lstdc++fs)
-        check_cxx_source_compiles("${code}" CXX_FILESYSTEM_STDCPPFS_NEEDED)
-        set(can_link ${CXX_FILESYSTEM_STDCPPFS_NEEDED})
-        if(NOT CXX_FILESYSTEM_STDCPPFS_NEEDED)
-            # Try to compile a simple filesystem program with the libc++ flag
-            set(CMAKE_REQUIRED_LIBRARIES ${prev_libraries} -lc++fs)
-            check_cxx_source_compiles("${code}" CXX_FILESYSTEM_CPPFS_NEEDED)
-            set(can_link ${CXX_FILESYSTEM_CPPFS_NEEDED})
-            if(NOT CXX_FILESYSTEM_CPPFS_NEEDED)
+    ## HERE STARTS MODIFICATION
+    # Try to compile a simple filesystem program with the libstdc++ flag
+    set(CMAKE_REQUIRED_LIBRARIES  stdc++fs)
+    check_cxx_source_compiles("${code}" CXX_FILESYSTEM_STDCPPFS_NEEDED)
+    set(can_link ${CXX_FILESYSTEM_STDCPPFS_NEEDED})
+    if(NOT CXX_FILESYSTEM_STDCPPFS_NEEDED)
+        # Try to compile a simple filesystem program with the libc++ flag
+        set(CMAKE_REQUIRED_LIBRARIES c++fs c++experimental)
+        check_cxx_source_compiles("${code}" CXX_FILESYSTEM_CPPFS_NEEDED)
+        set(can_link ${CXX_FILESYSTEM_CPPFS_NEEDED})
+        if(NOT CXX_FILESYSTEM_CPPFS_NEEDED)
+            # Try to compile a simple filesystem program with the libc++ and libc++experimental flag
+            set(CMAKE_REQUIRED_LIBRARIES c++fs c++experimental)
+            check_cxx_source_compiles("${code}" CXX_FILESYSTEM_CPPFS_CPPEXPERIMENTAL_NEEDED)
+            set(can_link ${CXX_FILESYSTEM_CPPFS_CPPEXPERIMENTAL_NEEDED})
+            if(NOT CXX_FILESYSTEM_CPPFS_CPPEXPERIMENTAL_NEEDED)
                 # Try to compile a simple filesystem program without any linker flags
                 check_cxx_source_compiles("${code}" CXX_FILESYSTEM_NO_LINK_NEEDED)
                 set(can_link ${CXX_FILESYSTEM_NO_LINK_NEEDED})
             endif()
         endif()
-        ## HERE ENDS MODIFICATION
+
     endif()
+    ## HERE ENDS MODIFICATION
 
     if(can_link)
         add_library(std::filesystem INTERFACE IMPORTED)
@@ -225,9 +224,11 @@ if(CXX_FILESYSTEM_HAVE_FS)
         if(CXX_FILESYSTEM_NO_LINK_NEEDED)
             # Nothing to add...
         elseif(CXX_FILESYSTEM_STDCPPFS_NEEDED)
-            target_link_libraries(std::filesystem INTERFACE -lstdc++fs)
+            target_link_libraries(std::filesystem INTERFACE stdc++fs)
         elseif(CXX_FILESYSTEM_CPPFS_NEEDED)
-            target_link_libraries(std::filesystem INTERFACE -lc++fs)
+            target_link_libraries(std::filesystem INTERFACE c++fs)
+        elseif(CXX_FILESYSTEM_CPPFS_CPPEXPERIMENTAL_NEEDED)
+            target_link_libraries(std::filesystem INTERFACE c++fs c++experimental)
         endif()
     endif()
 endif()
