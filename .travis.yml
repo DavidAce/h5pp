@@ -16,13 +16,13 @@ matrix:
       compiler: gcc
       env:
         - CXX=g++-8 CC=gcc-8
-        - CMAKE_FLAGS='-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF'
-        - CMAKE_GEN='Unix Makefiles'
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
       addons:
         apt:
           update: true
           sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - gcc-8
             - g++-8
@@ -33,14 +33,14 @@ matrix:
       dist: xenial
       compiler: clang
       env:
-        - CMAKE_FLAGS='-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF'
-        - CMAKE_GEN='Unix Makefiles'
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
         - CXX=clang++ CC=clang
       addons:
         apt:
           update: true
           sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - libstdc++-8-dev
 
@@ -50,15 +50,15 @@ matrix:
       dist: bionic
       compiler: gcc
       env:
-        - CMAKE_FLAGS='-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF'
-        - CMAKE_GEN='Unix Makefiles'
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
 
     - name: "bionic clang"
       os: linux
       dist: bionic
       compiler: clang
       env:
-        - CMAKE_FLAGS='-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF'
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
 
     - name: "xenial gcc-8 conda libs"
@@ -67,18 +67,18 @@ matrix:
       compiler: gcc
       env:
         - CXX=g++-8 CC=gcc-8
-        - CMAKE_FLAGS='-DDOWNLOAD_METHOD=native -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF'
-        - CMAKE_GEN='Unix Makefiles'
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
       addons:
         apt:
           update: true
           sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - gcc-8
             - g++-8
       before_install:
-        # Here we just install Miniconda, which you shouldn't have to change.
+        # Here we just install Miniconda, which you shouldn"t have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh
         - ./miniconda.sh -b -p $HOME/miniconda
@@ -92,10 +92,10 @@ matrix:
       os: linux
       compiler: gcc
       env:
-        - CMAKE_FLAGS='-DDOWNLOAD_METHOD=native -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF'
-        - CMAKE_GEN='Unix Makefiles'
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
       before_install:
-        # Here we just install Miniconda, which you shouldn't have to change.
+        # Here we just install Miniconda, which you shouldn"t have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh
         - ./miniconda.sh -b -p $HOME/miniconda
@@ -111,13 +111,13 @@ matrix:
       compiler: gcc
       env:
         - CXX=g++-8 CC=gcc-8
-        - CMAKE_FLAGS='-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF'
-        - CMAKE_GEN='Unix Makefiles'
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
       addons:
         apt:
           update: true
           sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - gcc-8
             - g++-8
@@ -137,7 +137,7 @@ matrix:
         apt:
           update: true
           sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - libhdf5-dev
             - libaec-dev
@@ -149,8 +149,8 @@ matrix:
       os: linux
       compiler: clang
       env:
-        - CMAKE_FLAGS='-DDOWNLOAD_METHOD=conan  -DBUILD_SHARED_LIBS:BOOL=OFF'
-        - CMAKE_GEN='Unix Makefiles'
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan  -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
         - CXX=clang++ CC=clang
       before_install:
         # Here we just install Miniconda, which you shouldn't have to change.
@@ -166,8 +166,8 @@ matrix:
       os: windows
       compiler: gcc
       env:
-        - CMAKE_FLAGS='-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF'
-        - CMAKE_GEN='Ninja'
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Ninja"
       before_install:
         - ${CC} --version
 
@@ -177,8 +177,8 @@ matrix:
       env:
         - CC="/c/Program Files/LLVM/bin/clang"
         - CXX="/c/Program Files/LLVM/bin/clang++"
-        - CMAKE_FLAGS='-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF'
-        - CMAKE_GEN='Ninja'
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Ninja"
       before_install:
         - choco install ninja
         - choco upgrade llvm -y
@@ -190,8 +190,8 @@ matrix:
       env:
         - CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
         - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
-        - CMAKE_FLAGS='-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF'
-        - CMAKE_GEN='Ninja'
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Ninja"
       before_install:
         - choco install ninja
         - choco upgrade mingw -y
@@ -204,8 +204,8 @@ matrix:
       env:
         - CC=clang
         - CXX=clang++
-        - CMAKE_FLAGS='-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF'
-        - CMAKE_GEN='Ninja'
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Ninja"
       before_install:
         - ${CC} --version
 
