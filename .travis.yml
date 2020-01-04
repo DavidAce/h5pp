@@ -205,9 +205,10 @@ matrix:
         - CC=clang
         - CXX=clang++
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN=XCode
+        - CMAKE_GEN="Unix Makefiles"
       before_install:
         - ${CC} --version
+
 
 
 script:
@@ -218,4 +219,5 @@ script:
   - cmake --build . --target all  -- -j2
   - make test
   - make install
+  - cat CMakeFiles/CMakeError.log
 

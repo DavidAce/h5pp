@@ -152,13 +152,9 @@ jobs:
         run: |
           cd build/Debug
           cmake --build . --target all
-      - name: Errors (Linux)
-        if: runner.os == 'Linux'
-        run: cat build/Debug/CMakeFiles/CMakeError.log
 
-      - name: Errors (Windows)
-        if: runner.os == 'Windows'
-        shell: powershell
+      - name: Errors
+        shell: bash
         run: cat build/Debug/CMakeFiles/CMakeError.log
 
       - name: Test
