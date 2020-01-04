@@ -148,6 +148,7 @@ jobs:
           cmake -E make_directory build/Debug
           cd build/Debug
           cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON  ${{ matrix.flags }} ${{ matrix.generator }} ../../
+          cat CMakeFiles/CMakeError.log
 
       - name: Build
         shell: bash
@@ -155,11 +156,12 @@ jobs:
           cd build/Debug
           cmake --build . --target all
           cmake --build . --target install
-
+          cat CMakeFiles/CMakeError.log
 
       - name: Test
         run: |
           cd build/Debug
-          ctest  --output-on-failure
+          ctest --output-on-failure
+
 
 
