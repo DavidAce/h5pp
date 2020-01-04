@@ -6,7 +6,7 @@
 
 #[=======================================================================[.rst:
 
-# ... and modified according to:
+# ... and modified lines 194 to 217 inspired by:
 #   https://gitlab.kitware.com/cmake/cmake/issues/17834
 
 
