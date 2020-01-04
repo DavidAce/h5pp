@@ -240,11 +240,11 @@ You can also optionally pass a true/false argument when writing a new dataset to
 
 
 ### Compression
-Extendable (or chunked) datasets can also be compressed with GZIP, if HDF5 was compiled with zlib support. Use these
+Extendable (or chunked) datasets can also be compressed if HDF5 was built with zlib support. Use these
 functions to set or check the compression level:
 
 ```c++
-    file.setCompressionLevel(9);            // 0 to 9: 0 to disable compression, 9 is maximum compression.
+    file.setCompressionLevel(9);            // 0 to 9: 0 to disable compression, 9 for maximum compression.
     file.getCompressionLevel();             // Gets the current compression level
     h5pp::checkIfCompressionIsAvailable();  // True if your installation of HDF5 has zlib support 
 ```
