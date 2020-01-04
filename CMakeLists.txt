@@ -258,7 +258,6 @@ endif()
 
 
 
-
 if(H5PP_IS_SUBPROJECT)
     add_library(h5pp::h5pp ALIAS h5pp)
     add_library(h5pp::headers ALIAS headers)
