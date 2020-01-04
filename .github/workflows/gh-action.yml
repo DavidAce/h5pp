@@ -157,8 +157,7 @@ jobs:
         shell: bash
         run: |
           cat build/Debug/CMakeFiles/CMakeError.log
-          cat build/Debug/Testing/LastTest.log
-          cat build/Debug/Testing/LastTestFailed.log
+          cat build/Debug/Testing/Temporary/LastTest.log
 
       - name: Test
         run: |

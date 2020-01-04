@@ -220,6 +220,5 @@ script:
   - make test
   - make install
   - cat CMakeFiles/CMakeError.log
-  - cat Testing/LastTest.log
-  - cat LastTestsFailed.log
+  - cat Testing/Temporary/LastTest.log
 
