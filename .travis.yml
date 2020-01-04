@@ -167,7 +167,7 @@ matrix:
       compiler: gcc
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="Ninja"
+        - CMAKE_GEN=Ninja
       before_install:
         - ${CC} --version
 
@@ -178,7 +178,7 @@ matrix:
         - CC="/c/Program Files/LLVM/bin/clang"
         - CXX="/c/Program Files/LLVM/bin/clang++"
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="Ninja"
+        - CMAKE_GEN=Ninja
       before_install:
         - choco install ninja
         - choco upgrade llvm -y
@@ -191,7 +191,7 @@ matrix:
         - CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
         - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="Ninja"
+        - CMAKE_GEN=Ninja
       before_install:
         - choco install ninja
         - choco upgrade mingw -y
@@ -205,7 +205,7 @@ matrix:
         - CC=clang
         - CXX=clang++
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="Ninja"
+        - CMAKE_GEN=XCode
       before_install:
         - ${CC} --version
 
@@ -214,7 +214,7 @@ script:
   - export MAKEFLAGS=-j2
   - cmake -E make_directory build/Debug
   - cd build/Debug
-  - cmake -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS -G $CMAKE_GEN ../../
+  - cmake -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS -G "$CMAKE_GEN" ../../
   - cmake --build . --target all  -- -j2
   - make test
   - make install
