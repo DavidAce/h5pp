@@ -169,7 +169,7 @@ matrix:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
       before_install:
-        - ${CC} --version
+        - choco install ninja
 
     - name: "Windows clang"
       os: windows
@@ -182,7 +182,6 @@ matrix:
       before_install:
         - choco install ninja
         - choco upgrade llvm -y
-        - ${CC} --version
 
     - name: "Windows gcc"
       os: windows
@@ -195,7 +194,6 @@ matrix:
       before_install:
         - choco install ninja
         - choco upgrade mingw -y
-        - ${CC} --version
 
     - name: "macOS clang"
       os: osx
@@ -206,9 +204,6 @@ matrix:
         - CXX=clang++
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
-      before_install:
-        - ${CC} --version
-
 
 
 script:
