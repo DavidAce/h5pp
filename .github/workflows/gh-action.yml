@@ -76,13 +76,13 @@ jobs:
             os: windows-2019
             compiler: clang
             generator: -G Ninja
-            flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
+            flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=ON
 
           - name: windows-2019-gcc
             os: windows-2019
             compiler: gcc
             generator: -G Ninja
-            flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
+            flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=ON
 
     steps:
       - uses: actions/checkout@v1
@@ -123,20 +123,18 @@ jobs:
         run: |
           Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
           scoop install ninja --global
+          choco install mingw
           if ("${{ matrix.compiler }}".StartsWith("clang")) {
             scoop install llvm --global
-            scoop install gcc --global
-          }
-          if ("${{ matrix.compiler }}" -eq "gcc") {
+            echo "::set-env name=CC::clang"
+            echo "::set-env name=CXX::clang++"
+          } elseif ("${{ matrix.compiler }}" -eq "gcc") {
             # Chocolatey GCC is broken on the windows-2019 image.
             # See: https://github.com/DaanDeMeyer/doctest/runs/231595515
             # See: https://github.community/t5/GitHub-Actions/Something-is-wrong-with-the-chocolatey-installed-version-of-gcc/td-p/32413
             scoop install gcc --global
             echo "::set-env name=CC::gcc"
             echo "::set-env name=CXX::g++"
-          } elseif ("${{ matrix.compiler }}" -eq "clang") {
-            echo "::set-env name=CC::clang"
-            echo "::set-env name=CXX::clang++"
           } else {
             echo "::set-env name=CC::${{ matrix.compiler }}"
             echo "::set-env name=CXX::${{ matrix.compiler }}"

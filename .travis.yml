@@ -166,7 +166,7 @@ matrix:
       os: windows
       compiler: gcc
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
         - CMAKE_GEN=Ninja
       before_install:
         - choco install ninja
@@ -177,7 +177,7 @@ matrix:
       env:
         - CC="/c/Program Files/LLVM/bin/clang"
         - CXX="/c/Program Files/LLVM/bin/clang++"
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
         - CMAKE_GEN=Ninja
       before_install:
         - choco install ninja
@@ -189,7 +189,7 @@ matrix:
       env:
         - CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
         - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
         - CMAKE_GEN=Ninja
       before_install:
         - choco install ninja
@@ -198,11 +198,11 @@ matrix:
     - name: "macOS clang"
       os: osx
       compiler: clang
-      osx_image: xcode10.1
+      osx_image: xcode11
       env:
         - CC=clang
         - CXX=clang++
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
         - CMAKE_GEN="Unix Makefiles"
 
 

@@ -186,8 +186,9 @@ if(CXX_FILESYSTEM_HAVE_FS)
         #include <@CXX_FILESYSTEM_HEADER@>
 
         int main() {
+            @CXX_FILESYSTEM_NAMESPACE@::path testpath = \"../\";
+            @CXX_FILESYSTEM_NAMESPACE@::exists(testpath);
             auto cwd = @CXX_FILESYSTEM_NAMESPACE@::current_path();
-            @CXX_FILESYSTEM_NAMESPACE@::path testpath;
             return static_cast<int>(cwd.string().size());
         }
     ]] code @ONLY)
