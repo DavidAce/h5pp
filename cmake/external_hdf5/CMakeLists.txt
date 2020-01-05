@@ -8,6 +8,16 @@ option(HDF5_ENABLE_PARALLEL "" OFF)
 option(HDF5_EXTERNALLY_CONFIGURED "" ON)
 option(HDF5_ENABLE_Z_LIB_SUPPORT "" ON)
 
+if(HDF5_ENABLE_Z_LIB_SUPPORT)
+    if(NOT BUILD_SHARED_LIBS)
+        set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+    endif()
+    find_package(ZLIB)
+    if(NOT ZLIB_FOUND)
+        SET(HDF5_ENABLE_Z_LIB_SUPPORT OFF CACHE BOOL "Disable zlib when not found" FORCE)
+    endif()
+endif()
+
 
 ExternalProject_Add(external_hdf5
         URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.6/src/hdf5-1.10.6.tar.gz
@@ -27,9 +37,7 @@ ExternalProject_Add(external_hdf5
         -DHDF5_ENABLE_PARALLEL:BOOL=${HDF5_ENABLE_PARALLEL}
         -DBUILD_TESTING:BOOL=OFF
         -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=${HDF5_ENABLE_Z_LIB_SUPPORT}
-        -DHDF5_ALLOW_EXTERNAL_SUPPORT:STRING=GIT
-        -DZLIB_URL:STRING=https://github.com/madler/zlib.git
-        -DZLIB_BRANCH:STRING=v1.2.11
+
         -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=OFF
         -DHDF5_BUILD_TOOLS:BOOL=ON
         -DHDF5_BUILD_FORTRAN:BOOL=OFF
@@ -38,6 +46,10 @@ ExternalProject_Add(external_hdf5
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON
         -DALLOW_UNSUPPORTED=ON
         -DCMAKE_INSTALL_MESSAGE=NEVER #Avoid unnecessary output to console
+
+#        -DHDF5_ALLOW_EXTERNAL_SUPPORT:STRING=GIT
+#        -DZLIB_URL:STRING=https://github.com/madler/zlib.git
+#        -DZLIB_BRANCH:STRING=develop
 
 #        -DHDF5_EXTERNALLY_CONFIGURED=1
 #        -DHDF5_USE_PREGEN:BOOL=ON

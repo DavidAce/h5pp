@@ -75,13 +75,13 @@ jobs:
           - name: windows-2019-clang
             os: windows-2019
             compiler: clang
-            generator: -G 'Visual Studio 15 2017'
+            generator: -G Ninja
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=ON
 
           - name: windows-2019-gcc
             os: windows-2019
             compiler: gcc
-            generator: -G 'Visual Studio 15 2017'
+            generator: -G Ninja
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=ON
 
     steps:

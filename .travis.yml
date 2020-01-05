@@ -162,12 +162,12 @@ matrix:
         - conda config --add channels conda-forge
         - conda install --yes conan
 
-    - name: "Windows MSVC"
+    - name: "Windows gcc"
       os: windows
       compiler: gcc
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
-        - CMAKE_GEN="Visual Studio 15 2017"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN=Ninja
       before_install:
         - choco install ninja
 
@@ -177,33 +177,41 @@ matrix:
       env:
         - CC="/c/Program Files/LLVM/bin/clang"
         - CXX="/c/Program Files/LLVM/bin/clang++"
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
-        - CMAKE_GEN="Visual Studio 15 2017"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN=Ninja
       before_install:
         - choco install ninja
         - choco upgrade llvm -y
 
-    - name: "Windows gcc"
+    - name: "Windows gcc mingw"
       os: windows
       compiler: gcc
       env:
         - CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
         - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
-        - CMAKE_GEN="Visual Studio 15 2017"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN=Ninja
       before_install:
         - choco install ninja
         - choco upgrade mingw -y
 
-    - name: "macOS clang"
+    - name: "macOS clang homebrew"
       os: osx
       compiler: clang
       osx_image: xcode11
       env:
         - CC=clang
         - CXX=clang++
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
+      addons:
+        homebrew:
+          packages:
+            - hdf5@1.10
+            - zlib
+            - szip
+            - spdlog
+            - eigen
 
 
 script:
