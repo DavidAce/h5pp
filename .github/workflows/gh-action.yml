@@ -6,10 +6,6 @@ jobs:
   ci:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
-
-    env:
-      CMAKE_GENERATOR: "CodeBlocks - Unix Makefiles"
-
     strategy:
       fail-fast: false
       matrix:
@@ -125,17 +121,19 @@ jobs:
         shell: powershell
         run: |
           Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
-          scoop install ninja --global
-          if ("${{ matrix.compiler }}".StartsWith("clang")) {
-            choco install llvm
 
-            #scoop install llvm --global
+          scoop install ninja --global
+          # Scoop modifies the PATH so we make the modified PATH global.
+          echo "::set-env name=PATH::$env:PATH"
+
+          python -m pip install --upgrade pip setuptools wheel
+          pip install conan
+
+          if ("${{ matrix.compiler }}" -eq "clang") {
+            choco install llvm
             echo "::set-env name=CC::clang"
             echo "::set-env name=CXX::clang++"
           } elseif ("${{ matrix.compiler }}" -eq "gcc") {
-            # Chocolatey GCC is broken on the windows-2019 image.
-            # See: https://github.com/DaanDeMeyer/doctest/runs/231595515
-            # See: https://github.community/t5/GitHub-Actions/Something-is-wrong-with-the-chocolatey-installed-version-of-gcc/td-p/32413
             #scoop install gcc --global
             choco install mingw
             echo "::set-env name=CC::gcc"
@@ -144,10 +142,6 @@ jobs:
             echo "::set-env name=CC::${{ matrix.compiler }}"
             echo "::set-env name=CXX::${{ matrix.compiler }}"
           }
-          # Scoop modifies the PATH so we make the modified PATH global.
-          echo "::set-env name=PATH::$env:PATH"
-          python -m pip install --upgrade pip setuptools wheel
-          pip install conan
 
       - name: Configure
         run: |
