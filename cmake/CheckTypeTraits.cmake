@@ -7,11 +7,9 @@ function(CheckTypeTraits)
     if(NOT has_type_traits)
         message(WARNING "
                 Missing <experimental/type_traits> header.\n\
-                Consider using a newer compiler (GCC 8 or above, Clang 7 or above),\n\
-                or checking the compiler flags. If using Clang, try passing the variable \n\
-                GCC_TOOLCHAIN=<path> \n\
-                where path is the install directory of a recent GCC installation.
-                h5pp will now try to mimic std::experimental::is_detected
+                Check that your compiler has the header.
+                For now the build will try to mimic std::experimental::is_detected
+                and hope that it works.
         ")
     endif()
     include(CheckCXXSourceCompiles)
