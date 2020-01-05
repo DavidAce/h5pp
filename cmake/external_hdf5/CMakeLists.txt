@@ -6,12 +6,12 @@ set(ENV{CMAKE_BUILD_PARALLEL_LEVEL} ${NUM_THREADS})
 include(ExternalProject)
 option(HDF5_ENABLE_PARALLEL "" OFF)
 option(HDF5_EXTERNALLY_CONFIGURED "" ON)
-option(HDF5_ENABLE_Z_LIB_SUPPORT "" ON)
+option(HDF5_ENABLE_Z_LIB_SUPPORT "Enable zlib if found" ON)
 
 
 if(HDF5_ENABLE_Z_LIB_SUPPORT)
     if(NOT BUILD_SHARED_LIBS)
-        set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+        set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX} )
     endif()
     find_package(ZLIB)
     if(TARGET ZLIB::ZLIB)
@@ -19,10 +19,10 @@ if(HDF5_ENABLE_Z_LIB_SUPPORT)
         get_filename_component(ZLIB_EXT ${ZLIB_LIBRARY} EXT)
         if(NOT BUILD_SHARED_LIBS AND ZLIB_EXT MATCHES "${CMAKE_SHARED_LIBRARY_SUFFIX}")
             message(STATUS "Found only shared zlib on static build: disabling zlib support for hdf5")
-            set(HDF5_ENABLE_Z_LIB_SUPPORT OFF CACHE BOOL "Disabled zlib when not found" FORCE)
+            set(HDF5_ENABLE_Z_LIB_SUPPORT OFF CACHE BOOL "Enable zlib if found" FORCE)
         endif()
     else()
-        set(HDF5_ENABLE_Z_LIB_SUPPORT OFF CACHE BOOL "Disabled zlib when not found" FORCE)
+        set(HDF5_ENABLE_Z_LIB_SUPPORT OFF CACHE BOOL "Enable zlib if found" FORCE)
     endif()
 endif()
 
@@ -38,6 +38,7 @@ ExternalProject_Add(external_hdf5
 #        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
 
         CMAKE_ARGS
+        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
@@ -62,5 +63,4 @@ ExternalProject_Add(external_hdf5
 #        -DHDF5_EXTERNALLY_CONFIGURED=1
 #        -DHDF5_USE_PREGEN:BOOL=ON
 #        -DHDF5_BATCH_H5DETECT:BOOL=ON
-#        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
         )
