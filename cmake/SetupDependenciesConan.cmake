@@ -29,16 +29,22 @@ endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
-    set(SETTINGS_CONAN_LIBCXX "SETTINGS compiler.libcxx=libstdc++11")
+if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
+    # Let it autodetect libcxx
+    conan_cmake_run(CONANFILE conanfile.txt
+            CONAN_COMMAND ${CONAN_COMMAND}
+            SETTINGS compiler.cppstd=17
+            BASIC_SETUP CMAKE_TARGETS
+            BUILD missing)
+else()
+    conan_cmake_run(CONANFILE conanfile.txt
+            CONAN_COMMAND ${CONAN_COMMAND}
+            SETTINGS compiler.cppstd=17
+            SETTINGS compiler.libcxx=libstdc++11
+            BASIC_SETUP CMAKE_TARGETS
+            BUILD missing)
 endif()
 
-conan_cmake_run(CONANFILE conanfile.txt
-        CONAN_COMMAND ${CONAN_COMMAND}
-        SETTINGS compiler.cppstd=17
-        ${SETTINGS_CONAN_LIBCXX}
-        BASIC_SETUP CMAKE_TARGETS
-        BUILD missing)
 
 
 
