@@ -187,7 +187,7 @@ matrix:
         - choco install ninja
         - choco upgrade llvm -y
 
-    - name: "Windows gcc mingw"
+    - name: "Windows gcc mingw conan"
       os: windows
       compiler: gcc
       env:
@@ -195,15 +195,17 @@ matrix:
         - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
+        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
       before_install:
         - choco install ninja
         - choco upgrade mingw -y
-        - choco install miniconda3 --params="'/AddToPath:1'"
+        - choco install miniconda3
         - conda update --yes conda
         - conda config --add channels conda-forge
         - conda install --yes conan
+        - conan user
 
-    - name: "macOS clang homebrew"
+    - name: "macOS clang conan"
       os: osx
       compiler: clang
       osx_image: xcode11
@@ -218,6 +220,26 @@ matrix:
             - conan
           update: true
 
+    - name: "macOS clang homebrew"
+      os: osx
+      compiler: clang
+      osx_image: xcode11
+      env:
+        - CC=clang
+        - CXX=clang++
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
+        - CMAKE_GEN="Unix Makefiles"
+      addons:
+        homebrew:
+          packages:
+            - hdf5@10.1
+            - eigen
+            - spdlog
+            - zlib
+            - szip
+          update: true
+      before_install:
+        - brew link szip
 
 script:
   - export MAKEFLAGS=-j2

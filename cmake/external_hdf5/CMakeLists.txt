@@ -5,6 +5,66 @@ get_num_threads(NUM_THREADS)
 set(ENV{CMAKE_BUILD_PARALLEL_LEVEL} ${NUM_THREADS})
 include(ExternalProject)
 option(HDF5_ENABLE_PARALLEL "" OFF)
+option(HDF5_EXTERNALLY_CONFIGURED "" ON)
+
+
+# The following check is needed because HDF5 will blindly use
+# find_package(ZLIB), which finds the shared library
+# (even when a static is present) and use it to link to static
+# hdf5 libraries, causing a build error. Here we circumvent that
+# by specifying the static zlib library explicitly, which
+# works for both static and shared linking.
+
+set(HDF5_ENABLE_Z_LIB_SUPPORT ON)
+set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+find_package(ZLIB)
+if(ZLIB_LIBRARY)
+    get_filename_component(ZLIB_EXT ${ZLIB_LIBRARY} EXT)
+    if(NOT BUILD_SHARED_LIBS AND ZLIB_EXT MATCHES "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        message(STATUS "Could not find static ZLIB: disabling ZLIB support for hdf5")
+        set(HDF5_ENABLE_Z_LIB_SUPPORT OFF)
+    endif()
+else()
+    unset(ZLIB_LIBRARY)
+    message(STATUS "Could not find ZLIB: disabling ZLIB support for hdf5")
+    set(HDF5_ENABLE_Z_LIB_SUPPORT OFF)
+endif()
+
+# The following check is needed because HDF5 will blindly use
+# find_package(SZIP), which finds the shared library
+# (even when a static is present) and use it to link to static
+# hdf5 libraries, causing a build error. Here we circumvent that
+# by specifying the static SZIP library explicitly, which
+# works for both static and shared linking.
+# In addition, SZIP sometimes dependes on libaec.
+
+#set(HDF5_ENABLE_SZIP_SUPPORT ON)
+#set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+#find_library(SZIP_LIBRARY NAMES sz szip szip-static libsz libszip libszip-static) # No built in findSZIP.cmake
+#if(SZIP_LIBRARY)
+#    message(STATUS "Found SZIP: ${SZIP_LIBRARY}")
+#    get_filename_component(SZIP_EXT ${SZIP_LIBRARY} EXT)
+#    if(NOT BUILD_SHARED_LIBS AND SZIP_EXT MATCHES "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+#        message(STATUS "Could not find static SZIP: disabling SZIP support for hdf5")
+#        set(HDF5_ENABLE_SZIP_SUPPORT OFF)
+#    else()
+#        find_library(AEC_LIBRARY NAMES aec)
+#        if(AEC_LIBRARY)
+#            message(STATUS "Found AEC: ${AEC_LIBRARY}")
+#            list(APPEND CMAKE_SHARED_LINKER_FLAGS -laec)
+#            list(APPEND SZIP_LIBRARY ${AEC_LIBRARY})
+#        endif()
+#    endif()
+#
+#else()
+#    unset(SZIP_LIBRARY)
+#    message(STATUS "Could not find SZIP: disabling SZIP support for hdf5")
+#    set(HDF5_ENABLE_SZIP_SUPPORT OFF)
+#endif()
+
+
+
+
 
 
 ExternalProject_Add(external_hdf5
@@ -18,12 +78,17 @@ ExternalProject_Add(external_hdf5
 #        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
 
         CMAKE_ARGS
+        -DBUILD_SHARED_LIBS:BOOL=OFF
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
         -DHDF5_ENABLE_PARALLEL:BOOL=${HDF5_ENABLE_PARALLEL}
         -DBUILD_TESTING:BOOL=OFF
-        -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=OFF
-        -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=OFF
+        -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=${HDF5_ENABLE_Z_LIB_SUPPORT}
+        -DZLIB_LIBRARY:PATH=${ZLIB_LIBRARY}
+        -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=OFF # Complains about undefined reference to functions in libaec
+#        -DSZIP_LIBRARY:PATH=${SZIP_LIBRARY}
+#        -DCMAKE_SHARED_LINKER_FLAGS=${CMAKE_SHARED_LINKER_FLAGS}
         -DHDF5_BUILD_TOOLS:BOOL=ON
         -DHDF5_BUILD_FORTRAN:BOOL=OFF
         -DHDF5_BUILD_EXAMPLES:BOOL=OFF
