@@ -129,20 +129,23 @@ jobs:
           scoop install ninja --global
           scoop install conan --global
           refreshenv
-          conan profile new default --detect
-          conan profile update settings.compiler.libcxx=libstdc++11 default
+
 
           if ("${{ matrix.compiler }}" -eq "clang") {
             scoop install llvm --global
             #choco install llvm
             refreshenv
+            conan profile new default --detect
+            conan profile update settings.compiler.libcxx=libstdc++11 default
             echo "::set-env name=PATH::$env:PATH"
             echo "::set-env name=CC::clang"
             echo "::set-env name=CXX::clang++"
+
           } elseif ("${{ matrix.compiler }}" -eq "gcc") {
             scoop install gcc --global
             refreshenv
-            #choco install mingw
+            conan profile new default --detect
+            conan profile update settings.compiler.libcxx=libstdc++11 default
             echo "::set-env name=CC::gcc"
             echo "::set-env name=CXX::g++"
           } else {
