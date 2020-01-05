@@ -191,6 +191,7 @@ CheckCXXOptional()
 #################################
 target_compile_features(flags INTERFACE cxx_std_17)
 target_link_libraries(flags INTERFACE pthread)
+target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->)
 
 
 target_include_directories(
