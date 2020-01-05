@@ -122,15 +122,15 @@ jobs:
         run: |
           Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
 
-          scoop install ninja --global
-          # Scoop modifies the PATH so we make the modified PATH global.
-          echo "::set-env name=PATH::$env:PATH"
+
 
           python -m pip install --upgrade pip setuptools wheel
           pip install conan
-
           if ("${{ matrix.compiler }}" -eq "clang") {
             choco install llvm
+            # LLVM modifies the PATH so we prepend the install directory
+            echo "::set-env name=PATH::/c/Program Files/LLVM/bin:PATH"
+
             echo "::set-env name=CC::clang"
             echo "::set-env name=CXX::clang++"
           } elseif ("${{ matrix.compiler }}" -eq "gcc") {
@@ -142,7 +142,9 @@ jobs:
             echo "::set-env name=CC::${{ matrix.compiler }}"
             echo "::set-env name=CXX::${{ matrix.compiler }}"
           }
-
+          scoop install ninja --global
+          # Scoop modifies the PATH so we make the modified PATH global.
+          echo "::set-env name=PATH::$env:PATH"
       - name: Configure
         run: |
           cmake -E make_directory build/Debug
