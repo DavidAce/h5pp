@@ -119,8 +119,6 @@ jobs:
           fi
       - name: Install (Windows)
         uses: actions/setup-python@v1
-        with:
-          python-version: '3.7'
         if: runner.os == 'Windows'
         shell: powershell
         run: |
