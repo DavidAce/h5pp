@@ -196,9 +196,12 @@ matrix:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
       before_install:
-        - pip install conan
         - choco install ninja
         - choco upgrade mingw -y
+        - choco install miniconda3 --params="'/AddToPath:1'"
+        - conda update --yes conda
+        - conda config --add channels conda-forge
+        - conda install --yes conan
 
     - name: "macOS clang homebrew"
       os: osx
@@ -213,8 +216,6 @@ matrix:
         homebrew:
           packages:
             - conan
-            - spdlog
-            - eigen
           update: true
 
 
