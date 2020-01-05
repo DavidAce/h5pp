@@ -8,9 +8,6 @@ option(HDF5_ENABLE_PARALLEL "" OFF)
 option(HDF5_EXTERNALLY_CONFIGURED "" ON)
 option(HDF5_ENABLE_Z_LIB_SUPPORT "" ON)
 
-if (WIN32)
-    set(HDF5_ENABLE_Z_LIB_SUPPORT OFF CACHE)
-endif (WIN32)
 
 ExternalProject_Add(external_hdf5
         URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.6/src/hdf5-1.10.6.tar.gz
@@ -30,6 +27,9 @@ ExternalProject_Add(external_hdf5
         -DHDF5_ENABLE_PARALLEL:BOOL=${HDF5_ENABLE_PARALLEL}
         -DBUILD_TESTING:BOOL=OFF
         -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=${HDF5_ENABLE_Z_LIB_SUPPORT}
+        -DHDF5_ALLOW_EXTERNAL_SUPPORT:STRING="GIT"
+        -DZLIB_URL="https://github.com/madler/zlib.git"
+        -DZLIB_BRANCH="v1.2.11"
         -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=OFF
         -DHDF5_BUILD_TOOLS:BOOL=ON
         -DHDF5_BUILD_FORTRAN:BOOL=OFF
