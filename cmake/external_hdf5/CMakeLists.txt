@@ -29,7 +29,6 @@ ExternalProject_Add(external_hdf5
         -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=${HDF5_ENABLE_Z_LIB_SUPPORT}
         -DHDF5_ALLOW_EXTERNAL_SUPPORT:STRING="GIT"
         -DZLIB_URL="https://github.com/madler/zlib.git"
-        -DZLIB_BRANCH="v1.2.11"
         -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=OFF
         -DHDF5_BUILD_TOOLS:BOOL=ON
         -DHDF5_BUILD_FORTRAN:BOOL=OFF
