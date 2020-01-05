@@ -184,6 +184,22 @@ matrix:
         - conan profile new default --detect
         - conan profile update settings.compiler.libcxx=libstdc++11 default
 
+    - name: "Windows MSVC"
+      os: windows
+      env:
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="NMake Makefiles"
+        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
+      before_install:
+        - choco upgrade mingw -y
+        - choco install ninja miniconda3 openssl.light
+        - cmd.exe /C 'refreshenv'
+        - conda create -n h5pp python=3.7 --yes
+        - . activate h5pp
+        - conda config --add channels conda-forge
+        - conda install --yes conan
+        - conan profile new default --detect
+        - conan profile update settings.compiler.libcxx=libstdc++11 default
 
     - name: "Windows clang"
       os: windows
