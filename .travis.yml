@@ -175,6 +175,7 @@ matrix:
       before_install:
         - choco upgrade mingw -y
         - choco install ninja miniconda3 openssl.light
+        - refreshenv
         - conda create -n h5pp python=3.7 --yes
         - . activate h5pp
         - conda config --add channels conda-forge
@@ -194,6 +195,7 @@ matrix:
       before_install:
         - choco upgrade mingw -y
         - choco install llvm ninja miniconda3 openssl.light
+        - refreshenv
         - conda create -n h5pp python=3.7 --yes
         - . activate h5pp
         - conda config --add channels conda-forge
@@ -212,6 +214,7 @@ matrix:
       before_install:
         - choco upgrade mingw -y
         - choco install ninja miniconda3 openssl.light
+        - refreshenv
         - conda create -n h5pp python=3.7 --yes
         - . activate h5pp
         - conda config --add channels conda-forge
