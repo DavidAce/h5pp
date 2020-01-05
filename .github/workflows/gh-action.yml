@@ -76,13 +76,13 @@ jobs:
             os: windows-2019
             compiler: clang
             generator: -G Ninja
-            flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=ON
+            flags: -DDOWNLOAD_METHOD:STRING=conan -DBUILD_SHARED_LIBS:BOOL=ON
 
           - name: windows-2019-gcc
             os: windows-2019
             compiler: gcc
             generator: -G Ninja
-            flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=ON
+            flags: -DDOWNLOAD_METHOD:STRING=conan -DBUILD_SHARED_LIBS:BOOL=ON
 
     steps:
       - uses: actions/checkout@v1
@@ -123,6 +123,7 @@ jobs:
         run: |
           Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
           scoop install ninja --global
+          scoop install python
           choco install mingw
           if ("${{ matrix.compiler }}".StartsWith("clang")) {
             scoop install llvm --global
@@ -141,6 +142,7 @@ jobs:
           }
           # Scoop modifies the PATH so we make the modified PATH global.
           echo "::set-env name=PATH::$env:PATH"
+          pip install conan
       - name: Configure
         run: |
           cmake -E make_directory build/Debug
