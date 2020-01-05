@@ -118,12 +118,14 @@ jobs:
             conan user
           fi
       - name: Install (Windows)
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
         if: runner.os == 'Windows'
         shell: powershell
         run: |
           Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
           scoop install ninja --global
-          scoop install python
           choco install mingw
           if ("${{ matrix.compiler }}".StartsWith("clang")) {
             scoop install llvm --global
@@ -142,6 +144,7 @@ jobs:
           }
           # Scoop modifies the PATH so we make the modified PATH global.
           echo "::set-env name=PATH::$env:PATH"
+          python -m pip install --upgrade pip setuptools wheel
           pip install conan
       - name: Configure
         run: |
