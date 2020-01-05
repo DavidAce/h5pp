@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 project(test-readWriteAttributes)
 add_executable(${PROJECT_NAME} readWriteAttributes.cpp)
-target_compile_options(${PROJECT_NAME} PRIVATE -g -Wpedantic -Wextra -Wall -Wno-ignored-attributes)
 target_link_libraries(${PROJECT_NAME} PRIVATE h5pp)
 add_test(NAME test-readWriteAttributes WORKING_DIRECTORY ${CMAKE_BINARY_DIR} COMMAND ${PROJECT_NAME})
