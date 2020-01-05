@@ -32,7 +32,7 @@ include(${CMAKE_BINARY_DIR}/conan.cmake)
 conan_cmake_run(CONANFILE conanfile.txt
         CONAN_COMMAND ${CONAN_COMMAND}
         SETTINGS compiler.cppstd=17
-        SETTINGS compiler.libcxx=libstdc++11
+#        SETTINGS compiler.libcxx=libstdc++11
         BASIC_SETUP CMAKE_TARGETS
         BUILD missing)
 
