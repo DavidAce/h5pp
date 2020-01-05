@@ -199,7 +199,11 @@ matrix:
       before_install:
         - choco install ninja
         - choco upgrade mingw -y
-        - choco install miniconda3
+        - choco install miniconda3 openssl.light
+        - conda create -n h5pp python=3.7 --yes
+        - . activate h5pp
+        - conda --version ; python --version ; pip --version
+        - python -m pip install --upgrade pip
         - conda update --yes conda
         - conda config --add channels conda-forge
         - conda install --yes conan
@@ -208,7 +212,7 @@ matrix:
     - name: "macOS clang conan"
       os: osx
       compiler: clang
-      osx_image: xcode11
+      osx_image: xcode11.3
       env:
         - CC=clang
         - CXX=clang++
@@ -223,7 +227,7 @@ matrix:
     - name: "macOS clang homebrew"
       os: osx
       compiler: clang
-      osx_image: xcode11
+      osx_image: xcode11.3
       env:
         - CC=clang
         - CXX=clang++
@@ -232,14 +236,12 @@ matrix:
       addons:
         homebrew:
           packages:
-            - hdf5@10.1
+            - hdf5
             - eigen
             - spdlog
             - zlib
             - szip
           update: true
-      before_install:
-        - brew link szip
 
 script:
   - export MAKEFLAGS=-j2
