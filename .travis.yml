@@ -172,6 +172,7 @@ matrix:
         - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
+        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
       before_install:
         - choco upgrade mingw -y
         - choco install ninja miniconda3 openssl.light
@@ -192,6 +193,7 @@ matrix:
         - CXX="/c/Program Files/LLVM/bin/clang++"
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
+        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
       before_install:
         - choco upgrade mingw -y
         - choco install llvm ninja miniconda3 openssl.light
@@ -248,12 +250,16 @@ matrix:
       addons:
         homebrew:
           packages:
-            - hdf5
             - eigen
             - spdlog
             - zlib
             - szip
           update: true
+      before_install:
+        - brew uninstall hdf5
+        - brew install hdf5 --build-from-source
+        - brew link hdf5
+        - brew link szip
 
 script:
   - export MAKEFLAGS=-j2
