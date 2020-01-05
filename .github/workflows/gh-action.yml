@@ -85,6 +85,9 @@ jobs:
             flags: -DDOWNLOAD_METHOD:STRING=conan -DBUILD_SHARED_LIBS:BOOL=ON
 
     steps:
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
       - uses: actions/checkout@v1
       - name: Install (Linux)
         if: runner.os == 'Linux'
@@ -118,7 +121,6 @@ jobs:
             conan user
           fi
       - name: Install (Windows)
-        uses: actions/setup-python@v1
         if: runner.os == 'Windows'
         shell: powershell
         run: |
@@ -144,6 +146,7 @@ jobs:
           echo "::set-env name=PATH::$env:PATH"
           python -m pip install --upgrade pip setuptools wheel
           pip install conan
+
       - name: Configure
         run: |
           cmake -E make_directory build/Debug
