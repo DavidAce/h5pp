@@ -79,7 +79,6 @@ matrix:
           packages:
             - gcc-8
             - g++-8
-            - zlib1g-dev
       before_install:
         # Here we just install Miniconda, which you shouldn"t have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
@@ -169,9 +168,10 @@ matrix:
       os: windows
       compiler: gcc
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
       before_install:
+        - pip install conan
         - choco install ninja
 
     - name: "Windows clang"
@@ -180,9 +180,10 @@ matrix:
       env:
         - CC="/c/Program Files/LLVM/bin/clang"
         - CXX="/c/Program Files/LLVM/bin/clang++"
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
       before_install:
+        - pip install conan
         - choco install ninja
         - choco upgrade llvm -y
 
@@ -192,9 +193,10 @@ matrix:
       env:
         - CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
         - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
       before_install:
+        - pip install conan
         - choco install ninja
         - choco upgrade mingw -y
 
@@ -205,14 +207,12 @@ matrix:
       env:
         - CC=clang
         - CXX=clang++
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
       addons:
         homebrew:
           packages:
-            - hdf5@1.10
-            - zlib
-            - szip
+            - conan
             - spdlog
             - eigen
 
