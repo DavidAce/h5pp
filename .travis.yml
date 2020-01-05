@@ -26,6 +26,7 @@ matrix:
           packages:
             - gcc-8
             - g++-8
+            - zlib1g-dev
 
 
     - name: "xenial clang"
@@ -43,6 +44,7 @@ matrix:
             - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - libstdc++-8-dev
+            - zlib1g-dev
 
 
     - name: "bionic gcc"
@@ -77,6 +79,7 @@ matrix:
           packages:
             - gcc-8
             - g++-8
+            - zlib1g-dev
       before_install:
         # Here we just install Miniconda, which you shouldn"t have to change.
         - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
