@@ -35,12 +35,14 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
             CONAN_COMMAND ${CONAN_COMMAND}
             SETTINGS compiler.cppstd=17
             BASIC_SETUP CMAKE_TARGETS
+            BUILD_TYPE "Release"
             BUILD missing)
 else()
     conan_cmake_run(CONANFILE conanfile.txt
             CONAN_COMMAND ${CONAN_COMMAND}
             SETTINGS compiler.cppstd=17
             SETTINGS compiler.libcxx=libstdc++11
+            BUILD_TYPE "Release"
             BASIC_SETUP CMAKE_TARGETS
             BUILD missing)
 endif()
