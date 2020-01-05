@@ -171,8 +171,12 @@ matrix:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
       before_install:
-        - pip install conan
-        - choco install ninja
+        - choco install gcc ninja miniconda3 openssl.light
+        - conda create -n h5pp python=3.7 --yes
+        - . activate h5pp
+        - conda config --add channels conda-forge
+        - conda install --yes conan
+        - conan user
 
     - name: "Windows clang"
       os: windows
@@ -183,9 +187,12 @@ matrix:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN=Ninja
       before_install:
-        - pip install conan
-        - choco install ninja
-        - choco upgrade llvm -y
+        - choco install llvm ninja miniconda3 openssl.light
+        - conda create -n h5pp python=3.7 --yes
+        - . activate h5pp
+        - conda config --add channels conda-forge
+        - conda install --yes conan
+        - conan user
 
     - name: "Windows gcc mingw conan"
       os: windows
@@ -197,14 +204,10 @@ matrix:
         - CMAKE_GEN=Ninja
         - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
       before_install:
-        - choco install ninja
         - choco upgrade mingw -y
-        - choco install miniconda3 openssl.light
+        - choco install ninja miniconda3 openssl.light
         - conda create -n h5pp python=3.7 --yes
         - . activate h5pp
-        - conda --version ; python --version ; pip --version
-        - python -m pip install --upgrade pip
-        - conda update --yes conda
         - conda config --add channels conda-forge
         - conda install --yes conan
         - conan user
