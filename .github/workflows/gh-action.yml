@@ -123,8 +123,12 @@ jobs:
           Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
           python -m pip install --upgrade pip setuptools wheel
           pip install conan
+          conan user
           if ("${{ matrix.compiler }}" -eq "clang") {
-            scoop install llvm --global
+            #scoop install llvm --global
+            choco install llvm
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+            echo "::set-env name=PATH::$env:PATH"
             echo "::set-env name=CC::clang"
             echo "::set-env name=CXX::clang++"
           } elseif ("${{ matrix.compiler }}" -eq "gcc") {
