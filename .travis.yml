@@ -179,7 +179,8 @@ matrix:
         - . activate h5pp
         - conda config --add channels conda-forge
         - conda install --yes conan
-        - conan user
+        - conan profile update settings.compiler.libcxx=libstdc++11 default
+
 
     - name: "Windows clang"
       os: windows
@@ -196,7 +197,7 @@ matrix:
         - . activate h5pp
         - conda config --add channels conda-forge
         - conda install --yes conan
-        - conan user
+        - conan profile update settings.compiler.libcxx=libstdc++11 default
 
     - name: "Windows gcc mingw conan"
       os: windows
@@ -214,7 +215,7 @@ matrix:
         - . activate h5pp
         - conda config --add channels conda-forge
         - conda install --yes conan
-        - conan user
+        - conan profile update settings.compiler.libcxx=libstdc++11 default
 
     - name: "macOS clang conan"
       os: osx

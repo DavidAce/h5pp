@@ -123,7 +123,8 @@ jobs:
           Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
           python -m pip install --upgrade pip setuptools wheel
           pip install conan
-          conan user
+          conan profile update settings.compiler.libcxx=libstdc++11 default
+
           if ("${{ matrix.compiler }}" -eq "clang") {
             #scoop install llvm --global
             choco install llvm
@@ -141,6 +142,7 @@ jobs:
             echo "::set-env name=CXX::${{ matrix.compiler }}"
           }
           scoop install ninja --global
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
           # Scoop and llvm modify the PATH so we make the modified PATH global.
           echo "::set-env name=PATH::$env:PATH"
       - name: Configure
