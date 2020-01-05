@@ -31,23 +31,19 @@ include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
     # Let it autodetect libcxx
-    conan_cmake_run(CONANFILE conanfile.txt
-            CONAN_COMMAND ${CONAN_COMMAND}
-            SETTINGS compiler.cppstd=17
-            BASIC_SETUP CMAKE_TARGETS
-            BUILD_TYPE "Release"
-            BUILD missing)
-else()
-    conan_cmake_run(CONANFILE conanfile.txt
-            CONAN_COMMAND ${CONAN_COMMAND}
-            SETTINGS compiler.cppstd=17
-            SETTINGS compiler.libcxx=libstdc++11
-            BUILD_TYPE "Release"
-            BASIC_SETUP CMAKE_TARGETS
-            BUILD missing)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    # There is no libcxx
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    list(APPEND conan_libcxx compiler.libcxx=libstdc++11)
 endif()
 
-
+conan_cmake_run(CONANFILE conanfile.txt
+        CONAN_COMMAND ${CONAN_COMMAND}
+        SETTINGS compiler.cppstd=17
+        SETTINGS "${conan_libcxx}"
+        BUILD_TYPE "Release"
+        BASIC_SETUP CMAKE_TARGETS
+        BUILD missing)
 
 
 
