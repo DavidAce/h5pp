@@ -286,6 +286,7 @@ matrix:
         - DOWNLOAD_METHOD=conan
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Visual Studio 15 2017"
+        - CMAKE_PLATFORM=x64
       cache:
         directories:
           - $HOME/.conan/data
@@ -296,6 +297,7 @@ matrix:
         - DOWNLOAD_METHOD=native
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Visual Studio 15 2017"
+        - CMAKE_PLATFORM=x64
       cache:
         directories:
           - $TRAVIS_BUILD_DIR/build/Debug/install
@@ -356,7 +358,7 @@ script:
           -DBUILD_EXAMPLES:BOOL=ON \
            $CMAKE_FLAGS \
           -G "$CMAKE_GEN" \
-          -DCMAKE_GENERATOR_PLATFORM=x64 \
+          -DCMAKE_GENERATOR_PLATFORM=$CMAKE_PLATFORM \
           ../../
   - cmake --build . --parallel
   - cmake --build . --target install
