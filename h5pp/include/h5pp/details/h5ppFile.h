@@ -617,8 +617,7 @@ void h5pp::File::writeDataset(const DataType *data, const T (&dims)[N], const st
     // This function takes a pointer and a specifiation of dimensions. Easiest thing to do
     // is to wrap this in an Eigen::Tensor and send to writeDataset
     // Note that C-style arrays are generally row-major order already
-    Eigen::DSizes<long, N> dimsizes;
-    std::copy_n(std::begin(dims), N, dimsizes.begin()); // Copy the dimensions (not the data)
+    auto dimsizes   = Textra::copy_dims<N>(dims);
     auto tensorWrap = Eigen::TensorMap<const Eigen::Tensor<const DataType, N, Eigen::RowMajor>>(data, dimsizes);
     writeDataset(tensorWrap, datasetPath, extendable);
 }
@@ -651,8 +650,7 @@ template<typename DataType> void h5pp::File::readDataset(DataType &data, const s
                 data = matrixRowmajor;
             }
         } else if constexpr(tc::is_eigen_tensor<DataType>()) {
-            Eigen::DSizes<long, DataType::NumDimensions> eigenDims;
-            std::copy(dims.begin(), dims.end(), eigenDims.begin());
+            auto eigenDims = Textra::copy_dims<DataType::NumDimensions>(dims);
             if constexpr(DataType::Options == Eigen::RowMajor) {
                 // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
                 data.resize(eigenDims);
@@ -700,8 +698,7 @@ template<typename DataType> void h5pp::File::readDataset(DataType &data, const s
 template<typename DataType, typename T, size_t N> void h5pp::File::readDataset(DataType *data, const T (&dims)[N], const std::string &datasetPath) {
     // This function takes a pointer and a specifiation of dimensions. Easiest thing to do
     // is to wrap this in an Eigen::Tensor and send to readDataset
-    Eigen::DSizes<long, N> dimsizes;
-    std::copy_n(std::begin(dims), N, dimsizes.begin());
+    auto dimsizes   = Textra::copy_dims<N>(dims);
     auto tensorWrap = Eigen::TensorMap<Eigen::Tensor<DataType, N>>(data, dimsizes);
     readDataset(tensorWrap, datasetPath);
 }
@@ -832,8 +829,7 @@ template<typename DataType> void h5pp::File::readAttribute(DataType &data, const
             }
 
         } else if constexpr(tc::is_eigen_tensor<DataType>()) {
-            Eigen::DSizes<long, DataType::NumDimensions> eigenDims;
-            std::copy(dims.begin(), dims.end(), eigenDims.begin());
+            auto eigenDims = Textra::copy_dims<DataType::NumDimensions>(dims);
             if constexpr(DataType::Options == Eigen::RowMajor) {
                 // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
                 data.resize(eigenDims);

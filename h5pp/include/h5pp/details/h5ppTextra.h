@@ -3,6 +3,7 @@
 #include <Eigen/Sparse>
 #include <iostream>
 #include <iterator>
+#include <numeric>
 #include <unsupported/Eigen/CXX11/Tensor>
 #if !defined(_MSC_VER)
 #define CONSTEXPR constexpr
@@ -21,25 +22,62 @@ namespace h5pp {
      */
     namespace Textra {
         using cdouble = std::complex<double>;
-
+        // The default type for an index varies wildly between compilers/archs, so we query here
+        using idxType                                    = typename Eigen::Tensor<double, 1>::Index;
         template<typename Scalar> using MatrixType       = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
         template<typename Scalar> using VectorType       = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
         template<typename Scalar> using SparseMatrixType = Eigen::SparseMatrix<Scalar>;
-        template<long rank> using array                  = Eigen::array<long, rank>;
+        template<idxType rank> using array               = Eigen::array<idxType, rank>;
+        template<idxType rank> using DSizes              = Eigen::DSizes<idxType, rank>;
+        using array8                                     = array<8>;
+        using array7                                     = array<7>;
+        using array6                                     = array<6>;
+        using array5                                     = array<5>;
+        using array4                                     = array<4>;
+        using array3                                     = array<3>;
+        using array2                                     = array<2>;
+        using array1                                     = array<1>;
 
         // Shorthand for the list of index pairs.
-        template<typename Scalar, long length> using idxlistpair = Eigen::array<Eigen::IndexPair<Scalar>, length>;
-        CONSTEXPR idxlistpair<long, 0> idx() {
-            Eigen::array<Eigen::IndexPair<long>, 0> empty_index_list = {};
+        template<typename T, auto length> using idxlistpair = Eigen::array<Eigen::IndexPair<T>, length>;
+
+        // Handy functions to copy lists of dimensions
+        template<typename T, auto rank, typename Container> void copy_dims(Eigen::DSizes<T, rank> dsizes, const Container &container) {
+            if constexpr(std::is_array_v<Container>) {
+                std::copy_n(std::begin(container), rank, dsizes.begin());
+            } else {
+                if(container.size() != rank) throw std::runtime_error("copy_dims: Wrong container size, can't copy dimensions.");
+                std::copy(std::begin(container), std::end(container), dsizes.begin());
+            }
+        }
+        template<auto rank, typename Container>[[nodiscard]] CONSTEXPR Eigen::DSizes<idxType, rank> copy_dims(const Container &container) {
+            Eigen::DSizes<idxType, rank> dsizes;
+            if constexpr(std::is_array<Container>::value) {
+                std::copy_n(std::begin(container), rank, dsizes.begin());
+            } else {
+                if(container.size() != rank) throw std::runtime_error("copy_dims: Wrong container size, can't copy dimensions.");
+                std::copy(std::begin(container), std::end(container), dsizes.begin());
+            }
+            return dsizes;
+        }
+
+        template<auto rank, typename Container>[[nodiscard]] CONSTEXPR Eigen::DSizes<idxType, rank> copy_dims(const Container *container) {
+            Eigen::DSizes<idxType, rank> dsizes;
+            std::copy_n(container, rank, dsizes.begin());
+            return dsizes;
+        }
+
+        CONSTEXPR idxlistpair<idxType, 0> idx() {
+            Eigen::array<Eigen::IndexPair<idxType>, 0> empty_index_list = {};
             return empty_index_list;
         }
 
-        template<typename T, std::size_t N> CONSTEXPR idxlistpair<long, N> idx(const T (&list1)[N], const T (&list2)[N]) {
+        template<typename T, size_t N> CONSTEXPR idxlistpair<idxType, N> idx(const T (&list1)[N], const T (&list2)[N]) {
             // Use numpy-style indexing for contraction. Each list contains a list of indices to be contracted for the respective
             // tensors. This function zips them together into pairs as used in Eigen::Tensor module. This does not sort the indices in decreasing order.
             static_assert(std::is_integral_v<T>);
-            Eigen::array<Eigen::IndexPair<long>, N> pairlistOut;
-            for(unsigned long i = 0; i < N; i++) { pairlistOut[i] = Eigen::IndexPair<long>{list1[i], list2[i]}; }
+            Eigen::array<Eigen::IndexPair<idxType>, N> pairlistOut;
+            for(size_t i = 0; i < N; i++) { pairlistOut[i] = Eigen::IndexPair<idxType>{list1[i], list2[i]}; }
             return pairlistOut;
         }
 
@@ -49,26 +87,16 @@ namespace h5pp {
             T dimB;
         };
 
-        template<std::size_t NB, std::size_t N>
-        CONSTEXPR idxlistpair<long, N> sortIdx(const Eigen::array<long, NB> &dimensions, const long (&idx_ctrct_A)[N], const long (&idx_ctrct_B)[N]) {
+        template<size_t NB, size_t N> CONSTEXPR idxlistpair<idxType, N> sortIdx(const array<NB> &dimensions, const idxType (&idx_ctrct_A)[N], const idxType (&idx_ctrct_B)[N]) {
             // When doing contractions, some indices may be larger than others. For performance, you want to
             // contract the largest indices first. This will return a sorted index list in decreasing order.
-            Eigen::array<idx_dim_pair<long>, N> idx_dim_pair_list;
-            for(unsigned long i = 0; i < N; i++) { idx_dim_pair_list[i] = {idx_ctrct_A[i], idx_ctrct_B[i], dimensions[idx_ctrct_B[i]]}; }
+            Eigen::array<idx_dim_pair<idxType>, N> idx_dim_pair_list;
+            for(size_t i = 0; i < N; i++) { idx_dim_pair_list[i] = {idx_ctrct_A[i], idx_ctrct_B[i], dimensions[idx_ctrct_B[i]]}; }
             std::sort(idx_dim_pair_list.begin(), idx_dim_pair_list.end(), [](const auto &i, const auto &j) { return i.dimB > j.dimB; });
-            idxlistpair<long, N> pairlistOut;
-            for(unsigned long i = 0; i < N; i++) { pairlistOut[i] = Eigen::IndexPair<long>{idx_dim_pair_list[i].idxA, idx_dim_pair_list[i].idxB}; }
+            idxlistpair<idxType, N> pairlistOut;
+            for(size_t i = 0; i < N; i++) { pairlistOut[i] = Eigen::IndexPair<idxType>{idx_dim_pair_list[i].idxA, idx_dim_pair_list[i].idxB}; }
             return pairlistOut;
         }
-
-        using array8 = Eigen::array<long, 8>;
-        using array7 = Eigen::array<long, 7>;
-        using array6 = Eigen::array<long, 6>;
-        using array5 = Eigen::array<long, 5>;
-        using array4 = Eigen::array<long, 4>;
-        using array3 = Eigen::array<long, 3>;
-        using array2 = Eigen::array<long, 2>;
-        using array1 = Eigen::array<long, 1>;
 
         //
         //    //***************************************//
@@ -83,9 +111,7 @@ namespace h5pp {
 
             Eigen::Tensor<Scalar, 1> diagonals(rows);
             for(auto i = 0; i < rows; i++) { diagonals(i) = tensor(i, i); }
-            std::cout << "diagonals: \n" << diagonals;
             return diagonals;
-            //        return tensor.reshape(array1{rows*cols}).stride(array1{cols+1});
         }
 
         template<typename Scalar> constexpr auto asDiagonal(const Eigen::Tensor<Scalar, 1> &tensor) {
@@ -121,7 +147,7 @@ namespace h5pp {
         template<typename Derived> using is_plainObject = std::is_base_of<Eigen::PlainObjectBase<std::decay_t<Derived>>, std::decay_t<Derived>>;
 
         template<typename Derived, auto rank>
-        constexpr Eigen::Tensor<typename Derived::Scalar, rank> Matrix_to_Tensor(const Eigen::EigenBase<Derived> &matrix, const Eigen::array<long, rank> &dims) {
+        constexpr Eigen::Tensor<typename Derived::Scalar, rank> Matrix_to_Tensor(const Eigen::EigenBase<Derived> &matrix, const array<rank> &dims) {
             if constexpr(is_plainObject<Derived>::value) {
                 // Return map from raw input.
                 return Eigen::TensorMap<const Eigen::Tensor<const typename Derived::Scalar, rank>>(matrix.derived().eval().data(), dims);
@@ -139,8 +165,8 @@ namespace h5pp {
         }
         // Helpful overload
         template<typename Derived, auto rank>
-        constexpr Eigen::Tensor<typename Derived::Scalar, rank> Matrix_to_Tensor(const Eigen::EigenBase<Derived> &matrix, const Eigen::DSizes<long, rank> &dims) {
-            Eigen::array<long, rank> dim_array = dims;
+        constexpr Eigen::Tensor<typename Derived::Scalar, rank> Matrix_to_Tensor(const Eigen::EigenBase<Derived> &matrix, const DSizes<rank> &dims) {
+            array<rank> dim_array = dims;
             std::copy(std::begin(dims), std::end(dims), std::begin(dim_array));
             return Matrix_to_Tensor(matrix, dim_array);
         }
@@ -175,7 +201,7 @@ namespace h5pp {
         // change storage layout //
         //************************//
         template<typename Scalar, auto rank> Eigen::Tensor<Scalar, rank, Eigen::RowMajor> to_RowMajor(const Eigen::Tensor<Scalar, rank, Eigen::ColMajor> &tensor) {
-            std::array<long, rank> neworder;
+            array<rank> neworder;
             std::iota(std::begin(neworder), std::end(neworder), 0);
             std::reverse(neworder.data(), neworder.data() + neworder.size());
             return tensor.swap_layout().shuffle(neworder);
@@ -183,7 +209,7 @@ namespace h5pp {
         template<typename Scalar, auto rank> Eigen::Tensor<Scalar, rank, Eigen::RowMajor> to_RowMajor(const Eigen::Tensor<Scalar, rank, Eigen::RowMajor> &tensor) { return tensor; }
 
         template<typename Scalar, auto rank> Eigen::Tensor<Scalar, rank, Eigen::ColMajor> to_ColMajor(const Eigen::Tensor<Scalar, rank, Eigen::RowMajor> &tensor) {
-            std::array<long, rank> neworder;
+            array<rank> neworder;
             std::iota(std::begin(neworder), std::end(neworder), 0);
             std::reverse(neworder.data(), neworder.data() + neworder.size());
             return tensor.swap_layout().shuffle(neworder);
