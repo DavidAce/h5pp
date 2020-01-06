@@ -7,6 +7,7 @@
 #include "h5ppFileCounter.h"
 #include "h5ppHdf5.h"
 #include "h5ppLogger.h"
+#include "h5ppStdIsDetected.h"
 #include "h5ppTextra.h"
 #include "h5ppType.h"
 #include "h5ppTypeCheck.h"
@@ -38,17 +39,9 @@ namespace h5pp {
 #error Could not find includes: <filesystem> or <experimental/filesystem> <ghc/filesystem>
 #endif
 
-// Include experimental/type_traits
-#if __has_include(<experimental/type_traits>)
-#include <experimental/type_traits>
-#else
-#error Could not find <experimental/type_traits>
-#endif
-
 // Include optional or experimental/optional
 #if __has_include(<optional>)
 #include <optional>
-
 #elif __has_include(<experimental/optional>)
 #include <experimental/optional>
 namespace h5pp {
@@ -99,7 +92,7 @@ namespace h5pp {
 
         size_t logLevel          = 2;
         bool   defaultExtendable = false; /*!< New datasets with rank >= can be set to extendable by default. For small datasets, setting this true results in larger file size */
-        size_t compressionLevel  = 0;
+        unsigned int compressionLevel = 0;
 
         // Mpi related constants
         hid_t plist_facc  = 0;
@@ -269,7 +262,7 @@ namespace h5pp {
 
         // Functions related to datasets
 
-        void setCompressionLevel(size_t compressionLevelZeroToNine) {
+        void setCompressionLevel(unsigned int compressionLevelZeroToNine) {
             if(checkIfCompressionIsAvailable()) {
                 if(compressionLevelZeroToNine < 10) {
                     h5pp::Logger::log->debug("Compression level set to {}", compressionLevelZeroToNine);
@@ -282,7 +275,7 @@ namespace h5pp {
             }
         }
 
-        size_t getCompressionLevel() const { return compressionLevel; }
+        unsigned int getCompressionLevel() const { return compressionLevel; }
 
         template<typename DataType> void writeDataset(const DataType &data, const std::string &datasetPath, std::optional<bool> extendable = std::nullopt);
 

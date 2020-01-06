@@ -17,7 +17,7 @@ namespace h5pp {
         int                  ndims;
         std::vector<hsize_t> dims;
         std::vector<hsize_t> chunkDims;
-        size_t               compressionLevel = 0;
+        unsigned int         compressionLevel = 0;
 
         ~DatasetProperties() {
             H5Tclose(dataType);
