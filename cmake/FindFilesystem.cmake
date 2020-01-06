@@ -194,7 +194,6 @@ if(CXX_FILESYSTEM_HAVE_FS)
         }
     ]] code @ONLY)
 
-    # ON MSVC we shouldn't need a linker flag
     if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
         # ON MSVC we shouldn't need a linker flag
         check_cxx_source_compiles("${code}" CXX_FILESYSTEM_NO_LINK_NEEDED)

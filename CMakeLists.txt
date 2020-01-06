@@ -141,7 +141,9 @@ if (NOT TARGET Threads::Threads)
     set(CMAKE_THREAD_PREFER_PTHREAD FALSE)
     set(THREADS_PREFER_PTHREAD_FLAG FALSE)
     find_package(Threads)
-    set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES pthread)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES pthread)
+    endif ()
 endif ()
 
 
@@ -190,7 +192,6 @@ CheckCXXOptional()
 ### Compiler and linker flags ###
 #################################
 target_compile_features(flags INTERFACE cxx_std_17)
-target_link_libraries(flags INTERFACE pthread)
 target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) # Need this for and/or logical operators on VS
 
 

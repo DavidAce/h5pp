@@ -160,7 +160,7 @@ namespace h5pp::Utils {
 
         size_t               size       = getSize<DataType>(data);
         std::vector<hsize_t> dims       = getDimensions<DataType>(data);
-        size_t               slice_size = std::ceil(std::sqrt(size));
+        auto                 slice_size = static_cast<size_t>(std::ceil(std::sqrt(size)));
         std::vector<hsize_t> chunkDims  = dims;
         for(size_t dim = 0; dim < dims.size(); dim++) {
             while(chunkDims[dim] > 1) {
