@@ -121,7 +121,7 @@ jobs:
         shell: powershell
         run: |
           Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
-          if ( "${{ matrix.generator }}" -match "Ninja" ){
+          if ( '${{ matrix.generator }}' -match "Ninja" ){
             scoop install ninja --global
             refreshenv
           }

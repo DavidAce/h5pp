@@ -259,7 +259,17 @@ matrix:
           packages:
             - conan
 
-    - name: "osx clang homebrew"
+    - name: "osx clang native"
+      os: osx
+      compiler: clang
+      osx_image: xcode11.3
+      env:
+        - CC=clang
+        - CXX=clang++
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+
+    - name: "osx clang native (+homebrew)"
       os: osx
       compiler: clang
       osx_image: xcode11.3
