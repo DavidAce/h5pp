@@ -307,7 +307,7 @@ before_install:
   - |
     if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
       if [[ "${CMAKE_GEN}" == "Visual Studio 16 2019" ]]; then
-        choco install visualstudio2019community
+        choco install visualstudio2019community --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
         choco install vswhere
         cmd.exe /C 'refreshenv'
         vswhere
