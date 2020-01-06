@@ -255,33 +255,39 @@ function(find_package_hdf5)
                 HINTS ${hdf5_install_prefix} ${CMAKE_INSTALL_PREFIX}  ${CMAKE_INSTALL_PREFIX}/hdf5
                 PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build
                 NO_DEFAULT_PATH)
-
-        if(TARGET hdf5_hl_cpp-${HDF5_TARGET_SUFFIX})
-            if(HDF5_FIND_VERBOSE)
-                message(STATUS "Found target: hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}")
+        if(EXISTS ${HDF5_CONFIG})
+            file(READ ${HDF5_CONFIG} hdf5-config)
+            message(STATUS "hdf5-config.cmake: \n ${hdf5-config} ")
+            get_filename_component(HDF5_CONFIG_DIR ${HDF5_CONFIG} DIRECTORY)
+            if(EXISTS "${HDF5_CONFIG_DIR}/hdf5-targets.cmake" )
+                file(READ ${HDF5_CONFIG_DIR}/hdf5-targets.cmake hdf5-targets)
+                message(STATUS "hdf5-targets.cmake: \n ${hdf5-targets} ")
             endif()
-            list(APPEND HDF5_TARGETS hdf5_hl_cpp-${HDF5_TARGET_SUFFIX})
-        endif()
-        if(TARGET hdf5_hl-${HDF5_TARGET_SUFFIX})
-            if(HDF5_FIND_VERBOSE)
-                message(STATUS "Found target: hdf5_hl-${HDF5_TARGET_SUFFIX}")
+            if(EXISTS "${HDF5_CONFIG_DIR}/hdf5-targets-debug.cmake" )
+                file(READ ${HDF5_CONFIG_DIR}/hdf5-targets-debug.cmake hdf5-targets-debug)
+                message(STATUS "hdf5-targets.cmake: \n ${hdf5-targets-debug} ")
             endif()
-            list(APPEND HDF5_TARGETS hdf5_hl-${HDF5_TARGET_SUFFIX})
+            file()
         endif()
-        if(TARGET hdf5-${HDF5_TARGET_SUFFIX})
-            if(HDF5_FIND_VERBOSE)
-                message(STATUS "Found target: hdf5-${HDF5_TARGET_SUFFIX}")
+        list(HDF5_TARGET_CANDIDATES
+                hdf5::hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
+                hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
+                hdf5_hl_cpp
+                hdf5::hdf5_hl-${HDF5_TARGET_SUFFIX}
+                hdf5_hl-${HDF5_TARGET_SUFFIX}
+                hdf5_hl
+                hdf5::hdf5-${HDF5_TARGET_SUFFIX}
+                hdf5-${HDF5_TARGET_SUFFIX}
+                hdf5
+                )
+        foreach(tgt ${HDF5_TARGET_CANDIDATES})
+            if(TARGET ${tgt})
+                if(HDF5_FIND_VERBOSE)
+                    message(STATUS "Found target: ${tgt}")
+                endif()
+                list(APPEND HDF5_TARGETS ${tgt})
             endif()
-            list(APPEND HDF5_TARGETS hdf5-${HDF5_TARGET_SUFFIX})
-        endif()
-
-        #To print all variables, use the code below:
-        #get_cmake_property(_variableNames VARIABLES)
-        #foreach (_variableName ${_variableNames})
-        #    if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
-        #        message(STATUS "${_variableName}=${${_variableName}}")
-        #    endif()
-        #endforeach()
+        endforeach()
     endif()
 
     if(NOT HDF5_FOUND)
@@ -303,22 +309,6 @@ function(find_package_hdf5)
 
     if(HDF5_FOUND)
 
-        if(HDF5_FIND_VERBOSE)
-            include(cmake/PrintTargetInfo.cmake)
-            message(STATUS "HDF5_TARGETS: ${HDF5_TARGETS}")
-            foreach(tgt ${HDF5_TARGETS})
-                print_target_info(${tgt})
-            endforeach()
-            #To print all variables, use the code below:
-            get_cmake_property(_variableNames VARIABLES)
-            foreach (_variableName ${_variableNames})
-                if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
-                    message(STATUS "${_variableName}=${${_variableName}}")
-                endif()
-            endforeach()
-        endif()
-
-
         add_library(hdf5::hdf5 IMPORTED INTERFACE)
         target_link_libraries(hdf5::hdf5 INTERFACE ${HDF5_TARGETS})
 
@@ -339,6 +329,25 @@ function(find_package_hdf5)
                 target_link_libraries(hdf5::hdf5 INTERFACE aec)
             endif()
         endif()
+
+        if(HDF5_FIND_VERBOSE)
+            include(cmake/PrintTargetInfo.cmake)
+            message(STATUS "HDF5_TARGETS: ${HDF5_TARGETS}")
+            foreach(tgt ${HDF5_TARGETS})
+                print_target_info(${tgt})
+            endforeach()
+            print_target_info(hdf5::hdf5)
+            #To print all variables, use the code below:
+            get_cmake_property(_variableNames VARIABLES)
+            foreach (_variableName ${_variableNames})
+                if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
+                    message(STATUS "${_variableName}=${${_variableName}}")
+                endif()
+            endforeach()
+        endif()
+
+
+
         set(HDF5_FOUND               ${HDF5_FOUND}                  PARENT_SCOPE)
         set(HDF5_VERSION             ${HDF5_VERSION}                PARENT_SCOPE)
         set(HDF5_IS_PARALLEL         ${HDF5_IS_PARALLEL}            PARENT_SCOPE)
