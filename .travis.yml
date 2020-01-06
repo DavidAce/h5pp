@@ -307,11 +307,11 @@ before_install:
   - |
     if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
       if [[ "${CMAKE_GEN}" == "Visual Studio 16 2019" ]]; then
-        choco install visualstudio2019buildtools --package-parameters '--allWorkloads --includeRecommended --includeOptional --passive'
+        eval choco install visualstudio2019buildtools --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive"
       fi
-      choco install python3 --version 3.7.4
       choco upgrade cmake
-    #      export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+      choco install python3 --version 3.7.4
+      export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
       python -m pip install --upgrade pip
       cmd.exe /C 'refreshenv'
     elif [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
