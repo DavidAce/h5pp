@@ -2,9 +2,9 @@
 #if !defined(_MSC_VER) && __has_include(<experimental/type_traits>)
 #include <experimental/type_traits>
 #else
-https : // stackoverflow.com/questions/35661129/strange-msvc-behaviour-with-stdexperimentalis-detected
+/* https : // stackoverflow.com/questions/35661129/strange-msvc-behaviour-with-stdexperimentalis-detected */
 #include <type_traits>
-        namespace std {
+namespace std {
     namespace experimental {
         template<typename...> using void_t = void;
 
