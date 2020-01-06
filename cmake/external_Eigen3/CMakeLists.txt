@@ -12,9 +12,6 @@ ExternalProject_Add(external_eigen3
         PATCH_COMMAND git apply ${PROJECT_SOURCE_DIR}/Eigen_3.3.7.patch
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
-
-        BUILD_COMMAND   ${CMAKE_COMMAND} --build . --parallel
-        INSTALL_COMMAND ${CMAKE_COMMAND} --build . --target install
         CMAKE_ARGS
         -DEIGEN_TEST_CXX11:BOOL=ON
         -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
