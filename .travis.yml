@@ -11,22 +11,22 @@ matrix:
   fast_finish: true
   include:
     - name: "xenial gcc-8"
-        os: linux
-        dist: xenial
-        compiler: gcc
-        env:
-          - CXX=g++-8 CC=gcc-8
-          - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-          - CMAKE_GEN="Unix Makefiles"
-        addons:
-          apt:
-            update: true
-            sources:
-              - sourceline: "ppa:ubuntu-toolchain-r/test"
-            packages:
-              - gcc-8
-              - g++-8
-              - zlib1g-dev
+      os: linux
+      dist: xenial
+      compiler: gcc
+      env:
+        - CXX=g++-8 CC=gcc-8
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+          packages:
+            - gcc-8
+            - g++-8
+            - zlib1g-dev
 
     - name: "xenial clang"
       os: linux
