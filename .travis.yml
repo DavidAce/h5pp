@@ -275,8 +275,7 @@ matrix:
             - szip
           update: true
       before_install:
-        - brew uninstall hdf5
-        - brew install hdf5 --build-from-source
+        - brew reinstall hdf5 --build-from-source
         - brew link hdf5
         - brew link szip
 
