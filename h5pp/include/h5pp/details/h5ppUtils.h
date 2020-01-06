@@ -1,6 +1,7 @@
 #pragma once
 #include "h5ppType.h"
 #include "h5ppTypeCheck.h"
+#include <numeric>
 #include <spdlog/spdlog.h>
 
 namespace h5pp::Utils {
