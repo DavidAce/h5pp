@@ -305,9 +305,16 @@ function(find_package_hdf5)
 
         if(HDF5_FIND_VERBOSE)
             include(cmake/PrintTargetInfo.cmake)
-            message("HDF5_TARGETS: ${HDF5_TARGETS}")
+            message(STATUS "HDF5_TARGETS: ${HDF5_TARGETS}")
             foreach(tgt ${HDF5_TARGETS})
                 print_target_info(${tgt})
+            endforeach()
+            #To print all variables, use the code below:
+            get_cmake_property(_variableNames VARIABLES)
+            foreach (_variableName ${_variableNames})
+                if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
+                    message(STATUS "${_variableName}=${${_variableName}}")
+                endif()
             endforeach()
         endif()
 
