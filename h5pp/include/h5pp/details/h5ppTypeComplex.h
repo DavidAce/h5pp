@@ -3,20 +3,26 @@
 namespace h5pp::Type::Complex {
     inline hid_t H5T_COMPLEX_INT;
     inline hid_t H5T_COMPLEX_LONG;
+    inline hid_t H5T_COMPLEX_LLONG;
     inline hid_t H5T_COMPLEX_UINT;
     inline hid_t H5T_COMPLEX_ULONG;
+    inline hid_t H5T_COMPLEX_ULLONG;
     inline hid_t H5T_COMPLEX_DOUBLE;
     inline hid_t H5T_COMPLEX_FLOAT;
     inline hid_t H5T_SCALAR2_INT;
     inline hid_t H5T_SCALAR2_LONG;
+    inline hid_t H5T_SCALAR2_LLONG;
     inline hid_t H5T_SCALAR2_UINT;
     inline hid_t H5T_SCALAR2_ULONG;
+    inline hid_t H5T_SCALAR2_ULLONG;
     inline hid_t H5T_SCALAR2_DOUBLE;
     inline hid_t H5T_SCALAR2_FLOAT;
     inline hid_t H5T_SCALAR3_INT;
     inline hid_t H5T_SCALAR3_LONG;
+    inline hid_t H5T_SCALAR3_LLONG;
     inline hid_t H5T_SCALAR3_UINT;
     inline hid_t H5T_SCALAR3_ULONG;
+    inline hid_t H5T_SCALAR3_ULLONG;
     inline hid_t H5T_SCALAR3_DOUBLE;
     inline hid_t H5T_SCALAR3_FLOAT;
 

@@ -36,7 +36,7 @@ namespace h5pp::Utils {
         if constexpr(std::is_pod<DataType>::value) return 1;
         if constexpr(tc::is_StdComplex<DataType>()) return 1;
         if constexpr(tc::is_ScalarN<DataType>()) return 1;
-        spdlog::warn("WARNING: getSize could not get the size of the type provided: " + std::string(typeid(data).name()));
+        spdlog::warn("WARNING: getSize could not get the size of the type provided: {}", Type::Check::type_name<DataType>());
         return 0;
     }
 
@@ -71,6 +71,7 @@ namespace h5pp::Utils {
         if constexpr(tc::is_std_array<T>::value) return sizeof(typename T::value_type);
         if constexpr(std::is_array<T>::value) return sizeof(std::remove_all_extents_t<T>);
         if constexpr(std::is_same<T, std::string>::value) return sizeof(char);
+        spdlog::warn("WARNING: getSizeOf could not get sizeof for the type provided: {}", Type::Check::type_name<T>());
         return sizeof(std::remove_all_extents_t<T>);
     }
 
@@ -128,9 +129,9 @@ namespace h5pp::Utils {
 
         else {
             tc::print_type_and_exit_compile_time<DataType>();
-            std::string error = "getDimensions can't match the type provided: " + std::string(typeid(DataType).name());
+            std::string error = "getDimensions can't match the type provided: " + Type::Check::type_name<DataType>();
             spdlog::critical(error);
-            throw(std::logic_error(error));
+            throw std::logic_error(error);
         }
     }
 

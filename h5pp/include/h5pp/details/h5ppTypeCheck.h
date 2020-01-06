@@ -65,22 +65,24 @@ namespace h5pp::Type::Check {
 
     template<typename...> struct print_type_and_exit_compile_time;
 
-    template<class T> constexpr std::string_view type_name() {
-        using namespace std;
+    template<typename T> constexpr auto type_name() {
+        std::string_view name, prefix, suffix;
 #ifdef __clang__
-        string_view p = __PRETTY_FUNCTION__;
-        return string_view(p.data() + 34, p.size() - 34 - 1);
+        name   = __PRETTY_FUNCTION__;
+        prefix = "auto h5pp::Type::Check::type_name() [T = ";
+        suffix = "]";
 #elif defined(__GNUC__)
-        string_view p = __PRETTY_FUNCTION__;
-#if __cplusplus < 201402
-        return string_view(p.data() + 36, p.size() - 36 - 1);
-#else
-        return string_view(p.data() + 49, p.find(';', 49) - 49);
-#endif
+        name   = __PRETTY_FUNCTION__;
+        prefix = "constexpr auto h5pp::Type::Check::type_name() [with T = ";
+        suffix = "]";
 #elif defined(_MSC_VER)
-        string_view p = __FUNCSIG__;
-        return string_view(p.data() + 84, p.size() - 84 - 7);
+        name   = __FUNCSIG__;
+        prefix = "auto __cdecl h5pp::Type::Check::type_name<";
+        suffix = ">(void)";
 #endif
+        name.remove_prefix(prefix.size());
+        name.remove_suffix(suffix.size());
+        return name;
     }
 
     template<typename T> constexpr bool is_StdComplex() { return is_specialization<T, std::complex>::value; }

@@ -680,7 +680,7 @@ template<typename DataType> void h5pp::File::readDataset(DataType &data, const s
             if(retval < 0) { throw std::runtime_error("Failed to read arithmetic type dataset"); }
 
         } else {
-            Logger::log->error("Attempted to read dataset of unknown type. Name: [{}] | Type: [{}]", datasetPath, typeid(data).name());
+            Logger::log->error("Attempted to read dataset of unknown type. Name: [{}] | Type: [{}]", datasetPath, Type::Check::type_name<DataType>());
             throw std::runtime_error("Attempted to read dataset of unknown type");
         }
         H5Tclose(datatype);
@@ -689,7 +689,8 @@ template<typename DataType> void h5pp::File::readDataset(DataType &data, const s
     } catch(std::exception &ex) {
         closeFileHandle(file);
         H5Eprint(H5E_DEFAULT, stderr);
-        throw std::runtime_error(fmt::format("readDataset failed. Dataset name [{}] | Link [{}] | type [{}] | Reason: {}", datasetPath, typeid(data).name(), ex.what()));
+        throw std::runtime_error(
+            fmt::format("readDataset failed. Dataset name [{}] | Link [{}] | type [{}] | Reason: {}", datasetPath, Type::Check::type_name<DataType>(), ex.what()));
     }
 
     closeFileHandle(file);
@@ -716,7 +717,8 @@ template<typename DataType> void h5pp::File::writeAttributeToFile(const DataType
     auto  ndims    = h5pp::Utils::getRank<DataType>();
     auto  dims     = h5pp::Utils::getDimensions(attribute);
     hid_t memspace = h5pp::Utils::getMemSpace(ndims, dims);
-    h5pp::Logger::log->debug("Writing attribute to file: [{}] | size {} | rank {} | dim extents {}", attributeName, size, ndims, dims);
+    h5pp::Logger::log->debug(
+        "Writing attribute to file: [{}] | size {} | rank {} | dim extents {} | type {}", attributeName, size, ndims, dims, Type::Check::type_name<DataType>());
 
     if constexpr(tc::hasMember_c_str<DataType>::value or std::is_same<char *, typename std::decay<DataType>::type>::value) { h5pp::Utils::setStringSize(datatype, size); }
 
@@ -743,7 +745,12 @@ template<typename DataType> void h5pp::File::writeAttribute(const DataType &attr
         if(not h5pp::Hdf5::checkIfAttributeExists(file, aprops.linkPath, aprops.attrName)) {
             hid_t linkObject  = h5pp::Hdf5::openLink(file, aprops.linkPath);
             hid_t attributeId = H5Acreate(linkObject, aprops.attrName.c_str(), aprops.dataType, aprops.memSpace, H5P_DEFAULT, H5P_DEFAULT);
-            h5pp::Logger::log->trace("Writing attribute: [{}] | size {} | rank {} | dim extents {}", aprops.attrName, aprops.size, aprops.ndims, aprops.dims);
+            h5pp::Logger::log->debug("Writing attribute: [{}] | size {} | rank {} | dim extents {} | type {}",
+                                     aprops.attrName,
+                                     aprops.size,
+                                     aprops.ndims,
+                                     aprops.dims,
+                                     Type::Check::type_name<DataType>());
             try {
                 if constexpr(tc::hasMember_c_str<DataType>::value) {
                     retval = H5Awrite(attributeId, aprops.dataType, attribute.c_str());
@@ -810,7 +817,7 @@ template<typename DataType> void h5pp::File::readAttribute(DataType &data, const
         for(const auto &dim : dims) size *= dim;
 
         h5pp::Logger::log->debug(
-            "Reading attribute: [{}] | link {} | size {} | rank {} | dim extents {} | type {}", attributeName, linkPath, size, ndims, dims, typeid(data).name());
+            "Reading attribute: [{}] | link {} | size {} | rank {} | dim extents {} | type {}", attributeName, linkPath, size, ndims, dims, Type::Check::type_name<DataType>());
         if(not h5pp::Utils::typeSizesMatch<DataType>(datatype)) throw std::runtime_error("DataTypes do not match");
 
         if constexpr(tc::is_eigen_core<DataType>::value) {
@@ -864,7 +871,7 @@ template<typename DataType> void h5pp::File::readAttribute(DataType &data, const
             retval = H5Aread(link_attribute, datatype, &data);
             if(retval < 0) { throw std::runtime_error("Failed to read arithmetic type dataset"); }
         } else {
-            Logger::log->error("Attempted to read attribute of unknown type. Name: [{}] | Type: [{}]", attributeName, typeid(data).name());
+            Logger::log->error("Attempted to read attribute of unknown type. Name: [{}] | Type: [{}]", attributeName, Type::Check::type_name<DataType>());
             throw std::runtime_error("Attempted to read dataset of unknown type");
         }
         H5Tclose(datatype);
@@ -875,7 +882,7 @@ template<typename DataType> void h5pp::File::readAttribute(DataType &data, const
         closeFileHandle(file);
         H5Eprint(H5E_DEFAULT, stderr);
         throw std::runtime_error(
-            fmt::format("readAttribute failed. Attribute name [{}] | Link [{}] | type [{}] | Reason: {}", attributeName, linkPath, typeid(data).name(), ex.what()));
+            fmt::format("readAttribute failed. Attribute name [{}] | Link [{}] | type [{}] | Reason: {}", attributeName, linkPath, Type::Check::type_name<DataType>(), ex.what()));
     }
 
     closeFileHandle(file);
