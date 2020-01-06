@@ -241,7 +241,7 @@ matrix:
     #        - conda install --yes conan
     #        - conan profile new default --detect
     #        - conan profile update settings.compiler.libcxx=libstdc++11 default
-    - name: "macOS clang conan"
+    - name: "osx clang conan"
       os: osx
       compiler: clang
       osx_image: xcode11.3
@@ -250,13 +250,14 @@ matrix:
         - CXX=clang++
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
+        - DOWNLOAD_METHOD=conan
       addons:
         homebrew:
           packages:
             - conan
           update: true
 
-    - name: "macOS clang homebrew"
+    - name: "osx clang homebrew"
       os: osx
       compiler: clang
       osx_image: xcode11.3
@@ -279,7 +280,7 @@ matrix:
         - brew link hdf5
         - brew link szip
 
-    - name: "Windows MSVC 2017 conan"
+    - name: "windows msvc 2017 conan"
       os: windows
       env:
         - DOWNLOAD_METHOD=conan
@@ -289,7 +290,7 @@ matrix:
         directories:
           - $HOME/.conan/data
 
-    - name: "Windows MSVC 2017 native"
+    - name: "windows msvc 2017 native"
       os: windows
       env:
         - DOWNLOAD_METHOD=native

@@ -8,6 +8,7 @@ function(build_dependency dep_name install_dir extra_flags)
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             ${extra_flags}
             -G "${CMAKE_GENERATOR}"
+            -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
             ${PROJECT_SOURCE_DIR}/cmake/external_${dep_name}
             WORKING_DIRECTORY ${build_dir}
             RESULT_VARIABLE config_result
