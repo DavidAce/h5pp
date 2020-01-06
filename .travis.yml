@@ -306,11 +306,15 @@ matrix:
 before_install:
   - |
     if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
+      choco install visualstudio2019community
       choco install python3 --version 3.7.4
       choco upgrade cmake
       export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+      export PATH=/c/Program\ Files/CMake/bin:$PATH
       python -m pip install --upgrade pip
       cmd.exe /C 'refreshenv'
+    elif [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+      export PATH=/Users/travis/Library/Python/2.7/bin:$PATH
     else
       pip install --user --upgrade pip
     fi
@@ -331,8 +335,6 @@ install:
 # Setup Build
 before_script:
   # On windows PATH's do not get set properly because travis does not restart the shell, so we add them manually
-  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then export PATH=/Users/travis/Library/Python/2.7/bin:$PATH; fi
-  - if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then export PATH=/c/Program\ Files/CMake/bin:$PATH; fi
   - |
     if [[ "${DOWNLOAD_METHOD}" == "conan" ]]; then
       if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then export PATH=/c/Program\ Files/Conan/conan:$PATH; fi
