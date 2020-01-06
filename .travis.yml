@@ -164,124 +164,176 @@ matrix:
     #        - conda config --add channels conda-forge
     #        - conda install --yes conan
 
-    - name: "Windows gcc"
-      os: windows
-      compiler: gcc
-      env:
-        - CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
-        - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN=Ninja
-        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
-      before_install:
-        - choco upgrade mingw -y
-        - choco install ninja miniconda3 openssl.light
-        - cmd.exe /C 'refreshenv'
-        - conda create -n h5pp python=3.7 --yes
-        - . activate h5pp
-        - conda config --add channels conda-forge
-        - conda install --yes conan
-        - conan profile new default --detect
-        - conan profile update settings.compiler.libcxx=libstdc++11 default
 
-    - name: "Windows MSVC"
+    #    - name: "Windows gcc"
+    #      os: windows
+    #      compiler: gcc
+    #      env:
+    #        - DOWNLOAD_METHOD=conan
+    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
+    #        - CMAKE_GEN=Ninja
+    #        - export PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
+    #        - export CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
+    #        - export CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
+    #      before_install:
+    #        - choco upgrade mingw -y
+    #        - choco install ninja miniconda3 openssl.light
+    #        - cmd.exe /C 'refreshenv'
+    #        - conda create -n h5pp python=3.7 --yes
+    #        - . activate h5pp
+    #        - conda config --add channels conda-forge
+    #        - conda install --yes conan
+    #        - conan profile new default --detect
+    #        - conan profile update settings.compiler.libcxx=libstdc++11 default
+    #
+    #    - name: "Windows MSVC"
+    #      os: windows
+    #      env:
+    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
+    #        - CMAKE_GEN="NMake Makefiles"
+    #        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
+    #      before_install:
+    #        - choco upgrade mingw -y
+    #        - choco install ninja miniconda3 openssl.light
+    #        - cmd.exe /C 'refreshenv'
+    #        - conda create -n h5pp python=3.7 --yes
+    #        - . activate h5pp
+    #        - conda config --add channels conda-forge
+    #        - conda install --yes conan
+    #        - conan profile new default --detect
+    #        - conan profile update settings.compiler.libcxx=libstdc++11 default
+    #
+    #    - name: "Windows clang"
+    #      os: windows
+    #      compiler: clang
+    #      env:
+    #        - CC="/c/Program Files/LLVM/bin/clang"
+    #        - CXX="/c/Program Files/LLVM/bin/clang++"
+    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
+    #        - CMAKE_GEN=Ninja
+    #        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
+    #      before_install:
+    #        - choco upgrade mingw -y
+    #        - choco install llvm ninja miniconda3 openssl.light
+    #        - cmd.exe /C 'refreshenv'
+    #        - conda create -n h5pp python=3.7 --yes
+    #        - . activate h5pp
+    #        - conda config --add channels conda-forge
+    #        - conda install --yes conan
+    #        - conan profile new default --detect
+    #        - conan profile update settings.compiler.libcxx=libstdc++11 default
+    #    - name: "Windows gcc mingw conan"
+    #      os: windows
+    #      compiler: gcc
+    #      env:
+    #        - CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
+    #        - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
+    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
+    #        - CMAKE_GEN=Ninja
+    #        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
+    #      before_install:
+    #        - choco upgrade mingw -y
+    #        - choco install ninja miniconda3 openssl.light
+    #        - cmd.exe /C 'refreshenv'
+    #        - conda create -n h5pp python=3.7 --yes
+    #        - . activate h5pp
+    #        - conda config --add channels conda-forge
+    #        - conda install --yes conan
+    #        - conan profile new default --detect
+    #        - conan profile update settings.compiler.libcxx=libstdc++11 default
+    #    - name: "macOS clang conan"
+    #      os: osx
+    #      compiler: clang
+    #      osx_image: xcode11.3
+    #      env:
+    #        - CC=clang
+    #        - CXX=clang++
+    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
+    #        - CMAKE_GEN="Unix Makefiles"
+    #      addons:
+    #        homebrew:
+    #          packages:
+    #            - conan
+    #          update: true
+    #
+    #    - name: "macOS clang homebrew"
+    #      os: osx
+    #      compiler: clang
+    #      osx_image: xcode11.3
+    #      env:
+    #        - CC=clang
+    #        - CXX=clang++
+    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
+    #        - CMAKE_GEN="Unix Makefiles"
+    #      addons:
+    #        homebrew:
+    #          packages:
+    #            - eigen
+    #            - spdlog
+    #            - zlib
+    #            - szip
+    #          update: true
+    #      before_install:
+    #        - brew uninstall hdf5
+    #        - brew install hdf5 --build-from-source
+    #        - brew link hdf5
+    #        - brew link szip
+    - name: "Windows MSVC conan"
       os: windows
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="NMake Makefiles"
-        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
-      before_install:
-        - choco upgrade mingw -y
-        - choco install ninja miniconda3 openssl.light
-        - cmd.exe /C 'refreshenv'
-        - conda create -n h5pp python=3.7 --yes
-        - . activate h5pp
-        - conda config --add channels conda-forge
-        - conda install --yes conan
-        - conan profile new default --detect
-        - conan profile update settings.compiler.libcxx=libstdc++11 default
+        - DOWNLOAD_METHOD=conan
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="-G \"Visual Studio 15 2017\" -DCMAKE_GENERATOR_PLATFORM=x64"
+        - CMAKE_BUILD_TYPE=Release
+      cache:
+        directories:
+          - $HOME/.conan/data
 
-    - name: "Windows clang"
-      os: windows
-      compiler: clang
-      env:
-        - CC="/c/Program Files/LLVM/bin/clang"
-        - CXX="/c/Program Files/LLVM/bin/clang++"
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN=Ninja
-        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
-      before_install:
-        - choco upgrade mingw -y
-        - choco install llvm ninja miniconda3 openssl.light
-        - cmd.exe /C 'refreshenv'
-        - conda create -n h5pp python=3.7 --yes
-        - . activate h5pp
-        - conda config --add channels conda-forge
-        - conda install --yes conan
-        - conan profile new default --detect
-        - conan profile update settings.compiler.libcxx=libstdc++11 default
-    - name: "Windows gcc mingw conan"
-      os: windows
-      compiler: gcc
-      env:
-        - CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
-        - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN=Ninja
-        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
-      before_install:
-        - choco upgrade mingw -y
-        - choco install ninja miniconda3 openssl.light
-        - cmd.exe /C 'refreshenv'
-        - conda create -n h5pp python=3.7 --yes
-        - . activate h5pp
-        - conda config --add channels conda-forge
-        - conda install --yes conan
-        - conan profile new default --detect
-        - conan profile update settings.compiler.libcxx=libstdc++11 default
-    - name: "macOS clang conan"
-      os: osx
-      compiler: clang
-      osx_image: xcode11.3
-      env:
-        - CC=clang
-        - CXX=clang++
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="Unix Makefiles"
-      addons:
-        homebrew:
-          packages:
-            - conan
-          update: true
+# The pre-install script. On windows it will install conan via chocolatey
+before_install:
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
+      choco install python3 --version 3.7.4
+      export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+      python -m pip install --upgrade pip
+    else
+      pip install --user --upgrade pip
+    fi
 
-    - name: "macOS clang homebrew"
-      os: osx
-      compiler: clang
-      osx_image: xcode11.3
-      env:
-        - CC=clang
-        - CXX=clang++
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
-        - CMAKE_GEN="Unix Makefiles"
-      addons:
-        homebrew:
-          packages:
-            - eigen
-            - spdlog
-            - zlib
-            - szip
-          update: true
-      before_install:
-        - brew uninstall hdf5
-        - brew install hdf5 --build-from-source
-        - brew link hdf5
-        - brew link szip
+install:
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "windows" ]] && [[ "${DOWNLOAD_METHOD}" == "conan" ]]; then
+      pip install conan
+    elif [[ "${TRAVIS_OS_NAME}" =~ linux|osx ]] && [[ "${DOWNLOAD_METHOD}" == "conan" ]]; then
+      pip install --user conan --upgrade
+    fi
 
+
+
+# Setup Build
+before_script:
+  # The path to conan does not get set properly because travis does not restart the shell
+  # so we have to manually add the path it on Windows.
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then export PATH=$PATH:/Users/travis/Library/Python/2.7/bin; fi
+  - |
+    if [[ "${DOWNLOAD_METHOD}" == "conan" ]]; then
+      if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then export PATH=$PATH:/c/Program\ Files/Conan/conan; fi
+      conan user
+      conan profile new default --detect
+      conan profile update settings.compiler.libcxx=libstdc++11 default
+    fi
+  - if [[ "${COMPILER_CXX}" != "" ]]; then export CXX=${COMPILER_CXX}; fi
+  - if [[ "${COMPILER_CC}" != "" ]]; then export CC=${COMPILER_CC}; fi
+
+# Build and Test
 script:
+  # Import Environment
+  - env
+  # Cmake Build
   - export MAKEFLAGS=-j2
   - cmake -E make_directory build/Debug
   - cd build/Debug
-  - cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS -G "$CMAKE_GEN" ../../
+  - cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS $CMAKE_GEN ../../
   - cmake --build . --target all  -- -j2
   - cmake --build . --target install
   - ctest --output-on-failure
