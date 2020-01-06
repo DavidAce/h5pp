@@ -131,13 +131,13 @@ jobs:
             refreshenv
             conan profile new default --detect
             conan profile update settings.compiler.libcxx=libstdc++11 default
-            conan user
           }
           echo "::set-env name=CC::${{ matrix.compiler }}"
           echo "::set-env name=CXX::${{ matrix.compiler }}"
 
           # Some commands modify the PATH so we make the modified PATH global.
           echo "::set-env name=PATH::$env:PATH"
+
       - name: Configure
         run: |
           cmake -E make_directory build/Debug
