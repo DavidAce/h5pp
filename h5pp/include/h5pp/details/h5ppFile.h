@@ -825,13 +825,13 @@ template<typename DataType> void h5pp::File::readAttribute(DataType &data, const
                 // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
                 data.resize(dims[0], dims[1]);
                 retval = H5Aread(link_attribute, datatype, data.data());
-                if(retval < 0) { throw std::runtime_error("Failed to read Eigen Matrix rowmajor dataset"); }
+                if(retval < 0) throw std::runtime_error("Failed to read Eigen Matrix rowmajor dataset");
             } else {
                 // Data is RowMajor in HDF5, user gave a ColMajor container so we need to swap the layout.
                 Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> matrixRowmajor;
                 matrixRowmajor.resize(dims[0], dims[1]); // Data is transposed in HDF5!
                 retval = H5Aread(link_attribute, datatype, matrixRowmajor.data());
-                if(retval < 0) { throw std::runtime_error("Failed to read Eigen Matrix colmajor dataset"); }
+                if(retval < 0) throw std::runtime_error("Failed to read Eigen Matrix colmajor dataset");
                 data = matrixRowmajor;
             }
 
@@ -841,12 +841,12 @@ template<typename DataType> void h5pp::File::readAttribute(DataType &data, const
                 // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
                 data.resize(eigenDims);
                 retval = H5Aread(link_attribute, datatype, data.data());
-                if(retval < 0) { throw std::runtime_error("Failed to read Eigen Tensor rowmajor dataset"); }
+                if(retval < 0) throw std::runtime_error("Failed to read Eigen Tensor rowmajor dataset");
             } else {
                 // Data is RowMajor in HDF5, user gave a ColMajor container so we need to swap the layout.
                 Eigen::Tensor<typename DataType::Scalar, DataType::NumIndices, Eigen::RowMajor> tensorRowmajor(eigenDims);
                 retval = H5Aread(link_attribute, datatype, tensorRowmajor.data());
-                if(retval < 0) { throw std::runtime_error("Failed to read Eigen Tensor colmajor dataset"); }
+                if(retval < 0) throw std::runtime_error("Failed to read Eigen Tensor colmajor dataset");
                 data = Textra::to_ColMajor(tensorRowmajor);
             }
         }
@@ -855,21 +855,21 @@ template<typename DataType> void h5pp::File::readAttribute(DataType &data, const
             if(ndims != 1) throw std::runtime_error("Vector cannot take datatypes with dimension: " + std::to_string(ndims));
             data.resize(dims[0]);
             retval = H5Aread(link_attribute, datatype, data.data());
-            if(retval < 0) { throw std::runtime_error("Failed to read std::vector dataset"); }
+            if(retval < 0) throw std::runtime_error("Failed to read std::vector dataset");
         } else if constexpr(tc::is_std_array<DataType>::value) {
             if(ndims != 1) throw std::runtime_error("Array cannot take datatypes with dimension: " + std::to_string(ndims));
             retval = H5Aread(link_attribute, datatype, data.data());
-            if(retval < 0) { throw std::runtime_error("Failed to read std::vector dataset"); }
+            if(retval < 0) throw std::runtime_error("Failed to read std::vector dataset");
         } else if constexpr(std::is_same<std::string, DataType>::value) {
             if(ndims != 1) throw std::runtime_error("std::string expected dimension 1. Got: " + std::to_string(ndims));
             hsize_t stringsize = H5Tget_size(datatype);
             data.resize(stringsize);
             retval = H5Aread(link_attribute, datatype, data.data());
-            if(retval < 0) { throw std::runtime_error("Failed to read std::string dataset"); }
+            if(retval < 0) throw std::runtime_error("Failed to read std::string dataset");
 
         } else if constexpr(std::is_arithmetic<DataType>::value or tc::is_StdComplex<DataType>()) {
             retval = H5Aread(link_attribute, datatype, &data);
-            if(retval < 0) { throw std::runtime_error("Failed to read arithmetic type dataset"); }
+            if(retval < 0) throw std::runtime_error("Failed to read arithmetic type dataset");
         } else {
             Logger::log->error("Attempted to read attribute of unknown type. Name: [{}] | Type: [{}]", attributeName, Type::Check::type_name<DataType>());
             throw std::runtime_error("Attempted to read dataset of unknown type");

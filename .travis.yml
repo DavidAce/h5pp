@@ -241,43 +241,43 @@ matrix:
     #        - conda install --yes conan
     #        - conan profile new default --detect
     #        - conan profile update settings.compiler.libcxx=libstdc++11 default
-    #    - name: "macOS clang conan"
-    #      os: osx
-    #      compiler: clang
-    #      osx_image: xcode11.3
-    #      env:
-    #        - CC=clang
-    #        - CXX=clang++
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN="Unix Makefiles"
-    #      addons:
-    #        homebrew:
-    #          packages:
-    #            - conan
-    #          update: true
-    #
-    #    - name: "macOS clang homebrew"
-    #      os: osx
-    #      compiler: clang
-    #      osx_image: xcode11.3
-    #      env:
-    #        - CC=clang
-    #        - CXX=clang++
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
-    #        - CMAKE_GEN="Unix Makefiles"
-    #      addons:
-    #        homebrew:
-    #          packages:
-    #            - eigen
-    #            - spdlog
-    #            - zlib
-    #            - szip
-    #          update: true
-    #      before_install:
-    #        - brew uninstall hdf5
-    #        - brew install hdf5 --build-from-source
-    #        - brew link hdf5
-    #        - brew link szip
+    - name: "macOS clang conan"
+      os: osx
+      compiler: clang
+      osx_image: xcode11.3
+      env:
+        - CC=clang
+        - CXX=clang++
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+      addons:
+        homebrew:
+          packages:
+            - conan
+          update: true
+
+    - name: "macOS clang homebrew"
+      os: osx
+      compiler: clang
+      osx_image: xcode11.3
+      env:
+        - CC=clang
+        - CXX=clang++
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
+        - CMAKE_GEN="Unix Makefiles"
+      addons:
+        homebrew:
+          packages:
+            - eigen
+            - spdlog
+            - zlib
+            - szip
+          update: true
+      before_install:
+        - brew uninstall hdf5
+        - brew install hdf5 --build-from-source
+        - brew link hdf5
+        - brew link szip
 
     - name: "Windows MSVC 2017 conan"
       os: windows
@@ -285,30 +285,24 @@ matrix:
         - DOWNLOAD_METHOD=conan
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Visual Studio 15 2017"
-        - CMAKE_BUILD_TYPE=Release
       cache:
         directories:
           - $HOME/.conan/data
 
-    - name: "Windows MSVC 2019 conan"
+    - name: "Windows MSVC 2017 native"
       os: windows
       env:
-        - DOWNLOAD_METHOD=conan
+        - DOWNLOAD_METHOD=native
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="Visual Studio 16 2019"
-        - CMAKE_BUILD_TYPE=Release
+        - CMAKE_GEN="Visual Studio 15 2017"
       cache:
         directories:
-          - $HOME/.conan/data
-
+          - $TRAVIS_BUILD_DIR/build/Debug/install
 
 # The pre-install script. On windows it will install conan via chocolatey
 before_install:
   - |
     if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
-      if [[ "${CMAKE_GEN}" == "Visual Studio 16 2019" ]]; then
-        choco install visualstudio2019buildtools
-      fi
       choco upgrade cmake
       choco install python3 --version 3.7.4
       export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
