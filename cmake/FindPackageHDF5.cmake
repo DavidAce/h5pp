@@ -82,8 +82,7 @@ function(find_package_hdf5_isolator hdf5_root)
     unset(HDF5_FOUND CACHE)
     unset(HDF5_FOUND PARENT_SCOPE)
     set(HDF5_FOUND False)
-    set(HDF5_FIND_DEBUG OFF)
-    set(HDF5_FIND_VERBOSE OFF)
+
     if(HDF5_FIND_VERBOSE)
         message(STATUS "Searching for hdf5 execs in ${hdf5_root}" )
     endif()
@@ -122,12 +121,12 @@ function(find_package_hdf5_isolator hdf5_root)
         set(HDF5_LIBNAMES)
         set(HDF5_LINK_LIBNAMES)
         #To print all variables, use the code below:
-#        get_cmake_property(_variableNames VARIABLES)
-#        foreach (_variableName ${_variableNames})
-#            if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
-#                message(STATUS "${_variableName}=${${_variableName}}")
-#            endif()
-#        endforeach()
+        get_cmake_property(_variableNames VARIABLES)
+        foreach (_variableName ${_variableNames})
+            if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
+                message(STATUS "${_variableName}=${${_variableName}}")
+            endif()
+        endforeach()
 
         # Get a list of library names like hdf5 hdf5_hl hdf5_hl_cpp etc
         foreach(lang ${HDF5_LANG})
@@ -239,19 +238,36 @@ function(find_package_hdf5)
     if (NOT HDF5_REQUIRED)
         set(HDF5_REQUIRED OFF)
     endif()
+    if(NOT HDF5_FIND_DEBUG)
+        set(HDF5_FIND_DEBUG ON)
+    endif()
+    if(NOT HDF5_FIND_VERBOSE)
+        set(HDF5_FIND_VERBOSE ON)
+    endif()
+
 
     if(NOT HDF5_FOUND)
         # Message try finding HDF5 where it would have gotten installed previously
         find_package(HDF5
                 COMPONENTS ${HDF5_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
                 HINTS ${hdf5_install_prefix} ${CMAKE_INSTALL_PREFIX} NO_DEFAULT_PATH)
+
         if(TARGET hdf5_hl_cpp-${HDF5_TARGET_SUFFIX})
+            if(HDF5_FIND_VERBOSE)
+                message(STATUS "Found target: hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}")
+            endif()
             list(APPEND HDF5_TARGETS hdf5_hl_cpp-${HDF5_TARGET_SUFFIX})
         endif()
         if(TARGET hdf5_hl-${HDF5_TARGET_SUFFIX})
+            if(HDF5_FIND_VERBOSE)
+                message(STATUS "Found target: hdf5_hl-${HDF5_TARGET_SUFFIX}")
+            endif()
             list(APPEND HDF5_TARGETS hdf5_hl-${HDF5_TARGET_SUFFIX})
         endif()
         if(TARGET hdf5-${HDF5_TARGET_SUFFIX})
+            if(HDF5_FIND_VERBOSE)
+                message(STATUS "Found target: hdf5-${HDF5_TARGET_SUFFIX}")
+            endif()
             list(APPEND HDF5_TARGETS hdf5-${HDF5_TARGET_SUFFIX})
         endif()
 
@@ -283,25 +299,30 @@ function(find_package_hdf5)
 
     if(HDF5_FOUND)
 
-#        include(cmake/PrintTargetInfo.cmake)
-#        message("HDF5_TARGETS: ${HDF5_TARGETS}")
-#        foreach(tgt ${HDF5_TARGETS})
-#            print_target_info(${tgt})
-#        endforeach()
+        include(cmake/PrintTargetInfo.cmake)
+        message("HDF5_TARGETS: ${HDF5_TARGETS}")
+        foreach(tgt ${HDF5_TARGETS})
+            print_target_info(${tgt})
+        endforeach()
 
-
-        if(APPLE AND "sz" IN_LIST HDF5_TARGETS)
-            list(FILTER "HDF5_TARGETS" EXCLUDE REGEX "sz")
-            find_library(SZIP_LIBRARY NAMES sz szip szip-static libsz libszip libszip-static) # No built in findSZIP.cmake
-            if(SZIP_LIBRARY)
-                message(STATUS "Found SZIP: ${SZIP_LIBRARY}")
-                list(APPEND HDF5_TARGETS ${SZIP_LIBRARY})
-                endif()
-        endif()
 
 
         add_library(hdf5::hdf5 IMPORTED INTERFACE)
         target_link_libraries(hdf5::hdf5 INTERFACE ${HDF5_TARGETS})
+
+
+        if(APPLE AND "sz" IN_LIST HDF5_TARGETS)
+            include(cmake/TargetFilters.cmake)
+            remove_library_recursive(hdf5::hdf5 "sz")
+            find_library(SZIP_LIBRARY NAMES sz szip szip-static libsz libszip libszip-static) # No built in findSZIP.cmake
+            if(SZIP_LIBRARY)
+                message(STATUS "Found SZIP: ${SZIP_LIBRARY}")
+                target_link_libraries(hdf5::hdf5 INTERFACE ${SZIP_LIBRARY})
+                list(APPEND HDF5_TARGETS ${SZIP_LIBRARY})
+            endif()
+        endif()
+
+
 
         if("sz" IN_LIST HDF5_LINK_LIBNAMES)
             CHECK_LIBRARY_EXISTS(aec aec_decode_init "/usr/lib/x86_64-linux-gnu" HAVE_AEC_LIB)
