@@ -289,6 +289,17 @@ function(find_package_hdf5)
 #            print_target_info(${tgt})
 #        endforeach()
 
+
+        if(APPLE AND "sz" IN_LIST HDF5_TARGETS)
+            list(FILTER "HDF5_TARGETS" EXCLUDE REGEX "sz")
+            find_library(SZIP_LIBRARY NAMES sz szip szip-static libsz libszip libszip-static) # No built in findSZIP.cmake
+            if(SZIP_LIBRARY)
+                message(STATUS "Found SZIP: ${SZIP_LIBRARY}")
+                list(APPEND HDF5_TARGETS ${SZIP_LIBRARY})
+                endif()
+        endif()
+
+
         add_library(hdf5::hdf5 IMPORTED INTERFACE)
         target_link_libraries(hdf5::hdf5 INTERFACE ${HDF5_TARGETS})
 
