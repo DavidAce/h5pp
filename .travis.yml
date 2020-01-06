@@ -278,7 +278,8 @@ matrix:
     #        - brew install hdf5 --build-from-source
     #        - brew link hdf5
     #        - brew link szip
-    - name: "Windows MSVC conan"
+
+    - name: "Windows MSVC 2017 conan"
       os: windows
       env:
         - DOWNLOAD_METHOD=conan
@@ -288,6 +289,18 @@ matrix:
       cache:
         directories:
           - $HOME/.conan/data
+
+    - name: "Windows MSVC conan"
+      os: windows
+      env:
+        - DOWNLOAD_METHOD=conan
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Visual Studio 16 2019"
+        - CMAKE_BUILD_TYPE=Release
+      cache:
+        directories:
+          - $HOME/.conan/data
+
 
 # The pre-install script. On windows it will install conan via chocolatey
 before_install:
@@ -330,8 +343,17 @@ script:
   - export MAKEFLAGS=-j2
   - cmake -E make_directory build/Debug
   - cd build/Debug
-  - cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS -G "$CMAKE_GEN" ../../
-  - cmake --build . --target all  -- -j2
+  - |
+    cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+          -DH5PP_PRINT_INFO:BOOL=ON \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DENABLE_TESTS:BOOL=ON \
+          -DBUILD_EXAMPLES:BOOL=ON \
+           $CMAKE_FLAGS \
+          -G "$CMAKE_GEN" \
+          -DCMAKE_GENERATOR_PLATFORM=x64 \
+          ../../
+  - cmake --build . --target all  --parallel
   - cmake --build . --target install
   - ctest --output-on-failure
 
