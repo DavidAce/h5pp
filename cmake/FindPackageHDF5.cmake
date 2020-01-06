@@ -86,9 +86,10 @@ function(find_package_hdf5_isolator hdf5_root)
     if(HDF5_FIND_VERBOSE)
         message(STATUS "Searching for hdf5 execs in ${hdf5_root}" )
     endif()
+    include(GNUInstallDirs)
     set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE ON)
-    find_file(HDF5_C_COMPILER_EXECUTABLE    NAMES h5cc  PATHS ${hdf5_root} PATH_SUFFIXES bin hdf5/bin NO_DEFAULT_PATH)
-    find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ PATHS ${hdf5_root} PATH_SUFFIXES bin hdf5/bin NO_DEFAULT_PATH)
+    find_file(HDF5_C_COMPILER_EXECUTABLE    NAMES h5cc  PATHS ${hdf5_root} ${hdf5_root}/hdf5 PATH_SUFFIXES bin hdf5/bin ${CMAKE_INSTALL_LIBEXECDIR} ${CMAKE_INSTALL_BINDIR} NO_DEFAULT_PATH)
+    find_file(HDF5_CXX_COMPILER_EXECUTABLE  NAMES h5c++ PATHS ${hdf5_root} ${hdf5_root}/hdf5 PATH_SUFFIXES bin hdf5/bin ${CMAKE_INSTALL_LIBEXECDIR} ${CMAKE_INSTALL_BINDIR} NO_DEFAULT_PATH)
     if (HDF5_C_COMPILER_EXECUTABLE OR HDF5_CXX_COMPILER_EXECUTABLE)
         if(HDF5_FIND_VERBOSE)
             message(STATUS "Searching for hdf5 execs in ${hdf5_root} - Success -- C:  ${HDF5_C_COMPILER_EXECUTABLE}  CXX: ${HDF5_CXX_COMPILER_EXECUTABLE}" )
@@ -251,7 +252,9 @@ function(find_package_hdf5)
         # Message try finding HDF5 where it would have gotten installed previously
         find_package(HDF5
                 COMPONENTS ${HDF5_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
-                HINTS ${hdf5_install_prefix} ${CMAKE_INSTALL_PREFIX} NO_DEFAULT_PATH)
+                HINTS ${hdf5_install_prefix} ${CMAKE_INSTALL_PREFIX}  ${CMAKE_INSTALL_PREFIX}/hdf5
+                PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build
+                NO_DEFAULT_PATH)
 
         if(TARGET hdf5_hl_cpp-${HDF5_TARGET_SUFFIX})
             if(HDF5_FIND_VERBOSE)

@@ -251,11 +251,13 @@ matrix:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
         - DOWNLOAD_METHOD=conan
+      cache:
+        directories:
+          - $HOME/.conan/data
       addons:
         homebrew:
           packages:
             - conan
-          update: true
 
     - name: "osx clang homebrew"
       os: osx
@@ -270,14 +272,11 @@ matrix:
         homebrew:
           packages:
             - eigen
+            - hdf5
             - spdlog
             - zlib
             - szip
-          update: true
-      before_install:
-        - brew reinstall szip --build-from-source
-        - brew link hdf5
-        - brew link szip
+
 
     - name: "windows msvc 2017 conan"
       os: windows
