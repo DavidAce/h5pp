@@ -290,7 +290,7 @@ matrix:
         directories:
           - $HOME/.conan/data
 
-    - name: "Windows MSVC conan"
+    - name: "Windows MSVC 2019 conan"
       os: windows
       env:
         - DOWNLOAD_METHOD=conan
@@ -307,6 +307,7 @@ before_install:
   - |
     if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
       choco install python3 --version 3.7.4
+      choco upgrade cmake
       export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
       python -m pip install --upgrade pip
     else
@@ -325,8 +326,7 @@ install:
 
 # Setup Build
 before_script:
-  # The path to conan does not get set properly because travis does not restart the shell
-  # so we have to manually add the path it on Windows.
+  # On windows PATH's do not get set properly because travis does not restart the shell, so we add them manually
   - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then export PATH=$PATH:/Users/travis/Library/Python/2.7/bin; fi
   - |
     if [[ "${DOWNLOAD_METHOD}" == "conan" ]]; then

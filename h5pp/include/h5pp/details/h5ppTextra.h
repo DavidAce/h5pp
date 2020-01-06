@@ -4,6 +4,11 @@
 #include <iostream>
 #include <iterator>
 #include <unsupported/Eigen/CXX11/Tensor>
+#if !defined(_MSC_VER)
+#define CONSTEXPR constexpr
+#else
+#define CONSTEXPR
+#endif
 
 namespace h5pp {
     /*! \brief **Textra** stands for "Tensor Extra". Provides extra functionality to Eigen::Tensor.*/
@@ -24,13 +29,12 @@ namespace h5pp {
 
         // Shorthand for the list of index pairs.
         template<typename Scalar, long length> using idxlistpair = Eigen::array<Eigen::IndexPair<Scalar>, length>;
-
-        constexpr idxlistpair<long, 0> idx() {
+        CONSTEXPR idxlistpair<long, 0> idx() {
             Eigen::array<Eigen::IndexPair<long>, 0> empty_index_list = {};
             return empty_index_list;
         }
 
-        template<typename T, std::size_t N> constexpr idxlistpair<long, N> idx(const T (&list1)[N], const T (&list2)[N]) {
+        template<typename T, std::size_t N> CONSTEXPR idxlistpair<long, N> idx(const T (&list1)[N], const T (&list2)[N]) {
             // Use numpy-style indexing for contraction. Each list contains a list of indices to be contracted for the respective
             // tensors. This function zips them together into pairs as used in Eigen::Tensor module. This does not sort the indices in decreasing order.
             static_assert(std::is_integral_v<T>);
@@ -46,7 +50,7 @@ namespace h5pp {
         };
 
         template<std::size_t NB, std::size_t N>
-        constexpr idxlistpair<long, N> sortIdx(const Eigen::array<long, NB> &dimensions, const long (&idx_ctrct_A)[N], const long (&idx_ctrct_B)[N]) {
+        CONSTEXPR idxlistpair<long, N> sortIdx(const Eigen::array<long, NB> &dimensions, const long (&idx_ctrct_A)[N], const long (&idx_ctrct_B)[N]) {
             // When doing contractions, some indices may be larger than others. For performance, you want to
             // contract the largest indices first. This will return a sorted index list in decreasing order.
             Eigen::array<idx_dim_pair<long>, N> idx_dim_pair_list;
