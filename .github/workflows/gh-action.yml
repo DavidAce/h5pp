@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Actions
 
 on: [push]
 # INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
@@ -80,7 +80,7 @@ jobs:
             compiler: cl
             sources: native
             generator: -G "Visual Studio 16 2019" -A x64
-            flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=ON
+            flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=OFF
     steps:
       - uses: actions/checkout@v1
       - uses: ilammy/msvc-dev-cmd@v1

@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/DavidAce/h5pp.svg?branch=master)](https://travis-ci.org/DavidAce/h5pp)
 [![Build Status](https://github.com/DavidAce/h5pp/workflows/C%2FC++%20CI/badge.svg)](https://github.com/DavidAce/h5pp/actions)
 [![Anaconda-Server Badge](https://anaconda.org/davidace/h5pp/badges/installer/conda.svg)](https://conda.anaconda.org/davidace)
-[![Download](https://api.bintray.com/packages/davidace/conan-public/h5pp%3Adavidace/images/download.svg) ](https://bintray.com/davidace/conan-public/h5pp%3Adavidace/_latestVersion)
-[![Download](https://img.shields.io/badge/Platform-Linux%7CWindows%7CmacOS-blue)](https://img.shields.io/badge/Platform-Linux%7CWindows%7CmacOS-blue)
+[![Download](https://img.shields.io/badge/Install%20with-conan-green) ](https://bintray.com/davidace/conan-public/h5pp%3Adavidace/_latestVersion)
+[![Download](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)
 
 # h5pp
 `h5pp` is a C++17 wrapper for HDF5 with focus on simplicity.

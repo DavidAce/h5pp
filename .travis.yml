@@ -27,6 +27,9 @@ matrix:
             - gcc-8
             - g++-8
             - zlib1g-dev
+      cache:
+        directories:
+          - $TRAVIS_BUILD_DIR/build/Debug/install
 
     - name: "xenial clang"
       os: linux
@@ -44,7 +47,9 @@ matrix:
           packages:
             - libstdc++-8-dev
             - zlib1g-dev
-
+      cache:
+        directories:
+          - $TRAVIS_BUILD_DIR/build/Debug/install
 
     - name: "bionic gcc"
       os: linux
@@ -53,6 +58,9 @@ matrix:
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
+      cache:
+        directories:
+          - $TRAVIS_BUILD_DIR/build/Debug/install
 
     - name: "bionic clang"
       os: linux
@@ -61,6 +69,9 @@ matrix:
       env:
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
+      cache:
+        directories:
+          - $TRAVIS_BUILD_DIR/build/Debug/install
 
     - name: "xenial gcc-8 conda libs"
       os: linux
