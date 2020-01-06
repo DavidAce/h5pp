@@ -166,14 +166,14 @@ jobs:
         shell: bash
         run: |
           cd build/Debug
-          cmake --build . --target all
+          cmake --build . --parallel
           cmake --build . --target install
           cat CMakeFiles/CMakeError.log
 
       - name: Test
         run: |
           cd build/Debug
-          ctest --output-on-failure
+          ctest -C Debug --output-on-failure
 
 
 

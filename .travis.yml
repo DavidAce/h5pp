@@ -363,9 +363,9 @@ script:
           -G "$CMAKE_GEN" \
           -DCMAKE_GENERATOR_PLATFORM=x64 \
           ../../
-  - cmake --build . --target all  --parallel
+  - cmake --build . --parallel
   - cmake --build . --target install
-  - ctest --output-on-failure
+  - ctest -C Debug --output-on-failure
 
 
 after_failure:
