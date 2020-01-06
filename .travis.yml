@@ -314,7 +314,7 @@ before_install:
     else
       pip install --user --upgrade pip
     fi
-    - cmake --version
+    cmake --version
 
 install:
   - |
