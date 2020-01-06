@@ -193,21 +193,29 @@ if(CXX_FILESYSTEM_HAVE_FS)
             return static_cast<int>(cwd.string().size());
         }
     ]] code @ONLY)
-    # Try to compile a simple filesystem program with the libstdc++ flag
-    set(CMAKE_REQUIRED_LIBRARIES  -lstdc++fs)
-    check_cxx_source_compiles("${code}" CXX_FILESYSTEM_STDCPPFS_NEEDED)
-    set(can_link ${CXX_FILESYSTEM_STDCPPFS_NEEDED})
-    if(NOT CXX_FILESYSTEM_STDCPPFS_NEEDED)
-        # Try to compile a simple filesystem program with the libc++ flag
-        set(CMAKE_REQUIRED_LIBRARIES -lc++fs)
-        check_cxx_source_compiles("${code}" CXX_FILESYSTEM_CPPFS_NEEDED)
-        set(can_link ${CXX_FILESYSTEM_CPPFS_NEEDED})
-        if(NOT CXX_FILESYSTEM_CPPFS_NEEDED)
-            # Try to compile a simple filesystem program without any linker flags
-            check_cxx_source_compiles("${code}" CXX_FILESYSTEM_NO_LINK_NEEDED)
-            set(can_link ${CXX_FILESYSTEM_NO_LINK_NEEDED})
-        endif()
 
+    # ON MSVC we shouldn't need a linker flag
+    if(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
+        # ON MSVC we shouldn't need a linker flag
+        check_cxx_source_compiles("${code}" CXX_FILESYSTEM_NO_LINK_NEEDED)
+        set(can_link ${CXX_FILESYSTEM_NO_LINK_NEEDED})
+    else()
+        # Try to compile a simple filesystem program with the libstdc++ flag
+        # If the linker flag exists it's preferrable to use it to avoid spurious undefined references
+        set(CMAKE_REQUIRED_LIBRARIES  -lstdc++fs)
+        check_cxx_source_compiles("${code}" CXX_FILESYSTEM_STDCPPFS_NEEDED)
+        set(can_link ${CXX_FILESYSTEM_STDCPPFS_NEEDED})
+        if(NOT CXX_FILESYSTEM_STDCPPFS_NEEDED)
+            # Try to compile a simple filesystem program with the libc++ flag
+            set(CMAKE_REQUIRED_LIBRARIES -lc++fs)
+            check_cxx_source_compiles("${code}" CXX_FILESYSTEM_CPPFS_NEEDED)
+            set(can_link ${CXX_FILESYSTEM_CPPFS_NEEDED})
+            if(NOT CXX_FILESYSTEM_CPPFS_NEEDED)
+                # Try to compile a simple filesystem program without any linker flags
+                check_cxx_source_compiles("${code}" CXX_FILESYSTEM_NO_LINK_NEEDED)
+                set(can_link ${CXX_FILESYSTEM_NO_LINK_NEEDED})
+            endif()
+        endif()
     endif()
     ## HERE ENDS MODIFICATION 2
 
@@ -219,9 +227,9 @@ if(CXX_FILESYSTEM_HAVE_FS)
         if(CXX_FILESYSTEM_NO_LINK_NEEDED)
             # Nothing to add...
         elseif(CXX_FILESYSTEM_STDCPPFS_NEEDED)
-            target_link_libraries(std::filesystem INTERFACE stdc++fs)
+            target_link_libraries(std::filesystem INTERFACE -lstdc++fs)
         elseif(CXX_FILESYSTEM_CPPFS_NEEDED)
-            target_link_libraries(std::filesystem INTERFACE c++fs)
+            target_link_libraries(std::filesystem INTERFACE -lc++fs)
         endif()
     endif()
 endif()
