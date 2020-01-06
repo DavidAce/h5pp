@@ -283,7 +283,7 @@ matrix:
       env:
         - DOWNLOAD_METHOD=conan
         - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_GEN="-G \"Visual Studio 15 2017\" -DCMAKE_GENERATOR_PLATFORM=x64"
+        - CMAKE_GEN="Visual Studio 15 2017"
         - CMAKE_BUILD_TYPE=Release
       cache:
         directories:
@@ -324,16 +324,13 @@ before_script:
     fi
   - if [[ "${COMPILER_CXX}" != "" ]]; then export CXX=${COMPILER_CXX}; fi
   - if [[ "${COMPILER_CC}" != "" ]]; then export CC=${COMPILER_CC}; fi
-
 # Build and Test
 script:
-  # Import Environment
-  - env
   # Cmake Build
   - export MAKEFLAGS=-j2
   - cmake -E make_directory build/Debug
   - cd build/Debug
-  - cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS $CMAKE_GEN ../../
+  - cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DH5PP_PRINT_INFO:BOOL=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS:BOOL=ON -DBUILD_EXAMPLES:BOOL=ON $CMAKE_FLAGS -G "$CMAKE_GEN" ../../
   - cmake --build . --target all  -- -j2
   - cmake --build . --target install
   - ctest --output-on-failure
