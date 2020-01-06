@@ -269,15 +269,18 @@ function(find_package_hdf5)
             endif()
             file()
         endif()
-        list(HDF5_TARGET_CANDIDATES
+        list(APPEND HDF5_TARGET_CANDIDATES
                 hdf5::hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
                 hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
+                hdf5_hl_cpp_${HDF5_TARGET_SUFFIX}
                 hdf5_hl_cpp
                 hdf5::hdf5_hl-${HDF5_TARGET_SUFFIX}
                 hdf5_hl-${HDF5_TARGET_SUFFIX}
+                hdf5_hl_${HDF5_TARGET_SUFFIX}
                 hdf5_hl
                 hdf5::hdf5-${HDF5_TARGET_SUFFIX}
                 hdf5-${HDF5_TARGET_SUFFIX}
+                hdf5_${HDF5_TARGET_SUFFIX}
                 hdf5
                 )
         foreach(tgt ${HDF5_TARGET_CANDIDATES})
