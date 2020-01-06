@@ -275,7 +275,7 @@ matrix:
             - szip
           update: true
       before_install:
-        - brew reinstall hdf5 --build-from-source
+        - brew reinstall szip --build-from-source
         - brew link hdf5
         - brew link szip
 
@@ -306,9 +306,11 @@ before_install:
   - |
     if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
       choco upgrade cmake
-      choco install python3 --version 3.7.4
-      export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
-      python -m pip install --upgrade pip
+      if [[ "${DOWNLOAD_METHOD}" == "conan" ]]; then
+        choco install python3 --version 3.7.4
+        export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+        python -m pip install --upgrade pip
+      fi
       cmd.exe /C 'refreshenv'
     elif [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
       export PATH=/Users/travis/Library/Python/2.7/bin:$PATH

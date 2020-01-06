@@ -2,9 +2,8 @@
 
 # This makes sure we use our modules to find dependencies!
 list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)
-
-include(${PROJECT_SOURCE_DIR}/cmake/Fetch_Eigen3.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/Fetch_spdlog.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/Fetch_Eigen3.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/Fetch_HDF5.cmake)
 
 if(TARGET Eigen3::Eigen)
