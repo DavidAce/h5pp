@@ -6,6 +6,7 @@ function(build_dependency dep_name install_dir extra_flags)
             COMMAND  ${CMAKE_COMMAND}
             -DCMAKE_INSTALL_PREFIX:PATH=${install_dir}
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
             ${extra_flags}
             -G "${CMAKE_GENERATOR}"
             -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}

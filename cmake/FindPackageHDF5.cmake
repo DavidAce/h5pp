@@ -255,19 +255,7 @@ function(find_package_hdf5)
                 HINTS ${hdf5_install_prefix} ${CMAKE_INSTALL_PREFIX}  ${CMAKE_INSTALL_PREFIX}/hdf5
                 PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build
                 NO_DEFAULT_PATH)
-        if(EXISTS ${HDF5_CONFIG})
-            file(READ ${HDF5_CONFIG} hdf5-config)
-            message(STATUS "hdf5-config.cmake: \n ${hdf5-config} ")
-            get_filename_component(HDF5_CONFIG_DIR ${HDF5_CONFIG} DIRECTORY)
-            if(EXISTS "${HDF5_CONFIG_DIR}/hdf5-targets.cmake" )
-                file(READ ${HDF5_CONFIG_DIR}/hdf5-targets.cmake hdf5-targets)
-                message(STATUS "hdf5-targets.cmake: \n ${hdf5-targets} ")
-            endif()
-            if(EXISTS "${HDF5_CONFIG_DIR}/hdf5-targets-debug.cmake" )
-                file(READ ${HDF5_CONFIG_DIR}/hdf5-targets-debug.cmake hdf5-targets-debug)
-                message(STATUS "hdf5-targets.cmake: \n ${hdf5-targets-debug} ")
-            endif()
-        endif()
+
         list(APPEND HDF5_TARGET_CANDIDATES
                 hdf5::hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
                 hdf5::hdf5_hl_cpp_${HDF5_TARGET_SUFFIX}
@@ -312,8 +300,11 @@ function(find_package_hdf5)
     endif()
 
 
-    if(HDF5_FOUND)
 
+
+
+
+    if(HDF5_FOUND)
         add_library(hdf5::hdf5 IMPORTED INTERFACE)
         target_link_libraries(hdf5::hdf5 INTERFACE ${HDF5_TARGETS})
 
@@ -330,7 +321,8 @@ function(find_package_hdf5)
 
         if("sz" IN_LIST HDF5_LINK_LIBNAMES)
             CHECK_LIBRARY_EXISTS(aec aec_decode_init "/usr/lib/x86_64-linux-gnu" HAVE_AEC_LIB)
-            if(HAVE_AEC_LIB)
+            find_library(AEC_LIBRARY NAMES aec)
+            if(HAVE_AEC_LIB OR AEC_LIBRARY)
                 target_link_libraries(hdf5::hdf5 INTERFACE aec)
             endif()
         endif()
