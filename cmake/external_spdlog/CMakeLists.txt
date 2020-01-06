@@ -10,7 +10,6 @@ ExternalProject_Add(external_spdlog
         URL_MD5     373bbb7ea7557cbe6726705463bcae16
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
-        BUILD_COMMAND ${CMAKE_COMMAND} --build . -- -j ${NUM_THREADS}
         CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
