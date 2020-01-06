@@ -161,7 +161,7 @@ target_compile_definitions(deps INTERFACE DOWNLOAD_METHOD=${DOWNLOAD_METHOD})
 #######################################################
 ###  h5pp requires the filesystem library           ###
 #######################################################
-find_package(Filesystem COMPONENTS Final Experimental)
+#find_package(Filesystem COMPONENTS Final Experimental)
 if (TARGET std::filesystem)
     target_link_libraries(flags INTERFACE std::filesystem)
 elseif (NOT DOWNLOAD_METHOD MATCHES "none")
