@@ -182,7 +182,7 @@ namespace h5pp {
                     switch(accessMode) {
                         case(AccessMode::READONLY): {
                             h5pp::Logger::log->trace("Opening file handle in READONLY mode");
-                            hid_t fileHandle = H5Fopen(static_cast<const char *>(FilePath.c_str()), H5F_ACC_RDONLY, plist_facc);
+                            hid_t fileHandle = H5Fopen(FilePath.string().c_str(), H5F_ACC_RDONLY, plist_facc);
                             if(fileHandle < 0) {
                                 H5Eprint(H5E_DEFAULT, stderr);
                                 throw std::runtime_error("Failed to open file in read-only mode: " + FilePath.string());
@@ -192,7 +192,7 @@ namespace h5pp {
                         }
                         case(AccessMode::READWRITE): {
                             h5pp::Logger::log->trace("Opening file handle in READWRITE mode");
-                            hid_t fileHandle = H5Fopen(static_cast<const char *>(FilePath.c_str()), H5F_ACC_RDWR, plist_facc);
+                            hid_t fileHandle = H5Fopen(FilePath.string().c_str(), H5F_ACC_RDWR, plist_facc);
                             if(fileHandle < 0) {
                                 H5Eprint(H5E_DEFAULT, stderr);
                                 throw std::runtime_error("Failed to open file in read-write mode: " + FilePath.string());
@@ -339,7 +339,7 @@ namespace h5pp {
 
         bool fileIsValid() const { return fileIsValid(FilePath); }
 
-        static bool fileIsValid(const fs::path &fileName) { return fs::exists(fileName) and H5Fis_hdf5(static_cast<const char *>(fileName.c_str())) > 0; }
+        static bool fileIsValid(const fs::path &fileName) { return fs::exists(fileName) and H5Fis_hdf5(fileName.string().c_str()) > 0; }
 
         inline void createGroupLink(const std::string &group_relative_name) {
             hid_t file = openFileHandle();
@@ -439,8 +439,8 @@ namespace h5pp {
                         if(fileIsValid(FilePath)) {
                             hid_t file;
                             switch(accessMode) {
-                                case(AccessMode::READONLY): file = H5Fopen(static_cast<const char *>(FilePath.c_str()), H5F_ACC_RDONLY, plist_facc); break;
-                                case(AccessMode::READWRITE): file = H5Fopen(static_cast<const char *>(FilePath.c_str()), H5F_ACC_RDWR, plist_facc); break;
+                                case(AccessMode::READONLY): file = H5Fopen(FilePath.string().c_str(), H5F_ACC_RDONLY, plist_facc); break;
+                                case(AccessMode::READWRITE): file = H5Fopen(FilePath.string().c_str(), H5F_ACC_RDWR, plist_facc); break;
                                 default: throw std::runtime_error("Invalid access mode");
                             }
                             if(file < 0) {
@@ -459,7 +459,7 @@ namespace h5pp {
                 case CreateMode::TRUNCATE: {
                     h5pp::Logger::log->debug("File mode [TRUNCATE]: Overwriting file if it exists: [{}]", FilePath.string());
                     try {
-                        hid_t file = H5Fcreate(static_cast<const char *>(FilePath.c_str()), H5F_ACC_TRUNC, H5P_DEFAULT, plist_facc);
+                        hid_t file = H5Fcreate(FilePath.string().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, plist_facc);
                         if(file < 0) {
                             H5Eprint(H5E_DEFAULT, stderr);
                             throw std::runtime_error("Failed to create file: [" + FilePath.string() + "]");
@@ -477,7 +477,7 @@ namespace h5pp {
                             h5pp::Logger::log->info("Previous file exists. Choosing new file name: [{}] ---> [{}]", FileName.string(), FilePath.filename().string());
                             FileName = FilePath.filename();
                         }
-                        hid_t file = H5Fcreate(static_cast<const char *>(FilePath.c_str()), H5F_ACC_TRUNC, H5P_DEFAULT, plist_facc);
+                        hid_t file = H5Fcreate(FilePath.string().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, plist_facc);
                         if(file < 0) {
                             H5Eprint(H5E_DEFAULT, stderr);
                             throw std::runtime_error("Failed to create file: [" + FilePath.string() + "]");
