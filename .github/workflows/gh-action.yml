@@ -79,6 +79,7 @@ jobs:
           - name: windows-2019-msvc-native
             os: windows-2019
             compiler: cl
+            sources: native
             generator: -G "Visual Studio 16 2019" -A x64
             flags: -DDOWNLOAD_METHOD:STRING=native -DBUILD_SHARED_LIBS:BOOL=ON
     steps:
@@ -120,18 +121,18 @@ jobs:
         shell: powershell
         run: |
           Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
-          if [[ "${{ matrix.generator }}" == *"Ninja"* ]]; then
+          if ( "${{ matrix.generator }}" -match "Ninja" ){
             scoop install ninja --global
             refreshenv
-          fi
+          }
 
-          if [[ "${{ matrix.sources }}" == *"conan"* ]]; then
+          if ( "${{ matrix.sources }}" -match "conan" ){
             scoop install conan --global
             refreshenv
             conan profile new default --detect
             conan profile update settings.compiler.libcxx=libstdc++11 default
             conan user
-          fi
+          }
           echo "::set-env name=CC::${{ matrix.compiler }}"
           echo "::set-env name=CXX::${{ matrix.compiler }}"
 
