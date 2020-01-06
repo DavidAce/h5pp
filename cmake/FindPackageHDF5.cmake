@@ -120,14 +120,15 @@ function(find_package_hdf5_isolator hdf5_root)
         set(ACCEPT_PACKAGE TRUE)
         set(HDF5_LIBNAMES)
         set(HDF5_LINK_LIBNAMES)
-        #To print all variables, use the code below:
-        get_cmake_property(_variableNames VARIABLES)
-        foreach (_variableName ${_variableNames})
-            if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
-                message(STATUS "${_variableName}=${${_variableName}}")
-            endif()
-        endforeach()
-
+        if(HDF5_FIND_VERBOSE)
+            #To print all variables, use the code below:
+            get_cmake_property(_variableNames VARIABLES)
+            foreach (_variableName ${_variableNames})
+                if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
+                    message(STATUS "${_variableName}=${${_variableName}}")
+                endif()
+            endforeach()
+        endif()
         # Get a list of library names like hdf5 hdf5_hl hdf5_hl_cpp etc
         foreach(lang ${HDF5_LANG})
 #            message(lang: ${lang})
@@ -299,29 +300,27 @@ function(find_package_hdf5)
 
     if(HDF5_FOUND)
 
-        include(cmake/PrintTargetInfo.cmake)
-        message("HDF5_TARGETS: ${HDF5_TARGETS}")
-        foreach(tgt ${HDF5_TARGETS})
-            print_target_info(${tgt})
-        endforeach()
-
+        if(HDF5_FIND_VERBOSE)
+            include(cmake/PrintTargetInfo.cmake)
+            message("HDF5_TARGETS: ${HDF5_TARGETS}")
+            foreach(tgt ${HDF5_TARGETS})
+                print_target_info(${tgt})
+            endforeach()
+        endif()
 
 
         add_library(hdf5::hdf5 IMPORTED INTERFACE)
         target_link_libraries(hdf5::hdf5 INTERFACE ${HDF5_TARGETS})
 
 
-        if(APPLE AND "sz" IN_LIST HDF5_TARGETS)
-            include(cmake/TargetFilters.cmake)
-            remove_library_recursive(hdf5::hdf5 "sz")
-            find_library(SZIP_LIBRARY NAMES sz szip szip-static libsz libszip libszip-static) # No built in findSZIP.cmake
+        if(APPLE AND "sz" IN_LIST HDF5_LINK_LIBNAMES)
+            find_library(SZIP_LIBRARY NAMES sz szip szip-static libsz libszip libszip-static HINTS /usr/local/opt) # No built in findSZIP.cmake
             if(SZIP_LIBRARY)
                 message(STATUS "Found SZIP: ${SZIP_LIBRARY}")
-                target_link_libraries(hdf5::hdf5 INTERFACE ${SZIP_LIBRARY})
-                list(APPEND HDF5_TARGETS ${SZIP_LIBRARY})
+                get_filename_component(SZIP_PARENT_DIR ${SZIP_LIBRARY} DIRECTORY)
+                target_link_libraries(hdf5::hdf5 INTERFACE -L${SZIP_PARENT_DIR})
             endif()
         endif()
-
 
 
         if("sz" IN_LIST HDF5_LINK_LIBNAMES)
