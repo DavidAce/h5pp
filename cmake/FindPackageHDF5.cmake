@@ -267,18 +267,20 @@ function(find_package_hdf5)
                 file(READ ${HDF5_CONFIG_DIR}/hdf5-targets-debug.cmake hdf5-targets-debug)
                 message(STATUS "hdf5-targets.cmake: \n ${hdf5-targets-debug} ")
             endif()
-            file()
         endif()
         list(APPEND HDF5_TARGET_CANDIDATES
                 hdf5::hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
+                hdf5::hdf5_hl_cpp_${HDF5_TARGET_SUFFIX}
                 hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
                 hdf5_hl_cpp_${HDF5_TARGET_SUFFIX}
                 hdf5_hl_cpp
                 hdf5::hdf5_hl-${HDF5_TARGET_SUFFIX}
+                hdf5::hdf5_hl_${HDF5_TARGET_SUFFIX}
                 hdf5_hl-${HDF5_TARGET_SUFFIX}
                 hdf5_hl_${HDF5_TARGET_SUFFIX}
                 hdf5_hl
                 hdf5::hdf5-${HDF5_TARGET_SUFFIX}
+                hdf5::hdf5_${HDF5_TARGET_SUFFIX}
                 hdf5-${HDF5_TARGET_SUFFIX}
                 hdf5_${HDF5_TARGET_SUFFIX}
                 hdf5
