@@ -10,237 +10,141 @@ branches:
 matrix:
   fast_finish: true
   include:
-#    - name: "xenial gcc-8"
-    #      os: linux
-    #      dist: xenial
-    #      compiler: gcc
-    #      env:
-    #        - CXX=g++-8 CC=gcc-8
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN="Unix Makefiles"
-    #      addons:
-    #        apt:
-    #          update: true
-    #          sources:
-    #            - sourceline: "ppa:ubuntu-toolchain-r/test"
-    #          packages:
-    #            - gcc-8
-    #            - g++-8
-    #            - zlib1g-dev
-    #
-    #
-    #    - name: "xenial clang"
-    #      os: linux
-    #      dist: xenial
-    #      compiler: clang
-    #      env:
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN="Unix Makefiles"
-    #        - CXX=clang++ CC=clang
-    #      addons:
-    #        apt:
-    #          update: true
-    #          sources:
-    #            - sourceline: "ppa:ubuntu-toolchain-r/test"
-    #          packages:
-    #            - libstdc++-8-dev
-    #            - zlib1g-dev
-    #
-    #
-    #    - name: "bionic gcc"
-    #      os: linux
-    #      dist: bionic
-    #      compiler: gcc
-    #      env:
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN="Unix Makefiles"
-    #
-    #    - name: "bionic clang"
-    #      os: linux
-    #      dist: bionic
-    #      compiler: clang
-    #      env:
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN="Unix Makefiles"
-    #
-    #    - name: "xenial gcc-8 conda libs"
-    #      os: linux
-    #      dist: xenial
-    #      compiler: gcc
-    #      env:
-    #        - CXX=g++-8 CC=gcc-8
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN="Unix Makefiles"
-    #      addons:
-    #        apt:
-    #          update: true
-    #          sources:
-    #            - sourceline: "ppa:ubuntu-toolchain-r/test"
-    #          packages:
-    #            - gcc-8
-    #            - g++-8
-    #      before_install:
-    #        # Here we just install Miniconda, which you shouldn"t have to change.
-    #        - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    #        - chmod +x miniconda.sh
-    #        - ./miniconda.sh -b -p $HOME/miniconda
-    #        - export PATH=$HOME/miniconda/bin:$PATH
-    #        - conda update --yes conda
-    #        - conda install --yes hdf5 eigen
-    #
-    #
-    #    - name: "bionic gcc conda-forge libs"
-    #      dist: bionic
-    #      os: linux
-    #      compiler: gcc
-    #      env:
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN="Unix Makefiles"
-    #      before_install:
-    #        # Here we just install Miniconda, which you shouldn"t have to change.
-    #        - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    #        - chmod +x miniconda.sh
-    #        - ./miniconda.sh -b -p $HOME/miniconda
-    #        - export PATH=$HOME/miniconda/bin:$PATH
-    #        - conda update --yes conda
-    #        - conda config --add channels conda-forge
-    #        - conda install --yes hdf5 hdf5-static eigen spdlog
-    #
-    #
-    #    - name: "xenial gcc-8 apt libs"
-    #      dist: xenial
-    #      os: linux
-    #      compiler: gcc
-    #      env:
-    #        - CXX=g++-8 CC=gcc-8
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN="Unix Makefiles"
-    #      addons:
-    #        apt:
-    #          update: true
-    #          sources:
-    #            - sourceline: "ppa:ubuntu-toolchain-r/test"
-    #          packages:
-    #            - gcc-8
-    #            - g++-8
-    #            - libhdf5-dev
-    #            - libaec-dev
-    #            - libeigen3-dev
-    #            - libspdlog-dev
-    #
-    #    - name: "bionic gcc apt libs"
-    #      dist: bionic
-    #      os: linux
-    #      compiler: gcc
-    #      env:
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native  -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN="Unix Makefiles"
-    #      addons:
-    #        apt:
-    #          update: true
-    #          sources:
-    #            - sourceline: "ppa:ubuntu-toolchain-r/test"
-    #          packages:
-    #            - libhdf5-dev
-    #            - libaec-dev
-    #            - libeigen3-dev
-    #            - libspdlog-dev
-    #
-    #    - name: "bionic clang conan libs"
-    #      dist: bionic
-    #      os: linux
-    #      compiler: clang
-    #      env:
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan  -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN="Unix Makefiles"
-    #        - CXX=clang++ CC=clang
-    #      before_install:
-    #        # Here we just install Miniconda, which you shouldn't have to change.
-    #        - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    #        - chmod +x miniconda.sh
-    #        - ./miniconda.sh -b -p $HOME/miniconda
-    #        - export PATH=$HOME/miniconda/bin:$PATH
-    #        - conda update --yes conda
-    #        - conda config --add channels conda-forge
-    #        - conda install --yes conan
+    - name: "xenial gcc-8"
+        os: linux
+        dist: xenial
+        compiler: gcc
+        env:
+          - CXX=g++-8 CC=gcc-8
+          - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+          - CMAKE_GEN="Unix Makefiles"
+        addons:
+          apt:
+            update: true
+            sources:
+              - sourceline: "ppa:ubuntu-toolchain-r/test"
+            packages:
+              - gcc-8
+              - g++-8
+              - zlib1g-dev
+
+    - name: "xenial clang"
+      os: linux
+      dist: xenial
+      compiler: clang
+      env:
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+        - CXX=clang++ CC=clang
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+          packages:
+            - libstdc++-8-dev
+            - zlib1g-dev
 
 
-    #    - name: "Windows gcc"
-    #      os: windows
-    #      compiler: gcc
-    #      env:
-    #        - DOWNLOAD_METHOD=conan
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN=Ninja
-    #        - export PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
-    #        - export CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
-    #        - export CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
-    #      before_install:
-    #        - choco upgrade mingw -y
-    #        - choco install ninja miniconda3 openssl.light
-    #        - cmd.exe /C 'refreshenv'
-    #        - conda create -n h5pp python=3.7 --yes
-    #        - . activate h5pp
-    #        - conda config --add channels conda-forge
-    #        - conda install --yes conan
-    #        - conan profile new default --detect
-    #        - conan profile update settings.compiler.libcxx=libstdc++11 default
-    #
-    #    - name: "Windows MSVC"
-    #      os: windows
-    #      env:
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN="NMake Makefiles"
-    #        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
-    #      before_install:
-    #        - choco upgrade mingw -y
-    #        - choco install ninja miniconda3 openssl.light
-    #        - cmd.exe /C 'refreshenv'
-    #        - conda create -n h5pp python=3.7 --yes
-    #        - . activate h5pp
-    #        - conda config --add channels conda-forge
-    #        - conda install --yes conan
-    #        - conan profile new default --detect
-    #        - conan profile update settings.compiler.libcxx=libstdc++11 default
-    #
-    #    - name: "Windows clang"
-    #      os: windows
-    #      compiler: clang
-    #      env:
-    #        - CC="/c/Program Files/LLVM/bin/clang"
-    #        - CXX="/c/Program Files/LLVM/bin/clang++"
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN=Ninja
-    #        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
-    #      before_install:
-    #        - choco upgrade mingw -y
-    #        - choco install llvm ninja miniconda3 openssl.light
-    #        - cmd.exe /C 'refreshenv'
-    #        - conda create -n h5pp python=3.7 --yes
-    #        - . activate h5pp
-    #        - conda config --add channels conda-forge
-    #        - conda install --yes conan
-    #        - conan profile new default --detect
-    #        - conan profile update settings.compiler.libcxx=libstdc++11 default
-    #    - name: "Windows gcc mingw conan"
-    #      os: windows
-    #      compiler: gcc
-    #      env:
-    #        - CC="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-gcc"
-    #        - CXX="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/x86_64-w64-mingw32-g++"
-    #        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
-    #        - CMAKE_GEN=Ninja
-    #        - PATH="/c/tools/miniconda3/:/c/tools/miniconda3/Scripts:$PATH"
-    #      before_install:
-    #        - choco upgrade mingw -y
-    #        - choco install ninja miniconda3 openssl.light
-    #        - cmd.exe /C 'refreshenv'
-    #        - conda create -n h5pp python=3.7 --yes
-    #        - . activate h5pp
-    #        - conda config --add channels conda-forge
-    #        - conda install --yes conan
-    #        - conan profile new default --detect
-    #        - conan profile update settings.compiler.libcxx=libstdc++11 default
+    - name: "bionic gcc"
+      os: linux
+      dist: bionic
+      compiler: gcc
+      env:
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+
+    - name: "bionic clang"
+      os: linux
+      dist: bionic
+      compiler: clang
+      env:
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+
+    - name: "xenial gcc-8 conda libs"
+      os: linux
+      dist: xenial
+      compiler: gcc
+      env:
+        - DOWNLOAD_METHOD=conan
+        - CXX=g++-8 CC=gcc-8
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+        - DOWNLOAD_METHOD=conan
+        - CONDA_PACKAGES="hdf5 hdf5-static eigen spdlog"
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+          packages:
+            - gcc-8
+            - g++-8
+
+
+    - name: "bionic gcc conda libs"
+      dist: bionic
+      os: linux
+      compiler: gcc
+      env:
+        - DOWNLOAD_METHOD=native
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+        - CONDA_PACKAGES="hdf5 hdf5-static eigen spdlog"
+
+
+    - name: "xenial gcc-8 apt libs"
+      dist: xenial
+      os: linux
+      compiler: gcc
+      env:
+        - DOWNLOAD_METHOD=native
+        - CXX=g++-8 CC=gcc-8
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+          packages:
+            - gcc-8
+            - g++-8
+            - libhdf5-dev
+            - libaec-dev
+            - libeigen3-dev
+            - libspdlog-dev
+
+    - name: "bionic gcc apt libs"
+      dist: bionic
+      os: linux
+      compiler: gcc
+      env:
+        - DOWNLOAD_METHOD=native
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD  -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+          packages:
+            - libhdf5-dev
+            - libaec-dev
+            - libeigen3-dev
+            - libspdlog-dev
+
+    - name: "bionic clang conan libs"
+      dist: bionic
+      os: linux
+      compiler: clang
+      env:
+        - DOWNLOAD_METHOD=conan
+        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD  -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+        - CXX=clang++ CC=clang
+
     - name: "osx clang conan"
       os: osx
       compiler: clang
@@ -316,15 +220,15 @@ matrix:
 # The pre-install script. On windows it will install conan via chocolatey
 before_install:
   - |
-    if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
+    if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
       choco upgrade cmake
-      if [[ "${DOWNLOAD_METHOD}" == "conan" ]]; then
+      if [[ "$DOWNLOAD_METHOD" == "conan" ]]; then
         choco install python3 --version 3.7.4
         export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
         python -m pip install --upgrade pip
       fi
       cmd.exe /C 'refreshenv'
-    elif [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+    elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       export PATH=/Users/travis/Library/Python/2.7/bin:$PATH
     else
       pip install --user --upgrade pip
@@ -333,12 +237,12 @@ before_install:
 
 install:
   - |
-    if [[ "${DOWNLOAD_METHOD}" == "conan" ]]; then
-      if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
+    if [[ "$DOWNLOAD_METHOD" == "conan" ]]; then
+      if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
         pip install conan
         cmd.exe /C 'refreshenv'
         export PATH=/c/Program\ Files/Conan/conan:$PATH
-      elif [[ "${TRAVIS_OS_NAME}" =~ linux|osx ]]; then
+      elif [[ "$TRAVIS_OS_NAME" =~ linux|osx ]]; then
         pip install --user conan --upgrade
       fi
     fi
@@ -348,13 +252,23 @@ install:
 before_script:
   # On windows PATH's do not get set properly because travis does not restart the shell, so we add them manually
   - |
-    if [[ "${DOWNLOAD_METHOD}" == "conan" ]]; then
+
+    if [[ "$DOWNLOAD_METHOD" == "conan" ]]; then
       conan user
       conan profile new default --detect
       conan profile update settings.compiler.libcxx=libstdc++11 default
     fi
-  - if [[ "${COMPILER_CXX}" != "" ]]; then export CXX=${COMPILER_CXX}; fi
-  - if [[ "${COMPILER_CC}" != "" ]]; then export CC=${COMPILER_CC}; fi
+    if [[ $CONDA_PACKAGES ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      # Here we just install Miniconda
+      wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+      chmod +x miniconda.sh
+      ./miniconda.sh -b -p $HOME/miniconda
+      export PATH=$HOME/miniconda/bin:$PATH
+      conda update --yes conda
+      conda config --add channels conda-forge
+      conda install --yes ${CONDA_PACKAGES}
+    fi
+
   - cmake --version
 # Build and Test
 script:
