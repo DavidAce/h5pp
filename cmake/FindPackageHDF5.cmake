@@ -241,18 +241,18 @@ function(find_package_hdf5)
         set(HDF5_REQUIRED OFF)
     endif()
     if(NOT HDF5_FIND_DEBUG)
-        set(HDF5_FIND_DEBUG ON)
+        set(HDF5_FIND_DEBUG OFF)
     endif()
     if(NOT HDF5_FIND_VERBOSE)
-        set(HDF5_FIND_VERBOSE ON)
+        set(HDF5_FIND_VERBOSE OFF)
     endif()
 
 
     if(NOT HDF5_FOUND)
-        # Message try finding HDF5 where it would have gotten installed previously
+        # Message try finding HDF5 where it would have been installed previously by h5pp
         find_package(HDF5
                 COMPONENTS ${HDF5_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
-                HINTS ${hdf5_install_prefix} ${CMAKE_INSTALL_PREFIX}  ${CMAKE_INSTALL_PREFIX}/hdf5
+                HINTS ${hdf5_install_prefix} ${H5PP_DIRECTORY_HINTS} ${CMAKE_INSTALL_PREFIX}  ${CMAKE_INSTALL_PREFIX}/hdf5
                 PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build
                 NO_DEFAULT_PATH)
 
@@ -328,12 +328,14 @@ function(find_package_hdf5)
         endif()
 
         if(HDF5_FIND_VERBOSE)
-            include(cmake/PrintTargetInfo.cmake)
-            message(STATUS "HDF5_TARGETS: ${HDF5_TARGETS}")
-            foreach(tgt ${HDF5_TARGETS})
-                print_target_info(${tgt})
-            endforeach()
-            print_target_info(hdf5::hdf5)
+            if(EXISTS cmake/PrintTargetInfo.cmake)
+                include(cmake/PrintTargetInfo.cmake)
+                message(STATUS "HDF5_TARGETS: ${HDF5_TARGETS}")
+                foreach(tgt ${HDF5_TARGETS})
+                    print_target_info(${tgt})
+                endforeach()
+                print_target_info(hdf5::hdf5)
+            endif()
             #To print all variables, use the code below:
             get_cmake_property(_variableNames VARIABLES)
             foreach (_variableName ${_variableNames})
