@@ -4,7 +4,7 @@ import os, re
 
 class h5ppConan(ConanFile):
     name = "h5pp"
-    version = "1.0.0"
+    version = "1.1.0"
     license = "MIT"
     url = "https://github.com/DavidAce/h5pp"
     settings = "os", "compiler", "build_type", "arch"
@@ -52,7 +52,3 @@ class h5ppConan(ConanFile):
 
     def package_id(self):
         self.info.header_only()
-
-    def package_info(self):
-        self.cpp_info.libs.append("stdc++fs")
-        #self.cpp_info.cxxflags.append("-std=c++17")
