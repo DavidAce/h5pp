@@ -19,26 +19,26 @@ include(cmake/gitversion.cmake)
 ### Set options for compilation                              ###
 ################################################################
 option(BUILD_SHARED_LIBS        "Builds shared libraries"                             OFF)
-option(BUILD_EXAMPLES           "Builds examples"                                     OFF)
-option(ENABLE_TESTS             "Enable testing"                                      OFF)
-option(H5PP_IS_SUBPROJECT       "Use h5pp with add_subdirectory()"                    OFF)
-option(APPEND_LIBSUFFIX         "Append <libname> to CMAKE_INSTALL_PREFIX"            OFF)
-option(PREFER_CONDA_LIBS        "Search for dependencies from anaconda first"         OFF)
-option(H5PP_PRINT_INFO          "Print info during cmake configuration"               OFF)
+option(BUILD_EXAMPLES "Builds examples" OFF)
+option(ENABLE_TESTS "Enable testing" OFF)
+option(H5PP_IS_SUBPROJECT "Use h5pp with add_subdirectory()" OFF)
+option(APPEND_LIBSUFFIX "Append <libname> to CMAKE_INSTALL_PREFIX" OFF)
+option(PREFER_CONDA_LIBS "Search for dependencies from anaconda first" OFF)
+option(H5PP_PRINT_INFO "Print info during cmake configuration" OFF)
 
 #################################################################
 ### Make an "enum" for valid download methods:                ###
-###     native                                                ###
 ###     conan                                                 ###
+###     cmake                                                 ###
+###     system                                                ###
 ###     none                                                  ###
 #################################################################
-set(VALID_DOWNLOAD_METHODS conan native none)
-set(DOWNLOAD_METHOD native CACHE STRING "Download method for external dependencies")
-set_property(CACHE DOWNLOAD_METHOD  PROPERTY STRINGS ${VALID_DOWNLOAD_METHODS})
-if(NOT DOWNLOAD_METHOD IN_LIST VALID_DOWNLOAD_METHODS)
+set(VALID_DOWNLOAD_METHODS none find-only native conan)
+set(DOWNLOAD_METHOD none CACHE STRING "Download method for external dependencies")
+set_property(CACHE DOWNLOAD_METHOD PROPERTY STRINGS ${VALID_DOWNLOAD_METHODS})
+if (NOT DOWNLOAD_METHOD IN_LIST VALID_DOWNLOAD_METHODS)
     message(FATAL_ERROR "DOWNLOAD_METHOD must be one of ${VALID_DOWNLOAD_METHODS}")
-endif()
-
+endif ()
 
 
 ##################################################################
@@ -171,6 +171,9 @@ elseif (NOT DOWNLOAD_METHOD MATCHES "none")
     message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
     include(cmake/Fetch_ghcFilesystem.cmake)
     target_link_libraries(flags INTERFACE ghcFilesystem::ghc_filesystem)
+    list(APPEND H5PP_DIRECTORY_HINTS ${ghcfilesystem_install_prefix})
+else ()
+    message(STATUS "Your compiler lacks std::filesystem. Enable any DOWNLOAD_MODE to get the ghc::filesystem replacement")
 endif ()
 
 
@@ -224,13 +227,13 @@ list(APPEND H5PP_DIRECTORY_HINTS ${CMAKE_INSTALL_PREFIX})
 ##################################################################
 ### Try to find or fetch all dependencies                      ###
 ##################################################################
-if(NOT "${DOWNLOAD_METHOD}" MATCHES "none")
-    if("${DOWNLOAD_METHOD}" MATCHES "conan")
+if (NOT DOWNLOAD_METHOD MATCHES "none")
+    if (DOWNLOAD_METHOD MATCHES "conan")
         include(cmake/SetupDependenciesConan.cmake)
-    elseif("${DOWNLOAD_METHOD}" MATCHES "native")
+    else ()
         include(cmake/SetupDependenciesNative.cmake)
-    endif()
-endif()
+    endif ()
+endif ()
 
 target_link_libraries(h5pp INTERFACE headers deps flags)
 
@@ -324,6 +327,7 @@ else()
             ${PROJECT_SOURCE_DIR}/cmake/FindEigen3.cmake
             ${PROJECT_SOURCE_DIR}/cmake/Findspdlog.cmake
             ${PROJECT_SOURCE_DIR}/cmake/FindPackageHDF5.cmake
+            ${PROJECT_SOURCE_DIR}/cmake/FindFilesystem.cmake
             DESTINATION ${H5PP_CONFIG_DIR}
             COMPONENT config
             )
@@ -380,7 +384,7 @@ if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
                 DEPENDS h5pp deps flags
                 COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failure)
 
-    elseif(NOT "${DOWNLOAD_METHOD}" MATCHES "none")
+    elseif (NOT DOWNLOAD_METHOD MATCHES "none")
         message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
     endif()
 endif()
@@ -398,7 +402,8 @@ if(NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES)
         add_subdirectory(examples/readme-example2 h5pp-examples/readme-example2)
         add_subdirectory(examples/readme-example3 h5pp-examples/readme-example3)
         add_subdirectory(examples/readme-example4 h5pp-examples/readme-example4)
-    elseif (NOT "${DOWNLOAD_METHOD}" MATCHES "none")
+
+    elseif (NOT DOWNLOAD_METHOD MATCHES "none")
         message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
     endif ()
 endif()
