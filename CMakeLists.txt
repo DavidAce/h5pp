@@ -14,11 +14,10 @@ project(h5pp VERSION 1.1.0
 include(cmake/gitversion.cmake)
 
 
-
 ################################################################
 ### Set options for compilation                              ###
 ################################################################
-option(BUILD_SHARED_LIBS        "Builds shared libraries"                             OFF)
+option(BUILD_SHARED_LIBS "Builds shared libraries" OFF)
 option(BUILD_EXAMPLES "Builds examples" OFF)
 option(ENABLE_TESTS "Enable testing" OFF)
 option(H5PP_IS_SUBPROJECT "Use h5pp with add_subdirectory()" OFF)

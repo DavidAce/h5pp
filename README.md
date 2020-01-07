@@ -278,7 +278,7 @@ There are currently 4 ways to obtain `h5pp`:
 - `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
 - From conda: `conda install -c davidace h5pp`
 - From [conan bintray repo](https://bintray.com/davidace/conan-public/h5pp%3Adavidace)
-- (Debian only) Download the the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
+- (Debian only) Download the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
 
 
 ## Requirements
