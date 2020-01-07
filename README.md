@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/DavidAce/h5pp.svg?branch=master)](https://travis-ci.org/DavidAce/h5pp)
-[![Build Status](https://github.com/DavidAce/h5pp/workflows/C%2FC++%20CI/badge.svg)](https://github.com/DavidAce/h5pp/actions)
+[![Build Status](https://github.com/DavidAce/h5pp/workflows/Actions/badge.svg)](https://github.com/DavidAce/h5pp/actions)
 [![Anaconda-Server Badge](https://anaconda.org/davidace/h5pp/badges/installer/conda.svg)](https://conda.anaconda.org/davidace)
 [![Download](https://img.shields.io/badge/Install%20with-conan-green) ](https://bintray.com/davidace/conan-public/h5pp%3Adavidace/_latestVersion)
 [![Download](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)
@@ -7,8 +7,9 @@
 # h5pp
 `h5pp` is a C++17 wrapper for HDF5 with focus on simplicity.
 
-In just a few lines of code, `h5pp` lets users read and write to disk in binary format. It supports complex data types in possibly multidimensional containers that are common in scientific computing.
-In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.org) matrices and tensors.
+In just a few lines of code, `h5pp` lets users read and write to [HDF5](https://www.hdfgroup.org/) files, a portable binary format.
+`h5pp` supports common data types and common containers, such as std::vector.
+In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.tuxfamily.org) matrices and tensors.
 
 [Latest release](https://github.com/DavidAce/h5pp/releases) 
 
@@ -38,11 +39,11 @@ In particular, `h5pp` makes it easy to store [**Eigen**](http://eigen.tuxfamily.
 ## Features
 * Header-only C++17 template library
 * Support for common data types:
-    - `int`, `float`, `double` in unsigned and long versions
+    - `int`,`long`, `long long` `float`, `double` (and unsigned versions)
         - any of the above in C-style arrays
         - any of the above in `std::complex<>` form
         - any of the above in POD-structs with x,y or x,y,z data members. In `h5pp` these go by the name `Scalar2` and `Scalar3`.
-            These work well together with `double2` or `float3` types found in CUDA
+            These work well together with types such as `double2` or `float3` found in CUDA
     - `std::string` and `char` arrays
     - Contiguous containers of types above, such as `std::vector`, with `.data()` methods
     - `Eigen` types such as `Matrix`, `Array` and `Tensor`, with automatic conversion to/from row major storage layout
@@ -319,6 +320,7 @@ If not set, `CMAKE_INSTALL_PREFIX` defaults to `${CMAKE_BINARY_DIR}/install`, wh
 #### Opt-in automatic dependency installation
 The CMake flag `DOWNLOAD_METHOD` controls the automated behavior for finding or installing dependencies. It can take one of three valid strings:
 * `none` (default) all handling of dependencies is disabled and linking is left to the user.
+* `find-only` only attempt to find dependencies already installed (no downloads).
 * `conan` to install dependencies using the [conan package manager](https://conan.io/). This method is guided by `conanfile.txt` found in this project's root directory.
     This method requires conan to be installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
   - Add conan install (or bin) directory to the environment variable `PATH`.
@@ -416,7 +418,7 @@ You could also use CMake's `find_package(...)` mechanism. A minimal `CMakeLists.
 The difficult part is linking to HDF5 libraries and its dependencies.
 When installing `h5pp` this is handled with a helper function defined in `cmake/FindPackageHDF5.cmake` which finds HDF5 installed
 somewhere on your system (e.g. installed via `conda`,`apt`, `Easybuild`,etc) and defines a CMake target `hdf5::hdf5` with everything you need to link correctly.
-You can use it too! If you copy `cmake/FindPackageHDF5.cmake` to your project, find HDF5 by including it and using the function:
+You can use it too! If you copy `cmake/FindPackageHDF5.cmake` to your project, find HDF5 by including it and use the function:
 
 ```cmake
     include(FindPackageHDF5.cmake)
