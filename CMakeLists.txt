@@ -170,7 +170,7 @@ elseif (DOWNLOAD_METHOD MATCHES "find|none")
     message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
     message(FATAL_ERROR "<filesystem> header and/or library not found")
 else ()
-    message(STATUS "Your compiler lacks std::filesystem. Getting ghc::filesystem instead replacement")
+    message(STATUS "Your compiler lacks std::filesystem. Getting ghc::filesystem replacement")
     message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
     include(cmake/Fetch_ghcFilesystem.cmake)
     target_link_libraries(flags INTERFACE ghcFilesystem::ghc_filesystem)
@@ -272,9 +272,6 @@ else()
 
     #######################################################
     ### Install library                                 ###
-    ### Default path is ${PROJECT_SOURCE_DIR}/install   ###
-    ### where ${PROJECT_SOURCE_DIR}  is the path of     ###
-    ### this CMakeLists.txt                             ###
     #######################################################
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/include/ DESTINATION ${H5PP_INSTALL_DIR}include COMPONENT headers)
