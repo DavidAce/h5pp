@@ -23,7 +23,7 @@ elseif ("${DOWNLOAD_METHOD}" MATCHES "native")
     endif()
 
 else()
-    message(STATUS "Dependency Eigen3 not found and DOWNLOAD_METHOD != 'native'")
+    message(STATUS "Dependency Eigen3 not found in your system. Set DOWNLOAD_METHOD to one of 'conan|native'")
 endif()
 
 
