@@ -6,6 +6,12 @@ set(H5PP_CONFIG_DIR                     @PACKAGE_H5PP_CONFIG_DIR@)
 set(H5PP_DIRECTORY_HINTS                @PACKAGE_H5PP_DIRECTORY_HINTS@)
 
 
+#######################################################
+###  Make sure we use h5pp find modules             ###
+#######################################################
+list(INSERT CMAKE_MODULE_PATH 0  ${H5PP_CONFIG_DIR})
+
+
 ##################################################################
 ### Preempt Threads::Threads                                   ###
 ### It's looked for in dependencies, so we make it right       ###
@@ -22,15 +28,35 @@ if(NOT TARGET Threads::Threads)
     endif()
 endif()
 
-
-
-
-
 include(${H5PP_CONFIG_DIR}/h5ppTargets.cmake)
 get_target_property(H5PP_DOWNLOAD_METHOD h5pp::deps INTERFACE_COMPILE_DEFINITIONS)
 
+
+
+#######################################################
+###  h5pp requires the filesystem library           ###
+#######################################################
+find_package(Filesystem COMPONENTS Final Experimental)
+if (TARGET std::filesystem)
+    list(APPEND H5PP_FOUND_TARGETS std::filesystem)
+elseif (H5PP_DOWNLOAD_METHOD MATCHES "find|none")
+    message(STATUS "Your compiler lacks std::filesystem. Set DOWNLOAD_MODE to 'conan' or 'native' to get the ghc::filesystem replacement")
+    message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
+    message(FATAL_ERROR "<filesystem> header and/or library not found")
+else()
+    message(STATUS "Your compiler lacks std::filesystem. Using ghc::filesystem replacement")
+    message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
+    include(CMakeFindDependencyMacro)
+    find_dependency(ghcFilesystem HINTS ${H5PP_DIRECTORY_HINTS})
+    if(TARGET ghcFilesystem::ghc_filesystem)
+        list(APPEND H5PP_FOUND_TARGETS ghcFilesystem::ghc_filesystem)
+    endif()
+endif ()
+
+
+
 if("${H5PP_DOWNLOAD_METHOD}" MATCHES "conan")
     include(${H5PP_CONFIG_DIR}/h5ppConfig.deps-conan.cmake)
-elseif("${H5PP_DOWNLOAD_METHOD}" MATCHES "native")
+elseif("${H5PP_DOWNLOAD_METHOD}" MATCHES "native|find")
     include(${H5PP_CONFIG_DIR}/h5ppConfig.deps-native.cmake)
 endif()

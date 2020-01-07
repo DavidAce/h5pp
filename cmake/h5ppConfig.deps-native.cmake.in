@@ -1,14 +1,20 @@
 @PACKAGE_INIT@
 
 
+#######################################################
+###  Make sure we use h5pp find modules             ###
+#######################################################
 list(INSERT CMAKE_MODULE_PATH 0  ${H5PP_CONFIG_DIR})
+
+#######################################################
+###  Option to prepend typical conda paths to hints ###
+#######################################################
 if(H5PP_PREFER_CONDA_LIBS)
     list(INSERT H5PP_DIRECTORY_HINTS 0
                     $ENV{CONDA_PREFIX}
                     $ENV{HOME}/anaconda3
                     $ENV{HOME}/miniconda
                     $ENV{HOME}/.conda)
-
 endif()
 
 
