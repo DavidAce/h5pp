@@ -11,7 +11,6 @@ elseif ("${DOWNLOAD_METHOD}" MATCHES "native")
     message(STATUS "Eigen3 will be installed into ${CMAKE_INSTALL_PREFIX}")
     include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)
     build_dependency(Eigen3 "${eigen3_install_prefix}" "" "")
-#    message("Checking in ${CMAKE_INSTALL_PREFIX}/Eigen3")
     find_package(Eigen3 3.3.7
             HINTS ${eigen3_install_prefix}
             PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3  NO_DEFAULT_PATH)

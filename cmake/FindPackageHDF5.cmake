@@ -14,7 +14,6 @@
 #
 
 function(define_hdf5_target lang libnames target_list)
-#    message("lang: ${lang}  libnames: ${libnames}")
     list(GET libnames 0 lib)
     if(TARGET hdf5::${lib}_${HDF5_TARGET_SUFFIX})
         return()
@@ -24,8 +23,6 @@ function(define_hdf5_target lang libnames target_list)
     if(numlibs GREATER 1)
         list(SUBLIST libnames 1 -1 othernames)
     endif()
-#    message("othernames: ${othernames}")
-
     if(HDF5_${lang}_LIBRARY_${lib})
         add_library(hdf5::${lib}_${HDF5_TARGET_SUFFIX} ${HDF5_LINK_TYPE} IMPORTED)
         set_target_properties(hdf5::${lib}_${HDF5_TARGET_SUFFIX} PROPERTIES IMPORTED_LOCATION  ${HDF5_${lang}_LIBRARY_${lib}})
@@ -123,18 +120,16 @@ function(find_package_hdf5_isolator hdf5_root)
         set(HDF5_LINK_LIBNAMES)
         if(HDF5_FIND_VERBOSE)
             #To print all variables, use the code below:
-            get_cmake_property(_variableNames VARIABLES)
-            foreach (_variableName ${_variableNames})
-                if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
-                    message(STATUS "${_variableName}=${${_variableName}}")
-                endif()
-            endforeach()
+            # get_cmake_property(_variableNames VARIABLES)
+            # foreach (_variableName ${_variableNames})
+            #     if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
+            #         message(STATUS "${_variableName}=${${_variableName}}")
+            #     endif()
+            # endforeach()
         endif()
         # Get a list of library names like hdf5 hdf5_hl hdf5_hl_cpp etc
         foreach(lang ${HDF5_LANG})
-#            message(lang: ${lang})
             foreach(lib ${HDF5_${lang}_LIBRARY_NAMES})
-                #                message("INVESTIGATING: HDF5_${lang}_LIBRARY_${lib}: ${HDF5_${lang}_LIBRARY_${lib}} due to HDF5_${lang}_LIBRARY_NAMES : ${HDF5_${lang}_LIBRARY_NAMES}")
                 if(${lib} MATCHES "hdf5")
                     list(APPEND HDF5_LIBNAMES ${lib})
                 else()
@@ -249,7 +244,7 @@ function(find_package_hdf5)
 
 
     if(NOT HDF5_FOUND)
-        # Message try finding HDF5 where it would have been installed previously by h5pp
+        # Try finding HDF5 where it would have been installed previously by h5pp
         find_package(HDF5
                 COMPONENTS ${HDF5_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
                 HINTS ${hdf5_install_prefix} ${H5PP_DIRECTORY_HINTS} ${CMAKE_INSTALL_PREFIX}  ${CMAKE_INSTALL_PREFIX}/hdf5

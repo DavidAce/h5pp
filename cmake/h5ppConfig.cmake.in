@@ -6,18 +6,27 @@ set(H5PP_CONFIG_DIR                     @PACKAGE_H5PP_CONFIG_DIR@)
 set(H5PP_DIRECTORY_HINTS                @PACKAGE_H5PP_DIRECTORY_HINTS@)
 
 
-#######################################################
-###  Make sure we use h5pp find modules             ###
-#######################################################
+
+#  Make sure we use h5pp find modules
 list(INSERT CMAKE_MODULE_PATH 0  ${H5PP_CONFIG_DIR})
 
 
-##################################################################
+########################## IMPORTANT #############################
 ### Preempt Threads::Threads                                   ###
-### It's looked for in dependencies, so we make it right       ###
+### It's looked for in dependency configs, so we make it right ###
 ### before it's done wrong, i.e. with pthread instead of       ###
 ### -lpthread. If this is undesirable you can preempt it       ###
-### yourself similarly                                         ###
+### yourself similarly. The reason is that downstream I often  ###
+### need to avoid a static linking segfault by using:          ###
+### -Wl, -whole-archive pthread -Wl, -no-whole-archive         ###
+### and cmake is unable to identify "-lpthread" as being the   ###
+### same as pthread --> multiple declaration errors. Note that ###
+### CMake changes it into                                      ###
+### -Wl, -whole-archive -lpthread -Wl, -no-whole-archive       ###
+### anyway. If an entire dependency tree had only "-lpthread"  ###
+### or only "pthread" this wouldn't be a problem, but          ###
+### unfortunately different dependencies do it differently.    ###
+### Since conan prefers "pthread", I'll do the same here.      ###
 ##################################################################
 if(NOT TARGET Threads::Threads)
     set(CMAKE_THREAD_PREFER_PTHREAD FALSE)
@@ -33,9 +42,8 @@ get_target_property(H5PP_DOWNLOAD_METHOD h5pp::deps INTERFACE_COMPILE_DEFINITION
 
 
 
-#######################################################
-###  h5pp requires the filesystem library           ###
-#######################################################
+
+# h5pp requires the filesystem header (and possibly stdc++fs library)
 find_package(Filesystem COMPONENTS Final Experimental)
 if (TARGET std::filesystem)
     list(APPEND H5PP_FOUND_TARGETS std::filesystem)

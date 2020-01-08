@@ -5,18 +5,7 @@ project(h5pp VERSION 1.1.0
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         )
 
-################################################################
-### Get git version number                                   ###
-### Generates a header gitversion/gitversion.h               ###
-### Include it using #include <gitversion.h>                 ###
-### Gives a namespace GIT:: with several git version numbers.###
-################################################################
-include(cmake/gitversion.cmake)
-
-
-################################################################
-### Set options for compilation                              ###
-################################################################
+# Set options for compilation
 option(BUILD_SHARED_LIBS "Builds shared libraries" OFF)
 option(BUILD_EXAMPLES "Builds examples" OFF)
 option(ENABLE_TESTS "Enable testing" OFF)
@@ -25,13 +14,8 @@ option(APPEND_LIBSUFFIX "Append <libname> to CMAKE_INSTALL_PREFIX" OFF)
 option(PREFER_CONDA_LIBS "Search for dependencies from anaconda first" OFF)
 option(H5PP_PRINT_INFO "Print info during cmake configuration" OFF)
 
-#################################################################
-### Make an "enum" for valid download methods:                ###
-###     conan                                                 ###
-###     cmake                                                 ###
-###     system                                                ###
-###     none                                                  ###
-#################################################################
+
+# Make an "enum" for valid download methods: none find-only native conan
 set(VALID_DOWNLOAD_METHODS none find-only native conan)
 set(DOWNLOAD_METHOD none CACHE STRING "Download method for external dependencies")
 set_property(CACHE DOWNLOAD_METHOD PROPERTY STRINGS ${VALID_DOWNLOAD_METHODS})
@@ -39,12 +23,9 @@ if (NOT DOWNLOAD_METHOD IN_LIST VALID_DOWNLOAD_METHODS)
     message(FATAL_ERROR "DOWNLOAD_METHOD must be one of ${VALID_DOWNLOAD_METHODS}")
 endif ()
 
-
-##################################################################
-### Print host properties                                      ###
-##################################################################
-if(H5PP_PRINT_INFO)
-    cmake_host_system_information(RESULT _host_name   QUERY HOSTNAME)
+# Print host properties
+if (H5PP_PRINT_INFO)
+    cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
     cmake_host_system_information(RESULT _proc_type   QUERY PROCESSOR_DESCRIPTION)
     cmake_host_system_information(RESULT _os_name     QUERY OS_NAME)
     cmake_host_system_information(RESULT _os_release  QUERY OS_RELEASE)
@@ -59,11 +40,10 @@ if(H5PP_PRINT_INFO)
 endif()
 
 
-#####################################################################
+
 # Used when h5pp is included as subproject (e.g., as Git submodule/subtree) in the source
 # tree of a project that uses it. Users may set the option H5PP_IS_SUBPROJECT
 # before add_subdirectory(h5pp)
-#####################################################################
 if (NOT H5PP_IS_SUBPROJECT)
     if ("^${CMAKE_SOURCE_DIR}$" STREQUAL "^${PROJECT_SOURCE_DIR}$")
         set(H5PP_IS_SUBPROJECT OFF)
@@ -74,23 +54,20 @@ if (NOT H5PP_IS_SUBPROJECT)
 endif ()
 
 
-#####################################################################
-### Let cmake find our Find<package>.cmake modules                ###
-#####################################################################
+# Let cmake find our Find<package>.cmake modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 
-#####################################################################
-### Set default install directory for h5pp and its dependencies   ###
-### Append directory <libname> to CMAKE_INSTALL_PREFIX            ###
-### Useful if you want to have separate directories for each libs ###
-### and to easily delete them individually                        ###
-#####################################################################
+# Set default install directory for h5pp and its dependencies
+# Append directory <libname> to CMAKE_INSTALL_PREFIX
+# Useful if you want to have separate directories for each libs
+# and to easily delete them individually
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
     message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/install")
     set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "..." FORCE)
 endif ()
 if (APPEND_LIBSUFFIX)
+    set(H5PP_INSTALL_DIR h5pp/)
     set(H5PP_CONFIG_DIR h5pp/share/h5pp/cmake)
     set(eigen3_install_prefix ${CMAKE_INSTALL_PREFIX}/Eigen3)
     set(spdlog_install_prefix ${CMAKE_INSTALL_PREFIX}/spdlog)
@@ -117,24 +94,32 @@ if(H5PP_PRINT_INFO)
     message(STATUS "PREFER_CONDA_LIBS       : ${PREFER_CONDA_LIBS}")
     message(STATUS "CMAKE_INSTALL_PREFIX    : ${CMAKE_INSTALL_PREFIX}")
     message("")
-endif()
+endif ()
 
 
-#########################################################################
-### Define main target and auxiliary for partial consumption          ###
-#########################################################################
+# Define main target and auxiliary for partial consumption
 add_library(h5pp INTERFACE)
 add_library(headers INTERFACE)
 add_library(deps INTERFACE)
 add_library(flags INTERFACE)
 
 
-##################################################################
+########################## IMPORTANT #############################
 ### Preempt Threads::Threads                                   ###
-### It's looked for in dependencies, so we make it right       ###
+### It's looked for in dependency configs, so we make it right ###
 ### before it's done wrong, i.e. with pthread instead of       ###
 ### -lpthread. If this is undesirable you can preempt it       ###
-### yourself similarly                                         ###
+### yourself similarly. The reason is that downstream I often  ###
+### need to avoid a static linking segfault by using:          ###
+### -Wl, -whole-archive pthread -Wl, -no-whole-archive         ###
+### and cmake is unable to identify "-lpthread" as being the   ###
+### same as pthread --> multiple declaration errors. Note that ###
+### CMake changes it into                                      ###
+### -Wl, -whole-archive -lpthread -Wl, -no-whole-archive       ###
+### anyway. If an entire dependency tree had only "-lpthread"  ###
+### or only "pthread" this wouldn't be a problem, but          ###
+### unfortunately different dependencies do it differently.    ###
+### Since conan prefers "pthread", I'll do the same here.      ###
 ##################################################################
 if (NOT TARGET Threads::Threads)
     set(CMAKE_THREAD_PREFER_PTHREAD FALSE)
@@ -146,22 +131,16 @@ if (NOT TARGET Threads::Threads)
 endif ()
 
 
-#######################################################
-###  On some HPC clusters Clang needs path to gnu gcc #
-#######################################################
+# On some HPC clusters Clang needs path to gnu gcc toolchain because it's not in path
 if (GCC_TOOLCHAIN AND ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
 endif ()
 
-
-#######################################################
-### Add def for download method for use in configs  ###
-#######################################################
+# Add def for download method for use in installed h5ppConfig.cmake
 target_compile_definitions(deps INTERFACE DOWNLOAD_METHOD=${DOWNLOAD_METHOD})
 
-#######################################################
-###  h5pp requires the filesystem library           ###
-#######################################################
+
+# h5pp requires the filesystem header (and possibly stdc++fs library)
 find_package(Filesystem COMPONENTS Final Experimental)
 if (TARGET std::filesystem)
     target_link_libraries(flags INTERFACE std::filesystem)
@@ -177,41 +156,28 @@ else ()
     list(APPEND H5PP_DIRECTORY_HINTS ${ghcfilesystem_install_prefix})
 endif ()
 
-
-#######################################################
-###  Check  #include<experimental/type_traits>      ###
-#######################################################
+# Check  #include<experimental/type_traits>
 include(${PROJECT_SOURCE_DIR}/cmake/CheckTypeTraits.cmake)
 CheckTypeTraits()
 
-#######################################################
-###  Check  #include<optional> or                   ###
-###  or     #include<experimental/optional>         ###
-#######################################################
+# Check  #include<optional> or #include<experimental/optional>
 include(${PROJECT_SOURCE_DIR}/cmake/CheckCXXOptional.cmake)
 CheckCXXOptional()
 
-
-#################################
-### Compiler and linker flags ###
-#################################
+# Required compiler features
 target_compile_features(flags INTERFACE cxx_std_17)
 target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) # Need this for and/or logical operators on VS
 
 
-target_include_directories(
-        headers
-        INTERFACE
+target_include_directories(headers INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/include>
         $<INSTALL_INTERFACE:${H5PP_INSTALL_DIR}include>
-)
+        )
 
 
-##################################################################
-### Setup dependency paths                                     ###
-### Prepend conda dirs for hints when using find_package       ###
-##################################################################
+# Setup dependency paths
 if(PREFER_CONDA_LIBS)
+    # Prepend conda dirs for hints when using find_package
     list(APPEND H5PP_DIRECTORY_HINTS
             $ENV{CONDA_PREFIX}
             $ENV{HOME}/anaconda3
@@ -222,12 +188,7 @@ endif()
 list(APPEND H5PP_DIRECTORY_HINTS ${CMAKE_INSTALL_PREFIX})
 
 
-
-
-
-##################################################################
-### Try to find or fetch all dependencies                      ###
-##################################################################
+#Try to find or fetch all dependencies
 if (NOT DOWNLOAD_METHOD MATCHES "none")
     if (DOWNLOAD_METHOD MATCHES "conan")
         include(cmake/SetupDependenciesConan.cmake)
@@ -236,12 +197,13 @@ if (NOT DOWNLOAD_METHOD MATCHES "none")
     endif ()
 endif ()
 
+# Link all targets to one main h5pp target (the only one that users should need)
+# However, it's nice to have them separately also if need be.
 target_link_libraries(h5pp INTERFACE headers deps flags)
 
-##################################################################
-### Print summary of CMake configuration                       ###
-##################################################################
-if(H5PP_PRINT_INFO)
+
+# Print summary of CMake configuration
+if (H5PP_PRINT_INFO)
     message("========================== h5pp target summary ==============================")
     include(${PROJECT_SOURCE_DIR}/cmake/PrintTargetInfo.cmake)
     print_target_info(h5pp)
@@ -270,9 +232,7 @@ if(H5PP_IS_SUBPROJECT)
     add_library(h5pp::flags ALIAS h5pp)
 else()
 
-    #######################################################
-    ### Install library                                 ###
-    #######################################################
+    # Install library
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/include/ DESTINATION ${H5PP_INSTALL_DIR}include COMPONENT headers)
     install(TARGETS h5pp headers deps flags EXPORT h5ppTargets)
@@ -346,27 +306,23 @@ else()
                 install(FILES ${conan_file}
                         DESTINATION ${H5PP_CONFIG_DIR}
                         COMPONENT config)
-            endif()
-        endforeach()
+            endif ()
+        endforeach ()
 
-    endif()
-endif()
-
-
+    endif ()
+endif ()
 
 
-##################################################################
-### Unit testing                                               ###
-##################################################################
-if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
-    if(ALL_TARGETS_FOUND)
+# Simple testing with ctest
+if (NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
+    if (ALL_TARGETS_FOUND)
         enable_testing()
-        add_subdirectory(tests/simpleWrite         h5pp-tests/simpleWrite        )
-        add_subdirectory(tests/largeWrite          h5pp-tests/largeWrite         )
-        add_subdirectory(tests/overWrite           h5pp-tests/overWrite          )
-        add_subdirectory(tests/readWrite           h5pp-tests/readWrite          )
+        add_subdirectory(tests/simpleWrite h5pp-tests/simpleWrite)
+        add_subdirectory(tests/largeWrite h5pp-tests/largeWrite)
+        add_subdirectory(tests/overWrite h5pp-tests/overWrite)
+        add_subdirectory(tests/readWrite h5pp-tests/readWrite)
         add_subdirectory(tests/readWriteAttributes h5pp-tests/readWriteAttributes)
-        add_subdirectory(tests/copySwap            h5pp-tests/copySwap           )
+        add_subdirectory(tests/copySwap h5pp-tests/copySwap)
         add_custom_target(all-tests
                 DEPENDS test-simpleWrite
                         test-largeWrite
@@ -374,13 +330,14 @@ if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
                         test-readWrite
                         test-readWriteAttributes
                         test-copySwap)
+        # A handy target "all-tests" which runs all test when built.
         add_custom_command(
                 TARGET all-tests
                 POST_BUILD
                 COMMENT "Running Tests"
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
                 DEPENDS h5pp deps flags
-                COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> --output-on-failure)
+                COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure)
 
     elseif (NOT DOWNLOAD_METHOD MATCHES "none")
         message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
@@ -388,10 +345,7 @@ if(NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
 endif()
 
 
-
-#############################
-# ADD TARGETS FOR  EXAMPLES #
-#############################
+# Build examples
 if(NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES)
     if (ALL_TARGETS_FOUND)
         add_subdirectory(examples/helloworld h5pp-examples/helloworld)
@@ -404,20 +358,20 @@ if(NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES)
     elseif (NOT DOWNLOAD_METHOD MATCHES "none")
         message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
     endif ()
-endif()
+endif ()
 
-############################################
-# Use CPACK to generate .deb install file  #
-############################################
+
+# Use CPACK to generate .deb install file
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_ALL headers config)
+
 # Define apt dependencies that work with this library
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libhdf5-dev (>=1.10), libeigen3-dev (>=3.3.4), libspdlog-dev (>=1.3)")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "A C++ wrapper for HDF5")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/DavidAce/h5pp")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "DavidAce <aceituno@kth.se>")
 set(CPACK_DEBIAN_PACKAGE_NAME "h5pp")
-set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT" )
+set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_GENERATOR "DEB")
 include(CPack)

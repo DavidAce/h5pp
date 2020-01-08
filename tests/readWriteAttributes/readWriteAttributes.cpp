@@ -1,6 +1,5 @@
 
 #include <complex>
-#include <gitversion.h>
 #include <h5pp/h5pp.h>
 #include <iostream>
 /*! \brief Prints the content of a vector nicely */
