@@ -354,7 +354,14 @@ if(NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES)
         add_subdirectory(examples/readme-example2 h5pp-examples/readme-example2)
         add_subdirectory(examples/readme-example3 h5pp-examples/readme-example3)
         add_subdirectory(examples/readme-example4 h5pp-examples/readme-example4)
-
+        # A handy target "all-examples" to build all examples
+        add_custom_target(all-examples DEPENDS
+                helloworld
+                writescalar
+                readme-example1
+                readme-example2
+                readme-example3
+                readme-example4)
     elseif (NOT DOWNLOAD_METHOD MATCHES "none")
         message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
     endif ()
