@@ -8,9 +8,6 @@
 ##################################################################
 
 
-
-
-
 find_program (
         CONAN_COMMAND
         conan
@@ -37,6 +34,8 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     list(APPEND conan_libcxx compiler.libcxx=libstdc++11)
 endif()
 
+
+if(H5PP_ENABLE_EIGEN3 AND H5PP_ENABLE_SPDLOG AND EXISTS ${PROJECT_SOURCE_DIR}/conanfile.txt)
 conan_cmake_run(CONANFILE conanfile.txt
         CONAN_COMMAND ${CONAN_COMMAND}
         SETTINGS compiler.cppstd=17
@@ -45,7 +44,28 @@ conan_cmake_run(CONANFILE conanfile.txt
         OUTPUT_QUIET
         BASIC_SETUP CMAKE_TARGETS
         BUILD missing)
+else()
+    list(APPEND H5PP_CONAN_REQUIRES hdf5/1.10.5)
+    if(H5PP_ENABLE_EIGEN3)
+        list(APPEND H5PP_CONAN_REQUIRES eigen/3.3.7@conan/stable)
+    endif()
+    if(H5PP_ENABLE_SPDLOG)
+        list(APPEND H5PP_CONAN_REQUIRES spdlog/1.4.2@bincrafters/stable)
+    endif()
+    string(REPLACE ";" " " H5PP_CONAN_REQUIRES ${H5PP_CONAN_REQUIRES})
+    conan_cmake_run(
+            CONAN_COMMAND ${CONAN_COMMAND}
+            SETTINGS compiler.cppstd=17
+            SETTINGS "${conan_libcxx}"
+            BUILD_TYPE ${CMAKE_BUILD_TYPE}
+            REQUIRES ${H5PP_CONAN_REQUIRES}
+            OUTPUT_QUIET
+            BASIC_SETUP CMAKE_TARGETS
+            BUILD missing)
 
+
+
+endif()
 
 
 if(TARGET CONAN_PKG::Eigen3)
@@ -79,7 +99,7 @@ endif()
 
 
 foreach(tgt ${TARGETS_NOT_FOUND})
-    message(STATUS "Dependency not found: [${tgt}] -- make sure to find and link to it manually before using h5pp")
+    message(STATUS "Dependency not found: [${tgt}]")
 endforeach()
 
 if(TARGETS_NOT_FOUND)
@@ -92,9 +112,8 @@ endif()
 ##################################################################
 ### Link all the things!                                       ###
 ##################################################################
-target_link_libraries(deps INTERFACE CONAN_PKG::Eigen3)
-target_link_libraries(deps INTERFACE CONAN_PKG::spdlog)
-target_link_libraries(deps INTERFACE CONAN_PKG::HDF5)
+target_link_libraries(deps INTERFACE ${TARGETS_FOUND})
+
 
 
 

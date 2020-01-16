@@ -1,17 +1,23 @@
 
 #pragma once
 
+#include "h5ppAnalyze.h"
 #include "h5ppAttributeProperties.h"
 #include "h5ppConstants.h"
+#include "h5ppDataProperties.h"
 #include "h5ppDatasetProperties.h"
 #include "h5ppFileCounter.h"
 #include "h5ppHdf5.h"
+#include "h5ppHid.h"
 #include "h5ppLogger.h"
+#include "h5ppPropertyLists.h"
+#include "h5ppRawArrayWrapper.h"
 #include "h5ppStdIsDetected.h"
 #include "h5ppTextra.h"
-#include "h5ppType.h"
-#include "h5ppTypeCheck.h"
+#include "h5ppTypeCompoundCreate.h"
+#include "h5ppTypeScan.h"
 #include "h5ppUtils.h"
+#include <cassert>
 #include <hdf5.h>
 #include <hdf5_hl.h>
 #include <iomanip>
@@ -20,90 +26,76 @@
 #include <string>
 
 #if __has_include(<ghc/filesystem.hpp>)
-// Last resort
-#include <ghc/filesystem.hpp>
+    // Last resort
+    #include <ghc/filesystem.hpp>
 namespace h5pp {
     namespace fs = ghc::filesystem;
 }
 #elif __has_include(<filesystem>)
-#include <filesystem>
+    #include <filesystem>
 namespace h5pp {
     namespace fs = std::filesystem;
 }
 #elif __has_include(<experimental/filesystem>)
-#include <experimental/filesystem>
+    #include <experimental/filesystem>
 namespace h5pp {
     namespace fs = std::experimental::filesystem;
 }
 #else
-#error Could not find includes: <filesystem> or <experimental/filesystem> <ghc/filesystem>
+    #error Could not find includes: <filesystem> or <experimental/filesystem> <ghc/filesystem>
 #endif
 
 // Include optional or experimental/optional
 #if __has_include(<optional>)
-#include <optional>
+    #include <optional>
 #elif __has_include(<experimental/optional>)
-#include <experimental/optional>
+    #include <experimental/optional>
 namespace h5pp {
     constexpr const std::experimental::nullopt_t &nullopt = std::experimental::nullopt;
-    template<typename T> using optional                   = std::experimental::optional<T>;
+    template<typename T>
+    using optional = std::experimental::optional<T>;
 }
 #else
-#error Could not find <optional> or <experimental/optional>
+    #error Could not find <optional> or <experimental/optional>
 #endif
 
 namespace h5pp {
 
-    namespace tc = h5pp::Type::Check;
+    namespace tc = h5pp::Type::Scan;
     /*!
      \brief Writes and reads data to a binary hdf5-file.
     */
     enum class CreateMode { OPEN, TRUNCATE, RENAME };
     enum class AccessMode { READONLY, READWRITE };
 
-    inline bool checkIfCompressionIsAvailable() {
-        /*
-         * Check if zlib compression is available and can be used for both
-         * compression and decompression. We do not throw errors because this
-         * filter is an optional part of the hdf5 library.
-         */
-        [[maybe_unused]] herr_t       status;
-        [[maybe_unused]] htri_t       avail;
-        [[maybe_unused]] H5Z_filter_t filter_type;
-        [[maybe_unused]] unsigned int flags, filter_info;
-
-        avail = H5Zfilter_avail(H5Z_FILTER_DEFLATE);
-        if(not avail) { h5pp::Logger::log->debug("zlib filter not available"); }
-        H5Zget_filter_info(H5Z_FILTER_DEFLATE, &filter_info);
-        if(!(filter_info & H5Z_FILTER_CONFIG_ENCODE_ENABLED) || !(filter_info & H5Z_FILTER_CONFIG_DECODE_ENABLED)) {
-            h5pp::Logger::log->debug("zlib filter not available for encoding or decoding");
-        }
-        return avail;
-    }
-
     class File {
         private:
         mutable herr_t retval = 0;
-        fs::path       FileName; /*!< Filename (possibly relative) and extension, e.g. ../files/output.h5 */
-        fs::path       FilePath; /*!< Full path to the file */
+        fs::path       FileName; /*!< Filename and extension, e.g. output.h5 */
+        fs::path       FilePath; /*!< Full path to the file, eg. /home/cooldude/h5project/output.h5 */
 
         AccessMode accessMode = AccessMode::READWRITE;
         CreateMode createMode = CreateMode::RENAME;
 
-        size_t logLevel          = 2;
-        bool   defaultExtendable = false; /*!< New datasets with rank >= can be set to extendable by default. For small datasets, setting this true results in larger file size */
-        unsigned int compressionLevel = 0;
-
-        // Mpi related constants
-        hid_t plist_facc  = 0;
-        hid_t plist_xfer  = 0;
-        hid_t plist_lncr  = 0;
-        hid_t plist_lapl  = 0;
-        hid_t error_stack = 0;
+        size_t   logLevel     = 2;
+        bool     logTimestamp = false;
+        Hid::h5e error_stack;
+        //        bool   defaultExtendable = false; /*!< New datasets with ndims >= can be set to extendable by default. For small datasets, setting this true results in larger
+        //        file size */
+        unsigned int defaultCompressionLevel = 0;
 
         public:
         bool hasInitialized = false;
-        File() { h5pp::Logger::setLogger("h5pp", logLevel, false); }
+
+        // The following struct contains modifiable property lists.
+        // This allows us to use h5pp with MPI, for instance.
+        // Unmodified, these default to serial (non-MPI) use.
+        // We expose these property lists here so the user may set them as needed.
+        // To enable MPI, the user can call H5Pset_fapl_mpio(hid_t file_access_plist, MPI_Comm comm, MPI_Info info)
+        // The user is responsible for linking to MPI and learning how to set properties for MPI usage
+        PropertyLists plists;
+
+        File() { h5pp::Logger::setLogger("h5pp", logLevel, logTimestamp); }
 
         File(const File &other) {
             h5pp::Logger::log->debug("Copy-constructing this file [{}] from given file: [{}]. Previously initialized (this): {}. Previously initialized (other): {}",
@@ -114,44 +106,50 @@ namespace h5pp {
             *this = other;
         }
 
-        explicit File(const std::string &FileName_, AccessMode accessMode_ = AccessMode::READWRITE, CreateMode createMode_ = CreateMode::RENAME, size_t logLevel_ = 2)
-            : FileName(FileName_), accessMode(accessMode_), createMode(createMode_), logLevel(logLevel_) {
-            h5pp::Logger::setLogger("h5pp", logLevel, false);
+        explicit File(std::string_view FileName_,
+                      AccessMode       accessMode_   = AccessMode::READWRITE,
+                      CreateMode       createMode_   = CreateMode::RENAME,
+                      size_t           logLevel_     = 2,
+                      bool             logTimestamp_ = false)
+            : FileName(FileName_), accessMode(accessMode_), createMode(createMode_), logLevel(logLevel_), logTimestamp(logTimestamp_) {
+            h5pp::Logger::setLogger("h5pp", logLevel, logTimestamp);
             h5pp::Logger::log->debug("Constructing h5pp file. Given path: [{}]", FileName.string());
 
             if(accessMode_ == AccessMode::READONLY and createMode_ == CreateMode::TRUNCATE) {
                 Logger::log->error("Options READONLY and TRUNCATE are incompatible.");
                 return;
             }
-            checkIfCompressionIsAvailable();
             initialize();
         }
 
-        explicit File(const std::string &FileName_, CreateMode createMode_, size_t logLevel_ = 2) : File(FileName_, AccessMode::READWRITE, createMode_, logLevel_) {}
+        explicit File(std::string_view FileName_, CreateMode createMode_, size_t logLevel_ = 2, bool logTimestamp_ = false)
+            : File(FileName_, AccessMode::READWRITE, createMode_, logLevel_, logTimestamp_) {}
 
-        ~File() {
+        ~File() noexcept(false) {
             auto savedLog = h5pp::Logger::log->name();
-            h5pp::Logger::setLogger("h5pp-exit", logLevel, false);
+            h5pp::Logger::setLogger("h5pp|exit", logLevel, logTimestamp);
             try {
-                if(h5pp::Counter::ActiveFileCounter::getCount() == 1) {
-                    H5Pclose(plist_facc);
-                    H5Pclose(plist_xfer);
-                    H5Pclose(plist_lncr);
-                    h5pp::Type::Complex::closeTypes();
-                }
+                if(h5pp::Counter::ActiveFileCounter::getCount() == 1) { h5pp::Type::Compound::closeTypes(); }
                 h5pp::Counter::ActiveFileCounter::decrementCounter(FileName.string());
                 if(h5pp::Counter::ActiveFileCounter::getCount() == 0) {
                     h5pp::Logger::log->debug(
                         "Closing file: {}.", FileName.string(), h5pp::Counter::ActiveFileCounter::getCount(), h5pp::Counter::ActiveFileCounter::OpenFileNames());
-
                 } else {
                     h5pp::Logger::log->debug("Closing file: {}. There are still {} files open: {}",
-                                             FileName.string(),
+                                             getFileName(),
                                              h5pp::Counter::ActiveFileCounter::getCount(),
                                              h5pp::Counter::ActiveFileCounter::OpenFileNames());
                 }
-            } catch(...) { h5pp::Logger::log->warn("Failed to properly close file: ", getFilePath()); }
-            h5pp::Logger::setLogger(savedLog, logLevel, false);
+            } catch(std::exception &err) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                h5pp::Logger::log->error("h5pp file destructor failed | file: [{}] | Reason: {}", getFilePath(), err.what());
+                throw std::runtime_error("h5pp file destructor failed | file: [" + std::string(getFilePath()) + "] | Reason: " + std::string(err.what()));
+            } catch(...) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                h5pp::Logger::log->error("h5pp file destructor failed | file: [{}]", getFilePath());
+                throw std::runtime_error("h5pp file destructor failed | file: [" + std::string(getFilePath()) + "]");
+            }
+            h5pp::Logger::setLogger(savedLog, logLevel, logTimestamp);
         }
 
         File &operator=(const File &other) {
@@ -164,25 +162,24 @@ namespace h5pp {
                 if(hasInitialized) { h5pp::Counter::ActiveFileCounter::decrementCounter(FileName.string()); }
                 if(other.hasInitialized) {
                     logLevel = other.logLevel;
-                    h5pp::Logger::setLogger("h5pp", logLevel, false);
+                    h5pp::Logger::setLogger("h5pp", logLevel, logTimestamp);
                     accessMode = other.getAccessMode();
                     createMode = CreateMode::OPEN;
                     FileName   = other.FileName;
                     FilePath   = other.FilePath;
-                    checkIfCompressionIsAvailable();
                     initialize();
                 }
             }
             return *this;
         }
 
-        hid_t openFileHandle() const {
+        Hid::h5f openFileHandle() const {
             try {
                 if(hasInitialized) {
                     switch(accessMode) {
                         case(AccessMode::READONLY): {
                             h5pp::Logger::log->trace("Opening file handle in READONLY mode");
-                            hid_t fileHandle = H5Fopen(FilePath.string().c_str(), H5F_ACC_RDONLY, plist_facc);
+                            Hid::h5f fileHandle = H5Fopen(FilePath.string().c_str(), H5F_ACC_RDONLY, plists.file_access);
                             if(fileHandle < 0) {
                                 H5Eprint(H5E_DEFAULT, stderr);
                                 throw std::runtime_error("Failed to open file in read-only mode: " + FilePath.string());
@@ -192,7 +189,7 @@ namespace h5pp {
                         }
                         case(AccessMode::READWRITE): {
                             h5pp::Logger::log->trace("Opening file handle in READWRITE mode");
-                            hid_t fileHandle = H5Fopen(FilePath.string().c_str(), H5F_ACC_RDWR, plist_facc);
+                            Hid::h5f fileHandle = H5Fopen(FilePath.string().c_str(), H5F_ACC_RDWR, plists.file_access);
                             if(fileHandle < 0) {
                                 H5Eprint(H5E_DEFAULT, stderr);
                                 throw std::runtime_error("Failed to open file in read-write mode: " + FilePath.string());
@@ -209,193 +206,24 @@ namespace h5pp {
             } catch(std::exception &ex) { throw std::runtime_error("Could not open file handle: " + std::string(ex.what())); }
         }
 
-        herr_t closeFileHandle(hid_t file) const {
-            h5pp::Logger::log->trace("Closing file handle");
-            herr_t fileClose = H5Fclose(file);
-            if(fileClose < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to close file handle");
-            } else {
-                return fileClose;
-            }
-        }
-
-        void setCreateMode(CreateMode createMode_) { createMode = createMode_; }
-        void setAccessMode(AccessMode accessMode_) { accessMode = accessMode_; }
-        void enableDefaultExtendable() { defaultExtendable = true; }
-        void disableDefaultExtendable() { defaultExtendable = false; }
-
-        // Functions for querying the file
-
-        CreateMode getCreateMode() const { return createMode; }
-        AccessMode getAccessMode() const { return accessMode; }
-
-        std::string getFileName() const { return FileName.string(); }
-        std::string getFilePath() const { return FilePath.string(); }
-
-        // Functions for querying datasets
-        std::vector<size_t> getDatasetDims(const std::string &datasetPath) {
-            hid_t                file = openFileHandle();
-            std::vector<hsize_t> dims;
-            try {
-                hid_t dataset  = h5pp::Hdf5::openLink(file, datasetPath);
-                hid_t memspace = H5Dget_space(dataset);
-                int   ndims    = H5Sget_simple_extent_ndims(memspace);
-                dims.resize(ndims);
-                H5Sget_simple_extent_dims(memspace, dims.data(), nullptr);
-                h5pp::Hdf5::closeLink(dataset);
-                closeFileHandle(file);
-            } catch(std::exception &ex) {
-                closeFileHandle(file);
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("getDatasetDims failed. Dataset name [" + datasetPath + "]  | reason: " + std::string(ex.what()));
-            }
-            std::vector<size_t> retdims;
-            std::copy(dims.begin(), dims.end(), back_inserter(retdims));
-            return retdims;
-        }
-
-        void setLogLevel(size_t logLevelZeroToFive) {
-            logLevel = logLevelZeroToFive;
-            h5pp::Logger::setLogLevel(logLevelZeroToFive);
-        }
-
-        // Functions related to datasets
-
-        void setCompressionLevel(unsigned int compressionLevelZeroToNine) {
-            if(checkIfCompressionIsAvailable()) {
-                if(compressionLevelZeroToNine < 10) {
-                    h5pp::Logger::log->debug("Compression level set to {}", compressionLevelZeroToNine);
-                    compressionLevel = compressionLevelZeroToNine;
-                } else {
-                    h5pp::Logger::log->warn("Given invalid compression level: {}. Expected value 0 to 9");
-                }
-            } else {
-                h5pp::Logger::log->info("Compression not available");
-            }
-        }
-
-        unsigned int getCompressionLevel() const { return compressionLevel; }
-
-        template<typename DataType> void writeDataset(const DataType &data, const std::string &datasetPath, std::optional<bool> extendable = std::nullopt);
-
-        template<typename DataType, typename T, size_t N>
-        void writeDataset(const DataType &data, const T (&dims)[N], const std::string &datasetPath, std::optional<bool> extendable = std::nullopt);
-
-        template<typename DataType> void writeDataset(const DataType &data, const DatasetProperties &props);
-
-        template<typename DataType, typename T, size_t N>
-        void writeDataset(const DataType *data, const T (&dims)[N], const std::string &datasetPath, std::optional<bool> extendable = std::nullopt);
-
-        template<typename DataType, typename T, typename = std::enable_if_t<std::is_integral<T>::value>>
-        void writeDataset(const DataType *data, T size, const std::string &datasetPath, std::optional<bool> extendable = std::nullopt) {
-            return writeDataset(data, {size}, datasetPath, extendable);
-        }
-
-        template<typename DataType> void readDataset(DataType &data, const std::string &datasetPath) const;
-
-        template<typename DataType> DataType readDataset(const std::string &datasetPath) const;
-
-        template<typename DataType, typename T, size_t N> void readDataset(DataType *data, const T (&dims)[N], const std::string &datasetPath);
-
-        template<typename DataType, typename T, typename = std::enable_if_t<std::is_integral<T>::value>> void readDataset(DataType *data, T size, const std::string &datasetPath) {
-            return readDataset(data, {size}, datasetPath);
-        }
-
-        // Functions related to attributes
-        template<typename DataType> void writeAttribute(const DataType &attribute, const AttributeProperties &aprops);
-
-        template<typename DataType> void writeAttribute(const DataType &attribute, const std::string &attributeName, const std::string &linkPath);
-
-        template<typename DataType> void writeAttributeToFile(const DataType &attribute, const std::string &attributeName);
-
-        inline std::vector<std::string> getAttributeNames(const std::string &linkPath) const {
-            hid_t                    file = openFileHandle();
-            std::vector<std::string> attributeNames;
-            if(h5pp::Hdf5::checkIfLinkExistsRecursively(file, linkPath)) { attributeNames = h5pp::Hdf5::getAttributeNames(file, linkPath); }
-            closeFileHandle(file);
-            return attributeNames;
-        }
-
-        template<typename DataType> void readAttribute(DataType &data, const std::string &attributeName, const std::string &linkPath) const;
-
-        template<typename DataType> DataType readAttribute(const std::string &attributeName, const std::string &linkPath) const;
-
-        bool linkExists(const std::string &link) {
-            hid_t file = openFileHandle();
-            h5pp::Logger::log->trace("Checking if link exists: [{}]", link);
-            bool exists = h5pp::Hdf5::checkIfLinkExistsRecursively(file, link);
-            closeFileHandle(file);
-            return exists;
-        }
-
-        std::vector<std::string> getContentsOfGroup(const std::string &groupName) const {
-            hid_t file = openFileHandle();
-            h5pp::Logger::log->trace("Getting contents of group: [{}]", groupName);
-            auto foundLinks = h5pp::Hdf5::getContentsOfGroup(file, groupName);
-            closeFileHandle(file);
-            return foundLinks;
-        }
-
-        bool fileIsValid() const { return fileIsValid(FilePath); }
-
-        static bool fileIsValid(const fs::path &fileName) { return fs::exists(fileName) and H5Fis_hdf5(fileName.string().c_str()) > 0; }
-
-        inline void createGroupLink(const std::string &group_relative_name) {
-            hid_t file = openFileHandle();
-            h5pp::Logger::log->trace("Creating group: [{}]", group_relative_name);
-            h5pp::Hdf5::create_group_link(file, plist_lncr, group_relative_name);
-            closeFileHandle(file);
-        }
-
-        inline void writeSymbolicLink(const std::string &src_path, const std::string &tgt_path) {
-            hid_t file = openFileHandle();
-            h5pp::Logger::log->trace("Creating symbolik link: [{}] --> [{}]", src_path, tgt_path);
-            h5pp::Hdf5::write_symbolic_link(file, src_path, tgt_path);
-            closeFileHandle(file);
-        }
-
-        private:
-        fs::path getNewFileName(const fs::path &fileName) const {
-            int      i           = 1;
-            fs::path newFileName = fileName;
-            while(fs::exists(newFileName)) { newFileName.replace_filename(fileName.stem().string() + "-" + std::to_string(i++) + fileName.extension().string()); }
-            return newFileName;
-        }
-
-        void createDatasetLink(hid_t file, const DatasetProperties &props) {
-            if(not props.linkExists) {
-                h5pp::Logger::log->trace("Creating dataset link: [{}]", props.dsetName);
-                h5pp::Hdf5::createDatasetLink(file, plist_lncr, props);
-            }
-        }
-
-        void selectHyperslab(const hid_t &filespace, const hid_t &memspace) { h5pp::Hdf5::select_hyperslab(filespace, memspace); }
-
-        template<typename DataType>
-        bool determineIfExtendable(const DataType &data, const std::string &dsetName, std::optional<bool> userPrefersExtendable, std::optional<bool> dsetExists = std::nullopt);
-
         void initialize() {
             auto savedLog = h5pp::Logger::log->name();
-            h5pp::Logger::setLogger("h5pp-init", logLevel, false);
+            h5pp::Logger::setLogger("h5pp|init", logLevel, logTimestamp);
             /* Turn off error handling permanently */
-            error_stack                          = H5Eget_current_stack();
-            herr_t turnOffAutomaticErrorPrinting = H5Eset_auto(error_stack, nullptr, nullptr);
+            hid_t  error_stack                   = H5Eget_current_stack();
+            herr_t turnOffAutomaticErrorPrinting = H5Eset_auto2(error_stack, nullptr, nullptr);
+            H5Eclose_stack(error_stack);
             if(turnOffAutomaticErrorPrinting < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error("Failed to turn off H5E error printing");
             }
-            plist_facc = H5Pcreate(H5P_FILE_ACCESS);
-            plist_lncr = H5Pcreate(H5P_LINK_CREATE); // Create missing intermediate group if they don't exist
-            plist_xfer = H5Pcreate(H5P_DATASET_XFER);
-            plist_lapl = H5Pcreate(H5P_LINK_ACCESS);
-            H5Pset_create_intermediate_group(plist_lncr, 1);
+
             setOutputFilePath();
-            h5pp::Type::Complex::initTypes();
+            h5pp::Type::Compound::initTypes();
             hasInitialized = true;
             //            fileCount++;
             h5pp::Counter::ActiveFileCounter::incrementCounter(FileName.string());
-            h5pp::Logger::setLogger("h5pp|" + FileName.string(), logLevel, false);
+            h5pp::Logger::setLogger("h5pp|" + FileName.string(), logLevel, logTimestamp);
             //            h5pp::Logger::setLogger(savedLog,logLevel,false);
         }
 
@@ -439,8 +267,8 @@ namespace h5pp {
                         if(fileIsValid(FilePath)) {
                             hid_t file;
                             switch(accessMode) {
-                                case(AccessMode::READONLY): file = H5Fopen(FilePath.string().c_str(), H5F_ACC_RDONLY, plist_facc); break;
-                                case(AccessMode::READWRITE): file = H5Fopen(FilePath.string().c_str(), H5F_ACC_RDWR, plist_facc); break;
+                                case(AccessMode::READONLY): file = H5Fopen(FilePath.string().c_str(), H5F_ACC_RDONLY, plists.file_access); break;
+                                case(AccessMode::READWRITE): file = H5Fopen(FilePath.string().c_str(), H5F_ACC_RDWR, plists.file_access); break;
                                 default: throw std::runtime_error("Invalid access mode");
                             }
                             if(file < 0) {
@@ -459,7 +287,7 @@ namespace h5pp {
                 case CreateMode::TRUNCATE: {
                     h5pp::Logger::log->debug("File mode [TRUNCATE]: Overwriting file if it exists: [{}]", FilePath.string());
                     try {
-                        hid_t file = H5Fcreate(FilePath.string().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, plist_facc);
+                        hid_t file = H5Fcreate(FilePath.string().c_str(), H5F_ACC_TRUNC, plists.file_create, plists.file_access);
                         if(file < 0) {
                             H5Eprint(H5E_DEFAULT, stderr);
                             throw std::runtime_error("Failed to create file: [" + FilePath.string() + "]");
@@ -477,7 +305,7 @@ namespace h5pp {
                             h5pp::Logger::log->info("Previous file exists. Choosing new file name: [{}] ---> [{}]", FileName.string(), FilePath.filename().string());
                             FileName = FilePath.filename();
                         }
-                        hid_t file = H5Fcreate(FilePath.string().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, plist_facc);
+                        hid_t file = H5Fcreate(FilePath.string().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, plists.file_access);
                         if(file < 0) {
                             H5Eprint(H5E_DEFAULT, stderr);
                             throw std::runtime_error("Failed to create file: [" + FilePath.string() + "]");
@@ -493,159 +321,213 @@ namespace h5pp {
                 }
             }
         }
+
+        void setCreateMode(CreateMode createMode_) { createMode = createMode_; }
+        void setAccessMode(AccessMode accessMode_) { accessMode = accessMode_; }
+        //        void enableDefaultExtendable() { defaultExtendable = true; }
+        //        void disableDefaultExtendable() { defaultExtendable = false; }
+
+        // Functions for querying the file
+
+        CreateMode getCreateMode() const { return createMode; }
+        AccessMode getAccessMode() const { return accessMode; }
+
+        std::string getFileName() const { return FileName.string(); }
+        std::string getFilePath() const { return FilePath.string(); }
+
+        void setLogLevel(size_t logLevelZeroToFive) {
+            logLevel = logLevelZeroToFive;
+            h5pp::Logger::setLogLevel(logLevelZeroToFive);
+        }
+
+        // Functions related to datasets
+
+        void setDefaultCompressionLevel(unsigned int compressionLevelZeroToNine) { defaultCompressionLevel = h5pp::Hdf5::getValidCompressionLevel(compressionLevelZeroToNine); }
+        unsigned int getDefaultCompressionLevel() const { return defaultCompressionLevel; }
+
+        template<typename DataType>
+        void writeDataset(const DataType &data, const DatasetProperties &dsetProps);
+
+        template<typename DataType>
+        void writeDataset(const DataType &                    data,
+                          std::string_view                    dsetName,
+                          std::optional<H5D_layout_t>         layout           = std::nullopt,
+                          std::optional<std::vector<hsize_t>> chunkDimensions  = std::nullopt,
+                          std::optional<unsigned int>         compressionLevel = std::nullopt);
+
+        template<typename PointerType, typename T, size_t N, typename... Args, typename = std::enable_if_t<std::is_pointer_v<PointerType> and std::is_integral<T>::value>>
+        void writeDataset(const PointerType ptr,
+                          const T (&dims)[N],
+                          std::string_view                    datasetPath,
+                          std::optional<H5D_layout_t>         layout           = std::nullopt,
+                          std::optional<std::vector<hsize_t>> chunkDimensions  = std::nullopt,
+                          std::optional<unsigned int>         compressionLevel = std::nullopt) {
+            writeDataset(h5pp::Wrapper::RawArrayWrapper(ptr, dims), datasetPath, layout, chunkDimensions, compressionLevel);
+        }
+
+        template<typename PointerType, typename... Args, typename = std::enable_if_t<std::is_pointer_v<PointerType>>>
+        void writeDataset(const PointerType                   ptr,
+                          const size_t                        size,
+                          std::string_view                    datasetPath,
+                          std::optional<H5D_layout_t>         layout           = std::nullopt,
+                          std::optional<std::vector<hsize_t>> chunkDimensions  = std::nullopt,
+                          std::optional<unsigned int>         compressionLevel = std::nullopt) {
+            writeDataset(h5pp::Wrapper::RawArrayWrapper(ptr, size), datasetPath, layout, chunkDimensions, compressionLevel);
+        }
+
+        template<typename DataType>
+        void readDataset(DataType &data, std::string_view dsetName) const;
+
+        template<typename DataType>
+        DataType readDataset(std::string_view datasetPath) const;
+
+        template<typename DataType, typename T, size_t N>
+        void readDataset(DataType *data, const T (&dims)[N], std::string_view datasetPath);
+
+        template<typename DataType, typename T, typename = std::enable_if_t<std::is_integral<T>::value>>
+        void readDataset(DataType *data, T size, std::string_view datasetPath) {
+            return readDataset(data, {size}, datasetPath);
+        }
+
+        // Functions related to attributes
+        template<typename DataType>
+        void writeAttribute(const DataType &attribute, const AttributeProperties &aprops);
+
+        template<typename DataType>
+        void writeAttribute(const DataType &attribute, std::string_view attributeName, std::string_view linkPath);
+
+        template<typename DataType>
+        void writeAttributeToFile(const DataType &attribute, std::string_view attributeName);
+
+        inline std::vector<std::string_view> getAttributeNames(std::string_view linkPath) const {
+            Hid::h5f                      file           = openFileHandle();
+            std::vector<std::string_view> attributeNames = h5pp::Hdf5::getAttributeNames(file, linkPath, std::nullopt, plists);
+            return attributeNames;
+        }
+
+        template<typename DataType>
+        void readAttribute(DataType &data, std::string_view attributeName, std::string_view linkPath) const;
+
+        template<typename DataType>
+        DataType readAttribute(std::string_view attributeName, std::string_view linkPath) const;
+
+        // Functions for querying
+        std::vector<size_t> getDatasetDims(std::string_view datasetPath) {
+            Hid::h5f             file = openFileHandle();
+            std::vector<hsize_t> dims;
+            Hid::h5o             dataset  = h5pp::Hdf5::openLink(file, datasetPath);
+            Hid::h5s             memspace = H5Dget_space(dataset);
+            int                  ndims    = H5Sget_simple_extent_ndims(memspace);
+            dims.resize(ndims);
+            H5Sget_simple_extent_dims(memspace, dims.data(), nullptr);
+
+            std::vector<size_t> retdims(dims.begin(), dims.end());
+            return retdims;
+        }
+
+        bool linkExists(std::string_view link) const {
+            Hid::h5f file   = openFileHandle();
+            bool     exists = h5pp::Hdf5::checkIfLinkExists(file, link, std::nullopt, plists);
+            return exists;
+        }
+
+        std::vector<std::string> getContentsOfGroup(std::string_view groupName) const {
+            Hid::h5f file = openFileHandle();
+            h5pp::Logger::log->trace("Getting contents of group: [{}]", groupName);
+            auto foundLinks = h5pp::Hdf5::getContentsOfGroup(file, groupName);
+            return foundLinks;
+        }
+
+        bool fileIsValid() const { return fileIsValid(FilePath); }
+
+        static bool fileIsValid(const fs::path &fileName) { return fs::exists(fileName) and H5Fis_hdf5(fileName.string().c_str()) > 0; }
+
+        inline void createGroup(std::string_view group_relative_name) {
+            Hid::h5f file = openFileHandle();
+            h5pp::Hdf5::createGroup(file, group_relative_name);
+        }
+
+        inline void writeSymbolicLink(std::string_view src_path, std::string_view tgt_path) {
+            Hid::h5f file = openFileHandle();
+            h5pp::Logger::log->trace("Creating symbolik link: [{}] --> [{}]", src_path, tgt_path);
+            h5pp::Hdf5::writeSymbolicLink(file, src_path, tgt_path);
+        }
+
+        private:
+        fs::path getNewFileName(const fs::path &fileName) const {
+            int      i           = 1;
+            fs::path newFileName = fileName;
+            while(fs::exists(newFileName)) { newFileName.replace_filename(fileName.stem().string() + "-" + std::to_string(i++) + fileName.extension().string()); }
+            return newFileName;
+        }
+
+        void createDataset(hid_t file, DatasetProperties &dsetProps) {
+            if(not dsetProps.dsetExists) {
+                h5pp::Logger::log->trace("Creating dataset: [{}]", dsetProps.dsetName.value());
+                h5pp::Hdf5::createDataset(file, dsetProps, plists);
+            }
+        }
     };
-
 }
 
-template<typename DataType> void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &props) {
-    hid_t file = openFileHandle();
-    createDatasetLink(file, props);
-    h5pp::Logger::log->debug("Writing dataset: [{}] | size {} | rank {} | extent {}", props.dsetName, props.size, props.ndims, props.dims);
-    if(props.extendable) { h5pp::Hdf5::setExtentDataset(file, props); }
-    hid_t dataset   = h5pp::Hdf5::openLink(file, props.dsetName);
-    hid_t filespace = H5Dget_space(dataset);
-    selectHyperslab(filespace, props.memSpace);
-
-    try {
-        if(props.linkExists and not props.extendable) {
-            hsize_t old_dsetSize = H5Dget_storage_size(dataset);
-            hsize_t new_dsetSize = h5pp::Utils::getByteSize(data);
-            if(old_dsetSize != new_dsetSize) {
-                Logger::log->critical("The non-extendable dataset [{}] is being overwritten with a different size.\n\t Old size = {} bytes. New size = {} bytes",
-                                      props.dsetName,
-                                      old_dsetSize,
-                                      new_dsetSize);
-                throw std::runtime_error("Overwriting non-extendable dataset with different size");
-            }
-        }
-
-        if constexpr(tc::hasMember_c_str<DataType>::value) {
-            retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, data.c_str());
-            if(retval < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to write text to file");
-            }
-        } else if constexpr(tc::hasMember_data<DataType>::value) {
-            retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, data.data());
-            if(retval < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to write data to file");
-            }
-        } else {
-            retval = H5Dwrite(dataset, props.dataType, props.memSpace, filespace, H5P_DEFAULT, &data);
-            if(retval < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to write number to file");
-            }
-        }
-    } catch(std::exception &ex) {
-        h5pp::Hdf5::closeLink(dataset);
-        closeFileHandle(file);
-        throw std::runtime_error("Write to file failed [" + props.dsetName + "]: " + std::string(ex.what()));
-    }
-    h5pp::Hdf5::closeLink(dataset);
-    closeFileHandle(file);
+template<typename DataType>
+void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &dsetProps) {
+    Hid::h5f file = openFileHandle();
+    h5pp::Hdf5::writeDataset(file, data, dsetProps, plists);
 }
 
-template<typename DataType> void h5pp::File::writeDataset(const DataType &data, const std::string &datasetPath, std::optional<bool> extendable) {
+template<typename DataType>
+void h5pp::File::writeDataset(const DataType &                    data,
+                              std::string_view                    dsetName,
+                              std::optional<H5D_layout_t>         layout,
+                              std::optional<std::vector<hsize_t>> chunkDimensions,
+                              std::optional<unsigned int>         compressionLevel) {
     if(accessMode == AccessMode::READONLY) { throw std::runtime_error("Attempted to write to read-only file"); }
-    DatasetProperties props;
-    props.linkExists       = linkExists(datasetPath);
-    props.extendable       = determineIfExtendable(data, datasetPath, extendable, props.linkExists);
-    props.dataType         = h5pp::Type::getDataType<DataType>();
-    props.size             = h5pp::Utils::getSize<DataType>(data);
-    props.ndims            = h5pp::Utils::getRank<DataType>();
-    props.dims             = h5pp::Utils::getDimensions<DataType>(data);
-    props.chunkDims        = h5pp::Utils::getChunkDimensions<DataType>(data);
-    props.dsetName         = datasetPath;
-    props.memSpace         = h5pp::Utils::getMemSpace(props.ndims, props.dims);
-    props.dataSpace        = h5pp::Utils::getDataSpace(props.ndims, props.dims, props.extendable);
-    props.compressionLevel = compressionLevel;
+    Hid::h5f file = openFileHandle();
+
+    if(compressionLevel)
+        compressionLevel = h5pp::Hdf5::getValidCompressionLevel(compressionLevel);
+    else
+        compressionLevel = getDefaultCompressionLevel();
+
+    auto dsetProps = h5pp::Analyze::getDatasetProperties_write(file, dsetName, data, std::nullopt, layout, chunkDimensions, compressionLevel);
+    // Create the dataset id and set its properties
+    h5pp::Hdf5::createDataset(file, dsetProps);
+    h5pp::Hdf5::setDatasetExtent(dsetProps);
+    dsetProps.fileSpace = H5Dget_space(dsetProps.dataSet);
+    if(dsetProps.layout.value() == H5D_CHUNKED) h5pp::Hdf5::selectHyperslab(dsetProps.fileSpace, dsetProps.memSpace);
+
+#ifdef H5PP_EIGEN3
     if constexpr(tc::is_eigen_type<DataType>::value and not tc::is_eigen_1d<DataType>::value) {
         h5pp::Logger::log->debug("Converting data to row-major storage order");
         const auto tempRowm = Textra::to_RowMajor(data); // Convert to Row Major first;
-        writeDataset(tempRowm, props);
-    } else {
-        if(H5Tequal(props.dataType, H5T_C_S1)) {
-            // Read more about this step here
-            // http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
-            props.size = h5pp::Utils::setStringSize(props.dataType, props.size);
-            writeDataset(data, props);
-        } else {
-            writeDataset(data, props);
-        }
+        h5pp::Hdf5::writeDataset(file, tempRowm, dsetProps, plists);
+        return;
     }
+#endif
+    h5pp::Hdf5::writeDataset(file, data, dsetProps);
+    H5Eprint(H5E_DEFAULT, stderr);
 }
 
-template<typename DataType, typename T, std::size_t N>
-void h5pp::File::writeDataset(const DataType &data, const T (&dims)[N], const std::string &datasetPath, std::optional<bool> extendable) {
-    if(accessMode == AccessMode::READONLY) { throw std::runtime_error("Attempted to write to read-only file"); }
-    static_assert(std::is_integral_v<T>);
-    static_assert(N > 0, "Dimensions of given data are too few, N == 0");
-    DatasetProperties props;
-    props.linkExists       = linkExists(datasetPath);
-    props.extendable       = determineIfExtendable(data, datasetPath, extendable);
-    props.dataType         = h5pp::Type::getDataType<DataType>();
-    props.dims             = std::vector<hsize_t>(dims, dims + N);
-    props.ndims            = (int) props.dims.size();
-    props.chunkDims        = props.dims;
-    props.dsetName         = datasetPath;
-    props.size             = 1;
-    props.compressionLevel = compressionLevel;
-    for(const auto &dim : dims) props.size *= dim;
-    props.memSpace  = h5pp::Utils::getMemSpace(props.ndims, props.dims);
-    props.dataSpace = h5pp::Utils::getDataSpace(props.ndims, props.dims, props.extendable);
-
-    if constexpr(tc::is_eigen_type<DataType>::value and not tc::is_eigen_1d<DataType>::value) {
-        h5pp::Logger::log->debug("Converting data to row-major storage order");
-        const auto temp_rowm = Textra::to_RowMajor(data); // Convert to Row Major first;
-        writeDataset(temp_rowm, props);
-    } else {
-        if(H5Tequal(props.dataType, H5T_C_S1)) {
-            // Read more about this step here
-            // http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
-            h5pp::Utils::setStringSize(props.dataType, props.size);
-            writeDataset(data, props);
-        } else {
-            writeDataset(data, props);
-        }
-    }
-}
-
-template<typename DataType, typename T, size_t N>
-void h5pp::File::writeDataset(const DataType *data, const T (&dims)[N], const std::string &datasetPath, std::optional<bool> extendable) {
-    // This function takes a pointer and a specifiation of dimensions. Easiest thing to do
-    // is to wrap this in an Eigen::Tensor and send to writeDataset
-    // Note that C-style arrays are generally row-major order already
-    auto dimsizes   = Textra::copy_dims<N>(dims);
-    auto tensorWrap = Eigen::TensorMap<const Eigen::Tensor<const DataType, N, Eigen::RowMajor>>(data, dimsizes);
-    writeDataset(tensorWrap, datasetPath, extendable);
-}
-
-template<typename DataType> void h5pp::File::readDataset(DataType &data, const std::string &datasetPath) const {
-    hid_t file = openFileHandle();
+template<typename DataType>
+void h5pp::File::readDataset(DataType &data, std::string_view dsetName) const {
+    Hid::h5f file = openFileHandle();
     try {
-        hid_t                dataset  = h5pp::Hdf5::openLink(file, datasetPath);
-        hid_t                memspace = H5Dget_space(dataset);
-        hid_t                datatype = H5Dget_type(dataset);
-        int                  ndims    = H5Sget_simple_extent_ndims(memspace);
-        std::vector<hsize_t> dims(ndims);
-        H5Sget_simple_extent_dims(memspace, dims.data(), nullptr);
-        hsize_t size = 1;
-        for(const auto &dim : dims) size *= dim;
-        h5pp::Logger::log->debug("Reading dataset: [{}] | size {} | rank {} | dim extents {}", datasetPath, size, ndims, dims);
-
+        auto props = h5pp::Analyze::getDatasetProperties_read(file, dsetName, std::nullopt, plists);
+        h5pp::Logger::log->debug(
+            "Reading dataset: [{}] | size {} | bytes {} | ndims {} | dims {}", dsetName, props.size.value(), props.bytes.value(), props.ndims.value(), props.dims.value());
+#ifdef H5PP_EIGEN3
         if constexpr(tc::is_eigen_core<DataType>::value) {
             if(data.IsRowMajor) {
                 // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
                 data.resize(dims[0], dims[1]);
-                retval = H5LTread_dataset(file, datasetPath.c_str(), datatype, data.data());
+                retval = H5LTread_dataset(file, dsetName.c_str(), datatype, data.data());
                 if(retval < 0) { throw std::runtime_error("Failed to read Eigen Matrix rowmajor dataset"); }
             } else {
                 // Data is RowMajor in HDF5, user gave a ColMajor container we need to swap layout.
                 Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> matrixRowmajor;
                 matrixRowmajor.resize(dims[0], dims[1]); // Data is transposed in HDF5!
-                retval = H5LTread_dataset(file, datasetPath.c_str(), datatype, matrixRowmajor.data());
+                retval = H5LTread_dataset(file, dsetName.c_str(), datatype, matrixRowmajor.data());
                 if(retval < 0) { throw std::runtime_error("Failed to read Eigen Matrix colmajor dataset"); }
                 data = matrixRowmajor;
             }
@@ -654,75 +536,103 @@ template<typename DataType> void h5pp::File::readDataset(DataType &data, const s
             if constexpr(DataType::Options == Eigen::RowMajor) {
                 // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
                 data.resize(eigenDims);
-                retval = H5LTread_dataset(file, datasetPath.c_str(), datatype, data.data());
+                retval = H5LTread_dataset(file, dsetName.c_str(), datatype, data.data());
                 if(retval < 0) { throw std::runtime_error("Failed to read Eigen Tensor rowmajor dataset"); }
             } else {
                 // Data is RowMajor in HDF5, user gave a ColMajor container we need to swap layout.
                 Eigen::Tensor<typename DataType::Scalar, DataType::NumIndices, Eigen::RowMajor> tensorRowmajor(eigenDims);
-                H5LTread_dataset(file, datasetPath.c_str(), datatype, tensorRowmajor.data());
+                H5LTread_dataset(file, dsetName.c_str(), datatype, tensorRowmajor.data());
                 if(retval < 0) { throw std::runtime_error("Failed to read Eigen Tensor colmajor dataset"); }
                 data = Textra::to_ColMajor(tensorRowmajor);
             }
-        } else if constexpr(tc::is_std_vector<DataType>::value) {
-            assert(ndims == 1 and "Vector cannot take 2D datasets");
-            data.resize(dims[0]);
-            H5LTread_dataset(file, datasetPath.c_str(), datatype, data.data());
+        } else
+#endif // H5PP_EIGEN3
+
+            if constexpr(tc::is_std_vector<DataType>::value) {
+            assert(props.ndims == 1 and "Vector cannot take 2D datasets");
+            data.resize(props.dims.value()[0]);
+            H5LTread_dataset(file, std::string(dsetName).c_str(), props.dataType, data.data());
             if(retval < 0) { throw std::runtime_error("Failed to read std::vector dataset"); }
         } else if constexpr(std::is_same<std::string, DataType>::value) {
-            assert(ndims == 1 and "std string needs to have 1 dimension");
-            hsize_t stringsize = H5Dget_storage_size(dataset);
+            assert(props.ndims == 1 and "std string needs to have 1 dimension");
+            hsize_t stringsize = H5Dget_storage_size(props.dataSet);
             data.resize(stringsize);
-            retval = H5LTread_dataset(file, datasetPath.c_str(), datatype, data.data());
+            retval = H5LTread_dataset(file, std::string(dsetName).c_str(), props.dataType, data.data());
             if(retval < 0) { throw std::runtime_error("Failed to read std::string dataset"); }
 
         } else if constexpr(std::is_arithmetic<DataType>::value) {
-            retval = H5LTread_dataset(file, datasetPath.c_str(), datatype, &data);
+            retval = H5LTread_dataset(file, std::string(dsetName).c_str(), props.dataType, &data);
             if(retval < 0) { throw std::runtime_error("Failed to read arithmetic type dataset"); }
 
         } else {
-            Logger::log->error("Attempted to read dataset of unknown type. Name: [{}] | Type: [{}]", datasetPath, Type::Check::type_name<DataType>());
+            Logger::log->error("Attempted to read dataset of unknown type. Name: [{}] | Type: [{}]", dsetName, Type::Scan::type_name<DataType>());
             throw std::runtime_error("Attempted to read dataset of unknown type");
         }
-        H5Tclose(datatype);
-        h5pp::Hdf5::closeLink(dataset);
 
     } catch(std::exception &ex) {
-        closeFileHandle(file);
         H5Eprint(H5E_DEFAULT, stderr);
         throw std::runtime_error(
-            fmt::format("readDataset failed. Dataset name [{}] | Link [{}] | type [{}] | Reason: {}", datasetPath, Type::Check::type_name<DataType>(), ex.what()));
+            h5pp::Logger::format("readDataset failed. Dataset name [{}] | Link [{}] | type [{}] | Reason: {}", dsetName, Type::Scan::type_name<DataType>(), ex.what()));
     }
-
-    closeFileHandle(file);
 }
 
-template<typename DataType, typename T, size_t N> void h5pp::File::readDataset(DataType *data, const T (&dims)[N], const std::string &datasetPath) {
-    // This function takes a pointer and a specifiation of dimensions. Easiest thing to do
-    // is to wrap this in an Eigen::Tensor and send to readDataset
+template<typename DataType, typename T, size_t N>
+void h5pp::File::readDataset(DataType *data, const T (&dims)[N], std::string_view datasetPath) {
+    // This function takes a pointer and a specifiation of dimensions.
+
+#ifdef H5PP_EIGEN3
+    // Easiest thing to do is to wrap this in an Eigen::Tensor and send to readDataset
     auto dimsizes   = Textra::copy_dims<N>(dims);
     auto tensorWrap = Eigen::TensorMap<Eigen::Tensor<DataType, N>>(data, dimsizes);
     readDataset(tensorWrap, datasetPath);
+#else
+    Hid::h5f file = openFileHandle();
+    try {
+        Hid::h5o dataset  = h5pp::Hdf5::openLink(file, datasetPath);
+        Hid::h5s memspace = H5Dget_space(dataset);
+        Hid::h5s datatype = H5Dget_type(dataset);
+
+        std::array<hsize_t, N> h5dims;
+        H5Sget_simple_extent_dims(memspace, h5dims.data(), nullptr);
+        int     ndims = (int) N;
+        hsize_t size  = 1;
+        for(size_t idx = 0; idx < ndims; idx++) size *= h5dims[idx];
+        for(size_t idx = 0; idx < ndims; idx++)
+            if(h5dims[idx] != dims[idx])
+                throw std::runtime_error("Dimension mismatch in index " + std::to_string(idx) + ": " + std::to_string(h5dims[idx]) + "!=" + std::to_string(dims[idx]));
+        h5pp::Logger::log->debug("Reading dataset: [{}] | size {} | ndims {} | dims {}", datasetPath, size, ndims, h5dims);
+        retval = H5LTread_dataset(file, std::string(datasetPath).c_str(), datatype, data);
+        if(retval < 0) throw std::runtime_error("Failed to read arithmetic type dataset");
+    } catch(std::exception &ex) {
+        H5Eprint(H5E_DEFAULT, stderr);
+        throw std::runtime_error(
+            h5pp::Logger::format("readDataset failed. Dataset name [{}] | Link [{}] | type [{}] | Reason: {}", datasetPath, Type::Scan::type_name<DataType>(), ex.what()));
+    }
+#endif
 }
 
-template<typename DataType> DataType h5pp::File::readDataset(const std::string &datasetPath) const {
+template<typename DataType>
+DataType h5pp::File::readDataset(std::string_view datasetPath) const {
     DataType data;
     readDataset(data, datasetPath);
     return data;
 }
 
-template<typename DataType> void h5pp::File::writeAttributeToFile(const DataType &attribute, const std::string &attributeName) {
-    hid_t file     = openFileHandle();
-    hid_t datatype = h5pp::Type::getDataType<DataType>();
-    auto  size     = h5pp::Utils::getSize(attribute);
-    auto  ndims    = h5pp::Utils::getRank<DataType>();
-    auto  dims     = h5pp::Utils::getDimensions(attribute);
-    hid_t memspace = h5pp::Utils::getMemSpace(ndims, dims);
+template<typename DataType>
+void h5pp::File::writeAttributeToFile(const DataType &attribute, std::string_view attributeName) {
+    Hid::h5f file     = openFileHandle();
+    Hid::h5d datatype = h5pp::Utils::getH5DataType<DataType>();
+    auto     size     = h5pp::Utils::getSize(attribute);
+    auto     byteSize = h5pp::Utils::getBytesTotal<DataType>(attribute);
+    auto     ndims    = h5pp::Utils::getRank<DataType>();
+    auto     dims     = h5pp::Utils::getDimensions(attribute);
+    Hid::h5s memspace = h5pp::Utils::getMemSpace(ndims, dims);
     h5pp::Logger::log->debug(
-        "Writing attribute to file: [{}] | size {} | rank {} | dim extents {} | type {}", attributeName, size, ndims, dims, Type::Check::type_name<DataType>());
+        "Writing attribute to file: [{}] | size {} | bytes {} | ndims {} | dims {} | type {}", attributeName, size, byteSize, ndims, dims, Type::Scan::type_name<DataType>());
 
-    if constexpr(tc::hasMember_c_str<DataType>::value or std::is_same<char *, typename std::decay<DataType>::type>::value) { h5pp::Utils::setStringSize(datatype, size); }
+    //    if constexpr(tc::is_text<DataType>()) { h5pp::Utils::setStringSize(datatype, size); }
 
-    hid_t attributeId = H5Acreate(file, attributeName.c_str(), datatype, memspace, H5P_DEFAULT, H5P_DEFAULT);
+    Hid::h5a attributeId = H5Acreate(file, std::string(attributeName).c_str(), datatype, memspace, H5P_DEFAULT, H5P_DEFAULT);
     if constexpr(tc::hasMember_c_str<DataType>::value) {
         retval = H5Awrite(attributeId, datatype, attribute.c_str());
     } else if constexpr(tc::hasMember_data<DataType>::value) {
@@ -732,25 +642,19 @@ template<typename DataType> void h5pp::File::writeAttributeToFile(const DataType
     }
     if(retval < 0) {
         H5Eprint(H5E_DEFAULT, stderr);
-        throw std::runtime_error("Failed to write attribute [ " + attributeName + " ] to file");
+        throw std::runtime_error("Failed to write attribute [ " + std::string(attributeName) + " ] to file");
     }
-    H5Tclose(datatype);
-    H5Aclose(attributeId);
-    closeFileHandle(file);
 }
 
-template<typename DataType> void h5pp::File::writeAttribute(const DataType &attribute, const AttributeProperties &aprops) {
-    hid_t file = openFileHandle();
-    if(h5pp::Hdf5::checkIfLinkExistsRecursively(file, aprops.linkPath)) {
+template<typename DataType>
+void h5pp::File::writeAttribute(const DataType &attribute, const AttributeProperties &aprops) {
+    Hid::h5f file = openFileHandle();
+    if(h5pp::Hdf5::checkIfLinkExists(file, aprops.linkPath)) {
         if(not h5pp::Hdf5::checkIfAttributeExists(file, aprops.linkPath, aprops.attrName)) {
-            hid_t linkObject  = h5pp::Hdf5::openLink(file, aprops.linkPath);
-            hid_t attributeId = H5Acreate(linkObject, aprops.attrName.c_str(), aprops.dataType, aprops.memSpace, H5P_DEFAULT, H5P_DEFAULT);
-            h5pp::Logger::log->debug("Writing attribute: [{}] | size {} | rank {} | dim extents {} | type {}",
-                                     aprops.attrName,
-                                     aprops.size,
-                                     aprops.ndims,
-                                     aprops.dims,
-                                     Type::Check::type_name<DataType>());
+            Hid::h5o linkObject  = h5pp::Hdf5::openLink(file, aprops.linkPath);
+            Hid::h5a attributeId = H5Acreate(linkObject, aprops.attrName.c_str(), aprops.dataType, aprops.memSpace, H5P_DEFAULT, H5P_DEFAULT);
+            h5pp::Logger::log->debug(
+                "Writing attribute: [{}] | size {} | ndims {} | dims {} | type {}", aprops.attrName, aprops.size, aprops.ndims, aprops.dims, Type::Scan::type_name<DataType>());
             try {
                 if constexpr(tc::hasMember_c_str<DataType>::value) {
                     retval = H5Awrite(attributeId, aprops.dataType, attribute.c_str());
@@ -761,191 +665,139 @@ template<typename DataType> void h5pp::File::writeAttribute(const DataType &attr
                 }
                 if(retval < 0) { throw std::runtime_error("Failed to write attribute. Attribute name: [ " + aprops.attrName + " ]"); }
             } catch(std::exception &ex) {
-                H5Aclose(attributeId);
-                h5pp::Hdf5::closeLink(linkObject);
-                closeFileHandle(file);
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error("Link [ " + aprops.linkPath + " ]: " + std::string(ex.what()));
             }
-
-            H5Aclose(attributeId);
-            h5pp::Hdf5::closeLink(linkObject);
-            closeFileHandle(file);
         }
     } else {
-        closeFileHandle(file);
         std::string error = "Link " + aprops.linkPath + " does not exist, yet attribute is being written.";
         h5pp::Logger::log->critical(error);
         throw(std::logic_error(error));
     }
 }
 
-template<typename DataType> void h5pp::File::writeAttribute(const DataType &attribute, const std::string &attributeName, const std::string &linkPath) {
+template<typename DataType>
+void h5pp::File::writeAttribute(const DataType &attribute, std::string_view attributeName, std::string_view linkPath) {
     AttributeProperties aprops;
-    aprops.dataType = h5pp::Type::getDataType<DataType>();
+    aprops.dataType = h5pp::Utils::getH5DataType<DataType>();
     aprops.size     = h5pp::Utils::getSize(attribute);
+    aprops.byteSize = h5pp::Utils::getBytesTotal<DataType>(attribute);
     aprops.ndims    = h5pp::Utils::getRank<DataType>();
     aprops.dims     = h5pp::Utils::getDimensions(attribute);
     aprops.attrName = attributeName;
     aprops.linkPath = linkPath;
-    aprops.memSpace = h5pp::Utils::getMemSpace(aprops.ndims, aprops.dims);
-
+    aprops.memSpace = h5pp::Utils::getMemSpace(aprops.size, aprops.ndims, aprops.dims);
+#ifdef H5PP_EIGEN3
     if constexpr(tc::is_eigen_type<DataType>::value and not tc::is_eigen_1d<DataType>::value) {
         h5pp::Logger::log->debug("Converting data to row-major storage order");
         const auto tempRowm = Textra::to_RowMajor(attribute); // Convert to Row Major first;
         writeAttribute(tempRowm, aprops);
-    } else if constexpr(tc::hasMember_c_str<DataType>::value or std::is_same<char *, typename std::decay<DataType>::type>::value) {
-        aprops.size = h5pp::Utils::setStringSize(aprops.dataType, aprops.size);
+    } else
+#endif
+        if constexpr(tc::is_text<DataType>()) {
+        //        aprops.size = h5pp::Utils::setStringSize(aprops.dataType, aprops.size);
         writeAttribute(attribute, aprops);
     } else {
         writeAttribute(attribute, aprops);
     }
 }
 
-template<typename DataType> void h5pp::File::readAttribute(DataType &data, const std::string &attributeName, const std::string &linkPath) const {
-    hid_t file = openFileHandle();
-    try {
-        hid_t link           = h5pp::Hdf5::openLink(file, linkPath);
-        hid_t link_attribute = H5Aopen_name(link, attributeName.c_str());
+template<typename DataType>
+void h5pp::File::readAttribute(DataType &data, std::string_view attributeName, std::string_view linkPath) const {
+    Hid::h5f             file           = openFileHandle();
+    Hid::h5o             link           = h5pp::Hdf5::openLink(file, linkPath);
+    Hid::h5a             link_attribute = H5Aopen_name(link, std::string(attributeName).c_str());
+    Hid::h5s             memspace       = H5Aget_space(link_attribute);
+    Hid::h5t             datatype       = H5Aget_type(link_attribute);
+    int                  ndims          = H5Sget_simple_extent_ndims(memspace);
+    std::vector<hsize_t> dims(ndims);
+    H5Sget_simple_extent_dims(memspace, dims.data(), nullptr);
+    hsize_t size = 1;
+    for(const auto &dim : dims) size *= dim;
 
-        hid_t                memspace = H5Aget_space(link_attribute);
-        hid_t                datatype = H5Aget_type(link_attribute);
-        int                  ndims    = H5Sget_simple_extent_ndims(memspace);
-        std::vector<hsize_t> dims(ndims);
-        H5Sget_simple_extent_dims(memspace, dims.data(), nullptr);
-        hsize_t size = 1;
-        for(const auto &dim : dims) size *= dim;
+    h5pp::Logger::log->debug(
+        "Reading attribute: [{}] | link {} | size {} | ndims {} | dims {} | type {}", attributeName, linkPath, size, ndims, dims, Type::Scan::type_name<DataType>());
+    h5pp::Utils::assertBytesPerElemMatch<DataType>(datatype);
 
-        h5pp::Logger::log->debug(
-            "Reading attribute: [{}] | link {} | size {} | rank {} | dim extents {} | type {}", attributeName, linkPath, size, ndims, dims, Type::Check::type_name<DataType>());
-        if(not h5pp::Utils::typeSizesMatch<DataType>(datatype)) throw std::runtime_error("DataTypes do not match");
-
-        if constexpr(tc::is_eigen_core<DataType>::value) {
-            if(data.IsRowMajor) {
-                // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
-                data.resize(dims[0], dims[1]);
-                retval = H5Aread(link_attribute, datatype, data.data());
-                if(retval < 0) throw std::runtime_error("Failed to read Eigen Matrix rowmajor dataset");
-            } else {
-                // Data is RowMajor in HDF5, user gave a ColMajor container so we need to swap the layout.
-                Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> matrixRowmajor;
-                matrixRowmajor.resize(dims[0], dims[1]); // Data is transposed in HDF5!
-                retval = H5Aread(link_attribute, datatype, matrixRowmajor.data());
-                if(retval < 0) throw std::runtime_error("Failed to read Eigen Matrix colmajor dataset");
-                data = matrixRowmajor;
+#ifdef H5PP_EIGEN3
+    if constexpr(tc::is_eigen_core<DataType>::value) {
+        if(data.IsRowMajor) {
+            // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
+            data.resize(dims[0], dims[1]);
+            if(H5Aread(link_attribute, datatype, data.data()) < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to read Eigen Matrix rowmajor dataset");
             }
-
-        } else if constexpr(tc::is_eigen_tensor<DataType>()) {
-            auto eigenDims = Textra::copy_dims<DataType::NumDimensions>(dims);
-            if constexpr(DataType::Options == Eigen::RowMajor) {
-                // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
-                data.resize(eigenDims);
-                retval = H5Aread(link_attribute, datatype, data.data());
-                if(retval < 0) throw std::runtime_error("Failed to read Eigen Tensor rowmajor dataset");
-            } else {
-                // Data is RowMajor in HDF5, user gave a ColMajor container so we need to swap the layout.
-                Eigen::Tensor<typename DataType::Scalar, DataType::NumIndices, Eigen::RowMajor> tensorRowmajor(eigenDims);
-                retval = H5Aread(link_attribute, datatype, tensorRowmajor.data());
-                if(retval < 0) throw std::runtime_error("Failed to read Eigen Tensor colmajor dataset");
-                data = Textra::to_ColMajor(tensorRowmajor);
-            }
-        }
-
-        else if constexpr(tc::is_std_vector<DataType>::value) {
-            if(ndims != 1) throw std::runtime_error("Vector cannot take datatypes with dimension: " + std::to_string(ndims));
-            data.resize(dims[0]);
-            retval = H5Aread(link_attribute, datatype, data.data());
-            if(retval < 0) throw std::runtime_error("Failed to read std::vector dataset");
-        } else if constexpr(tc::is_std_array<DataType>::value) {
-            if(ndims != 1) throw std::runtime_error("Array cannot take datatypes with dimension: " + std::to_string(ndims));
-            retval = H5Aread(link_attribute, datatype, data.data());
-            if(retval < 0) throw std::runtime_error("Failed to read std::vector dataset");
-        } else if constexpr(std::is_same<std::string, DataType>::value) {
-            if(ndims != 1) throw std::runtime_error("std::string expected dimension 1. Got: " + std::to_string(ndims));
-            hsize_t stringsize = H5Tget_size(datatype);
-            data.resize(stringsize);
-            retval = H5Aread(link_attribute, datatype, data.data());
-            if(retval < 0) throw std::runtime_error("Failed to read std::string dataset");
-
-        } else if constexpr(std::is_arithmetic<DataType>::value or tc::is_StdComplex<DataType>()) {
-            retval = H5Aread(link_attribute, datatype, &data);
-            if(retval < 0) throw std::runtime_error("Failed to read arithmetic type dataset");
         } else {
-            Logger::log->error("Attempted to read attribute of unknown type. Name: [{}] | Type: [{}]", attributeName, Type::Check::type_name<DataType>());
-            throw std::runtime_error("Attempted to read dataset of unknown type");
+            // Data is RowMajor in HDF5, user gave a ColMajor container so we need to swap the layout.
+            Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> matrixRowmajor;
+            matrixRowmajor.resize(dims[0], dims[1]); // Data is transposed in HDF5!
+            if(H5Aread(link_attribute, datatype, matrixRowmajor.data()) < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to read Eigen Matrix colmajor dataset");
+            }
+            data = matrixRowmajor;
         }
-        H5Tclose(datatype);
-        H5Aclose(link_attribute);
-        h5pp::Hdf5::closeLink(link);
 
-    } catch(std::exception &ex) {
-        closeFileHandle(file);
-        H5Eprint(H5E_DEFAULT, stderr);
-        throw std::runtime_error(
-            fmt::format("readAttribute failed. Attribute name [{}] | Link [{}] | type [{}] | Reason: {}", attributeName, linkPath, Type::Check::type_name<DataType>(), ex.what()));
+    } else if constexpr(tc::is_eigen_tensor<DataType>()) {
+        auto eigenDims = Textra::copy_dims<DataType::NumDimensions>(dims);
+        if constexpr(DataType::Options == Eigen::RowMajor) {
+            // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
+            data.resize(eigenDims);
+            if(H5Aread(link_attribute, datatype, data.data()) < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to read Eigen Tensor rowmajor dataset");
+            }
+        } else {
+            // Data is RowMajor in HDF5, user gave a ColMajor container so we need to swap the layout.
+            Eigen::Tensor<typename DataType::Scalar, DataType::NumIndices, Eigen::RowMajor> tensorRowmajor(eigenDims);
+            if(H5Aread(link_attribute, datatype, tensorRowmajor.data()) < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to read Eigen Tensor colmajor dataset");
+            }
+            data = Textra::to_ColMajor(tensorRowmajor);
+        }
+    } else
+#endif
+        if constexpr(tc::is_std_vector<DataType>::value) {
+        if(ndims != 1) throw std::runtime_error("Vector cannot take datatypes with dimension: " + std::to_string(ndims));
+        data.resize(dims[0]);
+        if(H5Aread(link_attribute, datatype, data.data()) < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error("Failed to read std::vector dataset");
+        }
+    } else if constexpr(tc::is_std_array<DataType>::value) {
+        if(ndims != 1) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error("Array cannot take datatypes with dimension: " + std::to_string(ndims));
+        }
+        if(H5Aread(link_attribute, datatype, data.data()) < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error("Failed to read std::vector dataset");
+        }
+    } else if constexpr(std::is_same<std::string, DataType>::value) {
+        if(ndims != 1) throw std::runtime_error("std::string expected ndims 1. Got: " + std::to_string(ndims));
+        hsize_t stringsize = H5Tget_size(datatype);
+        data.resize(stringsize);
+        if(H5Aread(link_attribute, datatype, data.data()) < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error("Failed to read std::string dataset");
+        }
+
+    } else if constexpr(std::is_arithmetic<DataType>::value or tc::is_StdComplex<DataType>()) {
+        if(H5Aread(link_attribute, datatype, &data) < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error("Failed to read arithmetic type dataset");
+        }
+    } else {
+        Logger::log->error("Attempted to read attribute of unknown type. Name: [{}] | Type: [{}]", attributeName, Type::Scan::type_name<DataType>());
+        throw std::runtime_error("Attempted to read dataset of unknown type");
     }
-
-    closeFileHandle(file);
-}
-
-template<typename DataType> DataType h5pp::File::readAttribute(const std::string &attributeName, const std::string &linkPath) const {
-    DataType data;
-    readAttribute(data, attributeName, linkPath);
-    return data;
 }
 
 template<typename DataType>
-bool h5pp::File::determineIfExtendable(const DataType &data, const std::string &dsetName, std::optional<bool> userPrefersExtendable, std::optional<bool> dsetExists) {
-    hsize_t size     = h5pp::Utils::getSize<DataType>(data);
-    hsize_t rank     = h5pp::Utils::getRank<DataType>();
-    hid_t   datatype = h5pp::Type::getDataType<DataType>();
-    bool    isLarge  = size * H5Tget_size(datatype) >= h5pp::Constants::max_size_contiguous;
-    if(not dsetExists.has_value()) dsetExists = linkExists(dsetName);
-    bool isUnlimited = false;
-    H5Tclose(datatype);
-
-    if(dsetExists.value()) {
-        hid_t                file      = openFileHandle();
-        hid_t                dataSet   = h5pp::Hdf5::openLink(file, dsetName);
-        hid_t                dataSpace = H5Dget_space(dataSet);
-        hsize_t              ndims     = H5Sget_simple_extent_ndims(dataSpace);
-        std::vector<hsize_t> old_dims(ndims);
-        std::vector<hsize_t> max_dims(ndims);
-        H5Sget_simple_extent_dims(dataSpace, old_dims.data(), max_dims.data());
-        if(std::any_of(old_dims.begin(), old_dims.end(), [](int i) { return i < 0; })) { isUnlimited = true; }
-        if(std::any_of(max_dims.begin(), max_dims.end(), [](int i) { return i < 0; })) { isUnlimited = true; }
-        h5pp::Logger::log->trace("Checking existing if dataset is extendable: [{}] ... {}", dsetName, isUnlimited);
-        H5Sclose(dataSpace);
-        H5Dclose(dataSet);
-        closeFileHandle(file);
-    }
-
-    if(userPrefersExtendable) {
-        if(userPrefersExtendable.value() and dsetExists.value() and not isUnlimited) {
-            Logger::log->warn("Asked for an extendable dataset, but a non-extendable dataset already exists: [{}]. Conversion is not supported!", dsetName);
-        }
-        if(not userPrefersExtendable.value() and dsetExists.value() and isUnlimited) {
-            Logger::log->warn("Asked for a non-extendable dataset, but an extendable dataset already exists: [{}]. Conversion is not supported!", dsetName);
-        }
-
-        if(not dsetExists.value()) return userPrefersExtendable.value();
-    }
-
-    if(dsetExists.value() and isUnlimited) {
-        h5pp::Logger::log->trace("Dataset [{}] is extendable: {}", dsetName, true);
-        return true;
-    }
-    if(dsetExists.value() and not isUnlimited) {
-        h5pp::Logger::log->trace("Dataset [{}] is extendable: {}", dsetName, false);
-        return false;
-    }
-    if(not dsetExists.value() and defaultExtendable and rank >= 1) {
-        h5pp::Logger::log->trace("Dataset [{}] is extendable: {}", dsetName, true);
-        return true;
-    }
-    if(not dsetExists.value() and isLarge and rank >= 1) {
-        h5pp::Logger::log->trace("Dataset [{}] is extendable: {}", dsetName, true);
-        return true;
-    }
-    return false;
+DataType h5pp::File::readAttribute(std::string_view attributeName, std::string_view linkPath) const {
+    DataType data;
+    readAttribute(data, attributeName, linkPath);
+    return data;
 }

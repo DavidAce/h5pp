@@ -1,6 +1,6 @@
  
 cmake_minimum_required(VERSION 3.10)
-project(h5pp VERSION 1.1.0
+project(h5pp VERSION 1.5.0
         DESCRIPTION "A C++17 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         )
@@ -13,7 +13,9 @@ option(H5PP_IS_SUBPROJECT "Use h5pp with add_subdirectory()" OFF)
 option(APPEND_LIBSUFFIX "Append <libname> to CMAKE_INSTALL_PREFIX" OFF)
 option(PREFER_CONDA_LIBS "Search for dependencies from anaconda first" OFF)
 option(H5PP_PRINT_INFO "Print info during cmake configuration" OFF)
-
+option(H5PP_ENABLE_EIGEN3 "Enables Eigen3 for writing multidimensional containers" OFF)
+option(H5PP_ENABLE_SPDLOG "Enables Spdlog for logging h5pp internal info to stdout" OFF)
+option(H5PP_ENABLE_MPI "Enables use of MPI " ON)
 
 # Make an "enum" for valid download methods: none find-only native conan
 set(VALID_DOWNLOAD_METHODS none find-only native conan)
@@ -88,6 +90,9 @@ if(H5PP_PRINT_INFO)
     message(STATUS "BUILD_SHARED_LIBS       : ${BUILD_SHARED_LIBS}")
     message(STATUS "BUILD_EXAMPLES          : ${BUILD_EXAMPLES}")
     message(STATUS "ENABLE_TESTS            : ${ENABLE_TESTS}")
+    message(STATUS "H5PP_ENABLE_EIGEN3      : ${H5PP_ENABLE_EIGEN3}")
+    message(STATUS "H5PP_ENABLE_SPDLOG      : ${H5PP_ENABLE_SPDLOG}")
+    message(STATUS "H5PP_ENABLE_MPI         : ${H5PP_ENABLE_MPI}")
     message(STATUS "H5PP_IS_SUBPROJECT      : ${H5PP_IS_SUBPROJECT}")
     message(STATUS "DOWNLOAD_METHOD         : ${DOWNLOAD_METHOD}")
     message(STATUS "APPEND_LIBSUFFIX        : ${APPEND_LIBSUFFIX}")
@@ -121,6 +126,8 @@ add_library(flags INTERFACE)
 ### unfortunately different dependencies do it differently.    ###
 ### Since conan prefers "pthread", I'll do the same here.      ###
 ##################################################################
+### Read more about pthread segfault
+### https://stackoverflow.com/questions/35116327/when-g-static-link-pthread-cause-segmentation-fault-why
 if (NOT TARGET Threads::Threads)
     set(CMAKE_THREAD_PREFER_PTHREAD FALSE)
     set(THREADS_PREFER_PTHREAD_FLAG FALSE)
@@ -130,7 +137,12 @@ if (NOT TARGET Threads::Threads)
     endif ()
 endif ()
 
-
+if (H5PP_ENABLE_MPI AND NOT WIN32)
+    find_package(MPI)
+    if (TARGET MPI::MPI_CXX)
+        target_link_libraries(flags INTERFACE MPI::MPI_CXX)
+    endif ()
+endif ()
 # On some HPC clusters Clang needs path to gnu gcc toolchain because it's not in path
 if (GCC_TOOLCHAIN AND ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
@@ -314,57 +326,55 @@ endif ()
 
 
 # Simple testing with ctest
-if (NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS)
-    if (ALL_TARGETS_FOUND)
-        enable_testing()
-        add_subdirectory(tests/simpleWrite h5pp-tests/simpleWrite)
-        add_subdirectory(tests/largeWrite h5pp-tests/largeWrite)
-        add_subdirectory(tests/overWrite h5pp-tests/overWrite)
-        add_subdirectory(tests/readWrite h5pp-tests/readWrite)
-        add_subdirectory(tests/readWriteAttributes h5pp-tests/readWriteAttributes)
-        add_subdirectory(tests/copySwap h5pp-tests/copySwap)
-        add_custom_target(all-tests
-                DEPENDS test-simpleWrite
-                        test-largeWrite
-                        test-overWrite
-                        test-readWrite
-                        test-readWriteAttributes
-                        test-copySwap)
-        # A handy target "all-tests" which runs all test when built.
-        add_custom_command(
-                TARGET all-tests
-                POST_BUILD
-                COMMENT "Running Tests"
-                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                DEPENDS h5pp deps flags
-                COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure)
+if (NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS AND TARGET h5pp)
+    enable_testing()
+    add_subdirectory(tests/simpleWrite h5pp-tests/simpleWrite)
+    add_subdirectory(tests/largeWrite h5pp-tests/largeWrite)
+    add_subdirectory(tests/overWrite h5pp-tests/overWrite)
+    add_subdirectory(tests/rawArrayWrapper h5pp-tests/rawArrayWrapper)
+    add_subdirectory(tests/readWrite h5pp-tests/readWrite)
+    add_subdirectory(tests/readWriteAttributes h5pp-tests/readWriteAttributes)
+    add_subdirectory(tests/copySwap h5pp-tests/copySwap)
+    add_custom_target(all-tests
+            DEPENDS test-simpleWrite
+            test-largeWrite
+            test-overWrite
+            test-rawArrayWrapper
+            test-readWrite
+            test-readWriteAttributes
+            test-copySwap)
+    # A handy target "all-tests" which runs all test when built.
+    add_custom_command(
+            TARGET all-tests
+            POST_BUILD
+            COMMENT "Running Tests"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            DEPENDS h5pp deps flags
+            COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure)
 
-    elseif (NOT DOWNLOAD_METHOD MATCHES "none")
-        message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
-    endif()
-endif()
+elseif (NOT DOWNLOAD_METHOD MATCHES "none")
+    message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
+endif ()
 
 
 # Build examples
-if(NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES)
-    if (ALL_TARGETS_FOUND)
-        add_subdirectory(examples/helloworld h5pp-examples/helloworld)
-        add_subdirectory(examples/writescalar h5pp-examples/writescalar)
-        add_subdirectory(examples/readme-example1 h5pp-examples/readme-example1)
-        add_subdirectory(examples/readme-example2 h5pp-examples/readme-example2)
-        add_subdirectory(examples/readme-example3 h5pp-examples/readme-example3)
-        add_subdirectory(examples/readme-example4 h5pp-examples/readme-example4)
-        # A handy target "all-examples" to build all examples
-        add_custom_target(all-examples DEPENDS
-                helloworld
-                writescalar
-                readme-example1
-                readme-example2
-                readme-example3
-                readme-example4)
-    elseif (NOT DOWNLOAD_METHOD MATCHES "none")
-        message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
-    endif ()
+if (NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES AND TARGET h5pp)
+    add_subdirectory(examples/helloworld h5pp-examples/helloworld)
+    add_subdirectory(examples/writescalar h5pp-examples/writescalar)
+    add_subdirectory(examples/readme-example1 h5pp-examples/readme-example1)
+    add_subdirectory(examples/readme-example2 h5pp-examples/readme-example2)
+    add_subdirectory(examples/readme-example3 h5pp-examples/readme-example3)
+    add_subdirectory(examples/readme-example4 h5pp-examples/readme-example4)
+    # A handy target "all-examples" to build all examples
+    add_custom_target(all-examples DEPENDS
+            helloworld
+            writescalar
+            readme-example1
+            readme-example2
+            readme-example3
+            readme-example4)
+elseif (NOT DOWNLOAD_METHOD MATCHES "none")
+    message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
 endif ()
 
 

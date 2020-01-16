@@ -17,7 +17,7 @@ template<typename T> std::ostream &operator<<(std::ostream &out, const std::vect
 int main() {
     using cplx = std::complex<double>;
 
-    static_assert(h5pp::Type::Check::hasMember_data<std::vector<double>>() and
+    static_assert(h5pp::Type::Scan::hasMember_data<std::vector<double>>() and
                   "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     std::string outputFilename = "output/readWrite.h5";
@@ -59,6 +59,52 @@ int main() {
     std::cout << vectorComplexRead << std::endl;
     if(vectorComplex != vectorComplexRead) { throw std::runtime_error("vectorComplex != vectorComplexRead"); }
 
+    auto *cStyleDoubleArray = new double[10];
+    for(int i = 0; i < 10; i++) cStyleDoubleArray[i] = (double) i;
+    file.writeDataset(cStyleDoubleArray, 10, "cStyleDoubleArray");
+    auto *cStyleDoubleArrayRead = new double[10];
+    file.readDataset(cStyleDoubleArrayRead, 10, "cStyleDoubleArray");
+    delete[] cStyleDoubleArray;
+    delete[] cStyleDoubleArrayRead;
+
+    // Test new field2 type
+    struct Field2 {
+        double x;
+        double y;
+    };
+    std::vector<Field2> field2array(10);
+    for(size_t i = 0; i < field2array.size(); i++) {
+        field2array[i].x = 2.3 * i;
+        field2array[i].y = 20.5 * i;
+    }
+    file.writeDataset(field2array, "field2array");
+    auto field2ReadArray = file.readDataset<std::vector<Field2>>("field2array");
+    for(size_t i = 0; i < field2array.size(); i++) {
+        if(field2array[i].x != field2ReadArray[i].x) throw std::runtime_error("field2array != field2ReadArray at elem: " + std::to_string(i));
+        if(field2array[i].y != field2ReadArray[i].y) throw std::runtime_error("field2array != field2ReadArray at elem: " + std::to_string(i));
+    }
+
+    // Test new field3 type
+    struct Field3 {
+        double x;
+        double y;
+        double z;
+    };
+    std::vector<Field3> field3array(10);
+    for(size_t i = 0; i < field3array.size(); i++) {
+        field3array[i].x = 2.3 * i;
+        field3array[i].y = 20.5 * i;
+        field3array[i].z = 200.9 * i;
+    }
+    file.writeDataset(field3array, "field3array");
+    auto field3ReadArray = file.readDataset<std::vector<Field3>>("field3array");
+    for(size_t i = 0; i < field3array.size(); i++) {
+        if(field3array[i].x != field3ReadArray[i].x) throw std::runtime_error("field3array.x != field3ReadArray.x at elem: " + std::to_string(i));
+        if(field3array[i].y != field3ReadArray[i].y) throw std::runtime_error("field3array.y != field3ReadArray.y at elem: " + std::to_string(i));
+        if(field3array[i].z != field3ReadArray[i].z) throw std::runtime_error("field3array.z != field3ReadArray.z at elem: " + std::to_string(i));
+    }
+
+#ifdef H5PP_EIGEN3
     Eigen::MatrixXd matrixDouble(3, 2);
     matrixDouble.setRandom();
     std::cout << "Writing matrixDouble     : \n" << matrixDouble << std::endl;
@@ -124,34 +170,6 @@ int main() {
     }
     if(tensorMap2 != tensorMapRead2) { throw std::runtime_error("tensorDoubleRowMajor != tensorDoubleRowMajorRead"); }
 
-    auto foundLinksInRoot = file.getContentsOfGroup("/");
-    for(auto &link : foundLinksInRoot) { std::cout << "Found Link: " << link << std::endl; }
-
-    auto *cStyleDoubleArray = new double[10];
-    for(int i = 0; i < 10; i++) cStyleDoubleArray[i] = (double) i;
-    file.writeDataset(cStyleDoubleArray, 10, "cStyleDoubleArray");
-    auto *cStyleDoubleArrayRead = new double[10];
-    file.readDataset(cStyleDoubleArrayRead, 10, "cStyleDoubleArray");
-    delete[] cStyleDoubleArray;
-    delete[] cStyleDoubleArrayRead;
-
-    // Test new field2 type
-    struct Field2 {
-        double x;
-        double y;
-    };
-    std::vector<Field2> field2array(10);
-    for(size_t i = 0; i < field2array.size(); i++) {
-        field2array[i].x = 2.3 * i;
-        field2array[i].y = 20.5 * i;
-    }
-    file.writeDataset(field2array, "field2array");
-    auto field2ReadArray = file.readDataset<std::vector<Field2>>("field2array");
-    for(size_t i = 0; i < field2array.size(); i++) {
-        if(field2array[i].x != field2ReadArray[i].x) throw std::runtime_error("field2array != field2ReadArray at elem: " + std::to_string(i));
-        if(field2array[i].y != field2ReadArray[i].y) throw std::runtime_error("field2array != field2ReadArray at elem: " + std::to_string(i));
-    }
-
     Eigen::Matrix<Field2, Eigen::Dynamic, Eigen::Dynamic> field2Matrix(10, 10);
     for(int row = 0; row < field2Matrix.rows(); row++) {
         for(int col = 0; col < field2Matrix.cols(); col++) { field2Matrix(row, col) = {(double) row, (double) col}; }
@@ -163,26 +181,6 @@ int main() {
             if(field2Matrix(i, j).x != field2MatrixRead(i, j).x) throw std::runtime_error("field2array != field2ReadArray at elem: " + std::to_string(i) + " " + std::to_string(j));
             if(field2Matrix(i, j).y != field2MatrixRead(i, j).y) throw std::runtime_error("field2array != field2ReadArray at elem: " + std::to_string(i) + " " + std::to_string(j));
         }
-    }
-
-    // Test new field3 type
-    struct Field3 {
-        double x;
-        double y;
-        double z;
-    };
-    std::vector<Field3> field3array(10);
-    for(size_t i = 0; i < field3array.size(); i++) {
-        field3array[i].x = 2.3 * i;
-        field3array[i].y = 20.5 * i;
-        field3array[i].z = 200.9 * i;
-    }
-    file.writeDataset(field3array, "field3array");
-    auto field3ReadArray = file.readDataset<std::vector<Field3>>("field3array");
-    for(size_t i = 0; i < field3array.size(); i++) {
-        if(field3array[i].x != field3ReadArray[i].x) throw std::runtime_error("field3array.x != field3ReadArray.x at elem: " + std::to_string(i));
-        if(field3array[i].y != field3ReadArray[i].y) throw std::runtime_error("field3array.y != field3ReadArray.y at elem: " + std::to_string(i));
-        if(field3array[i].z != field3ReadArray[i].z) throw std::runtime_error("field3array.z != field3ReadArray.z at elem: " + std::to_string(i));
     }
 
     Eigen::Matrix<Field3, Eigen::Dynamic, Eigen::Dynamic> field3Matrix(10, 10);
@@ -201,6 +199,11 @@ int main() {
                 throw std::runtime_error("field3Matrix.z != field3MatrixRead.z at elem: " + std::to_string(i) + " " + std::to_string(j));
         }
     }
+
+#endif
+
+    auto foundLinksInRoot = file.getContentsOfGroup("/");
+    for(auto &link : foundLinksInRoot) { std::cout << "Found Link: " << link << std::endl; }
 
     return 0;
 }

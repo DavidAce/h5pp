@@ -13,9 +13,8 @@ template<typename T> std::ostream &operator<<(std::ostream &out, const std::vect
 }
 
 int main() {
-    static_assert(h5pp::Type::Check::hasMember_data<std::vector<double>>() and "Compile time type-checker failed. Could not properly detect class member data. Check that you are "
-                                                                               "using a supported compiler!");
-
+    static_assert(h5pp::Type::Scan::hasMember_data<std::vector<double>>() and "Compile time type-checker failed. Could not properly detect class member data. Check that you are "
+                                                                              "using a supported compiler!");
     // Generate dummy data
     int                               AttributeInt                 = 7;
     double                            AttributeDouble              = 47.4;
@@ -28,10 +27,6 @@ int main() {
                                                  1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
     std::string                       AttributeString              = "This is a very long string that I am testing";
     char                              AttributeCharArray[]         = "This is a char array";
-    Eigen::MatrixXd                   AttributeEigenMatrixDouble(10, 10);
-    Eigen::MatrixXcd                  AttributeEigenMatrixComplexDouble(10, 10);
-    AttributeEigenMatrixDouble.setRandom();
-    AttributeEigenMatrixComplexDouble.setRandom();
 
     // define the file
     std::string outputFilename = "output/readWriteAttributes.h5";
@@ -50,8 +45,6 @@ int main() {
     file.writeAttribute(AttributeCArrayFloat, "AttributeCArrayFloat", "testGroup/vectorDouble");
     file.writeAttribute(AttributeVectorDouble, "AttributeVectorDouble", "testGroup/vectorDouble");
     file.writeAttribute(AttributeVectorComplexDouble, "AttributeVectorComplexDouble", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeEigenMatrixDouble, "AttributeEigenMatrixDouble", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeEigenMatrixComplexDouble, "AttributeEigenMatrixComplexDouble", "testGroup/vectorDouble");
     file.writeAttribute(AttributeString, "AttributeString", "testGroup/vectorDouble");
     file.writeAttribute(AttributeCharArray, "AttributeCharArray", "testGroup/vectorDouble");
 
@@ -64,8 +57,6 @@ int main() {
     auto ReadAttributeCArrayFloat              = file.readAttribute<std::vector<float>>("AttributeCArrayFloat", "testGroup/vectorDouble");
     auto ReadAttributeVectorDouble             = file.readAttribute<std::vector<double>>("AttributeVectorDouble", "testGroup/vectorDouble");
     auto ReadAttributeVectorComplexDouble      = file.readAttribute<std::vector<std::complex<double>>>("AttributeVectorComplexDouble", "testGroup/vectorDouble");
-    auto ReadAttributeEigenMatrixDouble        = file.readAttribute<Eigen::MatrixXd>("AttributeEigenMatrixDouble", "testGroup/vectorDouble");
-    auto ReadAttributeEigenMatrixComplexDouble = file.readAttribute<Eigen::MatrixXcd>("AttributeEigenMatrixComplexDouble", "testGroup/vectorDouble");
     auto ReadAttributeString                   = file.readAttribute<std::string>("AttributeString", "testGroup/vectorDouble");
     auto ReadAttributeCharArray                = file.readAttribute<std::string>("AttributeCharArray", "testGroup/vectorDouble");
 
@@ -80,11 +71,30 @@ int main() {
 
     if(ReadAttributeVectorDouble != AttributeVectorDouble) throw std::runtime_error("ReadAttributeVectorDouble != AttributeVectorDouble");
     if(ReadAttributeVectorComplexDouble != AttributeVectorComplexDouble) throw std::runtime_error("ReadAttributeVectorComplexDouble != AttributeVectorComplexDouble");
+    if(ReadAttributeString != AttributeString) throw std::runtime_error("ReadAttributeString != AttributeString");
+    if(ReadAttributeCharArray != AttributeCharArray) throw std::runtime_error("ReadAttributeCharArray != AttributeCharArray");
+
+#ifdef H5PP_EIGEN3
+    static_assert(h5pp::Type::Scan::hasMember_Scalar<Eigen::MatrixXd>() and "Compile time type-checker failed. Could not properly detect class member Scalar. Scan that you are "
+                                                                            "using a supported compiler!");
+    // Generate dummy data
+    Eigen::MatrixXd  AttributeEigenMatrixDouble(10, 10);
+    Eigen::MatrixXcd AttributeEigenMatrixComplexDouble(10, 10);
+    AttributeEigenMatrixDouble.setRandom();
+    AttributeEigenMatrixComplexDouble.setRandom();
+
+    // Write attributes
+    file.writeAttribute(AttributeEigenMatrixDouble, "AttributeEigenMatrixDouble", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeEigenMatrixComplexDouble, "AttributeEigenMatrixComplexDouble", "testGroup/vectorDouble");
+
+    // Read the data back
+    auto ReadAttributeEigenMatrixDouble        = file.readAttribute<Eigen::MatrixXd>("AttributeEigenMatrixDouble", "testGroup/vectorDouble");
+    auto ReadAttributeEigenMatrixComplexDouble = file.readAttribute<Eigen::MatrixXcd>("AttributeEigenMatrixComplexDouble", "testGroup/vectorDouble");
+
     if(ReadAttributeEigenMatrixDouble != AttributeEigenMatrixDouble) throw std::runtime_error("ReadAttributeEigenMatrixDouble != AttributeEigenMatrixDouble");
     if(ReadAttributeEigenMatrixComplexDouble != AttributeEigenMatrixComplexDouble)
         throw std::runtime_error("ReadAttributeEigenMatrixComplexDouble != AttributeEigenMatrixComplexDouble");
-    if(ReadAttributeString != AttributeString) throw std::runtime_error("ReadAttributeString != AttributeString");
-    if(ReadAttributeCharArray != AttributeCharArray) throw std::runtime_error("ReadAttributeCharArray != AttributeCharArray");
+#endif
 
     auto allAttributes = file.getAttributeNames("testGroup/vectorDouble");
     for(auto &attr : allAttributes) std::cout << attr << std::endl;

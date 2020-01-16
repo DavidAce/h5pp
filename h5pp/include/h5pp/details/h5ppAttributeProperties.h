@@ -1,23 +1,24 @@
 
 #pragma once
+#include "h5ppHid.h"
 #include <hdf5.h>
 #include <hdf5_hl.h>
+#include <optional>
 #include <string>
 #include <vector>
-
 namespace h5pp {
     class AttributeProperties {
         public:
-        hid_t                dataType;
-        hid_t                memSpace;
-        hsize_t              size;
-        int                  ndims;
-        std::vector<hsize_t> dims;
-        std::string          attrName;
-        std::string          linkPath;
-        ~AttributeProperties() {
-            H5Tclose(dataType);
-            H5Sclose(memSpace);
-        }
+        Hid::h5a                            attributId;
+        Hid::h5t                            dataType;
+        Hid::h5s                            memSpace;
+        Hid::h5p                            plist_attr_create = H5P_DEFAULT;
+        Hid::h5p                            plist_attr_access = H5P_DEFAULT;
+        std::optional<std::string>          attrName;
+        std::optional<std::string>          linkName;
+        std::optional<hsize_t>              size;
+        std::optional<size_t>               bytes;
+        std::optional<int>                  ndims;
+        std::optional<std::vector<hsize_t>> dims;
     };
 } // namespace h5pp
