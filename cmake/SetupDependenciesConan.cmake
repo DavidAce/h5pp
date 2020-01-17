@@ -64,37 +64,17 @@ else()
 
 endif()
 message("CONAN TARGETS: ${CONAN_TARGETS}")
+list(APPEND H5PP_POSSIBLE_TARGET_NAMES CONAN_PKG::HDF5 CONAN_PKG::hdf5 CONAN_PKG::Eigen3 CONAN_PKG::eigen CONAN_PKG::spdlog)
 
-if(TARGET CONAN_PKG::Eigen3)
-    get_target_property(EIGEN3_INCLUDE_DIR CONAN_PKG::Eigen3 INTERFACE_INCLUDE_DIRECTORIES)
-    list(APPEND H5PP_DIRECTORY_HINTS ${EIGEN3_INCLUDE_DIR})
-    list(APPEND TARGETS_FOUND CONAN_PKG::Eigen3)
-elseif(TARGET CONAN_PKG::eigen)
-    get_target_property(EIGEN3_INCLUDE_DIR CONAN_PKG::eigen INTERFACE_INCLUDE_DIRECTORIES)
-    list(APPEND H5PP_DIRECTORY_HINTS ${EIGEN3_INCLUDE_DIR})
-    list(APPEND TARGETS_FOUND CONAN_PKG::eigen)
-endif()
-
-if(TARGET CONAN_PKG::spdlog)
-    get_target_property(SPDLOG_INCLUDE_DIR CONAN_PKG::spdlog INTERFACE_INCLUDE_DIRECTORIES)
-    list(APPEND H5PP_DIRECTORY_HINTS ${SPDLOG_INCLUDE_DIR})
-    list(APPEND TARGETS_FOUND CONAN_PKG::spdlog)
-endif()
-
-if(TARGET CONAN_PKG::HDF5)
-    get_target_property(HDF5_INCLUDE_DIR CONAN_PKG::HDF5 INTERFACE_INCLUDE_DIRECTORIES)
-    list(APPEND H5PP_DIRECTORY_HINTS ${HDF5_INCLUDE_DIR})
-    list(APPEND TARGETS_FOUND CONAN_PKG::HDF5)
-elseif(TARGET CONAN_PKG::hdf5)
-    get_target_property(HDF5_INCLUDE_DIR CONAN_PKG::hdf5 INTERFACE_INCLUDE_DIRECTORIES)
-    list(APPEND H5PP_DIRECTORY_HINTS ${HDF5_INCLUDE_DIR})
-    list(APPEND TARGETS_FOUND CONAN_PKG::hdf5)
-endif()
-
-foreach(tgt ${TARGETS_FOUND})
-    message(STATUS "Dependency found: [${tgt}]")
+foreach(tgt ${H5PP_POSSIBLE_TARGET_NAMES})
+    if(TARGET ${tgt})
+        message(STATUS "Dependency found: [${tgt}]")
+        get_target_property(${tgt}_INCLUDE_DIR ${tgt} INTERFACE_INCLUDE_DIRECTORIES)
+        if(${tgt}_INCLUDE_DIR)
+            list(APPEND H5PP_DIRECTORY_HINTS ${tgt}_INCLUDE_DIR)
+        endif()
+    endif()
 endforeach()
-
 
 ##################################################################
 ### Link all the things!                                       ###
