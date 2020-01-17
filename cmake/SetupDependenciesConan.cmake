@@ -63,7 +63,7 @@ else()
             BUILD missing)
 
 endif()
-
+message("CONAN TARGETS: ${CONAN_TARGETS}")
 
 if(TARGET CONAN_PKG::Eigen3)
     target_link_libraries(deps INTERFACE CONAN_PKG::Eigen3)
