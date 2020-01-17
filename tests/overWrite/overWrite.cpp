@@ -80,17 +80,16 @@ int main() {
 
 #ifdef H5PP_EIGEN3
     // Do the same for Eigen types
+    // Write chunked datasets that can be resized
 
-    // Enable default extendable datasets that can be resized
-    file.enableDefaultExtendable();
     // Define dummy data
     Eigen::MatrixXi  matrixInt           = Eigen::MatrixXi::Random(100, 100);
     Eigen::MatrixXd  matrixDouble        = Eigen::MatrixXd::Random(100, 100);
     Eigen::MatrixXcd matrixComplexDouble = Eigen::MatrixXcd::Random(100, 100);
     // Now write
-    file.writeDataset(matrixInt, "overWriteGroup_ext_enabled/matrixInt");
-    file.writeDataset(matrixDouble, "overWriteGroup_ext_enabled/matrixDouble");
-    file.writeDataset(matrixComplexDouble, "overWriteGroup_ext_enabled/matrixComplexDouble");
+    file.writeDataset(matrixInt, "overWriteGroup_ext_enabled/matrixInt", H5D_CHUNKED);
+    file.writeDataset(matrixDouble, "overWriteGroup_ext_enabled/matrixDouble", H5D_CHUNKED);
+    file.writeDataset(matrixComplexDouble, "overWriteGroup_ext_enabled/matrixComplexDouble", H5D_CHUNKED);
 
     // Now overwrite
     file.writeDataset(matrixInt, "overWriteGroup_ext_enabled/matrixInt");

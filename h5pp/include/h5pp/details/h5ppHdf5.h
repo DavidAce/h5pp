@@ -2,6 +2,7 @@
 #include "h5ppDatasetProperties.h"
 #include "h5ppLogger.h"
 #include "h5ppPropertyLists.h"
+#include "h5ppTextra.h"
 #include "h5ppTypeScan.h"
 #include "h5ppUtils.h"
 #include <hdf5.h>
@@ -223,26 +224,25 @@ namespace h5pp::Hdf5 {
         return maxDims;
     }
 
-    template<typename DataType>
-    void extendDataset(Hid::h5f &file, const DataType &data, std::string_view datasetRelativeName) {
-        namespace tc = h5pp::Type::Scan;
-#ifdef H5PP_EIGEN3
-        if constexpr(tc::is_eigen_core<DataType>::value) {
-            extendDataset(file, datasetRelativeName, 0, data.rows());
-            Hid::h5o             dataSet   = openLink(file, datasetRelativeName);
-            Hid::h5s             fileSpace = H5Dget_space(dataSet);
-            int                  ndims     = H5Sget_simple_extent_ndims(fileSpace);
-            std::vector<hsize_t> dims(ndims);
-            H5Sget_simple_extent_dims(fileSpace, dims.data(), nullptr);
-            H5Sclose(fileSpace);
-            closeLink(dataSet);
-            if(dims[1] < (hsize_t) data.cols()) extendDataset(file, datasetRelativeName, 1, data.cols());
-        } else
-#endif
-        {
-            extendDataset(file, datasetRelativeName, 0, h5pp::Utils::getSize(data));
-        }
-    }
+    //    template<typename DataType>
+    //    void extendDataset(Hid::h5f &file, const DataType &data, std::string_view datasetRelativeName) {
+    //        namespace tc = h5pp::Type::Scan;
+    //#ifdef H5PP_EIGEN3
+    //        if constexpr(tc::is_eigen_core<DataType>::value) {
+    //            extendDataset(file, datasetRelativeName, 0, data.rows());
+    //            Hid::h5o             dataSet   = openLink(file, datasetRelativeName);
+    //            Hid::h5s             fileSpace = H5Dget_space(dataSet);
+    //            int                  ndims     = H5Sget_simple_extent_ndims(fileSpace);
+    //            std::vector<hsize_t> dims(ndims);
+    //            H5Sget_simple_extent_dims(fileSpace, dims.data(), nullptr);
+    //            H5Sclose(fileSpace);
+    //            if(dims[1] < (hsize_t) data.cols()) extendDataset(file, datasetRelativeName, 1, data.cols());
+    //        } else
+    //#endif
+    //        {
+    //            extendDataset(file, datasetRelativeName, 0, h5pp::Utils::getSize(data));
+    //        }
+    //    }
 
     inline void createGroup(Hid::h5f &file, std::string_view groupRelativeName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
         // Check if group exists already
@@ -440,31 +440,31 @@ namespace h5pp::Hdf5 {
         h5pp::Utils::assertBytesPerElemMatch<DataType>(props.dataType);
         herr_t retval;
 #ifdef H5PP_EIGEN3
-        if constexpr(tc::is_eigen_core<DataType>::value) {
+        if constexpr(h5pp::Type::Scan::is_eigen_core<DataType>::value) {
             if(data.IsRowMajor) {
                 // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
-                data.resize(dims[0], dims[1]);
-                retval = H5LTread_dataset(file, dsetName.c_str(), datatype, data.data());
+                data.resize(props.dims.value()[0], props.dims.value()[1]);
+                retval = H5LTread_dataset(file, props.dsetName.value().c_str(), props.dataType, data.data());
                 if(retval < 0) { throw std::runtime_error("Failed to read Eigen Matrix rowmajor dataset"); }
             } else {
                 // Data is RowMajor in HDF5, user gave a ColMajor container we need to swap layout.
                 Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> matrixRowmajor;
-                matrixRowmajor.resize(dims[0], dims[1]); // Data is transposed in HDF5!
-                retval = H5LTread_dataset(file, dsetName.c_str(), datatype, matrixRowmajor.data());
+                matrixRowmajor.resize(props.dims.value()[0], props.dims.value()[1]); // Data is transposed in HDF5!
+                retval = H5LTread_dataset(file, props.dsetName.value().c_str(), props.dataType, matrixRowmajor.data());
                 if(retval < 0) { throw std::runtime_error("Failed to read Eigen Matrix colmajor dataset"); }
                 data = matrixRowmajor;
             }
-        } else if constexpr(tc::is_eigen_tensor<DataType>()) {
-            auto eigenDims = Textra::copy_dims<DataType::NumDimensions>(dims);
+        } else if constexpr(h5pp::Type::Scan::is_eigen_tensor<DataType>()) {
+            auto eigenDims = Textra::copy_dims<DataType::NumDimensions>(props.dims.value());
             if constexpr(DataType::Options == Eigen::RowMajor) {
                 // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
                 data.resize(eigenDims);
-                retval = H5LTread_dataset(file, dsetName.c_str(), datatype, data.data());
+                retval = H5LTread_dataset(file, props.dsetName.value().c_str(), props.dataType, data.data());
                 if(retval < 0) { throw std::runtime_error("Failed to read Eigen Tensor rowmajor dataset"); }
             } else {
                 // Data is RowMajor in HDF5, user gave a ColMajor container we need to swap layout.
                 Eigen::Tensor<typename DataType::Scalar, DataType::NumIndices, Eigen::RowMajor> tensorRowmajor(eigenDims);
-                retval = H5LTread_dataset(file, dsetName.c_str(), datatype, tensorRowmajor.data());
+                retval = H5LTread_dataset(file, props.dsetName.value().c_str(), props.dataType, tensorRowmajor.data());
                 if(retval < 0) { throw std::runtime_error("Failed to read Eigen Tensor colmajor dataset"); }
                 data = Textra::to_ColMajor(tensorRowmajor);
             }
@@ -544,38 +544,38 @@ namespace h5pp::Hdf5 {
         h5pp::Utils::assertBytesPerElemMatch<DataType>(props.dataType);
 
 #ifdef H5PP_EIGEN3
-        if constexpr(tc::is_eigen_core<DataType>::value) {
+        if constexpr(h5pp::Type::Scan::is_eigen_core<DataType>::value) {
             if(data.IsRowMajor) {
                 // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
-                data.resize(dims[0], dims[1]);
-                if(H5Aread(link_attribute, datatype, data.data()) < 0) {
+                data.resize(props.dims.value()[0], props.dims.value()[1]);
+                if(H5Aread(props.attributeId, props.dataType, data.data()) < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
                     throw std::runtime_error("Failed to read Eigen Matrix rowmajor dataset");
                 }
             } else {
                 // Data is RowMajor in HDF5, user gave a ColMajor container so we need to swap the layout.
                 Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> matrixRowmajor;
-                matrixRowmajor.resize(dims[0], dims[1]); // Data is transposed in HDF5!
-                if(H5Aread(link_attribute, datatype, matrixRowmajor.data()) < 0) {
+                matrixRowmajor.resize(props.dims.value()[0], props.dims.value()[1]); // Data is transposed in HDF5!
+                if(H5Aread(props.attributeId, props.dataType, matrixRowmajor.data()) < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
                     throw std::runtime_error("Failed to read Eigen Matrix colmajor dataset");
                 }
                 data = matrixRowmajor;
             }
 
-        } else if constexpr(tc::is_eigen_tensor<DataType>()) {
-            auto eigenDims = Textra::copy_dims<DataType::NumDimensions>(dims);
+        } else if constexpr(h5pp::Type::Scan::is_eigen_tensor<DataType>()) {
+            auto eigenDims = Textra::copy_dims<DataType::NumDimensions>(props.dims.value());
             if constexpr(DataType::Options == Eigen::RowMajor) {
                 // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
                 data.resize(eigenDims);
-                if(H5Aread(link_attribute, datatype, data.data()) < 0) {
+                if(H5Aread(props.attributeId, props.dataType, data.data()) < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
                     throw std::runtime_error("Failed to read Eigen Tensor rowmajor dataset");
                 }
             } else {
                 // Data is RowMajor in HDF5, user gave a ColMajor container so we need to swap the layout.
                 Eigen::Tensor<typename DataType::Scalar, DataType::NumIndices, Eigen::RowMajor> tensorRowmajor(eigenDims);
-                if(H5Aread(link_attribute, datatype, tensorRowmajor.data()) < 0) {
+                if(H5Aread(props.attributeId, props.dataType, tensorRowmajor.data()) < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
                     throw std::runtime_error("Failed to read Eigen Tensor colmajor dataset");
                 }

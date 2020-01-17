@@ -535,7 +535,7 @@ void h5pp::File::writeAttribute(const DataType &data, std::string_view attrName,
 #ifdef H5PP_EIGEN3
     if constexpr(tc::is_eigen_type<DataType>::value and not tc::is_eigen_1d<DataType>::value) {
         h5pp::Logger::log->debug("Converting data to row-major storage order");
-        const auto tempRowm = Textra::to_RowMajor(attribute); // Convert to Row Major first;
+        const auto tempRowm = Textra::to_RowMajor(data); // Convert to Row Major first;
         h5pp::Hdf5::writeAttribute(file, tempRowm, attrProps);
         return;
     }

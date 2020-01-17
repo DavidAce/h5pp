@@ -3,7 +3,7 @@
     #define H5PP_SPDLOG
     #include <spdlog/sinks/stdout_color_sinks.h>
     #include <spdlog/spdlog.h>
-    #if __has_include(<fmt/ranges.h>)
+    #if __has_include(<fmt/ranges.h>) && !defined(SPDLOG_FMT_EXTERNAL)
         #define SPDLOG_FMT_EXTERNAL
     #endif
     #if defined(SPDLOG_FMT_EXTERNAL)

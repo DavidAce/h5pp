@@ -18,9 +18,6 @@ int main() {
     file.writeDataset(matrixInt, "largeWriteGroup/matrixInt");
     file.writeDataset(matrixDouble, "largeWriteGroup/matrixDouble");
     file.writeDataset(matrixComplexDouble, "largeWriteGroup/matrixComplexDouble");
-    Eigen::Matrix<h5pp::Type::Compound::H5T_COMPLEX_STRUCT<double>, Eigen::Dynamic, Eigen::Dynamic> test =
-        matrixComplexDouble.transpose().cast<h5pp::Type::Compound::H5T_COMPLEX_STRUCT<double>>();
-    file.writeDataset(test, "largeWriteGroup/transpose");
 #endif
     return 0;
 }

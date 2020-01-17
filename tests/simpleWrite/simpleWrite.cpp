@@ -55,7 +55,6 @@ int main() {
     file.writeDataset(vectorInt.data(), vectorInt.size(), "simpleWriteGroup/vectorInt");
     file.writeDataset(vectorDouble.data(), vectorDouble.size(), "simpleWriteGroup/vectorDouble");
     file.writeDataset(vectorInt.data(), vectorInt.size(), "simpleWriteGroup/vectorInt");
-    return 0;
 
 #ifdef H5PP_EIGEN3
     Eigen::MatrixXi  matrixInt(2, 2);
@@ -71,8 +70,8 @@ int main() {
     file.writeDataset(matrixComplexDouble, "simpleWriteGroup/matrixComplexDouble");
 
     // Test compressed writes
-    if(h5pp::checkIfCompressionIsAvailable()) {
-        file.setCompressionLevel(9);
+    if(h5pp::Hdf5::checkIfCompressionIsAvailable()) {
+        file.setDefaultCompressionLevel(9);
         Eigen::Tensor<double, 4> bigTensor(40, 180, 40, 5);
         bigTensor.setConstant(1.0);
         file.writeDataset(bigTensor, "compressedWriteGroup/bigTensor");

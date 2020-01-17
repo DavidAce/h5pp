@@ -109,7 +109,7 @@ int main() {
     Eigen::MatrixXd matrixDouble(3, 2);
     matrixDouble.setRandom();
     std::cout << "Writing matrixDouble     : \n" << matrixDouble << std::endl;
-    file.writeDataset(matrixDouble, {matrixDouble.rows(), matrixDouble.cols()}, "matrixDouble");
+    file.writeDataset(matrixDouble, "matrixDouble");
     Eigen::MatrixXd matrixDoubleRead;
     std::cout << "Reading matrixDouble: \n";
     file.readDataset(matrixDoubleRead, "matrixDouble");
@@ -119,7 +119,7 @@ int main() {
     Eigen::Matrix<size_t, 2, 2, Eigen::RowMajor> matrixSizeTRowMajor;
     matrixSizeTRowMajor.setRandom();
     std::cout << "Writing matrixSizeTRowMajor: \n" << matrixSizeTRowMajor << std::endl;
-    file.writeDataset(matrixSizeTRowMajor, {matrixSizeTRowMajor.rows(), matrixSizeTRowMajor.cols()}, "matrixSizeTRowMajor");
+    file.writeDataset(matrixSizeTRowMajor, "matrixSizeTRowMajor");
     std::cout << "Reading matrixSizeTRowMajor: \n";
     Eigen::Matrix<size_t, 2, 2, Eigen::RowMajor> matrixSizeTRowMajorRead;
     file.readDataset(matrixSizeTRowMajorRead, "matrixSizeTRowMajor");
