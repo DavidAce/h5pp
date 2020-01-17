@@ -32,6 +32,7 @@ namespace h5pp {
 }
 #elif __has_include(<filesystem>)
     #include <filesystem>
+    #include <utility>
 namespace h5pp {
     namespace fs = std::filesystem;
 }
@@ -105,12 +106,12 @@ namespace h5pp {
             *this = other;
         }
 
-        explicit File(std::string_view FileName_,
-                      AccessMode       accessMode_   = AccessMode::READWRITE,
-                      CreateMode       createMode_   = CreateMode::RENAME,
-                      size_t           logLevel_     = 2,
-                      bool             logTimestamp_ = false)
-            : FileName(FileName_), accessMode(accessMode_), createMode(createMode_), logLevel(logLevel_), logTimestamp(logTimestamp_) {
+        explicit File(fs::path   FileName_,
+                      AccessMode accessMode_   = AccessMode::READWRITE,
+                      CreateMode createMode_   = CreateMode::RENAME,
+                      size_t     logLevel_     = 2,
+                      bool       logTimestamp_ = false)
+            : FileName(std::move(FileName_)), accessMode(accessMode_), createMode(createMode_), logLevel(logLevel_), logTimestamp(logTimestamp_) {
             h5pp::Logger::setLogger("h5pp", logLevel, logTimestamp);
             h5pp::Logger::log->debug("Constructing h5pp file. Given path: [{}]", FileName.string());
 
