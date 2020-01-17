@@ -66,50 +66,40 @@ endif()
 message("CONAN TARGETS: ${CONAN_TARGETS}")
 
 if(TARGET CONAN_PKG::Eigen3)
-    target_link_libraries(deps INTERFACE CONAN_PKG::Eigen3)
     get_target_property(EIGEN3_INCLUDE_DIR CONAN_PKG::Eigen3 INTERFACE_INCLUDE_DIRECTORIES)
     list(APPEND H5PP_DIRECTORY_HINTS ${EIGEN3_INCLUDE_DIR})
     list(APPEND TARGETS_FOUND CONAN_PKG::Eigen3)
-else()
-    list(APPEND TARGETS_NOT_FOUND CONAN_PKG::Eigen3)
+elseif(TARGET CONAN_PKG::eigen)
+    get_target_property(EIGEN3_INCLUDE_DIR CONAN_PKG::eigen INTERFACE_INCLUDE_DIRECTORIES)
+    list(APPEND H5PP_DIRECTORY_HINTS ${EIGEN3_INCLUDE_DIR})
+    list(APPEND TARGETS_FOUND CONAN_PKG::eigen)
 endif()
 
-
 if(TARGET CONAN_PKG::spdlog)
-    target_link_libraries(deps INTERFACE CONAN_PKG::spdlog)
     get_target_property(SPDLOG_INCLUDE_DIR CONAN_PKG::spdlog INTERFACE_INCLUDE_DIRECTORIES)
     list(APPEND H5PP_DIRECTORY_HINTS ${SPDLOG_INCLUDE_DIR})
     list(APPEND TARGETS_FOUND CONAN_PKG::spdlog)
-else()
-    list(APPEND TARGETS_NOT_FOUND CONAN_PKG::spdlog)
 endif()
 
-
 if(TARGET CONAN_PKG::HDF5)
-    target_link_libraries(deps INTERFACE CONAN_PKG::HDF5)
     get_target_property(HDF5_INCLUDE_DIR CONAN_PKG::HDF5 INTERFACE_INCLUDE_DIRECTORIES)
     list(APPEND H5PP_DIRECTORY_HINTS ${HDF5_INCLUDE_DIR})
     list(APPEND TARGETS_FOUND CONAN_PKG::HDF5)
-else()
-    list(APPEND TARGETS_NOT_FOUND CONAN_PKG::HDF5)
+elseif(TARGET CONAN_PKG::hdf5)
+    get_target_property(HDF5_INCLUDE_DIR CONAN_PKG::hdf5 INTERFACE_INCLUDE_DIRECTORIES)
+    list(APPEND H5PP_DIRECTORY_HINTS ${HDF5_INCLUDE_DIR})
+    list(APPEND TARGETS_FOUND CONAN_PKG::hdf5)
 endif()
 
-
-foreach(tgt ${TARGETS_NOT_FOUND})
-    message(STATUS "Dependency not found: [${tgt}]")
+foreach(tgt ${TARGETS_FOUND})
+    message(STATUS "Dependency found: [${tgt}]")
 endforeach()
-
-if(TARGETS_NOT_FOUND)
-    set(ALL_TARGETS_FOUND FALSE)
-else()
-    set(ALL_TARGETS_FOUND TRUE)
-endif()
 
 
 ##################################################################
 ### Link all the things!                                       ###
 ##################################################################
-target_link_libraries(deps INTERFACE ${TARGETS_FOUND})
+target_link_libraries(deps INTERFACE ${CONAN_TARGETS})
 
 
 
