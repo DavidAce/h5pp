@@ -2,6 +2,7 @@
 #include <cassert>
 #include <hdf5.h>
 #include <iostream>
+#include <string>
 
 namespace h5pp::Hid {
 
@@ -27,9 +28,10 @@ namespace h5pp::Hid {
         hid_base(const hid_base &other) {
             // Copy constructor
             assert(other.val == 0 or valid(other.val) and "Given identifier must be valid");
-            val = other.val;                      // Checks that we got a valid identifier through .value() (throws)
-            if(valid(other.val)) H5Iinc_ref(val); // Increment reference counter of identifier
-                                                  //            std::cout << "copy ctor: " << safe_print() << std::endl;
+            val = other.val; // Checks that we got a valid identifier through .value() (throws)
+            if(valid(other.val))
+                H5Iinc_ref(val); // Increment reference counter of identifier
+                                 //            std::cout << "copy ctor: " << safe_print() << std::endl;
         }
 
         hid_base &operator=(const hid_t &rhs) {
@@ -37,8 +39,9 @@ namespace h5pp::Hid {
             assert(rhs == 0 or valid(rhs) and "Given identifier must be valid");
             if(not equal(rhs)) close(); // Drop current
             val = rhs;
-            if(valid(val)) H5Iinc_ref(val); // Increment reference counter of identifier
-                                            //            std::cout << "hid_t assign: " << pretty_print() << std::endl;
+            if(valid(val))
+                H5Iinc_ref(val); // Increment reference counter of identifier
+                                 //            std::cout << "hid_t assign: " << pretty_print() << std::endl;
             return *this;
         }
 
@@ -47,8 +50,9 @@ namespace h5pp::Hid {
             assert(rhs.val == 0 or valid(rhs.val) and "Given identifier must be valid");
             if(not equal(rhs.val)) close(); // Drop current
             val = rhs.val;
-            if(valid(val)) H5Iinc_ref(val); // Increment reference counter of identifier
-                                            //            std::cout << "copy assign: " << pretty_print() << std::endl;
+            if(valid(val))
+                H5Iinc_ref(val); // Increment reference counter of identifier
+                                 //            std::cout << "copy assign: " << pretty_print() << std::endl;
             return *this;
         }
 

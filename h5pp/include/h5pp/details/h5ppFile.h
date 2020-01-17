@@ -122,33 +122,23 @@ namespace h5pp {
             initialize();
         }
 
-        explicit File(std::string_view FileName_, CreateMode createMode_, size_t logLevel_ = 2, bool logTimestamp_ = false)
-            : File(FileName_, AccessMode::READWRITE, createMode_, logLevel_, logTimestamp_) {}
+        explicit File(fs::path FileName_, CreateMode createMode_, size_t logLevel_ = 2, bool logTimestamp_ = false)
+            : File(std::move(FileName_), AccessMode::READWRITE, createMode_, logLevel_, logTimestamp_) {}
 
         ~File() noexcept(false) {
             auto savedLog = h5pp::Logger::log->name();
             h5pp::Logger::setLogger("h5pp|exit", logLevel, logTimestamp);
-            try {
-                if(h5pp::Counter::ActiveFileCounter::getCount() == 1) { h5pp::Type::Compound::closeTypes(); }
-                h5pp::Counter::ActiveFileCounter::decrementCounter(FileName.string());
-                if(h5pp::Counter::ActiveFileCounter::getCount() == 0) {
-                    h5pp::Logger::log->debug(
-                        "Closing file: {}.", FileName.string(), h5pp::Counter::ActiveFileCounter::getCount(), h5pp::Counter::ActiveFileCounter::OpenFileNames());
-                } else {
-                    h5pp::Logger::log->debug("Closing file: {}. There are still {} files open: {}",
-                                             getFileName(),
-                                             h5pp::Counter::ActiveFileCounter::getCount(),
-                                             h5pp::Counter::ActiveFileCounter::OpenFileNames());
-                }
-            } catch(std::exception &err) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                h5pp::Logger::log->error("h5pp file destructor failed | file: [{}] | Reason: {}", getFilePath(), err.what());
-                throw std::runtime_error("h5pp file destructor failed | file: [" + std::string(getFilePath()) + "] | Reason: " + std::string(err.what()));
-            } catch(...) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                h5pp::Logger::log->error("h5pp file destructor failed | file: [{}]", getFilePath());
-                throw std::runtime_error("h5pp file destructor failed | file: [" + std::string(getFilePath()) + "]");
+            if(h5pp::Counter::ActiveFileCounter::getCount() == 1) { h5pp::Type::Compound::closeTypes(); }
+            h5pp::Counter::ActiveFileCounter::decrementCounter(FileName.string());
+            if(h5pp::Counter::ActiveFileCounter::getCount() == 0) {
+                h5pp::Logger::log->debug("Closing file: {}.", FileName.string(), h5pp::Counter::ActiveFileCounter::getCount(), h5pp::Counter::ActiveFileCounter::OpenFileNames());
+            } else {
+                h5pp::Logger::log->debug("Closing file: {}. There are still {} files open: {}",
+                                         getFileName(),
+                                         h5pp::Counter::ActiveFileCounter::getCount(),
+                                         h5pp::Counter::ActiveFileCounter::OpenFileNames());
             }
+            H5Eprint(H5E_DEFAULT, stderr);
             h5pp::Logger::setLogger(savedLog, logLevel, logTimestamp);
         }
 
