@@ -3,7 +3,8 @@
 #include <iostream>
 
 /*! \brief Prints the content of a vector nicely */
-template<typename T> std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
+template<typename T>
+std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
     if(!v.empty()) {
         out << "[ ";
         std::copy(v.begin(), v.end(), std::ostream_iterator<T>(out, " "));
@@ -30,10 +31,10 @@ int main() {
 
     // Generate dummy data
     std::string stringDummy = "Dummy string with spaces";
-    std::cout << "Writing stringDummy       : \n" << stringDummy << std::endl;
+    std::cout << "Writing stringDummy :" << stringDummy << std::endl;
     // Write data data
     file.writeDataset(stringDummy, "stringDummy");
-    std::cout << "Reading stringDummy: \n";
+    std::cout << "Reading stringDummy: ";
     // Read the data back
     std::string stringDummyRead;
     file.readDataset(stringDummyRead, "stringDummy");

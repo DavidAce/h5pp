@@ -19,40 +19,43 @@ namespace h5pp::Hid {
         template<typename T, typename = std::enable_if_t<std::is_same_v<T, hid_t>>>
         hid_base(const T &other) {
             // constructor from hid_t
-            assert(val == 0 and "Initial value is nonzero");
-            assert(valid(other) and "Given identifier must be valid");
+            assert(other == 0 or valid(other) and "Given identifier must be valid");
             val = other;
+            //            std::cout << "hid_t ctor: " << safe_print() << std::endl;
         }
 
         hid_base(const hid_base &other) {
             // Copy constructor
-            assert(valid(other) and "Given identifier must be valid");
-            val = other.val; // Checks that we got a valid identifier through .value() (throws)
-            H5Iinc_ref(val); // Increment reference counter of identifier
+            assert(other.val == 0 or valid(other.val) and "Given identifier must be valid");
+            val = other.val;                      // Checks that we got a valid identifier through .value() (throws)
+            if(valid(other.val)) H5Iinc_ref(val); // Increment reference counter of identifier
+                                                  //            std::cout << "copy ctor: " << safe_print() << std::endl;
         }
 
         hid_base &operator=(const hid_t &rhs) {
             // Assignment from hid_t
-            assert(valid(rhs) and "Given identifier must be valid");
+            assert(rhs == 0 or valid(rhs) and "Given identifier must be valid");
             if(not equal(rhs)) close(); // Drop current
             val = rhs;
-            H5Iinc_ref(val); // Increment reference counter of identifier
+            if(valid(val)) H5Iinc_ref(val); // Increment reference counter of identifier
+                                            //            std::cout << "hid_t assign: " << pretty_print() << std::endl;
             return *this;
         }
 
         hid_base &operator=(const hid_base &rhs) {
             // Copy assignment
-            assert(valid(rhs) and "Given identifier must be valid");
-            if(not equal(rhs)) close(); // Drop current
+            assert(rhs.val == 0 or valid(rhs.val) and "Given identifier must be valid");
+            if(not equal(rhs.val)) close(); // Drop current
             val = rhs.val;
-            H5Iinc_ref(val); // Increment reference counter of identifier
+            if(valid(val)) H5Iinc_ref(val); // Increment reference counter of identifier
+                                            //            std::cout << "copy assign: " << pretty_print() << std::endl;
             return *this;
         }
 
         virtual std::string tag() const = 0;
         virtual void        close()     = 0;
 
-        hid_t value() const {
+        const hid_t &value() const {
             if(valid() or (val == 0 and zeroValueIsOK))
                 return val;
             else {
@@ -75,8 +78,11 @@ namespace h5pp::Hid {
                 return 0;
             }
         }
+
+        std::string pretty_print() { return tag() + ":" + std::to_string(val) + "(" + std::to_string(refcount()) + ")"; }
+        std::string safe_print() { return std::to_string(val) + "(" + std::to_string(refcount()) + ")"; }
+
         [[nodiscard]] bool valid(const hid_t &other) const {
-            if(zeroValueIsOK and val == hid_t(0)) return true;
             auto result = H5Iis_valid(other);
             assert(result >= 0 and "Error when determining validity of identifier");
             return result > 0;
@@ -148,7 +154,10 @@ namespace h5pp::Hid {
         [[nodiscard]] std::string tag() const final { return "h5s"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
-            if(valid()) H5Sclose(val);
+            if(valid()) {
+                H5Sclose(val);
+                //                std::cout << "closed " << val << " (" << refcount() << ")" << std::endl;
+            }
         }
     };
 

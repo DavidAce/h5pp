@@ -6,7 +6,7 @@
 int main() {
     // Define dummy data
     std::string outputFilename = "output/overWrite.h5";
-    size_t      logLevel       = 1;
+    size_t      logLevel       = 0;
     h5pp::File  file(outputFilename, h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, logLevel);
 
     using namespace std::complex_literals;

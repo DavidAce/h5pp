@@ -47,7 +47,6 @@ int main() {
     file.writeAttribute(AttributeVectorComplexDouble, "AttributeVectorComplexDouble", "testGroup/vectorDouble");
     file.writeAttribute(AttributeString, "AttributeString", "testGroup/vectorDouble");
     file.writeAttribute(AttributeCharArray, "AttributeCharArray", "testGroup/vectorDouble");
-
     // Read the data back
     auto ReadAttributeInt                      = file.readAttribute<int>("AttributeInt", "testGroup/vectorDouble");
     auto ReadAttributeDouble                   = file.readAttribute<double>("AttributeDouble", "testGroup/vectorDouble");

@@ -41,29 +41,26 @@ conan_cmake_run(CONANFILE conanfile.txt
         SETTINGS compiler.cppstd=17
         SETTINGS "${conan_libcxx}"
         BUILD_TYPE ${CMAKE_BUILD_TYPE}
-        OUTPUT_QUIET
         BASIC_SETUP CMAKE_TARGETS
         BUILD missing)
 else()
-    list(APPEND H5PP_CONAN_REQUIRES hdf5/1.10.5)
+    set(H5PP_CONAN_PACKAGE_HDF5 hdf5/1.10.5)
     if(H5PP_ENABLE_EIGEN3)
-        list(APPEND H5PP_CONAN_REQUIRES eigen/3.3.7@conan/stable)
+        set(H5PP_CONAN_PACKAGE_EIGEN3 eigen/3.3.7@conan/stable)
     endif()
     if(H5PP_ENABLE_SPDLOG)
-        list(APPEND H5PP_CONAN_REQUIRES spdlog/1.4.2@bincrafters/stable)
+        set(H5PP_CONAN_PACKAGE_SPDLOG  spdlog/1.4.2@bincrafters/stable)
     endif()
-    string(REPLACE ";" " " H5PP_CONAN_REQUIRES ${H5PP_CONAN_REQUIRES})
     conan_cmake_run(
             CONAN_COMMAND ${CONAN_COMMAND}
             SETTINGS compiler.cppstd=17
             SETTINGS "${conan_libcxx}"
             BUILD_TYPE ${CMAKE_BUILD_TYPE}
-            REQUIRES ${H5PP_CONAN_REQUIRES}
-            OUTPUT_QUIET
+            REQUIRES ${H5PP_CONAN_PACKAGE_HDF5}
+            REQUIRES ${H5PP_CONAN_PACKAGE_EIGEN3}
+            REQUIRES ${H5PP_CONAN_PACKAGE_SPDLOG}
             BASIC_SETUP CMAKE_TARGETS
             BUILD missing)
-
-
 
 endif()
 

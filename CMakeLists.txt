@@ -13,9 +13,9 @@ option(H5PP_IS_SUBPROJECT "Use h5pp with add_subdirectory()" OFF)
 option(APPEND_LIBSUFFIX "Append <libname> to CMAKE_INSTALL_PREFIX" OFF)
 option(PREFER_CONDA_LIBS "Search for dependencies from anaconda first" OFF)
 option(H5PP_PRINT_INFO "Print info during cmake configuration" OFF)
-option(H5PP_ENABLE_EIGEN3 "Enables Eigen3 for writing multidimensional containers" OFF)
+option(H5PP_ENABLE_EIGEN3 "Enables Eigen3 linear algebra library" OFF)
 option(H5PP_ENABLE_SPDLOG "Enables Spdlog for logging h5pp internal info to stdout" OFF)
-option(H5PP_ENABLE_MPI "Enables use of MPI " ON)
+option(H5PP_ENABLE_MPI "Enables use of MPI (work in progress)" OFF)
 
 # Make an "enum" for valid download methods: none find-only native conan
 set(VALID_DOWNLOAD_METHODS none find-only native conan)
