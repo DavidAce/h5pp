@@ -201,6 +201,17 @@ int main() {
         }
     }
 
+    // Test write/read from map types
+    Eigen::Map<Eigen::VectorXd>                vectorMapDouble(vectorDouble.data(), vectorDouble.size());
+    Eigen::Map<Eigen::MatrixXd>                matrixMapDouble(matrixDouble.data(), matrixDouble.rows(), matrixDouble.cols());
+    Eigen::TensorMap<Eigen::Tensor<double, 2>> tensorMapDouble(matrixDouble.data(), matrixDouble.rows(), matrixDouble.cols());
+    file.writeDataset(vectorMapDouble, "vectorMapDouble");
+    file.writeDataset(matrixMapDouble, "matrixMapDouble");
+    file.writeDataset(tensorMapDouble, "tensorMapDouble");
+    file.readDataset(vectorMapDouble, "vectorMapDouble");
+    file.readDataset(matrixMapDouble, "matrixMapDouble");
+    file.readDataset(tensorMapDouble, "tensorMapDouble");
+
 #endif
 
     auto foundLinksInRoot = file.getContentsOfGroup("/");

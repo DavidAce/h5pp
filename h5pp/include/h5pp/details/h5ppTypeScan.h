@@ -204,24 +204,21 @@ namespace h5pp::Type::Scan {
     }
 
 #ifdef H5PP_EIGEN3
-    template<typename T>
-    struct is_eigen_tensor : public std::false_type {};
-    template<typename Scalar, int rank, int storage, typename IndexType>
-    struct is_eigen_tensor<Eigen::Tensor<Scalar, rank, storage, IndexType>> : public std::true_type {};
-    template<typename Derived>
-    struct is_eigen_tensor<Eigen::TensorMap<Derived>> : public std::true_type {};
-    template<typename Derived>
-    struct is_eigen_tensor<Eigen::TensorBase<Derived, Eigen::ReadOnlyAccessors>> : public std::true_type {};
 
-    template<typename T>
-    struct is_eigen_matrix : public std::false_type {};
-    template<typename T, int rows, int cols, int StorageOrder>
-    struct is_eigen_matrix<Eigen::Matrix<T, rows, cols, StorageOrder>> : public std::true_type {};
-
-    template<typename T>
-    struct is_eigen_array : public std::false_type {};
-    template<typename T, int rows, int cols, int StorageOrder>
-    struct is_eigen_array<Eigen::Array<T, rows, cols, StorageOrder>> : public std::true_type {};
+    template<typename Derived>
+    using is_eigen_matrix = std::is_base_of<Eigen::MatrixBase<std::decay_t<Derived>>, std::decay_t<Derived>>;
+    template<typename Derived>
+    using is_eigen_array = std::is_base_of<Eigen::ArrayBase<std::decay_t<Derived>>, std::decay_t<Derived>>;
+    template<typename Derived>
+    using is_eigen_tensor = std::is_base_of<Eigen::TensorBase<std::decay_t<Derived>, Eigen::ReadOnlyAccessors>, std::decay_t<Derived>>;
+    template<typename Derived>
+    using is_eigen_dense = std::is_base_of<Eigen::DenseBase<std::decay_t<Derived>>, std::decay_t<Derived>>;
+    template<typename Derived>
+    using is_eigen_map = std::is_base_of<Eigen::MapBase<std::decay_t<Derived>, Eigen::ReadOnlyAccessors>, std::decay_t<Derived>>;
+    template<typename Derived>
+    using is_eigen_plain = std::is_base_of<Eigen::PlainObjectBase<std::decay_t<Derived>>, std::decay_t<Derived>>;
+    template<typename Derived>
+    using is_eigen_base = std::is_base_of<Eigen::EigenBase<std::decay_t<Derived>>, std::decay_t<Derived>>;
 
     template<typename T>
     struct is_eigen_core : public std::false_type {};
@@ -231,26 +228,63 @@ namespace h5pp::Type::Scan {
     struct is_eigen_core<Eigen::Array<T, rows, cols, StorageOrder>> : public std::true_type {};
 
     template<typename T>
-    struct is_eigen_type : public std::false_type {};
-    template<typename T, int rows, int cols, int StorageOrder>
-    struct is_eigen_type<Eigen::Matrix<T, rows, cols, StorageOrder>> : public std::true_type {};
-    template<typename T, int rows, int cols, int StorageOrder>
-    struct is_eigen_type<Eigen::Array<T, rows, cols, StorageOrder>> : public std::true_type {};
-    template<typename Scalar, int rank, int storage, typename IndexType>
-    struct is_eigen_type<Eigen::Tensor<Scalar, rank, storage, IndexType>> : public std::true_type {};
+    struct is_eigen_any {
+        static constexpr bool value = is_eigen_base<T>::value or is_eigen_tensor<T>::value;
+    };
+    template<typename T>
+    struct is_eigen_contiguous {
+        static constexpr bool value = is_eigen_any<T>::value and hasMember_data<T>::value;
+    };
 
     template<typename T>
-    struct is_eigen_1d : public std::false_type {};
-    template<typename T, int cols, int StorageOrder>
-    struct is_eigen_1d<Eigen::Matrix<T, 1, cols, StorageOrder>> : public std::true_type {};
-    template<typename T, int rows, int StorageOrder>
-    struct is_eigen_1d<Eigen::Matrix<T, rows, 1, StorageOrder>> : public std::true_type {};
-    template<typename T, int cols, int StorageOrder>
-    struct is_eigen_1d<Eigen::Array<T, 1, cols, StorageOrder>> : public std::true_type {};
-    template<typename T, int rows, int StorageOrder>
-    struct is_eigen_1d<Eigen::Array<T, rows, 1, StorageOrder>> : public std::true_type {};
-    template<typename Scalar, int storage, typename IndexType>
-    struct is_eigen_1d<Eigen::Tensor<Scalar, 1, storage, IndexType>> : public std::true_type {};
+    class is_eigen_1d {
+        private:
+        template<typename U>
+        static constexpr auto test() {
+            if constexpr(is_eigen_map<U>::value) return test<typename U::PlainObject>();
+            if constexpr(is_eigen_dense<U>::value) { return U::RowsAtCompileTime == 1 or U::ColsAtCompileTime == 1; }
+            if constexpr(is_eigen_tensor<U>::value and hasMember_NumIndices<U>::value) {
+                return U::NumIndices == 1;
+            } else
+                return false;
+        }
+
+        public:
+        static constexpr bool value = test<T>();
+    };
+
+    template<typename T>
+    class is_eigen_colmajor {
+        template<typename U>
+        static constexpr bool test() {
+            if constexpr(is_eigen_base<U>::value) { return not U::IsRowMajor; }
+            if constexpr(is_eigen_tensor<U>::value) {
+                return U::Layout == Eigen::ColMajor;
+            } else {
+                return false;
+            }
+        }
+
+        public:
+        static constexpr bool value = test<T>();
+    };
+
+    template<typename T>
+    class is_eigen_rowmajor {
+        template<typename U>
+        static constexpr bool test() {
+            if constexpr(is_eigen_base<U>::value) { return U::IsRowMajor; }
+            if constexpr(is_eigen_tensor<U>::value) {
+                return U::Layout == Eigen::RowMajor;
+            } else {
+                return false;
+            }
+        }
+
+        public:
+        static constexpr bool value = test<T>();
+    };
+
 #endif
 
     template<typename DataType>

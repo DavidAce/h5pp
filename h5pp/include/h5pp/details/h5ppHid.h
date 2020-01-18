@@ -6,8 +6,7 @@
 
 namespace h5pp::Hid {
 
-    // Base class for all the safe "hid_t" wrapper classes. Zero value is the default for H5P and H5E so it's ok for them to return it or to be
-    // constructed from it
+    // Base class for all the safe "hid_t" wrapper classes. Zero value is the default for H5P and H5E so it's ok for them to return it zero
     template<typename hid_h5x, bool zeroValueIsOK = false>
     class hid_base {
         protected:

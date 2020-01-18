@@ -8,7 +8,6 @@ int main() {
     double arr2[27];
     int    dims1[] = {2, 2, 2};
     int    dims2[] = {3, 3, 3};
-    double dims3[] = {9.0, 5, 6};
     for(int i = 0; i < 8; i++) arr1[i] = i + 0.8;
     for(int i = 0; i < 27; i++) arr2[i] = i + 0.27;
 

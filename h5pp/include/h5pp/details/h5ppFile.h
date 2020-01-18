@@ -70,7 +70,6 @@ namespace h5pp {
 
     class File {
         private:
-        mutable herr_t retval = 0;
         fs::path       FileName; /*!< Filename and extension, e.g. output.h5 */
         fs::path       FilePath; /*!< Full path to the file, eg. /home/cooldude/h5project/output.h5 */
 
@@ -400,7 +399,7 @@ namespace h5pp {
         void readAttribute(DataType &data, std::string_view attrName, std::string_view linkName) const;
 
         template<typename DataType>
-        DataType readAttribute(std::string_view attributeName, std::string_view linkPath) const;
+        DataType readAttribute(std::string_view attrName, std::string_view linkName) const;
 
         // Functions for querying
         std::vector<size_t> getDatasetDims(std::string_view datasetPath) {
@@ -462,7 +461,7 @@ namespace h5pp {
 template<typename DataType>
 void h5pp::File::writeDataset(const DataType &data, const DatasetProperties &dsetProps) {
     Hid::h5f file = openFileHandle();
-    h5pp::Hdf5::writeDataset(file, data, dsetProps, plists);
+    h5pp::Hdf5::writeDataset(data, dsetProps, plists);
 }
 
 template<typename DataType>
@@ -486,22 +485,14 @@ void h5pp::File::writeDataset(const DataType &                    data,
     dsetProps.fileSpace = H5Dget_space(dsetProps.dataSet);
     if(dsetProps.layout.value() == H5D_CHUNKED) h5pp::Hdf5::selectHyperslab(dsetProps.fileSpace, dsetProps.memSpace);
 
-#ifdef H5PP_EIGEN3
-    if constexpr(tc::is_eigen_type<DataType>::value and not tc::is_eigen_1d<DataType>::value) {
-        h5pp::Logger::log->debug("Converting data to row-major storage order");
-        const auto tempRowm = Textra::to_RowMajor(data); // Convert to Row Major first;
-        h5pp::Hdf5::writeDataset(file, tempRowm, dsetProps, plists);
-        return;
-    }
-#endif
-    h5pp::Hdf5::writeDataset(file, data, dsetProps, plists);
+    h5pp::Hdf5::writeDataset(data, dsetProps, plists);
 }
 
 template<typename DataType>
 void h5pp::File::readDataset(DataType &data, std::string_view dsetName) const {
     Hid::h5f file      = openFileHandle();
     auto     dsetProps = h5pp::Analyze::getDatasetProperties_read(file, dsetName, std::nullopt, plists);
-    h5pp::Hdf5::readDataset(file, data, dsetProps);
+    h5pp::Hdf5::readDataset(data, dsetProps);
 }
 
 template<typename DataType>
@@ -514,37 +505,37 @@ DataType h5pp::File::readDataset(std::string_view datasetPath) const {
 template<typename DataType>
 void h5pp::File::writeAttribute(const DataType &data, const AttributeProperties &attrProps) {
     Hid::h5f file = openFileHandle();
-    h5pp::Hdf5::writeAttribute(file, data, attrProps);
+    h5pp::Hdf5::writeAttribute(data, attrProps);
 }
 
 template<typename DataType>
 void h5pp::File::writeAttribute(const DataType &data, std::string_view attrName, std::string_view linkName) {
     Hid::h5f file      = openFileHandle();
     auto     attrProps = h5pp::Analyze::getAttributeProperties_write(file, data, attrName, linkName, std::nullopt, std::nullopt, plists);
-    h5pp::Hdf5::createAttribute(file, attrProps);
+    h5pp::Hdf5::createAttribute(attrProps);
 
 #ifdef H5PP_EIGEN3
-    if constexpr(tc::is_eigen_type<DataType>::value and not tc::is_eigen_1d<DataType>::value) {
+    if constexpr(tc::is_eigen_any<DataType>::value and not tc::is_eigen_1d<DataType>::value) {
         h5pp::Logger::log->debug("Converting data to row-major storage order");
         const auto tempRowm = Textra::to_RowMajor(data); // Convert to Row Major first;
-        h5pp::Hdf5::writeAttribute(file, tempRowm, attrProps);
+        h5pp::Hdf5::writeAttribute(tempRowm, attrProps);
         return;
     }
 #endif
 
-    h5pp::Hdf5::writeAttribute(file, data, attrProps);
+    h5pp::Hdf5::writeAttribute(data, attrProps);
 }
 
 template<typename DataType>
 void h5pp::File::readAttribute(DataType &data, std::string_view attrName, std::string_view linkName) const {
     Hid::h5f file      = openFileHandle();
     auto     attrProps = h5pp::Analyze::getAttributeProperties_read(file, attrName, linkName, std::nullopt, std::nullopt, plists);
-    h5pp::Hdf5::readAttribute(file, data, attrProps);
+    h5pp::Hdf5::readAttribute(data, attrProps);
 }
 
 template<typename DataType>
-DataType h5pp::File::readAttribute(std::string_view attributeName, std::string_view linkPath) const {
+DataType h5pp::File::readAttribute(std::string_view attrName, std::string_view linkName) const {
     DataType data;
-    readAttribute(data, attributeName, linkPath);
+    readAttribute(data, attrName, linkName);
     return data;
 }

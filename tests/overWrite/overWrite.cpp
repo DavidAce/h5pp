@@ -83,13 +83,18 @@ int main() {
     // Write chunked datasets that can be resized
 
     // Define dummy data
-    Eigen::MatrixXi  matrixInt           = Eigen::MatrixXi::Random(100, 100);
-    Eigen::MatrixXd  matrixDouble        = Eigen::MatrixXd::Random(100, 100);
-    Eigen::MatrixXcd matrixComplexDouble = Eigen::MatrixXcd::Random(100, 100);
+    Eigen::MatrixXi                                          matrixInt           = Eigen::MatrixXi::Random(100, 100);
+    Eigen::MatrixXd                                          matrixDouble        = Eigen::MatrixXd::Random(100, 100);
+    Eigen::MatrixXcd                                         matrixComplexDouble = Eigen::MatrixXcd::Random(100, 100);
+    Eigen::Map<Eigen::MatrixXcd>                             matrixMapComplexDouble(matrixComplexDouble.data(), matrixComplexDouble.rows(), matrixComplexDouble.cols());
+    Eigen::TensorMap<Eigen::Tensor<std::complex<double>, 2>> tensorMapComplexDouble(matrixComplexDouble.data(), matrixComplexDouble.rows(), matrixComplexDouble.cols());
+
     // Now write
     file.writeDataset(matrixInt, "overWriteGroup_ext_enabled/matrixInt", H5D_CHUNKED);
     file.writeDataset(matrixDouble, "overWriteGroup_ext_enabled/matrixDouble", H5D_CHUNKED);
     file.writeDataset(matrixComplexDouble, "overWriteGroup_ext_enabled/matrixComplexDouble", H5D_CHUNKED);
+    file.writeDataset(matrixMapComplexDouble, "overWriteGroup_ext_enabled/matrixMapComplexDouble", H5D_CHUNKED);
+    file.writeDataset(tensorMapComplexDouble, "overWriteGroup_ext_enabled/tensorMapComplexDouble", H5D_CHUNKED);
 
     // Now overwrite
     file.writeDataset(matrixInt, "overWriteGroup_ext_enabled/matrixInt");

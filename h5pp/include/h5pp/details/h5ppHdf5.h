@@ -21,6 +21,19 @@ namespace h5pp::Hdf5 {
         return output;
     }
 
+    inline std::vector<hsize_t> getMaxDims(const DatasetProperties &dsetProps) {
+        std::vector<hsize_t> maxdims(dsetProps.ndims.value());
+        H5Sget_simple_extent_dims(dsetProps.dataSpace, nullptr, maxdims.data());
+        return maxdims;
+    }
+
+    inline std::vector<hsize_t> getMaxDims(const Hid::h5s &space_id) {
+        int                  ndims = H5Sget_simple_extent_ndims(space_id);
+        std::vector<hsize_t> maxdims(ndims);
+        H5Sget_simple_extent_dims(space_id, nullptr, maxdims.data());
+        return maxdims;
+    }
+
     inline bool checkIfLinkExists(const Hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
         if(linkExists) return linkExists.value();
         h5pp::Logger::log->trace("Checking if link exists: [{}]", linkName);
@@ -39,6 +52,32 @@ namespace h5pp::Hdf5 {
         return true;
     }
 
+    inline bool
+        checkIfDatasetExists(const Hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
+        if(dsetExists) return dsetExists.value();
+        h5pp::Logger::log->trace("Checking if dataset exists: [{}]", dsetName);
+        for(const auto &subPath : pathCumulativeSplit(dsetName, "/")) {
+            int exists = H5Lexists(file, std::string(subPath).c_str(), plists.link_access);
+            if(exists == 0) {
+                h5pp::Logger::log->trace("Checking if dataset exists: [{}] ... false", dsetName);
+                return false;
+            }
+            if(exists < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to check if dataset exists: [" + std::string(dsetName) + "]");
+            }
+        }
+        Hid::h5o   object     = H5Oopen(file, std::string(dsetName).c_str(), plists.link_access);
+        H5I_type_t objectType = H5Iget_type(object);
+        if(objectType != H5I_DATASET) {
+            h5pp::Logger::log->trace("Checking if dataset exists: [{}] ... false", dsetName);
+            return false;
+        } else {
+            h5pp::Logger::log->trace("Checking if dataset exists: [{}] ... true", dsetName);
+            return true;
+        }
+    }
+
     [[nodiscard]] inline Hid::h5o
         openLink(const Hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
         if(checkIfLinkExists(file, linkName, linkExists, plists)) {
@@ -55,21 +94,22 @@ namespace h5pp::Hdf5 {
         }
     }
 
-    [[nodiscard]] inline Hid::h5d
-        openDataset(const Hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const Hid::h5p &dset_access = H5Pcreate(H5P_DATASET_ACCESS)) {
-        if(checkIfLinkExists(file, linkName, linkExists)) {
-            h5pp::Logger::log->trace("Opening link: [{}]", linkName);
-            Hid::h5d dataSet = H5Dopen(file, std::string(linkName).c_str(), dset_access);
-            if(dataSet < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to open existing link: [" + std::string(linkName) + "]");
-            } else {
-                return dataSet;
-            }
-        } else {
-            throw std::runtime_error("Link does not exist: [" + std::string(linkName) + "]");
-        }
-    }
+    //    [[nodiscard]] inline Hid::h5d
+    //        openDataset(const Hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const Hid::h5p &dset_access =
+    //        H5Pcreate(H5P_DATASET_ACCESS)) { if(checkIfLinkExists(file, linkName, linkExists)) {
+    //            h5pp::Logger::log->trace("Opening link: [{}]", linkName);
+    //            Hid::h5d dataSet = H5Dopen(file, std::string(linkName).c_str(), dset_access);
+    //            if(dataSet < 0) {
+    //                H5Eprint(H5E_DEFAULT, stderr);
+    //                throw std::runtime_error("Failed to open existing link: [" + std::string(linkName) + "]");
+    //            } else {
+    //                return dataSet;
+    //            }
+    //        } else {
+    //            throw std::runtime_error("Link does not exist: [" + std::string(linkName) + "]");
+    //        }
+    //    }
+
     //    template<typename h5x>
     //    [[nodiscard]] h5x openObject(const Hid::h5f &    file,
     //                                 std::string_view    objectName,
@@ -94,7 +134,7 @@ namespace h5pp::Hdf5 {
     //    }
 
     template<typename h5x>
-    [[nodiscard]] h5x openObject(const Hid::h5f &file, std::string_view objectName, const Hid::h5p &object_access = H5P_DEFAULT, std::optional<bool> objectExists = std::nullopt) {
+    [[nodiscard]] h5x openObject(const Hid::h5f &file, std::string_view objectName, std::optional<bool> objectExists = std::nullopt, const Hid::h5p &object_access = H5P_DEFAULT) {
         if(checkIfLinkExists(file, objectName, objectExists)) {
             h5pp::Logger::log->trace("Opening object: [{}]", objectName);
             h5x object;
@@ -218,16 +258,10 @@ namespace h5pp::Hdf5 {
         H5Dset_extent(dataset, newDims.data());
     }
 
-    inline std::vector<hsize_t> getMaxDims(const DatasetProperties &dsetProps) {
-        std::vector<hsize_t> maxDims(dsetProps.ndims.value());
-        H5Sget_simple_extent_dims(dsetProps.dataSpace, nullptr, maxDims.data());
-        return maxDims;
-    }
-
     //    template<typename DataType>
     //    void extendDataset(Hid::h5f &file, const DataType &data, std::string_view datasetRelativeName) {
     //        namespace tc = h5pp::Type::Scan;
-    //#ifdef H5PP_EIGEN3
+    //    #ifdef H5PP_EIGEN3
     //        if constexpr(tc::is_eigen_core<DataType>::value) {
     //            extendDataset(file, datasetRelativeName, 0, data.rows());
     //            Hid::h5o             dataSet   = openLink(file, datasetRelativeName);
@@ -237,8 +271,8 @@ namespace h5pp::Hdf5 {
     //            H5Sget_simple_extent_dims(fileSpace, dims.data(), nullptr);
     //            H5Sclose(fileSpace);
     //            if(dims[1] < (hsize_t) data.cols()) extendDataset(file, datasetRelativeName, 1, data.cols());
-    //        } else
-    //#endif
+    //            } else
+    //    #endif
     //        {
     //            extendDataset(file, datasetRelativeName, 0, h5pp::Utils::getSize(data));
     //        }
@@ -352,7 +386,7 @@ namespace h5pp::Hdf5 {
             file, dsetProps.dsetName.value().c_str(), dsetProps.dataType, dsetProps.dataSpace, plists.link_create, dsetProps.plist_dset_create, dsetProps.plist_dset_access);
     }
 
-    inline void createAttribute(const Hid::h5f &file, AttributeProperties &attrProps) {
+    inline void createAttribute(AttributeProperties &attrProps) {
         // Here we create, or register, the attribute id and set its properties before writing data to it.
         if(attrProps.attrExists and attrProps.attrExists.value()) return;
         if(attrProps.attributeId) return;
@@ -394,7 +428,7 @@ namespace h5pp::Hdf5 {
     }
 
     template<typename DataType>
-    void writeDataset(const Hid::h5f &file, const DataType &data, const DatasetProperties &props, const PropertyLists &plists = PropertyLists()) {
+    void writeDataset(const DataType &data, const DatasetProperties &props, const PropertyLists &plists = PropertyLists()) {
         h5pp::Logger::log->debug("Writing dataset: [{}] | size {} | bytes {} | ndims {} | dims {} | type {}",
                                  props.dsetName.value(),
                                  props.size.value(),
@@ -402,34 +436,33 @@ namespace h5pp::Hdf5 {
                                  props.ndims.value(),
                                  props.dims.value(),
                                  h5pp::Type::Scan::type_name<DataType>());
-
         h5pp::Utils::assertBytesPerElemMatch<DataType>(props.dataType);
-        if(props.dsetExists.value()) {
-            hsize_t dsetBytes = H5Dget_storage_size(props.dataSet);
-            hsize_t dataBytes = props.bytes.value();
-            if(dataBytes > dsetBytes and props.layout.value() != H5D_CHUNKED) {
-                throw std::runtime_error("Overwriting non-chunked dataset with more bytes than allocated: Existing data = " + std::to_string(dsetBytes) +
-                                         " bytes. Given data = " + std::to_string(dataBytes) + " bytes");
-            }
+        if(props.dsetExists.value() and props.layout != H5D_CHUNKED) { h5pp::Utils::assertBytesMatchTotal(data, props.dataSet); }
+        herr_t retval = 0;
+
+#ifdef H5PP_EIGEN3
+        if constexpr(h5pp::Type::Scan::is_eigen_colmajor<DataType>::value and not h5pp::Type::Scan::is_eigen_1d<DataType>::value) {
+            h5pp::Logger::log->debug("Converting data to row-major storage order");
+            const auto tempRowm = Textra::to_RowMajor(data); // Convert to Row Major first;
+            h5pp::Hdf5::writeDataset(tempRowm, props, plists);
+        } else
+#endif
+            if constexpr(h5pp::Type::Scan::hasMember_data<DataType>::value) {
+            retval = H5Dwrite(props.dataSet, props.dataType, props.memSpace, props.fileSpace, plists.dset_xfer, data.data());
+        } else if constexpr(std::is_pointer_v<DataType>) {
+            retval = H5Dwrite(props.dataSet, props.dataType, props.memSpace, props.fileSpace, plists.dset_xfer, data);
+        } else {
+            retval = H5Dwrite(props.dataSet, props.dataType, props.memSpace, props.fileSpace, plists.dset_xfer, &data);
         }
 
-        if constexpr(h5pp::Type::Scan::hasMember_data<DataType>::value) {
-            herr_t err = H5Dwrite(props.dataSet, props.dataType, props.memSpace, props.fileSpace, plists.dset_xfer, data.data());
-            if(err < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to write data using .data() method");
-            }
-        } else {
-            herr_t retval = H5Dwrite(props.dataSet, props.dataType, props.memSpace, props.fileSpace, plists.dset_xfer, &data);
-            if(retval < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to write number to file");
-            }
+        if(retval < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error("Failed to write number to file");
         }
     }
 
     template<typename DataType>
-    void readDataset(const Hid::h5f &file, DataType &data, const DatasetProperties &props) {
+    void readDataset(DataType &data, const DatasetProperties &props, const PropertyLists &plists = PropertyLists()) {
         h5pp::Logger::log->debug("Reading dataset: [{}] | size {} | bytes {} | ndims {} | dims {} | type {}",
                                  props.dsetName.value(),
                                  props.size.value(),
@@ -438,35 +471,38 @@ namespace h5pp::Hdf5 {
                                  props.dims.value(),
                                  Type::Scan::type_name<DataType>());
         h5pp::Utils::assertBytesPerElemMatch<DataType>(props.dataType);
-        herr_t retval;
+        herr_t retval = 0;
+        // Resize/transpose the data container before writing
+
 #ifdef H5PP_EIGEN3
-        if constexpr(h5pp::Type::Scan::is_eigen_core<DataType>::value) {
-            if(data.IsRowMajor) {
+        if constexpr(h5pp::Type::Scan::is_eigen_dense<DataType>::value) {
+            if constexpr(h5pp::Type::Scan::is_eigen_1d<DataType>::value) {
+                data.resize(props.dims.value()[0]);
+            } else if constexpr(h5pp::Type::Scan::is_eigen_rowmajor<DataType>::value) {
                 // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
                 data.resize(props.dims.value()[0], props.dims.value()[1]);
-                retval = H5LTread_dataset(file, props.dsetName.value().c_str(), props.dataType, data.data());
-                if(retval < 0) { throw std::runtime_error("Failed to read Eigen Matrix rowmajor dataset"); }
-            } else {
+            } else if constexpr(h5pp::Type::Scan::is_eigen_colmajor<DataType>::value) {
                 // Data is RowMajor in HDF5, user gave a ColMajor container we need to swap layout.
-                Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> matrixRowmajor;
-                matrixRowmajor.resize(props.dims.value()[0], props.dims.value()[1]); // Data is transposed in HDF5!
-                retval = H5LTread_dataset(file, props.dsetName.value().c_str(), props.dataType, matrixRowmajor.data());
-                if(retval < 0) { throw std::runtime_error("Failed to read Eigen Matrix colmajor dataset"); }
+                h5pp::Logger::log->debug("Transforming data to row major");
+                Eigen::Matrix<typename DataType::Scalar, DataType::RowsAtCompileTime, DataType::RowsAtCompileTime, Eigen::RowMajor> matrixRowmajor;
+                readDataset(matrixRowmajor, props, plists);
                 data = matrixRowmajor;
+                return;
+            } else {
+                throw std::runtime_error("Error detecting matrix type");
             }
         } else if constexpr(h5pp::Type::Scan::is_eigen_tensor<DataType>()) {
-            auto eigenDims = Textra::copy_dims<DataType::NumDimensions>(props.dims.value());
             if constexpr(DataType::Options == Eigen::RowMajor) {
                 // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
+                auto eigenDims = Textra::copy_dims<DataType::NumDimensions>(props.dims.value());
                 data.resize(eigenDims);
-                retval = H5LTread_dataset(file, props.dsetName.value().c_str(), props.dataType, data.data());
-                if(retval < 0) { throw std::runtime_error("Failed to read Eigen Tensor rowmajor dataset"); }
             } else {
                 // Data is RowMajor in HDF5, user gave a ColMajor container we need to swap layout.
-                Eigen::Tensor<typename DataType::Scalar, DataType::NumIndices, Eigen::RowMajor> tensorRowmajor(eigenDims);
-                retval = H5LTread_dataset(file, props.dsetName.value().c_str(), props.dataType, tensorRowmajor.data());
-                if(retval < 0) { throw std::runtime_error("Failed to read Eigen Tensor colmajor dataset"); }
+                h5pp::Logger::log->debug("Transforming data to row major");
+                Eigen::Tensor<typename DataType::Scalar, DataType::NumIndices, Eigen::RowMajor> tensorRowmajor;
+                readDataset(tensorRowmajor, props, plists);
                 data = Textra::to_ColMajor(tensorRowmajor);
+                return;
             }
         } else
 #endif // H5PP_EIGEN3
@@ -474,29 +510,35 @@ namespace h5pp::Hdf5 {
             if constexpr(h5pp::Type::Scan::is_std_vector<DataType>::value) {
             assert(props.ndims == 1 and "std::vector must be a one-dimensional datasets");
             data.resize(props.size.value());
-            retval = H5LTread_dataset(file, props.dsetName.value().c_str(), props.dataType, data.data());
-            if(retval < 0) { throw std::runtime_error("Failed to read std::vector dataset"); }
         } else if constexpr((h5pp::Type::Scan::hasMember_c_str<DataType>::value and h5pp::Type::Scan::hasMember_data<DataType>::value) or
                             std::is_same<std::string, DataType>::value) {
-            assert(props.ndims <= 1 and "std string needs to have 1 dimension");
+            assert(props.ndims == 1 and "std string needs to have 1 dimension");
             hsize_t stringsize = H5Dget_storage_size(props.dataSet);
             data.resize(stringsize);
-            retval = H5LTread_dataset(file, props.dsetName.value().c_str(), props.dataType, data.data());
-            if(retval < 0) { throw std::runtime_error("Failed to read std::string dataset"); }
-        } else if constexpr(h5pp::Type::Scan::hasMember_data<DataType>::value) {
-            retval = H5LTread_dataset(file, props.dsetName.value().c_str(), props.dataType, data.data());
-            if(retval < 0) { throw std::runtime_error("Failed to read into c-style array dataset"); }
+        }
+
+        h5pp::Utils::assertBytesMatchTotal(data, props.dataSet);
+
+        // Read the data into the container
+
+        if constexpr(h5pp::Type::Scan::hasMember_data<DataType>::value) {
+            retval = H5Dread(props.dataSet, props.dataType, props.memSpace, props.dataSpace, plists.dset_xfer, data.data());
         } else if constexpr(std::is_arithmetic<DataType>::value) {
-            retval = H5LTread_dataset(file, props.dsetName.value().c_str(), props.dataType, &data);
-            if(retval < 0) { throw std::runtime_error("Failed to read arithmetic type dataset"); }
+            retval = H5Dread(props.dataSet, props.dataType, props.memSpace, props.dataSpace, plists.dset_xfer, &data);
         } else {
             Logger::log->error("Attempted to read dataset of unknown type. Name: [{}] | Type: [{}]", props.dsetName.value(), Type::Scan::type_name<DataType>());
-            throw std::runtime_error("Attempted to read dataset of unknown type");
+            throw std::runtime_error("Attempted to read dataset of unknown type [" + props.dsetName.value() + "] | type [" + std::string(Type::Scan::type_name<DataType>()) + "]");
+        }
+
+        if(retval < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            Logger::log->error("Failed  to read dataset [{}] | type: [{}]", props.dsetName.value(), Type::Scan::type_name<DataType>());
+            throw std::runtime_error("Failed to read dataset [" + props.dsetName.value() + "] | type [" + std::string(Type::Scan::type_name<DataType>()) + "]");
         }
     }
 
     template<typename DataType>
-    void writeAttribute(const Hid::h5f &file, const DataType &data, const AttributeProperties &props) {
+    void writeAttribute(const DataType &data, const AttributeProperties &props) {
         h5pp::Logger::log->debug("Writing attribute: [{}] | link [{}] | size {} | bytes {} | ndims {} | dims {} | type {}",
                                  props.attrName.value(),
                                  props.linkName.value(),
@@ -528,7 +570,7 @@ namespace h5pp::Hdf5 {
     }
 
     template<typename DataType>
-    void readAttribute(const Hid::h5f &file, DataType &data, const AttributeProperties &props) {
+    void readAttribute(DataType &data, const AttributeProperties &props) {
         if(not props.linkExists or not props.linkExists.value())
             throw std::runtime_error("Tried to read attribute [" + props.attrName.value() + "] on non-existing link: [" + props.linkName.value() + "]");
         if(not props.attrExists or not props.attrExists.value())
@@ -554,6 +596,7 @@ namespace h5pp::Hdf5 {
                 }
             } else {
                 // Data is RowMajor in HDF5, user gave a ColMajor container so we need to swap the layout.
+                h5pp::Logger::log->debug("Transforming data to row major");
                 Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> matrixRowmajor;
                 matrixRowmajor.resize(props.dims.value()[0], props.dims.value()[1]); // Data is transposed in HDF5!
                 if(H5Aread(props.attributeId, props.dataType, matrixRowmajor.data()) < 0) {
@@ -574,6 +617,7 @@ namespace h5pp::Hdf5 {
                 }
             } else {
                 // Data is RowMajor in HDF5, user gave a ColMajor container so we need to swap the layout.
+                h5pp::Logger::log->debug("Transforming data to row major");
                 Eigen::Tensor<typename DataType::Scalar, DataType::NumIndices, Eigen::RowMajor> tensorRowmajor(eigenDims);
                 if(H5Aread(props.attributeId, props.dataType, tensorRowmajor.data()) < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);

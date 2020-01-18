@@ -17,8 +17,8 @@ namespace h5pp::Wrapper {
     class RawArrayWrapper {
         private:
         const PointerType         data_;
-        const std::size_t         size_;
         const std::vector<size_t> dims_;
+        const std::size_t         size_;
 
         public:
         constexpr static size_t NumIndices = N;

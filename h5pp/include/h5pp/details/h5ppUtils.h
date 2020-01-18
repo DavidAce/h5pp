@@ -34,7 +34,8 @@ namespace h5pp::Utils {
         if constexpr(tsc::hasMember_NumIndices<DataType>::value) return (int) DataType::NumIndices;
 #ifdef H5PP_EIGEN3
         if constexpr(tsc::is_eigen_tensor<DataType>::value) return (int) DataType::NumIndices;
-        if constexpr(tsc::is_eigen_core<DataType>::value) return 2;
+        if constexpr(tsc::is_eigen_1d<DataType>::value) return 1;
+        if constexpr(tsc::is_eigen_dense<DataType>::value) return 2;
 #endif
         return 1;
     }
@@ -52,9 +53,9 @@ namespace h5pp::Utils {
         } else if constexpr(tsc::is_text<DataType>()) {
             // Read more about this step here
             // http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
-            return {1};
+            return {(hsize_t) 1};
         } else if constexpr(tsc::hasMember_size<DataType>::value and ndims == 1) {
-            return {data.size()};
+            return {(hsize_t) data.size()};
         }
 #ifdef H5PP_EIGEN3
         else if constexpr(tsc::is_eigen_tensor<DataType>::value) {
@@ -62,7 +63,7 @@ namespace h5pp::Utils {
             std::vector<hsize_t> dims(data.dimensions().begin(),
                                       data.dimensions().end()); // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
             return dims;
-        } else if constexpr(tsc::is_eigen_core<DataType>::value) {
+        } else if constexpr(tsc::is_eigen_dense<DataType>::value) {
             std::vector<hsize_t> dims(ndims);
             dims[0] = (hsize_t) data.rows();
             dims[1] = (hsize_t) data.cols();
@@ -124,26 +125,25 @@ namespace h5pp::Utils {
         return chunkDims;
     }
 
-    [[nodiscard]] inline Hid::h5s getDataSpace(const hsize_t size, const int nDims, const std::vector<hsize_t> &dims, const H5D_layout_t layout) {
-        assert(nDims == dims.size() and "Dimension mismatch");
+    [[nodiscard]] inline Hid::h5s getDataSpace(const hsize_t size, const int ndims, const std::vector<hsize_t> &dims, const H5D_layout_t layout) {
+        assert((size_t) ndims == dims.size() and "Dimension mismatch");
         if(size == 0) return H5Screate(H5S_NULL);
-        if(layout == H5D_CHUNKED and nDims > 0) {
-            assert(nDims == dims.size() and "Dimension mismatch");
+        if(layout == H5D_CHUNKED and ndims > 0) {
             // Chunked layout datasets can be extended, which is why their max extent in any dimension is unlimited.
-            std::vector<hsize_t> maxDims(nDims);
-            std::fill_n(maxDims.begin(), nDims, H5S_UNLIMITED);
-            return H5Screate_simple(nDims, dims.data(), maxDims.data());
+            std::vector<hsize_t> maxDims(ndims);
+            std::fill_n(maxDims.begin(), ndims, H5S_UNLIMITED);
+            return H5Screate_simple(ndims, dims.data(), maxDims.data());
         } else {
-            if(nDims == 0)
+            if(ndims == 0)
                 return H5Screate(H5S_SCALAR);
             else {
-                return H5Screate_simple(nDims, dims.data(), nullptr); // nullptr ->  maxDims same as dims
+                return H5Screate_simple(ndims, dims.data(), nullptr); // nullptr ->  maxDims same as dims
             }
         }
     }
 
     [[nodiscard]] inline Hid::h5s getMemSpace(const hsize_t size, const int ndims, const std::vector<hsize_t> &dims) {
-        assert(ndims == dims.size() and "Dimension mismatch");
+        assert((size_t) ndims == dims.size() and "Dimension mismatch");
         if(size == 0) return H5Screate(H5S_NULL);
         if(ndims == 0)
             return H5Screate(H5S_SCALAR);
@@ -178,17 +178,16 @@ namespace h5pp::Utils {
         return sizeof(std::remove_all_extents_t<DecayType>);
     }
 
-    size_t getBytesPerElem(const Hid::h5t &hdf5Datatype) {
-        size_t      dsetTypeSize;
-        H5T_class_t h5class = H5Tget_class(hdf5Datatype);
+    size_t getBytesPerElem(const Hid::h5t &type) {
+        // This works as H5Tget_size but takes care of getting the correct size for char data
+        H5T_class_t h5class = H5Tget_class(type);
         if(h5class == H5T_STRING) {
             // We create text-data differently, as scalar (atomic) type of size 1. The result of H5Gget_size will then be the char*size. Therefore
             // we measure the type of a single H5T_C_S1 directly.
-            dsetTypeSize = H5Tget_size(H5T_C_S1);
+            return H5Tget_size(H5T_C_S1);
         } else {
-            dsetTypeSize = H5Tget_size(hdf5Datatype);
+            return H5Tget_size(type);
         }
-        return dsetTypeSize;
     }
 
     template<typename DataType>
@@ -196,12 +195,12 @@ namespace h5pp::Utils {
         return getBytesPerElem<DataType>() * getSize(data);
     }
 
-    size_t getBytesTotal(const Hid::h5d &dataSet) {
-        Hid::h5s dataSpace = H5Dget_space(dataSet);
-        Hid::h5t dataType  = H5Dget_type(dataSet);
-        size_t   size      = H5Sget_simple_extent_npoints(dataSpace);
-        size_t   typesize  = H5Tget_size(dataType);
-        return size * typesize;
+    size_t getBytesTotal(const Hid::h5s &space, const Hid::h5t &type) { return H5Sget_simple_extent_npoints(space) * H5Tget_size(type); }
+
+    size_t getBytesTotal(const Hid::h5d &dataset) {
+        Hid::h5s space = H5Dget_space(dataset);
+        Hid::h5t type  = H5Dget_type(dataset);
+        return getBytesTotal(space, type);
     }
 
     template<typename userDataType>
@@ -221,20 +220,20 @@ namespace h5pp::Utils {
         }
     }
 
-    template<typename userDataType>
-    bool checkBytesMatchTotal(const userDataType &data, const Hid::h5d &dataSet) {
-        size_t hdf5DataSize = H5Dget_storage_size(dataSet);
-        size_t userDataSize = getBytesTotal<userDataType>(data);
-        if(userDataSize != hdf5DataSize) { h5pp::Logger::log->error("Storage size mismatch: hdf5 {} bytes | given {} bytes", hdf5DataSize, userDataSize); }
-        return userDataSize == hdf5DataSize;
+    template<typename DataType>
+    bool checkBytesMatchTotal(const DataType &data, const Hid::h5d &dataset) {
+        size_t dsetsize = getBytesTotal(dataset);
+        size_t datasize = getBytesTotal(data);
+        if(datasize != dsetsize) { h5pp::Logger::log->error("Storage size mismatch: hdf5 {} bytes | given {} bytes", dsetsize, datasize); }
+        return datasize == dsetsize;
     }
 
-    template<typename userDataType>
-    void assertBytesMatchTotal(const userDataType &data, const Hid::h5d &dataSet) {
-        size_t dsetSize = H5Dget_storage_size(dataSet);
-        size_t dataSize = getBytesTotal<userDataType>(data);
-        if(dataSize != dsetSize) {
-            throw std::runtime_error("Storage size mismatch: dataset " + std::to_string(dsetSize) + " bytes | given " + std::to_string(dataSize) + "bytes");
+    template<typename DataType>
+    void assertBytesMatchTotal(const DataType &data, const Hid::h5d &dataset) {
+        size_t dsetsize = getBytesTotal(dataset);
+        size_t datasize = getBytesTotal(data);
+        if(datasize != dsetsize) {
+            throw std::runtime_error("Storage size mismatch: dataset " + std::to_string(dsetsize) + " bytes | given " + std::to_string(datasize) + " bytes");
         }
     }
 
@@ -298,7 +297,7 @@ namespace h5pp::Utils {
         }
     }
 
-    inline H5D_layout_t decideLayout(const size_t size, const size_t bytes, std::optional<H5D_layout_t> desiredLayout = std::nullopt) {
+    inline H5D_layout_t decideLayout(const size_t bytes, std::optional<H5D_layout_t> desiredLayout = std::nullopt) {
         /*! Depending on the size of this dataset we may benefint from using either
             a contiguous layout (for big non-extendable non-compressible datasets),
             a chunked layout (for extendable and compressible datasets)
@@ -326,9 +325,9 @@ namespace h5pp::Utils {
         // First, we check if the user explicitly asked for an extendable dataset.
         if(desiredLayout) return desiredLayout.value();
         // Otherwise we decide based on size
-        if(bytes < h5pp::Constants::max_size_compact)
+        if(bytes < h5pp::Constants::maxSizeCompact)
             return H5D_COMPACT;
-        else if(bytes < h5pp::Constants::max_size_contiguous)
+        else if(bytes < h5pp::Constants::maxSizeContiguous)
             return H5D_CONTIGUOUS;
         else
             return H5D_CHUNKED;

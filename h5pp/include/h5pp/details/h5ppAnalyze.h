@@ -12,12 +12,9 @@ namespace h5pp::Analyze {
         h5pp::Logger::log->trace("Reading properties of dataset: [{}] from file", dsetName);
         h5pp::DatasetProperties dsetProps;
         dsetProps.dsetName   = dsetName;
-        dsetProps.dsetExists = h5pp::Hdf5::checkIfLinkExists(file, dsetName, dsetExists, plists);
+        dsetProps.dsetExists = h5pp::Hdf5::checkIfDatasetExists(file, dsetName, dsetExists, plists);
         if(dsetProps.dsetExists.value()) {
-            dsetProps.dataSet   = h5pp::Hdf5::openObject<Hid::h5d>(file, dsetProps.dsetName.value(), H5P_DEFAULT, dsetProps.dsetExists);
-            H5I_type_t linkType = H5Iget_type(dsetProps.dataSet.value());
-            if(linkType != H5I_DATASET) { throw std::runtime_error("Given path does not point to a dataset: [{" + dsetProps.dsetName.value() + "]"); }
-
+            dsetProps.dataSet   = h5pp::Hdf5::openObject<Hid::h5d>(file, dsetProps.dsetName.value(), dsetProps.dsetExists, dsetProps.plist_dset_access);
             dsetProps.dataType  = H5Dget_type(dsetProps.dataSet);
             dsetProps.dataSpace = H5Dget_space(dsetProps.dataSet);
             dsetProps.memSpace  = H5Dget_space(dsetProps.dataSet);
@@ -34,6 +31,9 @@ namespace h5pp::Analyze {
             dsetProps.chunkDims         = dsetProps.dims.value(); // Can get modified below
             if(dsetProps.layout.value() == H5D_CHUNKED)
                 H5Pget_chunk(dsetProps.plist_dset_create, dsetProps.ndims.value(), dsetProps.chunkDims.value().data()); // Discard returned chunk rank, it's the same as ndims
+        } else {
+            h5pp::Logger::log->info("Given dataset name does not point to a dataset: [{}]", dsetName);
+            //            throw std::runtime_error("Given path does not point to a dataset: [{" + dsetProps.dsetName.value() + "]");
         }
         return dsetProps;
     }
@@ -60,7 +60,7 @@ namespace h5pp::Analyze {
         dataProps.bytes     = h5pp::Utils::getBytesTotal(data);
         dataProps.dataType  = h5pp::Utils::getH5DataType<DataType>();               // We use our own data-type matching to avoid any confusion
         dataProps.size      = h5pp::Utils::setStringSize(data, dataProps.dataType); // This only affects strings
-        dataProps.layout    = h5pp::Utils::decideLayout(dataProps.size.value(), dataProps.bytes.value(), desiredLayout);
+        dataProps.layout    = h5pp::Utils::decideLayout(dataProps.bytes.value(), desiredLayout);
         dataProps.chunkDims = h5pp::Utils::getDefaultChunkDimensions(dataProps.size.value(), dataProps.dims.value(), desiredChunkDims);
         dataProps.memSpace  = h5pp::Utils::getMemSpace(dataProps.size.value(), dataProps.ndims.value(), dataProps.dims.value());
         dataProps.dataSpace = h5pp::Utils::getDataSpace(dataProps.size.value(), dataProps.ndims.value(), dataProps.dims.value(), dataProps.layout.value());
@@ -126,7 +126,7 @@ namespace h5pp::Analyze {
 
             // Make some sanity checks on sizes
             auto dsetMaxDims = h5pp::Hdf5::getMaxDims(dsetProps);
-            for(size_t idx = 0; idx < dsetProps.ndims.value(); idx++) {
+            for(int idx = 0; idx < dsetProps.ndims.value(); idx++) {
                 if(dsetMaxDims[idx] != H5S_UNLIMITED and dataProps.layout.value() == H5D_CHUNKED and dataProps.dims.value()[idx] > dsetMaxDims[idx])
                     throw std::runtime_error("Dimension too large. Existing dataset [" + dsetProps.dsetName.value() + "] has a maximum size [" + std::to_string(dsetMaxDims[idx]) +
                                              "] in dimension [" + std::to_string(idx) + "], but the given data has size [" + std::to_string(dataProps.dims.value()[idx]) +
@@ -159,7 +159,7 @@ namespace h5pp::Analyze {
         attrProps.attrName   = attrName;
 
         if(attrProps.attrExists.value()) {
-            attrProps.linkObject  = h5pp::Hdf5::openObject<Hid::h5o>(file, attrProps.linkName.value(), H5P_DEFAULT, attrProps.linkExists);
+            attrProps.linkObject  = h5pp::Hdf5::openObject<Hid::h5o>(file, attrProps.linkName.value(), attrProps.linkExists, attrProps.plist_attr_access);
             attrProps.attributeId = H5Aopen_name(attrProps.linkObject, std::string(attrProps.attrName.value()).c_str());
             H5I_type_t linkType   = H5Iget_type(attrProps.attributeId.value());
             if(linkType != H5I_ATTR) { throw std::runtime_error("Given attribute name does not point to an attribute: [{" + attrProps.attrName.value() + "]"); }
