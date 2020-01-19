@@ -254,7 +254,7 @@ functions to set or check the compression level:
 
 
 ### Load data into Python
-HDF5 data is easy to load into Python. Loading integer and floating point data is straightforward. Compound data is almost as simple.
+HDF5 data is easy to load into Python. Loading integer and floating point data is straightforward. compound data is almost as simple.
 HDF5 does not support complex types specifically, but `h5pp`enables this through compound HDF5 types. Here is a python example which uses `h5py`
 to load 1D arrays from an HDF5 file generated with `h5pp`:
 

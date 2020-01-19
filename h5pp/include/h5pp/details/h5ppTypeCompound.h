@@ -2,32 +2,32 @@
 #include "h5ppHid.h"
 #include <complex>
 #include <hdf5.h>
-namespace h5pp::Type::Compound {
+namespace h5pp::type::compound {
 
-    inline Hid::h5t H5T_COMPLEX_INT;
-    inline Hid::h5t H5T_COMPLEX_LONG;
-    inline Hid::h5t H5T_COMPLEX_LLONG;
-    inline Hid::h5t H5T_COMPLEX_UINT;
-    inline Hid::h5t H5T_COMPLEX_ULONG;
-    inline Hid::h5t H5T_COMPLEX_ULLONG;
-    inline Hid::h5t H5T_COMPLEX_DOUBLE;
-    inline Hid::h5t H5T_COMPLEX_FLOAT;
-    inline Hid::h5t H5T_SCALAR2_INT;
-    inline Hid::h5t H5T_SCALAR2_LONG;
-    inline Hid::h5t H5T_SCALAR2_LLONG;
-    inline Hid::h5t H5T_SCALAR2_UINT;
-    inline Hid::h5t H5T_SCALAR2_ULONG;
-    inline Hid::h5t H5T_SCALAR2_ULLONG;
-    inline Hid::h5t H5T_SCALAR2_DOUBLE;
-    inline Hid::h5t H5T_SCALAR2_FLOAT;
-    inline Hid::h5t H5T_SCALAR3_INT;
-    inline Hid::h5t H5T_SCALAR3_LONG;
-    inline Hid::h5t H5T_SCALAR3_LLONG;
-    inline Hid::h5t H5T_SCALAR3_UINT;
-    inline Hid::h5t H5T_SCALAR3_ULONG;
-    inline Hid::h5t H5T_SCALAR3_ULLONG;
-    inline Hid::h5t H5T_SCALAR3_DOUBLE;
-    inline Hid::h5t H5T_SCALAR3_FLOAT;
+    inline hid::h5t H5T_COMPLEX_INT;
+    inline hid::h5t H5T_COMPLEX_LONG;
+    inline hid::h5t H5T_COMPLEX_LLONG;
+    inline hid::h5t H5T_COMPLEX_UINT;
+    inline hid::h5t H5T_COMPLEX_ULONG;
+    inline hid::h5t H5T_COMPLEX_ULLONG;
+    inline hid::h5t H5T_COMPLEX_DOUBLE;
+    inline hid::h5t H5T_COMPLEX_FLOAT;
+    inline hid::h5t H5T_SCALAR2_INT;
+    inline hid::h5t H5T_SCALAR2_LONG;
+    inline hid::h5t H5T_SCALAR2_LLONG;
+    inline hid::h5t H5T_SCALAR2_UINT;
+    inline hid::h5t H5T_SCALAR2_ULONG;
+    inline hid::h5t H5T_SCALAR2_ULLONG;
+    inline hid::h5t H5T_SCALAR2_DOUBLE;
+    inline hid::h5t H5T_SCALAR2_FLOAT;
+    inline hid::h5t H5T_SCALAR3_INT;
+    inline hid::h5t H5T_SCALAR3_LONG;
+    inline hid::h5t H5T_SCALAR3_LLONG;
+    inline hid::h5t H5T_SCALAR3_UINT;
+    inline hid::h5t H5T_SCALAR3_ULONG;
+    inline hid::h5t H5T_SCALAR3_ULLONG;
+    inline hid::h5t H5T_SCALAR3_DOUBLE;
+    inline hid::h5t H5T_SCALAR3_FLOAT;
 
     template<typename T>
     struct H5T_COMPLEX_STRUCT {

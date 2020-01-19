@@ -10,13 +10,13 @@ namespace h5pp {
      * Some of these can be used/modified to setup MPI usage.
      * */
     struct PropertyLists {
-        Hid::h5p file_create  = H5P_DEFAULT; // H5Pcreate(H5P_FILE_CREATE);
-        Hid::h5p file_access  = H5P_DEFAULT; // H5Pcreate(H5P_FILE_ACCESS);
-        Hid::h5p link_create  = H5P_DEFAULT; // H5Pcreate(H5P_LINK_CREATE);
-        Hid::h5p link_access  = H5P_DEFAULT; // H5Pcreate(H5P_LINK_ACCESS);
-        Hid::h5p group_create = H5P_DEFAULT; // H5Pcreate(H5P_GROUP_CREATE);
-        Hid::h5p group_access = H5P_DEFAULT; // H5Pcreate(H5P_GROUP_ACCESS);
-        Hid::h5p dset_xfer    = H5P_DEFAULT; // H5Pcreate(H5P_DATASET_XFER);
+        hid::h5p file_create  = H5P_DEFAULT; // H5Pcreate(H5P_FILE_CREATE);
+        hid::h5p file_access  = H5P_DEFAULT; // H5Pcreate(H5P_FILE_ACCESS);
+        hid::h5p link_create  = H5P_DEFAULT; // H5Pcreate(H5P_LINK_CREATE);
+        hid::h5p link_access  = H5P_DEFAULT; // H5Pcreate(H5P_LINK_ACCESS);
+        hid::h5p group_create = H5P_DEFAULT; // H5Pcreate(H5P_GROUP_CREATE);
+        hid::h5p group_access = H5P_DEFAULT; // H5Pcreate(H5P_GROUP_ACCESS);
+        hid::h5p dset_xfer    = H5P_DEFAULT; // H5Pcreate(H5P_DATASET_XFER);
 
         PropertyLists() {
             // Set default to create missing intermediate groups if they do not exist

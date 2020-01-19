@@ -13,8 +13,8 @@ template<typename T> std::ostream &operator<<(std::ostream &out, const std::vect
 }
 
 int main() {
-    static_assert(h5pp::Type::Scan::hasMember_data<std::vector<double>>() and "Compile time type-checker failed. Could not properly detect class member data. Check that you are "
-                                                                              "using a supported compiler!");
+    static_assert(h5pp::type::sfinae::has_data<std::vector<double>>() and "Compile time type-checker failed. Could not properly detect class member data. Check that you are "
+                                                                          "using a supported compiler!");
     // Generate dummy data
     int                               AttributeInt                 = 7;
     double                            AttributeDouble              = 47.4;
@@ -74,8 +74,8 @@ int main() {
     if(ReadAttributeCharArray != AttributeCharArray) throw std::runtime_error("ReadAttributeCharArray != AttributeCharArray");
 
 #ifdef H5PP_EIGEN3
-    static_assert(h5pp::Type::Scan::hasMember_Scalar<Eigen::MatrixXd>() and "Compile time type-checker failed. Could not properly detect class member Scalar. Scan that you are "
-                                                                            "using a supported compiler!");
+    static_assert(h5pp::type::sfinae::has_Scalar<Eigen::MatrixXd>() and "Compile time type-checker failed. Could not properly detect class member Scalar. Scan that you are "
+                                                                        "using a supported compiler!");
     // Generate dummy data
     Eigen::MatrixXd  AttributeEigenMatrixDouble(10, 10);
     Eigen::MatrixXcd AttributeEigenMatrixComplexDouble(10, 10);

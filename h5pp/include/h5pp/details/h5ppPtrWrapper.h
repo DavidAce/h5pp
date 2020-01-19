@@ -3,18 +3,17 @@
 #include <cassert>
 #include <numeric>
 #include <vector>
+
 /*! An STL-style wrapper for raw C-style arrays
  * We do not need the whole iterator machinery in h5pp,
- * and since this is used to wrap user data, we should never
- * need to modify the data, hence everything is const and
- * we only implement the most basic things.
+ * so we only implement the most basic things.
  * In addition this wrapper supports a description of the
  * dimensions of the data.
  * */
 
-namespace h5pp::Wrapper {
+namespace h5pp {
     template<typename PointerType, size_t N = 1, typename = std::enable_if_t<std::is_pointer_v<PointerType> or std::is_array_v<PointerType>>>
-    class RawArrayWrapper {
+    class PtrWrapper {
         private:
         const PointerType         data_;
         const std::vector<size_t> dims_;
@@ -23,24 +22,24 @@ namespace h5pp::Wrapper {
         public:
         constexpr static size_t NumIndices = N;
 
-        RawArrayWrapper(const PointerType data, const size_t size) : data_(data), dims_({size}), size_(size) { assert(N == dims_.size() and "Dimension mismatch"); }
+        PtrWrapper(const PointerType data, const size_t size) : data_(data), dims_({size}), size_(size) { assert(N == dims_.size() and "Dimension mismatch"); }
 
         template<typename T>
-        RawArrayWrapper(const PointerType data, const T (&dims)[N])
+        PtrWrapper(const PointerType data, const T (&dims)[N])
             : data_(data), dims_(std::begin(dims), std::end(dims)), size_(std::accumulate(std::begin(dims), std::end(dims), 1.0, std::multiplies<>())) {
             static_assert(std::is_integral_v<T> and "Type of dimension array must be integral");
             assert(N == dims_.size() and "Dimension mismatch");
         }
 
         template<typename T>
-        RawArrayWrapper(const PointerType data, const std::array<T, N> &dims)
+        PtrWrapper(const PointerType data, const std::array<T, N> &dims)
             : data_(data), dims_(dims.begin(), dims.end()), size_(std::accumulate(dims.begin(), dims.end(), 1.0, std::multiplies<>())) {
             static_assert(std::is_integral_v<T> and "Type of dimension array must be integral");
             assert(N == dims_.size() and "Dimension mismatch");
         }
 
         template<typename T>
-        RawArrayWrapper(const PointerType data, const std::vector<T> &dims) : data_(data), dims_(dims), size_(std::accumulate(dims.begin(), dims.end(), 1.0, std::multiplies<>())) {
+        PtrWrapper(const PointerType data, const std::vector<T> &dims) : data_(data), dims_(dims), size_(std::accumulate(dims.begin(), dims.end(), 1.0, std::multiplies<>())) {
             static_assert(std::is_integral_v<T> and "Type of dimension array must be integral");
             assert(N == dims_.size() and "Dimension mismatch");
         }

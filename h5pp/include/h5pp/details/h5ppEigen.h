@@ -19,14 +19,13 @@ namespace h5pp {
 /*! \brief **Textra** stands for "Tensor Extra". Provides extra functionality to Eigen::Tensor.*/
 
 /*!
- *  \namespace Textra
+ *  \namespace eigen
  *  This namespace makes shorthand typedef's to Eigen's unsupported Tensor module, and provides handy functions
  *  to interface between `Eigen::Tensor` and `Eigen::Matrix` objects.
  *  The contents of this namespace is co clear it is self-documenting ;)
  */
 #ifdef H5PP_EIGEN3
-    namespace Textra {
-        using cdouble = std::complex<double>;
+    namespace eigen {
         // The default type for an index varies wildly between compilers/archs, so we query here
         using idxType = typename Eigen::Tensor<double, 1>::Index;
         template<typename Scalar>
@@ -206,11 +205,9 @@ namespace h5pp {
             return Matrix_to_Tensor(matrix, matrix.rows(), matrix.cols());
         }
 
-        //
-        //    //****************************//
-        //    //Tensor to matrix conversions//
-        //    //****************************//
-        //
+        //****************************//
+        // Tensor to matrix conversions//
+        //****************************//
 
         template<typename Scalar>
         constexpr MatrixType<Scalar> Tensor2_to_Matrix(const Eigen::Tensor<Scalar, 2> &tensor) {

@@ -70,7 +70,7 @@ int main() {
     file.writeDataset(matrixComplexDouble, "simpleWriteGroup/matrixComplexDouble");
 
     // Test compressed writes
-    if(h5pp::Hdf5::checkIfCompressionIsAvailable()) {
+    if(h5pp::hdf5::checkIfCompressionIsAvailable()) {
         file.setDefaultCompressionLevel(9);
         Eigen::Tensor<double, 4> bigTensor(40, 180, 40, 5);
         bigTensor.setConstant(1.0);

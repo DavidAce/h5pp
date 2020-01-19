@@ -13,13 +13,13 @@
 namespace h5pp {
     class DatasetProperties {
         public:
-        Hid::h5d                            dataSet;
-        Hid::h5t                            dataType;
-        Hid::h5s                            fileSpace;
-        Hid::h5s                            dataSpace;
-        Hid::h5s                            memSpace;
-        Hid::h5p                            plist_dset_create = H5P_DEFAULT;
-        Hid::h5p                            plist_dset_access = H5P_DEFAULT;
+        hid::h5d                            dataSet;
+        hid::h5t                            dataType;
+        hid::h5s                            fileSpace;
+        hid::h5s                            dataSpace;
+        hid::h5s                            memSpace;
+        hid::h5p                            plist_dset_create = H5P_DEFAULT;
+        hid::h5p                            plist_dset_access = H5P_DEFAULT;
         std::optional<std::string>          dsetName;
         std::optional<bool>                 dsetExists;
         std::optional<H5D_layout_t>         layout; //

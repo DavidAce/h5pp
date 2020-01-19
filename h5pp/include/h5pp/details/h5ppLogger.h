@@ -15,7 +15,7 @@
     #include <memory>
 #endif
 
-namespace h5pp::Logger {
+namespace h5pp::logger {
 #ifdef H5PP_SPDLOG
     inline std::shared_ptr<spdlog::logger> log;
 

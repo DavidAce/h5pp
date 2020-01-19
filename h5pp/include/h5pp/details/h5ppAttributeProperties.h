@@ -9,12 +9,12 @@
 namespace h5pp {
     class AttributeProperties {
         public:
-        Hid::h5a                            attributeId;
-        Hid::h5o                            linkObject;
-        Hid::h5t                            dataType;
-        Hid::h5s                            memSpace;
-        Hid::h5p                            plist_attr_create = H5P_DEFAULT;
-        Hid::h5p                            plist_attr_access = H5P_DEFAULT;
+        hid::h5a                            attributeId;
+        hid::h5o                            linkObject;
+        hid::h5t                            dataType;
+        hid::h5s                            memSpace;
+        hid::h5p                            plist_attr_create = H5P_DEFAULT;
+        hid::h5p                            plist_attr_access = H5P_DEFAULT;
         std::optional<std::string>          attrName;
         std::optional<std::string>          linkName;
         std::optional<bool>                 attrExists;

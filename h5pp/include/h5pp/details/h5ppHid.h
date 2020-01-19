@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-namespace h5pp::Hid {
+namespace h5pp::hid {
 
     // Base class for all the safe "hid_t" wrapper classes. Zero value is the default for H5P and H5E so it's ok for them to return it zero
     template<typename hid_h5x, bool zeroValueIsOK = false>

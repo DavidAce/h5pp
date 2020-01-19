@@ -5,7 +5,7 @@
 
 namespace h5pp {
     class File;
-    namespace Counter {
+    namespace counter {
         class ActiveFileCounter {
             public:
             friend class h5pp::File;

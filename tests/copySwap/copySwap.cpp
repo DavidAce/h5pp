@@ -18,7 +18,7 @@ using namespace std::complex_literals;
 // Store some dummy data to an hdf5 file
 
 int main() {
-    static_assert(h5pp::Type::Scan::hasMember_data<std::vector<double>>() and
+    static_assert(h5pp::type::sfinae::has_data<std::vector<double>>() and
                   "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     std::string outputFilenameA = "outputA/copySwapA.h5";
