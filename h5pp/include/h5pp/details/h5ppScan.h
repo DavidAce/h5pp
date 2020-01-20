@@ -125,7 +125,7 @@ namespace h5pp::scan {
             h5pp::hdf5::setDataSpaceExtent(dataProps);
 
             // Make some sanity checks on sizes
-            auto dsetMaxDims = h5pp::hdf5::getMaxDimensions(dsetProps);
+            auto dsetMaxDims = h5pp::hdf5::getMaxDimensions(dsetProps.dataSet);
             for(int idx = 0; idx < dsetProps.ndims.value(); idx++) {
                 if(dsetMaxDims[idx] != H5S_UNLIMITED and dataProps.layout.value() == H5D_CHUNKED and dataProps.dims.value()[idx] > dsetMaxDims[idx])
                     throw std::runtime_error("Dimension too large. Existing dataset [" + dsetProps.dsetName.value() + "] has a maximum size [" + std::to_string(dsetMaxDims[idx]) +

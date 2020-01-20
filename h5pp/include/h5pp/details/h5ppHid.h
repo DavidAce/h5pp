@@ -146,7 +146,10 @@ namespace h5pp::hid {
         [[nodiscard]] std::string tag() const final { return "h5p"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return (val > 0 and rhs > 0 and H5Pequal(val, rhs)) or val == rhs; }
         void                      close() final {
-            if(valid()) H5Pclose(val);
+            if(valid()) {
+                herr_t err = H5Pclose(val);
+                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+            }
         }
     };
 
@@ -158,8 +161,8 @@ namespace h5pp::hid {
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
             if(valid()) {
-                H5Sclose(val);
-                //                std::cout << "closed " << val << " (" << refcount() << ")" << std::endl;
+                herr_t err = H5Sclose(val);
+                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
             }
         }
     };
@@ -171,7 +174,10 @@ namespace h5pp::hid {
         [[nodiscard]] std::string tag() const final { return "h5t"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return (valid(val) and valid(rhs) > 0 and H5Tequal(val, rhs)) or val == rhs; }
         void                      close() final {
-            if(valid()) { H5Tclose(val); }
+            if(valid()) {
+                herr_t err = H5Tclose(val);
+                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+            }
         }
     };
 
@@ -182,7 +188,10 @@ namespace h5pp::hid {
         [[nodiscard]] std::string tag() const final { return "h5d"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
-            if(valid()) { H5Dclose(val); }
+            if(valid()) {
+                herr_t err = H5Dclose(val);
+                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+            }
         }
     };
 
@@ -193,7 +202,10 @@ namespace h5pp::hid {
         [[nodiscard]] std::string tag() const final { return "h5g"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
-            if(valid()) H5Gclose(val);
+            if(valid()) {
+                herr_t err = H5Gclose(val);
+                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+            }
         }
     };
 
@@ -204,7 +216,10 @@ namespace h5pp::hid {
         [[nodiscard]] std::string tag() const final { return "h5a"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
-            if(valid()) H5Aclose(val);
+            if(valid()) {
+                herr_t err = H5Aclose(val);
+                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+            }
         }
     };
 
@@ -215,7 +230,10 @@ namespace h5pp::hid {
         [[nodiscard]] std::string tag() const final { return "h5o"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
-            if(valid()) { H5Oclose(val); }
+            if(valid()) {
+                herr_t err = H5Oclose(val);
+                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+            }
         }
     };
 
@@ -226,7 +244,10 @@ namespace h5pp::hid {
         [[nodiscard]] std::string tag() const final { return "h5f"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
-            if(valid()) { H5Fclose(val); }
+            if(valid()) {
+                herr_t err = H5Fclose(val);
+                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+            }
         }
     };
 

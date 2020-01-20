@@ -1,7 +1,9 @@
 #pragma once
 #include "h5ppDatasetProperties.h"
 #include "h5ppEigen.h"
+#include "h5ppFilesystem.h"
 #include "h5ppLogger.h"
+#include "h5ppPermissions.h"
 #include "h5ppPropertyLists.h"
 #include "h5ppTypeSfinae.h"
 #include "h5ppUtils.h"
@@ -9,7 +11,7 @@
 
 namespace h5pp::hdf5 {
 
-    std::vector<std::string_view> pathCumulativeSplit(std::string_view strv, std::string_view delim) {
+    [[nodiscard]] inline std::vector<std::string_view> pathCumulativeSplit(std::string_view strv, std::string_view delim) {
         std::vector<std::string_view> output;
         size_t                        current_position = 0;
         while(current_position < strv.size()) {
@@ -19,6 +21,13 @@ namespace h5pp::hdf5 {
             current_position = found_position + 1;
         }
         return output;
+    }
+
+    inline int getRank(const hid::h5s &space) { return H5Sget_simple_extent_ndims(space); }
+
+    inline int getRank(const hid::h5d &dataset) {
+        hid::h5s space = H5Dget_space(dataset);
+        return H5Sget_simple_extent_ndims(space);
     }
 
     inline std::vector<hsize_t> getDimensions(const hid::h5s &space) {
@@ -33,8 +42,6 @@ namespace h5pp::hdf5 {
         return getDimensions(space);
     }
 
-    inline std::vector<hsize_t> getDimensions(const DatasetProperties &dsetProps) { return getDimensions(dsetProps.dataSet); }
-
     inline std::vector<hsize_t> getMaxDimensions(const hid::h5s &space) {
         int                  ndims = H5Sget_simple_extent_ndims(space);
         std::vector<hsize_t> maxdims(ndims);
@@ -45,12 +52,6 @@ namespace h5pp::hdf5 {
     inline std::vector<hsize_t> getMaxDimensions(const hid::h5d &dataset) {
         hid::h5s space = H5Dget_space(dataset);
         return getMaxDimensions(space);
-    }
-
-    inline std::vector<hsize_t> getMaxDimensions(const DatasetProperties &dsetProps) {
-        std::vector<hsize_t> maxdims(dsetProps.ndims.value());
-        H5Sget_simple_extent_dims(dsetProps.dataSpace, nullptr, maxdims.data());
-        return maxdims;
     }
 
     inline bool checkIfLinkExists(const hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
@@ -133,7 +134,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    bool checkEqualTypesRecursive(const hid::h5t &type1, const hid::h5t &type2) {
+    [[nodiscard]] inline bool checkEqualTypesRecursive(const hid::h5t &type1, const hid::h5t &type2) {
         // If types are compound, check recursively that all members have equal types and names
         H5T_class_t dataClass1 = H5Tget_class(type1);
         H5T_class_t dataClass2 = H5Tget_class(type1);
@@ -165,7 +166,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline bool checkIfCompressionIsAvailable() {
+    [[nodiscard]] inline bool checkIfCompressionIsAvailable() {
         /*
          * Check if zlib compression is available and can be used for both
          * compression and decompression. We do not throw errors because this
@@ -183,7 +184,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    unsigned int getValidCompressionLevel(std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+    [[nodiscard]] inline unsigned int getValidCompressionLevel(std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
         if(checkIfCompressionIsAvailable()) {
             if(desiredCompressionLevel.has_value()) {
                 if(desiredCompressionLevel.value() < 10) {
@@ -202,7 +203,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline std::vector<std::string>
+    [[nodiscard]] inline std::vector<std::string>
         getAttributeNames(hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
         hid::h5o                 link      = openLink(file, linkName, linkExists, plists);
         unsigned int             num_attrs = H5Aget_num_attrs(link);
@@ -221,12 +222,12 @@ namespace h5pp::hdf5 {
         return attrNames;
     }
 
-    inline bool checkIfAttributeExists(const hid::h5f &     file,
-                                       std::string_view     linkName,
-                                       std::string_view     attrName,
-                                       std::optional<bool>  linkExists = std::nullopt,
-                                       std::optional<bool>  attrExists = std::nullopt,
-                                       const PropertyLists &plists     = PropertyLists()) {
+    [[nodiscard]] inline bool checkIfAttributeExists(const hid::h5f &     file,
+                                                     std::string_view     linkName,
+                                                     std::string_view     attrName,
+                                                     std::optional<bool>  linkExists = std::nullopt,
+                                                     std::optional<bool>  attrExists = std::nullopt,
+                                                     const PropertyLists &plists     = PropertyLists()) {
         if(linkExists and attrExists and linkExists.value() and attrExists.value()) return true;
         hid::h5o link = openLink(file, linkName, linkExists, plists);
         h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}]", attrName, linkName);
@@ -671,6 +672,92 @@ namespace h5pp::hdf5 {
         } else {
             throw std::runtime_error("Attempted to read dataset of unknown type");
         }
+    }
+
+    inline bool fileIsValid(const fs::path &filePath) { return fs::exists(filePath) and H5Fis_hdf5(filePath.string().c_str()) > 0; }
+
+    [[nodiscard]] inline fs::path getAvailableFileName(const fs::path &fileName) {
+        int      i           = 1;
+        fs::path newFileName = fileName;
+        while(fs::exists(newFileName)) { newFileName.replace_filename(fileName.stem().string() + "-" + std::to_string(i++) + fileName.extension().string()); }
+        return newFileName;
+    }
+
+    inline std::pair<h5pp::fs::path, h5pp::fs::path> createFile(const h5pp::fs::path &filePath,
+                                                                const AccessMode &    accessMode = AccessMode::READWRITE,
+                                                                const CreateMode &    createMode = CreateMode::RENAME,
+                                                                const PropertyLists & plists     = PropertyLists()) {
+        fs::path filePath_result = filePath;
+        fs::path fileName_result = filePath.filename();
+        try {
+            if(fs::create_directories(filePath_result.parent_path())) {
+                h5pp::logger::log->trace("Created directory: {}", filePath_result.parent_path().string());
+            } else {
+                h5pp::logger::log->trace("Directory already exists: {}", filePath_result.parent_path().string());
+            }
+        } catch(std::exception &ex) { throw std::runtime_error("Failed to create directory: " + std::string(ex.what())); }
+
+        switch(createMode) {
+            case CreateMode::OPEN: {
+                h5pp::logger::log->debug("File mode [OPEN]: Opening file [{}]", filePath_result.string());
+                try {
+                    if(fileIsValid(filePath_result)) {
+                        hid_t file;
+                        switch(accessMode) {
+                            case(AccessMode::READONLY): file = H5Fopen(filePath_result.string().c_str(), H5F_ACC_RDONLY, plists.file_access); break;
+                            case(AccessMode::READWRITE): file = H5Fopen(filePath_result.string().c_str(), H5F_ACC_RDWR, plists.file_access); break;
+                            default: throw std::runtime_error("Invalid access mode");
+                        }
+                        if(file < 0) {
+                            H5Eprint(H5E_DEFAULT, stderr);
+                            throw std::runtime_error("Failed to open file: [" + filePath_result.string() + "]");
+                        }
+                        H5Fclose(file);
+                        filePath_result = fs::canonical(filePath_result);
+                    } else {
+                        throw std::runtime_error("Invalid file: [" + filePath_result.string() + "]");
+                    }
+                } catch(std::exception &ex) { throw std::runtime_error("Failed to open hdf5 file: " + std::string(ex.what())); }
+                break;
+            }
+            case CreateMode::TRUNCATE: {
+                h5pp::logger::log->debug("File mode [TRUNCATE]: Overwriting file if it exists: [{}]", filePath_result.string());
+                try {
+                    hid_t file = H5Fcreate(filePath_result.string().c_str(), H5F_ACC_TRUNC, plists.file_create, plists.file_access);
+                    if(file < 0) {
+                        H5Eprint(H5E_DEFAULT, stderr);
+                        throw std::runtime_error("Failed to create file: [" + filePath_result.string() + "]");
+                    }
+                    H5Fclose(file);
+                    filePath_result = fs::canonical(filePath_result);
+                } catch(std::exception &ex) { throw std::runtime_error("Failed to create hdf5 file: " + std::string(ex.what())); }
+                break;
+            }
+            case CreateMode::RENAME: {
+                try {
+                    h5pp::logger::log->debug("File mode [RENAME]: Finding new file name if previous file exists: [{}]", filePath_result.string());
+                    if(fileIsValid(filePath_result)) {
+                        filePath_result = getAvailableFileName(filePath_result);
+                        h5pp::logger::log->info("Previous file exists. Choosing new file name: [{}] ---> [{}]", fileName_result.string(), filePath_result.filename().string());
+                        fileName_result = filePath_result.filename();
+                    }
+                    hid_t file = H5Fcreate(filePath_result.string().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, plists.file_access);
+                    if(file < 0) {
+                        H5Eprint(H5E_DEFAULT, stderr);
+                        throw std::runtime_error("Failed to create file: [" + filePath_result.string() + "]");
+                    }
+                    H5Fclose(file);
+                    filePath_result = fs::canonical(filePath_result);
+                } catch(std::exception &ex) { throw std::runtime_error("Failed to create renamed hdf5 file : " + std::string(ex.what())); }
+                break;
+            }
+            default: {
+                h5pp::logger::log->error("File Mode not set. Choose  CreateMode::<OPEN|TRUNCATE|RENAME>");
+                throw std::runtime_error("File Mode not set. Choose  CreateMode::<OPEN|TRUNCATE|RENAME>");
+            }
+        }
+
+        return std::make_pair(filePath_result, fileName_result);
     }
 
 }

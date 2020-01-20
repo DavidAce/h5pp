@@ -168,9 +168,6 @@ else ()
     list(APPEND H5PP_DIRECTORY_HINTS ${ghcfilesystem_install_prefix})
 endif ()
 
-# Check  #include<experimental/type_traits>
-#include(${PROJECT_SOURCE_DIR}/cmake/CheckTypeTraits.cmake)
-#CheckTypeTraits()
 
 # Check  #include<optional> or #include<experimental/optional>
 include(${PROJECT_SOURCE_DIR}/cmake/CheckCXXOptional.cmake)
