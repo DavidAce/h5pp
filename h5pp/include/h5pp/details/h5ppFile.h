@@ -308,17 +308,17 @@ namespace h5pp {
             return foundLinks;
         }
 
-        [[nodiscard]] std::pair<std::type_index, size_t> getDatasetTypeInfo(std::string_view dsetName) {
+        [[nodiscard]] std::pair<std::type_index, size_t> getDatasetTypeInfo(std::string_view dsetName) const {
             hid::h5f file = openFileHandle();
             return h5pp::hdf5::getDatasetTypeInfo(file, dsetName, std::nullopt, plists.link_access);
         }
 
-        [[nodiscard]] std::pair<std::type_index, size_t> getAttributeTypeInfo(std::string_view linkName, std::string_view attrName) {
+        [[nodiscard]] std::pair<std::type_index, size_t> getAttributeTypeInfo(std::string_view linkName, std::string_view attrName) const {
             hid::h5f file = openFileHandle();
             return h5pp::hdf5::getAttributeTypeInfo(file, linkName, attrName, std::nullopt, std::nullopt, plists.link_access);
         }
 
-        [[nodiscard]] std::map<std::string, std::pair<std::type_index, size_t>> getAttributeTypeInfoAll(std::string_view linkName) {
+        [[nodiscard]] std::map<std::string, std::pair<std::type_index, size_t>> getAttributeTypeInfoAll(std::string_view linkName) const {
             hid::h5f file = openFileHandle();
             return h5pp::hdf5::getAttributeTypeInfoAll(file, linkName, std::nullopt, plists.link_access);
         }
