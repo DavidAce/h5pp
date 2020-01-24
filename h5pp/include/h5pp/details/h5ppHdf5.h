@@ -8,6 +8,8 @@
 #include "h5ppTypeSfinae.h"
 #include "h5ppUtils.h"
 #include <hdf5.h>
+#include <map>
+#include <typeindex>
 
 namespace h5pp::hdf5 {
 
@@ -54,11 +56,11 @@ namespace h5pp::hdf5 {
         return getMaxDimensions(space);
     }
 
-    inline bool checkIfLinkExists(const hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
+    inline bool checkIfLinkExists(const hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
         if(linkExists) return linkExists.value();
         h5pp::logger::log->trace("Checking if link exists: [{}]", linkName);
         for(const auto &subPath : pathCumulativeSplit(linkName, "/")) {
-            int exists = H5Lexists(file, std::string(subPath).c_str(), plists.link_access);
+            int exists = H5Lexists(file, std::string(subPath).c_str(), link_access);
             if(exists == 0) {
                 h5pp::logger::log->trace("Checking if link exists: [{}] ... {}", linkName, false);
                 return false;
@@ -72,12 +74,11 @@ namespace h5pp::hdf5 {
         return true;
     }
 
-    inline bool
-        checkIfDatasetExists(const hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
+    inline bool checkIfDatasetExists(const hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
         if(dsetExists) return dsetExists.value();
         h5pp::logger::log->trace("Checking if dataset exists: [{}]", dsetName);
         for(const auto &subPath : pathCumulativeSplit(dsetName, "/")) {
-            int exists = H5Lexists(file, std::string(subPath).c_str(), plists.link_access);
+            int exists = H5Lexists(file, std::string(subPath).c_str(), dset_access);
             if(exists == 0) {
                 h5pp::logger::log->trace("Checking if dataset exists: [{}] ... false", dsetName);
                 return false;
@@ -87,7 +88,7 @@ namespace h5pp::hdf5 {
                 throw std::runtime_error("Failed to check if dataset exists: [" + std::string(dsetName) + "]");
             }
         }
-        hid::h5o   object     = H5Oopen(file, std::string(dsetName).c_str(), plists.link_access);
+        hid::h5o   object     = H5Oopen(file, std::string(dsetName).c_str(), dset_access);
         H5I_type_t objectType = H5Iget_type(object);
         if(objectType != H5I_DATASET) {
             h5pp::logger::log->trace("Checking if dataset exists: [{}] ... false", dsetName);
@@ -99,46 +100,79 @@ namespace h5pp::hdf5 {
     }
 
     [[nodiscard]] inline hid::h5o
-        openLink(const hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
-        if(checkIfLinkExists(file, linkName, linkExists, plists)) {
-            h5pp::logger::log->trace("Opening link: [{}]", linkName);
-            hid::h5o linkObject = H5Oopen(file, std::string(linkName).c_str(), plists.link_access);
+        openObject(const hid::h5f &file, std::string_view objectName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &object_access = H5P_DEFAULT) {
+        if(checkIfLinkExists(file, objectName, linkExists, object_access)) {
+            h5pp::logger::log->trace("Opening link: [{}]", objectName);
+            hid::h5o linkObject = H5Oopen(file, std::string(objectName).c_str(), object_access);
             if(linkObject < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to open existing link: [" + std::string(linkName) + "]");
-            } else {
-                return linkObject;
-            }
-        } else {
-            throw std::runtime_error("Link does not exist: [" + std::string(linkName) + "]");
-        }
-    }
-
-    template<typename h5x>
-    [[nodiscard]] h5x openObject(const hid::h5f &file, std::string_view objectName, std::optional<bool> objectExists = std::nullopt, const hid::h5p &object_access = H5P_DEFAULT) {
-        if(checkIfLinkExists(file, objectName, objectExists)) {
-            h5pp::logger::log->trace("Opening object: [{}]", objectName);
-            h5x object;
-            if constexpr(std::is_same_v<h5x, hid::h5d>) object = H5Dopen(file, std::string(objectName).c_str(), object_access);
-            if constexpr(std::is_same_v<h5x, hid::h5g>) object = H5Gopen(file, std::string(objectName).c_str(), object_access);
-            if constexpr(std::is_same_v<h5x, hid::h5o>) object = H5Oopen(file, std::string(objectName).c_str(), object_access);
-
-            if(object < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error("Failed to open existing object: [" + std::string(objectName) + "]");
             } else {
-                return object;
+                return linkObject;
             }
         } else {
             throw std::runtime_error("Object does not exist: [" + std::string(objectName) + "]");
         }
     }
 
-    [[nodiscard]] inline bool checkEqualTypesRecursive(const hid::h5t &type1, const hid::h5t &type2) {
+    template<typename h5x>
+    [[nodiscard]] h5x openLink(const hid::h5f &file, std::string_view linkName, std::optional<bool> objectExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
+        if(checkIfLinkExists(file, linkName, objectExists)) {
+            h5pp::logger::log->trace("Opening link: [{}]", linkName);
+            h5x object;
+            if constexpr(std::is_same_v<h5x, hid::h5d>) object = H5Dopen(file, std::string(linkName).c_str(), link_access);
+            if constexpr(std::is_same_v<h5x, hid::h5g>) object = H5Gopen(file, std::string(linkName).c_str(), link_access);
+            if constexpr(std::is_same_v<h5x, hid::h5o>) object = H5Oopen(file, std::string(linkName).c_str(), link_access);
+
+            if(object < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to open existing link: [" + std::string(linkName) + "]");
+            } else {
+                return object;
+            }
+        } else {
+            throw std::runtime_error("Link does not exist: [" + std::string(linkName) + "]");
+        }
+    }
+
+    [[nodiscard]] inline bool checkIfAttributeExists(const hid::h5f &    file,
+                                                     std::string_view    linkName,
+                                                     std::string_view    attrName,
+                                                     std::optional<bool> linkExists  = std::nullopt,
+                                                     std::optional<bool> attrExists  = std::nullopt,
+                                                     const hid::h5p &    link_access = H5P_DEFAULT) {
+        if(linkExists and attrExists and linkExists.value() and attrExists.value()) return true;
+        hid::h5o link = openObject(file, linkName, linkExists, link_access);
+        h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}]", attrName, linkName);
+        bool         exists    = false;
+        unsigned int num_attrs = H5Aget_num_attrs(link);
+
+        for(unsigned int i = 0; i < num_attrs; i++) {
+            hid::h5a    attr_id  = H5Aopen_idx(link, i);
+            hsize_t     buf_size = 0;
+            std::string buf;
+            buf_size = H5Aget_name(attr_id, buf_size, nullptr);
+            buf.resize(buf_size + 1);
+            H5Aget_name(attr_id, buf_size + 1, buf.data());
+            std::string attr_name(buf.data());
+            H5Aclose(attr_id);
+            if(attrName == attr_name) {
+                exists = true;
+                break;
+            }
+        }
+        h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}] ... {}", attrName, linkName, exists);
+        return exists;
+    }
+
+    [[nodiscard]] inline bool H5Tequal_recurse(const hid::h5t &type1, const hid::h5t &type2) {
         // If types are compound, check recursively that all members have equal types and names
         H5T_class_t dataClass1 = H5Tget_class(type1);
         H5T_class_t dataClass2 = H5Tget_class(type1);
         if(dataClass1 == H5T_COMPOUND and dataClass2 == H5T_COMPOUND) {
+            size_t size_type1 = H5Tget_size(type1);
+            size_t size_type2 = H5Tget_size(type2);
+            if(size_type1 != size_type2) return false;
             int num_members1 = H5Tget_nmembers(type1);
             int num_members2 = H5Tget_nmembers(type2);
             if(num_members1 != num_members2) return false;
@@ -153,7 +187,7 @@ namespace h5pp::hdf5 {
                 H5free_memory(mem1);
                 H5free_memory(mem2);
                 if(not equal) return false;
-                if(not checkEqualTypesRecursive(t1, t2)) return false;
+                if(not H5Tequal_recurse(t1, t2)) return false;
             }
             return true;
         } else if(dataClass1 == dataClass2) {
@@ -202,10 +236,8 @@ namespace h5pp::hdf5 {
             return 0;
         }
     }
-
-    [[nodiscard]] inline std::vector<std::string>
-        getAttributeNames(hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
-        hid::h5o                 link      = openLink(file, linkName, linkExists, plists);
+    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5o> or std::is_same_v<h5x, hid::h5d> or std::is_same_v<h5x, hid::h5g>>>
+    [[nodiscard]] inline std::vector<std::string> getAttributeNames(const h5x &link) {
         unsigned int             num_attrs = H5Aget_num_attrs(link);
         std::vector<std::string> attrNames;
         for(unsigned int i = 0; i < num_attrs; i++) {
@@ -222,43 +254,129 @@ namespace h5pp::hdf5 {
         return attrNames;
     }
 
-    [[nodiscard]] inline bool checkIfAttributeExists(const hid::h5f &     file,
-                                                     std::string_view     linkName,
-                                                     std::string_view     attrName,
-                                                     std::optional<bool>  linkExists = std::nullopt,
-                                                     std::optional<bool>  attrExists = std::nullopt,
-                                                     const PropertyLists &plists     = PropertyLists()) {
-        if(linkExists and attrExists and linkExists.value() and attrExists.value()) return true;
-        hid::h5o link = openLink(file, linkName, linkExists, plists);
-        h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}]", attrName, linkName);
-        bool         exists    = false;
-        unsigned int num_attrs = H5Aget_num_attrs(link);
-
-        for(unsigned int i = 0; i < num_attrs; i++) {
-            hid::h5a    attr_id  = H5Aopen_idx(link, i);
-            hsize_t     buf_size = 0;
-            std::string buf;
-            buf_size = H5Aget_name(attr_id, buf_size, nullptr);
-            buf.resize(buf_size + 1);
-            H5Aget_name(attr_id, buf_size + 1, buf.data());
-            std::string attr_name(buf.data());
-            H5Aclose(attr_id);
-            if(attrName == attr_name) {
-                exists = true;
-                break;
-            }
-        }
-        h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}] ... {}", attrName, linkName, exists);
-        return exists;
+    [[nodiscard]] inline std::vector<std::string>
+        getAttributeNames(hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
+        hid::h5o link = openObject(file, linkName, linkExists, link_access);
+        return getAttributeNames(link);
     }
 
-    inline void extendDataset(hid::h5f &           file,
-                              std::string_view     datasetRelativeName,
-                              const int            dim,
-                              const int            extent,
-                              std::optional<bool>  linkExists = std::nullopt,
-                              const PropertyLists &plists     = PropertyLists()) {
-        hid::h5o dataset = openLink(file, datasetRelativeName, linkExists, plists);
+    inline std::type_index getValueTypeID(const hid::h5t &type) {
+        if(H5Tequal(type, H5T_NATIVE_SHORT)) return typeid(short);
+        if(H5Tequal(type, H5T_NATIVE_INT)) return typeid(int);
+        if(H5Tequal(type, H5T_NATIVE_LONG)) return typeid(long);
+        if(H5Tequal(type, H5T_NATIVE_LLONG)) return typeid(long long);
+        if(H5Tequal(type, H5T_NATIVE_USHORT)) return typeid(unsigned short);
+        if(H5Tequal(type, H5T_NATIVE_UINT)) return typeid(unsigned int);
+        if(H5Tequal(type, H5T_NATIVE_ULONG)) return typeid(unsigned long);
+        if(H5Tequal(type, H5T_NATIVE_ULLONG)) return typeid(unsigned long long);
+        if(H5Tequal(type, H5T_NATIVE_DOUBLE)) return typeid(double);
+        if(H5Tequal(type, H5T_NATIVE_LDOUBLE)) return typeid(long double);
+        if(H5Tequal(type, H5T_NATIVE_FLOAT)) return typeid(float);
+        if(H5Tequal(type, H5T_NATIVE_HBOOL)) return typeid(bool);
+        if(H5Tequal(type, H5T_NATIVE_CHAR)) return typeid(char);
+        if(H5Tequal_recurse(type, H5Tcopy(H5T_C_S1))) return typeid(std::string);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_COMPLEX_SHORT)) return typeid(std::complex<short>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_COMPLEX_INT)) return typeid(std::complex<int>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_COMPLEX_LONG)) return typeid(std::complex<long>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_COMPLEX_LLONG)) return typeid(std::complex<long long>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_COMPLEX_USHORT)) return typeid(std::complex<unsigned short>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_COMPLEX_UINT)) return typeid(std::complex<unsigned int>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_COMPLEX_ULONG)) return typeid(std::complex<unsigned long>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_COMPLEX_ULLONG)) return typeid(std::complex<unsigned long long>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_COMPLEX_DOUBLE)) return typeid(std::complex<double>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_COMPLEX_LDOUBLE)) return typeid(std::complex<long double>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_COMPLEX_FLOAT)) return typeid(std::complex<float>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR2_SHORT)) return typeid(h5pp::type::compound::H5T_SCALAR2<short>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR2_INT)) return typeid(h5pp::type::compound::H5T_SCALAR2<int>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR2_LONG)) return typeid(h5pp::type::compound::H5T_SCALAR2<long>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR2_LLONG)) return typeid(h5pp::type::compound::H5T_SCALAR2<long long>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR2_USHORT)) return typeid(h5pp::type::compound::H5T_SCALAR2<unsigned short>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR2_UINT)) return typeid(h5pp::type::compound::H5T_SCALAR2<unsigned int>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR2_ULONG)) return typeid(h5pp::type::compound::H5T_SCALAR2<unsigned long>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR2_ULLONG)) return typeid(h5pp::type::compound::H5T_SCALAR2<unsigned long long>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR2_DOUBLE)) return typeid(h5pp::type::compound::H5T_SCALAR2<double>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR2_LDOUBLE)) return typeid(h5pp::type::compound::H5T_SCALAR2<long double>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR2_FLOAT)) return typeid(h5pp::type::compound::H5T_SCALAR2<float>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_SHORT)) return typeid(h5pp::type::compound::H5T_SCALAR3<short>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_INT)) return typeid(h5pp::type::compound::H5T_SCALAR3<int>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_LONG)) return typeid(h5pp::type::compound::H5T_SCALAR3<long>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_LLONG)) return typeid(h5pp::type::compound::H5T_SCALAR3<long long>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_USHORT)) return typeid(h5pp::type::compound::H5T_SCALAR3<unsigned short>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_UINT)) return typeid(h5pp::type::compound::H5T_SCALAR3<unsigned int>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_ULONG)) return typeid(h5pp::type::compound::H5T_SCALAR3<unsigned long>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_ULLONG)) return typeid(h5pp::type::compound::H5T_SCALAR3<unsigned long long>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_DOUBLE)) return typeid(h5pp::type::compound::H5T_SCALAR3<double>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_LDOUBLE)) return typeid(h5pp::type::compound::H5T_SCALAR3<long double>);
+        if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_FLOAT)) return typeid(h5pp::type::compound::H5T_SCALAR3<float>);
+        hsize_t     buf_size = H5Iget_name(type, nullptr, 0);
+        std::string name;
+        name.resize(buf_size + 1);
+        H5Iget_name(type, name.data(), buf_size + 1);
+        H5Eprint(H5E_DEFAULT, stderr);
+        h5pp::logger::log->warn("Unable to match given hdf5 type to native type: " + name);
+        throw std::runtime_error("Unable to match given hdf5 type to native type: " + name);
+        return typeid(std::nullopt);
+    }
+
+    inline std::pair<std::type_index, size_t> getDatasetTypeInfo(const hid::h5d &dataset) {
+        hid::h5t type  = H5Dget_type(dataset);
+        hid::h5s space = H5Dget_space(dataset);
+        auto     size  = (size_t) H5Sget_simple_extent_npoints(space);
+        return std::make_pair(getValueTypeID(type), size);
+    }
+
+    inline std::pair<std::type_index, size_t>
+        getDatasetTypeInfo(const hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
+        auto dataset = openLink<hid::h5d>(file, dsetName, dsetExists, dset_access);
+        return getDatasetTypeInfo(dataset);
+    }
+
+    inline std::pair<std::type_index, size_t> getAttributeTypeInfo(const hid::h5a &attribute) {
+        hid::h5t type  = H5Aget_type(attribute);
+        hid::h5s space = H5Aget_space(attribute);
+        auto     size  = (size_t) H5Sget_simple_extent_npoints(space);
+        return std::make_pair(getValueTypeID(type), size);
+    }
+
+    inline std::pair<std::type_index, size_t> getAttributeTypeInfo(const hid::h5f &    file,
+                                                                   std::string_view    linkName,
+                                                                   std::string_view    attrName,
+                                                                   std::optional<bool> linkExists  = std::nullopt,
+                                                                   std::optional<bool> attrExists  = std::nullopt,
+                                                                   const hid::h5p &    link_access = H5P_DEFAULT) {
+        auto link = openLink<hid::h5o>(file, linkName, linkExists, link_access);
+        if(checkIfAttributeExists(file, linkName, attrName, linkExists, attrExists, link_access)) {
+            hid::h5a attribute = H5Aopen_name(link, std::string(attrName).c_str());
+            return getAttributeTypeInfo(attribute);
+        } else {
+            throw std::runtime_error("Attribute [" + std::string(attrName) + "] does not exist in link [" + std::string(linkName) + "]");
+        }
+    }
+
+    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5o> or std::is_same_v<h5x, hid::h5d> or std::is_same_v<h5x, hid::h5g>>>
+    std::map<std::string, std::pair<std::type_index, size_t>> getAttributeTypeInfoAll(const h5x &link) {
+        std::map<std::string, std::pair<std::type_index, size_t>> allAttrInfo;
+        for(auto &attrName : getAttributeNames(link)) {
+            h5pp::logger::log->trace("Collecting type info about attribute [{}]", attrName);
+            hid::h5a attribute = H5Aopen_name(link, attrName.c_str());
+            allAttrInfo.insert({attrName, getAttributeTypeInfo(attribute)});
+        }
+        return allAttrInfo;
+    }
+
+    inline std::map<std::string, std::pair<std::type_index, size_t>>
+        getAttributeTypeInfoAll(const hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
+        auto link = openLink<hid::h5o>(file, linkName, linkExists, link_access);
+        return getAttributeTypeInfoAll(link);
+    }
+
+    inline void extendDataset(hid::h5f &          file,
+                              std::string_view    datasetRelativeName,
+                              const int           dim,
+                              const int           extent,
+                              std::optional<bool> linkExists  = std::nullopt,
+                              const hid::h5p &    dset_access = H5P_DEFAULT) {
+        auto dataset = openLink<hid::h5d>(file, datasetRelativeName, linkExists, dset_access);
         h5pp::logger::log->trace("Extending dataset [ {} ] dimension [{}] to extent [{}]", datasetRelativeName, dim, extent);
         // Retrieve the current size of the memSpace (act as if you don't know its size and want to append)
         hid::h5a             dataSpace = H5Dget_space(dataset);
@@ -272,27 +390,27 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType>
-    void extendDataset(hid::h5f &file, const DataType &data, std::string_view datasetRelativeName) {
+    void extendDataset(hid::h5f &file, const DataType &data, std::string_view dsetName) {
 #ifdef H5PP_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_core<DataType>::value) {
-            extendDataset(file, datasetRelativeName, 0, data.rows());
-            hid::h5o             dataSet   = openLink(file, datasetRelativeName);
+            extendDataset(file, dsetName, 0, data.rows());
+            hid::h5d             dataSet   = openLink<hid::h5d>(file, dsetName);
             hid::h5s             fileSpace = H5Dget_space(dataSet);
             int                  ndims     = H5Sget_simple_extent_ndims(fileSpace);
             std::vector<hsize_t> dims(ndims);
             H5Sget_simple_extent_dims(fileSpace, dims.data(), nullptr);
             H5Sclose(fileSpace);
-            if(dims[1] < (hsize_t) data.cols()) extendDataset(file, datasetRelativeName, 1, data.cols());
+            if(dims[1] < (hsize_t) data.cols()) extendDataset(file, dsetName, 1, data.cols());
         } else
 #endif
         {
-            extendDataset(file, datasetRelativeName, 0, h5pp::utils::getSize(data));
+            extendDataset(file, dsetName, 0, h5pp::utils::getSize(data));
         }
     }
 
     inline void createGroup(hid::h5f &file, std::string_view groupRelativeName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
         // Check if group exists already
-        linkExists = checkIfLinkExists(file, groupRelativeName, linkExists, plists);
+        linkExists = checkIfLinkExists(file, groupRelativeName, linkExists, plists.link_access);
         if(linkExists.value()) {
             h5pp::logger::log->trace("Group already exists: {}", groupRelativeName);
             return;
@@ -303,7 +421,7 @@ namespace h5pp::hdf5 {
     }
 
     inline void writeSymbolicLink(hid::h5f &file, std::string_view src_path, std::string_view tgt_path, const PropertyLists &plists = PropertyLists()) {
-        if(checkIfLinkExists(file, src_path, std::nullopt, plists)) {
+        if(checkIfLinkExists(file, src_path, std::nullopt, plists.link_access)) {
             h5pp::logger::log->trace("Creating symbolik link: [{}] --> [{}]", src_path, tgt_path);
             herr_t retval = H5Lcreate_soft(std::string(src_path).c_str(), file, std::string(tgt_path).c_str(), plists.link_create, plists.link_access);
             if(retval < 0) {

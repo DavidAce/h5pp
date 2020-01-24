@@ -91,7 +91,7 @@ namespace h5pp {
         ~File() noexcept(false) {
             auto savedLog = h5pp::logger::log->name();
             h5pp::logger::setLogger("h5pp|exit", logLevel, logTimestamp);
-            if(h5pp::counter::ActiveFileCounter::getCount() == 1) { h5pp::type::compound::closeTypes(); }
+            //            if(h5pp::counter::ActiveFileCounter::getCount() == 1) { h5pp::type::compound::closeTypes(); }
             h5pp::counter::ActiveFileCounter::decrementCounter(fileName.string());
             if(h5pp::counter::ActiveFileCounter::getCount() == 0) {
                 h5pp::logger::log->debug("Closing file: {}.", fileName.string(), h5pp::counter::ActiveFileCounter::getCount(), h5pp::counter::ActiveFileCounter::OpenFileNames());
@@ -264,7 +264,7 @@ namespace h5pp {
 
         [[nodiscard]] inline std::vector<std::string> getAttributeNames(std::string_view linkPath) const {
             hid::h5f                 file           = openFileHandle();
-            std::vector<std::string> attributeNames = h5pp::hdf5::getAttributeNames(file, linkPath, std::nullopt, plists);
+            std::vector<std::string> attributeNames = h5pp::hdf5::getAttributeNames(file, linkPath, std::nullopt, plists.link_access);
             return attributeNames;
         }
 
@@ -286,19 +286,19 @@ namespace h5pp {
 
         [[nodiscard]] int getDatasetRank(std::string_view datasetPath) {
             hid::h5f file    = openFileHandle();
-            hid::h5d dataset = h5pp::hdf5::openObject<hid::h5d>(file, datasetPath);
+            hid::h5d dataset = h5pp::hdf5::openLink<hid::h5d>(file, datasetPath);
             return h5pp::hdf5::getRank(dataset);
         }
 
         [[nodiscard]] std::vector<hsize_t> getDatasetDimensions(std::string_view datasetPath) {
             hid::h5f file    = openFileHandle();
-            hid::h5d dataset = h5pp::hdf5::openObject<hid::h5d>(file, datasetPath);
+            hid::h5d dataset = h5pp::hdf5::openLink<hid::h5d>(file, datasetPath);
             return h5pp::hdf5::getDimensions(dataset);
         }
 
         [[nodiscard]] bool linkExists(std::string_view link) const {
             hid::h5f file   = openFileHandle();
-            bool     exists = h5pp::hdf5::checkIfLinkExists(file, link, std::nullopt, plists);
+            bool     exists = h5pp::hdf5::checkIfLinkExists(file, link, std::nullopt, plists.link_access);
             return exists;
         }
 
@@ -306,6 +306,21 @@ namespace h5pp {
             hid::h5f file       = openFileHandle();
             auto     foundLinks = h5pp::hdf5::getContentsOfGroup(file, groupName);
             return foundLinks;
+        }
+
+        [[nodiscard]] std::pair<std::type_index, size_t> getDatasetTypeInfo(std::string_view dsetName) {
+            hid::h5f file = openFileHandle();
+            return h5pp::hdf5::getDatasetTypeInfo(file, dsetName, std::nullopt, plists.link_access);
+        }
+
+        [[nodiscard]] std::pair<std::type_index, size_t> getAttributeTypeInfo(std::string_view linkName, std::string_view attrName) {
+            hid::h5f file = openFileHandle();
+            return h5pp::hdf5::getAttributeTypeInfo(file, linkName, attrName, std::nullopt, std::nullopt, plists.link_access);
+        }
+
+        [[nodiscard]] std::map<std::string, std::pair<std::type_index, size_t>> getAttributeTypeInfoAll(std::string_view linkName) {
+            hid::h5f file = openFileHandle();
+            return h5pp::hdf5::getAttributeTypeInfoAll(file, linkName, std::nullopt, plists.link_access);
         }
 
         [[nodiscard]] bool fileIsValid() const { return h5pp::hdf5::fileIsValid(filePath); }

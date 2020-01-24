@@ -146,7 +146,7 @@ namespace h5pp::type::sfinae {
         std::string_view name, prefix, suffix;
 #ifdef __clang__
         name   = __PRETTY_FUNCTION__;
-        prefix = "auto h5pp::Type::Scan::type_name() [T = ";
+        prefix = "auto h5pp::type::sfinae::type_name() [T = ";
         suffix = "]";
 #elif defined(__GNUC__)
         name   = __PRETTY_FUNCTION__;

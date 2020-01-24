@@ -48,68 +48,45 @@ namespace h5pp::type::compound::Create {
 
         return NEW_SCALAR3_TYPE;
     }
-
 }
 
 namespace h5pp::type::compound {
 
     inline void initTypes() {
-        H5T_COMPLEX_INT    = Create::createComplexType<int>();
-        H5T_COMPLEX_LONG   = Create::createComplexType<long>();
-        H5T_COMPLEX_LLONG  = Create::createComplexType<long long>();
-        H5T_COMPLEX_UINT   = Create::createComplexType<unsigned int>();
-        H5T_COMPLEX_UINT   = Create::createComplexType<unsigned int>();
-        H5T_COMPLEX_ULONG  = Create::createComplexType<unsigned long>();
-        H5T_COMPLEX_ULLONG = Create::createComplexType<unsigned long long>();
-        H5T_COMPLEX_DOUBLE = Create::createComplexType<double>();
-        H5T_COMPLEX_FLOAT  = Create::createComplexType<float>();
+        if(not H5T_COMPLEX_SHORT.valid()) H5T_COMPLEX_SHORT = Create::createComplexType<short>();
+        if(not H5T_COMPLEX_INT.valid()) H5T_COMPLEX_INT = Create::createComplexType<int>();
+        if(not H5T_COMPLEX_LONG.valid()) H5T_COMPLEX_LONG = Create::createComplexType<long>();
+        if(not H5T_COMPLEX_LLONG.valid()) H5T_COMPLEX_LLONG = Create::createComplexType<long long>();
+        if(not H5T_COMPLEX_USHORT.valid()) H5T_COMPLEX_USHORT = Create::createComplexType<unsigned short>();
+        if(not H5T_COMPLEX_UINT.valid()) H5T_COMPLEX_UINT = Create::createComplexType<unsigned int>();
+        if(not H5T_COMPLEX_ULONG.valid()) H5T_COMPLEX_ULONG = Create::createComplexType<unsigned long>();
+        if(not H5T_COMPLEX_ULLONG.valid()) H5T_COMPLEX_ULLONG = Create::createComplexType<unsigned long long>();
+        if(not H5T_COMPLEX_DOUBLE.valid()) H5T_COMPLEX_DOUBLE = Create::createComplexType<double>();
+        if(not H5T_COMPLEX_LDOUBLE.valid()) H5T_COMPLEX_LDOUBLE = Create::createComplexType<long double>();
+        if(not H5T_COMPLEX_FLOAT.valid()) H5T_COMPLEX_FLOAT = Create::createComplexType<float>();
 
-        H5T_SCALAR2_INT    = Create::createScalar2Type<int>();
-        H5T_SCALAR2_LONG   = Create::createScalar2Type<long>();
-        H5T_SCALAR2_LLONG  = Create::createScalar2Type<long long>();
-        H5T_SCALAR2_UINT   = Create::createScalar2Type<unsigned int>();
-        H5T_SCALAR2_ULONG  = Create::createScalar2Type<unsigned long>();
-        H5T_SCALAR2_ULLONG = Create::createScalar2Type<unsigned long long>();
-        H5T_SCALAR2_DOUBLE = Create::createScalar2Type<double>();
-        H5T_SCALAR2_FLOAT  = Create::createScalar2Type<float>();
+        if(not H5T_SCALAR2_SHORT.valid()) H5T_SCALAR2_SHORT = Create::createScalar2Type<short>();
+        if(not H5T_SCALAR2_INT.valid()) H5T_SCALAR2_INT = Create::createScalar2Type<int>();
+        if(not H5T_SCALAR2_LONG.valid()) H5T_SCALAR2_LONG = Create::createScalar2Type<long>();
+        if(not H5T_SCALAR2_LLONG.valid()) H5T_SCALAR2_LLONG = Create::createScalar2Type<long long>();
+        if(not H5T_SCALAR2_USHORT.valid()) H5T_SCALAR2_USHORT = Create::createScalar2Type<unsigned short>();
+        if(not H5T_SCALAR2_UINT.valid()) H5T_SCALAR2_UINT = Create::createScalar2Type<unsigned int>();
+        if(not H5T_SCALAR2_ULONG.valid()) H5T_SCALAR2_ULONG = Create::createScalar2Type<unsigned long>();
+        if(not H5T_SCALAR2_ULLONG.valid()) H5T_SCALAR2_ULLONG = Create::createScalar2Type<unsigned long long>();
+        if(not H5T_SCALAR2_DOUBLE.valid()) H5T_SCALAR2_DOUBLE = Create::createScalar2Type<double>();
+        if(not H5T_SCALAR2_LDOUBLE.valid()) H5T_SCALAR2_LDOUBLE = Create::createScalar2Type<long double>();
+        if(not H5T_SCALAR2_FLOAT.valid()) H5T_SCALAR2_FLOAT = Create::createScalar2Type<float>();
 
-        H5T_SCALAR3_INT    = Create::createScalar3Type<int>();
-        H5T_SCALAR3_LONG   = Create::createScalar3Type<long>();
-        H5T_SCALAR3_LLONG  = Create::createScalar3Type<long long>();
-        H5T_SCALAR3_UINT   = Create::createScalar3Type<unsigned int>();
-        H5T_SCALAR3_ULONG  = Create::createScalar3Type<unsigned long>();
-        H5T_SCALAR3_ULLONG = Create::createScalar3Type<unsigned long long>();
-        H5T_SCALAR3_DOUBLE = Create::createScalar3Type<double>();
-        H5T_SCALAR3_FLOAT  = Create::createScalar3Type<float>();
+        if(not H5T_SCALAR3_SHORT.valid()) H5T_SCALAR3_SHORT = Create::createScalar3Type<int>();
+        if(not H5T_SCALAR3_INT.valid()) H5T_SCALAR3_INT = Create::createScalar3Type<int>();
+        if(not H5T_SCALAR3_LONG.valid()) H5T_SCALAR3_LONG = Create::createScalar3Type<long>();
+        if(not H5T_SCALAR3_LLONG.valid()) H5T_SCALAR3_LLONG = Create::createScalar3Type<long long>();
+        if(not H5T_SCALAR3_USHORT.valid()) H5T_SCALAR3_USHORT = Create::createScalar3Type<unsigned short>();
+        if(not H5T_SCALAR3_UINT.valid()) H5T_SCALAR3_UINT = Create::createScalar3Type<unsigned int>();
+        if(not H5T_SCALAR3_ULONG.valid()) H5T_SCALAR3_ULONG = Create::createScalar3Type<unsigned long>();
+        if(not H5T_SCALAR3_ULLONG.valid()) H5T_SCALAR3_ULLONG = Create::createScalar3Type<unsigned long long>();
+        if(not H5T_SCALAR3_DOUBLE.valid()) H5T_SCALAR3_DOUBLE = Create::createScalar3Type<double>();
+        if(not H5T_SCALAR3_LDOUBLE.valid()) H5T_SCALAR3_LDOUBLE = Create::createScalar3Type<long double>();
+        if(not H5T_SCALAR3_FLOAT.valid()) H5T_SCALAR3_FLOAT = Create::createScalar3Type<float>();
     }
-
-    inline void closeTypes() {
-        H5Tclose(H5T_COMPLEX_INT);
-        H5Tclose(H5T_COMPLEX_LONG);
-        H5Tclose(H5T_COMPLEX_LLONG);
-        H5Tclose(H5T_COMPLEX_UINT);
-        H5Tclose(H5T_COMPLEX_ULONG);
-        H5Tclose(H5T_COMPLEX_ULLONG);
-        H5Tclose(H5T_COMPLEX_DOUBLE);
-        H5Tclose(H5T_COMPLEX_FLOAT);
-
-        H5Tclose(H5T_SCALAR2_INT);
-        H5Tclose(H5T_SCALAR2_LONG);
-        H5Tclose(H5T_SCALAR2_LLONG);
-        H5Tclose(H5T_SCALAR2_UINT);
-        H5Tclose(H5T_SCALAR2_ULONG);
-        H5Tclose(H5T_SCALAR2_ULLONG);
-        H5Tclose(H5T_SCALAR2_DOUBLE);
-        H5Tclose(H5T_SCALAR2_FLOAT);
-
-        H5Tclose(H5T_SCALAR3_INT);
-        H5Tclose(H5T_SCALAR3_LONG);
-        H5Tclose(H5T_SCALAR3_LLONG);
-        H5Tclose(H5T_SCALAR3_UINT);
-        H5Tclose(H5T_SCALAR3_ULONG);
-        H5Tclose(H5T_SCALAR3_ULLONG);
-        H5Tclose(H5T_SCALAR3_DOUBLE);
-        H5Tclose(H5T_SCALAR3_FLOAT);
-    }
-
 }

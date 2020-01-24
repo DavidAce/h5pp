@@ -4,29 +4,38 @@
 #include <hdf5.h>
 namespace h5pp::type::compound {
 
+    inline hid::h5t H5T_COMPLEX_SHORT;
     inline hid::h5t H5T_COMPLEX_INT;
     inline hid::h5t H5T_COMPLEX_LONG;
     inline hid::h5t H5T_COMPLEX_LLONG;
+    inline hid::h5t H5T_COMPLEX_USHORT;
     inline hid::h5t H5T_COMPLEX_UINT;
     inline hid::h5t H5T_COMPLEX_ULONG;
     inline hid::h5t H5T_COMPLEX_ULLONG;
     inline hid::h5t H5T_COMPLEX_DOUBLE;
+    inline hid::h5t H5T_COMPLEX_LDOUBLE;
     inline hid::h5t H5T_COMPLEX_FLOAT;
+    inline hid::h5t H5T_SCALAR2_SHORT;
     inline hid::h5t H5T_SCALAR2_INT;
     inline hid::h5t H5T_SCALAR2_LONG;
     inline hid::h5t H5T_SCALAR2_LLONG;
+    inline hid::h5t H5T_SCALAR2_USHORT;
     inline hid::h5t H5T_SCALAR2_UINT;
     inline hid::h5t H5T_SCALAR2_ULONG;
     inline hid::h5t H5T_SCALAR2_ULLONG;
     inline hid::h5t H5T_SCALAR2_DOUBLE;
+    inline hid::h5t H5T_SCALAR2_LDOUBLE;
     inline hid::h5t H5T_SCALAR2_FLOAT;
+    inline hid::h5t H5T_SCALAR3_SHORT;
     inline hid::h5t H5T_SCALAR3_INT;
     inline hid::h5t H5T_SCALAR3_LONG;
     inline hid::h5t H5T_SCALAR3_LLONG;
+    inline hid::h5t H5T_SCALAR3_USHORT;
     inline hid::h5t H5T_SCALAR3_UINT;
     inline hid::h5t H5T_SCALAR3_ULONG;
     inline hid::h5t H5T_SCALAR3_ULLONG;
     inline hid::h5t H5T_SCALAR3_DOUBLE;
+    inline hid::h5t H5T_SCALAR3_LDOUBLE;
     inline hid::h5t H5T_SCALAR3_FLOAT;
 
     template<typename T>

@@ -332,6 +332,7 @@ if (NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS AND TARGET h5pp)
     add_subdirectory(tests/readWrite h5pp-tests/readWrite)
     add_subdirectory(tests/readWriteAttributes h5pp-tests/readWriteAttributes)
     add_subdirectory(tests/copySwap h5pp-tests/copySwap)
+    add_subdirectory(tests/typeInfo h5pp-tests/typeInfo)
     add_custom_target(all-tests
             DEPENDS test-simpleWrite
             test-largeWrite
@@ -339,7 +340,9 @@ if (NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS AND TARGET h5pp)
             test-rawArrayWrapper
             test-readWrite
             test-readWriteAttributes
-            test-copySwap)
+            test-copySwap
+            test-typeInfo
+            )
     # A handy target "all-tests" which runs all test when built.
     add_custom_command(
             TARGET all-tests

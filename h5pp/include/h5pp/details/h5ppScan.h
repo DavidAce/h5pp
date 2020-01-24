@@ -12,9 +12,9 @@ namespace h5pp::scan {
         h5pp::logger::log->trace("Reading properties of dataset: [{}] from file", dsetName);
         h5pp::DatasetProperties dsetProps;
         dsetProps.dsetName   = dsetName;
-        dsetProps.dsetExists = h5pp::hdf5::checkIfDatasetExists(file, dsetName, dsetExists, plists);
+        dsetProps.dsetExists = h5pp::hdf5::checkIfDatasetExists(file, dsetName, dsetExists, plists.link_access);
         if(dsetProps.dsetExists.value()) {
-            dsetProps.dataSet   = h5pp::hdf5::openObject<hid::h5d>(file, dsetProps.dsetName.value(), dsetProps.dsetExists, dsetProps.plist_dset_access);
+            dsetProps.dataSet   = h5pp::hdf5::openLink<hid::h5d>(file, dsetProps.dsetName.value(), dsetProps.dsetExists, dsetProps.plist_dset_access);
             dsetProps.dataType  = H5Dget_type(dsetProps.dataSet);
             dsetProps.dataSpace = H5Dget_space(dsetProps.dataSet);
             dsetProps.memSpace  = H5Dget_space(dsetProps.dataSet);
@@ -52,7 +52,7 @@ namespace h5pp::scan {
         // Use this function to detect info from the given DataType, to later create a dataset from scratch.
         h5pp::DatasetProperties dataProps;
         dataProps.dsetName   = dsetName;
-        dataProps.dsetExists = h5pp::hdf5::checkIfLinkExists(file, dsetName, dsetExists, plists);
+        dataProps.dsetExists = h5pp::hdf5::checkIfLinkExists(file, dsetName, dsetExists, plists.link_access);
         // Infer properties from the given datatype
         dataProps.ndims     = h5pp::utils::getRank<DataType>();
         dataProps.dims      = h5pp::utils::getDimensions(data);
@@ -88,7 +88,7 @@ namespace h5pp::scan {
                                                        const PropertyLists &                     plists                  = PropertyLists()) {
         h5pp::logger::log->trace("Reading properties for writing into dataset: [{}]", dsetName);
 
-        if(not dsetExists) dsetExists = h5pp::hdf5::checkIfLinkExists(file, dsetName, dsetExists, plists);
+        if(not dsetExists) dsetExists = h5pp::hdf5::checkIfLinkExists(file, dsetName, dsetExists, plists.link_access);
 
         if(dsetExists.value()) {
             // We enter overwrite-mode
@@ -99,7 +99,7 @@ namespace h5pp::scan {
                 throw std::runtime_error("Number of dimensions in existing dataset (" + std::to_string(dsetProps.ndims.value()) + ") differ from dimensions in given data (" +
                                          std::to_string(h5pp::utils::getRank<DataType>()) + ")");
 
-            if(not h5pp::hdf5::checkEqualTypesRecursive(dsetProps.dataType, h5pp::utils::getH5Type<DataType>()))
+            if(not h5pp::hdf5::H5Tequal_recurse(dsetProps.dataType, h5pp::utils::getH5Type<DataType>()))
                 throw std::runtime_error("Given datatype does not match the type of an existing dataset: " + dsetProps.dsetName.value());
 
             h5pp::DatasetProperties dataProps;
@@ -153,13 +153,13 @@ namespace h5pp::scan {
         // Use this function to get info from existing attributes on file.
         h5pp::logger::log->trace("Reading properties of attribute: [{}] in link [{}] from file", attrName, linkName);
         h5pp::AttributeProperties attrProps;
-        attrProps.linkExists = h5pp::hdf5::checkIfLinkExists(file, linkName, linkExists, plists);
-        attrProps.attrExists = h5pp::hdf5::checkIfAttributeExists(file, linkName, attrName, attrProps.linkExists, attrExists, plists);
+        attrProps.linkExists = h5pp::hdf5::checkIfLinkExists(file, linkName, linkExists, plists.link_access);
+        attrProps.attrExists = h5pp::hdf5::checkIfAttributeExists(file, linkName, attrName, attrProps.linkExists, attrExists, plists.link_access);
         attrProps.linkName   = linkName;
         attrProps.attrName   = attrName;
 
         if(attrProps.attrExists.value()) {
-            attrProps.linkObject  = h5pp::hdf5::openObject<hid::h5o>(file, attrProps.linkName.value(), attrProps.linkExists, attrProps.plist_attr_access);
+            attrProps.linkObject  = h5pp::hdf5::openLink<hid::h5o>(file, attrProps.linkName.value(), attrProps.linkExists, attrProps.plist_attr_access);
             attrProps.attributeId = H5Aopen_name(attrProps.linkObject, std::string(attrProps.attrName.value()).c_str());
             H5I_type_t linkType   = H5Iget_type(attrProps.attributeId.value());
             if(linkType != H5I_ATTR) { throw std::runtime_error("Given attribute name does not point to an attribute: [{" + attrProps.attrName.value() + "]"); }
@@ -187,11 +187,12 @@ namespace h5pp::scan {
         // Use this function to get info from existing datasets on file.
         h5pp::logger::log->trace("Bootstrapping properties for writing attribute [{}] into link [{}]", attrName, linkName);
         h5pp::AttributeProperties dataProps;
-        dataProps.linkExists = h5pp::hdf5::checkIfLinkExists(file, linkName, linkExists, plists);
-        dataProps.attrExists = h5pp::hdf5::checkIfAttributeExists(file, linkName, attrName, dataProps.linkExists, attrExists, plists);
+        dataProps.linkExists = h5pp::hdf5::checkIfLinkExists(file, linkName, linkExists, plists.link_access);
+        dataProps.attrExists = h5pp::hdf5::checkIfAttributeExists(file, linkName, attrName, dataProps.linkExists, attrExists, plists.link_access);
         dataProps.linkName   = linkName;
         dataProps.attrName   = attrName;
-        if(dataProps.linkExists and dataProps.linkExists.value()) dataProps.linkObject = h5pp::hdf5::openLink(file, dataProps.linkName.value(), dataProps.linkExists, plists);
+        if(dataProps.linkExists and dataProps.linkExists.value())
+            dataProps.linkObject = h5pp::hdf5::openObject(file, dataProps.linkName.value(), dataProps.linkExists, plists.link_access);
         if(dataProps.attrExists and dataProps.attrExists.value()) dataProps.attributeId = H5Aopen_name(dataProps.linkObject, std::string(dataProps.attrName.value()).c_str());
 
         dataProps.dataType = h5pp::utils::getH5Type<DataType>();
@@ -215,8 +216,8 @@ namespace h5pp::scan {
         // Use this function to get info from existing datasets on file.
         h5pp::logger::log->trace("Reading properties for writing into attribute: [{}] on link [{}]", attrName, linkName);
 
-        linkExists = h5pp::hdf5::checkIfLinkExists(file, linkName, linkExists, plists);
-        attrExists = h5pp::hdf5::checkIfAttributeExists(file, linkName, attrName, linkExists, std::nullopt, plists);
+        linkExists = h5pp::hdf5::checkIfLinkExists(file, linkName, linkExists, plists.link_access);
+        attrExists = h5pp::hdf5::checkIfAttributeExists(file, linkName, attrName, linkExists, std::nullopt, plists.link_access);
 
         if(linkExists.value() and attrExists.value()) {
             // We enter overwrite mode
@@ -227,7 +228,7 @@ namespace h5pp::scan {
                 throw std::runtime_error("Number of dimensions in existing dataset (" + std::to_string(attrProps.ndims.value()) + ") differ from dimensions in given data (" +
                                          std::to_string(h5pp::utils::getRank<DataType>()) + ")");
 
-            if(not h5pp::hdf5::checkEqualTypesRecursive(attrProps.dataType, h5pp::utils::getH5Type<DataType>()))
+            if(not h5pp::hdf5::H5Tequal_recurse(attrProps.dataType, h5pp::utils::getH5Type<DataType>()))
                 throw std::runtime_error("Given datatype does not match the type of an existing dataset: " + attrProps.linkName.value());
 
             h5pp::AttributeProperties dataProps;
