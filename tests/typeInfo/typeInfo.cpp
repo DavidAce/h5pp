@@ -39,9 +39,12 @@ int main() {
     file.writeAttribute(AttributeString, "AttributeString", "testGroup/vectorDouble");
     file.writeAttribute(AttributeCharArray, "AttributeCharArray", "testGroup/vectorDouble");
 
-    for(auto &attr : file.getAttributeTypeInfoAll("testGroup/vectorDouble")) {
-        std::cout << attr.first << ": type [" << attr.second.first.name() << "] size: " << attr.second.second << std::endl;
+    for(auto &info : file.getAttributeTypeInfoAll("testGroup/vectorDouble")) {
+        std::cout << info.name() << ": type [" << info.type().name() << "] size: " << info.size() << std::endl;
     }
+
+    auto info = file.getDatasetTypeInfo("testGroup/vectorDouble");
+    std::cout << info.name() << ": type [" << info.type().name() << "] size: " << info.size() << std::endl;
 
     return 0;
 }

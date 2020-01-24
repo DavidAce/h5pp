@@ -1,4 +1,5 @@
 #pragma once
+#include "TypeInfo.h"
 #include "h5ppDatasetProperties.h"
 #include "h5ppEigen.h"
 #include "h5ppFilesystem.h"
@@ -318,32 +319,51 @@ namespace h5pp::hdf5 {
         return typeid(std::nullopt);
     }
 
-    inline std::pair<std::type_index, size_t> getDatasetTypeInfo(const hid::h5d &dataset) {
+    inline TypeInfo getDatasetTypeInfo(const hid::h5d &dataset) {
+        hsize_t     buf_size = H5Iget_name(dataset, nullptr, 0);
+        std::string dsetName;
+        dsetName.resize(buf_size + 1);
+        H5Iget_name(dataset, dsetName.data(), buf_size + 1);
+        h5pp::logger::log->trace("Collecting type info about dataset [{}]", dsetName);
         hid::h5t type  = H5Dget_type(dataset);
         hid::h5s space = H5Dget_space(dataset);
         auto     size  = (size_t) H5Sget_simple_extent_npoints(space);
-        return std::make_pair(getValueTypeID(type), size);
+        auto     ndims = getRank(space);
+        auto     dims  = getDimensions(space);
+        return TypeInfo(dsetName, size, getValueTypeID(type), ndims, dims, type);
     }
 
-    inline std::pair<std::type_index, size_t>
-        getDatasetTypeInfo(const hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
+    inline TypeInfo getDatasetTypeInfo(const hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
         auto dataset = openLink<hid::h5d>(file, dsetName, dsetExists, dset_access);
-        return getDatasetTypeInfo(dataset);
+        h5pp::logger::log->trace("Collecting type info about dataset [{}]", dsetName);
+        hid::h5t type  = H5Dget_type(dataset);
+        hid::h5s space = H5Dget_space(dataset);
+        auto     size  = (size_t) H5Sget_simple_extent_npoints(space);
+        auto     ndims = getRank(space);
+        auto     dims  = getDimensions(space);
+        return TypeInfo(dsetName, size, getValueTypeID(type), ndims, dims, type);
     }
 
-    inline std::pair<std::type_index, size_t> getAttributeTypeInfo(const hid::h5a &attribute) {
+    inline TypeInfo getAttributeTypeInfo(const hid::h5a &attribute) {
+        hsize_t     buf_size = H5Aget_name(attribute, 0, nullptr);
+        std::string attrName;
+        attrName.resize(buf_size + 1);
+        H5Aget_name(attribute, buf_size + 1, attrName.data());
+        h5pp::logger::log->trace("Collecting type info about attribute [{}]", attrName);
         hid::h5t type  = H5Aget_type(attribute);
         hid::h5s space = H5Aget_space(attribute);
         auto     size  = (size_t) H5Sget_simple_extent_npoints(space);
-        return std::make_pair(getValueTypeID(type), size);
+        auto     ndims = getRank(space);
+        auto     dims  = getDimensions(space);
+        return TypeInfo(attrName, size, getValueTypeID(type), ndims, dims, type);
     }
 
-    inline std::pair<std::type_index, size_t> getAttributeTypeInfo(const hid::h5f &    file,
-                                                                   std::string_view    linkName,
-                                                                   std::string_view    attrName,
-                                                                   std::optional<bool> linkExists  = std::nullopt,
-                                                                   std::optional<bool> attrExists  = std::nullopt,
-                                                                   const hid::h5p &    link_access = H5P_DEFAULT) {
+    inline TypeInfo getAttributeTypeInfo(const hid::h5f &    file,
+                                         std::string_view    linkName,
+                                         std::string_view    attrName,
+                                         std::optional<bool> linkExists  = std::nullopt,
+                                         std::optional<bool> attrExists  = std::nullopt,
+                                         const hid::h5p &    link_access = H5P_DEFAULT) {
         auto link = openLink<hid::h5o>(file, linkName, linkExists, link_access);
         if(checkIfAttributeExists(file, linkName, attrName, linkExists, attrExists, link_access)) {
             hid::h5a attribute = H5Aopen_name(link, std::string(attrName).c_str());
@@ -354,17 +374,17 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5o> or std::is_same_v<h5x, hid::h5d> or std::is_same_v<h5x, hid::h5g>>>
-    std::map<std::string, std::pair<std::type_index, size_t>> getAttributeTypeInfoAll(const h5x &link) {
-        std::map<std::string, std::pair<std::type_index, size_t>> allAttrInfo;
-        for(auto &attrName : getAttributeNames(link)) {
-            h5pp::logger::log->trace("Collecting type info about attribute [{}]", attrName);
-            hid::h5a attribute = H5Aopen_name(link, attrName.c_str());
-            allAttrInfo.insert({attrName, getAttributeTypeInfo(attribute)});
+    std::vector<TypeInfo> getAttributeTypeInfoAll(const h5x &link) {
+        std::vector<TypeInfo> allAttrInfo;
+        unsigned int          num_attrs = H5Aget_num_attrs(link);
+        for(unsigned int idx = 0; idx < num_attrs; idx++) {
+            hid::h5a attribute = H5Aopen_idx(link, idx);
+            allAttrInfo.emplace_back(getAttributeTypeInfo(attribute));
         }
         return allAttrInfo;
     }
 
-    inline std::map<std::string, std::pair<std::type_index, size_t>>
+    inline std::vector<TypeInfo>
         getAttributeTypeInfoAll(const hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
         auto link = openLink<hid::h5o>(file, linkName, linkExists, link_access);
         return getAttributeTypeInfoAll(link);
