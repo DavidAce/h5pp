@@ -307,7 +307,7 @@ namespace h5pp::type::sfinae {
         static constexpr bool test() {
             if constexpr(is_eigen_base<U>::value) { return not U::IsRowMajor; }
             if constexpr(is_eigen_tensor<U>::value) {
-                return U::Layout == Eigen::ColMajor;
+                return Eigen::ColMajor == static_cast<Eigen::StorageOptions>(U::Layout);
             } else {
                 return false;
             }
@@ -325,7 +325,7 @@ namespace h5pp::type::sfinae {
         static constexpr bool test() {
             if constexpr(is_eigen_base<U>::value) { return U::IsRowMajor; }
             if constexpr(is_eigen_tensor<U>::value) {
-                return U::Layout == Eigen::RowMajor;
+                return Eigen::RowMajor == static_cast<Eigen::StorageOptions>(U::Layout);
             } else {
                 return false;
             }

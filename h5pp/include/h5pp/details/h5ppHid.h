@@ -19,14 +19,14 @@ namespace h5pp::hid {
         template<typename T, typename = std::enable_if_t<std::is_same_v<T, hid_t>>>
         hid_base(const T &other) {
             // constructor from hid_t
-            assert(other == 0 or valid(other) and "Given identifier must be valid");
+            assert((other == 0 or valid(other)) and "Given identifier must be valid");
             val = other;
             //            std::cout << "hid_t ctor: " << safe_print() << std::endl;
         }
 
         hid_base(const hid_base &other) {
             // Copy constructor
-            assert(other.val == 0 or valid(other.val) and "Given identifier must be valid");
+            assert((other.val == 0 or valid(other.val)) and "Given identifier must be valid");
             val = other.val; // Checks that we got a valid identifier through .value() (throws)
             if(valid(other.val))
                 H5Iinc_ref(val); // Increment reference counter of identifier
@@ -35,7 +35,7 @@ namespace h5pp::hid {
 
         hid_base &operator=(const hid_t &rhs) {
             // Assignment from hid_t
-            assert(rhs == 0 or valid(rhs) and "Given identifier must be valid");
+            assert((rhs == 0 or valid(rhs)) and "Given identifier must be valid");
             if(not equal(rhs)) close(); // Drop current
             val = rhs;
             if(valid(val))
@@ -45,8 +45,9 @@ namespace h5pp::hid {
         }
 
         hid_base &operator=(const hid_base &rhs) {
+            if(this == &rhs) return *this;
             // Copy assignment
-            assert(rhs.val == 0 or valid(rhs.val) and "Given identifier must be valid");
+            assert((rhs.val == 0 or valid(rhs.val)) and "Given identifier must be valid");
             if(not equal(rhs.val)) close(); // Drop current
             val = rhs.val;
             if(valid(val))
@@ -54,11 +55,9 @@ namespace h5pp::hid {
                                  //            std::cout << "copy assign: " << pretty_print() << std::endl;
             return *this;
         }
-
-        virtual std::string tag() const = 0;
-        virtual void        close()     = 0;
-
-        const hid_t &value() const {
+        virtual void                      close()     = 0;
+        [[nodiscard]] virtual std::string tag() const = 0;
+        [[nodiscard]] const hid_t &       value() const {
             if(valid() or (val == 0 and zeroValueIsOK))
                 return val;
             else {
@@ -67,7 +66,7 @@ namespace h5pp::hid {
             }
         }
 
-        auto refcount() const {
+        [[nodiscard]] auto refcount() const {
             if(zeroValueIsOK and val == 0) return 0;
             if(valid()) {
                 auto refc = H5Iget_ref(val);
@@ -82,8 +81,8 @@ namespace h5pp::hid {
             }
         }
 
-        std::string pretty_print() { return tag() + ":" + std::to_string(val) + "(" + std::to_string(refcount()) + ")"; }
-        std::string safe_print() { return std::to_string(val) + "(" + std::to_string(refcount()) + ")"; }
+        [[nodiscard]] std::string pretty_print() { return tag() + ":" + std::to_string(val) + "(" + std::to_string(refcount()) + ")"; }
+        [[nodiscard]] std::string safe_print() { return std::to_string(val) + "(" + std::to_string(refcount()) + ")"; }
 
         [[nodiscard]] bool valid(const hid_t &other) const {
             auto result = H5Iis_valid(other);
@@ -94,7 +93,7 @@ namespace h5pp::hid {
         [[nodiscard]] bool valid(const hid_h5x &other) const { return other.valid(); }
 
         // hid_t operators
-        virtual bool equal(const hid_t &rhs) const = 0;
+        [[nodiscard]] virtual bool equal(const hid_t &rhs) const = 0;
 
         template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
         bool operator==(const T &rhs) const {
@@ -122,15 +121,15 @@ namespace h5pp::hid {
         }
 
         // hid_h5x operators
-        bool equal(const hid_h5x &rhs) const { return equal(rhs.value()); }
-        bool operator==(const hid_h5x &rhs) const { return equal(rhs); }
-        bool operator!=(const hid_h5x &rhs) const { return not equal(rhs); }
-        bool operator<=(const hid_h5x &rhs) const { return val <= rhs.value(); }
-        bool operator>=(const hid_h5x &rhs) const { return val >= rhs.value(); }
-        bool operator<(const hid_h5x &rhs) const { return val < rhs.value(); }
-        bool operator>(const hid_h5x &rhs) const { return val > rhs.value(); }
+        [[nodiscard]] bool equal(const hid_h5x &rhs) const { return equal(rhs.value()); }
+        bool               operator==(const hid_h5x &rhs) const { return equal(rhs); }
+        bool               operator!=(const hid_h5x &rhs) const { return not equal(rhs); }
+        bool               operator<=(const hid_h5x &rhs) const { return val <= rhs.value(); }
+        bool               operator>=(const hid_h5x &rhs) const { return val >= rhs.value(); }
+        bool               operator<(const hid_h5x &rhs) const { return val < rhs.value(); }
+        bool               operator>(const hid_h5x &rhs) const { return val > rhs.value(); }
 
-        operator hid_t() const { return value(); } // Class can be used as an actual hid_t
+        [[nodiscard]] operator hid_t() const { return value(); } // Class can be used as an actual hid_t
 
         explicit             operator bool() const { return valid() and val > 0; } // Test if set with syntax if(a)
         explicit             operator std::string() const { return tag() + ":" + std::to_string(val); }

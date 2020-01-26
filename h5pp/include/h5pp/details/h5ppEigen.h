@@ -229,7 +229,7 @@ namespace h5pp {
         //************************//
         template<typename Derived>
         auto to_RowMajor(const Eigen::TensorBase<Derived, Eigen::ReadOnlyAccessors> &tensor) {
-            if constexpr(Derived::Layout == Eigen::RowMajor)
+            if constexpr(Eigen::RowMajor == static_cast<Eigen::StorageOptions>(Derived::Layout))
                 return tensor;
             else {
                 array<Derived::NumIndices> neworder;
@@ -241,7 +241,7 @@ namespace h5pp {
 
         template<typename Derived>
         auto to_ColMajor(const Eigen::TensorBase<Derived, Eigen::ReadOnlyAccessors> &tensor) {
-            if constexpr(Derived::Layout == Eigen::ColMajor)
+            if constexpr(Eigen::ColMajor == static_cast<Eigen::StorageOptions>(Derived::Layout))
                 return tensor;
             else {
                 array<Derived::NumIndices> neworder;
