@@ -288,10 +288,10 @@ namespace h5pp::type::sfinae {
         template<typename U>
         static constexpr auto test() {
             if constexpr(is_eigen_map<U>::value) return test<typename U::PlainObject>();
-            if constexpr(is_eigen_dense<U>::value) { return U::RowsAtCompileTime == 1 or U::ColsAtCompileTime == 1; }
-            if constexpr(is_eigen_tensor<U>::value and has_NumIndices<U>::value) {
+            if constexpr(is_eigen_dense<U>::value) return U::RowsAtCompileTime == 1 or U::ColsAtCompileTime == 1;
+            if constexpr(is_eigen_tensor<U>::value and has_NumIndices<U>::value)
                 return U::NumIndices == 1;
-            } else
+            else
                 return false;
         }
 
@@ -305,12 +305,11 @@ namespace h5pp::type::sfinae {
     class is_eigen_colmajor {
         template<typename U>
         static constexpr bool test() {
-            if constexpr(is_eigen_base<U>::value) { return not U::IsRowMajor; }
-            if constexpr(is_eigen_tensor<U>::value) {
+            if constexpr(is_eigen_base<U>::value) return not U::IsRowMajor;
+            if constexpr(is_eigen_tensor<U>::value)
                 return Eigen::ColMajor == static_cast<Eigen::StorageOptions>(U::Layout);
-            } else {
+            else
                 return false;
-            }
         }
 
         public:
@@ -323,12 +322,11 @@ namespace h5pp::type::sfinae {
     class is_eigen_rowmajor {
         template<typename U>
         static constexpr bool test() {
-            if constexpr(is_eigen_base<U>::value) { return U::IsRowMajor; }
-            if constexpr(is_eigen_tensor<U>::value) {
+            if constexpr(is_eigen_base<U>::value) return U::IsRowMajor;
+            if constexpr(is_eigen_tensor<U>::value)
                 return Eigen::RowMajor == static_cast<Eigen::StorageOptions>(U::Layout);
-            } else {
+            else
                 return false;
-            }
         }
 
         public:

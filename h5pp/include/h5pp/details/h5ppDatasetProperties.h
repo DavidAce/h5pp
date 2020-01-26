@@ -1,9 +1,9 @@
 #pragma once
 #include "h5ppHid.h"
 #include "h5ppLogger.h"
+#include "h5ppOptional.h"
 #include <hdf5.h>
 #include <hdf5_hl.h>
-#include <optional>
 #include <string>
 #include <vector>
 

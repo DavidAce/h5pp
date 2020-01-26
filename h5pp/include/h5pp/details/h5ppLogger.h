@@ -1,4 +1,5 @@
 #pragma once
+#include "h5ppOptional.h"
 #if __has_include(<spdlog/spdlog.h>)
     #define H5PP_SPDLOG
     #include <spdlog/sinks/stdout_color_sinks.h>

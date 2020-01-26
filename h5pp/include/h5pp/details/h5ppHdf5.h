@@ -570,7 +570,6 @@ namespace h5pp::hdf5 {
             case H5D_CHUNKED: h5pp::logger::log->trace("Setting layout H5D_CHUNKED"); break;
             case H5D_COMPACT: h5pp::logger::log->trace("Setting layout H5D_COMPACT"); break;
             case H5D_CONTIGUOUS: h5pp::logger::log->trace("Setting layout H5D_CONTIGUOUS"); break;
-            case H5D_VIRTUAL: h5pp::logger::log->trace("Setting layout H5D_VIRTUAL"); break;
             default: throw std::runtime_error("Invalid layout");
         }
         herr_t err = H5Pset_layout(dsetProps.plist_dset_create, dsetProps.layout.value());
