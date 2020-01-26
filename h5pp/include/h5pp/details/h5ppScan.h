@@ -9,7 +9,8 @@ namespace h5pp::scan {
                                                              const std::optional<bool> dsetExists = std::nullopt,
                                                              const PropertyLists &     plists     = PropertyLists()) {
         // Use this function to get info from existing datasets on file.
-        h5pp::logger::log->trace("Reading properties of dataset: [{}] from file", dsetName);
+        h5pp::logger::log->debug("Scanning properties of existing dataset [{}]", dsetName);
+
         h5pp::DatasetProperties dsetProps;
         dsetProps.dsetName   = dsetName;
         dsetProps.dsetExists = h5pp::hdf5::checkIfDatasetExists(file, dsetName, dsetExists, plists.link_access);
@@ -21,7 +22,7 @@ namespace h5pp::scan {
             dsetProps.ndims     = std::max(1, H5Sget_simple_extent_ndims(dsetProps.dataSpace));
             dsetProps.dims      = std::vector<hsize_t>(dsetProps.ndims.value(), 0);
             H5Sget_simple_extent_dims(dsetProps.dataSpace, dsetProps.dims.value().data(), nullptr);
-            dsetProps.size  = H5Sget_simple_extent_npoints(dsetProps.dataSpace);
+            dsetProps.size  = h5pp::hdf5::getSize(dsetProps.dataSet);
             dsetProps.bytes = H5Dget_storage_size(dsetProps.dataSet);
 
             // We read the layout from file. Note that it is not possible to change the layout on existing datasets! Read more here
@@ -33,7 +34,6 @@ namespace h5pp::scan {
                 H5Pget_chunk(dsetProps.plist_dset_create, dsetProps.ndims.value(), dsetProps.chunkDims.value().data()); // Discard returned chunk rank, it's the same as ndims
         } else {
             h5pp::logger::log->info("Given dataset name does not point to a dataset: [{}]", dsetName);
-            //            throw std::runtime_error("Given path does not point to a dataset: [{" + dsetProps.dsetName.value() + "]");
         }
         return dsetProps;
     }
@@ -47,7 +47,7 @@ namespace h5pp::scan {
                                                            const std::optional<std::vector<hsize_t>> desiredChunkDims        = std::nullopt,
                                                            const std::optional<unsigned int>         desiredCompressionLevel = std::nullopt,
                                                            const PropertyLists &                     plists                  = PropertyLists()) {
-        h5pp::logger::log->trace("Inferring properties for future dataset: [{}] from type", dsetName);
+        h5pp::logger::log->debug("Scanning properties of type [{}] for writing new dataset [{}]", h5pp::type::sfinae::type_name<DataType>(), dsetName);
 
         // Use this function to detect info from the given DataType, to later create a dataset from scratch.
         h5pp::DatasetProperties dataProps;
@@ -58,8 +58,8 @@ namespace h5pp::scan {
         dataProps.dims      = h5pp::utils::getDimensions(data);
         dataProps.size      = h5pp::utils::getSize(data);
         dataProps.bytes     = h5pp::utils::getBytesTotal(data);
-        dataProps.dataType  = h5pp::utils::getH5Type<DataType>();                   // We use our own data-type matching to avoid any confusion
-        dataProps.size      = h5pp::utils::setStringSize(data, dataProps.dataType); // This only affects strings
+        dataProps.dataType  = h5pp::utils::getH5Type<DataType>();                  // We use our own data-type matching to avoid any confusion
+        dataProps.size      = h5pp::hdf5::setStringSize(data, dataProps.dataType); // This only affects strings
         dataProps.layout    = h5pp::utils::decideLayout(dataProps.bytes.value(), desiredLayout);
         dataProps.chunkDims = h5pp::utils::getDefaultChunkDimensions(dataProps.size.value(), dataProps.dims.value(), desiredChunkDims);
         dataProps.memSpace  = h5pp::utils::getMemSpace(dataProps.size.value(), dataProps.ndims.value(), dataProps.dims.value());
@@ -73,7 +73,7 @@ namespace h5pp::scan {
         dataProps.plist_dset_create = H5Pcreate(H5P_DATASET_CREATE);
         h5pp::hdf5::setDatasetCreationPropertyLayout(dataProps);
         h5pp::hdf5::setDatasetCreationPropertyCompression(dataProps);
-        h5pp::hdf5::setDataSpaceExtent(dataProps);
+        //        h5pp::hdf5::setDataSpaceExtent(dataProps);
         return dataProps;
     }
 
@@ -86,7 +86,7 @@ namespace h5pp::scan {
                                                        const std::optional<std::vector<hsize_t>> desiredChunkDims        = std::nullopt,
                                                        const std::optional<unsigned int>         desiredCompressionLevel = std::nullopt,
                                                        const PropertyLists &                     plists                  = PropertyLists()) {
-        h5pp::logger::log->trace("Reading properties for writing into dataset: [{}]", dsetName);
+        h5pp::logger::log->debug("Scanning properties of type [{}] for writing into dataset [{}]", h5pp::type::sfinae::type_name<DataType>(), dsetName);
 
         if(not dsetExists) dsetExists = h5pp::hdf5::checkIfLinkExists(file, dsetName, dsetExists, plists.link_access);
 
@@ -116,13 +116,13 @@ namespace h5pp::scan {
             // The rest we can inferr directly from the data
             dataProps.dims  = h5pp::utils::getDimensions(data);
             dataProps.size  = h5pp::utils::getSize(data);
-            dataProps.size  = h5pp::utils::setStringSize(data, dataProps.dataType); // This only affects strings
+            dataProps.size  = h5pp::hdf5::setStringSize(data, dataProps.dataType); // This only affects strings
             dataProps.bytes = h5pp::utils::getBytesTotal(data);
 
             dataProps.memSpace         = h5pp::utils::getMemSpace(dataProps.size.value(), dataProps.ndims.value(), dataProps.dims.value());
             dataProps.dataSpace        = h5pp::utils::getDataSpace(dataProps.size.value(), dataProps.ndims.value(), dataProps.dims.value(), dataProps.layout.value());
             dataProps.compressionLevel = 0; // Not used when overwriting
-            h5pp::hdf5::setDataSpaceExtent(dataProps);
+                                            //            h5pp::hdf5::setDataSpaceExtent(dataProps);
 
             // Make some sanity checks on sizes
             auto dsetMaxDims = h5pp::hdf5::getMaxDimensions(dsetProps.dataSet);
@@ -151,7 +151,7 @@ namespace h5pp::scan {
                                                                  const std::optional<bool> linkExists = std::nullopt,
                                                                  const PropertyLists &     plists     = PropertyLists()) {
         // Use this function to get info from existing attributes on file.
-        h5pp::logger::log->trace("Reading properties of attribute: [{}] in link [{}] from file", attrName, linkName);
+        h5pp::logger::log->debug("Scanning properties of existing attribute [{}] in link [{}]", attrName, linkName);
         h5pp::AttributeProperties attrProps;
         attrProps.linkExists = h5pp::hdf5::checkIfLinkExists(file, linkName, linkExists, plists.link_access);
         attrProps.attrExists = h5pp::hdf5::checkIfAttributeExists(file, linkName, attrName, attrProps.linkExists, attrExists, plists.link_access);
@@ -185,7 +185,7 @@ namespace h5pp::scan {
                                                                       std::optional<bool>  linkExists = std::nullopt,
                                                                       const PropertyLists &plists     = PropertyLists()) {
         // Use this function to get info from existing datasets on file.
-        h5pp::logger::log->trace("Bootstrapping properties for writing attribute [{}] into link [{}]", attrName, linkName);
+        h5pp::logger::log->debug("Scanning properties of type [{}] for writing new attribute [{}] in link [{}]", h5pp::type::sfinae::type_name<DataType>(), attrName, linkName);
         h5pp::AttributeProperties dataProps;
         dataProps.linkExists = h5pp::hdf5::checkIfLinkExists(file, linkName, linkExists, plists.link_access);
         dataProps.attrExists = h5pp::hdf5::checkIfAttributeExists(file, linkName, attrName, dataProps.linkExists, attrExists, plists.link_access);
@@ -197,7 +197,7 @@ namespace h5pp::scan {
 
         dataProps.dataType = h5pp::utils::getH5Type<DataType>();
         dataProps.size     = h5pp::utils::getSize(data);
-        dataProps.size     = h5pp::utils::setStringSize(data, dataProps.dataType); // This only affects strings
+        dataProps.size     = h5pp::hdf5::setStringSize(data, dataProps.dataType); // This only affects strings
         dataProps.bytes    = h5pp::utils::getBytesTotal<DataType>(data);
         dataProps.ndims    = h5pp::utils::getRank<DataType>();
         dataProps.dims     = h5pp::utils::getDimensions(data);
@@ -214,7 +214,7 @@ namespace h5pp::scan {
                                                                   std::optional<bool>  linkExists = std::nullopt,
                                                                   const PropertyLists &plists     = PropertyLists()) {
         // Use this function to get info from existing datasets on file.
-        h5pp::logger::log->trace("Reading properties for writing into attribute: [{}] on link [{}]", attrName, linkName);
+        h5pp::logger::log->debug("Scanning properties of type [{}] for writing into attribute [{}] in link [{}]", h5pp::type::sfinae::type_name<DataType>(), attrName, linkName);
 
         linkExists = h5pp::hdf5::checkIfLinkExists(file, linkName, linkExists, plists.link_access);
         attrExists = h5pp::hdf5::checkIfAttributeExists(file, linkName, attrName, linkExists, std::nullopt, plists.link_access);
@@ -244,7 +244,7 @@ namespace h5pp::scan {
             // The rest we can inferr directly from the data
             dataProps.dataType = h5pp::utils::getH5Type<DataType>();
             dataProps.size     = h5pp::utils::getSize(data);
-            dataProps.size     = h5pp::utils::setStringSize(data, dataProps.dataType); // This only affects strings
+            dataProps.size     = h5pp::hdf5::setStringSize(data, dataProps.dataType); // This only affects strings
             dataProps.bytes    = h5pp::utils::getBytesTotal<DataType>(data);
             dataProps.ndims    = h5pp::utils::getRank<DataType>();
             dataProps.dims     = h5pp::utils::getDimensions(data);

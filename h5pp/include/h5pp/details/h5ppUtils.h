@@ -3,6 +3,9 @@
 #include <cstring>
 #include <numeric>
 
+/*!
+ * \brief A collection of functions to get information about C++ types passed by the user
+ */
 namespace h5pp::utils {
 
     template<typename DataType>
@@ -71,11 +74,6 @@ namespace h5pp::utils {
         return hid_t(0);
     }
 
-    //    template<typename DataType>
-    //    [[nodiscard]] Hid::h5t getH5Type() {
-    //        return h5pp::Type::Sfinae::getH5Type<DataType>();
-    //    }
-
     template<typename DataType, size_t size>
     [[nodiscard]] constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size]) {
         if constexpr(h5pp::type::sfinae::is_text_v<DataType>)
@@ -86,8 +84,8 @@ namespace h5pp::utils {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] hsize_t getSize(const DataType &data) {
-        namespace tsc = h5pp::type::sfinae;
-        if constexpr(tsc::has_size_v<DataType>) return data.size();
+        namespace sfn = h5pp::type::sfinae;
+        if constexpr(sfn::has_size_v<DataType>) return data.size();
         if constexpr(std::is_array_v<DataType>) return getArraySize(data);
 
         // Add more checks here. As it is, these two checks above handle all cases I have encountered.
@@ -96,56 +94,135 @@ namespace h5pp::utils {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] constexpr int getRank() {
-        namespace tsc = h5pp::type::sfinae;
-        if constexpr(tsc::has_NumIndices<DataType>::value) return (int) DataType::NumIndices;
+        namespace sfn = h5pp::type::sfinae;
+        if constexpr(sfn::has_NumIndices_v<DataType>) return (int) DataType::NumIndices;
 #ifdef H5PP_EIGEN3
-        if constexpr(tsc::is_eigen_tensor<DataType>::value) return (int) DataType::NumIndices;
-        if constexpr(tsc::is_eigen_1d<DataType>::value) return 1;
-        if constexpr(tsc::is_eigen_dense<DataType>::value) return 2;
+        if constexpr(sfn::is_eigen_tensor_v<DataType>) return (int) DataType::NumIndices;
+        if constexpr(sfn::is_eigen_1d_v<DataType>) return 1;
+        if constexpr(sfn::is_eigen_dense_v<DataType>) return 2;
 #endif
         return 1;
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] std::vector<hsize_t> getDimensions(const DataType &data) {
-        namespace tsc       = h5pp::type::sfinae;
         constexpr int ndims = getRank<DataType>();
-        if constexpr(tsc::has_dimensions<DataType>::value) {
+        if constexpr(h5pp::type::sfinae::has_dimensions_v<DataType>) {
             std::vector<hsize_t> dims(data.dimensions().begin(),
                                       data.dimensions().end()); // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
             assert(data.dimensions().size() == ndims and "given dimensions do not match detected rank");
             assert(dims.size() == ndims and "copied dimensions do not match detected rank");
             return dims;
-        } else if constexpr(tsc::is_text_v<DataType>) {
+        } else if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
             // Read more about this step here
             // http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
             return {(hsize_t) 1};
-        } else if constexpr(tsc::has_size<DataType>::value and ndims == 1) {
+        } else if constexpr(h5pp::type::sfinae::has_size_v<DataType> and ndims == 1) {
             return {(hsize_t) data.size()};
         }
 #ifdef H5PP_EIGEN3
-        else if constexpr(tsc::is_eigen_tensor<DataType>::value) {
+        else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             assert(data.dimensions().size() == ndims and "given dimensions do not match detected rank");
             std::vector<hsize_t> dims(data.dimensions().begin(),
                                       data.dimensions().end()); // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
             return dims;
-        } else if constexpr(tsc::is_eigen_dense<DataType>::value) {
+        } else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType>) {
             std::vector<hsize_t> dims(ndims);
             dims[0] = (hsize_t) data.rows();
             dims[1] = (hsize_t) data.cols();
             return dims;
         }
 #endif
-        else if constexpr(std::is_array<DataType>::value) {
+        else if constexpr(std::is_array_v<DataType>) {
             return {getArraySize(data)};
-        } else if constexpr(std::is_arithmetic<DataType>::value or tsc::is_std_complex<DataType>()) {
+        } else if constexpr(std::is_arithmetic_v<DataType> or h5pp::type::sfinae::is_std_complex_v<DataType>) {
             return {1};
         } else {
-            tsc::print_type_and_exit_compile_time<DataType>();
+            h5pp::type::sfinae::print_type_and_exit_compile_time<DataType>();
             std::string error = "getDimensions can't match the type provided: " + h5pp::type::sfinae::type_name<DataType>();
             h5pp::logger::log->critical(error);
             throw std::logic_error(error);
         }
+    }
+
+    [[nodiscard]] inline hid::h5s getDataSpace(const hsize_t size, const int ndims, const std::vector<hsize_t> &dims, const H5D_layout_t layout) {
+        assert((size_t) ndims == dims.size() and "Dimension mismatch");
+        if(size == 0) return H5Screate(H5S_NULL);
+        if(layout == H5D_CHUNKED and ndims > 0) {
+            // Chunked layout datasets can be extended, which is why their max extent in any dimension is unlimited.
+            std::vector<hsize_t> maxDims(ndims, H5S_UNLIMITED);
+            return H5Screate_simple(ndims, dims.data(), maxDims.data());
+        } else {
+            if(ndims == 0)
+                return H5Screate(H5S_SCALAR);
+            else
+                return H5Screate_simple(ndims, dims.data(), nullptr); // nullptr ->  maxDims same as dims
+        }
+    }
+
+    [[nodiscard]] inline hid::h5s getMemSpace(const hsize_t size, const int ndims, const std::vector<hsize_t> &dims) {
+        assert((size_t) ndims == dims.size() and "Dimension mismatch");
+        if(size == 0) return H5Screate(H5S_NULL);
+        if(ndims == 0)
+            return H5Screate(H5S_SCALAR);
+        else
+            return H5Screate_simple(ndims, dims.data(), nullptr);
+    }
+
+    template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
+    [[nodiscard]] size_t getBytesPerElem() {
+        namespace sfn   = h5pp::type::sfinae;
+        using DecayType = typename std::decay<DataType>::type;
+        if constexpr(std::is_pointer_v<DecayType>) return getBytesPerElem<typename std::remove_pointer<DecayType>::type>();
+        if constexpr(std::is_reference_v<DecayType>) return getBytesPerElem<typename std::remove_reference<DecayType>::type>();
+        if constexpr(std::is_array_v<DecayType>) return getBytesPerElem<typename std::remove_all_extents<DecayType>::type>();
+        if constexpr(sfn::is_std_complex<DecayType>()) return sizeof(DecayType);
+        if constexpr(sfn::is_ScalarN<DecayType>()) return sizeof(DecayType);
+        if constexpr(std::is_arithmetic_v<DecayType>) return sizeof(DecayType);
+        if constexpr(sfn::has_Scalar_v<DecayType>) return sizeof(typename DecayType::Scalar);
+        if constexpr(sfn::has_value_type_v<DecayType>) return sizeof(typename DecayType::value_type);
+        return sizeof(std::remove_all_extents_t<DecayType>);
+    }
+
+    template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
+    [[nodiscard]] size_t getBytesTotal(const DataType &data) {
+        return h5pp::utils::getBytesPerElem<DataType>() * h5pp::utils::getSize(data);
+    }
+
+    [[nodiscard]] inline H5D_layout_t decideLayout(const size_t bytes, std::optional<H5D_layout_t> desiredLayout = std::nullopt) {
+        /*! Depending on the size of this dataset we may benefint from using either
+            a contiguous layout (for big non-extendable non-compressible datasets),
+            a chunked layout (for extendable and compressible datasets)
+            or a compact layout (for tiny datasets).
+
+            Contiguous
+            For big non-extendable non-compressible datasets
+
+            Chunked
+            Chunking is required for enabling compression and other filters, as well as for
+            creating extendible or unlimited dimension datasets. Note that a chunk always has
+            the same rank as the dataset and the chunk's dimensions do not need to be factors
+            of the dataset dimensions.
+
+            Compact
+            A compact dataset is one in which the raw data is stored in the object header of the dataset.
+            This layout is for very small datasets that can easily fit in the object header.
+            The compact layout can improve storage and access performance for files that have many very
+            tiny datasets. With one I/O access both the header and data values can be read.
+            The compact layout reduces the size of a file, as the data is stored with the header which
+            will always be allocated for a dataset. However, the object header is 64 KB in size,
+            so this layout can only be used for very small datasets.
+         */
+
+        // First, we check if the user explicitly asked for an extendable dataset.
+        if(desiredLayout) return desiredLayout.value();
+        // Otherwise we decide based on size
+        if(bytes < h5pp::constants::maxSizeCompact)
+            return H5D_COMPACT;
+        else if(bytes < h5pp::constants::maxSizeContiguous)
+            return H5D_CONTIGUOUS;
+        else
+            return H5D_CHUNKED;
     }
 
     [[nodiscard]] inline std::vector<hsize_t>
@@ -189,182 +266,6 @@ namespace h5pp::utils {
             }
         }
         return chunkDims;
-    }
-
-    [[nodiscard]] inline hid::h5s getDataSpace(const hsize_t size, const int ndims, const std::vector<hsize_t> &dims, const H5D_layout_t layout) {
-        assert((size_t) ndims == dims.size() and "Dimension mismatch");
-        if(size == 0) return H5Screate(H5S_NULL);
-        if(layout == H5D_CHUNKED and ndims > 0) {
-            // Chunked layout datasets can be extended, which is why their max extent in any dimension is unlimited.
-            std::vector<hsize_t> maxDims(ndims);
-            std::fill_n(maxDims.begin(), ndims, H5S_UNLIMITED);
-            return H5Screate_simple(ndims, dims.data(), maxDims.data());
-        } else {
-            if(ndims == 0)
-                return H5Screate(H5S_SCALAR);
-            else {
-                return H5Screate_simple(ndims, dims.data(), nullptr); // nullptr ->  maxDims same as dims
-            }
-        }
-    }
-
-    [[nodiscard]] inline hid::h5s getMemSpace(const hsize_t size, const int ndims, const std::vector<hsize_t> &dims) {
-        assert((size_t) ndims == dims.size() and "Dimension mismatch");
-        if(size == 0) return H5Screate(H5S_NULL);
-        if(ndims == 0)
-            return H5Screate(H5S_SCALAR);
-        else
-            return H5Screate_simple(ndims, dims.data(), nullptr);
-    }
-
-    template<typename h5x>
-    [[nodiscard]] std::string getName(const h5x &object) {
-        static_assert(std::is_convertible_v<h5x, hid_t>);
-        std::string buf;
-        ssize_t     namesize = H5Iget_name(object, nullptr, 0);
-        if(namesize > 0) {
-            buf.resize(namesize + 1);
-            H5Iget_name(object, buf.data(), namesize + 1);
-        }
-        return buf;
-    }
-
-    template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
-    [[nodiscard]] size_t getBytesPerElem() {
-        namespace tsc   = h5pp::type::sfinae;
-        using DecayType = typename std::decay<DataType>::type;
-        if constexpr(std::is_pointer<DecayType>::value) return getBytesPerElem<typename std::remove_pointer<DecayType>::type>();
-        if constexpr(std::is_reference<DecayType>::value) return getBytesPerElem<typename std::remove_reference<DecayType>::type>();
-        if constexpr(std::is_array<DecayType>::value) return getBytesPerElem<typename std::remove_all_extents<DecayType>::type>();
-        if constexpr(tsc::is_std_complex<DecayType>()) return sizeof(DecayType);
-        if constexpr(tsc::is_ScalarN<DecayType>()) return sizeof(DecayType);
-        if constexpr(std::is_arithmetic<DecayType>::value) return sizeof(DecayType);
-        if constexpr(tsc::has_Scalar<DecayType>::value) return sizeof(typename DecayType::Scalar);
-        if constexpr(tsc::has_value_type<DecayType>::value) return sizeof(typename DecayType::value_type);
-        return sizeof(std::remove_all_extents_t<DecayType>);
-    }
-
-    [[nodiscard]] inline size_t getBytesPerElem(const hid::h5t &type) {
-        // This works as H5Tget_size but takes care of getting the correct size for char data
-        H5T_class_t h5class = H5Tget_class(type);
-        if(h5class == H5T_STRING) {
-            // We create text-data differently, as scalar (atomic) type of size 1. The result of H5Gget_size will then be the char*size. Therefore
-            // we measure the type of a single H5T_C_S1 directly.
-            return H5Tget_size(H5T_C_S1);
-        } else {
-            return H5Tget_size(type);
-        }
-    }
-
-    template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
-    [[nodiscard]] size_t getBytesTotal(const DataType &data) {
-        return getBytesPerElem<DataType>() * getSize(data);
-    }
-
-    [[nodiscard]] inline size_t getBytesTotal(const hid::h5s &space, const hid::h5t &type) { return H5Sget_simple_extent_npoints(space) * H5Tget_size(type); }
-
-    [[nodiscard]] inline size_t getBytesTotal(const hid::h5d &dataset) {
-        hid::h5s space = H5Dget_space(dataset);
-        hid::h5t type  = H5Dget_type(dataset);
-        return getBytesTotal(space, type);
-    }
-
-    template<typename userDataType>
-    [[nodiscard]] bool checkBytesPerElemMatch(const hid::h5t &hdf5Datatype) {
-        size_t dsetTypeSize = getBytesPerElem(hdf5Datatype);
-        size_t dataTypeSize = getBytesPerElem<userDataType>();
-        if(dataTypeSize != dsetTypeSize) { h5pp::logger::log->debug("Type size mismatch: dataset type {} bytes | given type {} bytes", dsetTypeSize, dataTypeSize); }
-        return dataTypeSize == dsetTypeSize;
-    }
-
-    template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
-    void assertBytesPerElemMatch(const hid::h5t &type) {
-        size_t dsetTypeSize = getBytesPerElem(type);
-        size_t dataTypeSize = getBytesPerElem<DataType>();
-        if(dataTypeSize != dsetTypeSize) {
-            throw std::runtime_error("Type size mismatch: dataset type " + std::to_string(dsetTypeSize) + " bytes | given type " + std::to_string(dataTypeSize) + " bytes");
-        }
-    }
-
-    template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
-    [[nodiscard]] bool checkBytesMatchTotal(const DataType &data, const hid::h5d &dataset) {
-        size_t dsetsize = getBytesTotal(dataset);
-        size_t datasize = getBytesTotal(data);
-        if(datasize != dsetsize) { h5pp::logger::log->error("Storage size mismatch: hdf5 {} bytes | given {} bytes", dsetsize, datasize); }
-        return datasize == dsetsize;
-    }
-
-    template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
-    void assertBytesMatchTotal(const DataType &data, const hid::h5d &dataset) {
-        size_t dsetsize = getBytesTotal(dataset);
-        size_t datasize = getBytesTotal(data);
-        if(datasize != dsetsize) {
-            throw std::runtime_error("Storage size mismatch: dataset " + std::to_string(dsetsize) + " bytes | given " + std::to_string(datasize) + " bytes");
-        }
-    }
-
-    template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
-    inline hsize_t setStringSize(const DataType &data, const hid::h5t &datatype) {
-        hsize_t size = h5pp::utils::getSize(data);
-        if(h5pp::type::sfinae::is_text_v<DataType>) {
-            htri_t equaltypes = H5Tequal(datatype, H5T_C_S1);
-            if(equaltypes < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Type equality comparison failed");
-            }
-            if(equaltypes > 0) {
-                size          = std::max((hsize_t) 1, size);
-                herr_t retval = H5Tset_size(datatype.value(), size);
-                if(retval < 0) {
-                    H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to set size: " + std::to_string(size));
-                }
-                // The following makes sure there is a single "\0" at the end of the string when written to file.
-                // Note however that size here is supposed to be the number of characters NOT including null terminator.
-                retval = H5Tset_strpad(datatype, H5T_STR_NULLTERM);
-                if(retval < 0) {
-                    H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to set strpad");
-                }
-            }
-        }
-        return size;
-    }
-
-    [[nodiscard]] inline H5D_layout_t decideLayout(const size_t bytes, std::optional<H5D_layout_t> desiredLayout = std::nullopt) {
-        /*! Depending on the size of this dataset we may benefint from using either
-            a contiguous layout (for big non-extendable non-compressible datasets),
-            a chunked layout (for extendable and compressible datasets)
-            or a compact layout (for tiny datasets).
-
-            Contiguous
-            For big non-extendable non-compressible datasets
-
-            Chunked
-            Chunking is required for enabling compression and other filters, as well as for
-            creating extendible or unlimited dimension datasets. Note that a chunk always has
-            the same rank as the dataset and the chunk's dimensions do not need to be factors
-            of the dataset dimensions.
-
-            Compact
-            A compact dataset is one in which the raw data is stored in the object header of the dataset.
-            This layout is for very small datasets that can easily fit in the object header.
-            The compact layout can improve storage and access performance for files that have many very
-            tiny datasets. With one I/O access both the header and data values can be read.
-            The compact layout reduces the size of a file, as the data is stored with the header which
-            will always be allocated for a dataset. However, the object header is 64 KB in size,
-            so this layout can only be used for very small datasets.
-         */
-
-        // First, we check if the user explicitly asked for an extendable dataset.
-        if(desiredLayout) return desiredLayout.value();
-        // Otherwise we decide based on size
-        if(bytes < h5pp::constants::maxSizeCompact)
-            return H5D_COMPACT;
-        else if(bytes < h5pp::constants::maxSizeContiguous)
-            return H5D_CONTIGUOUS;
-        else
-            return H5D_CHUNKED;
     }
 
 }

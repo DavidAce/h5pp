@@ -62,7 +62,7 @@ namespace h5pp {
         template<auto rank, typename Container>
         [[nodiscard]] H5PP_CONSTEXPR Eigen::DSizes<idxType, rank> copy_dims(const Container &container) {
             Eigen::DSizes<idxType, rank> dsizes;
-            if constexpr(std::is_array<Container>::value) {
+            if constexpr(std::is_array_v<Container>) {
                 std::copy_n(std::begin(container), rank, dsizes.begin());
             } else {
                 if(container.size() != rank) throw std::runtime_error("copy_dims: Wrong container size, can't copy dimensions.");

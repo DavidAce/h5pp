@@ -5,7 +5,6 @@
 #include "h5ppConstants.h"
 #include "h5ppDatasetProperties.h"
 #include "h5ppEigen.h"
-#include "h5ppFileCounter.h"
 #include "h5ppFilesystem.h"
 #include "h5ppHdf5.h"
 #include "h5ppHid.h"
@@ -16,7 +15,7 @@
 #include "h5ppPtrWrapper.h"
 #include "h5ppScan.h"
 #include "h5ppTypeCompoundCreate.h"
-#include "h5ppTypeSfinae.h"
+//#include "h5ppTypeSfinae.h"
 #include "h5ppUtils.h"
 #include <cassert>
 #include <hdf5.h>
@@ -48,7 +47,7 @@ namespace h5pp {
         unsigned int defaultCompressionLevel = 0;
 
         public:
-        bool hasInitialized = false;
+        //        bool hasInitialized = false;
 
         // The following struct contains modifiable property lists.
         // This allows us to use h5pp with MPI, for instance.
@@ -58,14 +57,13 @@ namespace h5pp {
         // The user is responsible for linking to MPI and learning how to set properties for MPI usage
         PropertyLists plists;
 
-        File() { h5pp::logger::setLogger("h5pp", logLevel, logTimestamp); }
+        File() {
+            h5pp::logger::setLogger("h5pp", logLevel, logTimestamp);
+            h5pp::logger::log->debug("Default-constructing null file");
+        }
 
         File(const File &other) {
-            h5pp::logger::log->debug("Copy-constructing this file [{}] from given file: [{}]. Previously initialized (this): {}. Previously initialized (other): {}",
-                                     fileName.string(),
-                                     other.getFileName(),
-                                     hasInitialized,
-                                     other.hasInitialized);
+            h5pp::logger::log->debug("Copy-constructing this file [{}] from given file: [{}]", fileName.string(), other.getFileName());
             *this = other;
         }
 
@@ -75,109 +73,78 @@ namespace h5pp {
                       size_t     logLevel_     = 2,
                       bool       logTimestamp_ = false)
             : fileName(std::move(FileName_)), accessMode(accessMode_), createMode(createMode_), logLevel(logLevel_), logTimestamp(logTimestamp_) {
-            h5pp::logger::setLogger("h5pp", logLevel, logTimestamp);
-            h5pp::logger::log->debug("Constructing h5pp file. Given path: [{}]", fileName.string());
-
+            h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
+            h5pp::logger::log->debug("Constructing h5pp file: [{}]", fileName.string());
             if(accessMode_ == AccessMode::READONLY and createMode_ == CreateMode::TRUNCATE) {
                 logger::log->error("Options READONLY and TRUNCATE are incompatible.");
                 return;
             }
-            initialize();
+
+            /* Set default error print output */
+            error_stack                          = H5Eget_current_stack();
+            herr_t turnOffAutomaticErrorPrinting = H5Eset_auto2(error_stack, nullptr, nullptr);
+            if(turnOffAutomaticErrorPrinting < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to turn off H5E error printing");
+            }
+            setOutputFilePath();
+            h5pp::type::compound::initTypes();
+            h5pp::logger::setLogger("h5pp|" + fileName.string(), logLevel, logTimestamp);
+            h5pp::logger::log->debug("Successfully initialized");
         }
 
         explicit File(fs::path FileName_, CreateMode createMode_, size_t logLevel_ = 2, bool logTimestamp_ = false)
             : File(std::move(FileName_), AccessMode::READWRITE, createMode_, logLevel_, logTimestamp_) {}
 
-        ~File() noexcept(false) {
-            auto savedLog = h5pp::logger::log->name();
-            h5pp::logger::setLogger("h5pp|exit", logLevel, logTimestamp);
-            //            if(h5pp::counter::ActiveFileCounter::getCount() == 1) { h5pp::type::compound::closeTypes(); }
-            h5pp::counter::ActiveFileCounter::decrementCounter(fileName.string());
-            if(h5pp::counter::ActiveFileCounter::getCount() == 0) {
-                h5pp::logger::log->debug("Closing file: {}.", fileName.string(), h5pp::counter::ActiveFileCounter::getCount(), h5pp::counter::ActiveFileCounter::OpenFileNames());
-            } else {
-                h5pp::logger::log->debug("Closing file: {}. There are still {} files open: {}",
-                                         getFileName(),
-                                         h5pp::counter::ActiveFileCounter::getCount(),
-                                         h5pp::counter::ActiveFileCounter::OpenFileNames());
-            }
+        ~File() {
+            h5pp::logger::log->debug("Closing file");
             H5Eprint(H5E_DEFAULT, stderr);
-            h5pp::logger::setLogger(savedLog, logLevel, logTimestamp);
         }
 
+        //        File &operator=(const File &other) = default;
+
         File &operator=(const File &other) {
-            h5pp::logger::log->debug("Assign-constructing this file [{}] from given file: [{}]. Previously initialized (this): {}. Previously initialized (other): {}",
-                                     fileName.string(),
-                                     other.getFileName(),
-                                     hasInitialized,
-                                     other.hasInitialized);
+            h5pp::logger::log->debug("Assignment to this file [{}] from given file: [{}]", fileName.string(), other.getFileName());
             if(&other != this) {
-                if(hasInitialized) { h5pp::counter::ActiveFileCounter::decrementCounter(fileName.string()); }
-                if(other.hasInitialized) {
-                    logLevel = other.logLevel;
-                    h5pp::logger::setLogger("h5pp", logLevel, logTimestamp);
-                    accessMode = other.getAccessMode();
-                    createMode = CreateMode::OPEN;
-                    fileName   = other.fileName;
-                    filePath   = other.filePath;
-                    initialize();
-                }
+                logLevel     = other.logLevel;
+                logTimestamp = other.logTimestamp;
+                accessMode   = other.getAccessMode();
+                createMode   = CreateMode::OPEN;
+                fileName     = other.fileName;
+                filePath     = other.filePath;
+                plists       = other.plists;
+                h5pp::logger::setLogger("h5pp|" + fileName.string(), logLevel, logTimestamp);
             }
             return *this;
         }
 
         [[nodiscard]] hid::h5f openFileHandle() const {
-            try {
-                if(hasInitialized) {
-                    switch(accessMode) {
-                        case(AccessMode::READONLY): {
-                            h5pp::logger::log->trace("Opening file handle in READONLY mode");
-                            hid::h5f fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.file_access);
-                            if(fileHandle < 0) {
-                                H5Eprint(H5E_DEFAULT, stderr);
-                                throw std::runtime_error("Failed to open file in read-only mode: " + filePath.string());
-                            } else {
-                                return fileHandle;
-                            }
-                        }
-                        case(AccessMode::READWRITE): {
-                            h5pp::logger::log->trace("Opening file handle in READWRITE mode");
-                            hid::h5f fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDWR, plists.file_access);
-                            if(fileHandle < 0) {
-                                H5Eprint(H5E_DEFAULT, stderr);
-                                throw std::runtime_error("Failed to open file in read-write mode: " + filePath.string());
-                            } else {
-                                return fileHandle;
-                            }
-                        }
-                        default: throw std::runtime_error("Invalid access mode");
-                    }
-                } else {
-                    throw std::runtime_error("File hasn't initialized");
-                }
-
-            } catch(std::exception &ex) { throw std::runtime_error("Could not open file handle: " + std::string(ex.what())); }
-        }
-
-        void initialize() {
-            auto savedLog = h5pp::logger::log->name();
-            h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
-            /* Turn off error handling permanently */
-            error_stack                          = H5Eget_current_stack();
-            herr_t turnOffAutomaticErrorPrinting = H5Eset_auto2(error_stack, nullptr, nullptr);
-            //            H5Eclose_stack(error_stack);
-            if(turnOffAutomaticErrorPrinting < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to turn off H5E error printing");
-            }
-
-            setOutputFilePath();
-            h5pp::type::compound::initTypes();
-            //            fileCount++;
-            h5pp::counter::ActiveFileCounter::incrementCounter(fileName.string());
             h5pp::logger::setLogger("h5pp|" + fileName.string(), logLevel, logTimestamp);
-            //            h5pp::Logger::setLogger(savedLog,logLevel,false);
-            hasInitialized = true;
+            try {
+                switch(accessMode) {
+                    case(AccessMode::READONLY): {
+                        h5pp::logger::log->trace("Opening file handle in READONLY mode");
+                        hid::h5f fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.file_access);
+                        if(fileHandle < 0) {
+                            H5Eprint(H5E_DEFAULT, stderr);
+                            throw std::runtime_error("Failed to open file in read-only mode: " + filePath.string());
+                        } else {
+                            return fileHandle;
+                        }
+                    }
+                    case(AccessMode::READWRITE): {
+                        h5pp::logger::log->trace("Opening file handle in READWRITE mode");
+                        hid::h5f fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDWR, plists.file_access);
+                        if(fileHandle < 0) {
+                            H5Eprint(H5E_DEFAULT, stderr);
+                            throw std::runtime_error("Failed to open file in read-write mode: " + filePath.string());
+                        } else {
+                            return fileHandle;
+                        }
+                    }
+                    default: throw std::runtime_error("Invalid access mode");
+                }
+            } catch(std::exception &ex) { throw std::runtime_error("Could not open file handle: " + std::string(ex.what())); }
         }
 
         void setCreateMode(CreateMode createMode_) { createMode = createMode_; }
@@ -250,6 +217,7 @@ namespace h5pp {
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
         DataType readDataset(std::string_view datasetPath) const {
+            h5pp::logger::setLogger("h5pp|" + fileName.string(), logLevel, logTimestamp);
             DataType data;
             readDataset(data, datasetPath);
             return data;
@@ -344,7 +312,7 @@ namespace h5pp {
 
         private:
         void setOutputFilePath() {
-            h5pp::logger::log->trace("Attempting to set file name and path. File name [{}] path [{}]. Has initialized: {}", fileName.string(), filePath.string(), hasInitialized);
+            h5pp::logger::log->trace("Attempting to set file name and path. File name [{}] path [{}]", fileName.string(), filePath.string());
 
             // There are different possibilities:
             // 1) File is being initialized from another h5pp File (e.g. by copy or assignment) In that case the following applies:
@@ -365,6 +333,7 @@ namespace h5pp {
             h5pp::logger::log->trace("Current path        : {}", fs::current_path().string());
             h5pp::logger::log->debug("Detected file name  : {}", fileName.string());
             h5pp::logger::log->debug("Detected file path  : {}", filePath.string());
+            h5pp::logger::setLogger("h5pp|" + fileName.string(), logLevel, logTimestamp);
             // The following function can modify the resulting filePath and fileName depending on accessmode/createmode.
             std::tie(filePath, fileName) = h5pp::hdf5::createFile(filePath, accessMode, createMode, plists);
         }
@@ -412,15 +381,6 @@ void h5pp::File::writeAttribute(const DataType &data, std::string_view attrName,
     hid::h5f file      = openFileHandle();
     auto     attrProps = h5pp::scan::getAttributeProperties_write(file, data, attrName, linkName, std::nullopt, std::nullopt, plists);
     h5pp::hdf5::createAttribute(attrProps);
-
-#ifdef H5PP_EIGEN3
-    if constexpr(h5pp::type::sfinae::is_eigen_any<DataType>::value and not h5pp::type::sfinae::is_eigen_1d<DataType>::value) {
-        h5pp::logger::log->debug("Converting data to row-major storage order");
-        const auto tempRowm = eigen::to_RowMajor(data); // Convert to Row Major first;
-        h5pp::hdf5::writeAttribute(tempRowm, attrProps);
-        return;
-    }
-#endif
 
     h5pp::hdf5::writeAttribute(data, attrProps);
 }

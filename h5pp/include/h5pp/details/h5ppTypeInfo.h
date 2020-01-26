@@ -3,7 +3,11 @@
 #include "h5ppUtils.h"
 #include <string>
 #include <typeindex>
+
 namespace h5pp {
+    /*!
+     * \brief Collects type information about existing datasets
+     */
     class TypeInfo {
         private:
         const std::string          name_;
