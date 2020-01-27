@@ -252,8 +252,11 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 * `-DCMAKE_BUILD_TYPE=Release/Debug` to specify build type of tests and examples (default: `Release`)
 * `-DENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (recommended!) (default: `OFF`).
 * `-DBUILD_EXAMPLES:BOOL=<ON/OFF>` to build example programs (default: `OFF`)
-* `-DDOWNLOAD_METHOD=<none/conan/native>` to select download method. (default: `none`).
+* `-DDOWNLOAD_METHOD=<none/find-only/conan/native>` to select download method. (default: `none`).
 * `-DH5PP_PRINT_INFO:BOOL=<ON/OFF>` to print extra CMake info about the host and generated targets during configure (default: `OFF`).
+* `-DH5PP_IS_SUBPROJECT:BOOL<ON/OFF>` Use h5pp with add_subdirectory() (default: `OFF`).
+* `-DH5PP_ENABLE_EIGEN3:BOOL=<ON/OFF>` Enables Eigen3 linear algebra library (DEFAULT: `OFF`).
+* `-DH5PP_ENABLE_SPDLOG:BOOL=<ON/OFF>` Enables Spdlog for logging h5pp internal info to stdout (DEFAULT: `OFF`).
 * `-DAPPEND_LIBSUFFIX:BOOL=<ON/OFF>` Append a directory with the library name to install directory, i.e. `CMAKE_INSTALL_PREFIX/<libname>/`. This
     is useful when you want to install `h5pp`, `hdf5`, `Eigen3` and `spdlog` in separate folders (default: `OFF`).
 * `-DPREFER_CONDA_LIBS:BOOL=<ON/OFF>` to prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda (default: `OFF`).
@@ -276,7 +279,7 @@ The following variables can be set to help guide CMake's `find_package` to your 
 * `-DSPDLOG_CONFIG_ONLY:BOOL=<ON/OFF>`
 * `-DHDF5_DIR:PATH=<path to HDF5Config.cmake>` 
 * `-DHDF5_ROOT:PATH=<path to HDF5 install-dir>` 
-
+* `-DCONAN_PREFIX:PATH=<path to conan>`
 
 ## Linking
 
