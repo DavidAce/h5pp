@@ -18,13 +18,10 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
 *   [Introduction](#introduction)
 *   [Features](#features)
 *   [Usage](#usage)
-    *   [Example 1: Writing std::vector](#example-1-writing-stdvector)
-    *   [Example 2: Reading std::vector](#example-2-reading-stdvector)
-    *   [Example 3: Write and read an Eigen::Matrix](#example-3-write-and-read-an-eigenmatrix)
-    *   [Example 4: Metadata in attributes](#example-4-metadata-in-attributes)
+    *   [Example: Writing an std::vector](#example-writing-an-stdvector)
     *   [Debug and logging](#debug-and-logging)
     *   [File permissions](#file-permissions)
-    *   [Extendable and non-extendable datasets](#extendable-and-non-extendable-datasets)
+    *   [Storage layout](#storage-layout)
     *   [Compression](#compression)
     *   [Load data into Python](#load-data-into-python)
 *   [Download](#download)
@@ -36,14 +33,14 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
 *   [Linking](#linking)
 
 ## Introduction
-[HDF5](https://www.hdfgroup.org/) is a popular format for cross-platform binary storage of large datasets.
+[HDF5](https://www.hdfgroup.org/) is a popular format for portable binary storage of large datasets.
 With bindings to popular languages such as Python, Julia, Matlab and many others,
 it is straightforward to export, import and analyze data in a collaborative setting.
 
 In C/C++ using HDF5 directly is not at all straightforward.
 Beginners are met with a steep learning curve to the vast API of HDF5.
 There are many C/C++ libraries already that simplify the user experience, but as a matter of opinion,
-none as simple as [h5py](https://www.h5py.org/) for Python, for instance.
+not a simple as what can be found in other languages, like [h5py](https://www.h5py.org/) for Python.
 
 The goal of `h5pp` is to bring this level of simplicity to C++:
 - Users should be able to read/write common C++ data-types in a single line of code.
@@ -73,8 +70,8 @@ The goal of `h5pp` is to bring this level of simplicity to C++:
 ## Usage
 Using `h5pp` is intended to be simple. After initializing a file, 
 most of the work can be achieved using just two member functions `.writeDataset(...)` and `.readDataset(...)`.
-Here is one example for writing an `std::vector`
 
+### Example: Writing an `std::vector`
 ```c++
     #include <h5pp/h5pp.h>
     
