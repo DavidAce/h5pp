@@ -4,7 +4,7 @@ import os, re
 
 class h5ppConan(ConanFile):
     name = "h5pp"
-    version = "1.1.0"
+    version = "1.5.0"
     license = "MIT"
     url = "https://github.com/DavidAce/h5pp"
     settings = "os", "compiler", "build_type", "arch"
