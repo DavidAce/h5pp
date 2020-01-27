@@ -15,7 +15,7 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
 
 
 ## Table of Contents
-
+*   [Introduction](#introduction)
 *   [Features](#features)
 *   [Usage](#usage)
     *   [Example 1: Writing std::vector](#example-1-writing-stdvector)
@@ -35,30 +35,45 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
     * [Opt-in automatic dependency installation](#opt-in-automatic-dependency-installation)
 *   [Linking](#linking)
 
+## Introduction
+[HDF5](https://www.hdfgroup.org/) is a popular format for cross-platform binary storage of large datasets.
+With bindings to popular languages such as Python, Julia, Matlab and many others,
+it is straightforward to export, import and analyze data in a collaborative setting.
+
+In C/C++ using HDF5 directly is not at all straightforward.
+Beginners are met with a steep learning curve to the vast API of HDF5.
+There are many C/C++ libraries already that simplify the user experience, but as a matter of opinion,
+none as simple as [h5py](https://www.h5py.org/) for Python, for instance.
+
+The goal of `h5pp` is to bring this level of simplicity to C++:
+- Users should be able to read/write common C++ data-types in a single line of code.
+- Users should not need prior knowledge of HDF5 for simple tasks.
+- Seemingly simple tasks should stay simple, e.g., specifying storage layout or enabling compression.
+- Advanced tasks should stay possible e.g., specifying chunk dimensions or MPI parallelism   )
+- Logs and error messages should be meaningful to beginners.
+- Installation should be just as simple.
+ 
 
 ## Features
 * Header-only C++17 template library
 * Support for common data types:
-    - `int`,`long`, `long long` `float`, `double` (and unsigned versions)
+    - `short`,`int`,`long`, `long long` `float`, `double`, `long double` (and unsigned versions)
         - any of the above in C-style arrays
         - any of the above in `std::complex<>` form
         - any of the above in POD-structs with x,y or x,y,z data members. In `h5pp` these go by the name `Scalar2` and `Scalar3`.
-            These work well together with types such as `double2` or `float3` found in CUDA
-    - `std::string` and `char` arrays
-    - Contiguous containers of types above, such as `std::vector`, with `.data()` methods
-    - `Eigen` types such as `Matrix`, `Array` and `Tensor`, with automatic conversion to/from row major storage layout
-    - Any multi-dimensional container with access to a C-style contiguous buffer (without conversion to/from row major)
-* Modern CMake build, install and linking using targets
-* (Opt-in) Automatically find or download dependencies using either [conan package manager](https://conan.io/) or native "CMake-only" methods
+            These work well together with types such as `double2` or `float3` found in CUDA.
+    - `std::string` and `char` arrays.
+    - Contiguous containers, such as `std::vector`, with `.data()` methods.
+    - `Eigen` types such as `Matrix`, `Array` and `Tensor`, with automatic conversion to/from row major storage layout.
+    - Any multi-dimensional container with access to a C-style contiguous buffer (without conversion to/from row major).
+* Modern CMake build, install and linking using targets.
+* (Opt-in) Automatically find or download dependencies using either [conan package manager](https://conan.io/) or native "CMake-only" methods.
 
 
 ## Usage
-Using `h5pp` is intended to be simple. After initializing a file, most of the work can be achieved using just two member functions `.writeDataset(...)` and `.readDataset(...)`.
-To understand the basic usage, let's go through some examples.
-
-### Example 1: Writing std::vector
-To write data to file simply pass any supported object and a dataset name to `writeDataset`.
-This example shows how to do this with a vector of doubles.
+Using `h5pp` is intended to be simple. After initializing a file, 
+most of the work can be achieved using just two member functions `.writeDataset(...)` and `.readDataset(...)`.
+Here is one example for writing an `std::vector`
 
 ```c++
     #include <h5pp/h5pp.h>
@@ -78,102 +93,7 @@ This example shows how to do this with a vector of doubles.
     }
 ```
 
-
-### Example 2: Reading std::vector
-Reading from file works similarly with `readDataset`, with the only exception that you need to provide a container of the correct type.
-
-```c++
-    #include <h5pp/h5pp.h>
-    
-    int main() {
-        
-        // Initialize a file
-        h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READONLY, h5pp::CreateMode::OPEN );
-    
-        // Initialize an empty a vector of doubles
-        std::vector<double> v;
-    
-        // Read data. The vector is resized automatically by h5pp.
-        file.readDataset(v, "myStdVector");
-    
-        return 0;
-    }
-```
-
-**Notes** 
-* this time we make use of file permissions in the constructor of `h5pp::File`, read more under [File permissions](#file-permissions).
-* `h5pp` resizes `std` containers automatically. Resizing of C-style arrays is left to the user.
-*  It is possible to query a dataset's *size* in advance, but there is no support (yet?) for querying its *type*. 
-
-
-### Example 3: Write and read an Eigen::Matrix
-
-```c++
-    #include <h5pp/h5pp.h>
-    
-    int main() {
-    
-        // Initialize a file
-        h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE);
-    
-        // Initialize a 10x10 Eigen matrix with random complex entries
-        Eigen::MatrixXcd m1 = Eigen::MatrixXcd::Random(10, 10);
-        
-        // Write the matrix 
-        // Inside the file, the data will be stored in a dataset named "myEigenMatrix" under the group "myMatrixCollection"
-        file.writeDataset(m1, "myMatrixCollection/myEigenMatrix");
-    
-    
-        // Read it back in one line. Note that we pass the type as a template parameter
-        auto m2 = file.readDataset<Eigen::MatrixXcd> ("myMatrixCollection/myEigenMatrix");
-    
-        return 0;
-    }
-```
-
-**Notes** 
-* Once again we make use of file permissions in the constructor of `h5pp::File`, read more under [File permissions](#file-permissions).
-* `h5pp` resizes `Eigen` containers automatically. Resizing of C-style arrays is left to the user.
-* This time we put the dataset `myEigenMatrix` inside of the HDF5 group `myMatrixCollection`, which is automatically created by `h5pp`.
-* We can use an alternative syntax to read datasets by assignment in one line.
-
-
-### Example 4: Metadata in attributes
-Metadata for a datasets or groups is stored in so-called "attributes". An attribute can be of any type, just like a dataset.
-In fact, an attribute is very similar to a dataset, with the main difference being that it is supposed to be small and stored in the metadata headers of groups or datasets. 
-Writing attributes works similarly with the function `writeAttribute(someObject,attributeName,targetLink)`.
-
-```c++
-    #include <h5pp/h5pp.h>
-    #include <iostream>
-    int main() {
-    
-        // Initialize a file
-        h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::OPEN);
-        // Write an integer to file
-        file.writeDataset(42, "intGroup/myInt");
-        // We can now write metadata, or "attributes" to the int.
-        file.writeAttribute("this is some info about my int", "myInt_stringAttribute", "intGroup/myInt");
-        file.writeAttribute(3.14, "myInt_doubleAttribute", "intGroup/myInt");
-    
-        // List all attributes associated with our int.
-        // The following will print:
-        //      myInt_stringAttribute
-        //      myInt_doubleAttribute
-        auto allAttributes = file.getAttributeNames("intGroup/myInt");
-        for(auto & attr : allAttributes)std::cout << attr << std::endl; 
-    
-        // Read the attribute data back
-        auto stringAttribute = file.readAttribute<std::string> ("myInt_stringAttribute", "intGroup/myInt");
-        auto doubleAttribute = file.readAttribute<double>      ("myInt_doubleAttribute", "intGroup/myInt");
-    
-        return 0;
-    }
-```
-
-**Notes** 
-* Attributes can be written to groups or datasets. 
-* A single dataset or group can have multiple attributes of different types. 
+Find more code examples in the [Wiki](https://github.com/DavidAce/h5pp/wiki).
 
 
 ### Debug and logging
@@ -216,31 +136,21 @@ To give a concrete example, the syntax works as follows
     h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE);
 ```
 
-### Extendable and non-extendable datasets
-By default, datasets in h5pp are created as non-extendable. This means that a dataset has a fixed size and can only be overwritten if the new data has the same size and shape.
-In contrast, extendable datasets have dynamic size and can be overwritten by a larger dataset. Keep in mind that overwriting with a smaller dataset does not shrink the file size.
+### Storage Layout
+Unless specified, `h5pp` will automatically decide the best storage layout for each dataset. The possible layouts are
 
-To swap the default behavior, use one of the methods below
+- `H5D_COMPACT`:  For scalar or small datasets which can fit in the metadata header. Default on datasets smaller than 32 KB.
+- `H5D_CONTIGUOUS`: For medium size datasets.  Default on datasets smaller than 512 KB.
+- `H5D_CHUNKED`: For large datasets. Default on datasets larger than 512 KB. This layout has some additional features:
+    - Chunking, portioning of the data to improve IO performance by caching more efficiently. Chunk dimensions are calculated by `h5pp` if not given specifically.
+    - Compression, disabled by default, and only available if HDF5 was built with zlib enabled.
+    - Overwrite with different size (note that the file size never decreases, for instance after overwriting with a smaller dataset).
+
+To specify the layout, pass it as a third argument when writing a new dataset, for instance:
+
 ```c++
-    file.enableDefaultExtendable();
-    file.disableDefaultExtendable();
+    file.writeDataset(myData, "science/myChunkedData", H5D_CHUNKED);      // Creates a chunked dataset
 ```
-
-You can also optionally pass a true/false argument when writing a new dataset to explicitly create it as extendable or non-extendable
-
-```c++
-    file.writeDataset(testvector, "testvector", true);      // Creates an extendable dataset
-    file.writeDataset(testvector, "testvector", false);     // Creates a non-extendable dataset    
-```
-
-**Technical details:** 
-- Extendability only applies for datasets with one or more dimensions. Zero-dimensional or "scalar" datasets are always as non-extendable (as `H5S_SCALAR`).
-- Extendable datasets are "chunked" (as in `H5D_CHUNKED`), which means they can be read into memory in smaller chunks. This makes sense for large enough datasets.
-- A dataset with one or more dimensions is **non-extendable by default, unless it is very large**.
-- A non-extendable dataset smaller than 32 KB will be created as `H5D_COMPACT`, meaning it can fit in the metadata header.
-- A non-extendable dataset between 32 KB and 512 KB will be created as `H5D_CONTIGUOUS`, meaning it is not "chunked" and can be read entirely at once.
-- A non-extendable dataset larger than 512 KB will be **made into an extendable dataset** unless explicitly specified, because it makes sense to read large datasets in chunks.
-
 
 ### Compression
 Extendable (or chunked) datasets can also be compressed if HDF5 was built with zlib support. Use these
@@ -248,9 +158,15 @@ functions to set or check the compression level:
 
 ```c++
     file.setDefaultCompressionLevel(9);            // 0 to 9: 0 to disable compression, 9 for maximum compression.
-    file.getValidCompressionLevel();             // Gets the current compression level
-    h5pp::checkIfCompressionIsAvailable();  // True if your installation of HDF5 has zlib support 
+    file.getDefaultCompressionLevel();             // Gets the current compression level
+    h5pp::checkIfCompressionIsAvailable();         // True if your installation of HDF5 has zlib support 
 ```
+
+or pass a temporary compression level as the fifth argument when writing a dataset:
+```c++
+    file.writeDataset(myData, "science/myCompressedData", H5D_CHUNKED, std::nullopt, 8); // Creates a chunked dataset with compression level 8.
+```
+
 
 
 ### Load data into Python
