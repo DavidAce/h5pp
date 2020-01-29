@@ -286,7 +286,7 @@ namespace h5pp::scan {
         tableProps.fieldSizes   = std::vector<size_t>();
         tableProps.fieldNames   = std::vector<std::string>();
 
-        for(hsize_t idx = 0; idx < tableProps.NFIELDS.value(); idx++) {
+        for(unsigned int idx = 0; idx < (unsigned int) tableProps.NFIELDS.value(); idx++) {
             tableProps.fieldTypes.value().emplace_back(H5Tget_member_type(tableProps.entryType, idx));
             tableProps.fieldOffsets.value().emplace_back(H5Tget_member_offset(tableProps.entryType, idx));
             tableProps.fieldSizes.value().emplace_back(H5Tget_size(tableProps.fieldTypes.value().back()));
