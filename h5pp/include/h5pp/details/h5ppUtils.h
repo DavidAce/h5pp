@@ -1,4 +1,5 @@
 #pragma once
+#include "h5ppOptional.h"
 #include "h5ppTypeSfinae.h"
 #include <cstring>
 #include <numeric>
@@ -9,7 +10,8 @@
 namespace h5pp::utils {
 
     template<typename DataType>
-    [[nodiscard]] hid::h5t getH5Type() {
+    [[nodiscard]] hid::h5t getH5Type(const std::optional<hid::h5t> &h5type = std::nullopt) {
+        if(h5type.has_value()) return h5type.value();
         namespace tc = h5pp::type::sfinae;
         /* clang-format off */
         using DecayType    = typename std::decay<DataType>::type;

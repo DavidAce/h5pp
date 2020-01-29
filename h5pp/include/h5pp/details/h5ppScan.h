@@ -43,6 +43,7 @@ namespace h5pp::scan {
                                                            std::string_view                          dsetName,
                                                            const DataType &                          data,
                                                            const std::optional<bool>                 dsetExists              = std::nullopt,
+                                                           const std::optional<hid::h5t>             desiredH5Type           = std::nullopt,
                                                            const std::optional<H5D_layout_t>         desiredLayout           = std::nullopt,
                                                            const std::optional<std::vector<hsize_t>> desiredChunkDims        = std::nullopt,
                                                            const std::optional<unsigned int>         desiredCompressionLevel = std::nullopt,
@@ -58,7 +59,7 @@ namespace h5pp::scan {
         dataProps.dims      = h5pp::utils::getDimensions(data);
         dataProps.size      = h5pp::utils::getSize(data);
         dataProps.bytes     = h5pp::utils::getBytesTotal(data);
-        dataProps.dataType  = h5pp::utils::getH5Type<DataType>();                  // We use our own data-type matching to avoid any confusion
+        dataProps.dataType  = h5pp::utils::getH5Type<DataType>(desiredH5Type);     // We use our own data-type matching unless the user provides a custom one
         dataProps.size      = h5pp::hdf5::setStringSize(data, dataProps.dataType); // This only affects strings
         dataProps.layout    = h5pp::utils::decideLayout(dataProps.bytes.value(), desiredLayout);
         dataProps.chunkDims = h5pp::utils::getDefaultChunkDimensions(dataProps.size.value(), dataProps.dims.value(), desiredChunkDims);
@@ -82,6 +83,7 @@ namespace h5pp::scan {
                                                        std::string_view                          dsetName,
                                                        const DataType &                          data,
                                                        std::optional<bool>                       dsetExists              = std::nullopt,
+                                                       const std::optional<hid::h5t>             desiredH5Type           = std::nullopt,
                                                        const std::optional<H5D_layout_t>         desiredLayout           = std::nullopt,
                                                        const std::optional<std::vector<hsize_t>> desiredChunkDims        = std::nullopt,
                                                        const std::optional<unsigned int>         desiredCompressionLevel = std::nullopt,
@@ -108,7 +110,7 @@ namespace h5pp::scan {
             dataProps.dsetName          = dsetProps.dsetName;
             dataProps.dsetExists        = dsetProps.dsetExists;
             dataProps.layout            = dsetProps.layout;
-            dataProps.dataType          = h5pp::utils::getH5Type<DataType>();
+            dataProps.dataType          = h5pp::utils::getH5Type<DataType>(desiredH5Type);
             dataProps.ndims             = h5pp::utils::getRank<DataType>();
             dataProps.chunkDims         = dsetProps.chunkDims;
             dataProps.plist_dset_access = dsetProps.plist_dset_create;
@@ -140,7 +142,7 @@ namespace h5pp::scan {
         } else {
             // We enter write-from-scratch mode
             // Use this function to detect info from the given DataType, to later create a dataset from scratch.
-            return getDatasetProperties_bootstrap(file, dsetName, data, dsetExists, desiredLayout, desiredChunkDims, desiredCompressionLevel, plists);
+            return getDatasetProperties_bootstrap(file, dsetName, data, dsetExists, desiredH5Type, desiredLayout, desiredChunkDims, desiredCompressionLevel, plists);
         }
     }
 
@@ -177,13 +179,14 @@ namespace h5pp::scan {
     }
 
     template<typename DataType>
-    inline h5pp::AttributeProperties getAttributeProperties_bootstrap(const hid::h5f &     file,
-                                                                      const DataType &     data,
-                                                                      std::string_view     attrName,
-                                                                      std::string_view     linkName,
-                                                                      std::optional<bool>  attrExists = std::nullopt,
-                                                                      std::optional<bool>  linkExists = std::nullopt,
-                                                                      const PropertyLists &plists     = PropertyLists()) {
+    inline h5pp::AttributeProperties getAttributeProperties_bootstrap(const hid::h5f &              file,
+                                                                      const DataType &              data,
+                                                                      std::string_view              attrName,
+                                                                      std::string_view              linkName,
+                                                                      std::optional<bool>           attrExists    = std::nullopt,
+                                                                      std::optional<bool>           linkExists    = std::nullopt,
+                                                                      const std::optional<hid::h5t> desiredH5Type = std::nullopt,
+                                                                      const PropertyLists &         plists        = PropertyLists()) {
         // Use this function to get info from existing datasets on file.
         h5pp::logger::log->debug("Scanning properties of type [{}] for writing new attribute [{}] in link [{}]", h5pp::type::sfinae::type_name<DataType>(), attrName, linkName);
         h5pp::AttributeProperties dataProps;
@@ -195,7 +198,7 @@ namespace h5pp::scan {
             dataProps.linkObject = h5pp::hdf5::openObject(file, dataProps.linkName.value(), dataProps.linkExists, plists.link_access);
         if(dataProps.attrExists and dataProps.attrExists.value()) dataProps.attributeId = H5Aopen_name(dataProps.linkObject, std::string(dataProps.attrName.value()).c_str());
 
-        dataProps.dataType = h5pp::utils::getH5Type<DataType>();
+        dataProps.dataType = h5pp::utils::getH5Type<DataType>(desiredH5Type);
         dataProps.size     = h5pp::utils::getSize(data);
         dataProps.size     = h5pp::hdf5::setStringSize(data, dataProps.dataType); // This only affects strings
         dataProps.bytes    = h5pp::utils::getBytesTotal<DataType>(data);
@@ -206,13 +209,14 @@ namespace h5pp::scan {
     }
 
     template<typename DataType>
-    inline h5pp::AttributeProperties getAttributeProperties_write(const hid::h5f &     file,
-                                                                  const DataType &     data,
-                                                                  std::string_view     attrName,
-                                                                  std::string_view     linkName,
-                                                                  std::optional<bool>  attrExists = std::nullopt,
-                                                                  std::optional<bool>  linkExists = std::nullopt,
-                                                                  const PropertyLists &plists     = PropertyLists()) {
+    inline h5pp::AttributeProperties getAttributeProperties_write(const hid::h5f &              file,
+                                                                  const DataType &              data,
+                                                                  std::string_view              attrName,
+                                                                  std::string_view              linkName,
+                                                                  std::optional<bool>           attrExists    = std::nullopt,
+                                                                  std::optional<bool>           linkExists    = std::nullopt,
+                                                                  const std::optional<hid::h5t> desiredH5Type = std::nullopt,
+                                                                  const PropertyLists &         plists        = PropertyLists()) {
         // Use this function to get info from existing datasets on file.
         h5pp::logger::log->debug("Scanning properties of type [{}] for writing into attribute [{}] in link [{}]", h5pp::type::sfinae::type_name<DataType>(), attrName, linkName);
 
@@ -238,7 +242,7 @@ namespace h5pp::scan {
             dataProps.attrName          = attrProps.attrName;
             dataProps.linkExists        = attrProps.linkExists;
             dataProps.attrExists        = attrProps.attrExists;
-            dataProps.dataType          = h5pp::utils::getH5Type<DataType>();
+            dataProps.dataType          = h5pp::utils::getH5Type<DataType>(desiredH5Type);
             dataProps.ndims             = h5pp::utils::getRank<DataType>();
             dataProps.plist_attr_access = attrProps.plist_attr_create;
             // The rest we can inferr directly from the data

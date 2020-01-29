@@ -40,13 +40,13 @@ it is straightforward to export, import and analyze data in a collaborative sett
 In C/C++ using HDF5 directly is not at all straightforward.
 Beginners are met with a steep learning curve to the vast API of HDF5.
 There are many C/C++ libraries already that simplify the user experience, but as a matter of opinion,
-not a simple as what can be found in other languages, like [h5py](https://www.h5py.org/) for Python.
+not as simple as what can be found in other languages, like [h5py](https://www.h5py.org/) for Python.
 
 The goal of `h5pp` is to bring this level of simplicity to C++:
 - Users should be able to read/write common C++ data-types in a single line of code.
 - Users should not need prior knowledge of HDF5 for simple tasks.
 - Seemingly simple tasks should stay simple, e.g., specifying storage layout or enabling compression.
-- Advanced tasks should stay possible e.g., specifying chunk dimensions or MPI parallelism   )
+- Advanced tasks should stay possible e.g., specifying chunk dimensions or MPI parallelism.
 - Logs and error messages should be meaningful to beginners.
 - Installation should be just as simple.
  
@@ -54,7 +54,7 @@ The goal of `h5pp` is to bring this level of simplicity to C++:
 ## Features
 * Header-only C++17 template library
 * Support for common data types:
-    - `short`,`int`,`long`, `long long` `float`, `double`, `long double` (and unsigned versions)
+    - `short`,`int`,`long`, `long long`, `float`, `double`, `long double` (and unsigned versions)
         - any of the above in C-style arrays
         - any of the above in `std::complex<>` form
         - any of the above in POD-structs with x,y or x,y,z data members. In `h5pp` these go by the name `Scalar2` and `Scalar3`.
