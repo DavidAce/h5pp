@@ -258,7 +258,7 @@ namespace h5pp::scan {
 
         } else {
             h5pp::logger::log->trace("Attribute [{}] does not exists in link [{}]", attrName, linkName);
-            return getAttributeProperties_bootstrap(file, data, attrName, linkName, attrExists, linkExists, plists);
+            return getAttributeProperties_bootstrap(file, data, attrName, linkName, attrExists, linkExists, desiredH5Type, plists);
         }
     }
 

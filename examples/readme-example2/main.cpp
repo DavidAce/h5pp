@@ -3,7 +3,7 @@
 int main() {
 
     // Initialize a file
-    h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READONLY, h5pp::CreateMode::OPEN );
+    h5pp::File file("exampledir/example2.h5", h5pp::AccessMode::READONLY, h5pp::CreateMode::OPEN);
 
     // Initialize an empty a vector of doubles
     std::vector<double> v;

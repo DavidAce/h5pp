@@ -3,7 +3,7 @@
 int main() {
 
     // Initialize a file
-    h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::OPEN);
+    h5pp::File file("exampledir/example4.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE);
     // Write an integer to file
     file.writeDataset(42, "intGroup/myInt");
     // We can now write metadata, or "attributes" to the int.
