@@ -91,8 +91,8 @@ namespace h5pp {
             h5pp::logger::log->debug("Successfully initialized");
         }
 
-        explicit File(fs::path FileName_, CreateMode createMode_, size_t logLevel_ = 2, bool logTimestamp_ = false)
-            : File(std::move(FileName_), AccessMode::READWRITE, createMode_, logLevel_, logTimestamp_) {}
+        explicit File(const std::string &FileName_, CreateMode createMode_, size_t logLevel_ = 2, bool logTimestamp_ = false)
+            : File(FileName_, AccessMode::READWRITE, createMode_, logLevel_, logTimestamp_) {}
 
         ~File() {
             h5pp::logger::log->debug("Closing file");
