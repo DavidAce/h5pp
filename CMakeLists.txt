@@ -330,6 +330,7 @@ if (NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS AND TARGET h5pp)
     add_subdirectory(tests/rawArrayWrapper h5pp-tests/rawArrayWrapper)
     add_subdirectory(tests/readWrite h5pp-tests/readWrite)
     add_subdirectory(tests/readWriteAttributes h5pp-tests/readWriteAttributes)
+    add_subdirectory(tests/readWriteTables h5pp-tests/readWriteTables)
     add_subdirectory(tests/copySwap h5pp-tests/copySwap)
     add_subdirectory(tests/typeInfo h5pp-tests/typeInfo)
     add_subdirectory(tests/userType h5pp-tests/userType)
@@ -340,6 +341,7 @@ if (NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS AND TARGET h5pp)
             test-rawArrayWrapper
             test-readWrite
             test-readWriteAttributes
+            test-readWriteTables
             test-copySwap
             test-typeInfo
             test-userType

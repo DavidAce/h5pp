@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+project(test-readWriteTables)
+add_executable(${PROJECT_NAME} readWriteTables.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE h5pp)
+add_test(NAME test-readWriteTables WORKING_DIRECTORY ${CMAKE_BINARY_DIR} COMMAND ${PROJECT_NAME})

@@ -1,6 +1,7 @@
 #include "h5ppAttributeProperties.h"
 #include "h5ppConstants.h"
 #include "h5ppHdf5.h"
+#include "h5ppTableProperties.h"
 #include "h5ppUtils.h"
 namespace h5pp::scan {
 
@@ -259,6 +260,65 @@ namespace h5pp::scan {
             h5pp::logger::log->trace("Attribute [{}] does not exists in link [{}]", attrName, linkName);
             return getAttributeProperties_bootstrap(file, data, attrName, linkName, attrExists, linkExists, plists);
         }
+    }
+
+    inline h5pp::TableProperties getTableProperties_bootstrap(const hid::h5t &                  entryType,
+                                                              std::string_view                  tableName,
+                                                              std::string_view                  tableTitle,
+                                                              const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                                                              const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+        TableProperties tableProps;
+        tableProps.entryType  = entryType;
+        tableProps.tableTitle = tableTitle;
+        tableProps.tableName  = tableName;
+        tableProps.groupName  = "";
+        size_t pos            = tableProps.tableName.value().find_last_of('/');
+        if(pos != std::string::npos) tableProps.groupName.value().assign(tableProps.tableName.value().begin(), tableProps.tableName.value().begin() + pos);
+
+        tableProps.NFIELDS          = H5Tget_nmembers(entryType);
+        tableProps.NRECORDS         = 0;
+        tableProps.chunkSize        = desiredChunkSize.has_value() ? desiredChunkSize : 10;
+        tableProps.entrySize        = H5Tget_size(tableProps.entryType);
+        tableProps.compressionLevel = h5pp::hdf5::getValidCompressionLevel(desiredCompressionLevel);
+
+        tableProps.fieldTypes   = std::vector<h5pp::hid::h5t>();
+        tableProps.fieldOffsets = std::vector<size_t>();
+        tableProps.fieldSizes   = std::vector<size_t>();
+        tableProps.fieldNames   = std::vector<std::string>();
+
+        for(hsize_t idx = 0; idx < tableProps.NFIELDS.value(); idx++) {
+            tableProps.fieldTypes.value().emplace_back(H5Tget_member_type(tableProps.entryType, idx));
+            tableProps.fieldOffsets.value().emplace_back(H5Tget_member_offset(tableProps.entryType, idx));
+            tableProps.fieldSizes.value().emplace_back(H5Tget_size(tableProps.fieldTypes.value().back()));
+            const char *name = H5Tget_member_name(tableProps.entryType, idx);
+            tableProps.fieldNames.value().emplace_back(name);
+            H5free_memory((void *) name);
+        }
+        return tableProps;
+    }
+
+    template<typename DataType>
+    inline h5pp::TableProperties getTableProperties_write(const hid::h5f &file, const DataType &data, std::string_view tableName, const PropertyLists &plists = PropertyLists()) {
+        hid::h5d dataset    = h5pp::hdf5::openLink<hid::h5d>(file, tableName, std::nullopt, plists.link_access);
+        hid::h5t entryType  = H5Dget_type(dataset);
+        auto     tableProps = getTableProperties_bootstrap(entryType, tableName, "", std::nullopt, std::nullopt);
+        tableProps.NRECORDS = h5pp::utils::getSize(data);
+        return tableProps;
+    }
+
+    inline h5pp::TableProperties getTableProperties_read(const hid::h5f &file, std::string_view tableName, const PropertyLists &plists = PropertyLists()) {
+        hid::h5d dataset    = h5pp::hdf5::openLink<hid::h5d>(file, tableName, std::nullopt, plists.link_access);
+        hid::h5t entryType  = H5Dget_type(dataset);
+        auto     tableProps = getTableProperties_bootstrap(entryType, tableName, "", std::nullopt, std::nullopt);
+        hsize_t  NFIELDS, NRECORDS;
+        herr_t   err = H5TBget_table_info(file, std::string(tableName).c_str(), &NFIELDS, &NRECORDS);
+        if(err < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error("Failed to get table information");
+        }
+        tableProps.NFIELDS  = NFIELDS;
+        tableProps.NRECORDS = NRECORDS;
+        return tableProps;
     }
 
 }

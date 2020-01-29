@@ -5,6 +5,7 @@
 #include "h5ppLogger.h"
 #include "h5ppPermissions.h"
 #include "h5ppPropertyLists.h"
+#include "h5ppTableProperties.h"
 #include "h5ppTypeInfo.h"
 #include "h5ppTypeSfinae.h"
 #include "h5ppUtils.h"
@@ -572,7 +573,8 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline void createGroup(hid::h5f &file, std::string_view groupRelativeName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
+    inline void
+        createGroup(const hid::h5f &file, std::string_view groupRelativeName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
         // Check if group exists already
         linkExists = checkIfLinkExists(file, groupRelativeName, linkExists, plists.link_access);
         if(linkExists.value()) {
@@ -714,7 +716,7 @@ namespace h5pp::hdf5 {
         } catch(...) { throw(std::logic_error("Not a group: " + std::string(name) + " loc_id: " + std::to_string(loc_id))); }
     }
 
-    inline std::vector<std::string> getContentsOfGroup(hid::h5f &file, std::string_view groupName) {
+    inline std::vector<std::string> getContentsOfGroup(const hid::h5f &file, std::string_view groupName) {
         h5pp::logger::log->trace("Getting contents of group: {}", groupName);
         std::vector<std::string> linkNames;
         try {
@@ -1051,6 +1053,128 @@ namespace h5pp::hdf5 {
         }
 
         return std::make_pair(filePath_result, fileName_result);
+    }
+
+    inline void createTable(const hid::h5f &file, const TableProperties &tableProps, const PropertyLists &plists = PropertyLists()) {
+        createGroup(file, tableProps.groupName.value(), std::nullopt, plists);
+
+        // Copy member type data to a vector of hid_t for compatibility
+        std::vector<hid_t> fieldTypesHidT(tableProps.fieldTypes.value().begin(), tableProps.fieldTypes.value().end());
+
+        // Copy member name data to a vector of const char * for compatibility
+        std::vector<const char *> fieldNames;
+        for(auto &name : tableProps.fieldNames.value()) fieldNames.push_back(name.c_str());
+
+        H5TBmake_table(tableProps.tableTitle.value().c_str(),
+                       file,
+                       tableProps.tableName.value().c_str(),
+                       tableProps.NFIELDS.value(),
+                       tableProps.NRECORDS.value(),
+                       tableProps.entrySize.value(),
+                       fieldNames.data(),
+                       tableProps.fieldOffsets.value().data(),
+                       fieldTypesHidT.data(),
+                       tableProps.chunkSize.value(),
+                       nullptr,
+                       tableProps.compressionLevel.value(),
+                       nullptr);
+    }
+
+    template<typename DataType>
+    inline void appendTableEntries(const hid::h5f &file, const DataType &data, const TableProperties &tableProps) {
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
+            H5TBappend_records(file,
+                               tableProps.tableName.value().c_str(),
+                               tableProps.NRECORDS.value(),
+                               tableProps.entrySize.value(),
+                               tableProps.fieldOffsets.value().data(),
+                               tableProps.fieldSizes.value().data(),
+                               data.data());
+        } else {
+            H5TBappend_records(file,
+                               tableProps.tableName.value().c_str(),
+                               tableProps.NRECORDS.value(),
+                               tableProps.entrySize.value(),
+                               tableProps.fieldOffsets.value().data(),
+                               tableProps.fieldSizes.value().data(),
+                               &data);
+        }
+    }
+
+    template<typename DataType>
+    inline void readTableEntries(const hid::h5f &       file,
+                                 DataType &             data,
+                                 const TableProperties &tableProps,
+                                 std::optional<size_t>  startEntry = std::nullopt,
+                                 std::optional<size_t>  numEntries = std::nullopt) {
+        // If neither startEntry or numEntries are given given:
+        //          If data resizeable: startEntry = 0, numEntries = totalRecords
+        //          If data not resizeable: startEntry = last entry, numEntries = 1.
+        // If startEntry given but numEntries is not:
+        //          If data resizeable -> read from startEntries to the end
+        //          If data not resizeable -> read from startEntries a single entry
+        // If numEntries given but startEntries is not -> read the last numEntries records
+
+        hsize_t totalRecords = tableProps.NRECORDS.value();
+        if(not startEntry and not numEntries) {
+            if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
+                startEntry = 0;
+                numEntries = totalRecords;
+
+            } else {
+                startEntry = totalRecords - 1;
+                numEntries = 1;
+            }
+        } else if(startEntry and not numEntries) {
+            if(startEntry.value() > totalRecords - 1)
+                throw std::runtime_error("Invalid start entry for table [" + tableProps.tableName.value() + "] | nrecords = " + std::to_string(totalRecords) +
+                                         " | start entry = " + std::to_string(startEntry.value()));
+            if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
+                numEntries = totalRecords - startEntry.value();
+            } else {
+                numEntries = 1;
+            }
+
+        } else if(numEntries and not startEntry) {
+            if(numEntries and numEntries.value() > totalRecords)
+                throw std::runtime_error("Asked for more records than available in table [" + tableProps.tableName.value() + "] | nrecords = " + std::to_string(totalRecords) +
+                                         " | num entries = " + std::to_string(numEntries.value()));
+            startEntry = totalRecords - numEntries.value();
+        }
+
+        // Sanity check
+        if(numEntries.value() > totalRecords)
+            throw std::logic_error("Asked for more records than available in table [" + tableProps.tableName.value() + "] | nrecords = " + std::to_string(totalRecords));
+        if(startEntry.value() + numEntries.value() > totalRecords)
+            throw std::logic_error("Asked for more records than available in table [" + tableProps.tableName.value() + "] | nrecords = " + std::to_string(totalRecords));
+
+        h5pp::logger::log->debug("Reading table [{}] | read from record {} | read num records {} | available records {}",
+                                 tableProps.tableName.value(),
+                                 startEntry.value(),
+                                 numEntries.value(),
+                                 tableProps.NRECORDS.value());
+
+        if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) { data.resize(numEntries.value()); }
+
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
+            H5TBread_records(file,
+                             tableProps.tableName.value().c_str(),
+                             startEntry.value(),
+                             numEntries.value(),
+                             tableProps.entrySize.value(),
+                             tableProps.fieldOffsets.value().data(),
+                             tableProps.fieldSizes.value().data(),
+                             data.data());
+        } else {
+            H5TBread_records(file,
+                             tableProps.tableName.value().c_str(),
+                             startEntry.value(),
+                             numEntries.value(),
+                             tableProps.entrySize.value(),
+                             tableProps.fieldOffsets.value().data(),
+                             tableProps.fieldSizes.value().data(),
+                             &data);
+        }
     }
 
 }

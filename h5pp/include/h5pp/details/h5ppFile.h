@@ -259,6 +259,32 @@ namespace h5pp {
             return data;
         }
 
+        void createTable(const hid::h5t &                  entryH5Type,
+                         std::string_view                  tableName,
+                         std::string_view                  tableTitle,
+                         const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                         const std::optional<unsigned int> desiredCompressionLevel = std::nullopt
+
+        ) {
+            hid::h5f file       = openFileHandle();
+            auto     tableProps = h5pp::scan::getTableProperties_bootstrap(entryH5Type, tableName, tableTitle, desiredChunkSize, desiredCompressionLevel);
+            h5pp::hdf5::createTable(file, tableProps, plists);
+        }
+
+        template<typename DataType>
+        void appendTableEntries(const DataType &data, std::string_view tableName) {
+            hid::h5f file       = openFileHandle();
+            auto     tableProps = h5pp::scan::getTableProperties_write(file, data, tableName, plists);
+            h5pp::hdf5::appendTableEntries(file, data, tableProps);
+        }
+
+        template<typename DataType>
+        void readTableEntries(DataType &data, std::string_view tableName, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt) {
+            hid::h5f file       = openFileHandle();
+            auto     tableProps = h5pp::scan::getTableProperties_read(file, tableName, plists);
+            h5pp::hdf5::readTableEntries(file, data, tableProps, startEntry, numEntries);
+        }
+
         // Functions for querying
 
         [[nodiscard]] int getDatasetRank(std::string_view datasetPath) {
@@ -311,6 +337,7 @@ namespace h5pp {
             hid::h5f file = openFileHandle();
             h5pp::hdf5::writeSymbolicLink(file, src_path, tgt_path, plists);
         }
+
         void createDataset(DatasetProperties &dsetProps) {
             if(not dsetProps.dsetExists) {
                 h5pp::logger::log->trace("Creating dataset: [{}]", dsetProps.dsetName.value());
@@ -415,7 +442,6 @@ void h5pp::File::writeAttribute(const DataType &data, std::string_view attrName,
     hid::h5f file      = openFileHandle();
     auto     attrProps = h5pp::scan::getAttributeProperties_write(file, data, attrName, linkName, std::nullopt, std::nullopt, std::nullopt, plists);
     h5pp::hdf5::createAttribute(attrProps);
-
     h5pp::hdf5::writeAttribute(data, attrProps);
 }
 
@@ -424,6 +450,5 @@ void h5pp::File::writeAttribute(const DataType &data, const hid::h5t &customH5Ty
     hid::h5f file      = openFileHandle();
     auto     attrProps = h5pp::scan::getAttributeProperties_write(file, data, attrName, linkName, std::nullopt, std::nullopt, customH5Type, plists);
     h5pp::hdf5::createAttribute(attrProps);
-
     h5pp::hdf5::writeAttribute(data, attrProps);
 }
