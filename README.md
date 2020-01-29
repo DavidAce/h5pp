@@ -63,6 +63,8 @@ The goal of `h5pp` is to bring this level of simplicity to C++:
     - Contiguous containers, such as `std::vector`, with `.data()` methods.
     - `Eigen` types such as `Matrix`, `Array` and `Tensor`, with automatic conversion to/from row major storage layout.
     - Any multi-dimensional container with access to a C-style contiguous buffer (without conversion to/from row major).
+    - Support for user-defined compound HDF5 types
+    - Support for creating HDF5 tables from user-defined compound HDF5 types.  
 * Modern CMake build, install and linking using targets.
 * (Opt-in) Automatically find or download dependencies using either [conan package manager](https://conan.io/) or native "CMake-only" methods.
 
