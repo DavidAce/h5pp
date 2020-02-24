@@ -1107,7 +1107,7 @@ namespace h5pp::hdf5 {
                                  const TableProperties &tableProps,
                                  std::optional<size_t>  startEntry = std::nullopt,
                                  std::optional<size_t>  numEntries = std::nullopt) {
-        // If neither startEntry or numEntries are given given:
+        // If none of startEntry or numEntries are given:
         //          If data resizeable: startEntry = 0, numEntries = totalRecords
         //          If data not resizeable: startEntry = last entry, numEntries = 1.
         // If startEntry given but numEntries is not:

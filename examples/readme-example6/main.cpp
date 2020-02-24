@@ -35,6 +35,16 @@ int main() {
     file.appendTableEntries(particles, "somegroup/particleTable");
 
     // Read single entry
+
+    // NOTE
+    // If none of startEntry or numEntries (args 3 and 4) are given to readTableEntries:
+    //          If container is resizeable: startEntry = 0, numEntries = totalRecords
+    //          If container is not resizeable: startEntry = last entry, numEntries = 1.
+    // If startEntry given but numEntries is not:
+    //          If container is resizeable -> read from startEntries to the end
+    //          If container is not resizeable -> read from startEntries a single entry
+    // If numEntries given but startEntries is not -> read the last numEntries records
+
     Particle particle_read;
     file.readTableEntries(particle_read, "somegroup/particleTable");
 
@@ -43,6 +53,7 @@ int main() {
               << std::endl;
 
     // Or read multiple entries into a resizeable container
+
     std::vector<Particle> particles_read;
     file.readTableEntries(particles_read, "somegroup/particleTable", 0, 5);
     std::cout << "Multiple entries read \n";

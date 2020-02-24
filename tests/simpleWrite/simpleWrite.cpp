@@ -30,6 +30,9 @@ int main() {
         float y;
         float z;
     };
+    Field2 field2{0.53, 0.45};
+    Field3 field3{0.54, 0.56, 0.58};
+
     std::vector<Field2> field2array(10, {0.3, 0.8});
     std::vector<Field3> field3array(10, {0.3, 0.8, 1.4});
 
@@ -48,6 +51,8 @@ int main() {
     file.writeDataset(vectorDouble, "simpleWriteGroup/vectorDouble");
     file.writeDataset(vectorComplexInt, "simpleWriteGroup/vectorComplexInt");
     file.writeDataset(vectorComplexDouble, "simpleWriteGroup/vectorComplexDouble");
+    file.writeDataset(field2, "simpleWriteGroup/field2");
+    file.writeDataset(field3, "simpleWriteGroup/field3");
     file.writeDataset(field2array, "simpleWriteGroup/field2array");
     file.writeDataset(field3array, "simpleWriteGroup/field3array");
 

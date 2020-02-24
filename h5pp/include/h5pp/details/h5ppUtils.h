@@ -135,7 +135,9 @@ namespace h5pp::utils {
             return dims;
         }
 #endif
-        else if constexpr(std::is_array_v<DataType>) {
+        else if constexpr(h5pp::type::sfinae::is_ScalarN<DataType>()) {
+            return {1};
+        } else if constexpr(std::is_array_v<DataType>) {
             return {getArraySize(data)};
         } else if constexpr(std::is_arithmetic_v<DataType> or h5pp::type::sfinae::is_std_complex_v<DataType>) {
             return {1};

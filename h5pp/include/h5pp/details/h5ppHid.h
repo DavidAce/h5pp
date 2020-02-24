@@ -135,13 +135,14 @@ namespace h5pp::hid {
         explicit             operator std::string() const { return tag() + ":" + std::to_string(val); }
         explicit             operator std::string_view() const { return tag() + ":" + std::string_view(val); }
         friend std::ostream &operator<<(std::ostream &os, const hid_h5x &t) { return os << t.tag() << ":" << t.val; }
+        virtual ~hid_base() = default;
     };
 
     // All our safe hid_t wrapper classes
     class h5p : public hid_base<h5p, true> {
         public:
         using hid_base::hid_base;
-        ~h5p() { close(); }
+        ~h5p() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5p"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return (val > 0 and rhs > 0 and H5Pequal(val, rhs)) or val == rhs; }
         void                      close() final {
@@ -155,7 +156,7 @@ namespace h5pp::hid {
     class h5s : public hid_base<h5s> {
         public:
         using hid_base::hid_base;
-        ~h5s() { close(); }
+        ~h5s() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5s"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
@@ -169,7 +170,7 @@ namespace h5pp::hid {
     class h5t : public hid_base<h5t> {
         public:
         using hid_base::hid_base;
-        ~h5t() { close(); }
+        ~h5t() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5t"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return (valid(val) and valid(rhs) > 0 and H5Tequal(val, rhs)) or val == rhs; }
         void                      close() final {
@@ -183,7 +184,7 @@ namespace h5pp::hid {
     class h5d : public hid_base<h5d> {
         public:
         using hid_base::hid_base;
-        ~h5d() { close(); }
+        ~h5d() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5d"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
@@ -197,7 +198,7 @@ namespace h5pp::hid {
     class h5g : public hid_base<h5g> {
         public:
         using hid_base::hid_base;
-        ~h5g() { close(); }
+        ~h5g() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5g"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
@@ -225,7 +226,7 @@ namespace h5pp::hid {
     class h5o : public hid_base<h5o> {
         public:
         using hid_base::hid_base;
-        ~h5o() { close(); }
+        ~h5o() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5o"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
@@ -239,7 +240,7 @@ namespace h5pp::hid {
     class h5f : public hid_base<h5f> {
         public:
         using hid_base::hid_base;
-        ~h5f() { close(); }
+        ~h5f() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5f"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
@@ -253,7 +254,7 @@ namespace h5pp::hid {
     class h5e : public hid_base<h5e, true> {
         public:
         using hid_base::hid_base;
-        ~h5e() { close(); }
+        ~h5e() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5e"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
