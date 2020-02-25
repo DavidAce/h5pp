@@ -42,6 +42,10 @@ int main() {
     // Compare result
     if(stringDummy != stringDummyRead) { throw std::runtime_error("stringDummy != stringDummyRead"); }
 
+    std::complex<float> cplxFloat(1, 1);
+    file.writeDataset(cplxFloat, "cplxFloat");
+    auto cplxFloatRead = file.readDataset<std::complex<float>>("cplxFloat");
+
     std::vector<double> vectorDouble = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
                                         1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
     std::cout << "Writing vectorDouble      : \n" << vectorDouble << std::endl;
@@ -73,6 +77,11 @@ int main() {
         double x;
         double y;
     };
+
+    Field2 field2{0.53, 0.45};
+    file.writeDataset(field2, "field2");
+    auto field2Read = file.readDataset<std::vector<Field2>>("field2");
+
     std::vector<Field2> field2array(10);
     for(size_t i = 0; i < field2array.size(); i++) {
         field2array[i].x = 2.3 * i;
@@ -91,6 +100,10 @@ int main() {
         double y;
         double z;
     };
+    Field3 field3{0.54, 0.56, 0.58};
+    file.writeDataset(field3, "field3");
+    auto field3Read = file.readDataset<std::vector<Field3>>("field3");
+
     std::vector<Field3> field3array(10);
     for(size_t i = 0; i < field3array.size(); i++) {
         field3array[i].x = 2.3 * i;

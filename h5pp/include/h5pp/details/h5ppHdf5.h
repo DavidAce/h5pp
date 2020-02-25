@@ -820,14 +820,12 @@ namespace h5pp::hdf5 {
 
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
             retval = H5Dread(props.dataSet, props.dataType, props.memSpace, props.dataSpace, plists.dset_xfer, data.data());
-        } else if constexpr(std::is_arithmetic_v<DataType>) {
+        } else if constexpr(h5pp::type::sfinae::is_std_complex_v<DataType> or h5pp::type::sfinae::is_ScalarN<DataType>() or std::is_arithmetic_v<DataType>) {
             retval = H5Dread(props.dataSet, props.dataType, props.memSpace, props.dataSpace, plists.dset_xfer, &data);
         } else {
-            logger::log->error("Attempted to read dataset of unknown type. Name: [{}] | Type: [{}]", props.dsetName.value(), type::sfinae::type_name<DataType>());
-            throw std::runtime_error("Attempted to read dataset of unknown type [" + props.dsetName.value() + "] | type [" + std::string(type::sfinae::type_name<DataType>()) +
-                                     "]");
+            logger::log->warn("Attempting to read dataset of unknown type. Name: [{}] | Type: [{}]", props.dsetName.value(), type::sfinae::type_name<DataType>());
+            retval = H5Dread(props.dataSet, props.dataType, props.memSpace, props.dataSpace, plists.dset_xfer, &data);
         }
-
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             logger::log->error("Failed  to read dataset [{}] | type: [{}]", props.dsetName.value(), type::sfinae::type_name<DataType>());
