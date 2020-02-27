@@ -95,28 +95,6 @@ most of the work can be achieved using just two member functions `.writeDataset(
 Find more code examples in the [Wiki](https://github.com/DavidAce/h5pp/wiki).
 
 
-### Debug and logging
-[Spdlog](https://github.com/gabime/spdlog) is used to emit debugging information. The amount of console output (verbosity) can be set to any level between `0` and `5`:
-
-* `0: trace` (highest verbosity)
-* `1: debug`
-* `2: info`  (default)
-* `3: warn`
-* `4: error`
-* `5: critical`  (lowest verbosity)
-
-Set the level when constructing a h5pp::File or by calling the function `.setLogLevel(int)`:
-
-```c++
-    int logLevel = 0; // Highest verbosity
-    // This way...
-    h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::OPEN, logLevel); 
-    // or this way
-    file.setLogLevel(logLevel);                                                                       
-```
-
-
-
 ### File permissions
 To define permissions use the settings `AccessMode::<mode>` and/or `CreateMode::<mode>` as arguments when initializing the file.
 The possible modes are
@@ -168,6 +146,27 @@ or pass a temporary compression level as the fifth argument when writing a datas
 
 
 
+### Debug and logging
+[Spdlog](https://github.com/gabime/spdlog) is used to emit debugging information. The amount of console output (verbosity) can be set to any level between `0` and `5`:
+
+* `0: trace` (highest verbosity)
+* `1: debug`
+* `2: info`  (default)
+* `3: warn`
+* `4: error`
+* `5: critical`  (lowest verbosity)
+
+Set the level when constructing a h5pp::File or by calling the function `.setLogLevel(int)`:
+
+```c++
+    int logLevel = 0; // Highest verbosity
+    // This way...
+    h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::OPEN, logLevel); 
+    // or this way
+    file.setLogLevel(logLevel);                                                                       
+```
+
+
 ### Load data into Python
 HDF5 data is easy to load into Python. Loading integer and floating point data is straightforward. compound data is almost as simple.
 HDF5 does not support complex types specifically, but `h5pp`enables this through compound HDF5 types. Here is a python example which uses `h5py`
@@ -199,10 +198,11 @@ There are currently 4 ways to obtain `h5pp`:
 ## Requirements
 * C++17 capable compiler (tested with GCC version >= 7 and Clang version >= 7.0)
 * CMake (tested with version >= 3.10)
-* Dependencies:
-    - [**HDF5**](https://support.hdfgroup.org/HDF5/) (tested with version >= 1.8).
-    - [**Eigen**](http://eigen.tuxfamily.org) (tested with version >= 3.3.4).
-    - [**spdlog**](https://github.com/gabime/spdlog) (tested with version >= 1.3.1)
+* [**HDF5**](https://support.hdfgroup.org/HDF5/)  library, tested with version >= 1.8
+
+## Optional dependencies:
+* [**Eigen**](http://eigen.tuxfamily.org). Write Eigen matrices and tensors directly. Tested with version >= 3.3.4
+* [**spdlog**](https://github.com/gabime/spdlog). Enables logging for debug purposes. Tested with version >= 1.3.1
 
 
 ## Build and install
