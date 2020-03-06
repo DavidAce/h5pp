@@ -42,6 +42,13 @@ function(define_hdf5_target lang libnames target_list)
         list(APPEND othernames z dl rt m)
         list(REMOVE_DUPLICATES othernames)
     else()
+        #To print all variables, use the code below:
+        get_cmake_property(_variableNames VARIABLES)
+        foreach (_variableName ${_variableNames})
+         if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
+             message(STATUS "${_variableName}=${${_variableName}}")
+         endif()
+        endforeach()
         message(STATUS "Could not match lib ${lib} and language ${lang} to a defined variable \n"
                 "-- Considered in order: \n"
                 "--     HDF5_${lang}_LIBRARY_${lib} \n"
