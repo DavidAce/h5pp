@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
 project(external-spdlog)
-include(../GetNumThreads.cmake)
-get_num_threads(NUM_THREADS)
-set(ENV{CMAKE_BUILD_PARALLEL_LEVEL} ${NUM_THREADS})
 
 include(ExternalProject)
 ExternalProject_Add(external_spdlog

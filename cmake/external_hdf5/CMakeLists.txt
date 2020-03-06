@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
-project(external-eigen3)
-include(../GetNumThreads.cmake)
-get_num_threads(NUM_THREADS)
-set(ENV{CMAKE_BUILD_PARALLEL_LEVEL} ${NUM_THREADS})
+project(external-hdf5)
+
 include(ExternalProject)
 option(HDF5_ENABLE_PARALLEL "" OFF)
 option(HDF5_EXTERNALLY_CONFIGURED "" ON)
@@ -87,9 +85,6 @@ ExternalProject_Add(external_hdf5
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS OFF
-        #        CONFIGURE_COMMAND sh <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-cxx --enable-hl --enable-silent-rules
-        #        BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j ${NUM_THREADS}
-        #        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
 
         CMAKE_ARGS
         -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
