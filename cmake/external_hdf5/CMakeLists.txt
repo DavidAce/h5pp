@@ -12,17 +12,39 @@ option(HDF5_EXTERNALLY_CONFIGURED "" ON)
 # find_package(ZLIB), which finds the shared library
 # (even when a static is present) and use it to link to static
 # hdf5 libraries, causing a build error. Here we circumvent that
-# by specifying the static zlib library explicitly, which
-# works for both static and shared linking.
+# by specifying the shared/static zlib library explicitly as needed
 
 set(HDF5_ENABLE_Z_LIB_SUPPORT ON)
-set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+if(BUILD_SHARED_LIBS)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX})
+else()
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+endif()
+
 find_package(ZLIB)
+include(../PrintTargetProperties.cmake)
+print_target_properties(ZLIB::ZLIB)
+
 if(ZLIB_LIBRARY)
     get_filename_component(ZLIB_EXT ${ZLIB_LIBRARY} EXT)
-    if(NOT BUILD_SHARED_LIBS AND ZLIB_EXT MATCHES "${CMAKE_SHARED_LIBRARY_SUFFIX}")
-        message(STATUS "Could not find static ZLIB: disabling ZLIB support for hdf5")
-        set(HDF5_ENABLE_Z_LIB_SUPPORT OFF)
+    get_filename_component(ZLIB_WE  ${ZLIB_LIBRARY} NAME_WE)
+    get_filename_component(ZLIB_DIR  ${ZLIB_LIBRARY} DIRECTORY)
+    if(BUILD_SHARED_LIBS AND ZLIB_EXT MATCHES "${CMAKE_STATIC_LIBRARY_SUFFIX}")
+        if(EXISTS ${ZLIB_DIR}/${ZLIB_WE}${CMAKE_SHARED_LIBRARY_SUFFIX} )
+            message("Changing ZLIB extension ${ZLIB_EXT} -> ${CMAKE_SHARED_LIBRARY_SUFFIX}")
+            set(ZLIB_LIBRARY ${ZLIB_DIR}/${ZLIB_WE}${CMAKE_SHARED_LIBRARY_SUFFIX} )
+        else()
+            message(STATUS "Could not find shared ZLIB: disabling ZLIB support for hdf5")
+            set(HDF5_ENABLE_Z_LIB_SUPPORT OFF)
+        endif()
+    elseif(NOT BUILD_SHARED_LIBS AND ZLIB_EXT MATCHES "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        if(EXISTS ${ZLIB_DIR}/${ZLIB_WE}${CMAKE_STATIC_LIBRARY_SUFFIX} )
+            message("Changing ZLIB extension ${ZLIB_EXT} -> ${CMAKE_STATIC_LIBRARY_SUFFIX}")
+            set(ZLIB_LIBRARY ${ZLIB_DIR}/${ZLIB_WE}${CMAKE_STATIC_LIBRARY_SUFFIX} )
+        else()
+            message(STATUS "Could not find static ZLIB: disabling ZLIB support for hdf5")
+            set(HDF5_ENABLE_Z_LIB_SUPPORT OFF)
+        endif()
     endif()
 else()
     unset(ZLIB_LIBRARY)
@@ -30,13 +52,17 @@ else()
     set(HDF5_ENABLE_Z_LIB_SUPPORT OFF)
 endif()
 
+message(STATUS "ZLIB_LIBRARY:                   ${ZLIB_LIBRARY}")
+message(STATUS "ZLIB_LIBRARIES:                 ${ZLIB_LIBRARIES}")
+message(STATUS "HDF5_ENABLE_Z_LIB_SUPPORT:      ${HDF5_ENABLE_Z_LIB_SUPPORT}")
+message(STATUS "BUILD_SHARED_LIBS:              ${BUILD_SHARED_LIBS}")
+message(STATUS "CMAKE_FIND_LIBRARY_SUFFIXES:    ${CMAKE_FIND_LIBRARY_SUFFIXES}")
+
 # The following check is needed because HDF5 will blindly use
 # find_package(SZIP), which finds the shared library
 # (even when a static is present) and use it to link to static
 # hdf5 libraries, causing a build error. Here we circumvent that
-# by specifying the static SZIP library explicitly, which
-# works for both static and shared linking.
-# In addition, SZIP sometimes dependes on libaec.
+# by specifying the shared/static SZIP library explicitly as needed
 
 #set(HDF5_ENABLE_SZIP_SUPPORT ON)
 #set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
@@ -78,6 +104,8 @@ ExternalProject_Add(external_hdf5
         -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_CXX_FLAGS:STRING=-fPIC
+        -DCMAKE_C_FLAGS:STRING=-fPIC
         -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
         -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
         -DHDF5_ENABLE_PARALLEL:BOOL=${HDF5_ENABLE_PARALLEL}
