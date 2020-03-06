@@ -22,9 +22,6 @@ else()
 endif()
 
 find_package(ZLIB)
-include(../PrintTargetProperties.cmake)
-print_target_properties(ZLIB::ZLIB)
-
 if(ZLIB_LIBRARY)
     get_filename_component(ZLIB_EXT ${ZLIB_LIBRARY} EXT)
     get_filename_component(ZLIB_WE  ${ZLIB_LIBRARY} NAME_WE)
@@ -51,12 +48,6 @@ else()
     message(STATUS "Could not find ZLIB: disabling ZLIB support for hdf5")
     set(HDF5_ENABLE_Z_LIB_SUPPORT OFF)
 endif()
-
-message(STATUS "ZLIB_LIBRARY:                   ${ZLIB_LIBRARY}")
-message(STATUS "ZLIB_LIBRARIES:                 ${ZLIB_LIBRARIES}")
-message(STATUS "HDF5_ENABLE_Z_LIB_SUPPORT:      ${HDF5_ENABLE_Z_LIB_SUPPORT}")
-message(STATUS "BUILD_SHARED_LIBS:              ${BUILD_SHARED_LIBS}")
-message(STATUS "CMAKE_FIND_LIBRARY_SUFFIXES:    ${CMAKE_FIND_LIBRARY_SUFFIXES}")
 
 # The following check is needed because HDF5 will blindly use
 # find_package(SZIP), which finds the shared library
