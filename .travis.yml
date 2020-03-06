@@ -229,6 +229,7 @@ matrix:
 
 # The pre-install script. On windows it will install conan via chocolatey
 before_install:
+  - echo "Starting before_install"
   - |
     if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
       choco upgrade cmake
@@ -244,8 +245,11 @@ before_install:
       pip install --user --upgrade pip
     fi
     cmake --version
+  - echo "Finished before_install"
+
 
 install:
+  - echo "Starting install"
   - |
     if [[ "$H5PP_DOWNLOAD_METHOD" == "conan" ]]; then
       if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
@@ -256,13 +260,14 @@ install:
         pip install --user conan --upgrade
       fi
     fi
+  - echo "Finished install of pip"
 
 
 # Setup Build
 before_script:
   # On windows PATH's do not get set properly because travis does not restart the shell, so we add them manually
+  - echo "Starting before_script"
   - |
-
     if [[ "$H5PP_DOWNLOAD_METHOD" == "conan" ]]; then
       conan user
       conan profile new default --detect
@@ -278,11 +283,12 @@ before_script:
       conda config --add channels conda-forge
       conda install --yes ${CONDA_PACKAGES}
     fi
-
+  - echo "Finished before_script"
   - cmake --version
 # Build and Test
 script:
   # Cmake Build
+  - echo "Starting script"
   - export MAKEFLAGS=-j2
   - cmake --version
   - cmake -E make_directory build/Debug
