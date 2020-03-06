@@ -120,12 +120,12 @@ function(find_package_hdf5_isolator hdf5_root)
         set(HDF5_LINK_LIBNAMES)
         if(HDF5_FIND_VERBOSE)
             #To print all variables, use the code below:
-            # get_cmake_property(_variableNames VARIABLES)
-            # foreach (_variableName ${_variableNames})
-            #     if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
-            #         message(STATUS "${_variableName}=${${_variableName}}")
-            #     endif()
-            # endforeach()
+#             get_cmake_property(_variableNames VARIABLES)
+#             foreach (_variableName ${_variableNames})
+#                 if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
+#                     message(STATUS "${_variableName}=${${_variableName}}")
+#                 endif()
+#             endforeach()
         endif()
         # Get a list of library names like hdf5 hdf5_hl hdf5_hl_cpp etc
         foreach(lang ${HDF5_LANG})
@@ -251,6 +251,7 @@ function(find_package_hdf5)
                 PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build
                 NO_DEFAULT_PATH)
 
+        set(HDF5_IS_PARALLEL ${HDF5_ENABLE_PARALLEL})
         list(APPEND HDF5_TARGET_CANDIDATES
                 hdf5::hdf5_hl_cpp-${HDF5_TARGET_SUFFIX}
                 hdf5::hdf5_hl_cpp_${HDF5_TARGET_SUFFIX}
