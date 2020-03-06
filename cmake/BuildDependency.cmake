@@ -32,7 +32,7 @@ function(build_dependency dep_name install_dir extra_flags)
     endif()
 
 
-    execute_process(COMMAND  ${CMAKE_COMMAND} --build .
+    execute_process(COMMAND  ${CMAKE_COMMAND} --build . --parallel
             WORKING_DIRECTORY "${build_dir}"
             RESULT_VARIABLE build_result
             ERROR_VARIABLE  build_error
