@@ -16,7 +16,7 @@ matrix:
       compiler: gcc
       env:
         - CXX=g++-8 CC=gcc-8
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
       addons:
         apt:
@@ -36,7 +36,7 @@ matrix:
       dist: xenial
       compiler: clang
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
         - CXX=clang++ CC=clang
       addons:
@@ -56,7 +56,7 @@ matrix:
       dist: bionic
       compiler: gcc
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
       cache:
         directories:
@@ -67,7 +67,7 @@ matrix:
       dist: bionic
       compiler: clang
       env:
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
       cache:
         directories:
@@ -78,11 +78,10 @@ matrix:
       dist: xenial
       compiler: gcc
       env:
-        - DOWNLOAD_METHOD=conan
+        - H5PP_DOWNLOAD_METHOD=conan
         - CXX=g++-8 CC=gcc-8
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=conan -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
-        - DOWNLOAD_METHOD=conan
         - CONDA_PACKAGES="hdf5 hdf5-static eigen spdlog"
       addons:
         apt:
@@ -99,8 +98,8 @@ matrix:
       os: linux
       compiler: gcc
       env:
-        - DOWNLOAD_METHOD=native
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DPREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - H5PP_DOWNLOAD_METHOD=native
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=native -DH5PP_PREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
         - CONDA_PACKAGES="hdf5 hdf5-static eigen spdlog"
 
@@ -110,9 +109,9 @@ matrix:
       os: linux
       compiler: gcc
       env:
-        - DOWNLOAD_METHOD=native
+        - H5PP_DOWNLOAD_METHOD=native
         - CXX=g++-8 CC=gcc-8
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
       addons:
         apt:
@@ -132,8 +131,8 @@ matrix:
       os: linux
       compiler: gcc
       env:
-        - DOWNLOAD_METHOD=native
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD  -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - H5PP_DOWNLOAD_METHOD=native
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=native  -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
       addons:
         apt:
@@ -151,8 +150,8 @@ matrix:
       os: linux
       compiler: clang
       env:
-        - DOWNLOAD_METHOD=conan
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD  -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - H5PP_DOWNLOAD_METHOD=conan
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=conan  -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
         - CXX=clang++ CC=clang
 
@@ -163,9 +162,9 @@ matrix:
       env:
         - CC=clang
         - CXX=clang++
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
-        - DOWNLOAD_METHOD=conan
+        - H5PP_DOWNLOAD_METHOD=conan
       cache:
         directories:
           - $HOME/.conan/data
@@ -181,7 +180,7 @@ matrix:
       env:
         - CC=clang
         - CXX=clang++
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Unix Makefiles"
       cache:
         directories:
@@ -194,7 +193,7 @@ matrix:
       env:
         - CC=clang
         - CXX=clang++
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=ON"
         - CMAKE_GEN="Unix Makefiles"
       addons:
         homebrew:
@@ -209,8 +208,8 @@ matrix:
     - name: "windows msvc 2017 conan"
       os: windows
       env:
-        - DOWNLOAD_METHOD=conan
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - H5PP_DOWNLOAD_METHOD=conan
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Visual Studio 15 2017"
         - CMAKE_PLATFORM=x64
       cache:
@@ -220,8 +219,8 @@ matrix:
     - name: "windows msvc 2017 native"
       os: windows
       env:
-        - DOWNLOAD_METHOD=native
-        - CMAKE_FLAGS="-DDOWNLOAD_METHOD=$DOWNLOAD_METHOD -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - H5PP_DOWNLOAD_METHOD=native
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=native -DBUILD_SHARED_LIBS:BOOL=OFF"
         - CMAKE_GEN="Visual Studio 15 2017"
         - CMAKE_PLATFORM=x64
       cache:
@@ -233,7 +232,7 @@ before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
       choco upgrade cmake
-      if [[ "$DOWNLOAD_METHOD" == "conan" ]]; then
+      if [[ "$H5PP_DOWNLOAD_METHOD" == "conan" ]]; then
         choco install python3 --version 3.7.4
         export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
         python -m pip install --upgrade pip
@@ -248,7 +247,7 @@ before_install:
 
 install:
   - |
-    if [[ "$DOWNLOAD_METHOD" == "conan" ]]; then
+    if [[ "$H5PP_DOWNLOAD_METHOD" == "conan" ]]; then
       if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
         pip install conan
         cmd.exe /C 'refreshenv'
@@ -264,7 +263,7 @@ before_script:
   # On windows PATH's do not get set properly because travis does not restart the shell, so we add them manually
   - |
 
-    if [[ "$DOWNLOAD_METHOD" == "conan" ]]; then
+    if [[ "$H5PP_DOWNLOAD_METHOD" == "conan" ]]; then
       conan user
       conan profile new default --detect
       conan profile update settings.compiler.libcxx=libstdc++11 default
@@ -293,9 +292,9 @@ script:
           -DH5PP_PRINT_INFO:BOOL=ON \
           -DH5PP_ENABLE_EIGEN3:BOOL=ON \
           -DH5PP_ENABLE_SPDLOG:BOOL=ON \
+          -DH5PP_ENABLE_TESTS:BOOL=ON \
+          -DH5PP_BUILD_EXAMPLES:BOOL=ON \
           -DCMAKE_BUILD_TYPE=Debug \
-          -DENABLE_TESTS:BOOL=ON \
-          -DBUILD_EXAMPLES:BOOL=ON \
            $CMAKE_FLAGS \
           -G "$CMAKE_GEN" \
           -DCMAKE_GENERATOR_PLATFORM=$CMAKE_PLATFORM \

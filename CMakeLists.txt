@@ -1,37 +1,37 @@
  
 cmake_minimum_required(VERSION 3.10)
-project(h5pp VERSION 1.5.2
+project(h5pp VERSION 1.5.3
         DESCRIPTION "A C++17 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         )
 
 # Set options for compilation
 option(BUILD_SHARED_LIBS "Builds shared libraries" OFF)
-option(BUILD_EXAMPLES "Builds examples" OFF)
-option(ENABLE_TESTS "Enable testing" OFF)
+option(H5PP_BUILD_EXAMPLES "Builds examples" OFF)
+option(H5PP_ENABLE_TESTS "Enable testing" OFF)
 option(H5PP_IS_SUBPROJECT "Use h5pp with add_subdirectory()" OFF)
-option(APPEND_LIBSUFFIX "Append <libname> to CMAKE_INSTALL_PREFIX" OFF)
-option(PREFER_CONDA_LIBS "Search for dependencies from anaconda first" OFF)
+option(H5PP_APPEND_LIBSUFFIX "Append <libname> to CMAKE_INSTALL_PREFIX" OFF)
+option(H5PP_PREFER_CONDA_LIBS "Search for dependencies from anaconda first" OFF)
 option(H5PP_PRINT_INFO "Print info during cmake configuration" OFF)
 option(H5PP_ENABLE_EIGEN3 "Enables Eigen3 linear algebra library" OFF)
 option(H5PP_ENABLE_SPDLOG "Enables Spdlog for logging h5pp internal info to stdout" OFF)
 option(H5PP_ENABLE_MPI "Enables use of MPI (work in progress)" OFF)
 
 # Make an "enum" for valid download methods: none find-only native conan
-set(VALID_DOWNLOAD_METHODS none find-only native conan)
-set(DOWNLOAD_METHOD none CACHE STRING "Download method for external dependencies")
-set_property(CACHE DOWNLOAD_METHOD PROPERTY STRINGS ${VALID_DOWNLOAD_METHODS})
-if (NOT DOWNLOAD_METHOD IN_LIST VALID_DOWNLOAD_METHODS)
-    message(FATAL_ERROR "DOWNLOAD_METHOD must be one of ${VALID_DOWNLOAD_METHODS}")
+set(H5PP_DOWNLOAD_METHODS_VALID none find-only native conan)
+set(H5PP_DOWNLOAD_METHOD none CACHE STRING "Download method for external dependencies")
+set_property(CACHE H5PP_DOWNLOAD_METHOD PROPERTY STRINGS ${H5PP_DOWNLOAD_METHODS_VALID})
+if (NOT H5PP_DOWNLOAD_METHOD IN_LIST H5PP_DOWNLOAD_METHODS_VALID)
+    message(FATAL_ERROR "H5PP_DOWNLOAD_METHOD must be one of ${H5PP_DOWNLOAD_METHODS_VALID}")
 endif ()
 
 # Print host properties
 if (H5PP_PRINT_INFO)
     cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
-    cmake_host_system_information(RESULT _proc_type   QUERY PROCESSOR_DESCRIPTION)
-    cmake_host_system_information(RESULT _os_name     QUERY OS_NAME)
-    cmake_host_system_information(RESULT _os_release  QUERY OS_RELEASE)
-    cmake_host_system_information(RESULT _os_version  QUERY OS_VERSION)
+    cmake_host_system_information(RESULT _proc_type QUERY PROCESSOR_DESCRIPTION)
+    cmake_host_system_information(RESULT _os_name QUERY OS_NAME)
+    cmake_host_system_information(RESULT _os_release QUERY OS_RELEASE)
+    cmake_host_system_information(RESULT _os_version QUERY OS_VERSION)
     cmake_host_system_information(RESULT _os_platform QUERY OS_PLATFORM)
     message("========= HOST INFO =========")
     message("${_host_name}")
@@ -68,7 +68,7 @@ if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
     message(STATUS "Setting default install prefix -- CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/install")
     set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "..." FORCE)
 endif ()
-if (APPEND_LIBSUFFIX)
+if (H5PP_APPEND_LIBSUFFIX)
     set(H5PP_INSTALL_DIR h5pp/)
     set(H5PP_CONFIG_DIR h5pp/share/h5pp/cmake)
     set(eigen3_install_prefix ${CMAKE_INSTALL_PREFIX}/Eigen3)
@@ -76,6 +76,7 @@ if (APPEND_LIBSUFFIX)
     set(hdf5_install_prefix ${CMAKE_INSTALL_PREFIX}/hdf5)
     set(ghcfilesystem_install_prefix ${CMAKE_INSTALL_PREFIX}/ghcFilesystem)
 else ()
+    set(H5PP_INSTALL_DIR)
     set(H5PP_CONFIG_DIR share/h5pp/cmake)
     set(eigen3_install_prefix ${CMAKE_INSTALL_PREFIX})
     set(spdlog_install_prefix ${CMAKE_INSTALL_PREFIX})
@@ -88,15 +89,16 @@ endif ()
 if(H5PP_PRINT_INFO)
     message("=========================== h5pp build options ==============================")
     message(STATUS "BUILD_SHARED_LIBS       : ${BUILD_SHARED_LIBS}")
-    message(STATUS "BUILD_EXAMPLES          : ${BUILD_EXAMPLES}")
-    message(STATUS "ENABLE_TESTS            : ${ENABLE_TESTS}")
+    message(STATUS "H5PP_BUILD_EXAMPLES     : ${H5PP_BUILD_EXAMPLES}")
+    message(STATUS "H5PP_ENABLE_TESTS       : ${H5PP_ENABLE_TESTS}")
     message(STATUS "H5PP_ENABLE_EIGEN3      : ${H5PP_ENABLE_EIGEN3}")
     message(STATUS "H5PP_ENABLE_SPDLOG      : ${H5PP_ENABLE_SPDLOG}")
     message(STATUS "H5PP_ENABLE_MPI         : ${H5PP_ENABLE_MPI}")
     message(STATUS "H5PP_IS_SUBPROJECT      : ${H5PP_IS_SUBPROJECT}")
-    message(STATUS "DOWNLOAD_METHOD         : ${DOWNLOAD_METHOD}")
-    message(STATUS "APPEND_LIBSUFFIX        : ${APPEND_LIBSUFFIX}")
-    message(STATUS "PREFER_CONDA_LIBS       : ${PREFER_CONDA_LIBS}")
+    message(STATUS "H5PP_DOWNLOAD_METHOD    : ${H5PP_DOWNLOAD_METHOD}")
+    message(STATUS "H5PP_APPEND_LIBSUFFIX   : ${H5PP_APPEND_LIBSUFFIX}")
+    message(STATUS "H5PP_PREFER_CONDA_LIBS  : ${H5PP_PREFER_CONDA_LIBS}")
+    message(STATUS "H5PP_PRINT_INFO         : ${H5PP_PRINT_INFO}")
     message(STATUS "CMAKE_INSTALL_PREFIX    : ${CMAKE_INSTALL_PREFIX}")
     message("")
 endif ()
@@ -143,21 +145,22 @@ if (H5PP_ENABLE_MPI AND NOT WIN32)
         target_link_libraries(flags INTERFACE MPI::MPI_CXX)
     endif ()
 endif ()
+
 # On some HPC clusters Clang needs path to gnu gcc toolchain because it's not in path
 if (GCC_TOOLCHAIN AND ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
 endif ()
 
 # Add def for download method for use in installed h5ppConfig.cmake
-target_compile_definitions(deps INTERFACE DOWNLOAD_METHOD=${DOWNLOAD_METHOD})
+target_compile_definitions(deps INTERFACE H5PP_DOWNLOAD_METHOD=${H5PP_DOWNLOAD_METHOD})
 
 
 # h5pp requires the filesystem header (and possibly stdc++fs library)
 find_package(Filesystem COMPONENTS Final Experimental)
 if (TARGET std::filesystem)
     target_link_libraries(flags INTERFACE std::filesystem)
-elseif (DOWNLOAD_METHOD MATCHES "find|none")
-    message(STATUS "Your compiler lacks std::filesystem. Set DOWNLOAD_METHOD to 'conan' or 'native' to get the ghc::filesystem replacement")
+elseif (H5PP_DOWNLOAD_METHOD MATCHES "find|none")
+    message(STATUS "Your compiler lacks std::filesystem. Set H5PP_DOWNLOAD_METHOD to 'conan' or 'native' to get the ghc::filesystem replacement")
     message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
     message(FATAL_ERROR "<filesystem> header and/or library not found")
 else ()
@@ -184,7 +187,7 @@ target_include_directories(headers INTERFACE
 
 
 # Setup dependency paths
-if(PREFER_CONDA_LIBS)
+if (H5PP_PREFER_CONDA_LIBS)
     # Prepend conda dirs for hints when using find_package
     list(APPEND H5PP_DIRECTORY_HINTS
             $ENV{CONDA_PREFIX}
@@ -192,13 +195,13 @@ if(PREFER_CONDA_LIBS)
             $ENV{HOME}/miniconda
             $ENV{HOME}/.conda
             )
-endif()
+endif ()
 list(APPEND H5PP_DIRECTORY_HINTS ${CMAKE_INSTALL_PREFIX})
 
 
 #Try to find or fetch all dependencies
-if (NOT DOWNLOAD_METHOD MATCHES "none")
-    if (DOWNLOAD_METHOD MATCHES "conan")
+if (NOT H5PP_DOWNLOAD_METHOD MATCHES "none")
+    if (H5PP_DOWNLOAD_METHOD MATCHES "conan")
         include(cmake/SetupDependenciesConan.cmake)
     else ()
         include(cmake/SetupDependenciesNative.cmake)
@@ -299,8 +302,7 @@ else()
             )
 
 
-
-    if(DOWNLOAD_METHOD MATCHES "conan")
+    if (H5PP_DOWNLOAD_METHOD MATCHES "conan")
         # Install conan related files to define dependency targets the same way
         # we've already done here.
         set(CONAN_INSTALL_FILES
@@ -309,8 +311,8 @@ else()
                 ${CMAKE_BINARY_DIR}/conanbuildinfo.txt
                 ${CMAKE_BINARY_DIR}/conaninfo.txt
                 )
-        foreach(conan_file ${CONAN_INSTALL_FILES})
-            if(EXISTS "${conan_file}")
+        foreach (conan_file ${CONAN_INSTALL_FILES})
+            if (EXISTS "${conan_file}")
                 install(FILES ${conan_file}
                         DESTINATION ${H5PP_CONFIG_DIR}
                         COMPONENT config)
@@ -322,7 +324,7 @@ endif ()
 
 
 # Simple testing with ctest
-if (NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS AND TARGET h5pp)
+if (NOT H5PP_IS_SUBPROJECT AND H5PP_ENABLE_TESTS AND TARGET h5pp)
     enable_testing()
     add_subdirectory(tests/simpleWrite h5pp-tests/simpleWrite)
     add_subdirectory(tests/largeWrite h5pp-tests/largeWrite)
@@ -355,34 +357,33 @@ if (NOT H5PP_IS_SUBPROJECT AND ENABLE_TESTS AND TARGET h5pp)
             DEPENDS h5pp deps flags
             COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure)
 
-elseif (NOT DOWNLOAD_METHOD MATCHES "none")
-    message(STATUS "Dependencies missing, ignoring ENABLE_TESTS=ON")
+elseif (NOT H5PP_DOWNLOAD_METHOD MATCHES "none")
+    message(STATUS "Dependencies missing, ignoring H5PP_ENABLE_TESTS=ON")
 endif ()
 
 
 # Build examples
-if (NOT H5PP_IS_SUBPROJECT AND BUILD_EXAMPLES AND TARGET h5pp)
+if (NOT H5PP_IS_SUBPROJECT AND H5PP_BUILD_EXAMPLES AND TARGET h5pp)
     add_subdirectory(examples/helloworld h5pp-examples/helloworld)
-    add_subdirectory(examples/writescalar h5pp-examples/writescalar)
-    add_subdirectory(examples/readme-example1 h5pp-examples/readme-example1)
-    add_subdirectory(examples/readme-example2 h5pp-examples/readme-example2)
-    add_subdirectory(examples/readme-example3 h5pp-examples/readme-example3)
-    add_subdirectory(examples/readme-example4 h5pp-examples/readme-example4)
-    add_subdirectory(examples/readme-example5 h5pp-examples/readme-example5)
-    add_subdirectory(examples/readme-example6 h5pp-examples/readme-example6)
+    add_subdirectory(examples/example1 h5pp-examples/example1)
+    add_subdirectory(examples/example2 h5pp-examples/example2)
+    add_subdirectory(examples/example3 h5pp-examples/example3)
+    add_subdirectory(examples/example4 h5pp-examples/example4)
+    add_subdirectory(examples/example5 h5pp-examples/example5)
+    add_subdirectory(examples/example6 h5pp-examples/example6)
     # A handy target "all-examples" to build all examples
     add_custom_target(all-examples DEPENDS
             helloworld
             writescalar
-            readme-example1
-            readme-example2
-            readme-example3
-            readme-example4
-            readme-example5
-            readme-example6
+            example1
+            example2
+            example3
+            example4
+            example5
+            example6
             )
-elseif (NOT DOWNLOAD_METHOD MATCHES "none")
-    message(STATUS "Dependencies missing, ignoring BUILD_EXAMPLES=ON")
+elseif (NOT H5PP_DOWNLOAD_METHOD MATCHES "none")
+    message(STATUS "Dependencies missing, ignoring H5PP_BUILD_EXAMPLES=ON")
 endif ()
 
 

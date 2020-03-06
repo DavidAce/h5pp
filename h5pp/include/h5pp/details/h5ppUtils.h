@@ -79,7 +79,7 @@ namespace h5pp::utils {
     template<typename DataType, size_t size>
     [[nodiscard]] constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size]) {
         if constexpr(h5pp::type::sfinae::is_text_v<DataType>)
-            return strlen(arr);
+            return strnlen(arr, size);
         else
             return size;
     }

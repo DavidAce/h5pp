@@ -66,17 +66,17 @@ namespace h5pp::logger {
     class DummyLogger {
         public:
         template<typename... Args>
-        void trace(Args... args) const {}
+        void trace([[maybe_unused]] Args... args) const {}
         template<typename... Args>
-        void debug(Args... args) const {}
+        void debug([[maybe_unused]] Args... args) const {}
         template<typename... Args>
-        void info(Args... args) const {}
+        void info([[maybe_unused]] Args... args) const {}
         template<typename... Args>
-        void warn(Args... args) const {}
+        void warn([[maybe_unused]] Args... args) const {}
         template<typename... Args>
-        void error(Args... args) const {}
+        void error([[maybe_unused]] Args... args) const {}
         template<typename... Args>
-        void        critical(Args... args) const {}
+        void        critical([[maybe_unused]] Args... args) const {}
         std::string name() const { return ""; }
     };
     inline std::shared_ptr<DummyLogger> log;
@@ -85,10 +85,11 @@ namespace h5pp::logger {
     inline void disableTimestamp() {}
     template<typename levelType>
     inline void setLogLevel([[maybe_unused]] levelType levelZeroToFive) {}
-    inline void
-        setLogger([[maybe_unused]] const std::string &name, [[maybe_unused]] std::optional<int> levelZeroToFive = std::nullopt, std::optional<bool> timestamp = std::nullopt) {}
+    inline void setLogger([[maybe_unused]] const std::string & name,
+                          [[maybe_unused]] std::optional<int>  levelZeroToFive = std::nullopt,
+                          [[maybe_unused]] std::optional<bool> timestamp       = std::nullopt) {}
     template<typename... Args>
-    auto format(const std::string &first_param, Args... args) {
+    auto format(const std::string &first_param, [[maybe_unused]] Args... args) {
         return first_param;
     }
 

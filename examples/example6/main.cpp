@@ -9,7 +9,7 @@ struct Particle {
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example6.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE);
+    h5pp::File file("exampledir/example6.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, 0);
 
     // Create a type for the char array from the template H5T_C_S1
     // The template describes a string with a single char.
@@ -55,7 +55,7 @@ int main() {
     // Or read multiple entries into a resizeable container
 
     std::vector<Particle> particles_read;
-    file.readTableEntries(particles_read, "somegroup/particleTable", 0, 5);
+    file.readTableEntries(particles_read, "somegroup/particleTable", 0, 10);
     std::cout << "Multiple entries read \n";
     for(auto &elem : particles_read) {
         std::cout << " \t x: " << elem.x << " \t y: " << elem.y << " \t z: " << elem.z << " \t t: " << elem.t << " \t name: " << elem.name << std::endl;

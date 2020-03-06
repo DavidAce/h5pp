@@ -203,11 +203,10 @@ namespace h5pp::hdf5 {
     [[nodiscard]] inline bool
         checkIfLinkExists(const hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
         if(linkExists) return linkExists.value();
-        h5pp::logger::log->trace("Checking if link exists: [{}]", linkName);
         for(const auto &subPath : pathCumulativeSplit(linkName, "/")) {
             int exists = H5Lexists(file, std::string(subPath).c_str(), link_access);
             if(exists == 0) {
-                h5pp::logger::log->trace("Checking if link exists: [{}] ... {}", linkName, false);
+                h5pp::logger::log->trace("Checking if link exists: [{}] ... false", linkName);
                 return false;
             }
             if(exists < 0) {
@@ -215,14 +214,13 @@ namespace h5pp::hdf5 {
                 throw std::runtime_error("Failed to check if link exists: [" + std::string(linkName) + "]");
             }
         }
-        h5pp::logger::log->trace("Checking if link exists: [{}] ... {}", linkName, true);
+        h5pp::logger::log->trace("Checking if link exists: [{}] ... true", linkName);
         return true;
     }
 
     [[nodiscard]] inline bool
         checkIfDatasetExists(const hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
         if(dsetExists) return dsetExists.value();
-        h5pp::logger::log->trace("Checking if dataset exists: [{}]", dsetName);
         for(const auto &subPath : pathCumulativeSplit(dsetName, "/")) {
             int exists = H5Lexists(file, std::string(subPath).c_str(), dset_access);
             if(exists == 0) {
@@ -1054,7 +1052,15 @@ namespace h5pp::hdf5 {
     }
 
     inline void createTable(const hid::h5f &file, const TableProperties &tableProps, const PropertyLists &plists = PropertyLists()) {
+        h5pp::logger::log->debug(
+            "Creating table [{}] | num fields {} | record size {} bytes", tableProps.tableName.value(), tableProps.NFIELDS.value(), tableProps.entrySize.value());
+
         createGroup(file, tableProps.groupName.value(), std::nullopt, plists);
+
+        if(checkIfLinkExists(file, tableProps.tableName.value(), std::nullopt, plists.link_access)) {
+            h5pp::logger::log->debug("Table [{}] already exists", tableProps.tableName.value());
+            return;
+        }
 
         // Copy member type data to a vector of hid_t for compatibility
         std::vector<hid_t> fieldTypesHidT(tableProps.fieldTypes.value().begin(), tableProps.fieldTypes.value().end());
@@ -1076,10 +1082,14 @@ namespace h5pp::hdf5 {
                        nullptr,
                        tableProps.compressionLevel.value(),
                        nullptr);
+        h5pp::logger::log->trace("Successfully created table [{}]", tableProps.tableName.value());
     }
 
     template<typename DataType>
     inline void appendTableEntries(const hid::h5f &file, const DataType &data, const TableProperties &tableProps) {
+        h5pp::logger::log->debug(
+            "Appending records to table [{}] | num records {} | record size {} bytes", tableProps.tableName.value(), tableProps.NRECORDS.value(), tableProps.entrySize.value());
+
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
             H5TBappend_records(file,
                                tableProps.tableName.value().c_str(),
@@ -1125,7 +1135,7 @@ namespace h5pp::hdf5 {
             }
         } else if(startEntry and not numEntries) {
             if(startEntry.value() > totalRecords - 1)
-                throw std::runtime_error("Invalid start entry for table [" + tableProps.tableName.value() + "] | nrecords = " + std::to_string(totalRecords) +
+                throw std::runtime_error("Invalid start record for table [" + tableProps.tableName.value() + "] | nrecords = " + std::to_string(totalRecords) +
                                          " | start entry = " + std::to_string(startEntry.value()));
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 numEntries = totalRecords - startEntry.value();

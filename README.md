@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/DavidAce/h5pp.svg?branch=master)](https://travis-ci.org/DavidAce/h5pp)
 [![Build Status](https://github.com/DavidAce/h5pp/workflows/Actions/badge.svg)](https://github.com/DavidAce/h5pp/actions)
 [![Anaconda-Server Badge](https://anaconda.org/davidace/h5pp/badges/installer/conda.svg)](https://conda.anaconda.org/davidace)
-[![Download](https://img.shields.io/badge/Install%20with-conan-green) ](https://bintray.com/davidace/conan-public/h5pp%3Adavidace/_latestVersion)
+[![Download](https://img.shields.io/badge/Install%20with-conan-green)](https://bintray.com/davidace/conan-public/h5pp%3Adavidace/_latestVersion)
 [![Download](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)
 
 # h5pp
@@ -15,22 +15,22 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
 
 
 ## Table of Contents
-*   [Introduction](#introduction)
-*   [Features](#features)
-*   [Usage](#usage)
-    *   [Example: Writing an std::vector](#example-writing-an-stdvector)
-    *   [Debug and logging](#debug-and-logging)
-    *   [File permissions](#file-permissions)
-    *   [Storage layout](#storage-layout)
-    *   [Compression](#compression)
-    *   [Load data into Python](#load-data-into-python)
-*   [Download](#download)
-*   [Requirements](#requirements)
-*   [Build and Install](#build-and-install)
-    * [Option 1: Copy the headers](#option-1-copy-the-headers)
-    * [Option 2: Build and install with CMake](#option-2-build-and-install-with-cmake)
-    * [Opt-in automatic dependency installation](#opt-in-automatic-dependency-installation)
-*   [Linking](#linking)
+*  [Introduction](#introduction)
+*  [Features](#features)
+*  [Usage](#usage)
+    *  [Example: Writing an std::vector](#example-writing-an-stdvector)
+    *  [Debug and logging](#debug-and-logging)
+    *  [File permissions](#file-permissions)
+    *  [Storage layout](#storage-layout)
+    *  [Compression](#compression)
+    *  [Load data into Python](#load-data-into-python)
+*  [Download](#download)
+*  [Requirements](#requirements)
+*  [Build and Install](#build-and-install)
+    *  [Option 1: Copy the headers](#option-1-copy-the-headers)
+    *  [Option 2: Build and install with CMake](#option-2-build-and-install-with-cmake)
+    *  [Opt-in automatic dependency installation](#opt-in-automatic-dependency-installation)
+*  [Linking](#linking)
 
 ## Introduction
 [HDF5](https://www.hdfgroup.org/) is a popular format for portable binary storage of large datasets.
@@ -43,30 +43,30 @@ There are many C/C++ libraries already that simplify the user experience, but as
 not as simple as what can be found in other languages, like [h5py](https://www.h5py.org/) for Python.
 
 The goal of `h5pp` is to bring this level of simplicity to C++:
-- Users should be able to read/write common C++ data-types in a single line of code.
-- Users should not need prior knowledge of HDF5 for simple tasks.
-- Seemingly simple tasks should stay simple, e.g., specifying storage layout or enabling compression.
-- Advanced tasks should stay possible e.g., specifying chunk dimensions or MPI parallelism.
-- Logs and error messages should be meaningful to beginners.
-- Installation should be just as simple.
+*  Users should be able to read/write common C++ data-types in a single line of code.
+*  Users should not need prior knowledge of HDF5 for simple tasks.
+*  Seemingly simple tasks should stay simple, e.g., specifying storage layout or enabling compression.
+*  Advanced tasks should stay possible e.g., specifying chunk dimensions or MPI parallelism.
+*  Logs and error messages should be meaningful to beginners.
+*  Installation should be just as simple.
  
 
 ## Features
-* Header-only C++17 template library
-* Support for common data types:
-    - `short`,`int`,`long`, `long long`, `float`, `double`, `long double` (and unsigned versions)
-        - any of the above in C-style arrays
-        - any of the above in `std::complex<>` form
-        - any of the above in POD-structs with x,y or x,y,z data members. In `h5pp` these go by the name `Scalar2` and `Scalar3`.
+*  Header-only C++17 template library
+*  Support for common data types:
+    *  `short`,`int`,`long`, `long long`, `float`, `double`, `long double` (and unsigned versions)
+        *  any of the above in C-style arrays
+        *  any of the above in `std::complex<>` form
+        *  any of the above in POD-structs with x,y or x,y,z data members. In `h5pp` these go by the name `Scalar2` and `Scalar3`.
             These work well together with types such as `double2` or `float3` found in CUDA.
-    - `std::string` and `char` arrays.
-    - Contiguous containers, such as `std::vector`, with `.data()` methods.
-    - `Eigen` types such as `Matrix`, `Array` and `Tensor`, with automatic conversion to/from row major storage layout.
-    - Any multi-dimensional container with access to a C-style contiguous buffer (without conversion to/from row major).
-    - Support for user-defined compound HDF5 types
-    - Support for creating HDF5 tables from user-defined compound HDF5 types.  
-* Modern CMake build, install and linking using targets.
-* (Opt-in) Automatically find or download dependencies using either [conan package manager](https://conan.io/) or native "CMake-only" methods.
+    *  `std::string` and `char` arrays.
+    *  Contiguous containers, such as `std::vector`, with `.data()` methods.
+    *  `Eigen` types such as `Matrix`, `Array` and `Tensor`, with automatic conversion to/from row major storage layout.
+    *  Any multi-dimensional container with access to a C-style contiguous buffer (without conversion to/from row major).
+    *  Support for user-defined compound HDF5 types
+    *  Support for creating HDF5 tables from user-defined compound HDF5 types.  
+*  Modern CMake build, install and linking using targets.
+*  (Opt-in) Automatically find or download dependencies using either [conan package manager](https://conan.io/) or native "CMake-only" methods.
 
 
 ## Usage
@@ -98,13 +98,13 @@ Find more code examples in the [Wiki](https://github.com/DavidAce/h5pp/wiki).
 ### File permissions
 To define permissions use the settings `AccessMode::<mode>` and/or `CreateMode::<mode>` as arguments when initializing the file.
 The possible modes are
-* `AccessMode::`
-    - `READONLY`  Read permission to the file.
-    - `READWRITE` **(default)** Read and write permission to the file.
+*  `AccessMode::`
+    *  `READONLY`  Read permission to the file.
+    *  `READWRITE` **(default)** Read and write permission to the file.
 * `CreateMode::`
-    - `OPEN` Open the file with the given name. Throws an error when file does not exist.
-    - `RENAME` **(default)** File is created with an available file name. If `myFile.h5` already exists, `myFile-1.h5` is created instead. The appended integer is increased until an available name is found
-    - `TRUNCATE` File is created with the given name and erases any pre-existing file. 
+    *  `OPEN` Open the file with the given name. Throws an error when file does not exist.
+    *  `RENAME` **(default)** File is created with an available file name. If `myFile.h5` already exists, `myFile-1.h5` is created instead. The appended integer is increased until an available name is found
+    *  `TRUNCATE` File is created with the given name and erases any pre-existing file. 
 
 The defaults are chosen to avoid loss of data.
 To give a concrete example, the syntax works as follows
@@ -116,12 +116,12 @@ To give a concrete example, the syntax works as follows
 ### Storage Layout
 Unless specified, `h5pp` will automatically decide the best storage layout for each dataset. The possible layouts are
 
-- `H5D_COMPACT`:  For scalar or small datasets which can fit in the metadata header. Default on datasets smaller than 32 KB.
-- `H5D_CONTIGUOUS`: For medium size datasets.  Default on datasets smaller than 512 KB.
-- `H5D_CHUNKED`: For large datasets. Default on datasets larger than 512 KB. This layout has some additional features:
-    - Chunking, portioning of the data to improve IO performance by caching more efficiently. Chunk dimensions are calculated by `h5pp` if not given specifically.
-    - Compression, disabled by default, and only available if HDF5 was built with zlib enabled.
-    - Overwrite with different size (note that the file size never decreases, for instance after overwriting with a smaller dataset).
+* `H5D_COMPACT`:  For scalar or small datasets which can fit in the metadata header. Default on datasets smaller than 32 KB.
+* `H5D_CONTIGUOUS`: For medium size datasets.  Default on datasets smaller than 512 KB.
+* `H5D_CHUNKED`: For large datasets. Default on datasets larger than 512 KB. This layout has some additional features:
+    * Chunking, portioning of the data to improve IO performance by caching more efficiently. Chunk dimensions are calculated by `h5pp` if not given specifically.
+    * Compression, disabled by default, and only available if HDF5 was built with zlib enabled.
+    * Overwrite with different size (note that the file size never decreases, for instance after overwriting with a smaller dataset).
 
 To specify the layout, pass it as a third argument when writing a new dataset, for instance:
 
@@ -189,10 +189,10 @@ Notice the cast to `dtype=np.complex128` which interprets each element of the ar
 
 ## Download
 There are currently 4 ways to obtain `h5pp`:
-- `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
-- From conda: `conda install -c davidace h5pp`
-- From [conan bintray repo](https://bintray.com/davidace/conan-public/h5pp%3Adavidace)
-- (Debian only) Download the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
+* `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
+* From conda: `conda install -c davidace h5pp`
+* From [conan bintray repo](https://bintray.com/davidace/conan-public/h5pp%3Adavidace)
+* (Debian only) Download the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
 
 
 ## Requirements
@@ -238,9 +238,9 @@ The CMake flag `DOWNLOAD_METHOD` controls the automated behavior for finding or 
 * `find-only` only attempt to find dependencies already installed (no downloads).
 * `conan` to install dependencies using the [conan package manager](https://conan.io/). This method is guided by `conanfile.txt` found in this project's root directory.
     This method requires conan to be installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
-  - Add conan install (or bin) directory to the environment variable `PATH`.
-  - Export conan install (or bin) directory in the environment variable `CONAN_PREFIX`, i.e. from command line: `export CONAN_PREFIX=<path-to-conan>` 
-  - Give the variable `CONAN_PREFIX` directly to CMake, i.e. from command line: `cmake -DCONAN_PREFIX:PATH=<path-to-conan> ...`
+  * Add conan install (or bin) directory to the environment variable `PATH`.
+  * Export conan install (or bin) directory in the environment variable `CONAN_PREFIX`, i.e. from command line: `export CONAN_PREFIX=<path-to-conan>` 
+  * Give the variable `CONAN_PREFIX` directly to CMake, i.e. from command line: `cmake -DCONAN_PREFIX:PATH=<path-to-conan> ...`
 * `native` to find dependencies pre-installed somewhere on your system using `find_package`. If finding fails, dependencies are downloaded and built from source during CMake configure, 
     and installed under `CMAKE_INSTALL_PREFIX`. There are several variables you can pass to CMake to guide `find_package` calls, see [build options](#cmake-build-options). 
     By default it searches standard system install directories as well as typical anaconda3 or miniconda directories.
@@ -252,16 +252,16 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 * `-DCMAKE_INSTALL_PREFIX:PATH=<install-dir>` to specify install directory (default: `${CMAKE_BINARY_DIR}/install`).
 * `-DBUILD_SHARED_LIBS:BOOL=<ON/OFF>` to link dependencies with static or shared libraries (default: `OFF`)
 * `-DCMAKE_BUILD_TYPE=Release/Debug` to specify build type of tests and examples (default: `Release`)
-* `-DENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (recommended!) (default: `OFF`).
-* `-DBUILD_EXAMPLES:BOOL=<ON/OFF>` to build example programs (default: `OFF`)
-* `-DDOWNLOAD_METHOD=<none/find-only/conan/native>` to select download method. (default: `none`).
+* `-DH5PP_ENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (recommended!) (default: `OFF`).
+* `-DH5PP_BUILD_EXAMPLES:BOOL=<ON/OFF>` to build example programs (default: `OFF`)
+* `-DH5PP_DOWNLOAD_METHOD=<none/find-only/conan/native>` to select download method. (default: `none`).
 * `-DH5PP_PRINT_INFO:BOOL=<ON/OFF>` to print extra CMake info about the host and generated targets during configure (default: `OFF`).
 * `-DH5PP_IS_SUBPROJECT:BOOL<ON/OFF>` Use h5pp with add_subdirectory() (default: `OFF`).
 * `-DH5PP_ENABLE_EIGEN3:BOOL=<ON/OFF>` Enables Eigen3 linear algebra library (DEFAULT: `OFF`).
 * `-DH5PP_ENABLE_SPDLOG:BOOL=<ON/OFF>` Enables Spdlog for logging h5pp internal info to stdout (DEFAULT: `OFF`).
-* `-DAPPEND_LIBSUFFIX:BOOL=<ON/OFF>` Append a directory with the library name to install directory, i.e. `CMAKE_INSTALL_PREFIX/<libname>/`. This
+* `-DH5PP_APPEND_LIBSUFFIX:BOOL=<ON/OFF>` Append a directory with the library name to install directory, i.e. `CMAKE_INSTALL_PREFIX/<libname>/`. This
     is useful when you want to install `h5pp`, `hdf5`, `Eigen3` and `spdlog` in separate folders (default: `OFF`).
-* `-DPREFER_CONDA_LIBS:BOOL=<ON/OFF>` to prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda (default: `OFF`).
+* `-DH5PP_PREFER_CONDA_LIBS:BOOL=<ON/OFF>` to prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda (default: `OFF`).
     Note that this has no effect when `DOWNLOAD_METHOD=conan`.
 
 
@@ -301,11 +301,11 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 ```
 #### Targets explained
 
--  `h5pp::h5pp` is the main target including "everything" and should normally be the only target that you need -- headers,flags and (if enabled) the found/downloaded dependencies.
--  `h5pp::headers` links the `h5pp` headers only.
--  `h5pp::deps` has targets to link all the dependencies that were found/downloaded when `h5pp` was built. If you used `DOWNLOAD_METHOD=native` these targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, which can of course be used independently.
-    If you used `DOWNLOAD_METHOD=conan` these targets are `CONAN_PKG::Eigen3`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. If you used `DOWNLOAD_METHOD=none` this target is empty.
--  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`.
+*  `h5pp::h5pp` is the main target including "everything" and should normally be the only target that you need -- headers,flags and (if enabled) the found/downloaded dependencies.
+*  `h5pp::headers` links the `h5pp` headers only.
+*  `h5pp::deps` has targets to link all the dependencies that were found/downloaded when `h5pp` was built. If you used `DOWNLOAD_METHOD=native` these targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, which can of course be used independently.
+*   If you used `DOWNLOAD_METHOD=conan` these targets are `CONAN_PKG::Eigen3`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. If you used `DOWNLOAD_METHOD=none` this target is empty.
+*  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`.
 
 
 ### Link manually (not as easy)

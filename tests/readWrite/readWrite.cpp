@@ -45,6 +45,7 @@ int main() {
     std::complex<float> cplxFloat(1, 1);
     file.writeDataset(cplxFloat, "cplxFloat");
     auto cplxFloatRead = file.readDataset<std::complex<float>>("cplxFloat");
+    if(cplxFloat != cplxFloatRead) throw std::runtime_error("cplxFloat != cplxFloatRead");
 
     std::vector<double> vectorDouble = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
                                         1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
@@ -80,7 +81,9 @@ int main() {
 
     Field2 field2{0.53, 0.45};
     file.writeDataset(field2, "field2");
-    auto field2Read = file.readDataset<std::vector<Field2>>("field2");
+    auto field2Read = file.readDataset<Field2>("field2");
+    if(field2.x != field2Read.x) throw std::runtime_error("field2.x != field2Read.x");
+    if(field2.y != field2Read.y) throw std::runtime_error("field2.y != field2Read.y");
 
     std::vector<Field2> field2array(10);
     for(size_t i = 0; i < field2array.size(); i++) {
@@ -102,7 +105,10 @@ int main() {
     };
     Field3 field3{0.54, 0.56, 0.58};
     file.writeDataset(field3, "field3");
-    auto field3Read = file.readDataset<std::vector<Field3>>("field3");
+    auto field3Read = file.readDataset<Field3>("field3");
+    if(field3.x != field3Read.x) throw std::runtime_error("field3.x != field3Read.x");
+    if(field3.y != field3Read.y) throw std::runtime_error("field3.y != field3Read.y");
+    if(field3.z != field3Read.z) throw std::runtime_error("field3.z != field3Read.z");
 
     std::vector<Field3> field3array(10);
     for(size_t i = 0; i < field3array.size(); i++) {
