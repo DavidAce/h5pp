@@ -1,4 +1,3 @@
-sudo: false
 language: cpp
 notifications:
   email: false
@@ -7,7 +6,7 @@ branches:
     - master
 
 
-matrix:
+jobs:
   fast_finish: true
   include:
     - name: "xenial gcc-8"
@@ -238,7 +237,6 @@ before_install:
         export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
         python -m pip install --upgrade pip
       fi
-#      cmd.exe /C 'refreshenv'
     elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       export PATH=/Users/travis/Library/Python/2.7/bin:$PATH
     else
@@ -254,7 +252,6 @@ install:
     if [[ "$H5PP_DOWNLOAD_METHOD" == "conan" ]]; then
       if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
         pip install conan
-    #        cmd.exe /C 'refreshenv'
         export PATH=/c/Program\ Files/Conan/conan:$PATH
       elif [[ "$TRAVIS_OS_NAME" =~ linux|osx ]]; then
         pip install --user conan --upgrade
