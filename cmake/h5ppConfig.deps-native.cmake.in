@@ -41,8 +41,7 @@ if(TARGET spdlog::spdlog)
 endif()
 
 if (NOT TARGET hdf5::hdf5)
-    include(${H5PP_CONFIG_DIR}/FindPackageHDF5.cmake)
-    find_package_hdf5()
+    find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
 endif()
 
 if(TARGET hdf5::hdf5)

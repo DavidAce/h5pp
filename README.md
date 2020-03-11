@@ -196,9 +196,9 @@ There are currently 4 ways to obtain `h5pp`:
 
 
 ## Requirements
-* C++17 capable compiler (tested with GCC version >= 7 and Clang version >= 7.0)
-* CMake (tested with version >= 3.10)
-* [**HDF5**](https://support.hdfgroup.org/HDF5/)  library, tested with version >= 1.8
+* C++17 capable compiler. GCC version >= 7 or Clang version >= 7.0
+* CMake version >= 3.12
+* [**HDF5**](https://support.hdfgroup.org/HDF5/)  library, version >= 1.8
 
 ## Optional dependencies:
 * [**Eigen**](http://eigen.tuxfamily.org). Write Eigen matrices and tensors directly. Tested with version >= 3.3.4
@@ -334,13 +334,13 @@ You could also use CMake's `find_package(...)` mechanism. A minimal `CMakeLists.
 ```
 
 The difficult part is linking to HDF5 libraries and its dependencies.
-When installing `h5pp` this is handled with a helper function defined in `cmake/FindPackageHDF5.cmake` which finds HDF5 installed
+When installing `h5pp` this is handled with a custom module for finding HDF5, defined in `cmake/FindHDF5.cmake`. This finds HDF5 installed
 somewhere on your system (e.g. installed via `conda`,`apt`, `Easybuild`,etc) and defines a CMake target `hdf5::hdf5` with everything you need to link correctly.
-You can use it too! If you copy `cmake/FindPackageHDF5.cmake` to your project, find HDF5 by including it and use the function:
+You can use it too! Add the path pointing to `FindHDF5.cmake` to the variable `CMAKE_MODULE_PATH` from within your own project, e.g.:
 
 ```cmake
-    include(FindPackageHDF5.cmake)
-    find_package_hdf5()
+    list(APPEND CMAKE_MODULE_PATH path/to/bundled/FindHDF5.cmake)
+    find_package(HDF5 1.10 COMPONENTS C HL REQUIRED)
     if(TARGET hdf5::hdf5)
             target_link_libraries(myExecutable PRIVATE hdf5::hdf5)
     endif()
