@@ -374,10 +374,13 @@ endif()
 if(HDF5_FOUND)
     add_library(hdf5::hdf5 IMPORTED INTERFACE)
     target_link_libraries(hdf5::hdf5 INTERFACE ${HDF5_TARGETS})
-
-    if(BUILD_SHARED_LIBS)
-        target_compile_definitions(hdf5::hdf5 INTERFACE $<$<CXX_COMPILER_ID:MSVC>:H5_BUILT_AS_DYNAMIC_LIB>)
+    if(MSVC AND CMAKE_BUILD_TYPE MATCHES "Debug")
+        target_compile_options(hdf5::hdf5 INTERFACE /Z7) # Suppress warning about missing debug info
     endif()
+    if(MSVC AND BUILD_SHARED_LIBS)
+        target_compile_definitions(hdf5::hdf5 INTERFACE H5_BUILT_AS_DYNAMIC_LIB)
+    endif()
+
 
     if(APPLE AND "sz" IN_LIST HDF5_LINK_LIBNAMES)
         find_library(SZIP_LIBRARY NAMES sz szip szip-static libsz libszip libszip-static HINTS /usr/local/opt) # No built in findSZIP.cmake
