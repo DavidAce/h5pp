@@ -1,6 +1,7 @@
 #include(${PROJECT_SOURCE_DIR}/cmake/FindPackageHDF5.cmake)
 
 if(NOT TARGET hdf5::hdf5)
+    set(HDF5_FIND_VERBOSE ON)
     set(HDF5_PREFER_PARALLEL ON)
     find_package(HDF5 1.8 COMPONENTS C HL REQUIRED)
     if(TARGET hdf5::hdf5)
