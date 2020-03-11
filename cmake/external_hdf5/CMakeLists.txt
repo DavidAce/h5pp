@@ -78,7 +78,6 @@ endif()
 #endif()
 
 
-
 ExternalProject_Add(external_hdf5
         URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz
         URL_MD5     9e22217d22eb568e09f0cc15fb641d7c
@@ -90,8 +89,6 @@ ExternalProject_Add(external_hdf5
         -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-#        -DCMAKE_CXX_FLAGS:STRING=-fPIC
-#        -DCMAKE_C_FLAGS:STRING=-fPIC
         -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
         -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
         -DHDF5_ENABLE_PARALLEL:BOOL=${HDF5_ENABLE_PARALLEL}
@@ -103,9 +100,10 @@ ExternalProject_Add(external_hdf5
         -DHDF5_BUILD_FORTRAN:BOOL=OFF
         -DHDF5_BUILD_EXAMPLES:BOOL=OFF
         -DHDF5_BUILD_JAVA:BOOL=OFF
+        -DHDF5_DISABLE_COMPILER_WARNINGS:BOOL=ON
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON
         -DALLOW_UNSUPPORTED=ON
-        -DCMAKE_INSTALL_MESSAGE=ALWAYS #Avoid unnecessary output to console
+        -DCMAKE_INSTALL_MESSAGE=NEVER #Avoid unnecessary output to console
 
         #        -DHDF5_ALLOW_EXTERNAL_SUPPORT:STRING=GIT
         #        -DZLIB_URL:STRING=https://github.com/madler/zlib.git
