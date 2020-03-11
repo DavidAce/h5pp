@@ -34,7 +34,7 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
 
 ## Introduction
 [HDF5](https://www.hdfgroup.org/) is a popular format for portable binary storage of large datasets.
-With bindings to popular languages such as Python, Julia, Matlab and many others,
+With bindings to many languages such as Python, Julia, Matlab and many others,
 it is straightforward to export, import and analyze data in a collaborative setting.
 
 In C/C++ using HDF5 directly is not at all straightforward.
