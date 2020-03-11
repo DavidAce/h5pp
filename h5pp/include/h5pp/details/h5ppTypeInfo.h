@@ -22,7 +22,7 @@ namespace h5pp {
             : name_(name), size_(size), type_(type), ndims_(ndims), dims_(std::move(dims)), h5type_(h5type) {
             if(ndims_ != (int) dims_.size())
                 throw std::runtime_error("Dimension mismatch, ndims (" + std::to_string(ndims_) + ") != dims.size(" + std::to_string(dims_.size()) + ")");
-            size_t size_check = std::accumulate(std::begin(dims_), std::end(dims_), 1.0, std::multiplies<>());
+            size_t size_check = std::accumulate(std::begin(dims_), std::end(dims_), (hsize_t) 1, std::multiplies<>());
             if(size_check != size) throw std::runtime_error("Size mismatch, size (" + std::to_string(size_) + ") != product of dims (" + std::to_string(size_check) + ")");
         }
 

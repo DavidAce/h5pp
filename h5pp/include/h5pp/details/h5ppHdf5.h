@@ -1080,7 +1080,7 @@ namespace h5pp::hdf5 {
                        fieldTypesHidT.data(),
                        tableProps.chunkSize.value(),
                        nullptr,
-                       tableProps.compressionLevel.value(),
+                       (int) tableProps.compressionLevel.value(),
                        nullptr);
         h5pp::logger::log->trace("Successfully created table [{}]", tableProps.tableName.value());
     }

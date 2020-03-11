@@ -261,8 +261,8 @@ namespace h5pp::utils {
         auto                 slice_size = static_cast<size_t>(std::ceil(std::sqrt(size)));
         std::vector<hsize_t> chunkDims  = dims;
         for(size_t dim = 0; dim < dims.size(); dim++) {
-            while(chunkDims[dim] > 1) {
-                size_t chunkSize = std::accumulate(chunkDims.begin(), chunkDims.end(), 1, std::multiplies<>());
+            while(chunkDims[dim] > (hsize_t) 1) {
+                size_t chunkSize = std::accumulate(chunkDims.begin(), chunkDims.end(), (hsize_t) 1, std::multiplies<>());
                 if(chunkSize < slice_size)
                     break;
                 else

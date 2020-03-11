@@ -33,13 +33,13 @@ namespace h5pp {
 
         template<typename T>
         PtrWrapper(const PointerType data, const std::array<T, N> &dims)
-            : data_(data), dims_(dims.begin(), dims.end()), size_(std::accumulate(dims.begin(), dims.end(), 1.0, std::multiplies<>())) {
+            : data_(data), dims_(dims.begin(), dims.end()), size_(std::accumulate(dims.begin(), dims.end(), (T) 1, std::multiplies<>())) {
             static_assert(std::is_integral_v<T> and "Type of dimension array must be integral");
             assert(N == dims_.size() and "Dimension mismatch");
         }
 
         template<typename T>
-        PtrWrapper(const PointerType data, const std::vector<T> &dims) : data_(data), dims_(dims), size_(std::accumulate(dims.begin(), dims.end(), 1.0, std::multiplies<>())) {
+        PtrWrapper(const PointerType data, const std::vector<T> &dims) : data_(data), dims_(dims), size_(std::accumulate(dims.begin(), dims.end(), (T) 1, std::multiplies<>())) {
             static_assert(std::is_integral_v<T> and "Type of dimension array must be integral");
             assert(N == dims_.size() and "Dimension mismatch");
         }

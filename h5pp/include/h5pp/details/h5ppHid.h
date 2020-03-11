@@ -172,7 +172,7 @@ namespace h5pp::hid {
         using hid_base::hid_base;
         ~h5t() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5t"; }
-        [[nodiscard]] bool        equal(const hid_t &rhs) const final { return (valid(val) and valid(rhs) > 0 and H5Tequal(val, rhs)) or val == rhs; }
+        [[nodiscard]] bool        equal(const hid_t &rhs) const final { return (valid(val) and valid(rhs) and H5Tequal(val, rhs)) or val == rhs; }
         void                      close() final {
             if(valid()) {
                 herr_t err = H5Tclose(val);
