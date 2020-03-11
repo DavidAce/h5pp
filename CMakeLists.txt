@@ -179,6 +179,8 @@ CheckCXXOptional()
 # Required compiler features
 target_compile_features(flags INTERFACE cxx_std_17)
 target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) # Need this for and/or logical operators on VS
+set_target_properties(flags PROPERTIES LINK_FLAGS "$<$<CXX_COMPILER_ID:MSVC>:/ignore:4099>") # Suppress a ton of warning about missing debugging symbols in HDF5 libs
+
 
 target_include_directories(headers INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/include>
