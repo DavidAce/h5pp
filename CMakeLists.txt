@@ -178,7 +178,7 @@ CheckCXXOptional()
 
 # Required compiler features
 target_compile_features(flags INTERFACE cxx_std_17)
-target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>: /permissive->) # Need this for and/or logical operators on VS
+target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) # Need this for and/or logical operators on VS
 
 
 target_include_directories(headers INTERFACE
