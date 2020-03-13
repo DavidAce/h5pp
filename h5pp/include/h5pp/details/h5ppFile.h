@@ -279,10 +279,17 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        void readTableEntries(DataType &data, std::string_view tableName, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt) {
+        void readTableEntries(DataType &data, std::string_view tableName, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt) const {
             hid::h5f file       = openFileHandle();
             auto     tableProps = h5pp::scan::getTableProperties_read(file, tableName, plists);
             h5pp::hdf5::readTableEntries(file, data, tableProps, startEntry, numEntries);
+        }
+
+        template<typename DataType>
+        DataType readTableEntries(std::string_view tableName, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt) const {
+            DataType data;
+            readTableEntries(data, tableName, startEntry, numEntries);
+            return data;
         }
 
         // Functions for querying
