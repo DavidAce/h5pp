@@ -312,10 +312,22 @@ namespace h5pp {
             return exists;
         }
 
-        [[nodiscard]] std::vector<std::string> getContentsOfGroup(std::string_view groupName) const {
+        [[nodiscard]] std::vector<std::string> getLinksInGroup(std::string_view groupName, bool recursive = false) const {
             hid::h5f file       = openFileHandle();
-            auto     foundLinks = h5pp::hdf5::getContentsOfGroup(file, groupName);
+            auto     foundLinks = h5pp::hdf5::getLinksInGroup(file, groupName, recursive);
             return foundLinks;
+        }
+
+        [[nodiscard]] std::vector<std::string> getDatasetsInGroup(std::string_view groupName) const {
+            hid::h5f file          = openFileHandle();
+            auto     foundDatasets = h5pp::hdf5::getDatasetsInGroup(file, groupName);
+            return foundDatasets;
+        }
+
+        [[nodiscard]] std::vector<std::string> getGroupsInGroup(std::string_view groupName) const {
+            hid::h5f file        = openFileHandle();
+            auto     foundGroups = h5pp::hdf5::getGroupsInGroup(file, groupName);
+            return foundGroups;
         }
 
         [[nodiscard]] TypeInfo getDatasetTypeInfo(std::string_view dsetName) const {

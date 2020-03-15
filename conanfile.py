@@ -4,7 +4,7 @@ import os, re
 
 class h5ppConan(ConanFile):
     name = "h5pp"
-    version = "1.5.2"
+    version = "1.5.3"
     license = "MIT"
     url = "https://github.com/DavidAce/h5pp"
     settings = "os", "compiler", "build_type", "arch"
@@ -31,14 +31,14 @@ class h5ppConan(ConanFile):
 
     def _configure_cmake(self):
         cmake = CMake(self)
-        cmake.definitions["ENABLE_TESTS:BOOL"]              = True
-        cmake.definitions["BUILD_EXAMPLES:BOOL"]            = False
-        cmake.definitions["H5PP_PRINT_INFO:BOOL"]           = True
-        cmake.definitions["DOWNLOAD_METHOD:STRING"]         = "conan"
+        cmake.definitions["H5PP_ENABLE_TESTS:BOOL"] = True
+        cmake.definitions["H5PP_BUILD_EXAMPLES:BOOL"] = False
+        cmake.definitions["H5PP_PRINT_INFO:BOOL"] = True
+        cmake.definitions["H5PP_DOWNLOAD_METHOD:STRING"] = "conan"
         if tools.os_info.is_linux:
             cmake.definitions['BUILD_SHARED_LIBS:BOOL'] = True if self.options.shared else False
 
-        cmake.configure(source_folder=self.build_folder+'/h5pp-'+self.version)
+        cmake.configure(source_folder=self.build_folder + '/h5pp-' + self.version)
         return cmake
 
     def build(self):

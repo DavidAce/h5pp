@@ -714,12 +714,31 @@ namespace h5pp::hdf5 {
         } catch(...) { throw(std::logic_error("Not a group: " + std::string(name) + " loc_id: " + std::to_string(loc_id))); }
     }
 
-    inline std::vector<std::string> getContentsOfGroup(const hid::h5f &file, std::string_view groupName) {
+    inline std::vector<std::string> getLinksInGroup(const hid::h5f &file, std::string_view groupName, bool recursive) {
+        h5pp::logger::log->trace("Getting contents of group: {} | recursive {}", groupName, recursive);
+        std::vector<std::string> linkNames;
+        herr_t                   err;
+        try {
+            if(recursive)
+                err = H5Literate_by_name(file, std::string(groupName).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, fileInfo, &linkNames, H5P_DEFAULT);
+            else
+                err = H5Lvisit_by_name(file, std::string(groupName).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, fileInfo, &linkNames, H5P_DEFAULT);
+
+        } catch(std::exception &ex) { h5pp::logger::log->debug("Failed to get contents: {}", ex.what()); }
+        if(err < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error("Failed to iterate group: " + std::string(groupName));
+        }
+        return linkNames;
+    }
+
+    inline std::vector<std::string> getDatasetsInGroup(const hid::h5f &file, std::string_view groupName) {
         h5pp::logger::log->trace("Getting contents of group: {}", groupName);
         std::vector<std::string> linkNames;
         try {
             herr_t err = H5Literate_by_name(file, std::string(groupName).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, fileInfo, &linkNames, H5P_DEFAULT);
-            if(err < 0) {
+            H5Giterate();
+            H5Diterate() if(err < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error("Failed to iterate group: " + std::string(groupName));
             }
