@@ -307,32 +307,23 @@ namespace h5pp {
         }
 
         [[nodiscard]] bool linkExists(std::string_view link) const {
-            hid::h5f file   = openFileHandle();
-            bool     exists = h5pp::hdf5::checkIfLinkExists(file, link, std::nullopt, plists.link_access);
-            return exists;
+            return h5pp::hdf5::checkIfLinkExists(openFileHandle(), link, std::nullopt, plists.link_access);
         }
 
-        [[nodiscard]] std::vector<std::string> getLinksInGroup(std::string_view groupName, bool recursive = false) const {
-            hid::h5f file       = openFileHandle();
-            auto     foundLinks = h5pp::hdf5::getLinksInGroup(file, groupName, recursive);
-            return foundLinks;
+        [[nodiscard]] std::vector<std::string> findLinks(std::string_view searchKey = "",std::string_view searchRoot = "/",long maxSearchHits = -1) const {
+            return h5pp::hdf5::findLinks<H5O_TYPE_UNKNOWN>(openFileHandle(), searchKey, searchRoot,maxSearchHits,plists.link_access);
         }
 
-        [[nodiscard]] std::vector<std::string> getDatasetsInGroup(std::string_view groupName) const {
-            hid::h5f file          = openFileHandle();
-            auto     foundDatasets = h5pp::hdf5::getDatasetsInGroup(file, groupName);
-            return foundDatasets;
+        [[nodiscard]] std::vector<std::string> findDatasets(std::string_view searchKey = "",std::string_view searchRoot = "/", long maxSearchHits = -1) const {
+            return h5pp::hdf5::findLinks<H5O_TYPE_DATASET>(openFileHandle(), searchKey, searchRoot, maxSearchHits,plists.link_access);
         }
 
-        [[nodiscard]] std::vector<std::string> getGroupsInGroup(std::string_view groupName) const {
-            hid::h5f file        = openFileHandle();
-            auto     foundGroups = h5pp::hdf5::getGroupsInGroup(file, groupName);
-            return foundGroups;
+        [[nodiscard]] std::vector<std::string> findGroups(std::string_view searchKey = "",std::string_view searchRoot = "/", long maxSearchHits = -1) const {
+            return h5pp::hdf5::findLinks<H5O_TYPE_GROUP>(openFileHandle(), searchKey, searchRoot, maxSearchHits,plists.link_access);
         }
 
         [[nodiscard]] TypeInfo getDatasetTypeInfo(std::string_view dsetName) const {
-            hid::h5f file = openFileHandle();
-            return h5pp::hdf5::getDatasetTypeInfo(file, dsetName, std::nullopt, plists.link_access);
+            return h5pp::hdf5::getDatasetTypeInfo(openFileHandle(), dsetName, std::nullopt, plists.link_access);
         }
 
         [[nodiscard]] TypeInfo getAttributeTypeInfo(std::string_view linkName, std::string_view attrName) const {

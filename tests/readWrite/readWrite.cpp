@@ -233,7 +233,7 @@ int main() {
 
 #endif
 
-    auto foundLinksInRoot = file.getLinksInGroup("/");
+    auto foundLinksInRoot = file.findDatasets();
     for(auto &link : foundLinksInRoot) { std::cout << "Found Link: " << link << std::endl; }
 
     return 0;

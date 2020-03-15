@@ -706,44 +706,41 @@ namespace h5pp::hdf5 {
         H5Sselect_hyperslab(fileSpace, H5S_SELECT_SET, start.data(), nullptr, memDims.data(), nullptr);
     }
 
-    inline herr_t fileInfo([[maybe_unused]] hid_t loc_id, const char *name, [[maybe_unused]] const H5L_info_t *linfo, void *opdata) {
-        try {
-            auto linkNames = reinterpret_cast<std::vector<std::string> *>(opdata);
-            linkNames->push_back(name);
-            return 0;
-        } catch(...) { throw(std::logic_error("Not a group: " + std::string(name) + " loc_id: " + std::to_string(loc_id))); }
+    namespace internal{
+        inline long        maxSearchHits = -1;
+        inline std::string searchKey = "";
+        template<H5O_type_t ObjType>
+        inline herr_t collector([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const H5O_info_t *oinfo, void *opdata) {
+            try {
+                if (oinfo->type == ObjType or ObjType == H5O_TYPE_UNKNOWN){
+                    auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
+                    if(searchKey.empty() or std::string_view(name).find(searchKey) != std::string::npos ) {
+                        matchList->push_back(name);
+                        if(maxSearchHits > 0 and matchList->size() >= maxSearchHits) return 1;
+                    }
+                }
+                return 0;
+            } catch(...) { throw(std::logic_error("Could not collect object: " + std::string(name) + " loc_id: " + std::to_string(id))); }
+        }
     }
 
-    inline std::vector<std::string> getLinksInGroup(const hid::h5f &file, std::string_view groupName, bool recursive) {
-        h5pp::logger::log->trace("Getting contents of group: {} | recursive {}", groupName, recursive);
-        std::vector<std::string> linkNames;
-        herr_t                   err;
-        try {
-            if(recursive)
-                err = H5Literate_by_name(file, std::string(groupName).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, fileInfo, &linkNames, H5P_DEFAULT);
-            else
-                err = H5Lvisit_by_name(file, std::string(groupName).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, fileInfo, &linkNames, H5P_DEFAULT);
-
-        } catch(std::exception &ex) { h5pp::logger::log->debug("Failed to get contents: {}", ex.what()); }
+    template<H5O_type_t ObjType>
+    inline std::vector<std::string> findLinks(const hid::h5f &file, std::string_view searchKey = "", std::string_view searchRoot = "/", int maxSearchHits = -1,const hid::h5p &link_access = H5P_DEFAULT) {
+        std::string linkType = "any";
+        if (searchRoot.empty()) searchRoot = "/";
+        if constexpr (ObjType == H5O_TYPE_DATASET) linkType = "dataset";
+        if constexpr (ObjType == H5O_TYPE_NAMED_DATATYPE) linkType = "named datatype";
+        if constexpr (ObjType == H5O_TYPE_GROUP) linkType = "group";
+        h5pp::logger::log->trace("Search key: {} | search root: {} | link type: {} | max search hits {}", searchKey, searchRoot, linkType,maxSearchHits);
+        std::vector<std::string> matchList;
+        internal::maxSearchHits = maxSearchHits;
+        internal::searchKey     = searchKey;
+        herr_t err = H5Ovisit_by_name(file, searchRoot.data(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, link_access);
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to iterate group: " + std::string(groupName));
+            throw std::runtime_error("Failed to iterate from group: " + std::string(searchRoot));
         }
-        return linkNames;
-    }
-
-    inline std::vector<std::string> getDatasetsInGroup(const hid::h5f &file, std::string_view groupName) {
-        h5pp::logger::log->trace("Getting contents of group: {}", groupName);
-        std::vector<std::string> linkNames;
-        try {
-            herr_t err = H5Literate_by_name(file, std::string(groupName).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, fileInfo, &linkNames, H5P_DEFAULT);
-            H5Giterate();
-            H5Diterate() if(err < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to iterate group: " + std::string(groupName));
-            }
-        } catch(std::exception &ex) { h5pp::logger::log->debug("Failed to get contents: {}", ex.what()); }
-        return linkNames;
+        return matchList;
     }
 
     template<typename DataType>

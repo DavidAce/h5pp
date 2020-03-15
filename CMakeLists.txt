@@ -336,6 +336,7 @@ if (NOT H5PP_IS_SUBPROJECT AND H5PP_ENABLE_TESTS AND TARGET h5pp)
     add_subdirectory(tests/copySwap h5pp-tests/copySwap)
     add_subdirectory(tests/typeInfo h5pp-tests/typeInfo)
     add_subdirectory(tests/userType h5pp-tests/userType)
+    add_subdirectory(tests/findObjects h5pp-tests/findObjects)
     add_custom_target(all-tests
             DEPENDS test-simpleWrite
             test-largeWrite
@@ -347,6 +348,7 @@ if (NOT H5PP_IS_SUBPROJECT AND H5PP_ENABLE_TESTS AND TARGET h5pp)
             test-copySwap
             test-typeInfo
             test-userType
+            test-findObjects
             )
     # A handy target "all-tests" which runs all test when built.
     add_custom_command(
@@ -374,7 +376,6 @@ if (NOT H5PP_IS_SUBPROJECT AND H5PP_BUILD_EXAMPLES AND TARGET h5pp)
     # A handy target "all-examples" to build all examples
     add_custom_target(all-examples DEPENDS
             helloworld
-            writescalar
             example1
             example2
             example3
