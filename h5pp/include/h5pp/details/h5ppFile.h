@@ -158,6 +158,7 @@ namespace h5pp {
             logLevel = logLevelZeroToFive;
             h5pp::logger::setLogLevel(logLevelZeroToFive);
         }
+        [[nodiscard]] size_t getLogLevel() const { return logLevel; }
 
         // Functions related to datasets
 
