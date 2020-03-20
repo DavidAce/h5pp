@@ -44,8 +44,10 @@ int main() {
     file.writeAttribute(AttributeArrayLong, "AttributeArrayLong", "testGroup/vectorDouble");
     file.writeAttribute(AttributeCArrayFloat, "AttributeCArrayFloat", "testGroup/vectorDouble");
     file.writeAttribute(AttributeVectorDouble, "AttributeVectorDouble", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeVectorDouble, "AttributeVectorDouble", "testGroup/vectorDouble"); // Try overwrite
     file.writeAttribute(AttributeVectorComplexDouble, "AttributeVectorComplexDouble", "testGroup/vectorDouble");
     file.writeAttribute(AttributeString, "AttributeString", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeString, "AttributeString", "testGroup/vectorDouble"); // Try overwrite
     file.writeAttribute(AttributeCharArray, "AttributeCharArray", "testGroup/vectorDouble");
     // Read the data back
     auto ReadAttributeInt                      = file.readAttribute<int>("AttributeInt", "testGroup/vectorDouble");
