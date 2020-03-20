@@ -238,13 +238,6 @@ namespace h5pp::scan {
 
             h5pp::AttributeProperties dataProps = attrProps;
             // Start by copying properties that are immutable on overwrites
-            //            dataProps.attributeId       = attrProps.attributeId;
-            //            dataProps.linkObject        = attrProps.linkObject;
-            //            dataProps.attrName          = attrProps.attrName;
-            //            dataProps.linkName          = attrProps.linkName;
-            //            dataProps.linkExists        = attrProps.linkExists;
-            //            dataProps.attrExists        = attrProps.attrExists;
-
             dataProps.plist_attr_access = attrProps.plist_attr_create;
             dataProps.ndims             = h5pp::utils::getRank<DataType>();
             // The rest we can inferr directly from the data
