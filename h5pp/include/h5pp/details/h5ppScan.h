@@ -99,8 +99,8 @@ namespace h5pp::scan {
             auto dsetProps = getDatasetProperties_read(file, dsetName, dsetExists, plists);
 
             if(dsetProps.ndims != h5pp::utils::getRank<DataType>())
-                throw std::runtime_error("Number of dimensions in existing dataset (" + std::to_string(dsetProps.ndims.value()) + ") differ from dimensions in given data (" +
-                                         std::to_string(h5pp::utils::getRank<DataType>()) + ")");
+                throw std::runtime_error("The number of dimensions in the existing dataset [" + std::string(dsetName) + "] is (" + std::to_string(dsetProps.ndims.value()) +
+                                         "), which differs from the dimensions in given data (" + std::to_string(h5pp::utils::getRank<DataType>()) + ")");
 
             if(not h5pp::hdf5::H5Tequal_recurse(dsetProps.dataType, h5pp::utils::getH5Type<DataType>()))
                 throw std::runtime_error("Given datatype does not match the type of an existing dataset: " + dsetProps.dsetName.value());
@@ -230,24 +230,25 @@ namespace h5pp::scan {
             auto attrProps = getAttributeProperties_read(file, attrName, linkName, attrExists, linkExists, plists);
             // Sanity check
             if(attrProps.ndims != h5pp::utils::getRank<DataType>())
-                throw std::runtime_error("Number of dimensions in existing dataset (" + std::to_string(attrProps.ndims.value()) + ") differ from dimensions in given data (" +
-                                         std::to_string(h5pp::utils::getRank<DataType>()) + ")");
+                throw std::runtime_error("Number of dimensions in existing attribute [" + std::string(attrName) + "] (" + std::to_string(attrProps.ndims.value()) +
+                                         ") differ from dimensions in given data (" + std::to_string(h5pp::utils::getRank<DataType>()) + ")");
 
             if(not h5pp::hdf5::H5Tequal_recurse(attrProps.dataType, h5pp::utils::getH5Type<DataType>()))
                 throw std::runtime_error("Given datatype does not match the type of an existing dataset: " + attrProps.linkName.value());
 
-            h5pp::AttributeProperties dataProps;
+            h5pp::AttributeProperties dataProps = attrProps;
             // Start by copying properties that are immutable on overwrites
-            dataProps.attributeId       = attrProps.attributeId;
-            dataProps.linkObject        = attrProps.linkObject;
-            dataProps.attrName          = attrProps.attrName;
-            dataProps.linkExists        = attrProps.linkExists;
-            dataProps.attrExists        = attrProps.attrExists;
-            dataProps.dataType          = h5pp::utils::getH5Type<DataType>(desiredH5Type);
-            dataProps.ndims             = h5pp::utils::getRank<DataType>();
+            //            dataProps.attributeId       = attrProps.attributeId;
+            //            dataProps.linkObject        = attrProps.linkObject;
+            //            dataProps.attrName          = attrProps.attrName;
+            //            dataProps.linkName          = attrProps.linkName;
+            //            dataProps.linkExists        = attrProps.linkExists;
+            //            dataProps.attrExists        = attrProps.attrExists;
+
             dataProps.plist_attr_access = attrProps.plist_attr_create;
+            dataProps.ndims             = h5pp::utils::getRank<DataType>();
             // The rest we can inferr directly from the data
-            dataProps.dataType = h5pp::utils::getH5Type<DataType>();
+            dataProps.dataType = h5pp::utils::getH5Type<DataType>(desiredH5Type);
             dataProps.size     = h5pp::utils::getSize(data);
             dataProps.size     = h5pp::hdf5::setStringSize(data, dataProps.dataType); // This only affects strings
             dataProps.bytes    = h5pp::utils::getBytesTotal<DataType>(data);
