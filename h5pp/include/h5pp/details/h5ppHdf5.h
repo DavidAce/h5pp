@@ -708,7 +708,7 @@ namespace h5pp::hdf5 {
 
     namespace internal{
         inline long        maxSearchHits = -1;
-        inline std::string searchKey = "";
+        inline std::string searchKey;
         template<H5O_type_t ObjType>
         inline herr_t collector([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const H5O_info_t *oinfo, void *opdata) {
             try {
@@ -716,7 +716,7 @@ namespace h5pp::hdf5 {
                     auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
                     if(searchKey.empty() or std::string_view(name).find(searchKey) != std::string::npos ) {
                         matchList->push_back(name);
-                        if(maxSearchHits > 0 and matchList->size() >= maxSearchHits) return 1;
+                        if(maxSearchHits > 0 and (long) matchList->size() >= maxSearchHits) return 1;
                     }
                 }
                 return 0;
