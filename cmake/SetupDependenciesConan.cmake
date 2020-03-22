@@ -63,7 +63,7 @@ else()
             BUILD missing)
 
 endif()
-message("CONAN TARGETS: ${CONAN_TARGETS}")
+message(STATUS "CONAN TARGETS: ${CONAN_TARGETS}")
 list(APPEND H5PP_POSSIBLE_TARGET_NAMES CONAN_PKG::HDF5 CONAN_PKG::hdf5 CONAN_PKG::Eigen3 CONAN_PKG::eigen CONAN_PKG::spdlog)
 
 foreach(tgt ${H5PP_POSSIBLE_TARGET_NAMES})

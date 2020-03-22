@@ -727,15 +727,19 @@ namespace h5pp::hdf5 {
     template<H5O_type_t ObjType>
     inline std::vector<std::string> findLinks(const hid::h5f &file, std::string_view searchKey = "", std::string_view searchRoot = "/", int maxSearchHits = -1,const hid::h5p &link_access = H5P_DEFAULT) {
         std::string linkType = "any";
-        if (searchRoot.empty()) searchRoot = "/";
-        if constexpr (ObjType == H5O_TYPE_DATASET) linkType = "dataset";
-        if constexpr (ObjType == H5O_TYPE_NAMED_DATATYPE) linkType = "named datatype";
-        if constexpr (ObjType == H5O_TYPE_GROUP) linkType = "group";
-        h5pp::logger::log->trace("Search key: {} | search root: {} | link type: {} | max search hits {}", searchKey, searchRoot, linkType,maxSearchHits);
+        if(searchRoot.empty()) searchRoot = "/";
+        if constexpr(ObjType == H5O_TYPE_DATASET) linkType = "dataset";
+        if constexpr(ObjType == H5O_TYPE_NAMED_DATATYPE) linkType = "named datatype";
+        if constexpr(ObjType == H5O_TYPE_GROUP) linkType = "group";
+        h5pp::logger::log->trace("Search key: {} | search root: {} | link type: {} | max search hits {}", searchKey, searchRoot, linkType, maxSearchHits);
         std::vector<std::string> matchList;
         internal::maxSearchHits = maxSearchHits;
         internal::searchKey     = searchKey;
+#if defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers > 1
+        herr_t err = H5Ovisit_by_name(file, searchRoot.data(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, H5O_INFO_ALL, link_access);
+#else
         herr_t err = H5Ovisit_by_name(file, searchRoot.data(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, link_access);
+#endif
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error("Failed to iterate from group: " + std::string(searchRoot));
