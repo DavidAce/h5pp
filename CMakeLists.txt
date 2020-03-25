@@ -5,16 +5,16 @@ project(h5pp VERSION 1.6.0
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         )
 
-option(BUILD_SHARED_LIBS "Builds shared libraries" OFF)
-option(H5PP_BUILD_EXAMPLES "Builds examples" OFF)
-option(H5PP_ENABLE_TESTS "Enable testing" OFF)
-option(H5PP_IS_SUBPROJECT "Use h5pp with add_subdirectory()" OFF)
-option(H5PP_APPEND_LIBSUFFIX "Append <libname> to CMAKE_INSTALL_PREFIX" OFF)
-option(H5PP_PREFER_CONDA_LIBS "Search for dependencies from anaconda first" OFF)
-option(H5PP_PRINT_INFO "Print info during cmake configuration" OFF)
-option(H5PP_ENABLE_EIGEN3 "Enables Eigen3 linear algebra library" OFF)
-option(H5PP_ENABLE_SPDLOG "Enables Spdlog for logging h5pp internal info to stdout" OFF)
-option(H5PP_ENABLE_MPI "Enables use of MPI (work in progress)" OFF)
+option(BUILD_SHARED_LIBS      "Builds shared libraries"                                 OFF)
+option(H5PP_BUILD_EXAMPLES    "Builds examples"                                         OFF)
+option(H5PP_ENABLE_TESTS      "Enable testing"                                          OFF)
+option(H5PP_IS_SUBPROJECT     "Use h5pp with add_subdirectory()"                        OFF)
+option(H5PP_APPEND_LIBSUFFIX  "Append <libname> to CMAKE_INSTALL_PREFIX"                OFF)
+option(H5PP_PREFER_CONDA_LIBS "Search for dependencies from anaconda first"             OFF)
+option(H5PP_PRINT_INFO        "Print info during cmake configuration"                   OFF)
+option(H5PP_ENABLE_EIGEN3     "Enables Eigen3 linear algebra library"                   OFF)
+option(H5PP_ENABLE_SPDLOG     "Enables Spdlog for logging h5pp internal info to stdout" OFF)
+option(H5PP_ENABLE_MPI        "Enables use of MPI (work in progress)"                   OFF)
 
 # Make an "enum" for valid download methods: none find-only native conan
 set(H5PP_DOWNLOAD_METHODS_VALID none find-only native conan)
