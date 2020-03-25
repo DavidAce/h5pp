@@ -6,7 +6,7 @@
 int main() {
     std::string                       outputFilename = "output/simpleWrite.h5";
     size_t                            logLevel       = 0;
-    h5pp::File                        file(outputFilename, h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, logLevel);
+    h5pp::File                        file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
     std::string                       String    = "This is a string";
     char                              Char[100] = "This is a char array";
     double                            Double    = 2.0;

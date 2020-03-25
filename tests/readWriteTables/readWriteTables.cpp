@@ -10,7 +10,7 @@ struct Particle {
 };
 
 int main() {
-    h5pp::File file("output/readWriteTables.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, 0);
+    h5pp::File file("output/readWriteTables.h5", h5pp::FilePermission::REPLACE, 0);
 
     // Create a type for the char array from the template H5T_C_S1
     // The template describes a string with a single char.

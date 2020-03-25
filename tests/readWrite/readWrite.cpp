@@ -23,7 +23,7 @@ int main() {
 
     std::string outputFilename = "output/readWrite.h5";
     size_t      logLevel       = 0;
-    h5pp::File  file(outputFilename, h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, logLevel);
+    h5pp::File  file(outputFilename, H5F_ACC_TRUNC | H5F_ACC_RDWR, logLevel);
 
     std::vector<int> emptyVector;
     file.writeDataset(emptyVector, "emptyVector");

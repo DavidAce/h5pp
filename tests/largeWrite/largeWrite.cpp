@@ -6,7 +6,7 @@
 int main() {
     std::string outputFilename = "output/largeWrite.h5";
     size_t      logLevel       = 0;
-    h5pp::File  file(outputFilename, h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, logLevel);
+    h5pp::File  file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
     file.writeDataset("teststring", "simpleWriteGroup/String");
     std::vector<std::complex<double>> vectorComplexDouble(10000, {10.0, 5.0});
     file.writeDataset(vectorComplexDouble, "largeWriteGroup/vectorComplexDouble");

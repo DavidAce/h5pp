@@ -4,7 +4,7 @@
 #include <iostream>
 
 int main() {
-    h5pp::File file("output/findObjects.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, 0);
+    h5pp::File file("output/findObjects.h5", h5pp::FilePermission::REPLACE, 0);
 
     file.writeDataset(0.0,"dsetA");
     file.writeDataset(0.1,"group1/dsetB2");

@@ -7,7 +7,7 @@ int main() {
     // Define dummy data
     std::string outputFilename = "output/overWrite.h5";
     size_t      logLevel       = 0;
-    h5pp::File  file(outputFilename, h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, logLevel);
+    h5pp::File  file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
 
     using namespace std::complex_literals;
     std::vector<std::complex<double>> vectorComplexDouble(10000, {10.0, 5.0});

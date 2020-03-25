@@ -10,7 +10,7 @@ struct Particle {
 };
 
 int main() {
-    h5pp::File file("output/userType.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, 0);
+    h5pp::File file("output/userType.h5", h5pp::FilePermission::REPLACE, 0);
 
     // Create a type for the char array from the template H5T_C_S1
     // The template describes a string with a single char.
@@ -30,14 +30,14 @@ int main() {
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "dummy", HOFFSET(Particle, dummy), H5T_NATIVE_INT);
 
     std::vector<Particle> particles(10);
-    file.writeDataset(particles, MY_HDF5_PARTICLE_TYPE, "particles");
+    file.writeDataset(particles, "particles", MY_HDF5_PARTICLE_TYPE);
 
     // TODO: Add support for packed datatypes. The test below will not crash, but the data in the hdf5 file will be scrambled.
     // One can optionally repack the datatype to squeeze out any padding present in the struct.
     // This way the data is written in the most space-efficient way.
     h5pp::hid::h5t MY_PACKED_PARTICLE_TYPE = H5Tcopy(MY_HDF5_PARTICLE_TYPE);
     H5Tpack(MY_PACKED_PARTICLE_TYPE);
-    file.writeDataset(particles, MY_PACKED_PARTICLE_TYPE, "particles_packed_TODO");
+    file.writeDataset(particles, "particles_packed_TODO", MY_PACKED_PARTICLE_TYPE);
 
     // read it back
     std::vector<Particle> particles_read;

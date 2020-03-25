@@ -22,8 +22,8 @@ int main() {
                   "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     size_t     logLevel = 0;
-    h5pp::File fileA("outputA/copySwapA.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, logLevel);
-    h5pp::File fileB("outputB/copySwapB.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, logLevel);
+    h5pp::File fileA("outputA/copySwapA.h5", h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File fileB("outputB/copySwapB.h5", h5pp::FilePermission::REPLACE, logLevel);
 
     fileA.writeDataset("A", "groupA/A");
     fileB.writeDataset("B", "groupB/B");
@@ -36,7 +36,7 @@ int main() {
     h5pp::File fileD(fileC);
     fileD.writeDataset("D", "groupD/D");
 
-    h5pp::File fileE(h5pp::File("outputE/copySwapE.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE, logLevel));
+    h5pp::File fileE(h5pp::File("outputE/copySwapE.h5", h5pp::FilePermission::REPLACE, logLevel));
     fileE.writeDataset("E", "groupE/E");
 
     fileD = fileB;
