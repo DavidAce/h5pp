@@ -341,9 +341,8 @@ namespace h5pp::hdf5 {
                 return true;
             else
                 return type1 == type2;
-        } else {
+        } else
             return false;
-        }
     }
 
     [[nodiscard]] inline bool checkIfCompressionIsAvailable() {
@@ -989,89 +988,88 @@ namespace h5pp::hdf5 {
 
     inline bool fileIsValid(const fs::path &filePath) { return fs::exists(filePath) and H5Fis_hdf5(filePath.string().c_str()) > 0; }
 
-    [[nodiscard]] inline fs::path getAvailableFileName(const fs::path &fileName) {
+    [[nodiscard]] inline fs::path getAvailableFileName(const fs::path &filePath) {
         int      i           = 1;
-        fs::path newFileName = fileName;
-        while(fs::exists(newFileName)) { newFileName.replace_filename(fileName.stem().string() + "-" + std::to_string(i++) + fileName.extension().string()); }
+        fs::path newFileName = filePath;
+        while(fs::exists(newFileName)) { newFileName.replace_filename(filePath.stem().string() + "-" + std::to_string(i++) + filePath.extension().string()); }
         return newFileName;
     }
 
-    inline std::pair<h5pp::fs::path, h5pp::fs::path> createFile(const h5pp::fs::path &filePath,
-                                                                const AccessMode &    accessMode = AccessMode::READWRITE,
-                                                                const CreateMode &    createMode = CreateMode::RENAME,
-                                                                const PropertyLists & plists     = PropertyLists()) {
-        fs::path filePath_result = filePath;
-        fs::path fileName_result = filePath.filename();
-        try {
-            if(fs::create_directories(filePath_result.parent_path())) {
-                h5pp::logger::log->trace("Created directory: {}", filePath_result.parent_path().string());
-            } else {
-                h5pp::logger::log->trace("Directory already exists: {}", filePath_result.parent_path().string());
-            }
-        } catch(std::exception &ex) { throw std::runtime_error("Failed to create directory: " + std::string(ex.what())); }
+    [[nodiscard]] inline fs::path getBackupFileName(const fs::path &filePath) {
+        int      i           = 1;
+        fs::path newFilePath = filePath;
+        while(fs::exists(newFilePath)) { newFilePath.replace_extension(filePath.extension().string() + ".bak_" + std::to_string(i++)); }
+        return newFilePath;
+    }
 
-        switch(createMode) {
-            case CreateMode::OPEN: {
-                h5pp::logger::log->debug("File mode [OPEN]: Opening file [{}]", filePath_result.string());
-                try {
-                    if(fileIsValid(filePath_result)) {
-                        hid_t file;
-                        switch(accessMode) {
-                            case(AccessMode::READONLY): file = H5Fopen(filePath_result.string().c_str(), H5F_ACC_RDONLY, plists.file_access); break;
-                            case(AccessMode::READWRITE): file = H5Fopen(filePath_result.string().c_str(), H5F_ACC_RDWR, plists.file_access); break;
-                            default: throw std::runtime_error("Invalid access mode");
-                        }
-                        if(file < 0) {
-                            H5Eprint(H5E_DEFAULT, stderr);
-                            throw std::runtime_error("Failed to open file: [" + filePath_result.string() + "]");
-                        }
-                        H5Fclose(file);
-                        filePath_result = fs::canonical(filePath_result);
-                    } else {
-                        throw std::runtime_error("Invalid file: [" + filePath_result.string() + "]");
-                    }
-                } catch(std::exception &ex) { throw std::runtime_error("Failed to open hdf5 file: " + std::string(ex.what())); }
-                break;
+    inline h5pp::FilePermission convertFileAccessFlags(unsigned int H5F_ACC_FLAGS) {
+        h5pp::FilePermission permission = h5pp::FilePermission::RENAME;
+        if((H5F_ACC_FLAGS & (H5F_ACC_TRUNC | H5F_ACC_EXCL)) == (H5F_ACC_TRUNC | H5F_ACC_EXCL))
+            throw std::runtime_error("File access modes H5F_ACC_EXCL and H5F_ACC_TRUNC are mutually exclusive");
+        if((H5F_ACC_FLAGS & H5F_ACC_RDONLY) == H5F_ACC_RDONLY) permission = h5pp::FilePermission::READONLY;
+        if((H5F_ACC_FLAGS & H5F_ACC_RDWR) == H5F_ACC_RDWR) permission = h5pp::FilePermission::READWRITE;
+        if((H5F_ACC_FLAGS & H5F_ACC_EXCL) == H5F_ACC_EXCL) permission = h5pp::FilePermission::COLLISION_FAIL;
+        if((H5F_ACC_FLAGS & H5F_ACC_TRUNC) == H5F_ACC_TRUNC) permission = h5pp::FilePermission::REPLACE;
+        return permission;
+    }
+
+    inline unsigned int convertFileAccessFlags(h5pp::FilePermission permission) {
+        unsigned int H5F_ACC_MODE = H5F_ACC_RDONLY;
+        if(permission == h5pp::FilePermission::COLLISION_FAIL) H5F_ACC_MODE |= H5F_ACC_EXCL;
+        if(permission == h5pp::FilePermission::REPLACE) H5F_ACC_MODE |= H5F_ACC_TRUNC;
+        if(permission == h5pp::FilePermission::RENAME) H5F_ACC_MODE |= H5F_ACC_TRUNC;
+        if(permission == h5pp::FilePermission::READONLY) H5F_ACC_MODE |= H5F_ACC_RDONLY;
+        if(permission == h5pp::FilePermission::READWRITE) H5F_ACC_MODE |= H5F_ACC_RDWR;
+        return H5F_ACC_MODE;
+    }
+
+    inline fs::path createFile(const h5pp::fs::path &filePath_, const h5pp::FilePermission &permission, const PropertyLists &plists = PropertyLists()) {
+        fs::path filePath = fs::absolute(filePath_);
+        fs::path fileName = filePath_.filename();
+        if(fs::exists(filePath)) {
+            if(not fileIsValid(filePath)) h5pp::logger::log->debug("Pre-existing file may be corrupted [{}]", filePath.string());
+            if(permission == h5pp::FilePermission::READONLY) return filePath;
+            if(permission == h5pp::FilePermission::COLLISION_FAIL)
+                throw std::runtime_error("[COLLISION_FAIL]: Previous file exists with the same name [" + filePath.string() + "]");
+            if(permission == h5pp::FilePermission::RENAME) {
+                auto newFilePath = getAvailableFileName(filePath);
+                h5pp::logger::log->info("[RENAME]: Previous file exists. Choosing a new file name: [{}] --> [{}]", filePath.filename().string(), newFilePath.filename().string());
+                filePath = newFilePath;
+                fileName = filePath.filename();
             }
-            case CreateMode::TRUNCATE: {
-                h5pp::logger::log->debug("File mode [TRUNCATE]: Overwriting file if it exists: [{}]", filePath_result.string());
-                try {
-                    hid_t file = H5Fcreate(filePath_result.string().c_str(), H5F_ACC_TRUNC, plists.file_create, plists.file_access);
-                    if(file < 0) {
-                        H5Eprint(H5E_DEFAULT, stderr);
-                        throw std::runtime_error("Failed to create file: [" + filePath_result.string() + "]");
-                    }
-                    H5Fclose(file);
-                    filePath_result = fs::canonical(filePath_result);
-                } catch(std::exception &ex) { throw std::runtime_error("Failed to create hdf5 file: " + std::string(ex.what())); }
-                break;
+            if(permission == h5pp::FilePermission::READWRITE) return filePath;
+            if(permission == h5pp::FilePermission::BACKUP) {
+                auto backupPath = getBackupFileName(filePath);
+                h5pp::logger::log->info("[BACKUP]: Backing up existing file [{}] --> [{}]", filePath.filename().string(), backupPath.filename().string());
+                fs::rename(filePath, backupPath);
             }
-            case CreateMode::RENAME: {
-                try {
-                    h5pp::logger::log->debug("File mode [RENAME]: Finding new file name if previous file exists: [{}]", filePath_result.string());
-                    if(fileIsValid(filePath_result)) {
-                        filePath_result = getAvailableFileName(filePath_result);
-                        h5pp::logger::log->info("Previous file exists. Choosing new file name: [{}] ---> [{}]", fileName_result.string(), filePath_result.filename().string());
-                        fileName_result = filePath_result.filename();
-                        h5pp::logger::setLogger("h5pp|" + fileName_result.string());
-                    }
-                    hid_t file = H5Fcreate(filePath_result.string().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, plists.file_access);
-                    if(file < 0) {
-                        H5Eprint(H5E_DEFAULT, stderr);
-                        throw std::runtime_error("Failed to create file: [" + filePath_result.string() + "]");
-                    }
-                    H5Fclose(file);
-                    filePath_result = fs::canonical(filePath_result);
-                } catch(std::exception &ex) { throw std::runtime_error("Failed to create renamed hdf5 file : " + std::string(ex.what())); }
-                break;
-            }
-            default: {
-                h5pp::logger::log->error("File Mode not set. Choose  CreateMode::<OPEN|TRUNCATE|RENAME>");
-                throw std::runtime_error("File Mode not set. Choose  CreateMode::<OPEN|TRUNCATE|RENAME>");
-            }
+            if(permission == h5pp::FilePermission::REPLACE) {} // Do nothing
+        } else {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("[READONLY]: File does not exist [" + filePath.string() + "]");
+            if(permission == h5pp::FilePermission::COLLISION_FAIL) {} // Do nothing
+            if(permission == h5pp::FilePermission::RENAME) {}         // Do nothing
+            if(permission == h5pp::FilePermission::READWRITE) {}      // Do nothing;
+            if(permission == h5pp::FilePermission::BACKUP) {}         // Do nothing
+            if(permission == h5pp::FilePermission::REPLACE) {}        // Do nothing
+            try {
+                if(fs::create_directories(filePath.parent_path()))
+                    h5pp::logger::log->trace("Created directory: {}", filePath.parent_path().string());
+                else
+                    h5pp::logger::log->trace("Directory already exists: {}", filePath.parent_path().string());
+            } catch(std::exception &ex) { throw std::runtime_error("Failed to create directory: " + std::string(ex.what())); }
         }
 
-        return std::make_pair(filePath_result, fileName_result);
+        // One last sanity check
+        if(permission == h5pp::FilePermission::READONLY) throw std::logic_error("About to create/truncate a file even though READONLY was specified. This is a programming error!");
+
+        // Go ahead
+        hid_t file = H5Fcreate(filePath.string().c_str(), H5F_ACC_TRUNC, plists.file_create, plists.file_access);
+        if(file < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error("Failed to create file: [" + filePath.string() + "]");
+        }
+        H5Fclose(file);
+        return fs::canonical(filePath);
     }
 
     inline void createTable(const hid::h5f &file, const TableProperties &tableProps, const PropertyLists &plists = PropertyLists()) {
