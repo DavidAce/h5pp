@@ -5,7 +5,6 @@ project(h5pp VERSION 1.6.0
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         )
 
-# Set options for compilation
 option(BUILD_SHARED_LIBS "Builds shared libraries" OFF)
 option(H5PP_BUILD_EXAMPLES "Builds examples" OFF)
 option(H5PP_ENABLE_TESTS "Enable testing" OFF)
