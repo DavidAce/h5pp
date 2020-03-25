@@ -37,19 +37,20 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
 With bindings to languages such as Python, Julia, Matlab and many others,
 it is straightforward to export, import and analyze data in a collaborative setting.
 
-In C/C++ using HDF5 directly is not at all straightforward.
+In C/C++ using HDF5 directly is not straightforward.
 Beginners are met with a steep learning curve to the vast API of HDF5.
 There are many C/C++ libraries already that simplify the user experience, but as a matter of opinion,
-not as simple as what can be found in other languages, like [h5py](https://www.h5py.org/) for Python.
+things could be even simpler.
 
-The goal of `h5pp` is to bring this level of simplicity to C++:
+The goal of `h5pp` is make HDF5 simple to use in the following sense::
 *  Users should be able to read/write common C++ data-types in a single line of code.
 *  Users should not need prior knowledge of HDF5 for simple tasks.
 *  Seemingly simple tasks should stay simple, e.g., specifying storage layout or enabling compression.
-*  Advanced tasks should stay possible e.g., specifying chunk dimensions or MPI parallelism.
+*  Advanced tasks should stay possible e.g., specifying chunk dimensions, slabs or MPI parallelism.
 *  Logs and error messages should be meaningful to beginners.
 *  Installation should be just as simple.
  
+
 
 ## Features
 *  Header-only C++17 template library
@@ -96,21 +97,29 @@ Find more code examples in the [Wiki](https://github.com/DavidAce/h5pp/wiki).
 
 
 ### File permissions
-To define permissions use the settings `AccessMode::<mode>` and/or `CreateMode::<mode>` as arguments when initializing the file.
-The possible modes are
-*  `AccessMode::`
-    *  `READONLY`  Read permission to the file.
-    *  `READWRITE` **(default)** Read and write permission to the file.
-* `CreateMode::`
-    *  `OPEN` Open the file with the given name. Throws an error when file does not exist.
-    *  `RENAME` **(default)** File is created with an available file name. If `myFile.h5` already exists, `myFile-1.h5` is created instead. The appended integer is increased until an available name is found
-    *  `TRUNCATE` File is created with the given name and erases any pre-existing file. 
+`h5pp` offers more flags for file access permissions than HDF5. The new flags are primarily intended to
+prevent accidental loss of data, but also to clarify intent and avoid mutually exclusive options. 
 
-The defaults are chosen to avoid loss of data.
+The flags are listed in the order of increasing "danger" that they pose to previously existing files.
+
+
+| Flag | File exists | No file exists | Comment |
+| ---- | ---- | ---- | ---- |
+| `READONLY`                | Open with read-only permission       | Throw error     | Never writes to disk, fails if the file is not found |
+| `COLLISION_FAIL`          | Throw error                          | Create new file | Never deletes existing files and fails if it already exists |
+| `RENAME` **(default)**    | Rename this file and create          | Create new file | Never deletes existing files, but invents a new filename to avoid collision by appending "-#" (#=1,2,3...) to the stem of the filename |
+| `READWRITE`               | Open with read-write permission      | Create new file | Never deletes existing files, but is allowed to open/modify |
+| `BACKUP`                  | Rename existing file and create      | Create new file | Avoids collision by backing up the existing file, appending ".bak_#" (#=1,2,3...) to the filename |
+| `REPLACE`                 | Truncate (overwrite)                 | Create new file | Deletes the existing file and create a new one in place |
+
+
+* When a new file is created, the intermediate directories are always created automatically.
+* When a new file is created, `READWRITE` permission to it is implied.
+
 To give a concrete example, the syntax works as follows
 
 ```c++
-    h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::TRUNCATE);
+    h5pp::File file("myDir/someFile.h5", h5pp::FilePermission::REPLACE);
 ```
 
 ### Storage Layout
@@ -161,7 +170,7 @@ Set the level when constructing a h5pp::File or by calling the function `.setLog
 ```c++
     int logLevel = 0; // Highest verbosity
     // This way...
-    h5pp::File file("myDir/someFile.h5", h5pp::AccessMode::READWRITE, h5pp::CreateMode::OPEN, logLevel); 
+    h5pp::File file("myDir/someFile.h5", h5pp::create::READWRITE, h5pp::CreateMode::OPEN, logLevel); 
     // or this way
     file.setLogLevel(logLevel);                                                                       
 ```
@@ -201,9 +210,9 @@ There are currently 4 ways to obtain `h5pp`:
 * [**HDF5**](https://support.hdfgroup.org/HDF5/)  library, version >= 1.8
 
 ## Optional dependencies:
-* [**Eigen**](http://eigen.tuxfamily.org). Write Eigen matrices and tensors directly. Tested with version >= 3.3.4
-* [**spdlog**](https://github.com/gabime/spdlog). Enables logging for debug purposes. Tested with version >= 1.3.1
-
+* [**Eigen**](http://eigen.tuxfamily.org): Write Eigen matrices and tensors directly. Tested with version >= 3.3.4
+* [**spdlog**](https://github.com/gabime/spdlog): Enables logging for debug purposes. Tested with version >= 1.3.1
+* [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_DOWNLOAD_METHOD=<native/conan>.`
 
 ## Build and install
 
@@ -233,7 +242,7 @@ If not set, `CMAKE_INSTALL_PREFIX` defaults to `${CMAKE_BINARY_DIR}/install`, wh
 
 
 #### Opt-in automatic dependency installation
-The CMake flag `DOWNLOAD_METHOD` controls the automated behavior for finding or installing dependencies. It can take one of three valid strings:
+The CMake flag `H5PP_DOWNLOAD_METHOD` controls the automated behavior for finding or installing dependencies. It can take one of three valid strings:
 * `none` (default) all handling of dependencies is disabled and linking is left to the user.
 * `find-only` only attempt to find dependencies already installed (no downloads).
 * `conan` to install dependencies using the [conan package manager](https://conan.io/). This method is guided by `conanfile.txt` found in this project's root directory.
@@ -249,39 +258,43 @@ The CMake flag `DOWNLOAD_METHOD` controls the automated behavior for finding or 
 #### CMake build options
 
 The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
-* `-DCMAKE_INSTALL_PREFIX:PATH=<install-dir>` to specify install directory (default: `${CMAKE_BINARY_DIR}/install`).
-* `-DBUILD_SHARED_LIBS:BOOL=<ON/OFF>` to link dependencies with static or shared libraries (default: `OFF`)
-* `-DCMAKE_BUILD_TYPE=Release/Debug` to specify build type of tests and examples (default: `Release`)
-* `-DH5PP_ENABLE_TESTS:BOOL=<ON/OFF>` to run ctests after build (recommended!) (default: `OFF`).
-* `-DH5PP_BUILD_EXAMPLES:BOOL=<ON/OFF>` to build example programs (default: `OFF`)
-* `-DH5PP_DOWNLOAD_METHOD=<none/find-only/conan/native>` to select download method. (default: `none`).
-* `-DH5PP_PRINT_INFO:BOOL=<ON/OFF>` to print extra CMake info about the host and generated targets during configure (default: `OFF`).
-* `-DH5PP_IS_SUBPROJECT:BOOL<ON/OFF>` Use h5pp with add_subdirectory() (default: `OFF`).
-* `-DH5PP_ENABLE_EIGEN3:BOOL=<ON/OFF>` Enables Eigen3 linear algebra library (DEFAULT: `OFF`).
-* `-DH5PP_ENABLE_SPDLOG:BOOL=<ON/OFF>` Enables Spdlog for logging h5pp internal info to stdout (DEFAULT: `OFF`).
-* `-DH5PP_APPEND_LIBSUFFIX:BOOL=<ON/OFF>` Append a directory with the library name to install directory, i.e. `CMAKE_INSTALL_PREFIX/<libname>/`. This
-    is useful when you want to install `h5pp`, `hdf5`, `Eigen3` and `spdlog` in separate folders (default: `OFF`).
-* `-DH5PP_PREFER_CONDA_LIBS:BOOL=<ON/OFF>` to prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda (default: `OFF`).
-    Note that this has no effect when `DOWNLOAD_METHOD=conan`.
+
+| Var | Default | Description |
+| ---- | ---- | ---- |
+| `CMAKE_INSTALL_PREFIX`            | `${CMAKE_BINARY_DIR}/install` | Specify `h5pp` install directory  |
+| `BUILD_SHARED_LIBS`               | `OFF`      | Link dependencies with static or shared libraries    |
+| `H5PP_ENABLE_TESTS`               | `OFF`      | Build tests (recommended!) |
+| `H5PP_BUILD_EXAMPLES`             | `OFF`      | Build example programs |
+| `H5PP_DOWNLOAD_METHOD`            | `none`     | Select download method, select `none`, `find-only`, `native` or `conan` |
+| `H5PP_PRINT_INFO`                 | `OFF`      | Use h5pp with add_subdirectory() |
+| `H5PP_IS_SUBPROJECT`              | `OFF`      | Print extra CMake info about the host and generated targets during configure |
+| `H5PP_ENABLE_EIGEN3`              | `OFF`      | Enables Eigen3 linear algebra library support |
+| `H5PP_ENABLE_SPDLOG`              | `OFF`      | Enables Spdlog support for logging `h5pp` internal info to stdout |
+| `H5PP_APPEND_LIBSUFFIX`           | `OFF`      | Append a directory with the library name to install directory, i.e. `CMAKE_INSTALL_PREFIX/<libname>/`. This is useful when you want `native` build to install `h5pp`, `hdf5`, `Eigen3` and `spdlog` into separate folders |
+| `H5PP_PREFER_CONDA_LIBS`          | `OFF`      | Prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda. No effect when `H5PP_DOWNLOAD_METHOD=conan`  |
+| `EIGEN3_NO_CMAKE_PACKAGE_REGISTRY`| `OFF`      | Sets `NO_CMAKE_PACKAGE_REGISTRY` when CMake finds Eigen3 |
+| `EIGEN3_NO_DEFAULT_PATH`          | `OFF`      | Sets `NO_DEFAULT_PATH` when CMake finds Eigen3 |
+| `EIGEN3_NO_CONFIG`                | `OFF`      | Sets `NO_CONFIG` when CMake finds Eigen3 |
+| `EIGEN3_CONFIG_ONLY`              | `OFF`      | Sets `CONFIG_ONLY` when CMake finds Eigen3 |
+| `SPDLOG_NO_CMAKE_PACKAGE_REGISTRY`| `OFF`      | Sets `NO_CMAKE_PACKAGE_REGISTRY` when CMake finds Spdlog |
+| `SPDLOG_NO_DEFAULT_PATH`          | `OFF`      | Sets `NO_DEFAULT_PATH` when CMake finds Spdlog |
+| `SPDLOG_NO_CONFIG`                | `OFF`      | Sets `NO_CONFIG` when CMake finds Spdlog |
+| `SPDLOG_CONFIG_ONLY`              | `OFF`      | Sets `CONFIG_ONLY` when CMake finds Spdlog |
 
 
 The following variables can be set to help guide CMake's `find_package` to your pre-installed software (no defaults):
 
-* `-DEigen3_DIR:PATH=<path to Eigen3Config.cmake>` 
-* `-DEigen3_ROOT_DIR:PATH=<path to Eigen3 install-dir>` 
-* `-DEIGEN3_INCLUDE_DIR:PATH=<path to Eigen3 include-dir>`
-* `-DEIGEN3_NO_CMAKE_PACKAGE_REGISTRY:BOOL=<ON/OFF>`
-* `-DEIGEN3_NO_DEFAULT_PATH:BOOL=<ON/OFF>`
-* `-DEIGEN3_NO_CONFIG:BOOL=<ON/OFF>`
-* `-DEIGEN3_CONFIG_ONLY:BOOL=<ON/OFF>`
-* `-Dspdlog_DIR:PATH=<path to spdlogConfig.cmake>` 
-* `-DSPDLOG_NO_CMAKE_PACKAGE_REGISTRY:BOOL=<ON/OFF>`
-* `-DSPDLOG_NO_DEFAULT_PATH:BOOL=<ON/OFF>`
-* `-DSPDLOG_NO_CONFIG:BOOL=<ON/OFF>`
-* `-DSPDLOG_CONFIG_ONLY:BOOL=<ON/OFF>`
-* `-DHDF5_DIR:PATH=<path to HDF5Config.cmake>` 
-* `-DHDF5_ROOT:PATH=<path to HDF5 install-dir>` 
-* `-DCONAN_PREFIX:PATH=<path to conan>`
+| Var | Path to |
+| ---- | ---- |
+| `Eigen3_DIR`          | Eigen3Config.cmake  |
+| `Eigen3_ROOT_DIR`     | Eigen3 install directory    |
+| `EIGEN3_INCLUDE_DIR`  | Eigen3 include directory    |
+| `spdlog_DIR`          | spdlogConfig.cmake    |
+| `HDF5_ROOT`           | HDF5 install directory |
+| `HDF5_DIR`            | HDF5Config.cmake |
+| `CONAN_PREFIX`        | conan install directory |
+
+
 
 ## Linking
 
@@ -303,8 +316,8 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 
 *  `h5pp::h5pp` is the main target including "everything" and should normally be the only target that you need -- headers,flags and (if enabled) the found/downloaded dependencies.
 *  `h5pp::headers` links the `h5pp` headers only.
-*  `h5pp::deps` has targets to link all the dependencies that were found/downloaded when `h5pp` was built. If you used `DOWNLOAD_METHOD=native` these targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, which can of course be used independently.
-*   If you used `DOWNLOAD_METHOD=conan` these targets are `CONAN_PKG::Eigen3`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. If you used `DOWNLOAD_METHOD=none` this target is empty.
+*  `h5pp::deps` has targets to link all the dependencies that were found/downloaded when `h5pp` was built. If you used `H5PP_DOWNLOAD_METHOD=native` these targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, which can of course be used independently.
+*   If you used `H5PP_DOWNLOAD_METHOD=conan` these targets are `CONAN_PKG::Eigen3`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. If you used `H5PP_DOWNLOAD_METHOD=none` this target is empty.
 *  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`.
 
 
@@ -319,7 +332,7 @@ You could also use CMake's `find_package(...)` mechanism. A minimal `CMakeLists.
     add_executable(myExecutable main.cpp)
     target_include_directories(myExecutable PRIVATE <path-to-h5pp-headers>)
     # Setup h5pp
-    target_compile_options(myExecutable PRIVATE cxx_std_17 )
+    target_compile_features(myExecutable PRIVATE cxx_std_17)
     target_link_libraries(myExecutable PRIVATE  stdc++fs)
     
     # Possibly use find_package() here
@@ -334,14 +347,29 @@ You could also use CMake's `find_package(...)` mechanism. A minimal `CMakeLists.
 ```
 
 The difficult part is linking to HDF5 libraries and its dependencies.
-When installing `h5pp` this is handled with a custom module for finding HDF5, defined in `cmake/FindHDF5.cmake`. This finds HDF5 installed
-somewhere on your system (e.g. installed via `conda`,`apt`, `Easybuild`,etc) and defines a CMake target `hdf5::hdf5` with everything you need to link correctly.
-You can use it too! Add the path pointing to `FindHDF5.cmake` to the variable `CMAKE_MODULE_PATH` from within your own project, e.g.:
+#### Use the custom FindHDF5.cmake bundled with `h5pp`
+When installing `h5pp`, finding HDF5 and setting up the CMake target `hdf5::hdf5` for linking is handled by a custom module for finding HDF5, defined in `cmake/FindHDF5.cmake`. 
+This module wraps the default `FindHDF5.cmake` which comes with CMake and uses the same call signature, but fixes some annoyances with naming convensions in different versions of CMake and HDF5 executables.
+It reads hints passed through CMake flags to find HDF5 somewhere on your system (e.g. installed via `conda`,`apt`, `brew`, `Easybuild`,etc) and defines a CMake target `hdf5::hdf5` with everything you need to link correctly.
+Most importantly, it avoids injecting shared versions of libraries (dl, zlib, szip, aec) during static builds. 
+You can use the custom module too! Add the path pointing to `FindHDF5.cmake` to the variable `CMAKE_MODULE_PATH` from within your own project, e.g.:
 
 ```cmake
-    list(APPEND CMAKE_MODULE_PATH path/to/bundled/FindHDF5.cmake)
+    list(APPEND CMAKE_MODULE_PATH path/to/h5pp/cmake/FindHDF5.cmake)
     find_package(HDF5 1.10 COMPONENTS C HL REQUIRED)
     if(TARGET hdf5::hdf5)
             target_link_libraries(myExecutable PRIVATE hdf5::hdf5)
     endif()
 ```
+
+These are variables that can be used to guide the custom module:
+
+| Var | Where | Description |
+| ---- | ---- | ---- |
+| `HDF5_ROOT`            | CMake/ENV | Path to HDF5 root install directory    |
+| `CONAN_HDF5_ROOT`      | CMake     | Path to HDF5 root installed through Conan    |
+| `H5PP_DIRECTORY_HINTS` | CMake     | List of directories where `h5pp` should search for dependencies |
+| `HDF5_FIND_VERBOSE`    | CMake     | Prints more information about the search for HDF5. See also `HDF5_FIND_DEBUG` in the original module |
+| `EBROOTHDF5`           | ENV       | Variable defined by Easybuild with `module load HDF5` |
+
+
