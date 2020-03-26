@@ -253,7 +253,7 @@ install:
       if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
         pip install conan
         export PATH=/c/Program\ Files/Conan/conan:$PATH
-      elif [[ "$TRAVIS_OS_NAME" =~ linux|osx ]]; then
+      elif [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         pip install --user conan --upgrade
       fi
     fi
