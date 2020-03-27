@@ -170,7 +170,7 @@ Set the level when constructing a h5pp::File or by calling the function `.setLog
 ```c++
     int logLevel = 0; // Highest verbosity
     // This way...
-    h5pp::File file("myDir/someFile.h5", h5pp::create::READWRITE, h5pp::CreateMode::OPEN, logLevel); 
+    h5pp::File file("myDir/someFile.h5", h5pp::FilePermission::REPLACE, logLevel); 
     // or this way
     file.setLogLevel(logLevel);                                                                       
 ```
@@ -244,15 +244,14 @@ If not set, `CMAKE_INSTALL_PREFIX` defaults to `${CMAKE_BINARY_DIR}/install`, wh
 #### Opt-in automatic dependency installation
 The CMake flag `H5PP_DOWNLOAD_METHOD` controls the automated behavior for finding or installing dependencies. It can take one of three valid strings:
 * `none` (default) all handling of dependencies is disabled and linking is left to the user.
-* `find-only` only attempt to find dependencies already installed (no downloads).
+* `find-only` will only try to find dependencies already installed (no downloads). There are several variables you can pass to CMake to guide `find_package` calls, see [CMake build options](#cmake-build-options) below. 
 * `conan` to install dependencies using the [conan package manager](https://conan.io/). This method is guided by `conanfile.txt` found in this project's root directory.
-    This method requires conan to be installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
+  This method requires conan to be installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
   * Add conan install (or bin) directory to the environment variable `PATH`.
   * Export conan install (or bin) directory in the environment variable `CONAN_PREFIX`, i.e. from command line: `export CONAN_PREFIX=<path-to-conan>` 
   * Give the variable `CONAN_PREFIX` directly to CMake, i.e. from command line: `cmake -DCONAN_PREFIX:PATH=<path-to-conan> ...`
-* `native` to find dependencies pre-installed somewhere on your system using `find_package`. If finding fails, dependencies are downloaded and built from source during CMake configure, 
-    and installed under `CMAKE_INSTALL_PREFIX`. There are several variables you can pass to CMake to guide `find_package` calls, see [build options](#cmake-build-options). 
-    By default it searches standard system install directories as well as typical anaconda3 or miniconda directories.
+* `native` Begins just like `find-only`. If the library isn't found it will be downloaded and built from source using native CMake commands during configure, 
+   and installed under `CMAKE_INSTALL_PREFIX`. 
 
 
 #### CMake build options
@@ -316,9 +315,12 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 
 *  `h5pp::h5pp` is the main target including "everything" and should normally be the only target that you need -- headers,flags and (if enabled) the found/downloaded dependencies.
 *  `h5pp::headers` links the `h5pp` headers only.
-*  `h5pp::deps` has targets to link all the dependencies that were found/downloaded when `h5pp` was built. If you used `H5PP_DOWNLOAD_METHOD=native` these targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, which can of course be used independently.
-*   If you used `H5PP_DOWNLOAD_METHOD=conan` these targets are `CONAN_PKG::Eigen3`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. If you used `H5PP_DOWNLOAD_METHOD=none` this target is empty.
-*  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`.
+*  `h5pp::deps` collects library targets to link all the dependencies that were found/downloaded when `h5pp` was built. These can of course be used independently.
+    * If `H5PP_DOWNLOAD_METHOD=native` the targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, 
+    * If `H5PP_DOWNLOAD_METHOD=conan` the targets are `CONAN_PKG::Eigen3`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. 
+    * If `H5PP_DOWNLOAD_METHOD=none` then `h5pp::deps` is empty.
+*  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`. 
+    On `MSVC` it sets `/permissive-` to enable logical `and`/`or` in C++. 
 
 
 ### Link manually (not as easy)
@@ -373,3 +375,21 @@ These are variables that can be used to guide the custom module:
 | `EBROOTHDF5`           | ENV       | Variable defined by Easybuild with `module load HDF5` |
 
 
+# To-do
+In no particular order
+
+* Expand testing for more edge-cases in
+    * filesystem permissions
+    * user-defined types
+    * tables
+* Many more examples
+* Support for packed user-defined types. Read more: [H5TPack](https://support.hdfgroup.org/HDF5/doc/RM/RM_H5T.html#Datatype-Pack)
+* Support for reading portions (or "slabs") of datasets. (This is currently only supported for tables).
+* Better automatic choice of chunking dimensions. The current naive heuristic may be suboptimal.
+* More diverse CI-testing for Windows/OSX platforms.
+* Support row-major <-> col-major transformation for types other than Eigen3 matrices and tensors. For instance,
+  when raw pointers are passed together with dimension initializer list {x,y,z..}. (Although, this can be done by wrapping 
+  the data in an Eigen Map object).
+* True support for parallel read/write with MPI
+  
+  
