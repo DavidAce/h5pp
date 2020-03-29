@@ -45,10 +45,10 @@ things could be even simpler.
 The goal of `h5pp` is make HDF5 simple to use in the following sense::
 *  Users should be able to read/write common C++ data-types in a single line of code.
 *  Users should not need prior knowledge of HDF5 for simple tasks.
-*  Seemingly simple tasks should stay simple, e.g., specifying storage layout or enabling compression.
-*  Advanced tasks should stay possible e.g., specifying chunk dimensions, slabs or MPI parallelism.
+*  Sensible defaults should let simple tasks stay simple, e.g., specifying storage layout, chunk dimensions or compression.
+*  Advanced tasks should stay possible, e.g. MPI parallelism.
 *  Logs and error messages should be meaningful to beginners.
-*  Installation should be just as simple.
+*  Installation should be simple and scalable with opt-in automation.
  
 
 
@@ -110,7 +110,7 @@ The flags are listed in the order of increasing "danger" that they pose to previ
 | `RENAME` **(default)**    | Create renamed file                  | Create new file | Never deletes existing files. Invents a new filename to avoid collision by appending "-#" (#=1,2,3...) to the stem of the filename |
 | `READWRITE`               | Open with read-write permission      | Create new file | Never deletes existing files, but is allowed to open/modify |
 | `BACKUP`                  | Rename existing file and create new  | Create new file | Avoids collision by backing up the existing file, appending ".bak_#" (#=1,2,3...) to the filename |
-| `REPLACE`                 | Truncate (overwrite)                 | Create new file | Deletes the existing file and create a new one in place |
+| `REPLACE`                 | Truncate (overwrite)                 | Create new file | Deletes the existing file and creates a new one in place |
 
 
 * When a new file is created, the intermediate directories are always created automatically.
@@ -274,11 +274,11 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 | `EIGEN3_NO_CMAKE_PACKAGE_REGISTRY`| `OFF`      | Sets `NO_CMAKE_PACKAGE_REGISTRY` when CMake finds Eigen3 |
 | `EIGEN3_NO_DEFAULT_PATH`          | `OFF`      | Sets `NO_DEFAULT_PATH` when CMake finds Eigen3 |
 | `EIGEN3_NO_CONFIG`                | `OFF`      | Sets `NO_CONFIG` when CMake finds Eigen3 |
-| `EIGEN3_CONFIG_ONLY`              | `OFF`      | Sets `CONFIG_ONLY` when CMake finds Eigen3 |
+| `EIGEN3_CONFIG_ONLY`              | `OFF`      | Sets `CONFIG_ONLY` when CMake finds Eigen3 (i.e. ignore find_package modules)  |
 | `SPDLOG_NO_CMAKE_PACKAGE_REGISTRY`| `OFF`      | Sets `NO_CMAKE_PACKAGE_REGISTRY` when CMake finds Spdlog |
 | `SPDLOG_NO_DEFAULT_PATH`          | `OFF`      | Sets `NO_DEFAULT_PATH` when CMake finds Spdlog |
 | `SPDLOG_NO_CONFIG`                | `OFF`      | Sets `NO_CONFIG` when CMake finds Spdlog |
-| `SPDLOG_CONFIG_ONLY`              | `OFF`      | Sets `CONFIG_ONLY` when CMake finds Spdlog |
+| `SPDLOG_CONFIG_ONLY`              | `OFF`      | Sets `CONFIG_ONLY` when CMake finds Spdlog (i.e. ignore find_package modules) |
 
 
 The following variables can be set to help guide CMake's `find_package` to your pre-installed software (no defaults):
@@ -378,18 +378,20 @@ These are variables that can be used to guide the custom module:
 # To-do
 In no particular order
 
+* Expand documentation. Perhaps a doxygen webpage
+* Many more examples
 * Expand testing for more edge-cases in
     * filesystem permissions
     * user-defined types
     * tables
-* Many more examples
-* Support for packed user-defined types. Read more: [H5TPack](https://support.hdfgroup.org/HDF5/doc/RM/RM_H5T.html#Datatype-Pack)
-* Support for reading portions (or "slabs") of datasets. (This is currently only supported for tables).
+* Expose more of the C-API:
+    * Support for packed user-defined types. Read more: [H5TPack](https://support.hdfgroup.org/HDF5/doc/RM/RM_H5T.html#Datatype-Pack)
+    * Support for reading portions (or "slabs") of datasets. (This is currently only supported for tables).
+    * True support for parallel read/write with MPI
 * Better automatic choice of chunking dimensions. The current naive heuristic may be suboptimal.
 * More diverse CI-testing for Windows/OSX platforms.
 * Support row-major <-> col-major transformation for types other than Eigen3 matrices and tensors. For instance,
   when raw pointers are passed together with dimension initializer list {x,y,z..}. (Although, this can be done by wrapping 
   the data in an Eigen Map object).
-* True support for parallel read/write with MPI
   
   
