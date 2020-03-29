@@ -42,7 +42,7 @@ Beginners are met with a steep learning curve to the vast API of HDF5.
 There are many C/C++ libraries already that simplify the user experience, but as a matter of opinion,
 things could be even simpler.
 
-The goal of `h5pp` is to make HDF5 simple to use in the following sense::
+The goal of `h5pp` is to make HDF5 simple to use in the following sense:
 *  Users should be able to read/write common C++ data-types in a single line of code.
 *  Users should not need prior knowledge of HDF5 for simple tasks.
 *  Sensible defaults should let simple tasks stay simple, e.g., specifying storage layout, chunk dimensions or compression.
