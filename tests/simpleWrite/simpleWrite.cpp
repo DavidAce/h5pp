@@ -76,7 +76,7 @@ int main() {
 
     // Test compressed writes
     if(h5pp::hdf5::checkIfCompressionIsAvailable()) {
-        file.setDefaultCompressionLevel(9);
+        file.setCompressionLevel(9);
         Eigen::Tensor<double, 4> bigTensor(40, 180, 40, 5);
         bigTensor.setConstant(1.0);
         file.writeDataset(bigTensor, "compressedWriteGroup/bigTensor");
