@@ -1,6 +1,5 @@
 #pragma once
 #include "h5ppEigen.h"
-#include "h5ppLogger.h"
 #include "h5ppTypeCompound.h"
 #include <type_traits>
 
@@ -120,6 +119,20 @@ namespace h5pp::type::sfinae {
     struct is_std_array<std::array<T, N>> : public std::true_type {};
     template<typename T>
     inline constexpr bool is_std_array_v = is_std_array<T>::value;
+
+    template<typename T, typename = std::void_t<>>
+    struct is_streamable : std::false_type {};
+    template<typename T>
+    struct is_streamable<T, std::void_t<decltype(std::declval<std::stringstream>() << std::declval<T>())>> : public std::true_type {};
+    template<typename T>
+    inline constexpr bool is_streamable_v = is_streamable<T>::value;
+
+    template<typename T, typename = std::void_t<>>
+    struct is_iterable : public std::false_type {};
+    template<typename T>
+    struct is_iterable<T, std::void_t<decltype(std::declval<T>().begin()), decltype(std::declval<T>().end()), typename T::value_type>> : public std::true_type {};
+    template<typename T>
+    inline constexpr bool is_iterable_v = is_iterable<T>::value;
 
     template<typename T>
     struct is_text {
