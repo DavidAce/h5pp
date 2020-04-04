@@ -68,6 +68,8 @@ The goal of `h5pp` is make HDF5 simple to use in the following sense::
     *  Support for creating HDF5 tables from user-defined compound HDF5 types.  
 *  Modern CMake build, install and linking using targets.
 *  (Opt-in) Automatically find or download dependencies using either [conan package manager](https://conan.io/) or native "CMake-only" methods.
+*  Multi-platform: Linux, Windows, OSX. (Developed under Linux)
+*  Installation with package managers: conan, conda (and apt using .deb installation file)
 
 
 ## Usage
@@ -143,8 +145,8 @@ Extendable (or chunked) datasets can also be compressed if HDF5 was built with z
 functions to set or check the compression level:
 
 ```c++
-    file.setDefaultCompressionLevel(9);            // 0 to 9: 0 to disable compression, 9 for maximum compression.
-    file.getDefaultCompressionLevel();             // Gets the current compression level
+    file.setCompressionLevel(9);            // 0 to 9: 0 to disable compression, 9 for maximum compression.
+    file.getCompressionLevel();             // Gets the current compression level
     h5pp::checkIfCompressionIsAvailable();         // True if your installation of HDF5 has zlib support 
 ```
 
