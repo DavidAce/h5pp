@@ -1,0 +1,60 @@
+
+#include <h5pp/h5pp.h>
+#include <iostream>
+
+// In this example we want to treat a whole struct as a single writeable unit.
+// To achieve this, the memory layout of the struct has to be registered with HDF5 in advance.
+
+// First define a trivial "POD" struct.
+struct Particle {
+    double x = 0, y = 0, z = 0, t = 0;
+    int    id = 0;
+    void   dummy_function(int) {} // Functions are OK
+    // Se example 6 for the case of static-size array members
+};
+
+void print_particle(const Particle &p) { std::cout << " \t x: " << p.x << " \t y: " << p.y << " \t z: " << p.z << " \t t: " << p.t << " \t id: " << p.id << std::endl; }
+
+int main() {
+    h5pp::File file("exampledir/example5.h5", h5pp::FilePermission::REPLACE,0);
+
+    // Register the compound type
+    h5pp::hid::h5t H5_PARTICLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Particle));
+    H5Tinsert(H5_PARTICLE_TYPE, "x", HOFFSET(Particle, x), H5T_NATIVE_DOUBLE);
+    H5Tinsert(H5_PARTICLE_TYPE, "y", HOFFSET(Particle, y), H5T_NATIVE_DOUBLE);
+    H5Tinsert(H5_PARTICLE_TYPE, "z", HOFFSET(Particle, z), H5T_NATIVE_DOUBLE);
+    H5Tinsert(H5_PARTICLE_TYPE, "t", HOFFSET(Particle, t), H5T_NATIVE_DOUBLE);
+    H5Tinsert(H5_PARTICLE_TYPE, "id", HOFFSET(Particle, id), H5T_NATIVE_INT);
+
+    // Now we can write single particles or even containers with particles.
+
+    // Write a single particle
+    Particle particle;
+    file.writeDataset(particle, "particle", H5_PARTICLE_TYPE);
+
+    // Or write a container full of them! Let's write 10 particles into a vector.
+    std::vector<Particle> particles(10);
+    int                   id = 1;
+    for(auto &p : particles) {
+        p.x  = id + 100;
+        p.y  = id + 200;
+        p.z  = id + 300;
+        p.t  = id + 400;
+        p.id = id++;
+    }
+
+    // Write them all at once
+    file.writeDataset(particles, "particles", H5_PARTICLE_TYPE);
+
+    // Now let's read them back
+
+    // Read a single particle read some specific entries
+    auto particle_read = file.readDataset<Particle>("particle");
+    print_particle(particle_read);
+
+    // ...or read all 10 particles into a new vector
+    auto particles_read = file.readDataset<std::vector<Particle>>("particles");
+    for(auto &p : particles_read) print_particle(p);
+
+    return 0;
+}
