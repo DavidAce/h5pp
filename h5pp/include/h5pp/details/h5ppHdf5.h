@@ -1,5 +1,5 @@
 #pragma once
-#include "h5ppDatasetProperties.h"
+#include "h5ppDsetProperties.h"
 #include "h5ppEigen.h"
 #include "h5ppFilesystem.h"
 #include "h5ppLogger.h"
@@ -133,7 +133,7 @@ namespace h5pp::hdf5 {
             hid::h5t nativetype     = H5Tget_native_type(h5type, H5T_DIR_ASCEND);
             dsetTypeSize            = h5pp::hdf5::getBytesPerElem(nativetype);
             if(dataTypeSize != dsetTypeSize)
-                throw std::runtime_error("Type size mismatch: dataset type " + std::to_string(dsetTypeSize) + " bytes | given type " + std::to_string(dataTypeSize) + " bytes");
+                throw std::runtime_error(h5pp::format("Type size mismatch: dataset type is [{}] bytes | Type of given data is [{}] bytes", dsetTypeSize, dataTypeSize));
             else
                 h5pp::logger::log->warn("Detected packed HDF5 type: packed size {} bytes | native size {} bytes. This is not supported by h5pp yet!", packedTypesize, dataTypeSize);
         }
@@ -150,8 +150,8 @@ namespace h5pp::hdf5 {
             hid::h5t nativetype = H5Tget_native_type(datatype, H5T_DIR_ASCEND);
             size_t   packedsize = dsetsize;
             dsetsize            = h5pp::hdf5::getBytesTotal(space, nativetype);
-            if(datasize != dsetsize)
-                h5pp::logger::log->error("Storage size mismatch: hdf5 {} bytes | given {} bytes", dsetsize, datasize);
+            if(datasize != dsetsize) throw std::runtime_error(h5pp::format("Storage size mismatch. Existing dataset is [{}] bytes | New data is [{}] bytes", dsetsize, datasize));
+            //                h5pp::logger::log->error("Storage size mismatch: hdf5 {} bytes | given {} bytes", dsetsize, datasize);
             else
                 h5pp::logger::log->warn(
                     "Detected packed HDF5 type: packed total size {} bytes | native total size {} bytes. This is not supported by h5pp yet!", packedsize, datasize);
@@ -171,7 +171,7 @@ namespace h5pp::hdf5 {
             hid::h5t nativetype = H5Tget_native_type(datatype, H5T_DIR_ASCEND);
             dsetsize            = h5pp::hdf5::getBytesTotal(space, nativetype);
             if(datasize != dsetsize)
-                throw std::runtime_error("Storage size mismatch: dataset " + std::to_string(dsetsize) + " bytes | given " + std::to_string(datasize) + " bytes");
+                throw std::runtime_error(h5pp::format("Storage size mismatch. Existing dataset is [{}] bytes | New data is [{}] bytes", dsetsize, datasize));
             else
                 h5pp::logger::log->warn(
                     "Detected packed HDF5 type: packed total size {} bytes | native total size {} bytes. This is not supported by h5pp yet!", packedsize, datasize);
@@ -188,7 +188,7 @@ namespace h5pp::hdf5 {
                 herr_t retval = H5Tset_size(datatype, size);
                 if(retval < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to set size: " + std::to_string(size));
+                    throw std::runtime_error(h5pp::format("Failed to set size [{}]", size));
                 }
                 // The following makes sure there is a single "\0" at the end of the string when written to file.
                 // Note however that size here is supposed to be the number of characters NOT including null terminator.
@@ -213,7 +213,7 @@ namespace h5pp::hdf5 {
             }
             if(exists < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to check if link exists: [" + std::string(linkName) + "]");
+                throw std::runtime_error(h5pp::format("Failed to check if link exists: [{}]", linkName));
             }
         }
         h5pp::logger::log->trace("Checking if link exists: [{}] ... true", linkName);
@@ -231,7 +231,7 @@ namespace h5pp::hdf5 {
             }
             if(exists < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to check if dataset exists: [" + std::string(dsetName) + "]");
+                throw std::runtime_error(h5pp::format("Failed to check if dataset exists: [{}]", dsetName));
             }
         }
         hid::h5o   object     = H5Oopen(file, std::string(dsetName).c_str(), dset_access);
@@ -252,12 +252,12 @@ namespace h5pp::hdf5 {
             hid::h5o linkObject = H5Oopen(file, std::string(objectName).c_str(), object_access);
             if(linkObject < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to open existing object: [" + std::string(objectName) + "]");
+                throw std::runtime_error(h5pp::format("Failed to open existing object: [{}]", objectName));
             } else {
                 return linkObject;
             }
         } else {
-            throw std::runtime_error("Object does not exist: [" + std::string(objectName) + "]");
+            throw std::runtime_error(h5pp::format("Object does not exist: [{}]", objectName));
         }
     }
 
@@ -272,12 +272,12 @@ namespace h5pp::hdf5 {
 
             if(object < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to open existing link: [" + std::string(linkName) + "]");
+                throw std::runtime_error(h5pp::format("Failed to open existing link: [{}]", linkName));
             } else {
                 return object;
             }
         } else {
-            throw std::runtime_error("Link does not exist: [" + std::string(linkName) + "]");
+            throw std::runtime_error(h5pp::format("Link does not exist: [{}]", linkName));
         }
     }
 
@@ -458,8 +458,7 @@ namespace h5pp::hdf5 {
         name.resize(buf_size + 1);
         H5Iget_name(type, name.data(), buf_size + 1);
         H5Eprint(H5E_DEFAULT, stderr);
-        h5pp::logger::log->warn("Unable to match given hdf5 type to native type: " + name);
-        throw std::runtime_error("Unable to match given hdf5 type to native type: " + name);
+        throw std::runtime_error(h5pp::format("Unable to match given hdf5 type to native type [{}]", name));
         return typeid(std::nullopt);
     }
 
@@ -513,7 +512,7 @@ namespace h5pp::hdf5 {
             hid::h5a attribute = H5Aopen_name(link, std::string(attrName).c_str());
             return getAttributeTypeInfo(attribute);
         } else {
-            throw std::runtime_error("Attribute [" + std::string(attrName) + "] does not exist in link [" + std::string(linkName) + "]");
+            throw std::runtime_error(h5pp::format("Attribute [{}] does not exist in link [{}]", attrName, linkName));
         }
     }
 
@@ -591,19 +590,19 @@ namespace h5pp::hdf5 {
             herr_t retval = H5Lcreate_soft(std::string(src_path).c_str(), file, std::string(tgt_path).c_str(), plists.link_create, plists.link_access);
             if(retval < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to write symbolic link:  " + std::string(src_path));
+                throw std::runtime_error(h5pp::format("Failed to write symbolic link [{}]  ", src_path));
             }
         } else {
-            throw std::runtime_error("Trying to write soft link to non-existing path: " + std::string(src_path));
+            throw std::runtime_error(h5pp::format("Trying to write soft link to non-existing path [{}]", src_path));
         }
     }
 
-    inline void setDatasetCreationPropertyLayout(const DatasetProperties &dsetProps) {
+    inline void setDatasetCreationPropertyLayout(const DsetProperties &dsetProps) {
         switch(dsetProps.layout.value()) {
             case H5D_CHUNKED: h5pp::logger::log->trace("Setting layout H5D_CHUNKED"); break;
             case H5D_COMPACT: h5pp::logger::log->trace("Setting layout H5D_COMPACT"); break;
             case H5D_CONTIGUOUS: h5pp::logger::log->trace("Setting layout H5D_CONTIGUOUS"); break;
-            default: throw std::runtime_error("Invalid layout");
+            default: throw std::runtime_error("Given invalid layout when creating dataset property list. Choose one of H5D_COMPACT,H5D_CONTIGUOUS,H5D_CHUNKED");
         }
         herr_t err = H5Pset_layout(dsetProps.plist_dset_create, dsetProps.layout.value());
         if(err < 0) {
@@ -620,7 +619,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline void setDatasetCreationPropertyCompression(const DatasetProperties &dsetProps) {
+    inline void setDatasetCreationPropertyCompression(const DsetProperties &dsetProps) {
         // Compression works only on chunked layouts
         if(dsetProps.layout.value() != H5D_CHUNKED) {
             h5pp::logger::log->trace("Compression ignored: Layout is not H5D_CHUNKED");
@@ -646,14 +645,14 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline void setDatasetExtent(const DatasetProperties &dsetProps) {
+    inline void setDatasetExtent(const DsetProperties &dsetProps) {
         // Setting extent works only on chunked layouts
         if(dsetProps.layout.value() != H5D_CHUNKED) {
             h5pp::logger::log->trace("Dataset extent ignored: Layout is not H5D_CHUNKED");
             return;
         }
         h5pp::logger::log->trace("Setting dataset extent: {}", dsetProps.dims.value());
-        if(not dsetProps.dataSet) throw std::runtime_error("Extent can only be set on a valid dataset id. Got: " + std::to_string(dsetProps.dataSet));
+        if(not dsetProps.dataSet) throw std::runtime_error(h5pp::format("Extent can only be set on a valid dataset id. Got [{}]", dsetProps.dataSet));
         herr_t err = H5Dset_extent(dsetProps.dataSet, dsetProps.dims.value().data());
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
@@ -661,14 +660,14 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline void setDataSpaceExtent(const DatasetProperties &dsetProps) {
+    inline void setDataSpaceExtent(const DsetProperties &dsetProps) {
         // Setting extent works only on chunked layouts
         if(dsetProps.layout.value() != H5D_CHUNKED) {
             h5pp::logger::log->trace("Dataspace extent ignored: Layout is not H5D_CHUNKED");
             return;
         }
         h5pp::logger::log->trace("Setting dataspace extents: {}", dsetProps.dims.value());
-        if(not dsetProps.dataSpace) throw std::runtime_error("Extent can only be set on a valid dataspace id. Got: " + std::to_string(dsetProps.dataSpace));
+        if(not dsetProps.dataSpace) throw std::runtime_error(h5pp::format("Extent can only be set on a valid dataspace id. Got [{}]", dsetProps.dataSpace));
         std::vector<hsize_t> maxDims(dsetProps.ndims.value());
         std::fill_n(maxDims.begin(), dsetProps.ndims.value(), H5S_UNLIMITED);
         herr_t err = H5Sset_extent_simple(dsetProps.dataSpace, dsetProps.ndims.value(), dsetProps.dims.value().data(), maxDims.data());
@@ -678,13 +677,14 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline void createDataset(const hid::h5f &file, DatasetProperties &dsetProps, const PropertyLists &plists = PropertyLists()) {
+    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
+    void createDataset(const h5x &locId, DsetProperties &dsetProps, const PropertyLists &plists = PropertyLists()) {
         // Here we create, or register, the dataset id and set its properties before writing data to it.
         if(dsetProps.dsetExists and dsetProps.dsetExists.value()) return;
         if(dsetProps.dataSet) return;
         h5pp::logger::log->trace("Creating dataset: [{}]", dsetProps.dsetName.value());
         dsetProps.dataSet = H5Dcreate(
-            file, dsetProps.dsetName.value().c_str(), dsetProps.dataType, dsetProps.dataSpace, plists.link_create, dsetProps.plist_dset_create, dsetProps.plist_dset_access);
+            locId, dsetProps.dsetName.value().c_str(), dsetProps.dataType, dsetProps.dataSpace, plists.link_create, dsetProps.plist_dset_create, dsetProps.plist_dset_access);
     }
 
     inline void createAttribute(AttributeProperties &attrProps) {
@@ -721,7 +721,7 @@ namespace h5pp::hdf5 {
                     }
                 }
                 return 0;
-            } catch(...) { throw(std::logic_error("Could not collect object: " + std::string(name) + " loc_id: " + std::to_string(id))); }
+            } catch(...) { throw std::logic_error(h5pp::format("Could not collect object [{}] | loc_id [{}]", name, id)); }
         }
     }
 
@@ -744,13 +744,13 @@ namespace h5pp::hdf5 {
 #endif
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to iterate from group: " + std::string(searchRoot));
+            throw std::runtime_error(h5pp::format("Failed to iterate from group: [{}]", searchRoot));
         }
         return matchList;
     }
 
     template<typename DataType>
-    void writeDataset(const DataType &data, const DatasetProperties &props, const PropertyLists &plists = PropertyLists()) {
+    void writeDataset(const DataType &data, const DsetProperties &props, const PropertyLists &plists = PropertyLists()) {
         h5pp::logger::log->debug("Writing dataset: [{}] | size {} | bytes {} | ndims {} | dims {} | type {}",
                                  props.dsetName.value(),
                                  props.size.value(),
@@ -758,6 +758,10 @@ namespace h5pp::hdf5 {
                                  props.ndims.value(),
                                  props.dims.value(),
                                  h5pp::type::sfinae::type_name<DataType>());
+        // Create the dataset id and set its properties
+
+        if(props.layout.value() == H5D_CHUNKED) h5pp::hdf5::selectHyperslab(props.fileSpace, props.memSpace);
+
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(props.dataType);
         if(props.dsetExists.value() and props.layout != H5D_CHUNKED) { h5pp::hdf5::assertBytesMatchTotal(data, props.dataSet); }
         herr_t retval = 0;
@@ -784,7 +788,7 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType>
-    void readDataset(DataType &data, const DatasetProperties &props, const PropertyLists &plists = PropertyLists()) {
+    void readDataset(DataType &data, const DsetProperties &props, const PropertyLists &plists = PropertyLists()) {
         h5pp::logger::log->debug("Reading dataset: [{}] | size {} | bytes {} | ndims {} | dims {} | type {}",
                                  props.dsetName.value(),
                                  props.size.value(),
@@ -848,8 +852,7 @@ namespace h5pp::hdf5 {
         }
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            logger::log->error("Failed  to read dataset [{}] | type: [{}]", props.dsetName.value(), type::sfinae::type_name<DataType>());
-            throw std::runtime_error("Failed to read dataset [" + props.dsetName.value() + "] | type [" + std::string(type::sfinae::type_name<DataType>()) + "]");
+            throw std::runtime_error(h5pp::format("Failed  to read dataset [{}] | type: [{}]", props.dsetName.value(), type::sfinae::type_name<DataType>()));
         }
     }
 
@@ -876,19 +879,19 @@ namespace h5pp::hdf5 {
             herr_t retval = H5Awrite(props.attributeId, props.dataType, data.c_str());
             if(retval < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to write text attribute to link [ " + props.linkName.value() + " ]");
+                throw std::runtime_error(h5pp::format("Failed to write text attribute to link [{}]", props.linkName.value()));
             }
         } else if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
             herr_t retval = H5Awrite(props.attributeId, props.dataType, data.data());
             if(retval < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to write data attribute to link [ " + props.linkName.value() + " ]");
+                throw std::runtime_error(h5pp::format("Failed to write data attribute to link [{}]", props.linkName.value()));
             }
         } else {
             herr_t retval = H5Awrite(props.attributeId, props.dataType, &data);
             if(retval < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to write attribute to link [ " + props.linkName.value() + " ]");
+                throw std::runtime_error(h5pp::format("Failed to write attribute to link [{}]", props.linkName.value()));
             }
         }
     }
@@ -896,9 +899,9 @@ namespace h5pp::hdf5 {
     template<typename DataType>
     void readAttribute(DataType &data, const AttributeProperties &props) {
         if(not props.linkExists or not props.linkExists.value())
-            throw std::runtime_error("Tried to read attribute [" + props.attrName.value() + "] on non-existing link: [" + props.linkName.value() + "]");
+            throw std::runtime_error(h5pp::format("Tried to read attribute [{}] in non-existing link [{}]", props.attrName.value(), props.linkName.value()));
         if(not props.attrExists or not props.attrExists.value())
-            throw std::runtime_error("Tried to read non-existing attribute [" + props.attrName.value() + "] on link: [" + props.linkName.value() + "]");
+            throw std::runtime_error(h5pp::format("Tried to read non-existing attribute [{}] in link [{}]", props.attrName.value(), props.linkName.value()));
 
         h5pp::logger::log->debug("Reading attribute: [{}] | link {} | size {} | ndims {} | dims {} | type {}",
                                  props.attrName.value(),
@@ -952,7 +955,7 @@ namespace h5pp::hdf5 {
         } else
 #endif
             if constexpr(h5pp::type::sfinae::is_std_vector_v<DataType>) {
-            if(props.ndims.value() != 1) throw std::runtime_error("Vector cannot take datatypes with dimension: " + std::to_string(props.ndims.value()));
+            if(props.ndims.value() != 1) throw std::runtime_error(h5pp::format("Vector cannot take datatypes with dimension: [{}]",props.ndims.value()));
             data.resize(props.dims.value()[0]);
             if(H5Aread(props.attributeId, props.dataType, data.data()) < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
@@ -961,14 +964,14 @@ namespace h5pp::hdf5 {
         } else if constexpr(h5pp::type::sfinae::is_std_array_v<DataType>) {
             if(props.ndims.value() != 1) {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Array cannot take datatypes with dimension: " + std::to_string(props.ndims.value()));
+                throw std::runtime_error(h5pp::format("Array cannot take datatypes with dimension: [{}]",props.ndims.value()));
             }
             if(H5Aread(props.attributeId, props.dataType, data.data()) < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error("Failed to read std::vector dataset");
             }
         } else if constexpr(std::is_same_v<std::string, DataType>) {
-            if(props.ndims.value() != 1) throw std::runtime_error("std::string expected ndims 1. Got: " + std::to_string(props.ndims.value()));
+            if(props.ndims.value() != 1) throw std::runtime_error(h5pp::format("std::string expected ndims 1. Got: [{}]",props.ndims.value()));
             hsize_t stringsize = H5Tget_size(props.dataType);
             data.resize(stringsize);
             if(H5Aread(props.attributeId, props.dataType, data.data()) < 0) {
@@ -1030,7 +1033,7 @@ namespace h5pp::hdf5 {
             if(not fileIsValid(filePath)) h5pp::logger::log->debug("Pre-existing file may be corrupted [{}]", filePath.string());
             if(permission == h5pp::FilePermission::READONLY) return filePath;
             if(permission == h5pp::FilePermission::COLLISION_FAIL)
-                throw std::runtime_error("[COLLISION_FAIL]: Previous file exists with the same name [" + filePath.string() + "]");
+                throw std::runtime_error(h5pp::format("[COLLISION_FAIL]: Previous file exists with the same name [{}]", filePath.string()));
             if(permission == h5pp::FilePermission::RENAME) {
                 auto newFilePath = getAvailableFileName(filePath);
                 h5pp::logger::log->info("[RENAME]: Previous file exists. Choosing a new file name: [{}] --> [{}]", filePath.filename().string(), newFilePath.filename().string());
@@ -1045,7 +1048,7 @@ namespace h5pp::hdf5 {
             }
             if(permission == h5pp::FilePermission::REPLACE) {} // Do nothing
         } else {
-            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("[READONLY]: File does not exist [" + filePath.string() + "]");
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("[READONLY]: File does not exist [{}]", filePath.string()));
             if(permission == h5pp::FilePermission::COLLISION_FAIL) {} // Do nothing
             if(permission == h5pp::FilePermission::RENAME) {}         // Do nothing
             if(permission == h5pp::FilePermission::READWRITE) {}      // Do nothing;
@@ -1056,7 +1059,7 @@ namespace h5pp::hdf5 {
                     h5pp::logger::log->trace("Created directory: {}", filePath.parent_path().string());
                 else
                     h5pp::logger::log->trace("Directory already exists: {}", filePath.parent_path().string());
-            } catch(std::exception &ex) { throw std::runtime_error("Failed to create directory: " + std::string(ex.what())); }
+            } catch(std::exception &ex) { throw std::runtime_error(h5pp::format("Failed to create directory: {}",ex.what())); }
         }
 
         // One last sanity check
@@ -1066,7 +1069,7 @@ namespace h5pp::hdf5 {
         hid_t file = H5Fcreate(filePath.string().c_str(), H5F_ACC_TRUNC, plists.file_create, plists.file_access);
         if(file < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to create file: [" + filePath.string() + "]");
+            throw std::runtime_error(h5pp::format("Failed to create file: [{}]",filePath.string()));
         }
         H5Fclose(file);
         return fs::canonical(filePath);
@@ -1156,8 +1159,8 @@ namespace h5pp::hdf5 {
             }
         } else if(startEntry and not numEntries) {
             if(startEntry.value() > totalRecords - 1)
-                throw std::runtime_error("Invalid start record for table [" + tableProps.tableName.value() + "] | nrecords = " + std::to_string(totalRecords) +
-                                         " | start entry = " + std::to_string(startEntry.value()));
+                throw std::runtime_error(
+                    h5pp::format("Invalid start record for table [{}] | nrecords [{}] | start entry [{}]", tableProps.tableName.value(), totalRecords, startEntry.value()));
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 numEntries = totalRecords - startEntry.value();
             } else {
@@ -1166,16 +1169,16 @@ namespace h5pp::hdf5 {
 
         } else if(numEntries and not startEntry) {
             if(numEntries and numEntries.value() > totalRecords)
-                throw std::runtime_error("Asked for more records than available in table [" + tableProps.tableName.value() + "] | nrecords = " + std::to_string(totalRecords) +
-                                         " | num entries = " + std::to_string(numEntries.value()));
+                throw std::runtime_error(h5pp::format(
+                    "Asked for more records than available in table [{}] | nrecords [{}] | num_entries [{}]", tableProps.tableName.value(), totalRecords, numEntries.value()));
             startEntry = totalRecords - numEntries.value();
         }
 
         // Sanity check
         if(numEntries.value() > totalRecords)
-            throw std::logic_error("Asked for more records than available in table [" + tableProps.tableName.value() + "] | nrecords = " + std::to_string(totalRecords));
+            throw std::logic_error(h5pp::format("Asked for more records than available in table [{}] | nrecords [{}]", tableProps.tableName.value(), totalRecords));
         if(startEntry.value() + numEntries.value() > totalRecords)
-            throw std::logic_error("Asked for more records than available in table [" + tableProps.tableName.value() + "] | nrecords = " + std::to_string(totalRecords));
+            throw std::logic_error(h5pp::format("Asked for more records than available in table [{}] | nrecords [{}]", tableProps.tableName.value(), totalRecords));
 
         h5pp::logger::log->debug("Reading table [{}] | read from record {} | read num records {} | available records {}",
                                  tableProps.tableName.value(),
