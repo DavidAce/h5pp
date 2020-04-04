@@ -49,19 +49,19 @@ int main() {
         vectorComplexDouble = std::vector<std::complex<double>>(100, {10.0, 5.0});
         file.writeDataset(vectorComplexDouble, "overWriteGroup_ext_disabled/vectorComplexDouble");
 
-    } catch(std::exception &ex) { std::cout << "\n \t THE ERROR BELOW IS PART OF THE TEST AND WAS EXPECTED: " << ex.what() << std::endl; }
+    } catch(std::exception &ex) { std::cout << "THE ERROR BELOW IS PART OF THE TEST AND WAS EXPECTED: \n -- " << ex.what() << std::endl; }
 
     try {
         // Let's try writing something larger that should fit in the allocated space
         vectorComplexDouble = std::vector<std::complex<double>>(10000, {10.0, 5.0});
         file.writeDataset(vectorComplexDouble, "overWriteGroup_ext_disabled/vectorComplexDouble");
-    } catch(std::exception &ex) { std::cout << "\n THE ERROR IS PART OF THE TEST AND IS EXPECTED: " << ex.what() << std::endl; }
+    } catch(std::exception &ex) { std::cout << "THE ERROR IS PART OF THE TEST AND IS EXPECTED: \n -- " << ex.what() << std::endl; }
 
     try {
         // Let's try writing something exactly the same size as before which should fit exactly in the allocated space
         vectorComplexDouble = std::vector<std::complex<double>>(1000, {10.0, 5.0});
         file.writeDataset(vectorComplexDouble, "overWriteGroup_ext_disabled/vectorComplexDouble");
-    } catch(std::exception &ex) { std::cout << "\n THIS ERROR IS PART OF THE TEST AND IS EXPECTED: " << ex.what() << std::endl; }
+    } catch(std::exception &ex) { std::cout << "THIS ERROR IS PART OF THE TEST AND IS EXPECTED:\n" << ex.what() << std::endl; }
 
     // Strings are a special case that shouldn't fail for non-e
     somestring = "this is a teststring";
