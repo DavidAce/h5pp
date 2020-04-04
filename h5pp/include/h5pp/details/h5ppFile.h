@@ -3,8 +3,9 @@
 
 #include "h5ppAttributeProperties.h"
 #include "h5ppConstants.h"
-#include "h5ppDatasetProperties.h"
+#include "h5ppDsetProperties.h"
 #include "h5ppEigen.h"
+#include "h5ppEnums.h"
 #include "h5ppFilesystem.h"
 #include "h5ppHdf5.h"
 #include "h5ppHid.h"
@@ -36,7 +37,7 @@ namespace h5pp {
         size_t               logLevel     = 2;
         bool                 logTimestamp = false;
         hid::h5e             error_stack;
-        unsigned int         defaultCompressionLevel = 0;
+        unsigned int         currentCompressionLevel = 0;
 
         void init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
@@ -86,7 +87,7 @@ namespace h5pp {
         }
 
         ~File() {
-            h5pp::logger::log->debug("Closing [{}]", filePath.string());
+            h5pp::logger::log->debug("Closing file [{}]", filePath.string());
             H5Eprint(H5E_DEFAULT, stderr);
         }
 
@@ -151,15 +152,20 @@ namespace h5pp {
          *
          */
 
-        void setDefaultCompressionLevel(unsigned int compressionLevelZeroToNine) { defaultCompressionLevel = h5pp::hdf5::getValidCompressionLevel(compressionLevelZeroToNine); }
-        [[nodiscard]] unsigned int getDefaultCompressionLevel() const { return defaultCompressionLevel; }
+        void setCompressionLevel(unsigned int compressionLevelZeroToNine) { currentCompressionLevel = h5pp::hdf5::getValidCompressionLevel(compressionLevelZeroToNine); }
+        [[nodiscard]] unsigned int getCompressionLevel() const { return currentCompressionLevel; }
+        [[nodiscard]] unsigned int getCompressionLevel(std::optional<size_t> desiredCompressionLevel) const {
+            if(desiredCompressionLevel)
+                return h5pp::hdf5::getValidCompressionLevel(desiredCompressionLevel.value());
+            else return currentCompressionLevel;
+        }
 
         void createGroup(std::string_view group_relative_name) {
             hid::h5f file = openFileHandle();
             h5pp::hdf5::createGroup(file, group_relative_name, std::nullopt, plists);
         }
 
-        void createDataset(DatasetProperties &dsetProps) {
+        void createDataset(DsetProperties &dsetProps) {
             if(not dsetProps.dsetExists) {
                 h5pp::logger::log->trace("Creating dataset: [{}]", dsetProps.dsetName.value());
                 hid::h5f file = openFileHandle();
@@ -167,22 +173,18 @@ namespace h5pp {
             }
         }
 
-        template<typename DataType>
-        void writeDataset(const DataType &                    data,
-                          std::string_view                    dsetName,
-                          std::optional<hid::h5t>             customH5Type     = std::nullopt,
-                          std::optional<H5D_layout_t>         layout           = std::nullopt,
-                          std::optional<std::vector<hsize_t>> chunkDimensions  = std::nullopt,
-                          std::optional<unsigned int>         compressionLevel = std::nullopt) {
+
+
+        template<typename DataType, typename IterableType = std::initializer_list<hsize_t>>
+        void writeDataset(const DataType &                data,
+                          std::string_view                dsetName,
+                          std::optional<hid::h5t>         customH5Type     = std::nullopt,
+                          std::optional<H5D_layout_t>     layout           = std::nullopt,
+                          IterableType                    chunkDimensions  = {},
+                          std::optional<unsigned int>     compressionLevel = std::nullopt) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.string() + "]");
             hid::h5f file = openFileHandle();
-            if(compressionLevel)
-                compressionLevel = h5pp::hdf5::getValidCompressionLevel(compressionLevel);
-            else
-                compressionLevel = getDefaultCompressionLevel();
-
-            auto dsetProps = h5pp::scan::getDatasetProperties_write(file, dsetName, data, std::nullopt, customH5Type, layout, chunkDimensions, compressionLevel);
-            // Create the dataset id and set its properties
+            auto dsetProps = h5pp::scan::getDatasetProperties_write(file, dsetName, data, std::nullopt, customH5Type, layout, h5pp::utils::getOptionalIterable(chunkDimensions), getCompressionLevel(compressionLevel));
             h5pp::hdf5::createDataset(file, dsetProps);
             h5pp::hdf5::setDatasetExtent(dsetProps);
             dsetProps.fileSpace = H5Dget_space(dsetProps.dataSet);
@@ -190,49 +192,82 @@ namespace h5pp {
             h5pp::hdf5::writeDataset(data, dsetProps, plists);
         }
 
+        template<typename DataType, typename IterableType = std::initializer_list<hsize_t>, typename = std::enable_if_t<h5pp::type::sfinae::has_data_v<DataType>>>
+        void writeDataset(const DataType &                data,
+                          IterableType                    dims,
+                          std::string_view                dsetName,
+                          std::optional<hid::h5t>         customH5Type     = std::nullopt,
+                          std::optional<H5D_layout_t>     layout           = std::nullopt,
+                          IterableType                    chunkDimensions  = {},
+                          std::optional<unsigned int>     compressionLevel = std::nullopt) {
+            writeDataset(h5pp::PtrWrapper(data.data(),dims),dsetName,customH5Type,layout,chunkDimensions,compressionLevel);
+        }
+
         template<typename DataType>
-        void writeDataset(const DataType &data, const DatasetProperties &dsetProps) {
+        void writeDataset(const DataType &data, const DsetProperties &dsetProps) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.string() + "]");
             h5pp::hdf5::writeDataset(data, dsetProps, plists);
         }
 
         template<typename DataType>
-        void writeDataset(const DataType &                    data,
-                          std::string_view                    dsetName,
-                          H5D_layout_t                        layout,
-                          std::optional<std::vector<hsize_t>> chunkDimensions  = std::nullopt,
-                          std::optional<unsigned int>         compressionLevel = std::nullopt) {
-            writeDataset(data, dsetName, std::nullopt, layout, chunkDimensions, compressionLevel);
+        void writeDataset(const DataType &data, std::string_view dsetName, H5D_layout_t layout, std::optional<unsigned int> compressionLevel = std::nullopt) {
+            writeDataset(data, dsetName, std::nullopt, layout, std::nullopt, compressionLevel);
         }
-        template<typename DataType>
-        void writeDataset(const DataType &            data,
-                          std::string_view            dsetName,
-                          const std::vector<hsize_t> &chunkDimensions,
-                          std::optional<unsigned int> compressionLevel = std::nullopt) {
+
+        template<typename DataType, typename IterableType = std::initializer_list<hsize_t>,typename = std::enable_if_t<h5pp::type::sfinae::is_iterable_v<IterableType>>>
+        void writeDataset(const DataType &data, std::string_view dsetName, IterableType chunkDimensions, std::optional<unsigned int> compressionLevel = std::nullopt) {
             writeDataset(data, dsetName, std::nullopt, H5D_CHUNKED, chunkDimensions, compressionLevel);
         }
 
-        template<typename PointerType, typename T, size_t N, typename... Args, typename = std::enable_if_t<std::is_pointer_v<PointerType> and std::is_integral_v<T>>>
+        template<typename PointerType, typename T, size_t N, typename IterableType = std::initializer_list<hsize_t>, typename = std::enable_if_t<std::is_pointer_v<PointerType> and std::is_integral_v<T>>>
         void writeDataset(const PointerType ptr,
                           const T (&dims)[N],
-                          std::string_view                    datasetPath,
-                          std::optional<hid::h5t>             customH5Type     = std::nullopt,
-                          std::optional<H5D_layout_t>         layout           = std::nullopt,
-                          std::optional<std::vector<hsize_t>> chunkDimensions  = std::nullopt,
-                          std::optional<unsigned int>         compressionLevel = std::nullopt) {
+                          std::string_view            datasetPath,
+                          std::optional<hid::h5t>     customH5Type     = std::nullopt,
+                          std::optional<H5D_layout_t> layout           = std::nullopt,
+                          IterableType                chunkDimensions  = {},
+                          std::optional<unsigned int> compressionLevel = std::nullopt) {
             writeDataset(h5pp::PtrWrapper(ptr, dims), datasetPath, customH5Type, layout, chunkDimensions, compressionLevel);
         }
 
-        template<typename PointerType, typename = std::enable_if_t<std::is_pointer_v<PointerType>>>
-        void writeDataset(const PointerType                   ptr,
-                          const size_t                        size,
-                          std::string_view                    datasetPath,
-                          std::optional<hid::h5t>             customH5Type     = std::nullopt,
-                          std::optional<H5D_layout_t>         layout           = std::nullopt,
-                          std::optional<std::vector<hsize_t>> chunkDimensions  = std::nullopt,
-                          std::optional<unsigned int>         compressionLevel = std::nullopt) {
+        template<typename PointerType, typename IterableType = std::initializer_list<hsize_t>, typename = std::enable_if_t<std::is_pointer_v<PointerType>>>
+        void writeDataset(const PointerType           ptr,
+                          const size_t                size,
+                          std::string_view            datasetPath,
+                          std::optional<hid::h5t>     customH5Type     = std::nullopt,
+                          std::optional<H5D_layout_t> layout           = std::nullopt,
+                          IterableType                chunkDimensions  = {},
+                          std::optional<unsigned int> compressionLevel = std::nullopt) {
             writeDataset(h5pp::PtrWrapper(ptr, size), datasetPath, customH5Type, layout, chunkDimensions, compressionLevel);
         }
+
+        template<typename T,typename = std::enable_if_t<std::is_same_v<T,std::nullopt_t> or h5pp::type::sfinae::is_iterable_v<T>>>
+        using DimTypeTest = std::optional<T>;
+
+        template<
+            typename DataType>
+        void writeDataset(const DataType              &data,
+                          const std::initializer_list <hsize_t> dataDims,
+                          std::string_view            datasetPath,
+                          std::optional<hid::h5t>     customH5Type     = std::nullopt,
+                          std::optional<H5D_layout_t> layout           = std::nullopt,
+                          const std::initializer_list <hsize_t> chunkDims = {},
+                          std::optional<unsigned int> compressionLevel = std::nullopt) {
+            if constexpr (std::is_pointer_v<DataType>)
+                writeDataset(h5pp::PtrWrapper(data, dataDims), datasetPath, customH5Type, layout, chunkDims, compressionLevel);
+//            else
+//                writeDataset(data, datasetPath, customH5Type, layout, chunkDims, compressionLevel);
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.string() + "]");
+            hid::h5f file = openFileHandle();
+            auto dsetProps = h5pp::scan::getDatasetProperties_write(file, datasetPath, data, std::nullopt, customH5Type, layout, h5pp::utils::getOptionalIterable(chunkDims), getCompressionLevel(compressionLevel));
+            h5pp::hdf5::createDataset(file, dsetProps);
+            h5pp::hdf5::setDatasetExtent(dsetProps);
+            dsetProps.fileSpace = H5Dget_space(dsetProps.dataSet);
+            if(dsetProps.layout.value() == H5D_CHUNKED) h5pp::hdf5::selectHyperslab(dsetProps.fileSpace, dsetProps.memSpace);
+            h5pp::hdf5::writeDataset(data, dsetProps, plists);
+        }
+
+
 
         void writeSymbolicLink(std::string_view src_path, std::string_view tgt_path) {
             hid::h5f file = openFileHandle();
