@@ -1,19 +1,11 @@
 #pragma once
+#include "h5ppFormat.h"
 #include "h5ppOptional.h"
+
 #if __has_include(<spdlog/spdlog.h>)
-    #define H5PP_SPDLOG
+    #define H5PP_SPDLOG_TEMP
     #include <spdlog/sinks/stdout_color_sinks.h>
     #include <spdlog/spdlog.h>
-    #if __has_include(<fmt/ranges.h>) && !defined(SPDLOG_FMT_EXTERNAL)
-        #define SPDLOG_FMT_EXTERNAL
-    #endif
-    #if defined(SPDLOG_FMT_EXTERNAL)
-        #include <fmt/ranges.h>
-    #else
-        #include <spdlog/fmt/bundled/ranges.h>
-    #endif
-#else
-    #include <memory>
 #endif
 
 namespace h5pp::logger {
@@ -56,43 +48,54 @@ namespace h5pp::logger {
             disableTimestamp();
     }
 
-    template<typename... Args>
-    auto format(Args... args) {
-        return fmt::format(std::forward<Args>(args)...);
-    }
-
 #else
 
-    class DummyLogger {
+    class ManualLogger {
+        private:
         public:
+        std::string logName;
+        size_t      logLevel = 2;
         template<typename... Args>
-        void trace([[maybe_unused]] Args... args) const {}
+        void trace(const std::string &fmtstring, Args... args) const {
+            if(logLevel <= 0) std::cout << h5pp::format("[{}][{}] " + fmtstring, logName, " trace  ", args...) << '\n';
+        }
         template<typename... Args>
-        void debug([[maybe_unused]] Args... args) const {}
+        void debug(const std::string &fmtstring, Args... args) const {
+            if(logLevel <= 1) std::cout << h5pp::format("[{}][{}] " + fmtstring, logName, " debug  ", args...) << '\n';
+        }
         template<typename... Args>
-        void info([[maybe_unused]] Args... args) const {}
+        void info(const std::string &fmtstring, Args... args) const {
+            if(logLevel <= 2) std::cout << h5pp::format("[{}][{}] " + fmtstring, logName, " info   ", args...) << '\n';
+        }
         template<typename... Args>
-        void warn([[maybe_unused]] Args... args) const {}
+        void warn(const std::string &fmtstring, Args... args) const {
+            if(logLevel <= 3) std::cout << h5pp::format("[{}][{}] " + fmtstring, logName, " warn   ", args...) << '\n';
+        }
         template<typename... Args>
-        void error([[maybe_unused]] Args... args) const {}
+        void error(const std::string &fmtstring, Args... args) const {
+            if(logLevel <= 4) std::cout << h5pp::format("[{}][{}] " + fmtstring, logName, " error  ", args...) << '\n';
+        }
         template<typename... Args>
-        void        critical([[maybe_unused]] Args... args) const {}
-        std::string name() const { return ""; }
+        void critical(const std::string &fmtstring, Args... args) const {
+            if(logLevel <= 5) std::cout << h5pp::format("[{}][{}] " + fmtstring, logName, "critical", args...) << '\n';
+        }
+        std::string name() const { return logName; }
     };
-    inline std::shared_ptr<DummyLogger> log;
+    inline std::shared_ptr<ManualLogger> log;
 
     inline void enableTimestamp() {}
     inline void disableTimestamp() {}
     template<typename levelType>
-    inline void setLogLevel([[maybe_unused]] levelType levelZeroToFive) {}
-    inline void setLogger([[maybe_unused]] const std::string & name,
-                          [[maybe_unused]] std::optional<int>  levelZeroToFive = std::nullopt,
-                          [[maybe_unused]] std::optional<bool> timestamp       = std::nullopt) {}
-    template<typename... Args>
-    auto format(const std::string &first_param, [[maybe_unused]] Args... args) {
-        return first_param;
+    inline void setLogLevel([[maybe_unused]] levelType levelZeroToFive) {
+        if(log != nullptr) log->logLevel = levelZeroToFive;
     }
-
+    inline void setLogger([[maybe_unused]] const std::string & name_,
+                          [[maybe_unused]] std::optional<int>  levelZeroToFive = std::nullopt,
+                          [[maybe_unused]] std::optional<bool> timestamp       = std::nullopt) {
+        log          = std::make_shared<ManualLogger>();
+        log->logName = name_;
+        if(levelZeroToFive.has_value()) log->logLevel = levelZeroToFive.value();
+    }
 #endif
 
 }
