@@ -4,9 +4,9 @@
 
 struct Particle {
     double x = 0, y = 0, z = 0, t = 0;
+    double rho[3]   = {20,3.13,102.4};
     char   name[10] = "some name"; // Can be replaced by std::string
-    int    dummy    = 4;
-    void   testfunction(int) {}
+    void   dummy_function(int) {}
 };
 
 int main() {
@@ -20,6 +20,10 @@ int main() {
     // Optionally set the null terminator '\0' and possibly padding.
     H5Tset_strpad(MY_HDF5_NAME_TYPE, H5T_STR_NULLTERM);
 
+    // Specify the array "rho" as rank-1 array of length 3
+    std::vector<hsize_t> dims = {3};
+    h5pp::hid::h5t MY_HDF5_RHO_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE, dims.size(), dims.data());
+
     // Register the compound type
     h5pp::hid::h5t MY_HDF5_PARTICLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Particle));
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "x", HOFFSET(Particle, x), H5T_NATIVE_DOUBLE);
@@ -27,7 +31,7 @@ int main() {
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "z", HOFFSET(Particle, z), H5T_NATIVE_DOUBLE);
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "t", HOFFSET(Particle, t), H5T_NATIVE_DOUBLE);
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "name", HOFFSET(Particle, name), MY_HDF5_NAME_TYPE);
-    H5Tinsert(MY_HDF5_PARTICLE_TYPE, "dummy", HOFFSET(Particle, dummy), H5T_NATIVE_INT);
+    H5Tinsert(MY_HDF5_PARTICLE_TYPE, "rho", HOFFSET(Particle, rho), MY_HDF5_RHO_TYPE);
 
     file.createTable(MY_HDF5_PARTICLE_TYPE, "somegroup/particleTable", "particleTable");
 
@@ -41,14 +45,13 @@ int main() {
 
     std::cout << "Single entry read \n"
               << " \t x: " << particle_read.x << " \t y: " << particle_read.y << " \t z: " << particle_read.z << " \t t: " << particle_read.t << " \t name: " << particle_read.name
-              << " \t dummy: " << particle_read.dummy << std::endl;
-
+              << " \t rho: " << particle_read.rho[0] << " " << particle_read.rho[1] << " " << particle_read.rho[2] << std::endl;
     // Read multiple entries into resizeable container
     std::vector<Particle> particles_read;
     file.readTableEntries(particles_read, "somegroup/particleTable", 0, 5);
     std::cout << "Multiple entries read \n";
     for(auto &elem : particles_read) {
-        std::cout << " \t x: " << elem.x << " \t y: " << elem.y << " \t z: " << elem.z << " \t t: " << elem.t << " \t name: " << elem.name << " \t dummy: " << elem.dummy
+        std::cout << " \t x: " << elem.x << " \t y: " << elem.y << " \t z: " << elem.z << " \t t: " << elem.t << " \t name: " << elem.name << " \t rho: " << particle_read.rho[0] << " " << particle_read.rho[1] << " " << particle_read.rho[2]
                   << std::endl;
     }
 
