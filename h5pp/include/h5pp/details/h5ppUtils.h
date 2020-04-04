@@ -84,6 +84,20 @@ namespace h5pp::utils {
             return size;
     }
 
+    template<typename IterableType = std::initializer_list<hsize_t>>
+    [[nodiscard]] std::optional<std::vector<hsize_t>> getOptionalIterable(const IterableType &iterable) {
+        std::optional<std::vector<hsize_t>> optiter = std::nullopt;
+        if constexpr(h5pp::type::sfinae::is_iterable_v<IterableType>) {
+            if(iterable.size() > 0) {
+                optiter = std::vector<hsize_t>();
+                std::copy(iterable.begin(), iterable.end(), std::back_inserter(optiter.value()));
+            }
+        } else if constexpr(std::is_integral_v<IterableType>) {
+            optiter = {iterable};
+        }
+        return optiter;
+    }
+
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] hsize_t getSize(const DataType &data) {
         namespace sfn = h5pp::type::sfinae;
@@ -115,13 +129,13 @@ namespace h5pp::utils {
             assert(data.dimensions().size() == ndims and "given dimensions do not match detected rank");
             assert(dims.size() == ndims and "copied dimensions do not match detected rank");
             return dims;
-        } else if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
+        } else if constexpr(h5pp::type::sfinae::is_text_v<DataType>)
             // Read more about this step here
             // http://www.astro.sunysb.edu/mzingale/io_tutorial/HDF5_simple/hdf5_simple.c
             return {(hsize_t) 1};
-        } else if constexpr(h5pp::type::sfinae::has_size_v<DataType> and ndims == 1) {
+        else if constexpr(h5pp::type::sfinae::has_size_v<DataType> and ndims == 1)
             return {(hsize_t) data.size()};
-        }
+
 #ifdef H5PP_EIGEN3
         else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             assert(data.dimensions().size() == ndims and "given dimensions do not match detected rank");
@@ -135,13 +149,17 @@ namespace h5pp::utils {
             return dims;
         }
 #endif
-        else if constexpr(h5pp::type::sfinae::is_ScalarN<DataType>()) {
+        else if constexpr(h5pp::type::sfinae::is_ScalarN<DataType>())
             return {1};
-        } else if constexpr(std::is_array_v<DataType>) {
+        else if constexpr(std::is_array_v<DataType>)
             return {getArraySize(data)};
-        } else if constexpr(std::is_arithmetic_v<DataType> or h5pp::type::sfinae::is_std_complex_v<DataType>) {
+        else if constexpr(std::is_arithmetic_v<DataType> or h5pp::type::sfinae::is_std_complex_v<DataType>)
             return {1};
-        } else {
+        else if constexpr(std::is_pod_v<DataType>)
+            return {1};
+        else if constexpr(std::is_standard_layout_v<DataType>)
+            return {1};
+        else {
             h5pp::type::sfinae::print_type_and_exit_compile_time<DataType>();
             std::string error = "getDimensions can't match the type provided: " + h5pp::type::sfinae::type_name<DataType>();
             h5pp::logger::log->critical(error);
@@ -164,7 +182,16 @@ namespace h5pp::utils {
         }
     }
 
-    [[nodiscard]] inline hid::h5s getMemSpace(const hsize_t size, const int ndims, const std::vector<hsize_t> &dims) {
+
+
+    /*
+     * memspace is a description of the buffer in memory (i.e. where read elements will go).
+     * If there is no data conversion, then data is read directly into the user supplied buffer.
+     * If there is data conversion, HDF5 uses a 1MB buffer to do the conversions,
+     * but we still use the user's buffer for reading data in the first place.
+     * Also, you can adjust the 1MB default conversion buffer size. (see H5Pset_buffer)
+     */
+     [[nodiscard]] inline hid::h5s getMemSpace(const hsize_t size, const int ndims, const std::vector<hsize_t> &dims) {
         assert((size_t) ndims == dims.size() and "Dimension mismatch");
         if(size == 0) return H5Screate(H5S_NULL);
         if(ndims == 0)
