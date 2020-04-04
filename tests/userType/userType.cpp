@@ -5,8 +5,8 @@
 struct Particle {
     double x = 0, y = 0, z = 0, t = 0;
     char   name[10] = "some name"; // Can be replaced by std::string
-    int    dummy    = 4;
-    void   testfunction(int) {}
+    int    id       = 4;
+    void   dummy_function(int) {}
 };
 
 int main() {
@@ -27,7 +27,7 @@ int main() {
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "z", HOFFSET(Particle, z), H5T_NATIVE_DOUBLE);
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "t", HOFFSET(Particle, t), H5T_NATIVE_DOUBLE);
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "name", HOFFSET(Particle, name), MY_HDF5_NAME_TYPE);
-    H5Tinsert(MY_HDF5_PARTICLE_TYPE, "dummy", HOFFSET(Particle, dummy), H5T_NATIVE_INT);
+    H5Tinsert(MY_HDF5_PARTICLE_TYPE, "id", HOFFSET(Particle, id), H5T_NATIVE_INT);
 
     std::vector<Particle> particles(10);
     file.writeDataset(particles, "particles", MY_HDF5_PARTICLE_TYPE);
@@ -44,8 +44,7 @@ int main() {
     file.readDataset(particles_read, "particles");
 
     for(auto &elem : particles_read) {
-        std::cout << " \t x: " << elem.x << " \t y: " << elem.y << " \t z: " << elem.z << " \t t: " << elem.t << " \t name: " << elem.name << " \t dummy: " << elem.dummy
-                  << std::endl;
+        std::cout << " \t x: " << elem.x << " \t y: " << elem.y << " \t z: " << elem.z << " \t t: " << elem.t << " \t name: " << elem.name << " \t dummy: " << elem.id << std::endl;
     }
 
     return 0;
