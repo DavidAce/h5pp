@@ -1,5 +1,6 @@
 #pragma once
 #include "h5ppHid.h"
+#include "h5ppEnums.h"
 #include "h5ppLogger.h"
 #include "h5ppOptional.h"
 #include <hdf5.h>
@@ -11,7 +12,7 @@
  *  Properties of HDF5 datasets
  */
 namespace h5pp {
-    class DatasetProperties {
+    class DsetProperties {
         public:
         hid::h5d                            dataSet;
         hid::h5t                            dataType;
