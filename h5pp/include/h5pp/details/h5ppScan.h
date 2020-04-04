@@ -5,21 +5,16 @@
 #include "h5ppUtils.h"
 namespace h5pp::scan {
 
-    inline h5pp::DatasetProperties getDatasetProperties_read(const hid::h5f &          file,
-                                                             std::string_view          dsetName,
-                                                             const std::optional<bool> dsetExists = std::nullopt,
-                                                             const PropertyLists &     plists     = PropertyLists()) {
-        // Use this function to get info from existing datasets on file.
-        h5pp::logger::log->debug("Scanning properties of existing dataset [{}]", dsetName);
-
-        h5pp::DatasetProperties dsetProps;
+    inline h5pp::DsetProperties scanDataset(const hid::h5f &file, std::string_view dsetName, const PropertyLists &plists = PropertyLists()) {
+        h5pp::DsetProperties dsetProps;
         dsetProps.dsetName   = dsetName;
-        dsetProps.dsetExists = h5pp::hdf5::checkIfDatasetExists(file, dsetName, dsetExists, plists.link_access);
+        dsetProps.dsetExists = h5pp::hdf5::checkIfDatasetExists(file, dsetName, std::nullopt, plists.link_access);
         if(dsetProps.dsetExists.value()) {
             dsetProps.dataSet   = h5pp::hdf5::openLink<hid::h5d>(file, dsetProps.dsetName.value(), dsetProps.dsetExists, dsetProps.plist_dset_access);
             dsetProps.dataType  = H5Dget_type(dsetProps.dataSet);
             dsetProps.dataSpace = H5Dget_space(dsetProps.dataSet);
             dsetProps.memSpace  = H5Dget_space(dsetProps.dataSet);
+            dsetProps.fileSpace = H5Dget_space(dsetProps.dataSet);
             dsetProps.ndims     = std::max(1, H5Sget_simple_extent_ndims(dsetProps.dataSpace));
             dsetProps.dims      = std::vector<hsize_t>(dsetProps.ndims.value(), 0);
             H5Sget_simple_extent_dims(dsetProps.dataSpace, dsetProps.dims.value().data(), nullptr);
@@ -39,20 +34,56 @@ namespace h5pp::scan {
         return dsetProps;
     }
 
+    inline h5pp::DsetProperties getDatasetProperties_read(const hid::h5f &          file,
+                                                          std::string_view          dsetName,
+                                                          const std::optional<bool> dsetExists = std::nullopt,
+                                                          const PropertyLists &     plists     = PropertyLists()) {
+        // Use this function to get info from existing datasets on file.
+        h5pp::logger::log->debug("Scanning properties of existing dataset [{}]", dsetName);
+
+        h5pp::DsetProperties dsetProps;
+        dsetProps.dsetName   = dsetName;
+        dsetProps.dsetExists = h5pp::hdf5::checkIfDatasetExists(file, dsetName, dsetExists, plists.link_access);
+        if(dsetProps.dsetExists.value()) {
+            dsetProps.dataSet   = h5pp::hdf5::openLink<hid::h5d>(file, dsetProps.dsetName.value(), dsetProps.dsetExists, dsetProps.plist_dset_access);
+            dsetProps.dataType  = H5Dget_type(dsetProps.dataSet);
+            dsetProps.dataSpace = H5Dget_space(dsetProps.dataSet);
+            dsetProps.memSpace  = H5Dget_space(dsetProps.dataSet);
+            dsetProps.fileSpace = H5Dget_space(dsetProps.dataSet);
+
+            dsetProps.ndims = std::max(1, H5Sget_simple_extent_ndims(dsetProps.dataSpace));
+            dsetProps.dims  = std::vector<hsize_t>(dsetProps.ndims.value(), 0);
+            H5Sget_simple_extent_dims(dsetProps.dataSpace, dsetProps.dims.value().data(), nullptr);
+            dsetProps.size  = h5pp::hdf5::getSize(dsetProps.dataSet);
+            dsetProps.bytes = H5Dget_storage_size(dsetProps.dataSet);
+
+            // We read the layout from file. Note that it is not possible to change the layout on existing datasets! Read more here
+            // https://support.hdfgroup.org/HDF5/Tutor/layout.html
+            dsetProps.plist_dset_create = H5Dget_create_plist(dsetProps.dataSet);
+            dsetProps.layout            = H5Pget_layout(dsetProps.plist_dset_create);
+            dsetProps.chunkDims         = dsetProps.dims.value(); // Can get modified below
+            if(dsetProps.layout.value() == H5D_CHUNKED)
+                H5Pget_chunk(dsetProps.plist_dset_create, dsetProps.ndims.value(), dsetProps.chunkDims.value().data()); // Discard returned chunk rank, it's the same as ndims
+        } else {
+            h5pp::logger::log->info("Given dataset name does not point to a dataset: [{}]", dsetName);
+        }
+        return dsetProps;
+    }
+
     template<typename DataType>
-    h5pp::DatasetProperties getDatasetProperties_bootstrap(hid::h5f &                                file,
-                                                           std::string_view                          dsetName,
-                                                           const DataType &                          data,
-                                                           const std::optional<bool>                 dsetExists              = std::nullopt,
-                                                           const std::optional<hid::h5t>             desiredH5Type           = std::nullopt,
-                                                           const std::optional<H5D_layout_t>         desiredLayout           = std::nullopt,
-                                                           const std::optional<std::vector<hsize_t>> desiredChunkDims        = std::nullopt,
-                                                           const std::optional<unsigned int>         desiredCompressionLevel = std::nullopt,
-                                                           const PropertyLists &                     plists                  = PropertyLists()) {
+    h5pp::DsetProperties getDatasetProperties_bootstrap(hid::h5f &                                file,
+                                                        std::string_view                          dsetName,
+                                                        const DataType &                          data,
+                                                        const std::optional<bool>                 dsetExists              = std::nullopt,
+                                                        const std::optional<hid::h5t>             desiredH5Type           = std::nullopt,
+                                                        const std::optional<H5D_layout_t>         desiredLayout           = std::nullopt,
+                                                        const std::optional<std::vector<hsize_t>> desiredChunkDims        = std::nullopt,
+                                                        const std::optional<unsigned int>         desiredCompressionLevel = std::nullopt,
+                                                        const PropertyLists &                     plists                  = PropertyLists()) {
         h5pp::logger::log->debug("Scanning properties of type [{}] for writing new dataset [{}]", h5pp::type::sfinae::type_name<DataType>(), dsetName);
 
         // Use this function to detect info from the given DataType, to later create a dataset from scratch.
-        h5pp::DatasetProperties dataProps;
+        h5pp::DsetProperties dataProps;
         dataProps.dsetName   = dsetName;
         dataProps.dsetExists = h5pp::hdf5::checkIfLinkExists(file, dsetName, dsetExists, plists.link_access);
         // Infer properties from the given datatype
@@ -80,15 +111,15 @@ namespace h5pp::scan {
     }
 
     template<typename DataType>
-    h5pp::DatasetProperties getDatasetProperties_write(hid::h5f &                                file,
-                                                       std::string_view                          dsetName,
-                                                       const DataType &                          data,
-                                                       std::optional<bool>                       dsetExists              = std::nullopt,
-                                                       const std::optional<hid::h5t>             desiredH5Type           = std::nullopt,
-                                                       const std::optional<H5D_layout_t>         desiredLayout           = std::nullopt,
-                                                       const std::optional<std::vector<hsize_t>> desiredChunkDims        = std::nullopt,
-                                                       const std::optional<unsigned int>         desiredCompressionLevel = std::nullopt,
-                                                       const PropertyLists &                     plists                  = PropertyLists()) {
+    h5pp::DsetProperties getDatasetProperties_write(hid::h5f &                                file,
+                                                    std::string_view                          dsetName,
+                                                    const DataType &                          data,
+                                                    std::optional<bool>                       dsetExists              = std::nullopt,
+                                                    const std::optional<hid::h5t>             desiredH5Type           = std::nullopt,
+                                                    const std::optional<H5D_layout_t>         desiredLayout           = std::nullopt,
+                                                    const std::optional<std::vector<hsize_t>> desiredChunkDims        = std::nullopt,
+                                                    const std::optional<unsigned int>         desiredCompressionLevel = std::nullopt,
+                                                    const PropertyLists &                     plists                  = PropertyLists()) {
         h5pp::logger::log->debug("Scanning properties of type [{}] for writing into dataset [{}]", h5pp::type::sfinae::type_name<DataType>(), dsetName);
 
         if(not dsetExists) dsetExists = h5pp::hdf5::checkIfLinkExists(file, dsetName, dsetExists, plists.link_access);
@@ -105,7 +136,7 @@ namespace h5pp::scan {
             if(not h5pp::hdf5::H5Tequal_recurse(dsetProps.dataType, h5pp::utils::getH5Type<DataType>()))
                 throw std::runtime_error("Given datatype does not match the type of an existing dataset: " + dsetProps.dsetName.value());
 
-            h5pp::DatasetProperties dataProps;
+            h5pp::DsetProperties dataProps;
             // Start by copying properties that are immutable on overwrites
             dataProps.dataSet           = dsetProps.dataSet;
             dataProps.dsetName          = dsetProps.dsetName;
@@ -135,9 +166,12 @@ namespace h5pp::scan {
                                              "] in dimension [" + std::to_string(idx) + "], but the given data has size [" + std::to_string(dataProps.dims.value()[idx]) +
                                              "] in the same dimension. The dataset has layout H5D_CHUNKED but the dimension is not tagged with H5S_UNLIMITED");
                 if(dsetMaxDims[idx] != H5S_UNLIMITED and dataProps.layout.value() != H5D_CHUNKED and dataProps.dims.value()[idx] != dsetMaxDims[idx])
-                    throw std::runtime_error("Dimensions not equal. Existing dataset [" + dsetProps.dsetName.value() + "] has a maximum size [" + std::to_string(dsetMaxDims[idx]) +
-                                             "] in dimension [" + std::to_string(idx) + "], but the given data has size [" + std::to_string(dataProps.dims.value()[idx]) +
-                                             "] in the same dimension. Consider using H5D_CHUNKED layout for resizeable datasets");
+                    throw std::runtime_error(h5pp::format("Dimensions not equal. Existing dataset [{}] has a maximum size [{}] in dimension [{}], but the given data has size [{}] "
+                                                          "in that same dimension. Consider using layout H5D_CHUNKED for resizeable datasets",
+                                                          dsetProps.dsetName.value(),
+                                                          dsetMaxDims[idx],
+                                                          idx,
+                                                          dataProps.dims.value()[idx]));
             }
             return dataProps;
         } else {
