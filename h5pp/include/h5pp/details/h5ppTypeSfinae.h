@@ -1,5 +1,6 @@
 #pragma once
 #include "h5ppEigen.h"
+#include "h5ppOptional.h"
 #include "h5ppTypeCompound.h"
 #include <type_traits>
 
@@ -18,6 +19,13 @@ namespace h5pp::type::sfinae {
     inline constexpr bool has_size_v = has_size<T>::value;
 
     template<typename T, typename = std::void_t<>>
+    struct has_resize0 : public std::false_type {};
+    template<typename T>
+    struct has_resize0<T, std::void_t<decltype(std::declval<T>().resize())>> : public std::true_type {};
+    template<typename T>
+    inline constexpr bool has_resize0_v = has_resize0<T>::value;
+
+    template<typename T, typename = std::void_t<>>
     struct has_resize : public std::false_type {};
     template<typename T>
     struct has_resize<T, std::void_t<decltype(std::declval<T>().resize(0))>> : public std::true_type {};
@@ -30,6 +38,13 @@ namespace h5pp::type::sfinae {
     struct has_resize2<T, std::void_t<decltype(std::declval<T>().resize(0, 0))>> : public std::true_type {};
     template<typename T>
     inline constexpr bool has_resize2_v = has_resize2<T>::value;
+
+    template<typename T, auto rank, typename = std::void_t<>>
+    struct has_resizeN : public std::false_type {};
+    template<typename T, auto rank>
+    struct has_resizeN<T, rank, std::void_t<decltype(std::declval<T>().resize(std::declval<std::array<long, rank>>()))>> : public std::true_type {};
+    template<typename T, auto rank>
+    inline constexpr bool has_resizeN_v = has_resizeN<T, rank>::value;
 
     template<typename T, typename = std::void_t<>>
     struct has_data : public std::false_type {};
@@ -135,6 +150,26 @@ namespace h5pp::type::sfinae {
     inline constexpr bool is_iterable_v = is_iterable<T>::value;
 
     template<typename T>
+    struct is_integral_list {
+        private:
+        template<typename U>
+        static constexpr bool test() {
+            if constexpr(is_iterable_v<T>)
+                return std::is_integral_v<typename T::value_type>;
+            else
+                return false;
+        }
+
+        public:
+        static constexpr bool value = test<T>();
+    };
+    template<typename T>
+    inline constexpr bool is_integral_list_v = is_integral_list<T>::value;
+
+    template<typename T>
+    using is_iterable_or_nullopt = std::enable_if_t<is_iterable_v<T> or std::is_same_v<T, std::nullopt_t>>;
+
+    template<typename T>
     struct is_text {
         private:
         template<typename U>
@@ -153,6 +188,24 @@ namespace h5pp::type::sfinae {
     };
     template<typename T>
     inline constexpr bool is_text_v = is_text<T>::value;
+
+    template<typename Outer, typename Inner>
+    struct is_container_of {
+        private:
+        template<typename O,typename I>
+        static constexpr bool test() {
+            using Od = typename std::decay<O>::type;
+            using Id = typename std::decay<I>::type;
+            if constexpr(is_iterable_v<Od>)
+                if constexpr(has_value_type_v<Od>) return std::is_same_v<Id, typename Od::value_type>;
+            return false;
+        }
+
+        public:
+        static constexpr bool value = test<Outer, Inner>();
+    };
+    template<typename Outer, typename Inner>
+    inline constexpr bool is_container_of_v = is_container_of<Outer, Inner>::value;
 
     template<typename...>
     struct print_type_and_exit_compile_time;
@@ -295,6 +348,7 @@ namespace h5pp::type::sfinae {
     };
     template<typename T>
     inline constexpr bool is_eigen_contiguous_v = is_eigen_contiguous<T>::value;
+
     template<typename T>
     class is_eigen_1d {
         private:
