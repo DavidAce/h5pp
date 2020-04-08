@@ -42,10 +42,14 @@ namespace h5pp {
             }
             else if constexpr(h5pp::type::sfinae::is_iterable_v<T>) {
                 std::stringstream sstr;
-                sstr << "[";
-                for(const auto &elem : first) sstr << elem <<",";
-                sstr.seekp(-1, std::ios_base::end);
-                sstr << "]";
+                if (first.size() == 0)
+                    sstr << "[]";
+                else {
+                    sstr << "[";
+                    for(const auto &elem : first) sstr << elem <<",";
+                    sstr.seekp(-1, std::ios_base::end);
+                    sstr << "]";
+                }
                 result.emplace_back(sstr.str());
             }
             if constexpr(sizeof...(rest) > 0) {
@@ -53,6 +57,10 @@ namespace h5pp {
             }
             return result;
         }
+    }
+
+    std::string format(const std::string & fmtstring){
+        return fmtstring;
     }
 
     template<typename... Args>
