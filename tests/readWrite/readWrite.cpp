@@ -38,9 +38,12 @@ int main() {
     // Read the data back
     std::string stringDummyRead;
     file.readDataset(stringDummyRead, "stringDummy");
-    std::cout << stringDummyRead << std::endl;
+    std::cout << "stringDummyRead: " << stringDummyRead << std::endl;
     // Compare result
-    if(stringDummy != stringDummyRead) { throw std::runtime_error("stringDummy != stringDummyRead"); }
+    if(stringDummy != stringDummyRead) {
+        std::cout << "stringDummy    : " << stringDummy << std::endl;
+        std::cout << "stringDummyRead: " << stringDummyRead << std::endl;
+        throw std::runtime_error("stringDummy != stringDummyRead"); }
 
     std::complex<float> cplxFloat(1, 1);
     file.writeDataset(cplxFloat, "cplxFloat");
