@@ -29,11 +29,22 @@ int main() {
     //Write text data in various ways
     file.writeDataset(stringDummy, "stringDummy");
     file.writeDataset(charDummy, "charDummy");
+    file.writeDataset(charDummy,{99}, "charDummy_asarray_dims");
+    file.writeDataset(charDummy, 99, "charDummy_asarray_size");
     file.writeDataset("Dummy string literal", "literalDummy");
+
 
     auto stringDummyRead = file.readDataset<std::string>("stringDummy");
     if(stringDummy != stringDummyRead)
         throw std::runtime_error(h5pp::format("String dummy failed: [{}] != [{}]", stringDummy, stringDummyRead));
+
+    auto stringDummyRead2 = file.readDataset<std::string>(100,"stringDummy");
+    if(stringDummy != stringDummyRead2)
+        throw std::runtime_error(h5pp::format("String dummy failed: [{}] != [{}]", stringDummy, stringDummyRead2));
+
+    auto stringDummyRead3 = file.readDataset<std::string>(4,"stringDummy");
+    if(stringDummy != stringDummyRead3)
+        throw std::runtime_error(h5pp::format("String dummy failed: [{}] != [{}]", stringDummy, stringDummyRead3));
 
     auto charDummyRead = file.readDataset<std::string>("charDummy");
     if(strcmp(charDummy, charDummyRead.c_str()) != 0 )
@@ -46,6 +57,16 @@ int main() {
 
     char charBuffer[100];
     file.readDataset(charBuffer,{99},"charDummy");
+
+
+    // Now try some outlier cases
+
+    //Write text data in various ways
+    file.writeDataset(stringDummy, "stringDummy_chunked", H5D_CHUNKED);
+//    file.writeDataset(charDummy, "charDummy");
+//    file.writeDataset("Dummy string literal", "literalDummy");
+
+
 
 
     return 0;

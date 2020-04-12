@@ -5,9 +5,15 @@
 struct Particle {
     double x = 0, y = 0, z = 0, t = 0;
     char   name[10] = "some name"; // Can be replaced by std::string
-    int    id       = 4;
+    int    id       = 0;
     void   dummy_function(int) {}
+    bool   operator==(const Particle &p) const { return x == p.x and y == p.y and z == p.z and t == p.t and strncmp(name, p.name, 10) == 0 and id == p.id; }
+    bool   operator!=(const Particle &p) const { return not(*this == p); }
 };
+
+void print_particle(const Particle &p) {
+    std::cout << " \t x: " << p.x << " \t y: " << p.y << " \t z: " << p.z << " \t t: " << p.t << " \t id: " << p.id << "\t name: " << p.name << std::endl;
+}
 
 int main() {
     h5pp::File file("output/userType.h5", h5pp::FilePermission::REPLACE, 0);
@@ -29,8 +35,48 @@ int main() {
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "name", HOFFSET(Particle, name), MY_HDF5_NAME_TYPE);
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "id", HOFFSET(Particle, id), H5T_NATIVE_INT);
 
+    // Define a single particle
+    Particle p1;
+    p1.x  = 1;
+    p1.y  = 2;
+    p1.z  = 3;
+    p1.t  = 4;
+    p1.id = 5;
+    strncpy(p1.name, "new name", 10);
+
+    // Write a single particle
+    file.writeDataset(p1, "singleParticle", MY_HDF5_PARTICLE_TYPE);
+
+    // Read a single particle
+    auto p1_read = file.readDataset<Particle>("singleParticle");
+    print_particle(p1);
+    print_particle(p1_read);
+    if(p1 != p1_read) throw std::runtime_error("Single particle mismatch");
+
+    // Define multiple particles
+
     std::vector<Particle> particles(10);
+    int                   i = 0;
+    for(auto &p : particles) {
+        p.x  = i;
+        p.y  = i + 10;
+        p.z  = i + 100;
+        p.t  = i + 1000;
+        p.id = i++;
+    }
+    for (auto &p : particles)print_particle(p);
+
     file.writeDataset(particles, "particles", MY_HDF5_PARTICLE_TYPE);
+
+    // read them back
+    auto particles_read = file.readDataset<std::vector<Particle>>("particles");
+    for (auto &p : particles_read)print_particle(p);
+
+    if(particles.size() != particles_read.size()) throw std::runtime_error("Particles container size mismatch");
+    i = 0;
+    for(auto & p : particles)if(p != particles_read[i++]) throw std::runtime_error("Particle mismatch position "+ std::to_string(--i));
+
+
 
     // TODO: Add support for packed datatypes. The test below will not crash, but the data in the hdf5 file will be scrambled.
     // One can optionally repack the datatype to squeeze out any padding present in the struct.
@@ -38,14 +84,6 @@ int main() {
     h5pp::hid::h5t MY_PACKED_PARTICLE_TYPE = H5Tcopy(MY_HDF5_PARTICLE_TYPE);
     H5Tpack(MY_PACKED_PARTICLE_TYPE);
     file.writeDataset(particles, "particles_packed_TODO", MY_PACKED_PARTICLE_TYPE);
-
-    // read it back
-    std::vector<Particle> particles_read;
-    file.readDataset(particles_read, "particles");
-
-    for(auto &elem : particles_read) {
-        std::cout << " \t x: " << elem.x << " \t y: " << elem.y << " \t z: " << elem.z << " \t t: " << elem.t << " \t name: " << elem.name << " \t dummy: " << elem.id << std::endl;
-    }
 
     return 0;
 }
