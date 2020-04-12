@@ -10,7 +10,7 @@ namespace h5pp::type::compound::Create {
     template<typename T>
     [[nodiscard]] hid::h5t createComplexType() {
         hid::h5t NEW_COMPLEX_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(H5T_COMPLEX_STRUCT<T>));
-        hid::h5t h5type           = h5pp::utils::getH5Type<T>();
+        hid::h5t h5type           = h5pp::util::getH5Type<T>();
         herr_t   errr             = H5Tinsert(NEW_COMPLEX_TYPE, "real", HOFFSET(H5T_COMPLEX_STRUCT<T>, real), h5type);
         herr_t   erri             = H5Tinsert(NEW_COMPLEX_TYPE, "imag", HOFFSET(H5T_COMPLEX_STRUCT<T>, imag), h5type);
         if(errr < 0 or erri < 0) {
@@ -23,7 +23,7 @@ namespace h5pp::type::compound::Create {
     template<typename T>
     [[nodiscard]] hid::h5t createScalar2Type() {
         hid::h5t NEW_SCALAR2_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(H5T_SCALAR2<T>));
-        hid::h5t h5type           = h5pp::utils::getH5Type<T>();
+        hid::h5t h5type           = h5pp::util::getH5Type<T>();
         herr_t   errx             = H5Tinsert(NEW_SCALAR2_TYPE, "x", HOFFSET(H5T_SCALAR2<T>, x), h5type);
         herr_t   erry             = H5Tinsert(NEW_SCALAR2_TYPE, "y", HOFFSET(H5T_SCALAR2<T>, y), h5type);
         if(errx < 0 or erry < 0) {
@@ -36,7 +36,7 @@ namespace h5pp::type::compound::Create {
     template<typename T>
     [[nodiscard]] hid::h5t createScalar3Type() {
         hid::h5t NEW_SCALAR3_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(H5T_SCALAR3<T>));
-        hid::h5t h5type           = h5pp::utils::getH5Type<T>();
+        hid::h5t h5type           = h5pp::util::getH5Type<T>();
         herr_t   errx, erry, errz;
         errx = H5Tinsert(NEW_SCALAR3_TYPE, "x", HOFFSET(H5T_SCALAR3<T>, x), h5type);
         erry = H5Tinsert(NEW_SCALAR3_TYPE, "y", HOFFSET(H5T_SCALAR3<T>, y), h5type);
