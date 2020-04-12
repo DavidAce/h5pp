@@ -43,36 +43,60 @@ namespace h5pp::hdf5 {
 
     [[nodiscard]] inline int getRank(const hid::h5s &space) { return H5Sget_simple_extent_ndims(space); }
 
-    [[nodiscard]] inline int getRank(const hid::h5d &dataset) {
-        hid::h5s space = H5Dget_space(dataset);
-        return H5Sget_simple_extent_ndims(space);
+    [[nodiscard]] inline int getRank(const hid::h5d &dset) {
+        hid::h5s space = H5Dget_space(dset);
+        return getRank(space);
+    }
+
+    [[nodiscard]] inline int getRank(const hid::h5a &attr) {
+        hid::h5s space = H5Aget_space(attr);
+        return getRank(space);
+    }
+
+    [[nodiscard]] inline hsize_t getSize(const hid::h5s &space) {
+        return H5Sget_simple_extent_npoints(space);
+//        if(H5Tget_class(type) == H5T_STRING and H5Sget_simple_extent_npoints(space) == 1)
+//            // In HDF5 strings are stored as a scalar type with inflated byte size to fit the string.
+//            // To translate to "h5pp" language, the total string size is simply the size of the type.
+//            return H5Tget_size(type);
+//        else
+//            return H5Sget_simple_extent_npoints(space);
     }
 
     [[nodiscard]] inline hsize_t getSize(const hid::h5d &dataset) {
         hid::h5s space = H5Dget_space(dataset);
-        return H5Sget_simple_extent_npoints(space);
-        //        hsize_t     size      = H5Sget_simple_extent_npoints(space);
-        //        hid::h5t    type      = H5Dget_type(dataset);
-        //        H5T_class_t dataclass = H5Tget_class(type);
-        //        if(dataclass == H5T_STRING and size == 1)
-        //            // Strings are stored as scalar types of many bytes.
-        //            // Because they are multiple 1-byte chars, the total string size is simply the size of the type.
-        //            return H5Tget_size(type);
-        //        else
-        //            return H5Sget_simple_extent_npoints(space);
+        return getSize(space);
     }
 
-    [[nodiscard]] inline hsize_t getSize(const hid::h5s &space) { return H5Sget_simple_extent_npoints(space); }
+    [[nodiscard]] inline hsize_t getSize(const hid::h5a &attribute) {
+        hid::h5s space = H5Aget_space(attribute);
+        return getSize(space);
+    }
 
     [[nodiscard]] inline std::vector<hsize_t> getDimensions(const hid::h5s &space) {
         int                  ndims = H5Sget_simple_extent_ndims(space);
         std::vector<hsize_t> dims(ndims);
         H5Sget_simple_extent_dims(space, dims.data(), nullptr);
         return dims;
+//        if(H5Tget_class(type) == H5T_STRING and H5Sget_simple_extent_npoints(space) == 1)
+//            // In HDF5 strings are stored as a scalar type with inflated byte size to fit the string.
+//            // To translate to "h5pp" language, the dimensions are one element, with the size of the string
+//            return {H5Tget_size(type)};
+//        else {
+//            int                  ndims = H5Sget_simple_extent_ndims(space);
+//            std::vector<hsize_t> dims(ndims);
+//            H5Sget_simple_extent_dims(space, dims.data(), nullptr);
+//            return dims;
+//        }
     }
 
     [[nodiscard]] inline std::vector<hsize_t> getDimensions(const hid::h5d &dataset) {
         hid::h5s space = H5Dget_space(dataset);
+        return getDimensions(space);
+    }
+
+    [[nodiscard]] inline std::vector<hsize_t> getDimensions(const hid::h5a &attribute) {
+        hid::h5s space = H5Aget_space(attribute);
         return getDimensions(space);
     }
 
@@ -81,37 +105,47 @@ namespace h5pp::hdf5 {
         std::vector<hsize_t> maxdims(ndims);
         H5Sget_simple_extent_dims(space, nullptr, maxdims.data());
         return maxdims;
+
+//        if(H5Tget_class(type) == H5T_STRING and H5Sget_simple_extent_npoints(space) == 1)
+//            // In HDF5 strings are stored as a scalar type with inflated byte size to fit the string.
+//            // To translate to "h5pp" language, the dimensions are one element, with the size of the string
+//            return {H5Tget_size(type)};
+//        else {
+//            int                  ndims = H5Sget_simple_extent_ndims(space);
+//            std::vector<hsize_t> maxdims(ndims);
+//            H5Sget_simple_extent_dims(space, nullptr, maxdims.data());
+//            return maxdims;
+//        }
     }
 
-    [[nodiscard]] inline std::vector<hsize_t> getMaxDimensions(const hid::h5d &dataset) {
-        hid::h5s space = H5Dget_space(dataset);
+    [[nodiscard]] inline std::vector<hsize_t> getMaxDimensions(const hid::h5d &dset) {
+        hid::h5s space = H5Dget_space(dset);
         return getMaxDimensions(space);
     }
 
-    [[nodiscard]] inline size_t getBytesPerElem(const hid::h5t &type) {
+    [[nodiscard]] inline size_t getBytesPerElem(const hid::h5t &h5_type) {
+        return H5Tget_size(h5_type);
         // This works as H5Tget_size but takes care of getting the correct size for char data
-        H5T_class_t h5class = H5Tget_class(type);
-        if(h5class == H5T_STRING) {
-            // We create text-data differently, as scalar (atomic) type of size 1. The result of H5Gget_size will then be the char*size. Therefore
-            // we measure the type of a single H5T_C_S1 directly.
-            return H5Tget_size(H5T_C_S1);
-        } else {
-            return H5Tget_size(type);
-        }
+//        H5T_class_t h5class = H5Tget_class(type);
+//        if(h5class == H5T_STRING) {
+//            // We create text-data differently, as scalar (atomic) type of size 1. The result of H5Tget_size will then be the char*size.
+//            // Instead we measure the type of a single H5T_C_S1 directly.
+//            return H5Tget_size(H5T_C_S1);
+//        } else {
+//            return H5Tget_size(type);
+//        }
     }
 
-    [[nodiscard]] inline size_t getBytesTotal(const hid::h5s &space, const hid::h5t &type) { return H5Sget_simple_extent_npoints(space) * H5Tget_size(type); }
+    [[nodiscard]] inline size_t getBytesTotal(const hid::h5s &space, const hid::h5t &type) { return getBytesPerElem(type) * getSize(space); }
 
-    [[nodiscard]] inline size_t getBytesTotal(const hid::h5d &dataset) {
-        hid::h5s space = H5Dget_space(dataset);
-        hid::h5t type  = H5Dget_type(dataset);
-        return getBytesTotal(space, type);
-    }
+    [[nodiscard]] inline size_t getBytesTotal(const hid::h5d &dset) { return getBytesTotal(H5Dget_space(dset), H5Dget_type(dset)); }
+
+    [[nodiscard]] inline size_t getBytesTotal(const hid::h5a &attr) { return getBytesTotal(H5Aget_space(attr), H5Aget_type(attr)); }
 
     template<typename userDataType>
     [[nodiscard]] bool checkBytesPerElemMatch(const hid::h5t &h5type) {
         size_t dsetTypeSize = h5pp::hdf5::getBytesPerElem(h5type);
-        size_t dataTypeSize = h5pp::utils::getBytesPerElem<userDataType>();
+        size_t dataTypeSize = h5pp::util::getBytesPerElem<userDataType>();
         if(dataTypeSize != dsetTypeSize) {
             // The dsetType may have been generated by H5Tpack, in which case we should check against the native type
             size_t   packedTypesize = dsetTypeSize;
@@ -126,13 +160,14 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
-    void assertBytesPerElemMatch(const hid::h5t &h5type) {
-        size_t dsetTypeSize = h5pp::hdf5::getBytesPerElem(h5type);
-        size_t dataTypeSize = h5pp::utils::getBytesPerElem<DataType>();
+    void assertBytesPerElemMatch(const hid::h5t &h5_type) {
+        size_t dsetTypeSize = h5pp::hdf5::getBytesPerElem(h5_type);
+        size_t dataTypeSize = h5pp::util::getBytesPerElem<DataType>();
+        if(H5Tget_class(h5_type) == H5T_STRING) dsetTypeSize = H5Tget_size(H5T_C_S1);
         if(dataTypeSize != dsetTypeSize) {
             // The dsetType may have been generated by H5Tpack, in which case we should check against the native type
             size_t   packedTypesize = dsetTypeSize;
-            hid::h5t nativetype     = H5Tget_native_type(h5type, H5T_DIR_ASCEND);
+            hid::h5t nativetype     = H5Tget_native_type(h5_type, H5T_DIR_ASCEND);
             dsetTypeSize            = h5pp::hdf5::getBytesPerElem(nativetype);
             if(dataTypeSize != dsetTypeSize)
                 throw std::runtime_error(h5pp::format("Type size mismatch: dataset type is [{}] bytes | Type of given data is [{}] bytes", dsetTypeSize, dataTypeSize));
@@ -144,7 +179,7 @@ namespace h5pp::hdf5 {
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] bool checkBytesMatchTotal(const DataType &data, const hid::h5d &dataset) {
         size_t dsetsize = h5pp::hdf5::getBytesTotal(dataset);
-        size_t datasize = h5pp::utils::getBytesTotal(data);
+        size_t datasize = h5pp::util::getBytesTotal(data);
         if(datasize != dsetsize) {
             // The dsetType may have been generated by H5Tpack, in which case we should check against the native type
             hid::h5s space      = H5Dget_space(dataset);
@@ -163,11 +198,11 @@ namespace h5pp::hdf5 {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     void assertBytesMatchTotal(const DataType &data, const hid::h5d &h5_dset) {
-        hid::h5p plist_create = H5Dget_create_plist(h5_dset);
-        H5D_layout_t layout = H5Pget_layout(plist_create);
+        hid::h5p     plist_create = H5Dget_create_plist(h5_dset);
+        H5D_layout_t layout       = H5Pget_layout(plist_create);
         if(layout == H5D_CHUNKED) return; // Chunked datasets are allowed to not match
         size_t dsetsize = h5pp::hdf5::getBytesTotal(h5_dset);
-        size_t datasize = h5pp::utils::getBytesTotal(data);
+        size_t datasize = h5pp::util::getBytesTotal(data);
         if(datasize != dsetsize) {
             // The dsetType may have been generated by H5Tpack, in which case we should check against the native type
             size_t   packedsize = dsetsize;
@@ -183,7 +218,26 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline hsize_t setStringSize(const hid::h5t &h5_type, hsize_t size) {
+    template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
+    void assertBytesMatchTotal(const DataType &data, const hid::h5a &h5_attr) {
+        size_t dsetsize = h5pp::hdf5::getBytesTotal(h5_attr);
+        size_t datasize = h5pp::util::getBytesTotal(data);
+        if(datasize != dsetsize) {
+            // The dsetType may have been generated by H5Tpack, in which case we should check against the native type
+            size_t   packedsize = dsetsize;
+            hid::h5s space      = H5Aget_space(h5_attr);
+            hid::h5t datatype   = H5Aget_type(h5_attr);
+            hid::h5t nativetype = H5Tget_native_type(datatype, H5T_DIR_ASCEND);
+            dsetsize            = h5pp::hdf5::getBytesTotal(space, nativetype);
+            if(datasize != dsetsize)
+                throw std::runtime_error(h5pp::format("Storage size mismatch. Existing attribute is [{}] bytes | Given buffer is [{}] bytes", dsetsize, datasize));
+            else
+                h5pp::logger::log->warn(
+                    "Detected packed HDF5 type: packed total size {} bytes | native total size {} bytes. This is not supported by h5pp yet!", packedsize, datasize);
+        }
+    }
+
+    inline void setStringSize(const hid::h5t &h5_type, hsize_t size) {
         H5T_class_t dataclass = H5Tget_class(h5_type);
         if(dataclass == H5T_STRING) {
             herr_t retval;
@@ -202,7 +256,6 @@ namespace h5pp::hdf5 {
             //
             //            }
             retval = H5Tset_size(h5_type, size);
-            size   = 1;
             if(retval < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error(h5pp::format("Failed to set size [{}] on string", size));
@@ -215,7 +268,6 @@ namespace h5pp::hdf5 {
                 throw std::runtime_error("Failed to set strpad");
             }
         }
-        return size;
     }
 
     [[nodiscard]] inline bool
@@ -416,7 +468,7 @@ namespace h5pp::hdf5 {
     }
 
     [[nodiscard]] inline std::vector<std::string>
-        getAttributeNames(hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
+        getAttributeNames(const hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
         hid::h5o link = openObject(file, linkName, linkExists, link_access);
         return getAttributeNames(link);
     }
@@ -486,10 +538,10 @@ namespace h5pp::hdf5 {
         h5pp::logger::log->trace("Collecting type info about dataset [{}]", dsetName);
         hid::h5t type  = H5Dget_type(dataset);
         hid::h5s space = H5Dget_space(dataset);
+        auto     rank  = getRank(space);
         auto     size  = (size_t) H5Sget_simple_extent_npoints(space);
-        auto     ndims = getRank(space);
         auto     dims  = getDimensions(space);
-        return TypeInfo(dsetName, size, getCppType(type), ndims, dims, type);
+        return TypeInfo(dsetName, size, getCppType(type), rank, dims, type);
     }
 
     inline TypeInfo getDatasetTypeInfo(const hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
@@ -497,10 +549,10 @@ namespace h5pp::hdf5 {
         h5pp::logger::log->trace("Collecting type info about dataset [{}]", dsetName);
         hid::h5t type  = H5Dget_type(dataset);
         hid::h5s space = H5Dget_space(dataset);
-        auto     size  = (size_t) H5Sget_simple_extent_npoints(space);
-        auto     ndims = getRank(space);
+        auto     size  = getSize(space);
+        auto     rank  = getRank(space);
         auto     dims  = getDimensions(space);
-        return TypeInfo(dsetName, size, getCppType(type), ndims, dims, type);
+        return TypeInfo(dsetName, (size_t) size, getCppType(type), rank, dims, type);
     }
 
     inline TypeInfo getAttributeTypeInfo(const hid::h5a &attribute) {
@@ -511,10 +563,10 @@ namespace h5pp::hdf5 {
         h5pp::logger::log->trace("Collecting type info about attribute [{}]", attrName);
         hid::h5t type  = H5Aget_type(attribute);
         hid::h5s space = H5Aget_space(attribute);
-        auto     size  = (size_t) H5Sget_simple_extent_npoints(space);
-        auto     ndims = getRank(space);
+        auto     size  = getSize(space);
+        auto     rank  = getRank(space);
         auto     dims  = getDimensions(space);
-        return TypeInfo(attrName, size, getCppType(type), ndims, dims, type);
+        return TypeInfo(attrName, (size_t) size, getCppType(type), rank, dims, type);
     }
 
     inline TypeInfo getAttributeTypeInfo(const hid::h5f &    file,
@@ -583,7 +635,7 @@ namespace h5pp::hdf5 {
         } else
 #endif
         {
-            extendDataset(file, dsetPath, 0, h5pp::utils::getSize(data));
+            extendDataset(file, dsetPath, 0, h5pp::util::getSize(data));
         }
     }
 
@@ -613,16 +665,16 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline void setProperty_layout(MetaDset &dsetProps) {
-        if(not dsetProps.h5_plist_dset_create) throw std::logic_error("Could not configure the H5D layout: the dataset creation property list has not been initialized");
-        if(not dsetProps.h5_layout) throw std::logic_error("Could not configure the H5D layout: the H5D layout parameter has not been initialized");
-        switch(dsetProps.h5_layout.value()) {
+    inline void setProperty_layout(MetaDset &metaDset) {
+        if(not metaDset.h5_plist_dset_create) throw std::logic_error("Could not configure the H5D layout: the dataset creation property list has not been initialized");
+        if(not metaDset.h5_layout) throw std::logic_error("Could not configure the H5D layout: the H5D layout parameter has not been initialized");
+        switch(metaDset.h5_layout.value()) {
             case H5D_CHUNKED: h5pp::logger::log->trace("Setting layout H5D_CHUNKED"); break;
             case H5D_COMPACT: h5pp::logger::log->trace("Setting layout H5D_COMPACT"); break;
             case H5D_CONTIGUOUS: h5pp::logger::log->trace("Setting layout H5D_CONTIGUOUS"); break;
             default: throw std::runtime_error("Given invalid layout when creating dataset property list. Choose one of H5D_COMPACT,H5D_CONTIGUOUS,H5D_CHUNKED");
         }
-        herr_t err = H5Pset_layout(dsetProps.h5_plist_dset_create.value(), dsetProps.h5_layout.value());
+        herr_t err = H5Pset_layout(metaDset.h5_plist_dset_create.value(), metaDset.h5_layout.value());
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error("Could not set layout");
@@ -632,7 +684,12 @@ namespace h5pp::hdf5 {
     inline void setProperty_chunkDims(MetaDset &metaDset) {
         if(not metaDset.chunkDims) return;
         if(not metaDset.h5_layout) throw std::logic_error("Could not configure chunk dimensions: the H5D layout has not been initialized");
-        if(metaDset.h5_layout.value() != H5D_CHUNKED) return;
+        if(metaDset.h5_layout.value() != H5D_CHUNKED) {
+            h5pp::logger::log->trace("Chunk dimensions ignored: Layout is not H5D_CHUNKED");
+            metaDset.chunkDims = std::nullopt;
+            return;
+        }
+        //        if(H5Sget_simple_extent_type(metaDset.h5_space.value()) == H5S_SCALARRRR) return;
         if(not metaDset.h5_plist_dset_create) throw std::logic_error("Could not configure chunk dimensions: the dataset creation property list has not been initialized");
         if(not metaDset.dsetRank) throw std::logic_error("Could not configure chunk dimensions: the dataset rank (n dims) has not been initialized");
         if(not metaDset.dsetDims) throw std::logic_error("Could not configure chunk dimensions: the dataset dimensions have not been initialized");
@@ -650,26 +707,70 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline void setProperty_compression(MetaDset &dsetProps) {
-        if(not dsetProps.compression) return;
-        if(not dsetProps.h5_layout) throw std::logic_error("Could not configure chunk dimensions: the H5D layout has not been initialized");
-        if(dsetProps.h5_layout.value() != H5D_CHUNKED) {
+    inline void setProperty_compression(MetaDset &metaDset) {
+        if(not metaDset.compression) return;
+        if(not metaDset.h5_space) throw std::logic_error("Could not set compression: the space is not initialized");
+        if(not metaDset.h5_space->valid()) throw std::runtime_error(h5pp::format("compression can only be set on a valid dataspace id. Got [{}]", metaDset.h5_space.value()));
+        //        if(H5Sget_simple_extent_type(metaDset.h5_space.value()) == H5S_SCALARRRR) return;
+        if(not metaDset.h5_layout) throw std::logic_error("Could not configure chunk dimensions: the H5D layout has not been initialized");
+
+        if(metaDset.h5_layout.value() != H5D_CHUNKED) {
             h5pp::logger::log->trace("Compression ignored: Layout is not H5D_CHUNKED");
+            metaDset.compression = std::nullopt;
             return;
         }
-        if(dsetProps.compression and dsetProps.compression.value() == 0 and dsetProps.compression.value() < 10) {
-            h5pp::logger::log->warn("Invalid compression level [{}]", dsetProps.compression.value());
+        if(metaDset.compression and metaDset.compression.value() == 0 and metaDset.compression.value() < 10) {
+            h5pp::logger::log->warn("Invalid compression level [{}]", metaDset.compression.value());
             return;
         }
-        h5pp::logger::log->trace("Setting compression level {}", dsetProps.compression.value());
-        herr_t err = H5Pset_deflate(dsetProps.h5_plist_dset_create.value(), dsetProps.compression.value());
+        h5pp::logger::log->trace("Setting compression level {}", metaDset.compression.value());
+        herr_t err = H5Pset_deflate(metaDset.h5_plist_dset_create.value(), metaDset.compression.value());
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error("Failed to set compression level. Check that your HDF5 version has zlib enabled.");
         }
     }
 
-    inline void setSpaceExtent(const MetaDset &metaDset) {
+    inline void setSpaceExtent(MetaDset &metaDset) {
+        if(not metaDset.h5_space) throw std::logic_error("Could not set space extent: the space is not initialized");
+        if(not metaDset.h5_space->valid()) throw std::runtime_error("Could not set space extent. Space is not valid");
+        if(not metaDset.h5_layout) throw std::logic_error("Could not set space extent: the layout is not initialized");
+        if(not metaDset.h5_type) throw std::logic_error("Could not set space extent: the type is not initialized");
+        if(not metaDset.h5_type->valid()) throw std::logic_error("Could not set space extent: the type is not valid");
+        if(not metaDset.dsetDims) throw std::runtime_error("Could not set space extent: dataset dimensions are not defined");
+        if(not metaDset.dsetRank) throw std::runtime_error("Could not set space extent: dataset rank is not defined");
+
+        if(not metaDset.dsetDimsMax and metaDset.h5_layout.value() == H5D_CHUNKED) {
+            // Chunked datasets are unlimited unless told explicitly otherwise
+            metaDset.dsetDimsMax = std::vector<hsize_t>(metaDset.dsetRank.value(), 0);
+            std::fill_n(metaDset.dsetDimsMax->begin(), metaDset.dsetDimsMax->size(), H5S_UNLIMITED);
+        }
+
+        if(metaDset.dsetDimsMax and metaDset.dsetDimsMax->size() != metaDset.dsetDims->size())
+            throw std::runtime_error(h5pp::format("Rank mismatch in dimensions {} and max dimensions {}", metaDset.dsetDims.value(), metaDset.dsetDimsMax.value()));
+        herr_t err = 0;
+        if(metaDset.dsetDimsMax) {
+            std::vector<std::string> maxDimStr;
+            for(auto &dim : metaDset.dsetDimsMax.value()) {
+                if(dim == H5S_UNLIMITED)
+                    maxDimStr.emplace_back("H5S_UNLIMITED");
+                else
+                    maxDimStr.emplace_back(std::to_string(dim));
+            }
+            h5pp::logger::log->trace("Setting dataspace extents: dims {} | max dims {}", metaDset.dsetDims.value(), maxDimStr);
+            err = H5Sset_extent_simple(metaDset.h5_space.value(), metaDset.dsetRank.value(), metaDset.dsetDims->data(), metaDset.dsetDimsMax->data());
+
+        } else {
+            h5pp::logger::log->trace("Setting dataspace extents: dims {}", metaDset.dsetDims.value());
+            err = H5Sset_extent_simple(metaDset.h5_space.value(), metaDset.dsetRank.value(), metaDset.dsetDims->data(), nullptr);
+        }
+        if(err < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Failed to set extents {}", metaDset.string()));
+        }
+    }
+
+    inline void setSpaceExtent_OLD(const MetaDset &metaDset) {
         if(not metaDset.h5_space) throw std::logic_error("Could not set space extent: the space is not initialized");
         if(not metaDset.h5_space->valid()) throw std::runtime_error(h5pp::format("Extent can only be set on a valid dataspace id. Got [{}]", metaDset.h5_space.value()));
         if(not metaDset.h5_layout) throw std::logic_error("Could not set space extent: the layout is not initialized");
@@ -691,6 +792,7 @@ namespace h5pp::hdf5 {
             else
                 maxDimStr.emplace_back(std::to_string(dim));
         }
+
         h5pp::logger::log->trace("Setting dataspace extents: dims {} | max dims {}", metaDset.dsetDims.value(), maxDimStr);
         herr_t err = H5Sset_extent_simple(metaDset.h5_space.value(), metaDset.dsetRank.value(), metaDset.dsetDims->data(), maxDims.data());
         if(err < 0) {
@@ -699,156 +801,110 @@ namespace h5pp::hdf5 {
         }
     }
 
-//    inline void setDatasetCreationPropertyLayout(const DsetProperties &dsetProps) {
-//        switch(dsetProps.layout.value()) {
-//            case H5D_CHUNKED: h5pp::logger::log->trace("Setting layout H5D_CHUNKED"); break;
-//            case H5D_COMPACT: h5pp::logger::log->trace("Setting layout H5D_COMPACT"); break;
-//            case H5D_CONTIGUOUS: h5pp::logger::log->trace("Setting layout H5D_CONTIGUOUS"); break;
-//            default: throw std::runtime_error("Given invalid layout when creating dataset property list. Choose one of H5D_COMPACT,H5D_CONTIGUOUS,H5D_CHUNKED");
-//        }
-//        herr_t err = H5Pset_layout(dsetProps.plist_dset_create, dsetProps.layout.value());
-//        if(err < 0) {
-//            H5Eprint(H5E_DEFAULT, stderr);
-//            throw std::runtime_error("Could not set layout");
-//        }
-//        if(dsetProps.layout.value() == H5D_CHUNKED) {
-//            h5pp::logger::log->trace("Setting chunk dimensions [{}]", dsetProps.chunkDims.value());
-//            err = H5Pset_chunk(dsetProps.plist_dset_create, dsetProps.ndims.value(), dsetProps.chunkDims.value().data());
-//            if(err < 0) {
-//                H5Eprint(H5E_DEFAULT, stderr);
-//                throw std::runtime_error("Could not set chunk dimensions");
-//            }
-//        }
-//    }
-
-//    inline void setDatasetCreationPropertyCompression(const DsetProperties &dsetProps) {
-//        // Compression works only on chunked layouts
-//        if(dsetProps.layout.value() != H5D_CHUNKED) {
-//            h5pp::logger::log->trace("Compression ignored: Layout is not H5D_CHUNKED");
-//            return;
-//        }
-//        h5pp::logger::log->trace("Setting compression level {}", dsetProps.compressionLevel.value());
-//        // We assume that compression level is nonzero only if compression is actually available.
-//        // We do not check it here, but H5Pset_deflate will return an error if zlib is not enabled.
-//        if(dsetProps.compressionLevel and dsetProps.compressionLevel.value() == 0 and dsetProps.compressionLevel.value() < 10) {
-//            if(dsetProps.layout.value() == H5D_CHUNKED) {
-//                herr_t err = H5Pset_deflate(dsetProps.plist_dset_create, dsetProps.compressionLevel.value());
-//                if(err < 0) {
-//                    H5Eprint(H5E_DEFAULT, stderr);
-//                    throw std::runtime_error("Failed to set compression level. Check that your HDF5 version has zlib enabled.");
-//                } else {
-//                    h5pp::logger::log->trace("Compression set to level {}", dsetProps.compressionLevel.value());
-//                }
-//            } else {
-//                h5pp::logger::log->trace("Compression ignored: Layout is not H5D_CHUNKED");
-//            }
-//        } else if(dsetProps.compressionLevel) {
-//            h5pp::logger::log->warn("Invalid compression level", dsetProps.compressionLevel.value());
-//        }
-//    }
-
-//    inline void setDatasetExtent(const DsetProperties &dsetProps) {
-//        // Setting extent works only on chunked layouts
-//        if(dsetProps.layout.value() != H5D_CHUNKED) {
-//            h5pp::logger::log->trace("Dataset extent ignored: Layout is not H5D_CHUNKED");
-//            return;
-//        }
-//        h5pp::logger::log->trace("Setting dataset extent: {}", dsetProps.dims.value());
-//        if(not dsetProps.dataSet) throw std::runtime_error(h5pp::format("Extent can only be set on a valid dataset id. Got [{}]", dsetProps.dataSet));
-//        herr_t err = H5Dset_extent(dsetProps.dataSet, dsetProps.dims.value().data());
-//        if(err < 0) {
-//            H5Eprint(H5E_DEFAULT, stderr);
-//            throw std::runtime_error("Could not set extent on dataset");
-//        }
-//    }
-
-//    inline void setDataSpaceExtent(const DsetProperties &dsetProps) {
-//        // Setting extent works only on chunked layouts
-//        if(dsetProps.layout.value() != H5D_CHUNKED) {
-//            h5pp::logger::log->trace("Dataspace extent ignored: Layout is not H5D_CHUNKED");
-//            return;
-//        }
-//        h5pp::logger::log->trace("Setting dataspace extents: {}", dsetProps.dims.value());
-//        if(not dsetProps.dataSpace) throw std::runtime_error(h5pp::format("Extent can only be set on a valid dataspace id. Got [{}]", dsetProps.dataSpace));
-//        std::vector<hsize_t> maxDims(dsetProps.ndims.value());
-//        std::fill_n(maxDims.begin(), dsetProps.ndims.value(), H5S_UNLIMITED);
-//        herr_t err = H5Sset_extent_simple(dsetProps.dataSpace, dsetProps.ndims.value(), dsetProps.dims.value().data(), maxDims.data());
-//        if(err < 0) {
-//            H5Eprint(H5E_DEFAULT, stderr);
-//            throw std::runtime_error("Could not set extent on dataspace");
-//        }
-//    }
-
-//    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
-//    void createDataset(const h5x &locId, DsetProperties &dsetProps, const PropertyLists &plists = PropertyLists()) {
-//        // Here we create, or register, the dataset id and set its properties before writing data to it.
-//        if(dsetProps.dsetExists and dsetProps.dsetExists.value()) return;
-//        if(dsetProps.dataSet) return;
-//        h5pp::logger::log->trace("Creating dataset [{}]", dsetProps.dsetPath.value());
-//        dsetProps.dataSet = H5Dcreate(
-//            locId, dsetProps.dsetPath.value().c_str(), dsetProps.dataType, dsetProps.dataSpace, plists.link_create, dsetProps.plist_dset_create, dsetProps.plist_dset_access);
-//    }
-
-    void createDataset(const h5pp::MetaDset &metaDset, const PropertyLists &plists = PropertyLists()) {
-        // Here we create, the dataset id and set its properties before writing data to it.
-        metaDset.assertCreateReady();
-        if(metaDset.dsetExists.value()) return;
-
-        std::string debug_msg = h5pp::format("Creating dataset [{}]", metaDset.dsetPath.value());
-        if(metaDset.dsetSize) debug_msg.append(h5pp::format(" | size {}", metaDset.dsetSize.value()));
-        if(metaDset.dsetByte) debug_msg.append(h5pp::format(" | bytes {}", metaDset.dsetByte.value()));
-        if(metaDset.dsetRank) debug_msg.append(h5pp::format(" | rank {}", metaDset.dsetRank.value()));
-        if(metaDset.dsetDims) debug_msg.append(h5pp::format(" | dims {}", metaDset.dsetDims.value()));
-        if(metaDset.dsetDimsMax) debug_msg.append(h5pp::format(" | max dims {}", metaDset.dsetDimsMax.value()));
-        if(metaDset.chunkDims) debug_msg.append(h5pp::format(" | chunk dims {}", metaDset.chunkDims.value()));
-        h5pp::logger::log->debug(debug_msg);
-
-        hid_t dsetID = H5Dcreate(metaDset.h5_file.value(),
-                                 metaDset.dsetPath.value().c_str(),
-                                 metaDset.h5_type.value(),
-                                 metaDset.h5_space.value(),
-                                 plists.link_create,
-                                 metaDset.h5_plist_dset_create.value(),
-                                 metaDset.h5_plist_dset_access.value());
-        if(dsetID <= 0) {
-            H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Failed to create dataset [{}]", metaDset.dsetPath.value()));
-        }
-    }
-
-    inline void createAttribute(AttributeProperties &attrProps) {
-        // Here we create, or register, the attribute id and set its properties before writing data to it.
-        if(attrProps.attrExists and attrProps.attrExists.value()) return;
-        if(attrProps.attributeId) return;
-        h5pp::logger::log->trace("Creating attribute [{}]", attrProps.attrName.value());
-        attrProps.attributeId =
-            H5Acreate(attrProps.linkObject, attrProps.attrName.value().c_str(), attrProps.dataType, attrProps.memSpace, attrProps.plist_attr_create, attrProps.plist_attr_access);
-    }
-
-    //    inline void selectHyperslab(const hid::h5s &fileSpace, const hid::h5s &memSpace) {
-    //        const int            ndims = H5Sget_simple_extent_ndims(fileSpace);
-    //        std::vector<hsize_t> memDims(ndims);
-    //        std::vector<hsize_t> fileDims(ndims);
-    //        std::vector<hsize_t> start(ndims);
-    //        H5Sget_simple_extent_dims(memSpace, memDims.data(), nullptr);
-    //        H5Sget_simple_extent_dims(fileSpace, fileDims.data(), nullptr);
-    //        for(int i = 0; i < ndims; i++) start[i] = fileDims[i] - memDims[i];
-    //        H5Sselect_hyperslab(fileSpace, H5S_SELECT_SET, start.data(), nullptr, memDims.data(), nullptr);
+    //    inline void setDatasetCreationPropertyLayout(const DsetProperties &dsetProps) {
+    //        switch(dsetProps.layout.value()) {
+    //            case H5D_CHUNKED: h5pp::logger::log->trace("Setting layout H5D_CHUNKED"); break;
+    //            case H5D_COMPACT: h5pp::logger::log->trace("Setting layout H5D_COMPACT"); break;
+    //            case H5D_CONTIGUOUS: h5pp::logger::log->trace("Setting layout H5D_CONTIGUOUS"); break;
+    //            default: throw std::runtime_error("Given invalid layout when creating dataset property list. Choose one of H5D_COMPACT,H5D_CONTIGUOUS,H5D_CHUNKED");
+    //        }
+    //        herr_t err = H5Pset_layout(dsetProps.plist_dset_create, dsetProps.layout.value());
+    //        if(err < 0) {
+    //            H5Eprint(H5E_DEFAULT, stderr);
+    //            throw std::runtime_error("Could not set layout");
+    //        }
+    //        if(dsetProps.layout.value() == H5D_CHUNKED) {
+    //            h5pp::logger::log->trace("Setting chunk dimensions [{}]", dsetProps.chunkDims.value());
+    //            err = H5Pset_chunk(dsetProps.plist_dset_create, dsetProps.ndims.value(), dsetProps.chunkDims.value().data());
+    //            if(err < 0) {
+    //                H5Eprint(H5E_DEFAULT, stderr);
+    //                throw std::runtime_error("Could not set chunk dimensions");
+    //            }
+    //        }
     //    }
-    //
+
+    //    inline void setDatasetCreationPropertyCompression(const DsetProperties &dsetProps) {
+    //        // Compression works only on chunked layouts
+    //        if(dsetProps.layout.value() != H5D_CHUNKED) {
+    //            h5pp::logger::log->trace("Compression ignored: Layout is not H5D_CHUNKED");
+    //            return;
+    //        }
+    //        h5pp::logger::log->trace("Setting compression level {}", dsetProps.compressionLevel.value());
+    //        // We assume that compression level is nonzero only if compression is actually available.
+    //        // We do not check it here, but H5Pset_deflate will return an error if zlib is not enabled.
+    //        if(dsetProps.compressionLevel and dsetProps.compressionLevel.value() == 0 and dsetProps.compressionLevel.value() < 10) {
+    //            if(dsetProps.layout.value() == H5D_CHUNKED) {
+    //                herr_t err = H5Pset_deflate(dsetProps.plist_dset_create, dsetProps.compressionLevel.value());
+    //                if(err < 0) {
+    //                    H5Eprint(H5E_DEFAULT, stderr);
+    //                    throw std::runtime_error("Failed to set compression level. Check that your HDF5 version has zlib enabled.");
+    //                } else {
+    //                    h5pp::logger::log->trace("Compression set to level {}", dsetProps.compressionLevel.value());
+    //                }
+    //            } else {
+    //                h5pp::logger::log->trace("Compression ignored: Layout is not H5D_CHUNKED");
+    //            }
+    //        } else if(dsetProps.compressionLevel) {
+    //            h5pp::logger::log->warn("Invalid compression level", dsetProps.compressionLevel.value());
+    //        }
+    //    }
+
+    //    inline void setDatasetExtent(const DsetProperties &dsetProps) {
+    //        // Setting extent works only on chunked layouts
+    //        if(dsetProps.layout.value() != H5D_CHUNKED) {
+    //            h5pp::logger::log->trace("Dataset extent ignored: Layout is not H5D_CHUNKED");
+    //            return;
+    //        }
+    //        h5pp::logger::log->trace("Setting dataset extent: {}", dsetProps.dims.value());
+    //        if(not dsetProps.dataSet) throw std::runtime_error(h5pp::format("Extent can only be set on a valid dataset id. Got [{}]", dsetProps.dataSet));
+    //        herr_t err = H5Dset_extent(dsetProps.dataSet, dsetProps.dims.value().data());
+    //        if(err < 0) {
+    //            H5Eprint(H5E_DEFAULT, stderr);
+    //            throw std::runtime_error("Could not set extent on dataset");
+    //        }
+    //    }
+
+    //    inline void setDataSpaceExtent(const DsetProperties &dsetProps) {
+    //        // Setting extent works only on chunked layouts
+    //        if(dsetProps.layout.value() != H5D_CHUNKED) {
+    //            h5pp::logger::log->trace("Dataspace extent ignored: Layout is not H5D_CHUNKED");
+    //            return;
+    //        }
+    //        h5pp::logger::log->trace("Setting dataspace extents: {}", dsetProps.dims.value());
+    //        if(not dsetProps.dataSpace) throw std::runtime_error(h5pp::format("Extent can only be set on a valid dataspace id. Got [{}]", dsetProps.dataSpace));
+    //        std::vector<hsize_t> maxDims(dsetProps.ndims.value());
+    //        std::fill_n(maxDims.begin(), dsetProps.ndims.value(), H5S_UNLIMITED);
+    //        herr_t err = H5Sset_extent_simple(dsetProps.dataSpace, dsetProps.ndims.value(), dsetProps.dims.value().data(), maxDims.data());
+    //        if(err < 0) {
+    //            H5Eprint(H5E_DEFAULT, stderr);
+    //            throw std::runtime_error("Could not set extent on dataspace");
+    //        }
+    //    }
+
+    //    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
+    //    void createDataset(const h5x &locId, DsetProperties &dsetProps, const PropertyLists &plists = PropertyLists()) {
+    //        // Here we create, or register, the dataset id and set its properties before writing data to it.
+    //        if(dsetProps.dsetExists and dsetProps.dsetExists.value()) return;
+    //        if(dsetProps.dataSet) return;
+    //        h5pp::logger::log->trace("Creating dataset [{}]", dsetProps.dsetPath.value());
+    //        dsetProps.dataSet = H5Dcreate(
+    //            locId, dsetProps.dsetPath.value().c_str(), dsetProps.dataType, dsetProps.dataSpace, plists.link_create, dsetProps.plist_dset_create, dsetProps.plist_dset_access);
+    //    }
 
     std::string getSpaceString(const hid::h5s &space) {
         std::string msg;
-        msg.append(h5pp::format(" | size {}", getSize(space)));
-        msg.append(h5pp::format(" | rank {}", getRank(space)));
-        msg.append(h5pp::format(" | dims {}", getDimensions(space)));
+        //        msg.append(h5pp::format(" | size {}", getSize(space, type)));
+        //        msg.append(h5pp::format(" | rank {}", getRank(space)));
+        //        msg.append(h5pp::format(" | dims {}", getDimensions(space, type)));
+        msg.append(h5pp::format(" | size {}", H5Sget_simple_extent_npoints(space)));
+        int                  rank = H5Sget_simple_extent_ndims(space);
+        std::vector<hsize_t> dims(rank, 0);
+        H5Sget_simple_extent_dims(space, dims.data(), nullptr);
+        msg.append(h5pp::format(" | rank {}", rank));
+        msg.append(h5pp::format(" | dims {}", dims));
         if(H5Sget_select_type(space) == H5S_SEL_HYPERSLABS) {
             HyperSlab slab(space);
-            msg.append("| -- hyperslab -- ");
-            if(slab.offset) msg.append(h5pp::format(" | offset {} ", slab.offset.value()));
-            if(slab.extent) msg.append(h5pp::format(" | extent {} ", slab.extent.value()));
-            if(slab.stride) msg.append(h5pp::format(" | stride {} ", slab.stride.value()));
-            if(slab.block) msg.append(h5pp::format(" | block {} ", slab.block.value()));
+            msg.append(slab.string());
         }
         return msg;
     }
@@ -867,7 +923,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    void logSpaceTranfer(const hid::h5s &src, const hid::h5s &tgt) {
+    void logSpaceTranfer(const hid::h5s &src, const hid::h5s &tgt, const hid::h5t &type) {
         if(h5pp::logger::getLogLevel() == 0) {
             auto msg_src = getSpaceString(src);
             auto msg_tgt = getSpaceString(tgt);
@@ -877,71 +933,85 @@ namespace h5pp::hdf5 {
         }
     }
 
+    void logSpaceCreate(const hid::h5s &tgt) {
+        if(h5pp::logger::getLogLevel() == 0) {
+            auto msg_tgt = getSpaceString(tgt);
+            if(msg_tgt.empty()) return;
+            h5pp::logger::log->trace("Creating space {}", msg_tgt);
+        }
+    }
+
     template<typename DimType = std::initializer_list<hsize_t>>
-    inline void selectHyperslab(hid::h5s &space, const HyperSlab &slab) { // DimType slabOffset_, const DimType slabExtent_, DimType slabStride_ = {}, DimType slabBlock_ = {}) {
-        if(slab.empty()) return;
+    inline void selectHyperslab(hid::h5s &       space,
+                                const HyperSlab &hyperSlab,
+                                H5S_seloper_t    selectOp = H5S_SELECT_OR) { // DimType slabOffset_, const DimType slabExtent_, DimType slabStride_ = {}, DimType slabBlock_ = {}) {
+        if(hyperSlab.empty()) return;
         int ndims = (size_t) H5Sget_simple_extent_ndims(space);
         if(ndims < 0) throw std::runtime_error("Failed to read space rank");
         auto                 rank = (size_t) ndims;
         std::vector<hsize_t> dims(rank);
         H5Sget_simple_extent_dims(space, dims.data(), nullptr);
         // If one of slabOffset or slabExtent is given, then the other must also be given
-        if(slab.offset and not slab.extent) throw std::logic_error("Could not setup metadata for read operation: Given hyperslab offset but not extent");
-        if(not slab.offset and slab.extent) throw std::logic_error("Could not setup metadata for read operation: Given hyperslab extent but not offset");
+        if(hyperSlab.offset and not hyperSlab.extent) throw std::logic_error("Could not setup metadata for read operation: Given hyperslab offset but not extent");
+        if(not hyperSlab.offset and hyperSlab.extent) throw std::logic_error("Could not setup metadata for read operation: Given hyperslab extent but not offset");
 
         // If given, ranks of slabOffset and slabExtent must be identical to each other and to the rank of the existing dataset
-        if(slab.offset and slab.extent and (slab.offset.value().size() != slab.extent.value().size()))
+        if(hyperSlab.offset and hyperSlab.extent and (hyperSlab.offset.value().size() != hyperSlab.extent.value().size()))
             throw std::logic_error(h5pp::format(
-                "Could not setup metadata for read operation: Size mismatch in given hyperslab arrays: offset {} | extent {}", slab.offset.value(), slab.extent.value()));
+                "Could not setup metadata for read operation: Size mismatch in given hyperslab arrays: offset {} | extent {}", hyperSlab.offset.value(), hyperSlab.extent.value()));
 
-        if(slab.offset and slab.offset.value().size() != rank)
+        if(hyperSlab.offset and hyperSlab.offset.value().size() != rank)
             throw std::logic_error(h5pp::format("Could not setup metadata for read operation for dataset [{}]: Hyperslab arrays have different rank compared to the given space: "
                                                 "offset {} | extent {} | space dims {}",
-                                                slab.offset.value(),
-                                                slab.extent.value(),
+                                                hyperSlab.offset.value(),
+                                                hyperSlab.extent.value(),
                                                 dims));
 
         // If given, slabStride must have the same rank as the dataset
-        if(slab.stride and slab.stride.value().size() != rank)
+        if(hyperSlab.stride and hyperSlab.stride.value().size() != rank)
             throw std::logic_error(h5pp::format("Could not setup metadata for read operation for dataset [{}]: Hyperslab stride has a different rank compared to the dataset: "
                                                 "stride {} | dataset dims {}",
-                                                slab.stride.value(),
+                                                hyperSlab.stride.value(),
                                                 dims));
         // If given, slabBlock must have the same rank as the dataset
-        if(slab.block and slab.block.value().size() != rank)
+        if(hyperSlab.block and hyperSlab.block.value().size() != rank)
             throw std::logic_error(h5pp::format("Could not setup metadata for read operation for dataset [{}]: Hyperslab stride has a different rank compared to the dataset: "
                                                 "block {} | dataset dims {}",
-                                                slab.block.value(),
+                                                hyperSlab.block.value(),
                                                 dims));
 
+        if(H5Sget_select_type(space) != H5S_SEL_HYPERSLABS) selectOp = H5S_SELECT_SET; // First operation must be H5S_SELECT_SET.
+
         /* clang-format off */
-        if(slab.offset and slab.extent and slab.stride and slab.block)
-            H5Sselect_hyperslab(space, H5S_SELECT_SET, slab.offset.value().data(), slab.stride.value().data(), slab.extent.value().data(), slab.block.value().data());
-        else if (slab.offset and slab.extent and slab.stride)
-            H5Sselect_hyperslab(space, H5S_SELECT_SET, slab.offset.value().data(), slab.stride.value().data(), slab.extent.value().data(), nullptr);
-        else if (slab.offset and slab.extent and slab.block)
-            H5Sselect_hyperslab(space, H5S_SELECT_SET, slab.offset.value().data(), nullptr, slab.extent.value().data(), slab.block.value().data());
-        else if (slab.offset and slab.extent)
-            H5Sselect_hyperslab(space, H5S_SELECT_SET, slab.offset.value().data(), nullptr, slab.extent.value().data(), nullptr);
+        if(hyperSlab.offset and hyperSlab.extent and hyperSlab.stride and hyperSlab.block)
+            H5Sselect_hyperslab(space, selectOp, hyperSlab.offset.value().data(), hyperSlab.stride.value().data(), hyperSlab.extent.value().data(), hyperSlab.block.value().data());
+        else if (hyperSlab.offset and hyperSlab.extent and hyperSlab.stride)
+            H5Sselect_hyperslab(space, selectOp, hyperSlab.offset.value().data(), hyperSlab.stride.value().data(), hyperSlab.extent.value().data(), nullptr);
+        else if (hyperSlab.offset and hyperSlab.extent and hyperSlab.block)
+            H5Sselect_hyperslab(space, selectOp, hyperSlab.offset.value().data(), nullptr, hyperSlab.extent.value().data(), hyperSlab.block.value().data());
+        else if (hyperSlab.offset and hyperSlab.extent)
+            H5Sselect_hyperslab(space, selectOp, hyperSlab.offset.value().data(), nullptr, hyperSlab.extent.value().data(), nullptr);
 
         /* clang-format on */
 
         htri_t valid = H5Sselect_valid(space);
         if(valid < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            std::string error_msg = h5pp::format("Hyperslab selection is invalid: dataset dims: {}", dims);
-            if(slab.offset) error_msg.append(h5pp::format(" | offset {}", slab.offset.value()));
-            if(slab.extent) error_msg.append(h5pp::format(" | extent {}", slab.extent.value()));
-            if(slab.stride) error_msg.append(h5pp::format(" | stride {}", slab.stride.value()));
-            if(slab.block) error_msg.append(h5pp::format(" | block {}", slab.block.value()));
-            throw std::runtime_error(error_msg);
+            HyperSlab slab(space);
+            throw std::runtime_error(h5pp::format("Hyperslab selection is invalid {}", slab.string()));
         }
     }
 
-    //    template<typename DimType = std::initializer_list<hsize_t>>
-    //    inline void selectHyperslab(hid::h5s &space, const HyperSlab &slab) {
-    //        selectHyperslab(space, slab.slabOffset, slab.slabExtent, slab.slabStride, slab.slabBlock);
-    //    }
+    inline void selectHyperSlabs(hid::h5s &space, const std::vector<HyperSlab> &hyperSlabs, std::optional<std::vector<H5S_seloper_t>> hyperSlabSelectOps = std::nullopt) {
+        if(hyperSlabSelectOps and not hyperSlabSelectOps->empty()) {
+            if(hyperSlabs.size() != hyperSlabSelectOps->size())
+                for(const auto &slab : hyperSlabs) selectHyperslab(space, slab, hyperSlabSelectOps->at(0));
+            else
+                for(size_t num = 0; num < hyperSlabs.size(); num++) selectHyperslab(space, hyperSlabs[num], hyperSlabSelectOps->at(num));
+
+        } else
+            for(const auto &slab : hyperSlabs) selectHyperslab(space, slab);
+    }
 
     namespace internal {
         inline long        maxSearchHits = -1;
@@ -985,259 +1055,191 @@ namespace h5pp::hdf5 {
         return matchList;
     }
 
+    void createDataset(const h5pp::MetaDset &metaDset, const PropertyLists &plists = PropertyLists()) {
+        // Here we create, the dataset id and set its properties before writing data to it.
+        metaDset.assertCreateReady();
+        if(metaDset.dsetExists.value()) return;
+        h5pp::logger::log->debug("Creating dataset {}", metaDset.string());
+        h5pp::hdf5::logSpaceCreate(metaDset.h5_space.value());
+        hid_t dsetID = H5Dcreate(metaDset.h5_file.value(),
+                                 metaDset.dsetPath.value().c_str(),
+                                 metaDset.h5_type.value(),
+                                 metaDset.h5_space.value(),
+                                 plists.link_create,
+                                 metaDset.h5_plist_dset_create.value(),
+                                 metaDset.h5_plist_dset_access.value());
+        if(dsetID <= 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Failed to create dataset [{}]", metaDset.dsetPath.value()));
+        }
+    }
+
+    inline void createAttribute(const MetaAttr &metaAttr) {
+        // Here we create, or register, the attribute id and set its properties before writing data to it.
+        metaAttr.assertCreateReady();
+        if(metaAttr.attrExists.value()) return;
+        h5pp::logger::log->trace("Creating attribute {}", metaAttr.string());
+        hid::h5a attrID = H5Acreate(metaAttr.h5_link.value(),
+                                    metaAttr.attrName->c_str(),
+                                    metaAttr.h5_type.value(),
+                                    metaAttr.h5_space.value(),
+                                    metaAttr.h5_plist_attr_create.value(),
+                                    metaAttr.h5_plist_attr_access.value());
+        if(attrID <= 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Failed to create attribute [{}] for link [{}]", metaAttr.attrName.value(), metaAttr.linkPath.value()));
+        }
+    }
+
+//    inline void createAttribute(AttributeProperties &attrProps) {
+//        // Here we create, or register, the attribute id and set its properties before writing data to it.
+//        if(attrProps.attrExists and attrProps.attrExists.value()) return;
+//        if(attrProps.attributeId) return;
+//        h5pp::logger::log->trace("Creating attribute [{}]", attrProps.attrName.value());
+//        attrProps.attributeId =
+//            H5Acreate(attrProps.linkObject, attrProps.attrName.value().c_str(), attrProps.dataType, attrProps.memSpace, attrProps.plist_attr_create, attrProps.plist_attr_access);
+//    }
+
     template<typename DataType>
     void writeDataset(const DataType &data, const MetaData &metaData, const MetaDset &metaDset, const PropertyLists &plists = PropertyLists()) {
-        metaDset.assertWriteReady();
-        metaData.assertWriteReady();
-        //        metaSpace.assertSpaceReady();
-        //        HyperSlab memSlab (metaSpace.h5_memSpace.value());
-        //        HyperSlab fileSlab (metaSpace.h5_fileSpace.value());
-
-        h5pp::logger::log->debug("Writing to dataset [{}] | size {} | bytes {} | ndims {} | dims {} | type {}",
-                                 metaDset.dsetPath.value(),
-                                 metaDset.dsetSize.value(),
-                                 metaDset.dsetByte.value(),
-                                 metaDset.dsetRank.value(),
-                                 metaDset.dsetDims.value(),
-                                 h5pp::type::sfinae::type_name<DataType>());
-
-        // TODO: REMEMBER TO EXTEND CHUNKED DATASETS TO THE NEW SIZE
-
-
-
-        h5pp::hdf5::assertSpacesEqual(metaData.h5_space.value(), metaDset.h5_space.value(), metaDset.h5_layout.value());
-        h5pp::hdf5::assertBytesPerElemMatch<DataType>(metaDset.h5_type.value());
-        h5pp::hdf5::assertBytesMatchTotal<DataType>(data, metaDset.h5_dset.value());
-        h5pp::hdf5::logSpaceTranfer(metaData.h5_space.value(), metaDset.h5_space.value());
-
-        herr_t retval = 0;
-
 #ifdef H5PP_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_colmajor_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting data to row-major storage order");
             const auto tempRowm = eigen::to_RowMajor(data); // Convert to Row Major first;
             h5pp::hdf5::writeDataset(tempRowm, metaData, metaDset, plists);
-        } else
-#endif
-            if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            retval = H5Dwrite(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaData.h5_space.value(), plists.dset_xfer, data.data());
-        else if constexpr(std::is_pointer_v<DataType>)
-            retval = H5Dwrite(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaData.h5_space.value(), plists.dset_xfer, data);
-        else
-            retval = H5Dwrite(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaData.h5_space.value(), plists.dset_xfer, &data);
-
-        if(retval < 0) {
-            H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to write number to file");
+            return;
         }
-    }
+#endif
+        metaDset.assertWriteReady();
+        metaData.assertWriteReady();
+        h5pp::logger::log->debug("Writing from memory  {}", metaData.string());
+        h5pp::logger::log->debug("Writing into dataset {}", metaDset.string());
 
+        // TODO: REMEMBER TO EXTEND CHUNKED DATASETS TO THE NEW SIZE
 
-
-    template<typename DataType>
-    void readDataset(DataType &data, const MetaData &metaData, const MetaDset &metaDset, const PropertyLists &plists = PropertyLists()) {
-        metaDset.assertReadReady();
-        metaData.assertReadReady();
-        h5pp::logger::log->debug("Reading from dataset [{}] | size {} | bytes {} | ndims {} | dims {} | type {}",
-                                 metaDset.dsetPath.value(),
-                                 metaDset.dsetSize.value(),
-                                 metaDset.dsetByte.value(),
-                                 metaDset.dsetRank.value(),
-                                 metaDset.dsetDims.value(),
-                                 h5pp::type::sfinae::type_name<DataType>());
-
-        h5pp::hdf5::assertSpacesEqual(metaData.h5_space.value(), metaDset.h5_space.value(), metaDset.h5_layout.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(metaDset.h5_type.value());
-        h5pp::hdf5::logSpaceTranfer(metaDset.h5_space.value(), metaData.h5_space.value());
+        h5pp::hdf5::assertBytesMatchTotal<DataType>(data, metaDset.h5_dset.value());
+        h5pp::hdf5::assertSpacesEqual(metaData.h5_space.value(), metaDset.h5_space.value(), metaDset.h5_layout.value());
+        h5pp::hdf5::logSpaceTranfer(metaData.h5_space.value(), metaDset.h5_space.value(), metaDset.h5_type.value());
+
         herr_t retval = 0;
-        // Resize/transpose the data container before writing
-
-#ifdef H5PP_EIGEN3
-        if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType>) {
-            if constexpr(h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
-                data.resize(metaDset.dsetDims.value()[0]);
-            } else if constexpr(h5pp::type::sfinae::is_eigen_rowmajor_v<DataType>) {
-                // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
-                data.resize(metaDset.dsetDims.value()[0], metaDset.dsetDims.value()[1]);
-            } else if constexpr(h5pp::type::sfinae::is_eigen_colmajor_v<DataType>) {
-                // Data is RowMajor in HDF5, user gave a ColMajor container we need to swap layout.
-                h5pp::logger::log->debug("Transforming data to row major");
-                Eigen::Matrix<typename DataType::Scalar, DataType::RowsAtCompileTime, DataType::RowsAtCompileTime, Eigen::RowMajor> matrixRowmajor;
-                readDataset(matrixRowmajor, metaData, metaDset, plists);
-                data = matrixRowmajor;
-                return;
-            } else {
-                throw std::runtime_error("Error detecting matrix type");
-            }
-        } else if constexpr(h5pp::type::sfinae::is_eigen_tensor<DataType>()) {
-            if constexpr(DataType::Options == Eigen::RowMajor) {
-                // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
-                auto eigenDims = eigen::copy_dims<DataType::NumDimensions>(metaDset.dsetDims.value());
-                data.resize(eigenDims);
-            } else {
-                // Data is RowMajor in HDF5, user gave a ColMajor container we need to swap layout.
-                h5pp::logger::log->debug("Transforming data to row major");
-                Eigen::Tensor<typename DataType::Scalar, DataType::NumIndices, Eigen::RowMajor> tensorRowmajor;
-                readDataset(tensorRowmajor, metaData, metaDset, plists);
-                data = eigen::to_ColMajor(tensorRowmajor);
-                return;
-            }
-        } else
-#endif // H5PP_EIGEN3
-
-            //        if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
-            //            if(metaDset.dsetRank != 1) throw std::runtime_error("std container must be one-dimensional");
-            //            data.resize(metaDset.dsetSize.value());
-            //        }
-
-            h5pp::hdf5::assertBytesMatchTotal(data, metaDset.h5_dset.value());
-
-        // Read the data into the container
 
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            retval = H5Dread(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaDset.h5_space.value(), plists.dset_xfer, data.data());
-        else if constexpr(h5pp::type::sfinae::is_std_complex_v<DataType> or h5pp::type::sfinae::is_ScalarN<DataType>() or std::is_arithmetic_v<DataType>)
-            retval = H5Dread(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaDset.h5_space.value(), plists.dset_xfer, &data);
-        else {
-            logger::log->warn("Attempting to read dataset of unknown type [{}] | type [{}]", metaDset.dsetPath.value(), type::sfinae::type_name<DataType>());
-            retval = H5Dread(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaDset.h5_space.value(), plists.dset_xfer, &data);
-        }
+            retval = H5Dwrite(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaDset.h5_space.value(), plists.dset_xfer, data.data());
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
+            retval = H5Dwrite(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaDset.h5_space.value(), plists.dset_xfer, data);
+        else
+            retval = H5Dwrite(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaDset.h5_space.value(), plists.dset_xfer, &data);
+
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Failed  to read dataset [{}] | type [{}]", metaDset.dsetPath.value(), type::sfinae::type_name<DataType>()));
+            throw std::runtime_error(h5pp::format("Failed to write into dataset \n\t {} \n from memory \n\t {}", metaDset.string(), metaData.string()));
         }
     }
 
-    template<typename DataType>
-    void writeAttribute(const DataType &data, const AttributeProperties &props) {
-        h5pp::logger::log->debug("Writing attribute [{}] | link [{}] | size {} | bytes {} | ndims {} | dims {} | type {}",
-                                 props.attrName.value(),
-                                 props.linkName.value(),
-                                 props.size.value(),
-                                 props.bytes.value(),
-                                 props.ndims.value(),
-                                 props.dims.value(),
-                                 type::sfinae::type_name<DataType>());
-        h5pp::hdf5::assertBytesPerElemMatch<DataType>(props.dataType);
+    template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+    void readDataset(DataType &data, const MetaData &metaData, const MetaDset &metaDset, const PropertyLists &plists = PropertyLists()) {
+// Transpose the data container before reading
 #ifdef H5PP_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_colmajor_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting data to row-major storage order");
-            const auto tempRowm = eigen::to_RowMajor(data); // Convert to Row Major first;
-            h5pp::hdf5::writeAttribute(tempRowm, props);
-        } else
+            auto tempRowMajor = eigen::to_RowMajor(data); // Convert to Row Major first;
+            h5pp::hdf5::readDataset(tempRowMajor, metaData, metaDset, plists);
+            data = eigen::to_ColMajor(tempRowMajor);
+            return;
+        }
 #endif
 
-            if constexpr(h5pp::type::sfinae::has_c_str_v<DataType>) {
-            herr_t retval = H5Awrite(props.attributeId, props.dataType, data.c_str());
-            if(retval < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error(h5pp::format("Failed to write text attribute to link [{}]", props.linkName.value()));
-            }
-        } else if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
-            herr_t retval = H5Awrite(props.attributeId, props.dataType, data.data());
-            if(retval < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error(h5pp::format("Failed to write data attribute to link [{}]", props.linkName.value()));
-            }
-        } else {
-            herr_t retval = H5Awrite(props.attributeId, props.dataType, &data);
-            if(retval < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error(h5pp::format("Failed to write attribute to link [{}]", props.linkName.value()));
-            }
+        metaDset.assertReadReady();
+        metaData.assertReadReady();
+        h5pp::logger::log->debug("Reading into memory  {}", metaData.string());
+        h5pp::logger::log->debug("Reading from dataset {}", metaDset.string());
+
+//        h5pp::hdf5::assertSpacesEqual(metaData.h5_space.value(), metaDset.h5_space.value(), metaDset.h5_layout.value());
+        h5pp::hdf5::assertBytesPerElemMatch<DataType>(metaDset.h5_type.value());
+        h5pp::hdf5::assertBytesMatchTotal(data, metaDset.h5_dset.value());
+        h5pp::hdf5::logSpaceTranfer(metaDset.h5_space.value(), metaData.h5_space.value(), metaDset.h5_type.value());
+        herr_t retval = 0;
+
+        // Read the data
+
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
+            retval = H5Dread(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaDset.h5_space.value(), plists.dset_xfer, data.data());
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
+            retval = H5Dread(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaDset.h5_space.value(), plists.dset_xfer, data);
+        else
+            retval = H5Dread(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaDset.h5_space.value(), plists.dset_xfer, &data);
+
+        if(retval < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Failed to read from dataset \n\t {} \n into memory \n\t {}", metaDset.string(), metaData.string()));
         }
     }
 
     template<typename DataType>
-    void readAttribute(DataType &data, const AttributeProperties &props) {
-        if(not props.linkExists or not props.linkExists.value())
-            throw std::runtime_error(h5pp::format("Tried to read attribute [{}] in non-existing link [{}]", props.attrName.value(), props.linkName.value()));
-        if(not props.attrExists or not props.attrExists.value())
-            throw std::runtime_error(h5pp::format("Tried to read non-existing attribute [{}] in link [{}]", props.attrName.value(), props.linkName.value()));
-
-        h5pp::logger::log->debug("Reading attribute [{}] | link {} | size {} | ndims {} | dims {} | type {}",
-                                 props.attrName.value(),
-                                 props.linkName.value(),
-                                 props.size.value(),
-                                 props.ndims.value(),
-                                 props.dims.value(),
-                                 type::sfinae::type_name<DataType>());
-        h5pp::hdf5::assertBytesPerElemMatch<DataType>(props.dataType);
-
+    void writeAttribute(const DataType &data, const MetaData &metaData, const MetaAttr &metaAttr) {
 #ifdef H5PP_EIGEN3
-        if constexpr(h5pp::type::sfinae::is_eigen_core_v<DataType>) {
-            if(data.IsRowMajor) {
-                // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
-                data.resize(props.dims.value()[0], props.dims.value()[1]);
-                if(H5Aread(props.attributeId, props.dataType, data.data()) < 0) {
-                    H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to read Eigen Matrix rowmajor dataset");
-                }
-            } else {
-                // Data is RowMajor in HDF5, user gave a ColMajor container so we need to swap the layout.
-                h5pp::logger::log->debug("Transforming data to row major");
-                Eigen::Matrix<typename DataType::Scalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> matrixRowmajor;
-                matrixRowmajor.resize(props.dims.value()[0], props.dims.value()[1]); // Data is transposed in HDF5!
-                if(H5Aread(props.attributeId, props.dataType, matrixRowmajor.data()) < 0) {
-                    H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to read Eigen Matrix colmajor dataset");
-                }
-                data = matrixRowmajor;
-            }
-
-        } else if constexpr(h5pp::type::sfinae::is_eigen_tensor<DataType>()) {
-            auto eigenDims = eigen::copy_dims<DataType::NumDimensions>(props.dims.value());
-            if constexpr(DataType::Options == Eigen::RowMajor) {
-                // Data is RowMajor in HDF5, user gave a RowMajor container so no need to swap layout.
-                data.resize(eigenDims);
-                if(H5Aread(props.attributeId, props.dataType, data.data()) < 0) {
-                    H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to read Eigen Tensor rowmajor dataset");
-                }
-            } else {
-                // Data is RowMajor in HDF5, user gave a ColMajor container so we need to swap the layout.
-                h5pp::logger::log->debug("Transforming data to row major");
-                Eigen::Tensor<typename DataType::Scalar, DataType::NumIndices, Eigen::RowMajor> tensorRowmajor(eigenDims);
-                if(H5Aread(props.attributeId, props.dataType, tensorRowmajor.data()) < 0) {
-                    H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to read Eigen Tensor colmajor dataset");
-                }
-                data = eigen::to_ColMajor(tensorRowmajor);
-            }
-        } else
+        if constexpr(h5pp::type::sfinae::is_eigen_colmajor_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
+            h5pp::logger::log->debug("Converting attribute data to row-major storage order");
+            const auto tempRowm = eigen::to_RowMajor(data); // Convert to Row Major first;
+            h5pp::hdf5::writeAttribute(tempRowm, metaData, metaAttr);
+            return;
+        }
 #endif
-            if constexpr(h5pp::type::sfinae::is_std_vector_v<DataType>) {
-            if(props.ndims.value() != 1) throw std::runtime_error(h5pp::format("Vector cannot take datatypes with dimension [{}]", props.ndims.value()));
-            data.resize(props.dims.value()[0]);
-            if(H5Aread(props.attributeId, props.dataType, data.data()) < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to read std::vector dataset");
-            }
-        } else if constexpr(h5pp::type::sfinae::is_std_array_v<DataType>) {
-            if(props.ndims.value() != 1) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error(h5pp::format("Array cannot take datatypes with dimension [{}]", props.ndims.value()));
-            }
-            if(H5Aread(props.attributeId, props.dataType, data.data()) < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to read std::vector dataset");
-            }
-        } else if constexpr(std::is_same_v<std::string, DataType>) {
-            if(props.ndims.value() != 1) throw std::runtime_error(h5pp::format("std::string expected ndims 1. Got [{}]", props.ndims.value()));
-            hsize_t stringsize = H5Tget_size(props.dataType);
-            data.resize(stringsize);
-            if(H5Aread(props.attributeId, props.dataType, data.data()) < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to read std::string dataset");
-            }
+        metaData.assertWriteReady();
+        metaAttr.assertWriteReady();
 
-        } else if constexpr(std::is_arithmetic_v<DataType> or h5pp::type::sfinae::is_std_complex_v<DataType>) {
-            if(H5Aread(props.attributeId, props.dataType, &data) < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to read arithmetic type dataset");
-            }
-        } else {
-            throw std::runtime_error("Attempted to read dataset of unknown type");
+        h5pp::logger::log->debug("Writing from memory    {}", metaData.string());
+        h5pp::logger::log->debug("Writing into attribute {}", metaAttr.string());
+        h5pp::hdf5::assertBytesPerElemMatch<DataType>(metaAttr.h5_type.value());
+        h5pp::hdf5::assertBytesMatchTotal(data, metaAttr.h5_attr.value());
+        h5pp::hdf5::assertSpacesEqual(metaData.h5_space.value(), metaAttr.h5_space.value(), H5D_COMPACT);
+        h5pp::hdf5::logSpaceTranfer(metaData.h5_space.value(), metaAttr.h5_space.value(), metaAttr.h5_type.value());
+
+        herr_t retval = 0;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
+            retval = H5Awrite(metaAttr.h5_attr.value(), metaAttr.h5_type.value(), data.data());
+        else if constexpr(std::is_pointer_v<DataType>)
+            retval = H5Awrite(metaAttr.h5_attr.value(), metaAttr.h5_type.value(), data);
+        else
+            retval = H5Awrite(metaAttr.h5_attr.value(), metaAttr.h5_type.value(), &data);
+
+        if(retval < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Failed to write into attribute \n\t {} \n from memory \n\t {}", metaAttr.string(), metaData.string()));
+        }
+    }
+
+    template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+    void readAttribute(DataType &data, const MetaData &metaData, const MetaAttr &metaAttr) {
+        // Transpose the data container before reading
+#ifdef H5PP_EIGEN3
+        if constexpr(h5pp::type::sfinae::is_eigen_colmajor_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
+            h5pp::logger::log->debug("Converting data to row-major storage order");
+            auto tempRowMajor = eigen::to_RowMajor(data); // Convert to Row Major first;
+            h5pp::hdf5::readAttribute(tempRowMajor, metaData, metaAttr);
+            data = eigen::to_ColMajor(tempRowMajor);
+            return;
+        }
+#endif
+        metaData.assertReadReady();
+        metaAttr.assertReadReady();
+        h5pp::logger::log->debug("Reading into memory {}", metaData.string());
+        h5pp::logger::log->debug("Reading from file   {}", metaAttr.string());
+        h5pp::hdf5::assertSpacesEqual(metaData.h5_space.value(), metaAttr.h5_space.value(),H5D_COMPACT);
+        h5pp::hdf5::assertBytesPerElemMatch<DataType>(metaAttr.h5_type.value());
+        h5pp::hdf5::assertBytesMatchTotal(data, metaAttr.h5_attr.value());
+        h5pp::hdf5::logSpaceTranfer(metaAttr.h5_space.value(), metaData.h5_space.value(), metaAttr.h5_type.value());
+        herr_t retval = 0;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
+            retval = H5Aread(metaAttr.h5_attr.value(), metaAttr.h5_type.value(), data.data());
+        else if constexpr(std::is_pointer_v<DataType>)
+            retval = H5Aread(metaAttr.h5_attr.value(), metaAttr.h5_type.value(), data);
+        else
+            retval = H5Aread(metaAttr.h5_attr.value(), metaAttr.h5_type.value(), &data);
+        if(retval < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Failed to read from attribute \n\t {} \n into memory \n\t {}", metaAttr.string(), metaData.string()));
         }
     }
 
