@@ -167,6 +167,21 @@ namespace h5pp::type::sfinae {
     inline constexpr bool is_integral_list_v = is_integral_list<T>::value;
 
     template<typename T>
+    struct is_integral_num_or_list {
+        private:
+        template<typename U>
+        static constexpr bool test() {
+            if constexpr(is_integral_list_v<T>) return true;
+            return std::is_integral_v<T>;
+        }
+
+        public:
+        static constexpr bool value = test<T>();
+    };
+    template<typename T>
+    inline constexpr bool is_integral_num_or_list_v = is_integral_num_or_list<T>::value;
+
+    template<typename T>
     using is_iterable_or_nullopt = std::enable_if_t<is_iterable_v<T> or std::is_same_v<T, std::nullopt_t>>;
 
     template<typename T>
@@ -192,7 +207,7 @@ namespace h5pp::type::sfinae {
     template<typename Outer, typename Inner>
     struct is_container_of {
         private:
-        template<typename O,typename I>
+        template<typename O, typename I>
         static constexpr bool test() {
             using Od = typename std::decay<O>::type;
             using Id = typename std::decay<I>::type;
