@@ -4,7 +4,7 @@
 int main() {
 
     // Initialize a file
-    h5pp::File file("exampledir/example1.h5");
+    h5pp::File file("exampledir/example-step1-write-stdvector.h5");
 
     // Initialize a vector with 10 doubles
     std::vector<double> v (10, 3.14);

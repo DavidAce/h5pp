@@ -3,7 +3,7 @@
 int main() {
 #if __has_include(<Eigen/Core>)
     // Initialize a file
-    h5pp::File file("exampledir/example3.h5", h5pp::FilePermission::REPLACE,0);
+    h5pp::File file("exampledir/example-step2-eigen.h5", h5pp::FilePermission::REPLACE,0);
 
     // Initialize a 10x10 Eigen matrix with random complex entries
     Eigen::MatrixXcd m1 = Eigen::MatrixXcd::Random(5, 5);

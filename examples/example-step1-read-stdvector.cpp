@@ -2,7 +2,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example2.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-step1-read-stdvector.h5", h5pp::FilePermission::REPLACE);
 
     // Initialize an empty a vector of doubles
     std::vector<double> v(10,3.14);
