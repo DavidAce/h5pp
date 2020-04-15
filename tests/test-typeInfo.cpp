@@ -40,11 +40,11 @@ int main() {
     file.writeAttribute(AttributeCharArray, "AttributeCharArray", "testGroup/vectorDouble");
 
     for(auto &info : file.getAttributeTypeInfoAll("testGroup/vectorDouble")) {
-        std::cout << info.name() << ": type [" << info.type().name() << "] size: " << info.size() << std::endl;
+        std::cout << info.string() << std::endl;
     }
 
     auto info = file.getDatasetTypeInfo("testGroup/vectorDouble");
-    std::cout << info.name() << ": type [" << info.type().name() << "] size: " << info.size() << std::endl;
+    std::cout << info.string() << std::endl;
 
     return 0;
 }

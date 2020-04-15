@@ -9,12 +9,24 @@ int main() {
     size_t      logLevel       = 0;
     h5pp::File  file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
 
-    using namespace std::complex_literals;
-    std::vector<std::complex<double>> vectorComplexDouble(10000, {10.0, 5.0});
     std::string                       somestring = "this is a teststring";
 
-    // Now write
+
+    // Start with a typical type
+    std::vector<std::complex<double>> vectorComplexDouble(10, {10.0, 5.0});
+    // Write and overwrite
     file.writeDataset(vectorComplexDouble, "overWriteGroup_chunked/vectorComplexDouble", H5D_CHUNKED);
+    file.writeDataset(vectorComplexDouble, "overWriteGroup_chunked/vectorComplexDouble");
+    if(vectorComplexDouble != file.readDataset<std::vector<std::complex<double>>>("overWriteGroup_chunked/vectorComplexDouble"))
+        throw std::runtime_error("vectorComplexDouble not the same after overwrite");
+
+    // Increase size and overwirte
+    vectorComplexDouble.resize(150, {10.0, 5.0});
+    file.writeDataset(vectorComplexDouble, "overWriteGroup_chunked/vectorComplexDouble");
+    if(vectorComplexDouble != file.readDataset<std::vector<std::complex<double>>>("overWriteGroup_chunked/vectorComplexDouble"))
+        throw std::runtime_error("vectorComplexDouble not the same after resize+overwrite");
+
+
     file.writeDataset(somestring, "overWriteGroup_chunked/somestring", H5D_CHUNKED);
 
     // Now overwrite
