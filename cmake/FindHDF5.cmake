@@ -268,10 +268,12 @@ function(find_package_hdf5_exec_wrapper)
             $ENV{EBROOTHDF5}
             ${H5PP_DIRECTORY_HINTS}
             ${CMAKE_BINARY_DIR}/h5pp-deps-install
-            /usr /usr/local
             ${CMAKE_INSTALL_PREFIX}
             $ENV{CONDA_PREFIX}
-            $ENV{PATH})
+            )
+    if(NOT NO_DEFAULT_PATH)
+        list(APPEND HDF5_PATHS $ENV{PATH} /usr /usr/local)
+    endif()
 
 
     foreach(hdf5_root ${HDF5_PATHS})
@@ -298,7 +300,7 @@ function(find_package_hdf5_config_wrapper)
     set(HDF5_FIND_VERSION "") # The user has probably installed the latest version
     find_package(HDF5
             COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
-            HINTS ${hdf5_install_prefix} ${H5PP_DIRECTORY_HINTS} ${CMAKE_INSTALL_PREFIX} ${CMAKE_INSTALL_PREFIX}/hdf5
+            HINTS ${hdf5_install_prefix} ${H5PP_DIRECTORY_HINTS} ${CMAKE_INSTALL_PREFIX} ${CMAKE_INSTALL_PREFIX}/hdf5  ${CMAKE_INSTALL_PREFIX}/hdf5/share/cmake
             PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build
             NO_DEFAULT_PATH CONFIG)
     if(HDF5_FOUND)
@@ -360,6 +362,9 @@ if(NOT HDF5_FIND_VERBOSE)
     set(HDF5_FIND_VERBOSE OFF)
 endif()
 
+if(HDF5_NO_DEFAULT_PATH)
+    set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
+endif()
 
 if(NOT HDF5_FOUND)
     # Try finding HDF5 where it would have been installed previously by h5pp

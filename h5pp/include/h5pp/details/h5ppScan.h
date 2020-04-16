@@ -161,7 +161,11 @@ namespace h5pp::scan {
         meta.attrExists = h5pp::hdf5::checkIfAttributeExists(file, meta.linkPath.value(), meta.attrName.value(), meta.linkExists.value(), std::nullopt, plists.link_access);
         meta.h5_type    = h5pp::util::getH5Type<DataType>(options.h5_type);
         meta.h5_plist_attr_create = H5Pcreate(H5P_ATTRIBUTE_CREATE);
+#if H5_VERSION_GE(1,10,0)
         meta.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
+#else
+        meta.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_CREATE); //Missing access property in HDF5 1.8.x
+#endif
         meta.attrSize = h5pp::util::getSize(data,options.dataDims);
         meta.attrByte = h5pp::util::getBytesTotal(data);
         meta.attrRank = h5pp::util::getRank<DataType>(options.dataDims);
