@@ -264,6 +264,7 @@ namespace h5pp {
             /* clang-format off */
             if(not h5_attr             ) error_msg.append("\n\t h5_attr");
             if(not h5_type             ) error_msg.append("\n\t h5_type");
+            if(not h5_space            ) error_msg.append("\n\t h5_space");
             if(not error_msg.empty())
                 throw std::runtime_error("Cannot create attribute. The following meta fields are undefined\n\t" + error_msg);
             if(not h5_attr->valid()             ) error_msg.append("\n\t h5_attr");
@@ -277,7 +278,12 @@ namespace h5pp {
             std::string msg;
             /* clang-format off */
             if(attrSize) msg.append(h5pp::format(" | size {}", attrSize.value()));
-            if(attrByte) msg.append(h5pp::format(" | bytes {}", attrByte.value()));
+            if(attrByte) {
+                if(h5_type and H5Tis_variable_str(h5_type.value()))
+                    msg.append(" | bytes -");
+                else
+                    msg.append(h5pp::format(" | bytes {}", attrByte.value()));
+            }
             if(attrRank) msg.append(h5pp::format(" | rank {}", attrRank.value()));
             if(attrDims) msg.append(h5pp::format(" | dims {}", attrDims.value()));
             if(attrName) msg.append(h5pp::format(" | name [{}]",attrName.value()));
