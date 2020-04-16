@@ -77,5 +77,29 @@ int main() {
 
 //    char stringDummyChar[stringDummyRead.size() + 1];
 //    stringDummyRead.copy(stringDummyChar, stringDummyRead.size() + 1);
+
+
+    // Now let's try some text attributes
+    std::string stringAttribute = "This is a dummy string attribute";
+    file.writeAttribute(stringAttribute, "stringAttribute", "vecString");
+
+    auto stringAttributeRead = file.readAttribute<std::string>("stringAttribute", "vecString");
+    std::cout << "\nstringAttribute read:\n" << stringAttributeRead << std::endl;
+    if(stringAttribute != stringAttributeRead)
+        throw std::runtime_error(h5pp::format("stringAttribute failed: [{}] != [{}]", stringAttribute, stringAttributeRead));
+
+
+    std::vector<std::string> multiStringAttribute = {"This is another dummy string attribute", "With many elements"};
+    file.writeAttribute(multiStringAttribute, "multiStringAttribute", "vecString");
+    auto multiStringAttributeRead = file.readAttribute<std::vector<std::string>>("multiStringAttribute", "vecString");
+    std::cout << "\nmultiStringAttribute read: " << std::endl;
+    for(auto & elem : multiStringAttributeRead)
+        std::cout << elem << std::endl;
+
+    if(multiStringAttributeRead.size() != multiStringAttribute.size())
+        throw std::runtime_error(h5pp::format("multiStringAttribute read size mismatch: [{}] != [{}]", multiStringAttribute.size(), multiStringAttributeRead.size()));
+    for(size_t i = 0; i < multiStringAttribute.size(); i++)
+        if(multiStringAttribute[i] != multiStringAttributeRead[i]) throw std::runtime_error(h5pp::format("Vecstring read element mismatch: [{}] != [{}]", multiStringAttribute[i], multiStringAttributeRead[i]));
+
     return 0;
 }
