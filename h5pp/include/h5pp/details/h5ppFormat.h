@@ -5,10 +5,10 @@
     #define SPDLOG_FMT_EXTERNAL
 #endif
 
-#if defined(SPDLOG_FMT_EXTERNAL_TEMP)
+#if defined(SPDLOG_FMT_EXTERNAL)
     #include <fmt/format.h>
     #include <fmt/ranges.h>
-#elif __has_include(<spdlog/fmt/bundled/format.h_TEMP>)
+#elif __has_include(<spdlog/fmt/bundled/format.h>)
     #include <spdlog/fmt/bundled/format.h>
     #include <spdlog/fmt/bundled/ranges.h>
     #define SPDLOG_FMT_INTERNAL
@@ -25,7 +25,7 @@
 
 namespace h5pp {
 
-#if defined(SPDLOG_FMT_INTERNAL_TEMP) || defined(SPDLOG_FMT_EXTERNAL)
+#if defined(SPDLOG_FMT_INTERNAL) || defined(SPDLOG_FMT_EXTERNAL)
     template<typename... Args>
     [[nodiscard]] std::string format(Args... args) {
         return fmt::format(std::forward<Args>(args)...);
