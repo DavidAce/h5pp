@@ -93,7 +93,8 @@ jobs:
           fi
           sudo apt-get update
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            sudo apt-get install -y g++-${{ matrix.version }} g++-${{ matrix.version }}-multilib gfortran ${{ matrix.apt }}
+            sudo apt-get install -y g++-${{ matrix.version }} gfortran ${{ matrix.apt }}
+          # g++-${{ matrix.version }}-multilib
             echo "::set-env name=CC::gcc-${{ matrix.version }}"
             echo "::set-env name=CXX::g++-${{ matrix.version }}"
           else
