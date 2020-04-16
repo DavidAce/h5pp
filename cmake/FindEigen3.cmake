@@ -56,12 +56,13 @@ macro(_eigen3_check_version)
 endmacro()
 
 
-if(EIGEN3_NO_DEFAULT_PATH)
+if(EIGEN3_NO_DEFAULT_PATH OR Eigen3_NO_DEFAULT_PATH)
     set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
 endif()
-if(EIGEN3_NO_CMAKE_PACKAGE_REGISTRY)
+if(EIGEN3_NO_CMAKE_PACKAGE_REGISTRY OR Eigen3_NO_CMAKE_PACKAGE_REGISTRY)
     set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
 endif()
+
 
 # With this particular order we can manually override where we should look for Eigen first
 # Recall that H5PP_DIRECTORY_HINTS may have CONDA_PREFIX first inside if PREFER_CONDA_LIBS=ON
@@ -79,6 +80,7 @@ find_package(Eigen3 ${Eigen3_FIND_VERSION}
         HINTS ${EIGEN3_DIRECTORY_HINTS}
         PATHS $ENV{CONDA_PREFIX}
         PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3 Eigen3/include/eigen3
+        Eigen3_NO_DEFAULT_PATH
         ${NO_DEFAULT_PATH}
         ${NO_CMAKE_PACKAGE_REGISTRY}
         CONFIG QUIET)
