@@ -20,7 +20,7 @@ void print_point(const SpaceTimePoint &p) {
 }
 
 int main() {
-    h5pp::File file("exampledir/example6.h5", h5pp::FilePermission::REPLACE, 0);
+    h5pp::File file("exampledir/example-step3-struct-hard.h5", h5pp::FilePermission::REPLACE, 0);
 
     // Specify the array "coordinates" as rank-1 array of length 4
     std::vector<hsize_t> dims = {4};

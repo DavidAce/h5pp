@@ -17,7 +17,7 @@ void print_particle(const Particle &p) { std::cout << " \t x: " << p.x << " \t y
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example7.h5", h5pp::FilePermission::REPLACE,0);
+    h5pp::File file("exampledir/example-step3-tables.h5", h5pp::FilePermission::REPLACE,0);
 
     // Register the compound type
     h5pp::hid::h5t MY_HDF5_PARTICLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Particle));
