@@ -4,18 +4,18 @@
 #include "h5ppTypeSfinae.h"
 #include <hdf5.h>
 #include <type_traits>
-
 #include <vector>
 namespace h5pp {
     class HyperSlab {
         public:
         // Hyperslab properties. Read here https://support.hdfgroup.org/HDF5/doc/RM/RM_H5S.html#Dataspace-SelectHyperslab
-        std::optional<std::vector<hsize_t>> offset = std::nullopt; /*!< The start position of a hyperslab */
-        std::optional<std::vector<hsize_t>> extent = std::nullopt; /*!< The extent (or "count") of a hyperslab */
-        std::optional<std::vector<hsize_t>> stride = std::nullopt; /*!< The stride of a hyperslab. Empty means contiguous */
-        std::optional<std::vector<hsize_t>> block  = std::nullopt; /*!< The block size of each element in  the hyperslab. Empty means 1x1 */
-        std::optional<H5S_sel_type> select_type = std::nullopt;
-        HyperSlab() = default;
+
+        std::optional<std::vector<hsize_t>> offset      = std::nullopt; /*!< The start position of a hyperslab */
+        std::optional<std::vector<hsize_t>> extent      = std::nullopt; /*!< The extent (or "count") of a hyperslab */
+        std::optional<std::vector<hsize_t>> stride      = std::nullopt; /*!< The stride of a hyperslab. Empty means contiguous */
+        std::optional<std::vector<hsize_t>> block       = std::nullopt; /*!< The block size of each element in  the hyperslab. Empty means 1x1 */
+        std::optional<H5S_sel_type>         select_type = std::nullopt;
+        HyperSlab()                                     = default;
         template<typename DimType = std::initializer_list<hsize_t>>
         HyperSlab(DimType slabOffset_, DimType slabExtent_, DimType slabStride_ = {}, DimType slabBlock_ = {}) {
             offset = getOptionalIterable(slabOffset_);
@@ -35,23 +35,23 @@ namespace h5pp {
                 stride = std::vector<hsize_t>(rank, 0);
                 block  = std::vector<hsize_t>(rank, 0);
                 H5Sget_regular_hyperslab(space, offset->data(), stride->data(), extent->data(), block->data());
-            } else if (select_type.value() == H5S_SEL_ALL){
+            } else if(select_type.value() == H5S_SEL_ALL) {
                 offset = std::vector<hsize_t>(rank, 0);
                 extent = std::vector<hsize_t>(rank, 0);
-                H5Sget_simple_extent_dims(space,extent->data(),nullptr);
-            } else if (select_type.value() == H5S_SEL_ERROR)
+                H5Sget_simple_extent_dims(space, extent->data(), nullptr);
+            } else if(select_type.value() == H5S_SEL_ERROR)
                 throw std::runtime_error("Invalid hyperslab selection");
             else
                 throw std::runtime_error("Unsupported selection type. Choose space selection type NONE, ALL or HYPERSLABS");
         }
         [[nodiscard]] bool empty() const { return not offset and not extent and not stride and not block; }
 
-        [[nodiscard]] std::string string(){
+        [[nodiscard]] std::string string() {
             std::string msg;
             if(offset) msg.append(h5pp::format(" | offset {}", offset.value()));
             if(extent) msg.append(h5pp::format(" | extent {}", extent.value()));
             if(stride) msg.append(h5pp::format(" | stride {}", stride.value()));
-            if(block ) msg.append(h5pp::format(" | block {}" , block .value()));
+            if(block) msg.append(h5pp::format(" | block {}", block.value()));
             return msg;
         }
 
