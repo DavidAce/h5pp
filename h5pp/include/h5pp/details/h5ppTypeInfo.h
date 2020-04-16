@@ -8,29 +8,29 @@ namespace h5pp {
     /*!
      * \brief Collects type information about existing datasets
      */
-    class TypeInfo {
-        private:
-        const std::string          name_;
-        const size_t               size_;
-        const std::type_index      type_;
-        const int                  ndims_;
-        const std::vector<hsize_t> dims_;
-        const hid::h5t             h5type_;
+    struct TypeInfo {
+        std::optional<std::string>          cpp_type_name;
+        std::optional<size_t>               cpp_type_bytes;
+        std::optional<std::type_index>      cpp_type_index;
+        std::optional<std::string>          h5_path;
+        std::optional<std::string>          h5_name;
+        std::optional<hsize_t>              h5_size;
+        std::optional<int>                  h5_rank;
+        std::optional<std::vector<hsize_t>> h5_dims;
+        std::optional<hid::h5t>             h5_type;
 
-        public:
-        TypeInfo(std::string_view name, size_t size, std::type_index type, int ndims, std::vector<hsize_t> dims, const hid::h5t &h5type)
-            : name_(name), size_(size), type_(type), ndims_(ndims), dims_(std::move(dims)), h5type_(h5type) {
-            if(ndims_ != (int) dims_.size())
-                throw std::runtime_error("Dimension mismatch, ndims (" + std::to_string(ndims_) + ") != dims.size(" + std::to_string(dims_.size()) + ")");
-            size_t size_check = std::accumulate(std::begin(dims_), std::end(dims_), (hsize_t) 1, std::multiplies<>());
-            if(size_check != size) throw std::runtime_error("Size mismatch, size (" + std::to_string(size_) + ") != product of dims (" + std::to_string(size_check) + ")");
+
+        [[nodiscard]] std::string string(){
+            std::string msg;
+            if(cpp_type_name)   msg.append(h5pp::format("C++: type [{}]", cpp_type_name.value()));
+            if(cpp_type_bytes)  msg.append(h5pp::format(" bytes [{}]", cpp_type_bytes.value()));
+            if(not msg.empty()) msg.append(" | HDF5:");
+            if(h5_path)   msg.append(h5pp::format(" path [{}]", h5_path.value()));
+            if(h5_name)   msg.append(h5pp::format(" name [{}]", h5_name.value()));
+            if(h5_size)   msg.append(h5pp::format(" size [{}]", h5_size.value()));
+            if(h5_rank)   msg.append(h5pp::format(" rank [{}]", h5_rank.value()));
+            if(h5_dims)   msg.append(h5pp::format(" dims {}"  , h5_dims.value()));
+            return msg;
         }
-
-        [[nodiscard]] const std::string &         name() const { return name_; }
-        [[nodiscard]] const size_t &              size() const { return size_; }
-        [[nodiscard]] const std::type_index &     type() const { return type_; }
-        [[nodiscard]] const int &                 ndims() const { return ndims_; }
-        [[nodiscard]] const std::vector<hsize_t> &dims() const { return dims_; }
-        [[nodiscard]] const hid::h5t &            h5type() const { return h5type_; }
     };
 }
