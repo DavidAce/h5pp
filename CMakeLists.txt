@@ -17,7 +17,7 @@ option(H5PP_ENABLE_SPDLOG     "Enables Spdlog for logging h5pp internal info to 
 option(H5PP_ENABLE_MPI        "Enables use of MPI (work in progress)"                   OFF)
 
 # Make an "enum" for valid download methods: none find-only native conan
-set(H5PP_DOWNLOAD_METHODS_VALID none find-only native conan)
+set(H5PP_DOWNLOAD_METHODS_VALID none find fetch native conan find-or-fetch find-or-conan)
 set(H5PP_DOWNLOAD_METHOD none CACHE STRING "Download method for external dependencies")
 set_property(CACHE H5PP_DOWNLOAD_METHOD PROPERTY STRINGS ${H5PP_DOWNLOAD_METHODS_VALID})
 if (NOT H5PP_DOWNLOAD_METHOD IN_LIST H5PP_DOWNLOAD_METHODS_VALID)
@@ -107,6 +107,7 @@ add_library(h5pp INTERFACE)
 add_library(headers INTERFACE)
 add_library(deps INTERFACE)
 add_library(flags INTERFACE)
+list(APPEND H5PP_TARGETS h5pp headers deps flags)
 
 
 ########################## IMPORTANT #############################
@@ -132,8 +133,9 @@ if (NOT TARGET Threads::Threads)
     set(CMAKE_THREAD_PREFER_PTHREAD FALSE)
     set(THREADS_PREFER_PTHREAD_FLAG FALSE)
     find_package(Threads)
-    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    if (TARGET Threads::Threads AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES pthread)
+        list(APPEND H5PP_TARGETS Threads::Threads)
     endif ()
 endif ()
 
@@ -157,16 +159,17 @@ target_compile_definitions(deps INTERFACE H5PP_DOWNLOAD_METHOD=${H5PP_DOWNLOAD_M
 find_package(Filesystem COMPONENTS Final Experimental)
 if (TARGET std::filesystem)
     target_link_libraries(flags INTERFACE std::filesystem)
-elseif (H5PP_DOWNLOAD_METHOD MATCHES "find|none")
-    message(STATUS "Your compiler lacks std::filesystem. Set H5PP_DOWNLOAD_METHOD to 'conan' or 'native' to get the ghc::filesystem replacement")
-    message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
-    message(FATAL_ERROR "<filesystem> header and/or library not found")
-else ()
-    message(STATUS "Your compiler lacks std::filesystem. Getting ghc::filesystem replacement")
+elseif (H5PP_DOWNLOAD_METHOD MATCHES "fetch|native|conan")
+    message(STATUS "Your compiler lacks std::filesystem. A drop-in replacement ghc::filesystem will be downloaded")
     message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
     include(cmake/Fetch_ghcFilesystem.cmake)
     target_link_libraries(flags INTERFACE ghcFilesystem::ghc_filesystem)
     list(APPEND H5PP_DIRECTORY_HINTS ${ghcfilesystem_install_prefix})
+    list(APPEND H5PP_TARGETS ghcFilesystem::ghc_filesystem)
+else ()
+    message(STATUS "Your compiler lacks std::filesystem. Set H5PP_DOWNLOAD_METHOD to 'conan' or 'native' to get the ghc::filesystem replacement")
+    message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
+    message(FATAL_ERROR "<filesystem> header and/or library not found")
 endif ()
 
 
@@ -198,13 +201,19 @@ list(APPEND H5PP_DIRECTORY_HINTS ${CMAKE_INSTALL_PREFIX})
 
 
 #Try to find or fetch all dependencies
-if (NOT H5PP_DOWNLOAD_METHOD MATCHES "none")
-    if (H5PP_DOWNLOAD_METHOD MATCHES "conan")
-        include(cmake/SetupDependenciesConan.cmake)
-    else ()
-        include(cmake/SetupDependenciesNative.cmake)
-    endif ()
-endif ()
+include(cmake/SetupDependenciesFind.cmake)
+include(cmake/SetupDependenciesFetch.cmake)
+include(cmake/SetupDependenciesConan.cmake)
+
+
+# Print summary of CMake configuration
+if (H5PP_PRINT_INFO)
+    message("========================== h5pp target summary ==============================")
+    include(${PROJECT_SOURCE_DIR}/cmake/PrintTargetInfo.cmake)
+    foreach(tgt ${H5PP_TARGETS})
+        print_target_info(${tgt})
+    endforeach()
+endif()
 
 # Link all targets to one main h5pp target (the only one that users should need)
 # However, it's nice to have them separately also if need be.
