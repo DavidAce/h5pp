@@ -2,7 +2,11 @@
 #include "h5ppEigen.h"
 #include "h5ppOptional.h"
 #include "h5ppTypeCompound.h"
+#include <array>
+#include <sstream>
+#include <string>
 #include <type_traits>
+#include <vector>
 
 /*!
  * \brief A collection of type-detection and type-analysis utilities using SFINAE
@@ -10,6 +14,29 @@
 namespace h5pp::type::sfinae {
 
     // SFINAE detection
+    template<typename...>
+    struct print_type_and_exit_compile_time;
+
+    template<typename T>
+    constexpr auto type_name() {
+        std::string_view name, prefix, suffix;
+#ifdef __clang__
+        name   = __PRETTY_FUNCTION__;
+        prefix = "auto h5pp::type::sfinae::type_name() [T = ";
+        suffix = "]";
+#elif defined(__GNUC__)
+        name   = __PRETTY_FUNCTION__;
+        prefix = "constexpr auto h5pp::type::sfinae::type_name() [with T = ";
+        suffix = "]";
+#elif defined(_MSC_VER)
+        name   = __FUNCSIG__;
+        prefix = "auto __cdecl h5pp::type::sfinae::type_name<";
+        suffix = ">(void)";
+#endif
+        name.remove_prefix(prefix.size());
+        name.remove_suffix(suffix.size());
+        return name;
+    }
 
     template<typename T, typename = std::void_t<>>
     struct has_size : public std::false_type {};
@@ -138,7 +165,7 @@ namespace h5pp::type::sfinae {
     template<typename T, typename = std::void_t<>>
     struct is_streamable : std::false_type {};
     template<typename T>
-    struct is_streamable<T, std::void_t<decltype(std::declval<std::stringstream>() << std::declval<T>())>> : public std::true_type {};
+    struct is_streamable<T, std::void_t<decltype(std::declval<std::stringstream&> << std::declval<T>())>> : public std::true_type {};
     template<typename T>
     inline constexpr bool is_streamable_v = is_streamable<T>::value;
 
@@ -154,7 +181,7 @@ namespace h5pp::type::sfinae {
         private:
         template<typename U>
         static constexpr bool test() {
-            if constexpr(is_iterable_v<T>)
+            if constexpr(is_iterable_v<U> and has_value_type_v<U>)
                 return std::is_integral_v<typename T::value_type>;
             else
                 return false;
@@ -190,12 +217,17 @@ namespace h5pp::type::sfinae {
         template<typename U>
         static constexpr bool test() {
             using DecayType = typename std::decay<U>::type;
-            if constexpr(std::is_array_v<DecayType>) return test<typename std::remove_all_extents_t<DecayType>>();
-            if constexpr(std::is_pointer_v<DecayType>) return test<typename std::remove_pointer_t<DecayType>>();
-            if constexpr(std::is_const_v<DecayType>) return test<typename std::remove_cv_t<DecayType>>();
-            if constexpr(std::is_reference_v<DecayType>) return test<typename std::remove_reference_t<DecayType>>();
-            if constexpr(h5pp::type::sfinae::has_value_type_v<DecayType>) return test<typename DecayType::value_type>();
-            return std::is_same<DecayType, char>::value; // No support for wchar_t, char16_t and char32_t
+            // No support for wchar_t, char16_t and char32_t
+            if constexpr(std::is_same_v<DecayType, std::string>) return true;
+            if constexpr(std::is_same_v<DecayType, std::string_view>) return true;
+            if constexpr(std::is_same_v<DecayType, const char *>) return true;
+            if constexpr(std::is_same_v<DecayType, const char[]>) return true;
+            if constexpr(std::is_same_v<DecayType, char *>) return true;
+            if constexpr(std::is_same_v<DecayType, char[]>) return true;
+            if constexpr(std::is_same_v<DecayType, char>)
+                return true;
+            else
+                return false;
         }
 
         public:
@@ -204,47 +236,47 @@ namespace h5pp::type::sfinae {
     template<typename T>
     inline constexpr bool is_text_v = is_text<T>::value;
 
+    template<typename T>
+    struct has_text {
+        private:
+        template<typename U>
+        static constexpr bool test() {
+            using DecayType = typename std::decay<U>::type;
+            if constexpr(is_text_v<U>) return false;
+            if constexpr(std::is_array_v<DecayType>) return is_text_v<typename std::remove_all_extents_t<DecayType>>;
+            if constexpr(std::is_pointer_v<DecayType>) return is_text_v<typename std::remove_pointer_t<DecayType>>;
+            if constexpr(has_value_type_v<DecayType>) return is_text_v<typename DecayType::value_type>;
+            return false;
+        }
+
+        public:
+        static constexpr bool value = test<T>();
+    };
+    template<typename T>
+    inline constexpr bool has_text_v = has_text<T>::value;
+
     template<typename Outer, typename Inner>
     struct is_container_of {
         private:
         template<typename O, typename I>
         static constexpr bool test() {
-            using Od = typename std::decay<O>::type;
-            using Id = typename std::decay<I>::type;
-            if constexpr(is_iterable_v<Od>)
-                if constexpr(has_value_type_v<Od>) return std::is_same_v<Id, typename Od::value_type>;
+            //            using Od = typename std::decay<O>::type;
+            if constexpr(is_iterable_v<O>) {
+                if constexpr(has_value_type_v<O>) {
+                    using I_lhs = typename std::decay<I>::type;
+                    using I_rhs = typename std::decay<typename O::value_type>::type;
+                    return std::is_same_v<I_lhs, I_rhs>;
+                }
+            }
             return false;
         }
 
         public:
         static constexpr bool value = test<Outer, Inner>();
     };
+
     template<typename Outer, typename Inner>
     inline constexpr bool is_container_of_v = is_container_of<Outer, Inner>::value;
-
-    template<typename...>
-    struct print_type_and_exit_compile_time;
-
-    template<typename T>
-    constexpr auto type_name() {
-        std::string_view name, prefix, suffix;
-#ifdef __clang__
-        name   = __PRETTY_FUNCTION__;
-        prefix = "auto h5pp::type::sfinae::type_name() [T = ";
-        suffix = "]";
-#elif defined(__GNUC__)
-        name   = __PRETTY_FUNCTION__;
-        prefix = "constexpr auto h5pp::type::sfinae::type_name() [with T = ";
-        suffix = "]";
-#elif defined(_MSC_VER)
-        name   = __FUNCSIG__;
-        prefix = "auto __cdecl h5pp::type::sfinae::type_name<";
-        suffix = ">(void)";
-#endif
-        name.remove_prefix(prefix.size());
-        name.remove_suffix(suffix.size());
-        return name;
-    }
 
     template<typename T>
     struct is_std_complex : public std::false_type {};
