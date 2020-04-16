@@ -19,6 +19,7 @@
     #include <iostream>
     #include <list>
     #include <memory>
+    #include <sstream>
     #include <string>
 #endif
 
@@ -33,20 +34,23 @@ namespace h5pp {
 #else
     namespace formatting {
         template<class T, class... Ts>
-        std::list<std::string> convert_to_string_list(T const &first, Ts const &... rest) {
+        std::list<std::string> convert_to_string_list(const T &first, const Ts &... rest) {
             std::list<std::string> result;
-            if constexpr(h5pp::type::sfinae::is_streamable_v<T>){
+            if constexpr(h5pp::type::sfinae::is_text_v<T>)
+                result.emplace_back(first);
+            else if constexpr(std::is_arithmetic_v<T>)
+                result.emplace_back(std::to_string(first));
+            else if constexpr(h5pp::type::sfinae::is_streamable_v<T> ) {
                 std::stringstream sstr;
-                sstr << first;
+                sstr << std::boolalpha << first;
                 result.emplace_back(sstr.str());
-            }
-            else if constexpr(h5pp::type::sfinae::is_iterable_v<T>) {
+            } else if constexpr(h5pp::type::sfinae::is_iterable_v<T>) {
                 std::stringstream sstr;
-                if (first.size() == 0)
-                    sstr << "[]";
+                if(first.size() == 0)
+                    sstr << std::boolalpha << "[]";
                 else {
                     sstr << "[";
-                    for(const auto &elem : first) sstr << elem <<",";
+                    for(const auto &elem : first) sstr << elem << ",";
                     sstr.seekp(-1, std::ios_base::end);
                     sstr << "]";
                 }
@@ -59,9 +63,7 @@ namespace h5pp {
         }
     }
 
-    std::string format(const std::string & fmtstring){
-        return fmtstring;
-    }
+    std::string format(const std::string &fmtstring) { return fmtstring; }
 
     template<typename... Args>
     [[nodiscard]] std::string format(const std::string &fmtstring, [[maybe_unused]] Args... args) {
