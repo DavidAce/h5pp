@@ -169,16 +169,18 @@ namespace h5pp {
         template<typename DataType>
         void createDataset(const DataType &data, std::string_view dsetPath, const Options &options) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
-            if constexpr(std::is_array_v<DataType>)
-                createDataset(h5pp::PtrWrapper(data), dsetPath, options);
-            else if constexpr(std::is_pointer_v<DataType>) {
-                if(not options.dataDims) throw std::runtime_error(h5pp::format("Dimensions or size not specified for type [{}]", h5pp::type::sfinae::type_name<DataType>()));
-                createDataset(h5pp::PtrWrapper(data, options.dataDims.value()), dsetPath, options);
-            } else {
-                hid::h5f file     = openFileHandle();
-                auto     metaDset = h5pp::scan::makeMetaDset(file, data, dsetPath, options, plists);
+            if constexpr(std::is_pointer_v<DataType>)
+                if(not options.dataDims)
+                    throw std::runtime_error(
+                        h5pp::format("Error creating dataset [{}]: Dimensions or size not specified for type [{}]", dsetPath, h5pp::type::sfinae::type_name<DataType>()));
+
+            hid::h5f file     = openFileHandle();
+            auto     metaDset = h5pp::scan::makeMetaDset(file, data, dsetPath, options, plists);
+            if(metaDset.dsetExists and metaDset.dsetExists.value()) {
+                auto metaData = h5pp::scan::getMetaData(data, options);
+                h5pp::hdf5::resizeDataset(metaDset, metaData);
+            } else
                 h5pp::hdf5::createDataset(metaDset, plists);
-            }
         }
 
         template<typename DataType,
@@ -239,18 +241,16 @@ namespace h5pp {
         template<typename DataType>
         void writeDataset(const DataType &data, std::string_view dsetPath, const Options &options) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
-            if constexpr(std::is_array_v<DataType>)
-                writeDataset(h5pp::PtrWrapper(data, h5pp::util::getArraySize(data)), dsetPath, options);
-            else if constexpr(std::is_pointer_v<DataType>) {
-                if(not options.dataDims) throw std::runtime_error(h5pp::format("Dimensions or size not specified for type [{}]", h5pp::type::sfinae::type_name<DataType>()));
-                writeDataset(h5pp::PtrWrapper(data, options.dataDims.value()), dsetPath, options);
-            } else {
-                createDataset(data, dsetPath, options);
-                hid::h5f file     = openFileHandle();
-                auto     metaData = h5pp::scan::getMetaData(data, options);
-                auto     metaDset = h5pp::scan::getMetaDset(file, dsetPath, options, plists);
-                h5pp::hdf5::writeDataset(data, metaData, metaDset, plists);
-            }
+            if constexpr(std::is_pointer_v<DataType>)
+                if(not options.dataDims)
+                    throw std::runtime_error(
+                        h5pp::format("Error writing dataset [{}]: Dimensions or size not specified for type [{}]", dsetPath, h5pp::type::sfinae::type_name<DataType>()));
+
+            createDataset(data, dsetPath, options);
+            hid::h5f file     = openFileHandle();
+            auto     metaData = h5pp::scan::getMetaData(data, options);
+            auto     metaDset = h5pp::scan::getMetaDset(file, dsetPath, options, plists);
+            h5pp::hdf5::writeDataset(data, metaData, metaDset, plists);
         }
 
         template<typename DataType,
@@ -332,22 +332,16 @@ namespace h5pp {
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
         void readDataset(DataType &data, std::string_view dsetPath, const Options &options = Options()) const {
-            if constexpr(std::is_array_v<DataType>) {
-                auto wrapper = h5pp::PtrWrapper(data, h5pp::util::getArraySize(data));
-                readDataset(wrapper, dsetPath, options);
-            } else if constexpr(std::is_pointer_v<DataType>) {
-                if(not options.dataDims) throw std::runtime_error(h5pp::format("Dimensions or size not specified for type [{}]", h5pp::type::sfinae::type_name<DataType>()));
-                auto wrapper = h5pp::PtrWrapper(data, options.dataDims.value());
-                readDataset(wrapper, dsetPath, options);
+            if constexpr(std::is_pointer_v<DataType>)
+                if(not options.dataDims) throw std::runtime_error(h5pp::format("Error reading dataset [{}]: Dimensions or size not specified for given type [{}]", dsetPath, h5pp::type::sfinae::type_name<DataType>()));
 
-            } else {
-                hid::h5f file     = openFileHandle();
-                auto     metaDset = h5pp::scan::getMetaDset(file, dsetPath, options, plists);
-                MetaData metaData;
-                h5pp::util::resizeData(data, metaData, metaDset.h5_space.value(), metaDset.h5_type.value());
-                h5pp::scan::fillMetaData(data, metaData, options);
-                h5pp::hdf5::readDataset(data, metaData, metaDset, plists);
-            }
+            hid::h5f file     = openFileHandle();
+            auto     metaDset = h5pp::scan::getMetaDset(file, dsetPath, options, plists);
+            if(metaDset.dsetExists and not metaDset.dsetExists.value()) { return h5pp::logger::log->error("Cannot read dataset [{}]: It does not exist", dsetPath); }
+            MetaData metaData;
+            h5pp::util::resizeData(data, metaDset.h5_dset.value());
+            h5pp::scan::fillMetaData(data, metaData, options);
+            h5pp::hdf5::readDataset(data, metaData, metaDset, plists);
         }
 
         template<typename DataType,
@@ -386,6 +380,13 @@ namespace h5pp {
         template<typename DataType>
         void createAttribute(const DataType &data, std::string_view attrName, std::string_view linkPath, const Options &options = Options()) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to create attribute on read-only file [{}]", filePath.string()));
+            if constexpr(std::is_pointer_v<DataType>)
+                if(not options.dataDims)
+                    throw std::runtime_error(h5pp::format("Error creating attribute [{}] in link [{}]: Dimensions or size not specified for type [{}]",
+                                                          attrName,
+                                                          linkPath,
+                                                          h5pp::type::sfinae::type_name<DataType>()));
+
             hid::h5f file     = openFileHandle();
             auto     metaAttr = h5pp::scan::makeMetaAttr(file, data, attrName, linkPath, options, plists);
             h5pp::hdf5::createAttribute(metaAttr);
@@ -401,11 +402,37 @@ namespace h5pp {
         template<typename DataType>
         void writeAttribute(const DataType &data, std::string_view attrName, std::string_view linkPath, const Options &options = Options()) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
+            if constexpr(std::is_pointer_v<DataType>)
+                if(not options.dataDims)
+                    throw std::runtime_error(h5pp::format("Error writing to attribute [{}] in link [{}]: Dimensions or size not specified for type [{}]",
+                                                          attrName,
+                                                          linkPath,
+                                                          h5pp::type::sfinae::type_name<DataType>()));
+
             createAttribute(data, attrName, linkPath, options);
             hid::h5f file     = openFileHandle();
             auto     metaData = h5pp::scan::getMetaData(data, options);
             auto     metaAttr = h5pp::scan::getMetaAttr(file, attrName, linkPath, plists);
             h5pp::hdf5::writeAttribute(data, metaData, metaAttr);
+        }
+
+        template<typename DataType,
+                 typename DataDimsType = std::initializer_list<hsize_t>,
+                 typename              = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<DataDimsType>>>
+        void writeAttribute(const DataType &data, const DataDimsType &dataDims, std::string_view attrName, std::string_view linkPath) {
+            Options options;
+            options.dataDims = dataDims;
+            h5pp::hdf5::writeAttribute(data, attrName, linkPath, options);
+        }
+
+        template<typename DataType,
+                 typename DataDimsType = std::initializer_list<hsize_t>,
+                 typename              = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<DataDimsType>>>
+        void writeAttribute(const DataType &data, const DataDimsType &dataDims, std::string_view attrName, std::string_view linkPath, const hid::h5t &h5_type) {
+            Options options;
+            options.h5_type  = h5_type;
+            options.dataDims = dataDims;
+            h5pp::hdf5::writeAttribute(data, attrName, linkPath, options);
         }
 
         template<typename DataType>
@@ -416,11 +443,24 @@ namespace h5pp {
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        void readAttribute(DataType &data, std::string_view attrName, std::string_view linkPath, const Options &options) const {
+        void readAttribute(DataType &data, std::string_view attrName, std::string_view linkPath, const Options &options = Options()) const {
+            if constexpr(std::is_pointer_v<DataType>)
+                if(not options.dataDims)
+                    throw std::runtime_error(h5pp::format("Error reading attribute [{}] in link [{}]: Dimensions or size not specified for type [{}]",
+                                                          attrName,
+                                                          linkPath,
+                                                          h5pp::type::sfinae::type_name<DataType>()));
+
             hid::h5f file     = openFileHandle();
             auto     metaAttr = h5pp::scan::getMetaAttr(file, attrName, linkPath, plists);
+            if(metaAttr.linkExists and not metaAttr.linkExists.value())
+                return h5pp::logger::log->error("Could not read attribute [{}] in link [{}]: Link does not exist", attrName, linkPath);
+
+            if(metaAttr.attrExists and not metaAttr.attrExists.value())
+                return h5pp::logger::log->error("Could not read attribute [{}] in link [{}]: Attribute does not exist", attrName, linkPath);
+
             MetaData metaData;
-            h5pp::util::resizeData(data, metaData, metaAttr.h5_space.value(), metaAttr.h5_type.value());
+            h5pp::util::resizeData(data, metaAttr.h5_space.value(), metaAttr.h5_type.value());
             h5pp::scan::fillMetaData(data, metaData, options);
             h5pp::hdf5::readAttribute(data, metaData, metaAttr);
         }
@@ -444,7 +484,7 @@ namespace h5pp {
          *
          */
 
-        void createTable(const hid::h5t &                  entryH5Type,
+        void createTable(const hid::h5t &                  h5_entry_type,
                          std::string_view                  tableName,
                          std::string_view                  tableTitle,
                          const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
@@ -453,7 +493,7 @@ namespace h5pp {
         ) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
             hid::h5f file       = openFileHandle();
-            auto     tableProps = h5pp::scan::getTableProperties_bootstrap(entryH5Type, tableName, tableTitle, desiredChunkSize, desiredCompressionLevel);
+            auto     tableProps = h5pp::scan::getTableProperties_bootstrap(h5_entry_type, tableName, tableTitle, desiredChunkSize, desiredCompressionLevel);
             h5pp::hdf5::createTable(file, tableProps, plists);
         }
 
@@ -488,14 +528,12 @@ namespace h5pp {
          */
 
         [[nodiscard]] int getDatasetRank(std::string_view datasetPath) const {
-            hid::h5f file    = openFileHandle();
-            hid::h5d dataset = h5pp::hdf5::openLink<hid::h5d>(file, datasetPath);
+            auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(), datasetPath);
             return h5pp::hdf5::getRank(dataset);
         }
 
         [[nodiscard]] std::vector<hsize_t> getDatasetDimensions(std::string_view datasetPath) const {
-            hid::h5f file    = openFileHandle();
-            hid::h5d dataset = h5pp::hdf5::openLink<hid::h5d>(file, datasetPath);
+            auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(), datasetPath);
             return h5pp::hdf5::getDimensions(dataset);
         }
 
@@ -518,13 +556,11 @@ namespace h5pp {
         }
 
         [[nodiscard]] TypeInfo getAttributeTypeInfo(std::string_view linkName, std::string_view attrName) const {
-            hid::h5f file = openFileHandle();
-            return h5pp::hdf5::getAttributeTypeInfo(file, linkName, attrName, std::nullopt, std::nullopt, plists.link_access);
+            return h5pp::hdf5::getTypeInfo(openFileHandle(), linkName, attrName, std::nullopt, std::nullopt, plists.link_access);
         }
 
         [[nodiscard]] std::vector<TypeInfo> getAttributeTypeInfoAll(std::string_view linkName) const {
-            hid::h5f file = openFileHandle();
-            return h5pp::hdf5::getAttributeTypeInfoAll(file, linkName, std::nullopt, plists.link_access);
+            return h5pp::hdf5::getTypeInfo_allAttributes(openFileHandle(), linkName, std::nullopt, plists.link_access);
         }
 
         [[nodiscard]] bool fileIsValid() const { return h5pp::hdf5::fileIsValid(filePath); }
