@@ -44,7 +44,8 @@ namespace h5pp {
             assert(N == dims_.size() and "Dimension mismatch");
         }
 
-        using value_type = std::remove_pointer_t<PointerType>;
+        using value_type = typename std::remove_const<typename std::remove_pointer<PointerType>::type>::type;
+//        using value_type = typename std::decay<decltype(data_)>::type;
         auto        data() const { return data_; }
         auto        size() const { return size_; }
         auto        begin() const { return data_; }
@@ -53,5 +54,8 @@ namespace h5pp {
         auto        back() const { return *(data_ + size_); }
         const auto &dimensions() const { return dims_; }
     };
+
+
+
 
 }
