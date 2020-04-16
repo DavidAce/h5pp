@@ -214,7 +214,7 @@ There are currently 4 ways to obtain `h5pp`:
 ## Optional dependencies:
 * [**Eigen**](http://eigen.tuxfamily.org): Write Eigen matrices and tensors directly. Tested with version >= 3.3.4
 * [**spdlog**](https://github.com/gabime/spdlog): Enables logging for debug purposes. Tested with version >= 1.3.1
-* [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_DOWNLOAD_METHOD=<native/conan>.`
+* [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_DOWNLOAD_METHOD=<fetch/native/conan>.`
 
 ## Build and install
 
@@ -245,15 +245,25 @@ If not set, `CMAKE_INSTALL_PREFIX` defaults to `${CMAKE_BINARY_DIR}/install`, wh
 
 #### Opt-in automatic dependency installation
 The CMake flag `H5PP_DOWNLOAD_METHOD` controls the automated behavior for finding or installing dependencies. It can take one of three valid strings:
-* `none` (default) all handling of dependencies is disabled and linking is left to the user.
-* `find-only` will only try to find dependencies already installed (no downloads). There are several variables you can pass to CMake to guide `find_package` calls, see [CMake build options](#cmake-build-options) below. 
-* `conan` to install dependencies using the [conan package manager](https://conan.io/). This method is guided by `conanfile.txt` found in this project's root directory.
-  This method requires conan to be installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
+
+| Option | Description |
+| ---- | ---- |
+| `none`  **(default)**             | No handling of dependencies and linking is left to the user |
+| `find`                            | Use CMake's `find_package`  to find dependencies pre-installed on your system  |
+| `fetch`, a.k.a. `native` **(!)**  | Use CMake-only features to download and install dependencies automatically. Disregards pre-installed dependencies on your system |
+| `conan`   **(!!)**                | Use the [Conan package manager](https://conan.io/) to download and install dependencies automatically. Disregards pre-installed dependencies on your system  |
+| `find-or-fetch`                   | Start with `find` and then go to `fetch` if not found |
+| `find-or-conan`                   | Start with `find` and then go to `conan` if not found |
+
+There are several variables you can pass to CMake to guide `find_package` calls, see [CMake build options](#cmake-build-options) below. 
+
+**(!)** Dependencies are installed into `CMAKE_INSTALL_PREFIX`. Pass the CMake variable `H5PP_APPEND_LIBSUFFIX` to install into separate directories under `CMAKE_INSTALL_PREFIX`. 
+   
+**(!!)** Conan is guided by `conanfile.txt` found in this project's root directory. This method requires conan to be installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
   * Add conan install (or bin) directory to the environment variable `PATH`.
   * Export conan install (or bin) directory in the environment variable `CONAN_PREFIX`, i.e. from command line: `export CONAN_PREFIX=<path-to-conan>` 
   * Give the variable `CONAN_PREFIX` directly to CMake, i.e. from command line: `cmake -DCONAN_PREFIX:PATH=<path-to-conan> ...`
-* `native` Begins just like `find-only`. If the library isn't found it will be downloaded and built from source using native CMake commands during configure, 
-   and installed under `CMAKE_INSTALL_PREFIX`. 
+
 
 
 #### CMake build options
@@ -266,22 +276,13 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 | `BUILD_SHARED_LIBS`               | `OFF`      | Link dependencies with static or shared libraries    |
 | `H5PP_ENABLE_TESTS`               | `OFF`      | Build tests (recommended!) |
 | `H5PP_BUILD_EXAMPLES`             | `OFF`      | Build example programs |
-| `H5PP_DOWNLOAD_METHOD`            | `none`     | Select download method, select `none`, `find-only`, `native` or `conan` |
+| `H5PP_DOWNLOAD_METHOD`            | `none`     | Download method for dependencies, select `none`, `find`, `fetch`, `native`, `conan`, `find-or-fetch`, `find-or-conan`. Note: that `fetch` and `native` are equivalent and imply downloading and building a source tarball |
 | `H5PP_PRINT_INFO`                 | `OFF`      | Use h5pp with add_subdirectory() |
 | `H5PP_IS_SUBPROJECT`              | `OFF`      | Print extra CMake info about the host and generated targets during configure |
 | `H5PP_ENABLE_EIGEN3`              | `OFF`      | Enables Eigen3 linear algebra library support |
 | `H5PP_ENABLE_SPDLOG`              | `OFF`      | Enables Spdlog support for logging `h5pp` internal info to stdout |
 | `H5PP_APPEND_LIBSUFFIX`           | `OFF`      | Append a directory with the library name to install directory, i.e. `CMAKE_INSTALL_PREFIX/<libname>/`. This is useful when you want `native` build to install `h5pp`, `hdf5`, `Eigen3` and `spdlog` into separate folders |
 | `H5PP_PREFER_CONDA_LIBS`          | `OFF`      | Prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda. No effect when `H5PP_DOWNLOAD_METHOD=conan`  |
-| `EIGEN3_NO_CMAKE_PACKAGE_REGISTRY`| `OFF`      | Sets `NO_CMAKE_PACKAGE_REGISTRY` when CMake finds Eigen3 |
-| `EIGEN3_NO_DEFAULT_PATH`          | `OFF`      | Sets `NO_DEFAULT_PATH` when CMake finds Eigen3 |
-| `EIGEN3_NO_CONFIG`                | `OFF`      | Sets `NO_CONFIG` when CMake finds Eigen3 |
-| `EIGEN3_CONFIG_ONLY`              | `OFF`      | Sets `CONFIG_ONLY` when CMake finds Eigen3 (i.e. ignore find_package modules)  |
-| `SPDLOG_NO_CMAKE_PACKAGE_REGISTRY`| `OFF`      | Sets `NO_CMAKE_PACKAGE_REGISTRY` when CMake finds Spdlog |
-| `SPDLOG_NO_DEFAULT_PATH`          | `OFF`      | Sets `NO_DEFAULT_PATH` when CMake finds Spdlog |
-| `SPDLOG_NO_CONFIG`                | `OFF`      | Sets `NO_CONFIG` when CMake finds Spdlog |
-| `SPDLOG_CONFIG_ONLY`              | `OFF`      | Sets `CONFIG_ONLY` when CMake finds Spdlog (i.e. ignore find_package modules) |
-
 
 The following variables can be set to help guide CMake's `find_package` to your pre-installed software (no defaults):
 
@@ -318,9 +319,9 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 *  `h5pp::h5pp` is the main target including "everything" and should normally be the only target that you need -- headers,flags and (if enabled) the found/downloaded dependencies.
 *  `h5pp::headers` links the `h5pp` headers only.
 *  `h5pp::deps` collects library targets to link all the dependencies that were found/downloaded when `h5pp` was built. These can of course be used independently.
-    * If `H5PP_DOWNLOAD_METHOD=native` the targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, 
-    * If `H5PP_DOWNLOAD_METHOD=conan` the targets are `CONAN_PKG::Eigen3`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. 
-    * If `H5PP_DOWNLOAD_METHOD=none` then `h5pp::deps` is empty.
+    * If `H5PP_DOWNLOAD_METHOD==find-or-fetch|fetch|native` the targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, 
+    * If `H5PP_DOWNLOAD_METHOD==conan` the targets are `CONAN_PKG::Eigen3`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. 
+    * If `H5PP_DOWNLOAD_METHOD==none` then `h5pp::deps` is empty.
 *  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`. 
     On `MSVC` it sets `/permissive-` to enable logical `and`/`or` in C++. 
 
