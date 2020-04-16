@@ -1136,7 +1136,7 @@ namespace h5pp::hdf5 {
         h5pp::logger::log->debug("Writing from memory    {}", metaData.string());
         h5pp::logger::log->debug("Writing into attribute {}", metaAttr.string());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(metaAttr.h5_type.value());
-        h5pp::hdf5::assertBytesMatchTotal(data, metaAttr.h5_attr.value());
+        h5pp::hdf5::assertBytesMatchTotal(data, metaData.dataDims.value(), metaAttr.h5_attr.value());
         h5pp::hdf5::assertSpacesEqual(metaData.h5_space.value(), metaAttr.h5_space.value(), metaAttr.h5_type.value());
         h5pp::hdf5::logSpaceTranfer(metaData.h5_space.value(), metaAttr.h5_space.value());
 
