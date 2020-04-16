@@ -85,9 +85,23 @@ if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}
             )
+
     if(TARGET spdlog::spdlog)
         get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
         _spdlog_check_version()
+        find_library(FMT_LIBRARY
+                NAMES fmt
+                HINTS ${SPDLOG_DIRECTORY_HINTS}
+                PATHS $ENV{CONDA_PREFIX}
+                PATH_SUFFIXES spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
+                ${NO_DEFAULT_PATH}
+                ${NO_CMAKE_PACKAGE_REGISTRY}
+                )
+        if(FMT_LIBRARY)
+            target_link_libraries(spdlog::spdlog INTERFACE ${FMT_LIBRARY} )
+        else()
+            target_compile_definitions(spdlog::spdlog INTERFACE FMT_HEADER_ONLY )
+        endif()
     endif()
 endif()
 
@@ -126,12 +140,25 @@ if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
                     ${NO_CMAKE_PACKAGE_REGISTRY}
                     )
 
+            find_library(FMT_LIBRARY
+                    NAMES fmt
+                    HINTS ${SPDLOG_INCLUDE_DIR} ${SPDLOG_DIRECTORY_HINTS}
+                    PATHS $ENV{CONDA_PREFIX}
+                    PATH_SUFFIXES spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
+                    ${NO_DEFAULT_PATH}
+                    ${NO_CMAKE_PACKAGE_REGISTRY}
+                    )
             if(NOT SPDLOG_FMT_BUNDLED)
                 target_compile_definitions(spdlog INTERFACE SPDLOG_FMT_EXTERNAL)
             endif()
             if(SPDLOG_LIBRARY)
                 target_link_libraries(spdlog INTERFACE ${SPDLOG_LIBRARY} )
                 target_compile_definitions(spdlog INTERFACE SPDLOG_COMPILED_LIB )
+            endif()
+            if(FMT_LIBRARY)
+                target_link_libraries(spdlog INTERFACE ${FMT_LIBRARY} )
+            else()
+                target_compile_definitions(spdlog INTERFACE FMT_HEADER_ONLY )
             endif()
         endif()
     endif()
