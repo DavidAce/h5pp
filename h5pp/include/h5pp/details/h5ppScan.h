@@ -55,37 +55,32 @@ namespace h5pp::scan {
     template<typename DataType>
     inline h5pp::MetaDset
         makeMetaDset(const hid::h5f &file, const DataType &data, std::string_view dsetPath, const Options &options = Options(), const PropertyLists &plists = PropertyLists()) {
-        h5pp::logger::log->debug("Creating new dataset metadata for type [{}]", h5pp::type::sfinae::type_name<DataType>());
         h5pp::MetaDset meta;
-        meta.h5_file    = file;
-        meta.h5_type    = h5pp::util::getH5Type<DataType>(options.h5_type);
-        meta.h5_layout  = h5pp::util::decideLayout(h5pp::util::getBytesTotal(data), options.h5_layout);
-        meta.dsetPath   = dsetPath;
         meta.dsetExists = h5pp::hdf5::checkIfDatasetExists(file, dsetPath, std::nullopt, plists.link_access);
+        if(meta.dsetExists.value()) {
+            fillMetaDset(meta, file, dsetPath, options, plists);
+            return meta;
+        }
+        h5pp::logger::log->debug("Creating dataset metadata for type [{}]", h5pp::type::sfinae::type_name<DataType>());
+        meta.dsetPath   = dsetPath;
+        meta.h5_file = file;
+        meta.h5_type              = h5pp::util::getH5Type<DataType>(options.h5_type);
+        meta.h5_layout            = h5pp::util::decideLayout(data,options.dataDims,options.dataDimsMax, options.h5_layout);
         meta.h5_plist_dset_create = H5Pcreate(H5P_DATASET_CREATE);
         meta.h5_plist_dset_access = H5Pcreate(H5P_DATASET_ACCESS);
-        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
-            meta.dsetDims = std::vector<hsize_t>{};
-            meta.dsetSize = 1;
-            meta.dsetByte = h5pp::util::getBytesTotal(data);
-            meta.dsetRank = 0;
-            meta.h5_space = H5Screate(H5S_SCALAR);
-            if(meta.h5_layout.value() == H5D_CHUNKED) meta.h5_layout = H5D_CONTIGUOUS; // Cannot be chunked
-            h5pp::hdf5::setStringSize(meta.h5_type.value(), h5pp::util::getSize(data));
-        } else {
-            meta.dsetDims             = h5pp::util::getDimensions(data, options.dataDims); // Infer the dimensions from given data, or interpret differently if dims given in options
-            meta.dsetDimsMax          = h5pp::util::getDimensionsMax(data, meta.h5_layout.value(), meta.dsetDims.value(), options.dataDimsMax);
-            meta.dsetSize             = h5pp::util::getSize(data);
-            meta.dsetByte             = h5pp::util::getBytesTotal(data);
-            meta.dsetRank             = h5pp::util::getRank<DataType>(options.dataDims);
-            meta.chunkDims            = h5pp::util::getDefaultChunkDimensions(meta.dsetSize.value(), meta.dsetDims.value(), options.chunkDims);
-            meta.compression          = h5pp::hdf5::getValidCompressionLevel(options.compression);
-            meta.h5_space             = h5pp::util::getDataSpace(meta.dsetSize.value(),meta.dsetDims.value(), meta.h5_layout.value(), options.dataDimsMax);
-            h5pp::hdf5::setProperty_chunkDims(meta);
-            h5pp::hdf5::setProperty_compression(meta);
-            h5pp::hdf5::setSpaceExtent(meta);
-        }
-        h5pp::hdf5::setProperty_layout(meta);
+        meta.dsetDims    = h5pp::util::getDimensions(data, options.dataDims); // Infer the dimensions from given data, or interpret differently if dims given in options
+        meta.dsetDimsMax = h5pp::util::getDimensionsMax(meta.dsetDims.value(), meta.h5_layout.value(), options.dataDimsMax);
+        meta.dsetSize    = h5pp::util::getSize(data,options.dataDims);
+        meta.dsetByte    = h5pp::util::getBytesTotal(data,options.dataDims);
+        meta.dsetRank    = h5pp::util::getRank<DataType>(options.dataDims);
+        meta.chunkDims   = h5pp::util::getDefaultChunkDimensions(meta.dsetSize.value(), meta.dsetDims.value(), options.chunkDims);
+        meta.compression = h5pp::hdf5::getValidCompressionLevel(options.compression);
+        meta.h5_space    = h5pp::util::getDataSpace(meta.dsetSize.value(), meta.dsetDims.value(), meta.h5_layout.value(), options.dataDimsMax);
+        h5pp::hdf5::setStringSize(meta.h5_type.value(), H5T_VARIABLE);
+        h5pp::hdf5::setProperty_layout(meta); // Must go before setting chunk dims
+        h5pp::hdf5::setProperty_compression(meta);
+        h5pp::hdf5::setProperty_chunkDims(meta);
+        h5pp::hdf5::setSpaceExtent(meta);
         return meta;
     }
 
@@ -109,27 +104,14 @@ namespace h5pp::scan {
         // The point of passing options is to reinterpret the shape of the data and not to resize!
         // The data container should already be resized before entering this function.
 
-        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
-            // A string should be a scalar
-            if(not meta.dataSize) meta.dataSize = 1;
-            if(not meta.dataDims) meta.dataDims = std::vector<hsize_t>{};
-            if(not meta.dataRank) meta.dataRank = 0;
-            if(not meta.dataByte) meta.dataByte = h5pp::util::getBytesTotal(data);
-            if(not meta.cpp_type) meta.cpp_type = h5pp::type::sfinae::type_name<DataType>();
-            if(not meta.h5_space) meta.h5_space = h5pp::util::getMemSpace(meta.dataSize.value(),meta.dataDims.value());
-        }else{
-            if(not meta.dataSize) meta.dataSize = h5pp::util::getSize(data);
-            if(not meta.dataDims) meta.dataDims = h5pp::util::getDimensions(data, options.dataDims);
-            if(not meta.dataRank) meta.dataRank = h5pp::util::getRank<DataType>(meta.dataDims);
-            if(not meta.dataByte) meta.dataByte = h5pp::util::getBytesTotal(data);
-            if(not meta.cpp_type) meta.cpp_type = h5pp::type::sfinae::type_name<DataType>();
-            if(not meta.h5_space) meta.h5_space = h5pp::util::getMemSpace(meta.dataSize.value(),meta.dataDims.value());
-            if(options.mmrySlabs) h5pp::hdf5::selectHyperSlabs(meta.h5_space.value(), options.mmrySlabs.value(), options.mmrySlabSelectOps);
-        }
-
-
+        if(not meta.dataDims) meta.dataDims = h5pp::util::getDimensions(data, options.dataDims);
+        if(not meta.dataSize) meta.dataSize = h5pp::util::getSize(data,options.dataDims);
+        if(not meta.dataRank) meta.dataRank = h5pp::util::getRank<DataType>(options.dataDims);
+        if(not meta.dataByte) meta.dataByte = h5pp::util::getBytesTotal(data, options.dataDims);
+        if(not meta.cpp_type) meta.cpp_type = h5pp::type::sfinae::type_name<DataType>();
+        if(not meta.h5_space) meta.h5_space = h5pp::util::getMemSpace(meta.dataSize.value(), meta.dataDims.value());
+        if(options.mmrySlabs) h5pp::hdf5::selectHyperSlabs(meta.h5_space.value(), options.mmrySlabs.value(), options.mmrySlabSelectOps);
     }
-
 
     template<typename DataType>
     inline h5pp::MetaData getMetaData(const DataType &data, const Options &options = Options()) {
@@ -159,6 +141,8 @@ namespace h5pp::scan {
         if(not meta.attrSize) meta.attrSize = h5pp::hdf5::getSize(meta.h5_attr.value());
         if(not meta.attrDims) meta.attrDims = h5pp::hdf5::getDimensions(meta.h5_attr.value());
         if(not meta.attrRank) meta.attrRank = h5pp::hdf5::getRank(meta.h5_attr.value());
+        if(not meta.h5_plist_attr_create) meta.h5_plist_attr_create  = H5Aget_create_plist(meta.h5_attr.value());
+//        if(not meta.h5_plist_attr_access) meta.h5_plist_attr_access  = H5Aget_create_plist(meta.h5_attr.value());
     }
 
     template<typename DataType>
@@ -175,15 +159,16 @@ namespace h5pp::scan {
         meta.linkExists = h5pp::hdf5::checkIfLinkExists(file, meta.linkPath.value(), std::nullopt, plists.link_access);
         if(meta.linkExists and meta.linkExists.value()) meta.h5_link = h5pp::hdf5::openLink<hid::h5o>(file, linkPath, meta.linkExists, plists.link_access);
         meta.attrExists = h5pp::hdf5::checkIfAttributeExists(file, meta.linkPath.value(), meta.attrName.value(), meta.linkExists.value(), std::nullopt, plists.link_access);
-        meta.attrSize   = h5pp::util::getSize(data);
-        meta.attrByte   = h5pp::util::getBytesTotal(data);
-        meta.attrRank   = h5pp::util::getRank<DataType>(options.dataDims);
-        meta.attrDims   = h5pp::util::getDimensions(data, options.dataDims);
         meta.h5_type    = h5pp::util::getH5Type<DataType>(options.h5_type);
-        meta.h5_space   = h5pp::util::getMemSpace(meta.attrSize.value(),meta.attrDims.value());
-        h5pp::hdf5::setStringSize(meta.h5_type.value(), meta.attrSize.value());
         meta.h5_plist_attr_create = H5Pcreate(H5P_ATTRIBUTE_CREATE);
         meta.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
+        meta.attrSize = h5pp::util::getSize(data,options.dataDims);
+        meta.attrByte = h5pp::util::getBytesTotal(data);
+        meta.attrRank = h5pp::util::getRank<DataType>(options.dataDims);
+        meta.attrDims = h5pp::util::getDimensions(data, options.dataDims);
+        meta.h5_space = h5pp::util::getDataSpace(meta.attrSize.value(), meta.attrDims.value(), H5D_COMPACT);
+//        h5pp::hdf5::setStringSize(meta.h5_type.value(), h5pp::util::getBytesTotal(data));
+        h5pp::hdf5::setStringSize(meta.h5_type.value(), H5T_VARIABLE);
         return meta;
     }
 
