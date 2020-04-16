@@ -1,6 +1,7 @@
 function(build_dependency dep_name install_dir extra_flags)
     set(build_dir    ${CMAKE_BINARY_DIR}/h5pp-deps-build/${dep_name})
 
+
     execute_process( COMMAND  ${CMAKE_COMMAND} -E make_directory ${build_dir})
     execute_process(
             COMMAND  ${CMAKE_COMMAND}
@@ -32,7 +33,9 @@ function(build_dependency dep_name install_dir extra_flags)
     endif()
 
 
-    execute_process(COMMAND  ${CMAKE_COMMAND} --build . --parallel
+    include(cmake/GetNumThreads.cmake)
+    get_num_threads(num_threads)
+    execute_process(COMMAND  ${CMAKE_COMMAND} --build . --parallel ${num_threads}
             WORKING_DIRECTORY "${build_dir}"
             RESULT_VARIABLE build_result
             ERROR_VARIABLE  build_error
