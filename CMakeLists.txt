@@ -1,6 +1,6 @@
  
 cmake_minimum_required(VERSION 3.12)
-project(h5pp VERSION 1.6.0
+project(h5pp VERSION 1.7.0
         DESCRIPTION "A C++17 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         )
@@ -37,7 +37,6 @@ if (H5PP_PRINT_INFO)
     message("${_os_name} ${_os_platform} ${_os_release}")
     message("${_proc_type}")
     message("${_os_version}")
-    message("===============================")
 endif()
 
 
@@ -211,30 +210,6 @@ endif ()
 # However, it's nice to have them separately also if need be.
 target_link_libraries(h5pp INTERFACE headers deps flags)
 
-
-# Print summary of CMake configuration
-if (H5PP_PRINT_INFO)
-    message("========================== h5pp target summary ==============================")
-    include(${PROJECT_SOURCE_DIR}/cmake/PrintTargetInfo.cmake)
-    print_target_info(h5pp)
-    print_target_info(headers)
-    print_target_info(deps)
-    print_target_info(flags)
-    print_target_info(std::filesystem)
-    print_target_info(ghcFilesystem::ghc_filesystem)
-    print_target_info(spdlog::spdlog)
-    print_target_info(Eigen3::Eigen)
-    print_target_info(hdf5::hdf5)
-    print_target_info(CONAN_PKG::spdlog)
-    print_target_info(CONAN_PKG::HDF5)
-    print_target_info(CONAN_PKG::Eigen3)
-    print_target_info(CONAN_PKG::fmt)
-    print_target_info(CONAN_PKG::ZLIB)
-    print_target_info(Threads::Threads)
-    message("")
-endif()
-
-
 if(H5PP_IS_SUBPROJECT)
     add_library(h5pp::h5pp ALIAS h5pp)
     add_library(h5pp::headers ALIAS headers)
@@ -326,55 +301,12 @@ endif ()
 if (NOT H5PP_IS_SUBPROJECT AND H5PP_ENABLE_TESTS AND TARGET h5pp)
     enable_testing()
     add_subdirectory(tests)
-#    add_subdirectory(tests/simpleWrite h5pp-tests/simpleWrite)
-#    add_subdirectory(tests/largeWrite h5pp-tests/largeWrite)
-#    add_subdirectory(tests/overWrite h5pp-tests/overWrite)
-#    add_subdirectory(tests/rawArrayWrapper h5pp-tests/rawArrayWrapper)
-#    add_subdirectory(tests/readWrite h5pp-tests/readWrite)
-#    add_subdirectory(tests/readWriteAttributes h5pp-tests/readWriteAttributes)
-#    add_subdirectory(tests/readWriteTables h5pp-tests/readWriteTables)
-#    add_subdirectory(tests/readWriteText h5pp-tests/readWriteText)
-#    add_subdirectory(tests/copySwap h5pp-tests/copySwap)
-#    add_subdirectory(tests/typeInfo h5pp-tests/typeInfo)
-#    add_subdirectory(tests/userType h5pp-tests/userType)
-#    add_subdirectory(tests/findObjects h5pp-tests/findObjects)
-#    add_subdirectory(tests/chunkDimension h5pp-tests/chunkDimension)
-#    add_subdirectory(tests/compressedDataset h5pp-tests/compressedDataset)
-#    add_custom_target(all-tests
-#            DEPENDS
-#            test-simpleWrite
-#            test-largeWrite
-#            test-overWrite
-#            test-rawArrayWrapper
-#            test-readWrite
-#            test-readWriteAttributes
-#            test-readWriteTables
-#            test-readWriteText
-#            test-copySwap
-#            test-typeInfo
-#            test-userType
-#            test-findObjects
-#            test-chunkDimension
-#            )
-    # A handy target "all-tests" which runs all test when built.
-#add_custom_command(
-#        TARGET all-tests
-#        POST_BUILD
-#        COMMENT "Running Tests"
-#        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#        DEPENDS h5pp deps flags
-#        COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure)
-
-elseif (NOT H5PP_DOWNLOAD_METHOD MATCHES "none")
-    message(STATUS "Dependencies missing, ignoring H5PP_ENABLE_TESTS=ON")
 endif ()
 
 
 # Build examples
 if (NOT H5PP_IS_SUBPROJECT AND H5PP_BUILD_EXAMPLES AND TARGET h5pp)
     add_subdirectory(examples)
-elseif (NOT H5PP_DOWNLOAD_METHOD MATCHES "none")
-    message(STATUS "Dependencies missing, ignoring H5PP_BUILD_EXAMPLES=ON")
 endif ()
 
 
