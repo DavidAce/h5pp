@@ -150,9 +150,9 @@ namespace h5pp {
          *
          */
 
-        void                 setCompressionLevel(size_t compressionLevelZeroToNine) { currentCompressionLevel = h5pp::hdf5::getValidCompressionLevel(compressionLevelZeroToNine); }
+        void                 setCompressionLevel(unsigned int compressionLevelZeroToNine) { currentCompressionLevel = h5pp::hdf5::getValidCompressionLevel(compressionLevelZeroToNine); }
         [[nodiscard]] unsigned int getCompressionLevel() const { return currentCompressionLevel; }
-        [[nodiscard]] unsigned int getCompressionLevel(std::optional<size_t> desiredCompressionLevel) const {
+        [[nodiscard]] unsigned int getCompressionLevel(std::optional<unsigned int> desiredCompressionLevel) const {
             if(desiredCompressionLevel)
                 return h5pp::hdf5::getValidCompressionLevel(desiredCompressionLevel.value());
             else
