@@ -8,7 +8,7 @@
 #if defined(SPDLOG_FMT_EXTERNAL)
     #include <fmt/format.h>
     #include <fmt/ranges.h>
-#elif __has_include(<spdlog/fmt/bundled/format.h>)
+#elif __has_include(<spdlog/fmt/bundled/format_TEMP.h>)
     #include <spdlog/fmt/bundled/format.h>
     #include <spdlog/fmt/bundled/ranges.h>
     #define SPDLOG_FMT_INTERNAL
@@ -40,19 +40,19 @@ namespace h5pp {
                 result.emplace_back(first);
             else if constexpr(std::is_arithmetic_v<T>)
                 result.emplace_back(std::to_string(first));
-            else if constexpr(h5pp::type::sfinae::is_streamable_v<T> ) {
+            else if constexpr(h5pp::type::sfinae::is_streamable_v<T>) {
                 std::stringstream sstr;
                 sstr << std::boolalpha << first;
                 result.emplace_back(sstr.str());
             } else if constexpr(h5pp::type::sfinae::is_iterable_v<T>) {
                 std::stringstream sstr;
                 if(first.size() == 0)
-                    sstr << std::boolalpha << "[]";
+                    sstr << std::boolalpha << "{}";
                 else {
-                    sstr << "[";
+                    sstr << "{";
                     for(const auto &elem : first) sstr << elem << ",";
                     sstr.seekp(-1, std::ios_base::end);
-                    sstr << "]";
+                    sstr << "}";
                 }
                 result.emplace_back(sstr.str());
             }

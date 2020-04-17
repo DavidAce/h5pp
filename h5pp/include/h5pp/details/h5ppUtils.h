@@ -450,34 +450,39 @@ namespace h5pp::util {
     template<typename DataType>
     inline void resizeData(DataType &data, const std::vector<hsize_t> &newDims) {
         // This function may shrink a container!
-        size_t size_before = 0;
-        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) size_before = data.size();
 
 #ifdef H5PP_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             if(newDims.size() != 1) throw std::runtime_error(h5pp::format("Failed to resize 1-dimensional Eigen type: Dataset has dimensions {}", newDims));
+            h5pp::logger::log->debug("Resizing container [{}] -> {}", data.size(), newDims);
             data.resize(newDims[0]);
         } else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             if(newDims.size() != 2) throw std::runtime_error(h5pp::format("Failed to resize 2-dimensional Eigen type: Dataset has dimensions {}", newDims));
+            h5pp::logger::log->debug("Resizing container [{},{}] -> {}", data.rows(), data.cols(), newDims);
             data.resize(newDims[0], newDims[1]);
         } else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             if constexpr(h5pp::type::sfinae::has_resizeN_v<DataType, DataType::NumDimensions>) {
                 if(newDims.size() != DataType::NumDimensions)
                     throw std::runtime_error(h5pp::format("Failed to resize {}-dimensional Eigen tensor: Dataset has dimensions {}", DataType::NumDimensions, newDims));
                 auto eigenDims = eigen::copy_dims<DataType::NumDimensions>(newDims);
+                h5pp::logger::log->debug("Resizing container {} -> {}", data.dimensions(), newDims);
                 data.resize(eigenDims);
+            }else{
+                auto oldSize = data.size();
+                auto newSize = std::accumulate(newDims.begin(), newDims.end(), 1, std::multiplies<>());
+                if(oldSize != newSize)
+                    h5pp::logger::log->debug("Detected non-resizeable tensor container with wrong size: Given size {}. Required size {}", data.size(), newSize);
             }
-
         } else
 #endif // H5PP_EIGEN3
-            if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
+            if constexpr(h5pp::type::sfinae::has_size_v<DataType> and h5pp::type::sfinae::has_resize_v<DataType>) {
             auto newSize = std::accumulate(newDims.begin(), newDims.end(), 1, std::multiplies<>());
             if(newDims.size() > 1) h5pp::logger::log->debug("Given data container is 1-dimensional but the desired dimensions are {}. Resizing to fit all the data", newDims);
+            h5pp::logger::log->debug("Resizing container {} -> {}", data.size(), newSize);
             data.resize(newSize);
+        } else {
+            h5pp::logger::log->debug("Container could not be resized");
         }
-
-        if constexpr(h5pp::type::sfinae::has_size_v<DataType>)
-            if(size_before != (size_t) data.size()) h5pp::logger::log->debug("Resized container {} -> {}", size_before, data.size());
     }
 
     template<typename DataType>
@@ -488,10 +493,6 @@ namespace h5pp::util {
         // A selection of elements in memory space must occurr after calling this function.
         if(H5Tis_variable_str(type) > 0) {
             return;
-            // These are resized automatically when reading
-            //            hsize_t vlen = 0;
-            //            H5Dvlen_get_buf_size(dset,type,space,&vlen);
-            //            resizeData(data, {vlen});
         } else if(H5Sget_simple_extent_type(space) == H5S_SCALAR) {
             resizeData(data, {(hsize_t) 1});
         } else {
