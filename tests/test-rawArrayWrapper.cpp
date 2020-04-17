@@ -26,15 +26,15 @@ int main() {
 
     for(auto &elem : wrapped_arr4) { std::cout << elem << std::endl; }
 
-    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4)>() << std::endl;
-    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4)::value_type>() << std::endl;
-    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.data())>() << std::endl;
-    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.size())>() << std::endl;
-    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.begin())>() << std::endl;
-    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.end())>() << std::endl;
-    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.front())>() << std::endl;
-    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.back())>() << std::endl;
-    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.dimensions())>() << std::endl;
+//    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4)>() << std::endl;
+//    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4)::value_type>() << std::endl;
+//    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.data())>() << std::endl;
+//    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.size())>() << std::endl;
+//    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.begin())>() << std::endl;
+//    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.end())>() << std::endl;
+//    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.front())>() << std::endl;
+//    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.back())>() << std::endl;
+//    std::cout << h5pp::type::sfinae::type_name<decltype(wrapped_arr4.dimensions())>() << std::endl;
 
     return 0;
 }
