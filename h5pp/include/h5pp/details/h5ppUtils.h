@@ -461,7 +461,7 @@ namespace h5pp::util {
             h5pp::logger::log->debug("Resizing container [{},{}] -> {}", data.rows(), data.cols(), newDims);
             data.resize(newDims[0], newDims[1]);
         } else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
-            if constexpr(h5pp::type::sfinae::has_resizeN_v<DataType, DataType::NumDimensions>) {
+            if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 if(newDims.size() != DataType::NumDimensions)
                     throw std::runtime_error(h5pp::format("Failed to resize {}-dimensional Eigen tensor: Dataset has dimensions {}", DataType::NumDimensions, newDims));
                 auto eigenDims = eigen::copy_dims<DataType::NumDimensions>(newDims);
@@ -471,7 +471,7 @@ namespace h5pp::util {
                 auto oldSize = data.size();
                 auto newSize = std::accumulate(newDims.begin(), newDims.end(), 1, std::multiplies<>());
                 if(oldSize != newSize)
-                    h5pp::logger::log->debug("Detected non-resizeable tensor container with wrong size: Given size {}. Required size {}", data.size(), newSize);
+                    h5pp::logger::log->warn("Detected non-resizeable tensor container with wrong size: Given size {}. Required size {}", data.size(), newSize);
             }
         } else
 #endif // H5PP_EIGEN3
