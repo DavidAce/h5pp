@@ -63,7 +63,7 @@ namespace h5pp {
         }
     }
 
-    std::string format(const std::string &fmtstring) { return fmtstring; }
+    inline std::string format(const std::string &fmtstring) { return fmtstring; }
 
     template<typename... Args>
     [[nodiscard]] std::string format(const std::string &fmtstring, [[maybe_unused]] Args... args) {
