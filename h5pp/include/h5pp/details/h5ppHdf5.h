@@ -801,7 +801,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    void logSpaceTranfer(const hid::h5s &src, const hid::h5s &tgt) {
+    inline void logSpaceTranfer(const hid::h5s &src, const hid::h5s &tgt) {
         if(h5pp::logger::getLogLevel() == 0) {
             auto msg_src = getSpaceString(src);
             auto msg_tgt = getSpaceString(tgt);
@@ -811,7 +811,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    void logSpaceCreate(const hid::h5s &tgt) {
+    inline void logSpaceCreate(const hid::h5s &tgt) {
         if(h5pp::logger::getLogLevel() == 0) {
             auto msg_tgt = getSpaceString(tgt);
             if(msg_tgt.empty()) return;
@@ -933,7 +933,7 @@ namespace h5pp::hdf5 {
         return matchList;
     }
 
-    void createDataset(const h5pp::MetaDset &metaDset, const PropertyLists &plists = PropertyLists()) {
+    inline void createDataset(const h5pp::MetaDset &metaDset, const PropertyLists &plists = PropertyLists()) {
         // Here we create, the dataset id and set its properties before writing data to it.
         metaDset.assertCreateReady();
         if(metaDset.dsetExists.value()) return;
