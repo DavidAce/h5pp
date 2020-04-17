@@ -80,7 +80,6 @@ find_package(Eigen3 ${Eigen3_FIND_VERSION}
         HINTS ${EIGEN3_DIRECTORY_HINTS}
         PATHS $ENV{CONDA_PREFIX}
         PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3 Eigen3/include/eigen3
-        Eigen3_NO_DEFAULT_PATH
         ${NO_DEFAULT_PATH}
         ${NO_CMAKE_PACKAGE_REGISTRY}
         CONFIG QUIET)
@@ -91,6 +90,7 @@ if (TARGET Eigen3::Eigen)
     get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
     if(EIGEN3_VERSION_OK AND EIGEN3_INCLUDE_DIR)
         set(Eigen3_FOUND TRUE)
+        target_include_directories(Eigen3::Eigen SYSTEM INTERFACE ${EIGEN3_INCLUDE_DIR})
     endif()
 endif()
 
@@ -114,8 +114,7 @@ if(NOT TARGET Eigen3::Eigen OR NOT EIGEN3_INCLUDE_DIR AND NOT EIGEN3_CONFIG_ONLY
         # Add a convenience target. This one may not have a namespace
         # but you can create one yourself as an alias
         add_library(Eigen3 INTERFACE)
-        set_target_properties(Eigen3 PROPERTIES
-                INTERFACE_INCLUDE_DIRECTORIES "${EIGEN3_INCLUDE_DIR}")
+        target_include_directories(Eigen3 SYSTEM INTERFACE ${EIGEN3_INCLUDE_DIR})
     endif()
 endif()
 
