@@ -317,3 +317,6 @@ script:
 
 after_failure:
   - cat CMakeFiles/CMakeError.log
+  - cat tests/Testing/Temporary/CTestCostData.txt
+  - cat tests/Testing/Temporary/LastTest.log
+  - cat tests/Testing/Temporary/LastTestsFailed.log
