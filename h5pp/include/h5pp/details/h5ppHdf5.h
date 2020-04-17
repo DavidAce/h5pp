@@ -763,7 +763,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    std::string getSpaceString(const hid::h5s &space) {
+    inline std::string getSpaceString(const hid::h5s &space) {
         std::string msg;
         //        msg.append(h5pp::format(" | size {}", getSize(space, type)));
         //        msg.append(h5pp::format(" | rank {}", getRank(space)));
