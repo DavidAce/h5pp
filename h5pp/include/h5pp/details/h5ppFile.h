@@ -35,7 +35,7 @@ namespace h5pp {
         size_t               logLevel     = 2;
         bool                 logTimestamp = false;
         hid::h5e             error_stack;
-        size_t               currentCompressionLevel = 0;
+        unsigned int         currentCompressionLevel = 0;
 
         void init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
@@ -150,9 +150,9 @@ namespace h5pp {
          *
          */
 
-        void setCompressionLevel(size_t compressionLevelZeroToNine) { currentCompressionLevel = h5pp::hdf5::getValidCompressionLevel(compressionLevelZeroToNine); }
-        [[nodiscard]] size_t getCompressionLevel() const { return currentCompressionLevel; }
-        [[nodiscard]] size_t getCompressionLevel(std::optional<size_t> desiredCompressionLevel) const {
+        void                 setCompressionLevel(size_t compressionLevelZeroToNine) { currentCompressionLevel = h5pp::hdf5::getValidCompressionLevel(compressionLevelZeroToNine); }
+        [[nodiscard]] unsigned int getCompressionLevel() const { return currentCompressionLevel; }
+        [[nodiscard]] unsigned int getCompressionLevel(std::optional<size_t> desiredCompressionLevel) const {
             if(desiredCompressionLevel)
                 return h5pp::hdf5::getValidCompressionLevel(desiredCompressionLevel.value());
             else
@@ -333,7 +333,9 @@ namespace h5pp {
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
         void readDataset(DataType &data, std::string_view dsetPath, const Options &options = Options()) const {
             if constexpr(std::is_pointer_v<DataType>)
-                if(not options.dataDims) throw std::runtime_error(h5pp::format("Error reading dataset [{}]: Dimensions or size not specified for given type [{}]", dsetPath, h5pp::type::sfinae::type_name<DataType>()));
+                if(not options.dataDims)
+                    throw std::runtime_error(
+                        h5pp::format("Error reading dataset [{}]: Dimensions or size not specified for given type [{}]", dsetPath, h5pp::type::sfinae::type_name<DataType>()));
 
             hid::h5f file     = openFileHandle();
             auto     metaDset = h5pp::scan::getMetaDset(file, dsetPath, options, plists);
