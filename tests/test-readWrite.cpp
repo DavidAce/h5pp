@@ -155,6 +155,7 @@ int main() {
     std::cout << "Reading tensorComplex: \n";
     Eigen::Tensor<cplx, 4> tensorComplexRead;
     file.readDataset(tensorComplexRead, "tensorComplex");
+    std::cout << "Finished reading tensorComplex" << std::endl;
     // Tensor comparison isn't as straightforward if we want to properly test storage orders
     Eigen::Map<Eigen::VectorXcd> tensorMap(tensorComplex.data(), tensorComplex.size());
     Eigen::Map<Eigen::VectorXcd> tensorMapRead(tensorComplexRead.data(), tensorComplexRead.size());
