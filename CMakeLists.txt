@@ -32,11 +32,12 @@ if (H5PP_PRINT_INFO)
     cmake_host_system_information(RESULT _os_release QUERY OS_RELEASE)
     cmake_host_system_information(RESULT _os_version QUERY OS_VERSION)
     cmake_host_system_information(RESULT _os_platform QUERY OS_PLATFORM)
-    message("========= HOST INFO =========")
-    message("${_host_name}")
-    message("${_os_name} ${_os_platform} ${_os_release}")
-    message("${_proc_type}")
-    message("${_os_version}")
+    message(STATUS "| HOST INFO:\n"
+                    "   |-----------\n"
+                    "   | ${_host_name}\n"
+                    "   | ${_os_name} ${_os_platform} ${_os_release}\n"
+                    "   | ${_proc_type}\n"
+                    "   | ${_os_version}\n")
 endif()
 
 
@@ -85,20 +86,21 @@ endif ()
 
 
 if(H5PP_PRINT_INFO)
-    message("=========================== h5pp build options ==============================")
-    message(STATUS "BUILD_SHARED_LIBS       : ${BUILD_SHARED_LIBS}")
-    message(STATUS "H5PP_BUILD_EXAMPLES     : ${H5PP_BUILD_EXAMPLES}")
-    message(STATUS "H5PP_ENABLE_TESTS       : ${H5PP_ENABLE_TESTS}")
-    message(STATUS "H5PP_ENABLE_EIGEN3      : ${H5PP_ENABLE_EIGEN3}")
-    message(STATUS "H5PP_ENABLE_SPDLOG      : ${H5PP_ENABLE_SPDLOG}")
-    message(STATUS "H5PP_ENABLE_MPI         : ${H5PP_ENABLE_MPI}")
-    message(STATUS "H5PP_IS_SUBPROJECT      : ${H5PP_IS_SUBPROJECT}")
-    message(STATUS "H5PP_DOWNLOAD_METHOD    : ${H5PP_DOWNLOAD_METHOD}")
-    message(STATUS "H5PP_APPEND_LIBSUFFIX   : ${H5PP_APPEND_LIBSUFFIX}")
-    message(STATUS "H5PP_PREFER_CONDA_LIBS  : ${H5PP_PREFER_CONDA_LIBS}")
-    message(STATUS "H5PP_PRINT_INFO         : ${H5PP_PRINT_INFO}")
-    message(STATUS "CMAKE_INSTALL_PREFIX    : ${CMAKE_INSTALL_PREFIX}")
-    message("")
+    message(STATUS  "| H5PP BUILD OPTIONS\n"
+                    "   |-------------------\n"
+                    "   | BUILD_SHARED_LIBS       : ${BUILD_SHARED_LIBS}\n"
+                    "   | H5PP_BUILD_EXAMPLES     : ${H5PP_BUILD_EXAMPLES}\n"
+                    "   | H5PP_ENABLE_TESTS       : ${H5PP_ENABLE_TESTS}\n"
+                    "   | H5PP_ENABLE_EIGEN3      : ${H5PP_ENABLE_EIGEN3}\n"
+                    "   | H5PP_ENABLE_SPDLOG      : ${H5PP_ENABLE_SPDLOG}\n"
+                    "   | H5PP_ENABLE_MPI         : ${H5PP_ENABLE_MPI}\n"
+                    "   | H5PP_IS_SUBPROJECT      : ${H5PP_IS_SUBPROJECT}\n"
+                    "   | H5PP_DOWNLOAD_METHOD    : ${H5PP_DOWNLOAD_METHOD}\n"
+                    "   | H5PP_APPEND_LIBSUFFIX   : ${H5PP_APPEND_LIBSUFFIX}\n"
+                    "   | H5PP_PREFER_CONDA_LIBS  : ${H5PP_PREFER_CONDA_LIBS}\n"
+                    "   | H5PP_PRINT_INFO         : ${H5PP_PRINT_INFO}\n"
+                    "   | CMAKE_INSTALL_PREFIX    : ${CMAKE_INSTALL_PREFIX}\n")
+#    message("")
 endif ()
 
 
@@ -208,12 +210,32 @@ include(cmake/SetupDependenciesConan.cmake)
 
 # Print summary of CMake configuration
 if (H5PP_PRINT_INFO)
-    message("========================== h5pp target summary ==============================")
+    message(STATUS "| H5PP TARGET SUMMARY")
+    message(STATUS "|--------------------")
     include(${PROJECT_SOURCE_DIR}/cmake/PrintTargetInfo.cmake)
     foreach(tgt ${H5PP_TARGETS})
-        print_target_info(${tgt})
+        print_target_info(${tgt} "| ")
     endforeach()
 endif()
+
+## Print summary of CMake configuration
+#if (H5PP_PRINT_INFO)
+#    message("========================== h5pp target summary ==============================")
+#    include(${PROJECT_SOURCE_DIR}/cmake/PrintTargetInfo.cmake)
+#    print_target_info(h5pp)
+#    print_target_info(headers)
+#    print_target_info(deps)
+#    print_target_info(flags)
+#    print_target_info(std::filesystem)
+#    print_target_info(ghcFilesystem::ghc_filesystem)
+#    foreach(tgt ${CONAN_TARGETS})
+#        print_target_info(${tgt})
+#    endforeach()
+#    print_target_info(Threads::Threads)
+#    message("")
+#endif()
+
+
 
 # Link all targets to one main h5pp target (the only one that users should need)
 # However, it's nice to have them separately also if need be.

@@ -26,7 +26,7 @@ function(remove_genexpr list_data)
     set(${list_data} ${match_list} PARENT_SCOPE)
 endfunction()
 
-function(print_target_info target_name)
+function(print_target_info target_name prefix)
     if(TARGET ${target_name})
         get_target_property(INFO_INC  ${target_name} INTERFACE_INCLUDE_DIRECTORIES)
         get_target_property(INFO_LIB  ${target_name} INTERFACE_LINK_LIBRARIES)
@@ -47,7 +47,7 @@ function(print_target_info target_name)
         endif()
 
 
-        pad_string(padded_target "32" " " "[${target_name}]" )
+        pad_string(padded_target "32" " " "${prefix}[${target_name}]" )
         if(INFO_LIB)
             message(STATUS "${padded_target} LIBRARY : ${INFO_LIB}" )
         endif()

@@ -90,21 +90,4 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
     target_link_libraries(deps INTERFACE ${CONAN_TARGETS})
 
 
-    # Print summary of CMake configuration
-    if (H5PP_PRINT_INFO)
-        message("========================== h5pp target summary ==============================")
-        include(${PROJECT_SOURCE_DIR}/cmake/PrintTargetInfo.cmake)
-        print_target_info(h5pp)
-        print_target_info(headers)
-        print_target_info(deps)
-        print_target_info(flags)
-        print_target_info(std::filesystem)
-        print_target_info(ghcFilesystem::ghc_filesystem)
-        foreach(tgt ${CONAN_TARGETS})
-            print_target_info(${tgt})
-        endforeach()
-        print_target_info(Threads::Threads)
-        message("")
-    endif()
-
 endif()
