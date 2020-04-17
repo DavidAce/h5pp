@@ -67,8 +67,8 @@ namespace h5pp {
 
     template<typename... Args>
     [[nodiscard]] std::string format(const std::string &fmtstring, [[maybe_unused]] Args... args) {
-        size_t brackets_left  = std::count(fmtstring.begin(), fmtstring.end(), '{');
-        size_t brackets_right = std::count(fmtstring.begin(), fmtstring.end(), '}');
+        auto brackets_left  = std::count(fmtstring.begin(), fmtstring.end(), '{');
+        auto brackets_right = std::count(fmtstring.begin(), fmtstring.end(), '}');
         if(brackets_left != brackets_right) return std::string("FORMATTING ERROR: GOT STRING: " + fmtstring);
         auto        arglist = formatting::convert_to_string_list(args...);
         std::string result  = fmtstring;

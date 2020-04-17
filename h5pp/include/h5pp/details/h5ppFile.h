@@ -35,7 +35,7 @@ namespace h5pp {
         size_t               logLevel     = 2;
         bool                 logTimestamp = false;
         hid::h5e             error_stack;
-        unsigned int         currentCompressionLevel = 0;
+        size_t               currentCompressionLevel = 0;
 
         void init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
@@ -150,9 +150,9 @@ namespace h5pp {
          *
          */
 
-        void setCompressionLevel(unsigned int compressionLevelZeroToNine) { currentCompressionLevel = h5pp::hdf5::getValidCompressionLevel(compressionLevelZeroToNine); }
-        [[nodiscard]] unsigned int getCompressionLevel() const { return currentCompressionLevel; }
-        [[nodiscard]] unsigned int getCompressionLevel(std::optional<size_t> desiredCompressionLevel) const {
+        void setCompressionLevel(size_t compressionLevelZeroToNine) { currentCompressionLevel = h5pp::hdf5::getValidCompressionLevel(compressionLevelZeroToNine); }
+        [[nodiscard]] size_t getCompressionLevel() const { return currentCompressionLevel; }
+        [[nodiscard]] size_t getCompressionLevel(std::optional<size_t> desiredCompressionLevel) const {
             if(desiredCompressionLevel)
                 return h5pp::hdf5::getValidCompressionLevel(desiredCompressionLevel.value());
             else

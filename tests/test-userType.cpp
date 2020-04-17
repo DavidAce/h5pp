@@ -74,7 +74,7 @@ int main() {
 
     if(particles.size() != particles_read.size()) throw std::runtime_error("Particles container size mismatch");
     i = 0;
-    for(auto & p : particles)if(p != particles_read[i++]) throw std::runtime_error("Particle mismatch position "+ std::to_string(--i));
+    for(auto & p : particles)if(p != particles_read[(size_t) i++]) throw std::runtime_error("Particle mismatch position "+ std::to_string(--i));
 
 
 

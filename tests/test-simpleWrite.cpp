@@ -31,10 +31,10 @@ int main() {
         float z;
     };
     Field2 field2{0.53, 0.45};
-    Field3 field3{0.54, 0.56, 0.58};
+    Field3 field3{0.54f, 0.56f, 0.58f};
 
     std::vector<Field2> field2array(10, {0.3, 0.8});
-    std::vector<Field3> field3array(10, {0.3, 0.8, 1.4});
+    std::vector<Field3> field3array(10, {0.3f, 0.8f, 1.4f});
 
     // Test normal write usage
     file.writeDataset(String, "simpleWriteGroup/String");

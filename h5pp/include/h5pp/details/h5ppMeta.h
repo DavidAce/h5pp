@@ -42,7 +42,7 @@ namespace h5pp {
         void setFromSpace() {
             if(not h5_space) return;
             dataRank = H5Sget_simple_extent_ndims(h5_space.value());
-            dataDims = std::vector<hsize_t>(dataRank.value(), 0);
+            dataDims = std::vector<hsize_t>((size_t)dataRank.value(), 0);
             H5Sget_simple_extent_dims(h5_space.value(), dataDims->data(), nullptr);
         }
 
@@ -61,7 +61,7 @@ namespace h5pp {
                 throw std::runtime_error("Cannot write from memory. The following meta fields are not valid\n\t" + error_msg);
 
             /* clang-format on */
-            hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), 1, std::multiplies<>());
+            hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), (hsize_t)1, std::multiplies<>());
             if(size_check != dataSize.value()) throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | size check [{}]", dataSize.value(), size_check));
         }
 
@@ -80,7 +80,7 @@ namespace h5pp {
                 throw std::runtime_error("Cannot read into memory. The following meta fields are not valid\n\t" + error_msg);
 
             /* clang-format on */
-            hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), 1, std::multiplies<>());
+            hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), (hsize_t)1, std::multiplies<>());
             if(size_check != dataSize.value()) throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | size check [{}]", dataSize.value(), size_check));
         }
         [[nodiscard]] std::string string() const {

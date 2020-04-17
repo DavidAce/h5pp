@@ -122,12 +122,12 @@ namespace h5pp::util {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] hsize_t getSize(const DataType &data, std::optional<std::vector<hsize_t>> desiredDims = std::nullopt) {
-        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) return 1; // Strings and char arrays are treated as a single unit
-        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return data.size();
-        if constexpr(std::is_array_v<DataType>) return getArraySize(data);
+        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) return (hsize_t) 1; // Strings and char arrays are treated as a single unit
+        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return (hsize_t) data.size();
+        if constexpr(std::is_array_v<DataType>) return (hsize_t) getArraySize(data);
         if constexpr(std::is_pointer_v<DataType>) {
             if(not desiredDims) throw std::runtime_error("Failed to read data size: Pointer data has no specified dimensions");
-            auto size = std::accumulate(desiredDims->begin(), desiredDims->end(), 1, std::multiplies<>());
+            auto size = std::accumulate(desiredDims->begin(), desiredDims->end(), (hsize_t) 1, std::multiplies<>());
             return size;
         }
 
@@ -153,7 +153,7 @@ namespace h5pp::util {
         if constexpr(std::is_pointer_v<DataType>) {
             if(not desiredDims) {
                 throw std::runtime_error("Failed to read data rank: Pointer data has no specified dimensions");
-                return desiredDims->size();
+                return (int) desiredDims->size();
             }
         }
 
@@ -175,8 +175,8 @@ namespace h5pp::util {
 
         if(desiredDims) {
             // Check that the desired dimensions add up to the data size
-            auto   dataSize    = getSize(data);
-            size_t desiredSize = std::accumulate(desiredDims->begin(), desiredDims->end(), 1, std::multiplies<>());
+            auto dataSize    = getSize(data);
+            auto desiredSize = std::accumulate(desiredDims->begin(), desiredDims->end(), (hsize_t) 1, std::multiplies<>());
             if(dataSize != desiredSize) throw std::runtime_error(h5pp::format("Desired dimensions {} do not match the given data size [{}]", desiredDims.value(), dataSize));
             //            if(dataSize != desiredSize) h5pp::logger::log->warn("Desired dimensions [{}] do not match the given data size [{}]", desiredDims.value(), dataSize);
             return desiredDims.value();
@@ -266,7 +266,7 @@ namespace h5pp::util {
         else if(dims.empty() and size == 0)
             return H5Screate(H5S_NULL);
         else {
-            hsize_t num_elements = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<>());
+            auto num_elements = std::accumulate(dims.begin(), dims.end(), (hsize_t) 1, std::multiplies<>());
             if(size != num_elements) throw std::runtime_error(h5pp::format("Number of elements mismatch: size {} | dimensions {}", size, dims));
 
             // Chunked layout datasets can be extended, which is why their max extent in any dimension may be unlimited.
@@ -301,7 +301,7 @@ namespace h5pp::util {
         else if(dims.empty() and size == 0)
             return H5Screate(H5S_NULL);
         else {
-            hsize_t num_elements = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<>());
+            auto num_elements = std::accumulate(dims.begin(), dims.end(), (hsize_t) 1, std::multiplies<>());
             if(size != num_elements) throw std::runtime_error(h5pp::format("Number of elements mismatch: size {} | dimensions {}", size, dims));
             return H5Screate_simple((int) dims.size(), dims.data(), nullptr);
         }
@@ -395,9 +395,9 @@ namespace h5pp::util {
         if(maxDims) {
             for(auto &dim : maxDims.value())
                 if(dim == H5S_UNLIMITED) return H5D_CHUNKED;
-            size = std::accumulate(maxDims->begin(), maxDims->end(), 1, std::multiplies<>());
+            size = std::accumulate(maxDims->begin(), maxDims->end(), (hsize_t) 1, std::multiplies<>());
         } else if(dataDims)
-            size = std::accumulate(dataDims->begin(), dataDims->end(), 1, std::multiplies<>());
+            size = std::accumulate(dataDims->begin(), dataDims->end(), (hsize_t) 1, std::multiplies<>());
         else
             size = getSize(data, dataDims);
         auto bytes = size * getBytesPerElem<DataType>();
@@ -455,11 +455,11 @@ namespace h5pp::util {
         if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             if(newDims.size() != 1) throw std::runtime_error(h5pp::format("Failed to resize 1-dimensional Eigen type: Dataset has dimensions {}", newDims));
             h5pp::logger::log->debug("Resizing container [{}] -> {}", data.size(), newDims);
-            data.resize(newDims[0]);
+            data.resize((long) newDims[0]);
         } else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             if(newDims.size() != 2) throw std::runtime_error(h5pp::format("Failed to resize 2-dimensional Eigen type: Dataset has dimensions {}", newDims));
             h5pp::logger::log->debug("Resizing container [{},{}] -> {}", data.rows(), data.cols(), newDims);
-            data.resize(newDims[0], newDims[1]);
+            data.resize((long) newDims[0], (long) newDims[1]);
         } else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 if(newDims.size() != DataType::NumDimensions)
@@ -467,16 +467,15 @@ namespace h5pp::util {
                 auto eigenDims = eigen::copy_dims<DataType::NumDimensions>(newDims);
                 h5pp::logger::log->debug("Resizing container {} -> {}", data.dimensions(), newDims);
                 data.resize(eigenDims);
-            }else{
+            } else {
                 auto oldSize = data.size();
                 auto newSize = std::accumulate(newDims.begin(), newDims.end(), 1, std::multiplies<>());
-                if(oldSize != newSize)
-                    h5pp::logger::log->warn("Detected non-resizeable tensor container with wrong size: Given size {}. Required size {}", data.size(), newSize);
+                if(oldSize != newSize) h5pp::logger::log->warn("Detected non-resizeable tensor container with wrong size: Given size {}. Required size {}", data.size(), newSize);
             }
         } else
 #endif // H5PP_EIGEN3
             if constexpr(h5pp::type::sfinae::has_size_v<DataType> and h5pp::type::sfinae::has_resize_v<DataType>) {
-            auto newSize = std::accumulate(newDims.begin(), newDims.end(), 1, std::multiplies<>());
+            auto newSize = std::accumulate(newDims.begin(), newDims.end(), (size_t) 1, std::multiplies<>());
             if(newDims.size() > 1) h5pp::logger::log->debug("Given data container is 1-dimensional but the desired dimensions are {}. Resizing to fit all the data", newDims);
             h5pp::logger::log->debug("Resizing container {} -> {}", data.size(), newSize);
             data.resize(newSize);
@@ -497,7 +496,7 @@ namespace h5pp::util {
             resizeData(data, {(hsize_t) 1});
         } else {
             int                  rank = H5Sget_simple_extent_ndims(space); // This will define the bounding box of the selected elements in the file space
-            std::vector<hsize_t> extent(rank, 0);
+            std::vector<hsize_t> extent((size_t)rank, 0);
             H5Sget_simple_extent_dims(space, extent.data(), nullptr);
             resizeData(data, extent);
         }

@@ -225,7 +225,7 @@ int main() {
     }
 
     // Test write/read from map types
-    Eigen::Map<Eigen::VectorXd>                vectorMapDouble(vectorDouble.data(), vectorDouble.size());
+    Eigen::Map<Eigen::VectorXd>                vectorMapDouble(vectorDouble.data(), (long) vectorDouble.size());
     Eigen::Map<Eigen::MatrixXd>                matrixMapDouble(matrixDouble.data(), matrixDouble.rows(), matrixDouble.cols());
     Eigen::TensorMap<Eigen::Tensor<double, 2>> tensorMapDouble(matrixDouble.data(), matrixDouble.rows(), matrixDouble.cols());
     file.writeDataset(vectorMapDouble, "vectorMapDouble");

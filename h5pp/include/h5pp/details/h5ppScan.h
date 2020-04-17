@@ -43,7 +43,7 @@ namespace h5pp::scan {
         if(not meta.h5_plist_dset_access) meta.h5_plist_dset_access = H5Dget_access_plist(meta.h5_dset.value());
         if(not meta.h5_layout) meta.h5_layout = H5Pget_layout(meta.h5_plist_dset_create.value());
         if(not meta.chunkDims and meta.h5_layout.value() == H5D_CHUNKED) {
-            meta.chunkDims = std::vector<hsize_t>(meta.dsetRank.value(), 0);
+            meta.chunkDims = std::vector<hsize_t>((size_t) meta.dsetRank.value(), 0);
             int success    = H5Pget_chunk(meta.h5_plist_dset_create.value(), meta.dsetRank.value(), meta.chunkDims.value().data());
             if(success < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
@@ -485,7 +485,7 @@ namespace h5pp::scan {
         tableProps.tableName  = tableName;
         tableProps.groupName  = "";
         size_t pos            = tableProps.tableName.value().find_last_of('/');
-        if(pos != std::string::npos) tableProps.groupName.value().assign(tableProps.tableName.value().begin(), tableProps.tableName.value().begin() + pos);
+        if(pos != std::string::npos) tableProps.groupName.value().assign(tableProps.tableName.value().begin(), tableProps.tableName.value().begin() + (long) pos);
 
         tableProps.NFIELDS          = H5Tget_nmembers(entryType);
         tableProps.NRECORDS         = 0;

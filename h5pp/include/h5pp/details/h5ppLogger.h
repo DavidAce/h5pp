@@ -83,22 +83,24 @@ namespace h5pp::logger {
     };
     inline std::shared_ptr<ManualLogger> log;
 
-    inline void enableTimestamp() {}
-    inline void disableTimestamp() {}
-    inline size_t getLogLevel(){
-        if(log != nullptr) return log->logLevel;
-        else return 2;
+    inline void   enableTimestamp() {}
+    inline void   disableTimestamp() {}
+    inline size_t getLogLevel() {
+        if(log != nullptr)
+            return log->logLevel;
+        else
+            return 2;
     }
     template<typename levelType>
     inline void setLogLevel([[maybe_unused]] levelType levelZeroToFive) {
         if(log != nullptr) log->logLevel = levelZeroToFive;
     }
-//    inline size_t getLogLevel() {
-//        if(log != nullptr) return log->logLevel;
-//    }
-    inline void setLogger([[maybe_unused]] const std::string & name_,
-                          [[maybe_unused]] std::optional<int>  levelZeroToFive = std::nullopt,
-                          [[maybe_unused]] std::optional<bool> timestamp       = std::nullopt) {
+    //    inline size_t getLogLevel() {
+    //        if(log != nullptr) return log->logLevel;
+    //    }
+    inline void setLogger([[maybe_unused]] const std::string &   name_,
+                          [[maybe_unused]] std::optional<size_t> levelZeroToFive = std::nullopt,
+                          [[maybe_unused]] std::optional<bool>   timestamp       = std::nullopt) {
         log          = std::make_shared<ManualLogger>();
         log->logName = name_;
         if(levelZeroToFive.has_value()) log->logLevel = levelZeroToFive.value();

@@ -30,18 +30,18 @@ namespace h5pp {
             if(rank == 0) return;
             select_type = H5Sget_select_type(space);
             if(select_type.value() == H5S_SEL_HYPERSLABS) {
-                offset = std::vector<hsize_t>(rank, 0);
-                extent = std::vector<hsize_t>(rank, 0);
-                stride = std::vector<hsize_t>(rank, 0);
-                block  = std::vector<hsize_t>(rank, 0);
+                offset = std::vector<hsize_t>((size_t) rank, 0);
+                extent = std::vector<hsize_t>((size_t) rank, 0);
+                stride = std::vector<hsize_t>((size_t) rank, 0);
+                block  = std::vector<hsize_t>((size_t) rank, 0);
 #if H5_VERSION_GE(1,10,0)
                 H5Sget_regular_hyperslab(space, offset->data(), stride->data(), extent->data(), block->data());
 #else
                 H5Sget_simple_extent_dims(space, extent->data(), nullptr);
 #endif
             } else if(select_type.value() == H5S_SEL_ALL) {
-                offset = std::vector<hsize_t>(rank, 0);
-                extent = std::vector<hsize_t>(rank, 0);
+                offset = std::vector<hsize_t>((size_t) rank, 0);
+                extent = std::vector<hsize_t>((size_t) rank, 0);
                 H5Sget_simple_extent_dims(space, extent->data(), nullptr);
             } else if(select_type.value() == H5S_SEL_ERROR)
                 throw std::runtime_error("Invalid hyperslab selection");
