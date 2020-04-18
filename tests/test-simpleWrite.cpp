@@ -7,6 +7,7 @@ int main() {
     std::string                       outputFilename = "output/simpleWrite.h5";
     size_t                            logLevel       = 0;
     h5pp::File                        file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
+    bool                              Boolean = true;
     std::string                       String    = "This is a string";
     char                              Char[100] = "This is a char array";
     double                            Double    = 2.0;
@@ -37,6 +38,8 @@ int main() {
     std::vector<Field3> field3array(10, {0.3f, 0.8f, 1.4f});
 
     // Test normal write usage
+    file.writeDataset(Boolean, "simpleWriteGroup/Boolean");
+    file.writeDataset(false, "simpleWriteGroup/BooleanRval");
     file.writeDataset(String, "simpleWriteGroup/String");
     file.writeDataset(Char, "simpleWriteGroup/Char");
     file.writeDataset(Double, "simpleWriteGroup/Double");

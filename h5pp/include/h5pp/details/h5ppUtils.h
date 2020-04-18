@@ -30,8 +30,10 @@ namespace h5pp::util {
         if constexpr (std::is_same_v<DecayType, double>)                           return H5Tcopy(H5T_NATIVE_DOUBLE);
         if constexpr (std::is_same_v<DecayType, long double>)                      return H5Tcopy(H5T_NATIVE_LDOUBLE);
         if constexpr (std::is_same_v<DecayType, float>)                            return H5Tcopy(H5T_NATIVE_FLOAT);
-        if constexpr (std::is_same_v<DecayType, bool>)                             return H5Tcopy(H5T_NATIVE_HBOOL);
-//        if constexpr (std::is_same_v<DecayType, char>)                             return H5Tcopy(H5T_NATIVE_CHAR);
+        if constexpr (std::is_same_v<DecayType, bool> and sizeof(DecayType)==1)    return H5Tcopy(H5T_NATIVE_B8);
+        if constexpr (std::is_same_v<DecayType, bool> and sizeof(DecayType)==2)    return H5Tcopy(H5T_NATIVE_B16);
+        if constexpr (std::is_same_v<DecayType, bool> and sizeof(DecayType)==4)    return H5Tcopy(H5T_NATIVE_B32);
+//        if constexpr (std::is_same_v<DecayType, bool>)                             return H5Tcopy(H5T_NATIVE_HBOOL);
         if constexpr (std::is_same_v<DecayType, std::string>)                      return H5Tcopy(H5T_C_S1);
         if constexpr (std::is_same_v<DecayType, char>)                             return H5Tcopy(H5T_C_S1);
         if constexpr (std::is_same_v<DecayType, std::complex<short>>)              return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_SHORT);
@@ -73,7 +75,7 @@ namespace h5pp::util {
 
         /* clang-format on */
         h5pp::logger::log->critical("getH5Type could not match the type provided: {}", type::sfinae::type_name<DecayType>());
-        throw std::logic_error("getH5Type could not match the type provided: " + std::string(type::sfinae::type_name<DecayType>()));
+        throw std::logic_error(h5pp::format("getH5Type could not match the type provided [{}] | size {}",type::sfinae::type_name<DecayType>(),sizeof(DecayType)));
         return hid_t(0);
     }
 
