@@ -690,14 +690,14 @@ namespace h5pp::hdf5 {
         herr_t err;
         if(maxDims) {
             if(dims.size() != maxDims->size()) throw std::runtime_error(h5pp::format("Rank mismatch in dimensions {} and max dimensions {}", dims, maxDims.value()));
-            std::vector<std::string> maxDimStr;
+            std::vector<long> maxDimsLong;
             for(auto &dim : maxDims.value()) {
                 if(dim == H5S_UNLIMITED)
-                    maxDimStr.emplace_back("H5S_UNLIMITED");
+                    maxDimsLong.emplace_back(-1);
                 else
-                    maxDimStr.emplace_back(std::to_string(dim));
+                    maxDimsLong.emplace_back((long)dim);
             }
-            h5pp::logger::log->trace("Setting dataspace extents: dims {} | max dims {}", dims, maxDimStr);
+            h5pp::logger::log->trace("Setting dataspace extents: dims {} | max dims {}", dims, maxDimsLong);
             err = H5Sset_extent_simple(h5_space, (int) dims.size(), dims.data(), maxDims->data());
             if(err < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);

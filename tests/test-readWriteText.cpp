@@ -46,7 +46,7 @@ int main() {
     try{
         file.writeDataset(charDummy, {2}, "charDummy_asarray_dims");
     }catch(std::exception & err){
-
+        std::cout << "Expected error: " << err.what() << std::endl;
     }
 
 

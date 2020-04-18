@@ -177,8 +177,8 @@ namespace h5pp::util {
             // Check that the desired dimensions add up to the data size
             auto dataSize    = getSize(data);
             auto desiredSize = std::accumulate(desiredDims->begin(), desiredDims->end(), (hsize_t) 1, std::multiplies<>());
-            if(dataSize != desiredSize) throw std::runtime_error(h5pp::format("Desired dimensions {} do not match the given data size [{}]", desiredDims.value(), dataSize));
-            //            if(dataSize != desiredSize) h5pp::logger::log->warn("Desired dimensions [{}] do not match the given data size [{}]", desiredDims.value(), dataSize);
+            if(dataSize != desiredSize)
+                throw std::runtime_error(h5pp::format("Desired dimensions {} implies size [{}] which does not match the given data size [{}]", desiredDims.value(), desiredSize, dataSize));
             return desiredDims.value();
         }
         if constexpr(h5pp::type::sfinae::is_text_v<DataType>) return {1};

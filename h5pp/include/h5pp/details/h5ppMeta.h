@@ -183,14 +183,14 @@ namespace h5pp {
             if(dsetRank)    msg.append(h5pp::format(" | rank {}", dsetRank.value()));
             if(dsetDims)    msg.append(h5pp::format(" | dims {}", dsetDims.value()));
             if(dsetDimsMax){
-                std::vector<std::string> maxDimStr;
+                std::vector<long> maxDimsLong;
                 for(auto &dim : dsetDimsMax.value()) {
                     if(dim == H5S_UNLIMITED)
-                        maxDimStr.emplace_back("H5S_UNLIMITED");
+                        maxDimsLong.emplace_back(-1);
                     else
-                        maxDimStr.emplace_back(std::to_string(dim));
+                        maxDimsLong.emplace_back((long)dim);
                 }
-                msg.append(h5pp::format(" | max dims {}", maxDimStr));
+                msg.append(h5pp::format(" | max dims {}", maxDimsLong));
             }
             if(chunkDims)   msg.append(h5pp::format(" | chunk dims {}", chunkDims.value()));
             if(dsetPath)    msg.append(h5pp::format(" | path [{}]",dsetPath.value()));
