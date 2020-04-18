@@ -158,7 +158,8 @@ or pass a temporary compression level as the fifth argument when writing a datas
 
 
 ### Debug and logging
-[Spdlog](https://github.com/gabime/spdlog) is used to emit debugging information. The amount of console output (verbosity) can be set to any level between `0` and `5`:
+[Spdlog](https://github.com/gabime/spdlog) can be used to emit debugging information efficiently. 
+The amount of console output (verbosity) can be set to any level between `0` and `5`:
 
 * `0: trace` (highest verbosity)
 * `1: debug`
@@ -176,6 +177,10 @@ Set the level when constructing a h5pp::File or by calling the function `.setLog
     // or this way
     file.setLogLevel(logLevel);                                                                       
 ```
+
+**NOTE:** Logging works the same with or without [Spdlog](https://github.com/gabime/spdlog) enabled. When Spdlog is *not* found, 
+a hand-crafted logger is used in its place to give identical output but without any performance
+considerations (implemented with STL lists, strings and streams).
 
 
 ### Load data into Python
