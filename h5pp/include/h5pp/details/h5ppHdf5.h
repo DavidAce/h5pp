@@ -970,7 +970,6 @@ namespace h5pp::hdf5 {
 
     template<typename DataType>
     std::vector<const char *> getCharPtrVector(const DataType &data) {
-        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) { h5pp::logger::log->warn("Has size: {}", data.size()); }
         std::vector<const char *> sv;
         if constexpr(h5pp::type::sfinae::has_c_str_v<DataType>) // Takes care of std::string
             sv.push_back(data.c_str());
@@ -1010,25 +1009,6 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertSpacesEqual(metaData.h5_space.value(), metaDset.h5_space.value(), metaDset.h5_type.value());
         h5pp::hdf5::logSpaceTranfer(metaData.h5_space.value(), metaDset.h5_space.value());
         herr_t retval = 0;
-
-        //        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
-        //            const char *s;
-        //            if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-        //                s = data.data();
-        //            else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-        //                s = data;
-        //            retval = H5Dwrite(metaDset.h5_dset.value(), metaDset.h5_type.value(), H5S_ALL, H5S_ALL, plists.dset_xfer, &s);
-        //        }else if constexpr(h5pp::type::sfinae::is_container_of_v<DataType,std::string>){
-        //            std::vector<const char *> sv;
-        //            for(auto & elem : data) {sv.push_back(elem.c_str()); }
-        //            retval = H5Dwrite(metaDset.h5_dset.value(), metaDset.h5_type.value(),metaData.h5_space.value(), metaDset.h5_space.value(), plists.dset_xfer, sv.data());
-        //        }else if constexpr(h5pp::type::sfinae::has_text_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>){
-        //            std::vector<const char *> sv;
-        //            for(auto & elem : )
-        //            if constexpr (h5pp::type::sfinae::has_c_str_v)
-        //            for(auto & elem : data) {sv.push_back(elem.c_str()); }
-        //            retval = H5Dwrite(metaDset.h5_dset.value(), metaDset.h5_type.value(),metaData.h5_space.value(), metaDset.h5_space.value(), plists.dset_xfer, sv.data());
-        //        }
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
             auto vec = getCharPtrVector(data);
             retval   = H5Dwrite(metaDset.h5_dset.value(), metaDset.h5_type.value(), metaData.h5_space.value(), metaDset.h5_space.value(), plists.dset_xfer, vec.data());
@@ -1074,10 +1054,7 @@ namespace h5pp::hdf5 {
             std::vector<const char *> vdata{metaDset.dsetSize.value()}; // Allocate for pointers for "size" number of strings
             // HDF5 allocates space for each string
             retval = H5Dread(metaDset.h5_dset.value(), metaDset.h5_type.value(), H5S_ALL, metaDset.h5_space.value(), plists.dset_xfer, vdata.data());
-            std::vector<std::string> sdata;
-            for(auto &elem : sdata) std::cout << "Read string: " << elem << std::endl;
-            for(auto &elem : vdata) sdata.emplace_back(elem);
-            // Now sdata contains the whole dataset and we need to put the data into the user-given container.
+            // Now vdata contains the whole dataset and we need to put the data into the user-given container.
             if constexpr(std::is_same_v<DataType, std::string>) {
                 data.clear();
                 for(size_t i = 0; i < vdata.size(); i++) {
@@ -1088,7 +1065,6 @@ namespace h5pp::hdf5 {
                 data.clear();
                 data.resize(vdata.size());
                 for(size_t i = 0; i < data.size(); i++) data[i] = std::string(vdata[i]);
-                h5pp::logger::log->warn("Resulting vec-string {}", data);
             } else {
                 throw std::runtime_error("To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
             }
@@ -1174,9 +1150,6 @@ namespace h5pp::hdf5 {
             std::vector<const char *> vdata{metaAttr.attrSize.value()}; // Allocate for pointers for "size" number of strings
             // HDF5 allocates space for each string
             retval = H5Aread(metaAttr.h5_attr.value(), metaAttr.h5_type.value(), vdata.data());
-            std::vector<std::string> sdata;
-            for(auto &elem : sdata) std::cout << "Read string: " << elem << std::endl;
-            for(auto &elem : vdata) sdata.emplace_back(elem);
             // Now sdata contains the whole dataset and we need to put the data into the user-given container.
             if constexpr(std::is_same_v<DataType, std::string>) {
                 data.clear();
@@ -1188,7 +1161,6 @@ namespace h5pp::hdf5 {
                 data.clear();
                 data.resize(vdata.size());
                 for(size_t i = 0; i < data.size(); i++) data[i] = std::string(vdata[i]);
-                h5pp::logger::log->warn("Resulting vec-string {}", data);
             } else {
                 throw std::runtime_error("To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
             }
