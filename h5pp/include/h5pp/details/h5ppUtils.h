@@ -30,10 +30,7 @@ namespace h5pp::util {
         if constexpr (std::is_same_v<DecayType, double>)                           return H5Tcopy(H5T_NATIVE_DOUBLE);
         if constexpr (std::is_same_v<DecayType, long double>)                      return H5Tcopy(H5T_NATIVE_LDOUBLE);
         if constexpr (std::is_same_v<DecayType, float>)                            return H5Tcopy(H5T_NATIVE_FLOAT);
-        if constexpr (std::is_same_v<DecayType, bool> and sizeof(DecayType)==1)    return H5Tcopy(H5T_NATIVE_B8);
-        if constexpr (std::is_same_v<DecayType, bool> and sizeof(DecayType)==2)    return H5Tcopy(H5T_NATIVE_B16);
-        if constexpr (std::is_same_v<DecayType, bool> and sizeof(DecayType)==4)    return H5Tcopy(H5T_NATIVE_B32);
-//        if constexpr (std::is_same_v<DecayType, bool>)                             return H5Tcopy(H5T_NATIVE_HBOOL);
+        if constexpr (std::is_same_v<DecayType, bool>)                             return H5Tcopy(H5T_NATIVE_UINT8);
         if constexpr (std::is_same_v<DecayType, std::string>)                      return H5Tcopy(H5T_C_S1);
         if constexpr (std::is_same_v<DecayType, char>)                             return H5Tcopy(H5T_C_S1);
         if constexpr (std::is_same_v<DecayType, std::complex<short>>)              return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_SHORT);
