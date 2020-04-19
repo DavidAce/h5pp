@@ -113,7 +113,7 @@ namespace h5pp::hdf5 {
             return 0;
         }
         // Sum up the number of bytes
-        size_t max_len = h5pp::constants::maxSizeCompact;
+        size_t max_len = h5pp::constants::maxSizeContiguous;
         for(auto elem : vdata) {
             if(elem == nullptr) continue;
             *vlen += (hsize_t) strnlen(elem, max_len) + 1; // Add null-terminator
