@@ -25,8 +25,7 @@ int main() {
     vecString.emplace_back("length array");
     file.writeDataset(vecString, "vecString");
     auto vecStringReadString = file.readDataset<std::string>("vecString");
-    if(vecStringReadString != "this is a variable\nlength array")
-        throw std::runtime_error(h5pp::format("String mismatch: [{}] != [{}]", vecString,vecStringReadString));
+    if(vecStringReadString != "this is a variable\nlength array") throw std::runtime_error(h5pp::format("String mismatch: [{}] != [{}]", vecString, vecStringReadString));
     auto vecstringReadVector = file.readDataset<std::vector<std::string>>("vecString");
     if(vecstringReadVector.size() != vecString.size())
         throw std::runtime_error(h5pp::format("Vecstring read size mismatch: [{}] != [{}]", vecString.size(), vecstringReadVector.size()));
@@ -34,21 +33,21 @@ int main() {
         if(vecString[i] != vecstringReadVector[i]) throw std::runtime_error(h5pp::format("Vecstring read element mismatch: [{}] != [{}]", vecString[i], vecstringReadVector[i]));
 
     // Generate dummy data
-    std::string stringDummy    = "Dummy string";
-    char        charDummy[100] = "Dummy char array";
+    std::string stringDummy = "Dummy string";
+    std::string hugeString;
+    for(size_t num = 0; num < 100; num++) hugeString.append("This is a huge string line number: " + std::to_string(num) + "\n");
+    char charDummy[100] = "Dummy char array";
 
     // Write text data in various ways
     file.writeDataset(stringDummy, "stringDummy");
     file.writeDataset(charDummy, "charDummy");
+    file.writeDataset(hugeString, "hugeString");
     file.writeDataset(charDummy, {1}, "charDummy_asarray_dims");
     file.writeDataset(charDummy, 1, "charDummy_asarray_size");
     // The following shouldn't work
-    try{
+    try {
         file.writeDataset(charDummy, {2}, "charDummy_asarray_dims");
-    }catch(std::exception & err){
-        std::cout << "Expected error: " << err.what() << std::endl;
-    }
-
+    } catch(std::exception &err) { std::cout << "Expected error: " << err.what() << std::endl; }
 
     file.writeDataset("Dummy string literal", "literalDummy");
 
@@ -61,8 +60,6 @@ int main() {
     auto literalDummy = file.readDataset<std::string>("literalDummy");
     if("Dummy string literal" != literalDummy) throw std::runtime_error(h5pp::format("Literal dummy failed: [{}] != [{}]", "Dummy string literal", literalDummy));
 
-
-
     // Now try some outlier cases
 
     // Write text data in various ways
@@ -72,12 +69,10 @@ int main() {
     file.writeDataset(stringDummy, "stringDummy_extended");
     file.writeDataset("some other dummy text that makes it longer", "stringDummy_extended");
     auto stringDummy_extended = file.readDataset<std::string>("stringDummy_extended");
-    if(stringDummy_extended != "some other dummy text that makes it longer")
-        throw std::runtime_error(h5pp::format("Failed to extend string: [{}]",stringDummy_extended));
+    if(stringDummy_extended != "some other dummy text that makes it longer") throw std::runtime_error(h5pp::format("Failed to extend string: [{}]", stringDummy_extended));
 
-//    char stringDummyChar[stringDummyRead.size() + 1];
-//    stringDummyRead.copy(stringDummyChar, stringDummyRead.size() + 1);
-
+    //    char stringDummyChar[stringDummyRead.size() + 1];
+    //    stringDummyRead.copy(stringDummyChar, stringDummyRead.size() + 1);
 
     // Now let's try some text attributes
     std::string stringAttribute = "This is a dummy string attribute";
@@ -85,21 +80,19 @@ int main() {
 
     auto stringAttributeRead = file.readAttribute<std::string>("stringAttribute", "vecString");
     std::cout << "\nstringAttribute read:\n" << stringAttributeRead << std::endl;
-    if(stringAttribute != stringAttributeRead)
-        throw std::runtime_error(h5pp::format("stringAttribute failed: [{}] != [{}]", stringAttribute, stringAttributeRead));
-
+    if(stringAttribute != stringAttributeRead) throw std::runtime_error(h5pp::format("stringAttribute failed: [{}] != [{}]", stringAttribute, stringAttributeRead));
 
     std::vector<std::string> multiStringAttribute = {"This is another dummy string attribute", "With many elements"};
     file.writeAttribute(multiStringAttribute, "multiStringAttribute", "vecString");
     auto multiStringAttributeRead = file.readAttribute<std::vector<std::string>>("multiStringAttribute", "vecString");
     std::cout << "\nmultiStringAttribute read: " << std::endl;
-    for(auto & elem : multiStringAttributeRead)
-        std::cout << elem << std::endl;
+    for(auto &elem : multiStringAttributeRead) std::cout << elem << std::endl;
 
     if(multiStringAttributeRead.size() != multiStringAttribute.size())
         throw std::runtime_error(h5pp::format("multiStringAttribute read size mismatch: [{}] != [{}]", multiStringAttribute.size(), multiStringAttributeRead.size()));
     for(size_t i = 0; i < multiStringAttribute.size(); i++)
-        if(multiStringAttribute[i] != multiStringAttributeRead[i]) throw std::runtime_error(h5pp::format("Vecstring read element mismatch: [{}] != [{}]", multiStringAttribute[i], multiStringAttributeRead[i]));
+        if(multiStringAttribute[i] != multiStringAttributeRead[i])
+            throw std::runtime_error(h5pp::format("Vecstring read element mismatch: [{}] != [{}]", multiStringAttribute[i], multiStringAttributeRead[i]));
 
     return 0;
 }
