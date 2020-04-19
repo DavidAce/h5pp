@@ -52,10 +52,10 @@ namespace h5pp {
 
         [[nodiscard]] std::string string() {
             std::string msg;
-            if(offset) msg.append(h5pp::format(" | offset {}", offset.value()));
-            if(extent) msg.append(h5pp::format(" | extent {}", extent.value()));
-            if(stride) msg.append(h5pp::format(" | stride {}", stride.value()));
-            if(block) msg.append(h5pp::format(" | block {}", block.value()));
+            if(offset and not offset->empty()) msg.append(h5pp::format(" | offset {}", offset.value()));
+            if(extent and not extent->empty()) msg.append(h5pp::format(" | extent {}", extent.value()));
+            if(stride and not stride->empty()) msg.append(h5pp::format(" | stride {}", stride.value()));
+            if(block  and not block ->empty()) msg.append(h5pp::format(" | block {}", block.value()));
             return msg;
         }
 

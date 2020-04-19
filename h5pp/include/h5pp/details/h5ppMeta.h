@@ -42,7 +42,7 @@ namespace h5pp {
         void setFromSpace() {
             if(not h5_space) return;
             dataRank = H5Sget_simple_extent_ndims(h5_space.value());
-            dataDims = std::vector<hsize_t>((size_t)dataRank.value(), 0);
+            dataDims = std::vector<hsize_t>((size_t) dataRank.value(), 0);
             H5Sget_simple_extent_dims(h5_space.value(), dataDims->data(), nullptr);
         }
 
@@ -61,7 +61,7 @@ namespace h5pp {
                 throw std::runtime_error("Cannot write from memory. The following meta fields are not valid\n\t" + error_msg);
 
             /* clang-format on */
-            hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), (hsize_t)1, std::multiplies<>());
+            hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), (hsize_t) 1, std::multiplies<>());
             if(size_check != dataSize.value()) throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | size check [{}]", dataSize.value(), size_check));
         }
 
@@ -80,7 +80,7 @@ namespace h5pp {
                 throw std::runtime_error("Cannot read into memory. The following meta fields are not valid\n\t" + error_msg);
 
             /* clang-format on */
-            hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), (hsize_t)1, std::multiplies<>());
+            hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), (hsize_t) 1, std::multiplies<>());
             if(size_check != dataSize.value()) throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | size check [{}]", dataSize.value(), size_check));
         }
         [[nodiscard]] std::string string() const {
@@ -90,7 +90,8 @@ namespace h5pp {
             if(dataSize) msg.append(h5pp::format(" | size {}", dataSize.value()));
             if(dataByte) msg.append(h5pp::format(" | bytes {}", dataByte.value()));
             if(dataRank) msg.append(h5pp::format(" | rank {}", dataRank.value()));
-            if(dataDims) msg.append(h5pp::format(" | dims {}", dataDims.value()));
+            if(dataDims and not dataDims->empty())
+                         msg.append(h5pp::format(" | dims {}", dataDims.value()));
             if(cpp_type) msg.append(h5pp::format(" | type [{}]", cpp_type.value()));
             return msg;
             /* clang-format on */
@@ -181,8 +182,9 @@ namespace h5pp {
             if(dsetSize)    msg.append(h5pp::format(" | size {}", dsetSize.value()));
             if(dsetByte)    msg.append(h5pp::format(" | bytes {}", dsetByte.value()));
             if(dsetRank)    msg.append(h5pp::format(" | rank {}", dsetRank.value()));
-            if(dsetDims)    msg.append(h5pp::format(" | dims {}", dsetDims.value()));
-            if(dsetDimsMax){
+            if(dsetDims and not dsetDims->empty())
+                            msg.append(h5pp::format(" | dims {}", dsetDims.value()));
+            if(dsetDimsMax and not dsetDimsMax->empty()){
                 std::vector<long> maxDimsLong;
                 for(auto &dim : dsetDimsMax.value()) {
                     if(dim == H5S_UNLIMITED)
@@ -278,14 +280,10 @@ namespace h5pp {
             std::string msg;
             /* clang-format off */
             if(attrSize) msg.append(h5pp::format(" | size {}", attrSize.value()));
-            if(attrByte) {
-                if(h5_type and H5Tis_variable_str(h5_type.value()))
-                    msg.append(" | bytes -");
-                else
-                    msg.append(h5pp::format(" | bytes {}", attrByte.value()));
-            }
+            if(attrByte) msg.append(h5pp::format(" | bytes {}", attrByte.value()));
             if(attrRank) msg.append(h5pp::format(" | rank {}", attrRank.value()));
-            if(attrDims) msg.append(h5pp::format(" | dims {}", attrDims.value()));
+            if(attrDims and not attrDims->empty())
+                         msg.append(h5pp::format(" | dims {}", attrDims.value()));
             if(attrName) msg.append(h5pp::format(" | name [{}]",attrName.value()));
             if(linkPath) msg.append(h5pp::format(" | link [{}]",linkPath.value()));
             return msg;

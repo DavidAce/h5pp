@@ -104,7 +104,7 @@ namespace h5pp {
         }
 
         void flush(){
-            h5pp::logger::log->debug("Flushing caches");
+            h5pp::logger::log->trace("Flushing caches");
             H5Fflush(openFileHandle(),H5F_scope_t::H5F_SCOPE_GLOBAL);
             H5Eprint(H5E_DEFAULT, stderr);
         }
@@ -348,7 +348,7 @@ namespace h5pp {
             auto     metaDset = h5pp::scan::getMetaDset(file, dsetPath, options, plists);
             if(metaDset.dsetExists and not metaDset.dsetExists.value()) { return h5pp::logger::log->error("Cannot read dataset [{}]: It does not exist", dsetPath); }
             MetaData metaData;
-            h5pp::util::resizeData(data, metaDset.h5_dset.value());
+            h5pp::hdf5::resizeData(data, metaDset.h5_dset.value());
             h5pp::scan::fillMetaData(data, metaData, options);
             h5pp::hdf5::readDataset(data, metaData, metaDset, plists);
         }
@@ -469,7 +469,7 @@ namespace h5pp {
                 return h5pp::logger::log->error("Could not read attribute [{}] in link [{}]: Attribute does not exist", attrName, linkPath);
 
             MetaData metaData;
-            h5pp::util::resizeData(data, metaAttr.h5_space.value(), metaAttr.h5_type.value());
+            h5pp::hdf5::resizeData(data, metaAttr.h5_attr.value());
             h5pp::scan::fillMetaData(data, metaData, options);
             h5pp::hdf5::readAttribute(data, metaData, metaAttr);
         }

@@ -166,7 +166,7 @@ namespace h5pp::type::sfinae {
     template<typename T, typename = std::void_t<>>
     struct is_streamable : std::false_type {};
     template<typename T>
-    struct is_streamable<T, std::void_t<decltype(std::declval<std::stringstream&> << std::declval<T>())>> : public std::true_type {};
+    struct is_streamable<T, std::void_t<decltype(std::declval<std::stringstream &> << std::declval<T>())>> : public std::true_type {};
     template<typename T>
     inline constexpr bool is_streamable_v = is_streamable<T>::value;
 
@@ -219,6 +219,7 @@ namespace h5pp::type::sfinae {
         static constexpr bool test() {
             using DecayType = typename std::decay<U>::type;
             // No support for wchar_t, char16_t and char32_t
+            if constexpr(has_c_str_v<DecayType>) return true;
             if constexpr(std::is_same_v<DecayType, std::string>) return true;
             if constexpr(std::is_same_v<DecayType, std::string_view>) return true;
             if constexpr(std::is_same_v<DecayType, const char *>) return true;

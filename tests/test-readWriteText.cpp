@@ -20,6 +20,7 @@ int main() {
     size_t      logLevel       = 0;
     h5pp::File  file(outputFilename, H5F_ACC_TRUNC | H5F_ACC_RDWR, logLevel);
 
+
     std::vector<std::string> vecString;
     vecString.emplace_back("this is a variable");
     vecString.emplace_back("length array");
@@ -40,23 +41,33 @@ int main() {
 
     // Write text data in various ways
     file.writeDataset(stringDummy, "stringDummy");
-    file.writeDataset(charDummy, "charDummy");
     file.writeDataset(hugeString, "hugeString");
-    file.writeDataset(charDummy, {1}, "charDummy_asarray_dims");
-    file.writeDataset(charDummy, 1, "charDummy_asarray_size");
+
     // The following shouldn't work
     try {
         file.writeDataset(charDummy, {2}, "charDummy_asarray_dims");
     } catch(std::exception &err) { std::cout << "Expected error: " << err.what() << std::endl; }
 
-    file.writeDataset("Dummy string literal", "literalDummy");
 
     auto stringDummyRead = file.readDataset<std::string>("stringDummy");
     if(stringDummy != stringDummyRead) throw std::runtime_error(h5pp::format("String dummy failed: [{}] != [{}]", stringDummy, stringDummyRead));
 
+
+    file.writeDataset(charDummy, "charDummy");
     auto charDummyRead = file.readDataset<std::string>("charDummy");
     if(strcmp(charDummy, charDummyRead.c_str()) != 0) throw std::runtime_error(h5pp::format("Char dummy failed: [{}] != [{}]", charDummy, charDummyRead));
 
+
+    file.writeDataset(charDummy, {17}, "charDummy_dims");
+    auto charDummy_dims = file.readDataset<std::string>("charDummy_dims");
+    if(strcmp(charDummy, charDummy_dims.c_str()) != 0) throw std::runtime_error(h5pp::format("Char dummy given dims failed: [{}] != [{}]", charDummy, charDummy_dims));
+
+    file.writeDataset(charDummy, 17, "charDummy_size");
+    auto charDummy_size = file.readDataset<std::string>("charDummy_size");
+    if(strcmp(charDummy, charDummy_size.c_str()) != 0) throw std::runtime_error(h5pp::format("Char dummy given size failed: [{}] != [{}]", charDummy, charDummy_size));
+
+
+    file.writeDataset("Dummy string literal", "literalDummy");
     auto literalDummy = file.readDataset<std::string>("literalDummy");
     if("Dummy string literal" != literalDummy) throw std::runtime_error(h5pp::format("Literal dummy failed: [{}] != [{}]", "Dummy string literal", literalDummy));
 
@@ -64,23 +75,24 @@ int main() {
 
     // Write text data in various ways
     file.writeDataset(stringDummy, "stringDummy_chunked", H5D_CHUNKED);
-    file.writeDataset("some other dummy text that makes it longer", "stringDummy_chunked");
+
 
     file.writeDataset(stringDummy, "stringDummy_extended");
     file.writeDataset("some other dummy text that makes it longer", "stringDummy_extended");
     auto stringDummy_extended = file.readDataset<std::string>("stringDummy_extended");
     if(stringDummy_extended != "some other dummy text that makes it longer") throw std::runtime_error(h5pp::format("Failed to extend string: [{}]", stringDummy_extended));
 
-    //    char stringDummyChar[stringDummyRead.size() + 1];
-    //    stringDummyRead.copy(stringDummyChar, stringDummyRead.size() + 1);
+    file.writeDataset("String with fixed size", 23, "stringDummy_fixedSize");
+    auto stringDummy_fixedSize = file.readDataset<std::string>("stringDummy_fixedSize");
+    if(stringDummy_fixedSize != "String with fixed size") throw std::runtime_error(h5pp::format("Failed to write fixed-size string: [{}]", stringDummy_fixedSize));
 
     // Now let's try some text attributes
     std::string stringAttribute = "This is a dummy string attribute";
     file.writeAttribute(stringAttribute, "stringAttribute", "vecString");
-
     auto stringAttributeRead = file.readAttribute<std::string>("stringAttribute", "vecString");
     std::cout << "\nstringAttribute read:\n" << stringAttributeRead << std::endl;
     if(stringAttribute != stringAttributeRead) throw std::runtime_error(h5pp::format("stringAttribute failed: [{}] != [{}]", stringAttribute, stringAttributeRead));
+
 
     std::vector<std::string> multiStringAttribute = {"This is another dummy string attribute", "With many elements"};
     file.writeAttribute(multiStringAttribute, "multiStringAttribute", "vecString");

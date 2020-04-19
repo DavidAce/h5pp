@@ -141,6 +141,7 @@ namespace h5pp::util {
         if constexpr(h5pp::type::sfinae::is_eigen_1d_v<DataType>) return 1;
         if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType>) return 2;
 #endif
+        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) return 0;
         if constexpr(h5pp::type::sfinae::has_NumIndices_v<DataType>) return (int) DataType::NumIndices;
         if constexpr(std::is_array_v<DataType>) return std::rank_v<DataType>;
         if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return 1;
@@ -149,11 +150,10 @@ namespace h5pp::util {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] int getRank(std::optional<std::vector<hsize_t>> desiredDims) {
+        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) return 0;
         if constexpr(std::is_pointer_v<DataType>) {
-            if(not desiredDims) {
+            if(not desiredDims)
                 throw std::runtime_error("Failed to read data rank: Pointer data has no specified dimensions");
-                return (int) desiredDims->size();
-            }
         }
 
         if(desiredDims)
@@ -165,8 +165,8 @@ namespace h5pp::util {
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] std::vector<hsize_t> getDimensions(const DataType &data, std::optional<std::vector<hsize_t>> desiredDims = std::nullopt) {
         // Empty vector means scalar
+        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) return {};
         // When the data is a pointer we require "desiredDims", or else we know nothing about the shape of the data
-
         if constexpr(std::is_pointer_v<DataType>) {
             if(not desiredDims) throw std::runtime_error("Failed to read dimensions: Pointer data has no specified dimensions");
             return desiredDims.value();
@@ -176,11 +176,24 @@ namespace h5pp::util {
             // Check that the desired dimensions add up to the data size
             auto dataSize    = getSize(data);
             auto desiredSize = std::accumulate(desiredDims->begin(), desiredDims->end(), (hsize_t) 1, std::multiplies<>());
-            if(dataSize != desiredSize)
-                throw std::runtime_error(h5pp::format("Desired dimensions {} implies size [{}] which does not match the given data size [{}]", desiredDims.value(), desiredSize, dataSize));
+            if(dataSize != desiredSize) {
+                if constexpr (h5pp::type::sfinae::has_size_v<DataType>){
+                    if((hsize_t) data.size() != desiredSize)
+                        throw std::runtime_error(
+                            h5pp::format("Desired dimensions {} implies size [{}] which does not match the given data size [{}]", desiredDims.value(), desiredSize, data.size()));
+                    else return desiredDims.value();
+                }else if constexpr(std::is_array_v<DataType>){
+                    if((hsize_t) getArraySize(data) != desiredSize)
+                        throw std::runtime_error(
+                            h5pp::format("Desired dimensions {} implies size [{}] which does not match the given data size [{}]", desiredDims.value(), desiredSize, getArraySize(data)));
+                    else
+                        return desiredDims.value();
+                }
+                throw std::runtime_error(
+                    h5pp::format("Desired dimensions {} implies size [{}] which does not match the given data size [{}]", desiredDims.value(), desiredSize, dataSize));
+            }
             return desiredDims.value();
         }
-        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) return {1};
         constexpr int rank = getRank<DataType>();
         if constexpr(rank == 0) return {};
         if constexpr(h5pp::type::sfinae::has_dimensions_v<DataType>) {
@@ -481,31 +494,6 @@ namespace h5pp::util {
         } else {
             h5pp::logger::log->debug("Container could not be resized");
         }
-    }
-
-    template<typename DataType>
-    inline void resizeData(DataType &data, const hid::h5s &space, const hid::h5t &type) {
-        // This function is used when reading data from file into memory.
-        // It resizes the data so the space in memory can fit the data read from file.
-        // Note that this resizes the data to fit the bounding box of the data selected in the fileSpace.
-        // A selection of elements in memory space must occurr after calling this function.
-        if(H5Tis_variable_str(type) > 0) {
-            return;
-        } else if(H5Sget_simple_extent_type(space) == H5S_SCALAR) {
-            resizeData(data, {(hsize_t) 1});
-        } else {
-            int                  rank = H5Sget_simple_extent_ndims(space); // This will define the bounding box of the selected elements in the file space
-            std::vector<hsize_t> extent((size_t)rank, 0);
-            H5Sget_simple_extent_dims(space, extent.data(), nullptr);
-            resizeData(data, extent);
-        }
-    }
-
-    template<typename DataType>
-    inline void resizeData(DataType &data, const hid::h5d &dset) {
-        hid::h5s space = H5Dget_space(dset);
-        hid::h5t type  = H5Dget_type(dset);
-        resizeData(data, space, type);
     }
 
 }
