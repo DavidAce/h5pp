@@ -8,7 +8,9 @@
 // This time its members are going to be arrays
 // Note that it cannot have dynamic-size members.
 struct SpaceTimePoint {
-    double coordinates[4] = {0, 0, 0, 0};
+//    double coordinates[4] = {0, 0, 0, 0};
+    static constexpr std::array<hsize_t,1>  dims = {4}; // Specify the array "coordinates" as rank-1 array of length 4
+    std::array<double,4> coordinates = {0,0,0,0};
     char   type[10]       = "minkowski";
     void   dummy_function(int) {} // Functions are OK
     // Se example 6 for the case of static-size array members
@@ -22,12 +24,10 @@ void print_point(const SpaceTimePoint &p) {
 int main() {
     h5pp::File file("exampledir/example-step3-struct-hard.h5", h5pp::FilePermission::REPLACE, 0);
 
-    // Specify the array "coordinates" as rank-1 array of length 4
-    std::vector<hsize_t> dims = {4};
     // We can create a multi-dimensional array using H5Tarray_create. It takes the
     // rank (i.e. number of indices) and the size of each dimension in a c-style array pointer.
     // In this case we just have a 1D array.
-    h5pp::hid::h5t H5_COORD_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE, dims.size(), dims.data());
+    h5pp::hid::h5t H5_COORD_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE,SpaceTimePoint::dims.size(), SpaceTimePoint::dims.data());
 
     // Create a type for the char array from the template H5T_C_S1
     // The template describes a string with a single char.
