@@ -4,8 +4,8 @@
 
 struct Particle {
     double x = 0, y = 0, z = 0, t = 0;
-    char   name[10] = "some name"; // Can be replaced by std::string
     int    id       = 0;
+    char   name[10] = "some name"; // Can't be replaced by std::string, or anything resizeable?
     void   dummy_function(int) {}
     bool   operator==(const Particle &p) const { return x == p.x and y == p.y and z == p.z and t == p.t and strncmp(name, p.name, 10) == 0 and id == p.id; }
     bool   operator!=(const Particle &p) const { return not(*this == p); }
