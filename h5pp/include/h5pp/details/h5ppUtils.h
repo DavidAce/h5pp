@@ -228,11 +228,15 @@ namespace h5pp::util {
             return {};
         else if constexpr(std::is_standard_layout_v<DataType>)
             return {};
-        else return {};
-//        else {
+        else if constexpr(std::is_class_v<DataType>){
+            h5pp::logger::log->warn("Detected possible unsupported non-POD class. h5pp may fail.");
+            return {};
+        }
+//        else return {};
+        else {
 //            h5pp::type::sfinae::print_type_and_exit_compile_time<DataType>();
-//            throw std::logic_error(h5pp::format("getDimensions can't match the type provided [{}]",h5pp::type::sfinae::type_name<DataType>()));
-//        }
+            throw std::logic_error(h5pp::format("getDimensions can't match the type provided [{}]",h5pp::type::sfinae::type_name<DataType>()));
+        }
     }
 
     [[nodiscard]] inline std::vector<hsize_t>
