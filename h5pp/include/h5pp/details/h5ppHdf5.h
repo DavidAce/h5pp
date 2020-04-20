@@ -918,7 +918,7 @@ namespace h5pp::hdf5 {
         hid::h5s space = H5Aget_space(attr);
         hid::h5t type  = H5Aget_type(attr);
         hsize_t  bytes = getBytesTotal(attr);
-        resizeData(data, space, type, std::max(1ull,bytes));
+        resizeData(data, space, type, bytes);
     }
 
 
