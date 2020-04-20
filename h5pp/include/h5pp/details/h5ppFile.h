@@ -86,7 +86,7 @@ namespace h5pp {
 
         ~File() {
             h5pp::logger::log->debug("Closing file [{}]", filePath.string());
-            H5Fflush(openFileHandle(),H5F_scope_t::H5F_SCOPE_GLOBAL);
+            H5garbage_collect();
             H5Eprint(H5E_DEFAULT, stderr);
         }
 
@@ -106,6 +106,7 @@ namespace h5pp {
         void flush(){
             h5pp::logger::log->trace("Flushing caches");
             H5Fflush(openFileHandle(),H5F_scope_t::H5F_SCOPE_GLOBAL);
+            H5garbage_collect();
             H5Eprint(H5E_DEFAULT, stderr);
         }
 
