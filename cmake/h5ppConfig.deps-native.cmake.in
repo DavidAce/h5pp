@@ -13,6 +13,8 @@ if(H5PP_PREFER_CONDA_LIBS)
     list(INSERT H5PP_DIRECTORY_HINTS 0
                     $ENV{CONDA_PREFIX}
                     $ENV{HOME}/anaconda3
+                    $ENV{HOME}/anaconda
+                    $ENV{HOME}/miniconda3
                     $ENV{HOME}/miniconda
                     $ENV{HOME}/.conda)
 endif()
