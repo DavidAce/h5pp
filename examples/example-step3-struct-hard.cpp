@@ -27,7 +27,7 @@ int main() {
     // We can create a multi-dimensional array using H5Tarray_create. It takes the
     // rank (i.e. number of indices) and the size of each dimension in a c-style array pointer.
     // In this case we just have a 1D array.
-    h5pp::hid::h5t H5_COORD_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE,SpaceTimePoint::dims.size(), SpaceTimePoint::dims.data());
+    h5pp::hid::h5t H5_COORD_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE, (unsigned int)  SpaceTimePoint::dims.size(), SpaceTimePoint::dims.data());
 
     // Create a type for the char array from the template H5T_C_S1
     // The template describes a string with a single char.
