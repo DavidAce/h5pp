@@ -18,18 +18,6 @@
  */
 namespace h5pp::hdf5 {
 
-    inline std::string safe_c_str(std::string_view str){
-        if (str.empty()) return std::string(str);
-        std::string tmp (str);
-        size_t start_pos = 0;
-        while (( start_pos = tmp.find( '\0' , start_pos )) != std::string::npos ){
-            tmp.replace( start_pos, 1, "" );
-            start_pos += 1;
-        }
-        return tmp;
-    }
-
-
     [[nodiscard]] inline std::vector<std::string_view> pathCumulativeSplit(std::string_view strv, std::string_view delim) {
         std::vector<std::string_view> output;
         size_t                        current_position = 0;
@@ -376,7 +364,7 @@ namespace h5pp::hdf5 {
         checkIfDatasetExists(const hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
         if(dsetExists) return dsetExists.value();
         for(const auto &subPath : pathCumulativeSplit(dsetName, "/")) {
-            int exists = H5Lexists(file, safe_c_str(subPath).c_str(), dset_access);
+            int exists = H5Lexists(file, util::safe_str(subPath).c_str(), dset_access);
             if(exists == 0) {
                 h5pp::logger::log->trace("Checking if dataset exists [{}] ... false", dsetName);
                 return false;
@@ -386,7 +374,7 @@ namespace h5pp::hdf5 {
                 throw std::runtime_error(h5pp::format("Failed to check if dataset exists [{}]", dsetName));
             }
         }
-        hid::h5o   object     = H5Oopen(file, safe_c_str(dsetName).c_str(), dset_access);
+        hid::h5o   object     = H5Oopen(file, util::safe_str(dsetName).c_str(), dset_access);
         H5I_type_t objectType = H5Iget_type(object);
         if(objectType != H5I_DATASET) {
             h5pp::logger::log->trace("Checking if dataset exists [{}] ... false", dsetName);
@@ -401,7 +389,7 @@ namespace h5pp::hdf5 {
         openObject(const hid::h5f &file, std::string_view objectName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &object_access = H5P_DEFAULT) {
         if(checkIfLinkExists(file, objectName, linkExists, object_access)) {
             h5pp::logger::log->trace("Opening link [{}]", objectName);
-            hid::h5o linkObject = H5Oopen(file, safe_c_str(objectName).c_str(), object_access);
+            hid::h5o linkObject = H5Oopen(file, util::safe_str(objectName).c_str(), object_access);
             if(linkObject < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error(h5pp::format("Failed to open existing object [{}]", objectName));
@@ -418,9 +406,9 @@ namespace h5pp::hdf5 {
         if(checkIfLinkExists(file, linkName, objectExists)) {
             h5pp::logger::log->trace("Opening link [{}]", linkName);
             h5x object;
-            if constexpr(std::is_same_v<h5x, hid::h5d>) object = H5Dopen(file, safe_c_str(linkName).c_str(), link_access);
-            if constexpr(std::is_same_v<h5x, hid::h5g>) object = H5Gopen(file, safe_c_str(linkName).c_str(), link_access);
-            if constexpr(std::is_same_v<h5x, hid::h5o>) object = H5Oopen(file, safe_c_str(linkName).c_str(), link_access);
+            if constexpr(std::is_same_v<h5x, hid::h5d>) object = H5Dopen(file, util::safe_str(linkName).c_str(), link_access);
+            if constexpr(std::is_same_v<h5x, hid::h5g>) object = H5Gopen(file, util::safe_str(linkName).c_str(), link_access);
+            if constexpr(std::is_same_v<h5x, hid::h5o>) object = H5Oopen(file, util::safe_str(linkName).c_str(), link_access);
 
             if(object < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
@@ -442,7 +430,7 @@ namespace h5pp::hdf5 {
         if(linkExists and attrExists and linkExists.value() and attrExists.value()) return true;
         hid::h5o link = openObject(file, linkName, linkExists, link_access);
         h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}]", attrName, linkName);
-        bool exists = H5Aexists_by_name(link, std::string(".").c_str(), safe_c_str(attrName).c_str(), link_access) > 0;
+        bool exists = H5Aexists_by_name(link, std::string(".").c_str(), util::safe_str(attrName).c_str(), link_access) > 0;
         h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}] ... {}", attrName, linkName, exists);
         return exists;
     }
@@ -649,7 +637,7 @@ namespace h5pp::hdf5 {
                                 const hid::h5p &    link_access = H5P_DEFAULT) {
         auto link = openLink<hid::h5o>(file, linkName, linkExists, link_access);
         if(checkIfAttributeExists(file, linkName, attrName, linkExists, attrExists, link_access)) {
-            hid::h5a attribute = H5Aopen_name(link, safe_c_str(attrName).c_str());
+            hid::h5a attribute = H5Aopen_name(link, util::safe_str(attrName).c_str());
             return getTypeInfo(attribute);
         } else {
             throw std::runtime_error(h5pp::format("Attribute [{}] does not exist in link [{}]", attrName, linkName));
@@ -720,14 +708,14 @@ namespace h5pp::hdf5 {
             return;
         } else {
             h5pp::logger::log->trace("Creating group link [{}]", groupRelativeName);
-            hid::h5g group = H5Gcreate(file, safe_c_str(groupRelativeName).c_str(), plists.link_create, plists.group_create, plists.group_access);
+            hid::h5g group = H5Gcreate(file, util::safe_str(groupRelativeName).c_str(), plists.link_create, plists.group_create, plists.group_access);
         }
     }
 
     inline void writeSymbolicLink(hid::h5f &file, std::string_view src_path, std::string_view tgt_path, const PropertyLists &plists = PropertyLists()) {
         if(checkIfLinkExists(file, src_path, std::nullopt, plists.link_access)) {
             h5pp::logger::log->trace("Creating symbolic link [{}] --> [{}]", src_path, tgt_path);
-            herr_t retval = H5Lcreate_soft(safe_c_str(src_path).c_str(), file, safe_c_str(tgt_path).c_str(), plists.link_create, plists.link_access);
+            herr_t retval = H5Lcreate_soft(util::safe_str(src_path).c_str(), file, util::safe_str(tgt_path).c_str(), plists.link_create, plists.link_access);
             if(retval < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error(h5pp::format("Failed to write symbolic link [{}]  ", src_path));
@@ -1109,7 +1097,7 @@ namespace h5pp::hdf5 {
         if(metaDset.dsetExists.value()) return;
         h5pp::logger::log->debug("Creating dataset {}", metaDset.string());
         hid_t dsetID = H5Dcreate(metaDset.h5_file.value(),
-                                 safe_c_str(metaDset.dsetPath.value()).c_str(),
+                                 util::safe_str(metaDset.dsetPath.value()).c_str(),
                                  metaDset.h5_type.value(),
                                  metaDset.h5_space.value(),
                                  plists.link_create,
@@ -1127,7 +1115,7 @@ namespace h5pp::hdf5 {
         if(metaAttr.attrExists.value()) return;
         h5pp::logger::log->trace("Creating attribute {}", metaAttr.string());
         hid::h5a attrID = H5Acreate(metaAttr.h5_link.value(),
-                                    safe_c_str(metaAttr.attrName.value()).c_str(),
+                                    util::safe_str(metaAttr.attrName.value()).c_str(),
                                     metaAttr.h5_type.value(),
                                     metaAttr.h5_space.value(),
                                     metaAttr.h5_plist_attr_create.value(),
@@ -1477,9 +1465,9 @@ namespace h5pp::hdf5 {
         std::vector<const char *> fieldNames;
         for(auto &name : tableProps.fieldNames.value()) fieldNames.push_back(name.c_str());
 
-        H5TBmake_table(safe_c_str(tableProps.tableTitle.value()).c_str(),
+        H5TBmake_table(util::safe_str(tableProps.tableTitle.value()).c_str(),
                        file,
-                       safe_c_str(tableProps.tableName.value()).c_str(),
+                       util::safe_str(tableProps.tableName.value()).c_str(),
                        tableProps.NFIELDS.value(),
                        tableProps.NRECORDS.value(),
                        tableProps.entrySize.value(),
@@ -1500,7 +1488,7 @@ namespace h5pp::hdf5 {
 
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
             H5TBappend_records(file,
-                               safe_c_str(tableProps.tableName.value()).c_str(),
+                               util::safe_str(tableProps.tableName.value()).c_str(),
                                tableProps.NRECORDS.value(),
                                tableProps.entrySize.value(),
                                tableProps.fieldOffsets.value().data(),
@@ -1508,7 +1496,7 @@ namespace h5pp::hdf5 {
                                data.data());
         } else {
             H5TBappend_records(file,
-                               safe_c_str(tableProps.tableName.value()).c_str(),
+                               util::safe_str(tableProps.tableName.value()).c_str(),
                                tableProps.NRECORDS.value(),
                                tableProps.entrySize.value(),
                                tableProps.fieldOffsets.value().data(),
@@ -1574,7 +1562,7 @@ namespace h5pp::hdf5 {
 
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
             H5TBread_records(file,
-                             safe_c_str(tableProps.tableName.value()).c_str(),
+                             util::safe_str(tableProps.tableName.value()).c_str(),
                              startEntry.value(),
                              numEntries.value(),
                              tableProps.entrySize.value(),
@@ -1583,7 +1571,7 @@ namespace h5pp::hdf5 {
                              data.data());
         } else {
             H5TBread_records(file,
-                             safe_c_str(tableProps.tableName.value()).c_str(),
+                             util::safe_str(tableProps.tableName.value()).c_str(),
                              startEntry.value(),
                              numEntries.value(),
                              tableProps.entrySize.value(),

@@ -9,6 +9,17 @@
  */
 namespace h5pp::util {
 
+    inline std::string safe_str(std::string_view str){
+        if (str.empty()) return std::string(str);
+        std::string tmp (str);
+        size_t start_pos = 0;
+        while (( start_pos = tmp.find( '\0' , start_pos )) != std::string::npos ){
+            tmp.replace( start_pos, 1, "" );
+            start_pos += 1;
+        }
+        return tmp;
+    }
+
     template<typename DataType>
     [[nodiscard]] hid::h5t getH5Type(const std::optional<hid::h5t> &h5type = std::nullopt) {
         if(h5type.has_value()) return h5type.value(); // Intercept

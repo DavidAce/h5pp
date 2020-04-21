@@ -62,7 +62,7 @@ namespace h5pp::scan {
             return meta;
         }
         h5pp::logger::log->debug("Creating dataset metadata for type [{}]", h5pp::type::sfinae::type_name<DataType>());
-        meta.dsetPath   = dsetPath;
+        meta.dsetPath   = h5pp::util::safe_str(dsetPath);
         meta.h5_file = file;
         meta.h5_type              = h5pp::util::getH5Type<DataType>(options.h5_type);
         meta.h5_layout            = h5pp::util::decideLayout(data,options.dataDims,options.dataDimsMax, options.h5_layout);
@@ -134,7 +134,7 @@ namespace h5pp::scan {
             meta.attrExists = h5pp::hdf5::checkIfAttributeExists(file, meta.linkPath.value(), meta.attrName.value(), meta.linkExists.value(), std::nullopt, plists.link_access);
         if(meta.attrExists and not meta.attrExists.value()) return;
         // From here on the attribute exists
-        if(not meta.h5_attr) meta.h5_attr = H5Aopen_name(meta.h5_link.value(), h5pp::hdf5::safe_c_str(meta.attrName.value()).c_str());
+        if(not meta.h5_attr) meta.h5_attr = H5Aopen_name(meta.h5_link.value(), h5pp::util::safe_str(meta.attrName.value()).c_str());
         if(not meta.h5_type) meta.h5_type = H5Aget_type(meta.h5_attr.value());
         if(not meta.h5_space) meta.h5_space = H5Aget_space(meta.h5_attr.value());
         if(not meta.attrByte) meta.attrByte = h5pp::hdf5::getBytesTotal(meta.h5_attr.value());
@@ -232,7 +232,7 @@ namespace h5pp::scan {
         hid::h5t entryType  = H5Dget_type(dataset);
         auto     tableProps = getTableProperties_bootstrap(entryType, tableName, "", std::nullopt, std::nullopt);
         hsize_t  NFIELDS, NRECORDS;
-        herr_t   err = H5TBget_table_info(file, h5pp::hdf5::safe_c_str(tableName).c_str(), &NFIELDS, &NRECORDS);
+        herr_t   err = H5TBget_table_info(file, h5pp::util::safe_str(tableName).c_str(), &NFIELDS, &NRECORDS);
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error("Failed to get table information");
