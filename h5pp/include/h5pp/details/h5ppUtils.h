@@ -494,6 +494,7 @@ namespace h5pp::util {
             if(newDims.size() > 1) h5pp::logger::log->debug("Given data container is 1-dimensional but the desired dimensions are {}. Resizing to fit all the data", newDims);
             h5pp::logger::log->debug("Resizing container {} -> {}", data.size(), newSize);
             data.resize(newSize);
+        } else if constexpr (std::is_scalar_v<DataType> or std::is_class_v<DataType>){ return;
         } else {
             h5pp::logger::log->debug("Container could not be resized");
         }
