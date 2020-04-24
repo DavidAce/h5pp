@@ -1,19 +1,21 @@
 #pragma once
 
-// Check first if there are already fmt headers that SPDLOG is not aware of
-#if __has_include(<fmt/format.h>) && __has_include(<fmt/ranges.h>) && !defined(SPDLOG_FMT_EXTERNAL)
-    #define SPDLOG_FMT_EXTERNAL
-#endif
 
-#if defined(SPDLOG_FMT_EXTERNAL)
+#if __has_include(<spdlog/fmt/fmt.h>)
+    #include <spdlog/fmt/fmt.h>
+    #include <spdlog/fmt/bundled/ranges.h>
+#elif __has_include(<fmt/core.h>) && __has_include(<fmt/ranges.h>)
+    // Check if there are already fmt headers installed independently from Spdlog
+    // Note that in this case the user hasn't enabled Spdlog for h5pp, so the build hasn't linked any compiled FMT libraries
+    // To avoid undefined references we should opt in to the header-only mode of FMT.
+    #ifndef FMT_HEADER_ONLY
+    #define FMT_HEADER_ONLY
+    #endif
+    #include <fmt/core.h>
     #include <fmt/format.h>
     #include <fmt/ranges.h>
-#elif __has_include(<spdlog/fmt/bundled/format.h>)
-    #include <spdlog/fmt/bundled/format.h>
-    #include <spdlog/fmt/bundled/ranges.h>
-    #define SPDLOG_FMT_INTERNAL
 #else
-// In this case there is no spdlog or format and we roll our own formatter
+// In this case there is no fmt so we make our own simple formatter
     #include "h5ppTypeSfinae.h"
     #include <algorithm>
     #include <iostream>
@@ -25,7 +27,7 @@
 
 namespace h5pp {
 
-#if defined(SPDLOG_FMT_INTERNAL) || defined(SPDLOG_FMT_EXTERNAL)
+#if defined(FMT_FORMAT_H_)
     template<typename... Args>
     [[nodiscard]] std::string format(Args... args) {
         return fmt::format(std::forward<Args>(args)...);

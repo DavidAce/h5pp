@@ -3,7 +3,7 @@
 #include "h5ppOptional.h"
 
 #if __has_include(<spdlog/spdlog.h>)
-    #define H5PP_SPDLOG_TEMP
+    #define H5PP_SPDLOG
     #include <spdlog/sinks/stdout_color_sinks.h>
     #include <spdlog/spdlog.h>
 #endif
@@ -14,6 +14,13 @@ namespace h5pp::logger {
 
     inline void enableTimestamp() { log->set_pattern("[%Y-%m-%d %H:%M:%S][%n]%^[%=8l]%$ %v"); }
     inline void disableTimestamp() { log->set_pattern("[%n]%^[%=8l]%$ %v"); }
+
+    inline size_t getLogLevel() {
+        if(log != nullptr)
+            return static_cast<size_t>(log->level());
+        else
+            return 2;
+    }
 
     template<typename levelType>
     inline void setLogLevel(levelType levelZeroToFive) {
@@ -79,7 +86,7 @@ namespace h5pp::logger {
         void critical(const std::string &fmtstring, Args... args) const {
             if(logLevel <= 5) std::cout << h5pp::format("[{}][{}] " + fmtstring, logName, "critical", args...) << '\n';
         }
-        std::string name() const { return logName; }
+        [[nodiscard]] std::string name() const { return logName; }
     };
     inline std::shared_ptr<ManualLogger> log;
 
@@ -95,9 +102,7 @@ namespace h5pp::logger {
     inline void setLogLevel([[maybe_unused]] levelType levelZeroToFive) {
         if(log != nullptr) log->logLevel = levelZeroToFive;
     }
-    //    inline size_t getLogLevel() {
-    //        if(log != nullptr) return log->logLevel;
-    //    }
+
     inline void setLogger([[maybe_unused]] const std::string &   name_,
                           [[maybe_unused]] std::optional<size_t> levelZeroToFive = std::nullopt,
                           [[maybe_unused]] std::optional<bool>   timestamp       = std::nullopt) {
