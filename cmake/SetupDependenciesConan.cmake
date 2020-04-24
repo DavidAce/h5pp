@@ -86,7 +86,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
     ##################################################################
     ### Link all the things!                                       ###
     ##################################################################
-    list(APPEND HDF5_TARGETS ${CONAN_TARGETS})
+    list(APPEND H5PP_TARGETS ${CONAN_TARGETS})
     target_link_libraries(deps INTERFACE ${CONAN_TARGETS})
 
 
