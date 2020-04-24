@@ -88,6 +88,10 @@ if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
 
     if(TARGET spdlog::spdlog)
         get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
+        if(SPDLOG_INCLUDE_DIR MATCHES "conda")
+            # Use the header-only mode to avoid weird linking errors
+            set_target_properties(spdlog::spdlog PROPERTIES INTERFACE_COMPILE_DEFINITIONS "SPDLOG_HEADER_ONLY")
+        endif()
         _spdlog_check_version()
         find_library(FMT_LIBRARY
                 NAMES fmt
