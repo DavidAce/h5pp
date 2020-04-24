@@ -151,9 +151,18 @@ if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
             if(NOT SPDLOG_FMT_BUNDLED)
                 target_compile_definitions(spdlog INTERFACE SPDLOG_FMT_EXTERNAL)
             endif()
-            if(SPDLOG_LIBRARY)
+            if(SPDLOG_LIBRARY AND NOT SPDLOG_LIBRARY MATCHES "conda")
+                # Conda libraries sometimes give weird linking errors, such as:
+                # /usr/bin/ld:
+                #       /home/user/miniconda/lib/libspdlog.a(spdlog.cpp.o): TLS transition from R_X86_64_TLSLD
+                #       to R_X86_64_TPOFF32 against `_ZGVZN6spdlog7details2os9thread_idEvE3tid'
+                #       at 0x4 in section `.text._ZN6spdlog7details2os9thread_idEv' failed
+                # /home/user/miniconda/lib/libspdlog.a: error adding symbols: Bad value
+
                 target_link_libraries(spdlog INTERFACE ${SPDLOG_LIBRARY} )
                 target_compile_definitions(spdlog INTERFACE SPDLOG_COMPILED_LIB )
+            else()
+                target_compile_definitions(spdlog INTERFACE SPDLOG_HEADER_ONLY)
             endif()
             if(FMT_LIBRARY)
                 target_link_libraries(spdlog INTERFACE ${FMT_LIBRARY} )
