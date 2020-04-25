@@ -14,10 +14,9 @@ class h5ppConan(ConanFile):
     requires = "eigen/3.3.7@conan/stable", "spdlog/1.4.2@bincrafters/stable", "hdf5/1.10.5"
     build_policy    = "missing"
     exports = "LICENSE", "README.md"
-    exports_sources = "CMakeLists.txt", "cmake", "h5pp", "test", "examples"
+    exports_sources = "CMakeLists.txt", "cmake/", "h5pp/", "test/", "examples"
     scm = {
         "type": "git",
-        "subfolder": "h5pp",
         "url": "auto",
         "revision": "auto"
     }
