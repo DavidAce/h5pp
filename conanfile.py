@@ -47,7 +47,8 @@ class h5ppConan(ConanFile):
         if tools.os_info.is_linux:
             cmake.definitions['BUILD_SHARED_LIBS:BOOL'] = True if self.options.shared else False
 
-        cmake.configure(source_folder=self.build_folder + '/h5pp-' + self.version)
+        cmake.configure()
+        # cmake.configure(source_folder=self.build_folder + '/h5pp-' + self.version)
         return cmake
 
     def build(self):
