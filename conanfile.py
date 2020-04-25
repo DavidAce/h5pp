@@ -4,7 +4,7 @@ import os, re
 
 class h5ppConan(ConanFile):
     name = "h5pp"
-    version = "1.7.0"
+    # version = "1.7.0"
     author = "DavidAce <aceituno@kth.se>"
     topics = ("hdf5", "binary", "storage")
     url = "https://github.com/DavidAce/h5pp"
@@ -28,12 +28,12 @@ class h5ppConan(ConanFile):
         'shared=False',
     )
 
-    def source(self):
-        zip_name = self.version+".zip"
-        download("https://github.com/DavidAce/h5pp/archive/v"+self.version+".zip", zip_name)
-        unzip(zip_name)
-        git = tools.Git(folder="h5pp-"+self.version)
-        # git.clone("https://github.com/DavidAce/h5pp.git", "master")
+    # def source(self):
+    #     zip_name = self.version+".zip"
+    #     download("https://github.com/DavidAce/h5pp/archive/v"+self.version+".zip", zip_name)
+    #     unzip(zip_name)
+    #     git = tools.Git(folder="h5pp-"+self.version)
+    #     # git.clone("https://github.com/DavidAce/h5pp.git", "master")
 
     def configure(self):
         tools.check_min_cppstd(self, "17")
