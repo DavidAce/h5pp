@@ -5,7 +5,7 @@ import os, re
 class h5ppConan(ConanFile):
     name = "h5pp"
     version = "1.7.0"
-    author = "DavidAce"
+    author = "DavidAce <aceituno@kth.se>"
     topics = ("hdf5", "binary", "storage")
     url = "https://github.com/DavidAce/h5pp"
     license = "MIT"
@@ -13,12 +13,8 @@ class h5ppConan(ConanFile):
     generators = "cmake"
     requires = "eigen/3.3.7@conan/stable", "spdlog/1.4.2@bincrafters/stable", "hdf5/1.10.5"
     build_policy    = "missing"
-    options         = {
-        'shared': [True, False],
-    }
-    default_options = (
-        'shared=False',
-    )
+    exports = "LICENSE"
+    exports_sources = ("CMakeLists.txt","README.md", "cmake", "h5pp", "tests", "examples")
 
     scm = {
         "type": "git",
@@ -27,13 +23,18 @@ class h5ppConan(ConanFile):
         "revision": "auto"
     }
 
+    options         = {
+        'shared': [True, False],
+    }
+    default_options = (
+        'shared=False',
+    )
 
     def source(self):
-
         zip_name = self.version+".zip"
         download("https://github.com/DavidAce/h5pp/archive/v"+self.version+".zip", zip_name)
         unzip(zip_name)
-        # git = tools.Git(folder="h5pp-"+self.version)
+        git = tools.Git(folder="h5pp-"+self.version)
         # git.clone("https://github.com/DavidAce/h5pp.git", "master")
 
     def configure(self):
