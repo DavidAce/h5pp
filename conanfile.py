@@ -5,18 +5,28 @@ import os, re
 class h5ppConan(ConanFile):
     name = "h5pp"
     version = "1.7.0"
-    license = "MIT"
+    author = "DavidAce"
+    topics = ("hdf5", "binary", "storage")
     url = "https://github.com/DavidAce/h5pp"
+    license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
     requires = "eigen/3.3.7@conan/stable", "spdlog/1.4.2@bincrafters/stable", "hdf5/1.10.5"
-    build_policy    = 'missing'
+    build_policy    = "missing"
     options         = {
         'shared': [True, False],
     }
     default_options = (
         'shared=False',
     )
+
+    scm = {
+        "type": "git",
+        "subfolder": "h5pp",
+        "url": "auto",
+        "revision": "auto"
+    }
+
 
     def source(self):
 
