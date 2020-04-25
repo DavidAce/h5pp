@@ -13,8 +13,6 @@ class h5ppConan(ConanFile):
     generators = "cmake"
     requires = "eigen/3.3.7@conan/stable", "spdlog/1.4.2@bincrafters/stable", "hdf5/1.10.5"
     build_policy    = "missing"
-    exports = "LICENSE"
-    exports_sources = ("CMakeLists.txt","README.md", "cmake", "h5pp", "tests", "examples")
 
     scm = {
         "type": "git",
