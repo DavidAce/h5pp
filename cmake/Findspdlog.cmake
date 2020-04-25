@@ -101,7 +101,7 @@ if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}
                 )
-        if(FMT_LIBRARY)
+        if(FMT_LIBRARY AND NOT FMT_LIBRARY MATCHES "conda")
             target_link_libraries(spdlog::spdlog INTERFACE ${FMT_LIBRARY} )
         else()
             target_compile_definitions(spdlog::spdlog INTERFACE FMT_HEADER_ONLY )
