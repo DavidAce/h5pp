@@ -13,8 +13,8 @@ class h5ppConan(ConanFile):
     generators = "cmake"
     requires = "eigen/3.3.7@conan/stable", "spdlog/1.4.2@bincrafters/stable", "hdf5/1.10.5"
     build_policy    = "missing"
-    exports = "LICENSE", "README.md"
-    exports_sources = "CMakeLists.txt", "cmake/", "h5pp/", "test/", "examples"
+    # exports = "LICENSE", "README.md"
+    # exports_sources = "CMakeLists.txt", "cmake/", "h5pp/", "test/", "examples"
     scm = {
         "type": "git",
         "url": "auto",
@@ -27,13 +27,6 @@ class h5ppConan(ConanFile):
     default_options = (
         'shared=False',
     )
-
-    # def source(self):
-    #     zip_name = self.version+".zip"
-    #     download("https://github.com/DavidAce/h5pp/archive/v"+self.version+".zip", zip_name)
-    #     unzip(zip_name)
-    #     git = tools.Git(folder="h5pp-"+self.version)
-    #     # git.clone("https://github.com/DavidAce/h5pp.git", "master")
 
     def configure(self):
         tools.check_min_cppstd(self, "17")
