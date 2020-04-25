@@ -1,5 +1,5 @@
 # Here you can specify desired software packages to be downloaded by conan.
-# To activate reading this file from CMakeLists.txt, enable the setting -DDOWNLOAD_METHOD=conan
+# To activate reading this file from CMakeLists.txt, enable the setting -DH5PP_DOWNLOAD_METHOD=conan
 
 
 [requires]

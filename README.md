@@ -72,6 +72,7 @@ The goal of `h5pp` is to make HDF5 simple to use in the following sense:
 *  Installation with package managers: conan, conda (and apt using .deb installation file)
 
 
+
 ## Usage
 Using `h5pp` is intended to be simple. After initializing a file, 
 most of the work can be achieved using just two member functions `.writeDataset(...)` and `.readDataset(...)`.
@@ -222,6 +223,8 @@ There are currently 4 ways to obtain `h5pp`:
 * [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_DOWNLOAD_METHOD=<fetch/native/conan>.`
 
 ## Build and install
+For full working examples see the directory `quickstart`. These examples are explained below
+
 
 ### Option 1: Copy the headers
 Copy the files under `h5pp/source/include` and add `#include<h5pp/h5pp.h>`.
