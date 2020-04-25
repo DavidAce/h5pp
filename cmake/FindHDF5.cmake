@@ -26,7 +26,7 @@ function(register_hdf5_targets target_list)
         list(APPEND HDF5_COMPONENT_NAMES _cpp )
     endif()
     if("CXX_HL" IN_LIST HDF5_FIND_COMPONENTS)
-        list(APPEND HDF5_COMPONENT_NAMES _cpp_hl )
+        list(APPEND HDF5_COMPONENT_NAMES _cpp_hl _hl_cpp )
     endif()
     if("Fortran" IN_LIST HDF5_FIND_COMPONENTS)
         list(APPEND HDF5_COMPONENT_NAMES _fortran )
@@ -51,14 +51,16 @@ function(register_hdf5_targets target_list)
                 hdf5::hdf5${cmp}-${HDF5_TARGET_SUFFIX}
                 hdf5::hdf5${cmp}_${HDF5_TARGET_SUFFIX}
                 hdf5::hdf5${cmp}
-                hdf5::hdf5${cmp}
+                hdf5::hdf5-${HDF5_TARGET_SUFFIX}
+                hdf5::hdf5_${HDF5_TARGET_SUFFIX}
+                hdf5::hdf5
                 hdf5${cmp}-${HDF5_TARGET_SUFFIX}
                 hdf5${cmp}_${HDF5_TARGET_SUFFIX}
                 hdf5${cmp}
-                hdf5${cmp}
+                hdf5
                 )
     endforeach()
-
+    list(REMOVE_DUPLICATES HDF5_TARGET_CANDIDATES)
     foreach(tgt ${HDF5_TARGET_CANDIDATES})
         if(TARGET ${tgt})
             if(HDF5_FIND_VERBOSE)
@@ -431,6 +433,41 @@ if(HDF5_FOUND)
     if(HDF5_PREFER_PARALLEL)
         message(STATUS "Found HDF5: ${HDF5_INCLUDE_DIR} (found version ${HDF5_VERSION}) | Parallel: ${HDF5_IS_PARALLEL}")
     endif()
+
+    # Set variables to match the signature of the original cmake-bundled FindHDF5.cmake
+    set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIR})
+    foreach(tgt ${HDF5_TARGETS})
+        if(${tgt} MATCHES "cpp_hl|hl_cpp")
+            list(APPEND HDF5_CXX_HL_TARGETS ${tgt})
+        elseif(${tgt} MATCHES "cpp")
+            list(APPEND HDF5_CXX_TARGETS ${tgt})
+        elseif(${tgt} MATCHES "fortran")
+            list(APPEND HDF5_Fortran_TARGETS ${tgt})
+        elseif(${tgt} MATCHES "hl")
+            list(APPEND HDF5_C_HL_TARGETS ${tgt})
+        elseif(${tgt} MATCHES "static|shared")
+            list(APPEND HDF5_C_TARGETS ${tgt})
+        endif()
+    endforeach()
+    foreach(type C CXX C_HL CXX_HL Fortran)
+        foreach(tgt ${HDF5_${type}_TARGETS})
+            if(TARGET ${tgt})
+#                get_target_property(INTLIB ${tgt} INTERFACE_LINK_LIBRARIES)
+                get_target_property(IMPLIB ${tgt} LOCATION)
+                if(IMPLIB)
+                    list(APPEND HDF5_${type}_LIBRARIES ${IMPLIB} )
+                endif()
+                if(INTLIB)
+                    list(APPEND HDF5_${type}_LIBRARIES ${INTLIB} )
+                endif()
+                if(HDF5_FIND_VERBOSE OR HDF5_FIND_DEBUG)
+                    message(STATUS "Detected HDF5 ${type} component target ${tgt} with HDF5_${type}_LIBRARIES: ${HDF5_${type}_LIBRARIES}")
+                    mark_as_advanced(${tgt})
+                    mark_as_advanced(HDF5_${type}_LIBRARIES)
+                endif()
+            endif()
+        endforeach()
+    endforeach()
 endif()
 
 include(FindPackageHandleStandardArgs)
@@ -441,8 +478,6 @@ find_package_handle_standard_args(HDF5
         HANDLE_COMPONENTS
         FAIL_MESSAGE "Failed to find HDF5"
         )
-
-
 
 mark_as_advanced(HDF5_FOUND        )
 mark_as_advanced(HDF5_VERSION      )
