@@ -1,9 +1,7 @@
 #!/bin/bash
 
-# Get the source
-git clone https://github.com/DavidAce/h5pp.git
+# Add the conan repository where h5pp is
+conan remote add conan-h5pp https://api.bintray.com/conan/davidace/conan-public
 
-# Make build directories
-cd h5pp
-
-conan
+# Install h5pp. Use your own profile
+conan install h5pp/1.7.0@davidace/stable --profile default

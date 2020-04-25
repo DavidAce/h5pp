@@ -3,7 +3,6 @@
 #include <h5pp/h5pp.h>
 
 int main(){
-    h5pp::fs::path
     h5pp::File file("../../output/quickstart.h5", h5pp::FilePermission::REPLACE);
     // Write "Hello world" to the dataset "myFirstDataset"
     file.writeDataset("Hello World", "myFirstDataset");

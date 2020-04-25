@@ -9,12 +9,10 @@ class h5ppConan(ConanFile):
     topics = ("hdf5", "binary", "storage")
     url = "https://github.com/DavidAce/h5pp"
     license = "MIT"
-    settings = "os", "compiler", "build_type", "arch"
+    settings = "os", "compiler", "cppstd", "build_type", "arch"
     generators = "cmake"
     requires = "eigen/3.3.7@conan/stable", "spdlog/1.4.2@bincrafters/stable", "hdf5/1.10.5"
     build_policy    = "missing"
-    # exports = "LICENSE", "README.md"
-    # exports_sources = "CMakeLists.txt", "cmake/", "h5pp/", "test/", "examples"
     scm = {
         "type": "git",
         "url": "auto",
@@ -41,7 +39,6 @@ class h5ppConan(ConanFile):
             cmake.definitions['BUILD_SHARED_LIBS:BOOL'] = True if self.options.shared else False
 
         cmake.configure()
-        # cmake.configure(source_folder=self.build_folder + '/h5pp-' + self.version)
         return cmake
 
     def build(self):
