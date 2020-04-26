@@ -202,7 +202,6 @@ endif ()
 list(APPEND H5PP_DIRECTORY_HINTS ${CMAKE_INSTALL_PREFIX})
 
 
-
 #Try to find or fetch all dependencies
 include(cmake/SetupDependenciesFind.cmake)
 include(cmake/SetupDependenciesFetch.cmake)
