@@ -30,7 +30,6 @@ if(NOT spdlog_FIND_VERSION)
 endif()
 
 macro(_spdlog_check_version)
-
     if(EXISTS ${SPDLOG_INCLUDE_DIR}/spdlog/version.h)
         file(READ "${SPDLOG_INCLUDE_DIR}/spdlog/version.h" _spdlog_version_header)
         string(REGEX MATCH "define[ \t]+SPDLOG_VER_MAJOR[ \t]+([0-9]+)" _spdlog_world_version_match "${_spdlog_version_header}")
@@ -48,10 +47,6 @@ macro(_spdlog_check_version)
         endif()
     else()
         set(SPDLOG_VERSION_OK FALSE)
-    endif()
-    if(NOT SPDLOG_VERSION_OK)
-        message(STATUS "spdlog version ${SPDLOG_VERSION} found in ${SPDLOG_INCLUDE_DIR}, "
-                "but at least version ${spdlog_FIND_VERSION} is required")
     endif()
 endmacro()
 
@@ -88,28 +83,30 @@ if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
 
     if(TARGET spdlog::spdlog)
         _spdlog_check_version()
-        if(SPDLOG_VERSION_OK)
-            target_compile_definitions(spdlog INTERFACE H5PP_SPDLOG)
-            get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
-            if(SPDLOG_INCLUDE_DIR MATCHES "conda")
-                # Use the header-only mode to avoid weird linking errors
-                set_target_properties(spdlog::spdlog PROPERTIES INTERFACE_COMPILE_DEFINITIONS "SPDLOG_HEADER_ONLY")
-            endif()
-            find_library(FMT_LIBRARY
-                    NAMES fmt
-                    HINTS ${SPDLOG_DIRECTORY_HINTS}
-                    PATHS $ENV{CONDA_PREFIX}
-                    PATH_SUFFIXES spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
-                    ${NO_DEFAULT_PATH}
-                    ${NO_CMAKE_PACKAGE_REGISTRY}
-                    )
-            if(FMT_LIBRARY AND NOT FMT_LIBRARY MATCHES "conda")
-                target_link_libraries(spdlog::spdlog INTERFACE ${FMT_LIBRARY} )
-            else()
-                target_compile_definitions(spdlog::spdlog INTERFACE FMT_HEADER_ONLY )
-            endif()
+        if(NOT SPDLOG_VERSION_OK OR NOT SPDLOG_VERSION)
+          message(WARNING "Could not determine the spdlog version.\n"
+                  "However, the target spdlog::spdlog has already been defined, so it will be used.\n"
+                  "Something is wrong with your installation of spdlog")
         endif()
-
+        target_compile_definitions(spdlog INTERFACE H5PP_SPDLOG)
+        get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
+        if(SPDLOG_INCLUDE_DIR MATCHES "conda")
+            # Use the header-only mode to avoid weird linking errors
+            set_target_properties(spdlog::spdlog PROPERTIES INTERFACE_COMPILE_DEFINITIONS "SPDLOG_HEADER_ONLY")
+        endif()
+        find_library(FMT_LIBRARY
+                NAMES fmt
+                HINTS ${SPDLOG_DIRECTORY_HINTS}
+                PATHS $ENV{CONDA_PREFIX}
+                PATH_SUFFIXES spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
+                ${NO_DEFAULT_PATH}
+                ${NO_CMAKE_PACKAGE_REGISTRY}
+                )
+        if(FMT_LIBRARY AND NOT FMT_LIBRARY MATCHES "conda")
+            target_link_libraries(spdlog::spdlog INTERFACE ${FMT_LIBRARY} )
+        else()
+            target_compile_definitions(spdlog::spdlog INTERFACE FMT_HEADER_ONLY )
+        endif()
     endif()
 endif()
 
