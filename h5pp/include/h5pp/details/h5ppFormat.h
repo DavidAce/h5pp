@@ -1,15 +1,15 @@
 #pragma once
 
 
-#if __has_include(<spdlog/fmt/fmt.h>) && !defined(SPDLOG_FMT_EXTERNAL)
+#if defined(H5PP_SPDLOG) && __has_include(<spdlog/fmt/fmt.h>) && __has_include(<spdlog/fmt/bundled/ranges.h>) && !defined(SPDLOG_FMT_EXTERNAL)
     #include <spdlog/fmt/fmt.h>
     #include <spdlog/fmt/bundled/ranges.h>
-#elif __has_include(<fmt/core.h>) && __has_include(<fmt/ranges.h>)
+#elif __has_include(<fmt/core.h>) &&  __has_include(<fmt/format.h>) && __has_include(<fmt/ranges.h>)
     // Check if there are already fmt headers installed independently from Spdlog
     // Note that in this case the user hasn't enabled Spdlog for h5pp, so the build hasn't linked any compiled FMT libraries
     // To avoid undefined references we should opt in to the header-only mode of FMT.
     // Note that this should be skipped if using conan. Then, SPDLOG_FMT_EXTERNAL is defined
-    #if !defined(FMT_HEADER_ONLY) && !defined(SPDLOG_FMT_EXTERNAL)
+    #if !defined(H5PP_SPDLOG)
         #define FMT_HEADER_ONLY
     #endif
     #include <fmt/core.h>
