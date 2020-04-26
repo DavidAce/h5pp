@@ -72,7 +72,7 @@ jobs:
         directories:
           - $TRAVIS_BUILD_DIR/build/Debug/install
 
-    - name: "xenial gcc-8 | find-or-conan prefer conda"
+    - name: "xenial gcc-8 | conda-forge | find-or-conan"
       os: linux
       dist: xenial
       compiler: gcc
@@ -92,7 +92,7 @@ jobs:
             - g++-8
 
 
-    - name: "bionic gcc | find-or-fetch prefer conda"
+    - name: "bionic gcc | conda-forge | find-or-fetch"
       dist: bionic
       os: linux
       compiler: gcc
@@ -103,7 +103,7 @@ jobs:
         - CONDA_PACKAGES="hdf5 hdf5-static eigen spdlog"
 
 
-    - name: "xenial gcc-8 | find"
+    - name: "xenial gcc-8 | apt | find"
       dist: xenial
       os: linux
       compiler: gcc
@@ -125,7 +125,7 @@ jobs:
             - libeigen3-dev
             - libspdlog-dev
 
-    - name: "bionic gcc | find"
+    - name: "bionic gcc | apt | find"
       dist: bionic
       os: linux
       compiler: gcc
@@ -185,7 +185,7 @@ jobs:
         directories:
           - $TRAVIS_BUILD_DIR/build/Debug/install
 
-    - name: "osx clang | find-or-fetch (+homebrew)"
+    - name: "osx clang | homebrew | find-or-fetch"
       os: osx
       compiler: clang
       osx_image: xcode11.3

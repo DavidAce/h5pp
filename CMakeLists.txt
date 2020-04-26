@@ -202,6 +202,7 @@ endif ()
 list(APPEND H5PP_DIRECTORY_HINTS ${CMAKE_INSTALL_PREFIX})
 
 
+
 #Try to find or fetch all dependencies
 include(cmake/SetupDependenciesFind.cmake)
 include(cmake/SetupDependenciesFetch.cmake)
@@ -217,23 +218,6 @@ if (H5PP_PRINT_INFO)
         print_target_info(${tgt} "| ")
     endforeach()
 endif()
-
-## Print summary of CMake configuration
-#if (H5PP_PRINT_INFO)
-#    message("========================== h5pp target summary ==============================")
-#    include(${PROJECT_SOURCE_DIR}/cmake/PrintTargetInfo.cmake)
-#    print_target_info(h5pp)
-#    print_target_info(headers)
-#    print_target_info(deps)
-#    print_target_info(flags)
-#    print_target_info(std::filesystem)
-#    print_target_info(ghcFilesystem::ghc_filesystem)
-#    foreach(tgt ${CONAN_TARGETS})
-#        print_target_info(${tgt})
-#    endforeach()
-#    print_target_info(Threads::Threads)
-#    message("")
-#endif()
 
 
 
