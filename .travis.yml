@@ -273,9 +273,7 @@ before_script:
     if [[ $CONDA_PACKAGES ]] && [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       # Here we just install Miniconda
       wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-      # wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
       chmod +x miniconda.sh
-      # ./miniconda.sh -b -p $HOME/miniconda
       bash miniconda.sh -b -p $HOME/miniconda
       source "$HOME/miniconda/etc/profile.d/conda.sh"
       export PATH=$HOME/miniconda/bin:$PATH

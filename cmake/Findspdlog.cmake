@@ -88,7 +88,7 @@ if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
                   "However, the target spdlog::spdlog has already been defined, so it will be used.\n"
                   "Something is wrong with your installation of spdlog")
         endif()
-        target_compile_definitions(spdlog INTERFACE H5PP_SPDLOG)
+        target_compile_definitions(spdlog::spdlog INTERFACE H5PP_SPDLOG)
         get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
         if(SPDLOG_INCLUDE_DIR MATCHES "conda")
             # Use the header-only mode to avoid weird linking errors
