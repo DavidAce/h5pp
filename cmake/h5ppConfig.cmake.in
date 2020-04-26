@@ -49,11 +49,7 @@ get_target_property(H5PP_DOWNLOAD_METHOD h5pp::deps INTERFACE_COMPILE_DEFINITION
 find_package(Filesystem COMPONENTS Final Experimental)
 if (TARGET std::filesystem)
     list(APPEND H5PP_FOUND_TARGETS std::filesystem)
-elseif (H5PP_DOWNLOAD_METHOD MATCHES "find|none")
-    message(STATUS "Your compiler lacks std::filesystem. Set H5PP_DOWNLOAD_MODE to 'conan' or 'native' to get the ghc::filesystem replacement")
-    message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
-    message(FATAL_ERROR "<filesystem> header and/or library not found")
-else()
+elseif (H5PP_DOWNLOAD_METHOD MATCHES "fetch|native|conan")
     message(STATUS "Your compiler lacks std::filesystem. Using ghc::filesystem replacement")
     message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
     include(CMakeFindDependencyMacro)
@@ -61,12 +57,18 @@ else()
     if(TARGET ghcFilesystem::ghc_filesystem)
         list(APPEND H5PP_FOUND_TARGETS ghcFilesystem::ghc_filesystem)
     endif()
+else()
+    message(WARNING "<filesystem> header and/or library not found\n"
+            "Your compiler seems to lack std::filesystem\n"
+            "Set H5PP_DOWNLOAD_MODE to 'fetch','native' or 'conan' to get the ghc::filesystem replacement. "
+            "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem\n")
 endif ()
 
 
 
-if("${H5PP_DOWNLOAD_METHOD}" MATCHES "conan")
+if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
     include(${H5PP_CONFIG_DIR}/h5ppConfig.deps-conan.cmake)
-elseif("${H5PP_DOWNLOAD_METHOD}" MATCHES "native|find")
+endif()
+if(H5PP_DOWNLOAD_METHOD MATCHES "find|fetch|native")
     include(${H5PP_CONFIG_DIR}/h5ppConfig.deps-native.cmake)
 endif()
