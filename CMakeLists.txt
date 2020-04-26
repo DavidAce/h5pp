@@ -173,7 +173,6 @@ else ()
     message(FATAL_ERROR "<filesystem> header and/or library not found")
 endif ()
 
-
 # Check  #include<optional> or #include<experimental/optional>
 include(${PROJECT_SOURCE_DIR}/cmake/CheckCXXOptional.cmake)
 CheckCXXOptional()
