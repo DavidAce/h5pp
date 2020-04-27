@@ -20,7 +20,7 @@ elseif (H5PP_DOWNLOAD_METHOD MATCHES "native")
     if(TARGET spdlog::spdlog)
         message(STATUS "spdlog installed successfully")
     else()
-        message(FATAL_ERROR "Spdlog could not be downloaded.")
+        message(FATAL_ERROR "spdlog could not be installed")
     endif()
 
 else()

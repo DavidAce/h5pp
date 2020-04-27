@@ -52,7 +52,8 @@ namespace h5pp {
                 std::stringstream sstr;
                 sstr << std::boolalpha << "{";
                 for(const auto &elem : first) sstr << elem << ",";
-                sstr.seekp(-(long)std::min((size_t)1ul,first.size()), std::ios_base::end);
+                long rewind = -1*std::min((long) 1,(long) first.size());
+                sstr.seekp(rewind, std::ios_base::end);
                 sstr << "}";
                 result.emplace_back(sstr.str());
             }
