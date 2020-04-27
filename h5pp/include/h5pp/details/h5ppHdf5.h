@@ -950,12 +950,22 @@ namespace h5pp::hdf5 {
         htri_t equal = H5Sextent_equal(dataSpace, dsetSpace);
         if(equal == 0) {
             // One of the maxDims may be H5S_UNLIMITED, in which case, we just check the dimensions
+            auto dataDims = getDimensions(dataSpace);
+            auto dsetDims = getDimensions(dsetSpace);
             if(getDimensions(dataSpace) == getDimensions(dsetSpace)) return;
-            auto msg1 = getSpaceString(dataSpace);
-            auto msg2 = getSpaceString(dsetSpace);
-            throw std::runtime_error(h5pp::format("Spaces are not equal \n\t data space \t {} \n\t dset space \t {}", msg1, msg2));
+            auto dataSize = getSize(dataSpace);
+            auto dsetSize = getSize(dsetSpace);
+            if(dataSize != dsetSize) {
+                auto msg1 = getSpaceString(dataSpace);
+                auto msg2 = getSpaceString(dsetSpace);
+                throw std::runtime_error(h5pp::format("Spaces are not equal size \n\t data space \t {} \n\t dset space \t {}", msg1, msg2));
+            }else if(getDimensions(dataSpace) != getDimensions(dsetSpace)){
+                h5pp::logger::log->debug("Spaces have different shape:");
+                h5pp::logger::log->debug("  --  data space {}", getSpaceString(dataSpace));
+                h5pp::logger::log->debug("  --  dset space {}", getSpaceString(dsetSpace));
+            }
         } else if(equal < 0) {
-            throw std::runtime_error("Failed to compare space estents");
+            throw std::runtime_error("Failed to compare space extents");
         }
     }
 
