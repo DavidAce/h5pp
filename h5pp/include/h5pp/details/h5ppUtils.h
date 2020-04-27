@@ -479,9 +479,10 @@ namespace h5pp::util {
 
 #ifdef H5PP_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
-            if(newDims.size() != 1) throw std::runtime_error(h5pp::format("Failed to resize 1-dimensional Eigen type: Dataset has dimensions {}", newDims));
-            h5pp::logger::log->debug("Resizing container [{}] -> {}", data.size(), newDims);
-            data.resize((long) newDims[0]);
+            if(newDims.size() != 1) h5pp::logger::log->debug("Resizing given 1-dimensional Eigen type [{}] to fit dataset dimensions {}",type::sfinae::type_name<DataType>(), newDims);
+            auto newSize = std::accumulate(newDims.begin(), newDims.end(), 1l, std::multiplies<>());
+            h5pp::logger::log->debug("Resizing container [{}] -> {}", data.size(), newSize);
+            data.resize(newSize);
         } else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             if(newDims.size() != 2) throw std::runtime_error(h5pp::format("Failed to resize 2-dimensional Eigen type: Dataset has dimensions {}", newDims));
             h5pp::logger::log->debug("Resizing container [{},{}] -> {}", data.rows(), data.cols(), newDims);
