@@ -26,13 +26,6 @@ int main() {
     h5pp::File  file(outputFilename, H5F_ACC_TRUNC | H5F_ACC_RDWR, logLevel);
 
 
-
-    // Test writing an Nx1 matrix and reading as vector
-    Eigen::MatrixXd vectorMatrix = Eigen::MatrixXd::Random(10,1);
-    file.writeDataset(vectorMatrix, "vectorMatrix");
-    auto vectorMatrixReadAsVector = file.readDataset<Eigen::VectorXd>("vectorMatrix");
-exit(0);
-
     std::vector<int> emptyVector;
     file.writeDataset(emptyVector, "emptyVector");
     file.readDataset(emptyVector, "emptyVector");
@@ -244,9 +237,9 @@ exit(0);
     file.readDataset(tensorMapDouble, "tensorMapDouble");
 
     // Test writing an Nx1 matrix and reading as vector
-//    Eigen::MatrixXd vectorMatrix = Eigen::MatrixXd::Random(10,1);
-//    file.writeDataset(vectorMatrix, "vectorMatrix");
-//    auto vectorMatrixReadAsVector = file.readDataset<Eigen::VectorXd>("vectorMatrix");
+    Eigen::MatrixXd vectorMatrix = Eigen::MatrixXd::Random(10,1);
+    file.writeDataset(vectorMatrix, "vectorMatrix");
+    auto vectorMatrixReadAsVector = file.readDataset<Eigen::VectorXd>("vectorMatrix");
 
 #endif
 
