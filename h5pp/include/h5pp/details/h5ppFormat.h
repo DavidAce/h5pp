@@ -52,7 +52,10 @@ namespace h5pp {
                 std::stringstream sstr;
                 sstr << std::boolalpha << "{";
                 for(const auto &elem : first) sstr << elem << ",";
-                long rewind = -1*std::min((long) 1,(long) first.size());
+                //  Laborious casting here to avoid MSVC warnings and errors in std::min()
+                auto max_rewind = static_cast<long>(first.size());
+                auto min_rewind = static_cast<long>(1);
+                long rewind = -1*std::min(max_rewind,min_rewind);
                 sstr.seekp(rewind, std::ios_base::end);
                 sstr << "}";
                 result.emplace_back(sstr.str());
