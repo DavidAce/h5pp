@@ -9,7 +9,7 @@ class h5ppConan(ConanFile):
     topics = ("hdf5", "binary", "storage")
     url = "https://github.com/DavidAce/h5pp"
     license = "MIT"
-    settings = "os", "compiler", "cppstd", "build_type", "arch"
+    settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
     requires = "eigen/3.3.7@conan/stable", "spdlog/1.4.2@bincrafters/stable", "hdf5/1.10.5"
     build_policy    = "missing"
@@ -19,11 +19,17 @@ class h5ppConan(ConanFile):
         "revision": "auto"
     }
 
-    options         = {
-        'shared': [True, False],
-    }
+    options = {
+        'shared'    :[True,False],
+        'tests'     :[True,False],
+        'examples'  :[True,False],
+        'verbose'   :[True,False],
+        }
     default_options = (
         'shared=False',
+        'tests=True',
+        'examples=False',
+        'verbose=False',
     )
 
     def configure(self):
@@ -31,24 +37,22 @@ class h5ppConan(ConanFile):
 
     def _configure_cmake(self):
         cmake = CMake(self)
-        cmake.definitions["H5PP_ENABLE_TESTS:BOOL"] = True
-        cmake.definitions["H5PP_BUILD_EXAMPLES:BOOL"] = False
-        cmake.definitions["H5PP_PRINT_INFO:BOOL"] = True
-        cmake.definitions["H5PP_DOWNLOAD_METHOD:STRING"] = "conan"
-        if tools.os_info.is_linux:
-            cmake.definitions['BUILD_SHARED_LIBS:BOOL'] = True if self.options.shared else False
-
+        cmake.definitions['BUILD_SHARED_LIBS:BOOL']         = self.options.shared
+        cmake.definitions["H5PP_ENABLE_TESTS:BOOL"]         = self.options.tests
+        cmake.definitions["H5PP_BUILD_EXAMPLES:BOOL"]       = self.options.examples
+        cmake.definitions["H5PP_PRINT_INFO:BOOL"]           = self.options.verbose
+        cmake.definitions["H5PP_DOWNLOAD_METHOD:STRING"]    = "conan"
         cmake.configure()
         return cmake
 
     def build(self):
         cmake = self._configure_cmake()
+        cmake.test()
         cmake.build()
 
     def package(self):
         cmake = self._configure_cmake()
         cmake.install()
-        cmake.test()
 
     def package_id(self):
         self.info.header_only()

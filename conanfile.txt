@@ -12,3 +12,4 @@ cmake
 
 [options]
 *:shared=False
+
