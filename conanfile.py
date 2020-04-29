@@ -36,19 +36,19 @@ class h5ppConan(ConanFile):
         tools.check_min_cppstd(self, "17")
 
 
-    # def build(self):
-
-
-    def package(self):
+    def build(self):
         cmake = CMake(self)
-        cmake.definitions['BUILD_SHARED_LIBS:BOOL']         = self.options.shared
-        cmake.definitions["H5PP_ENABLE_TESTS:BOOL"]         = self.options.tests
-        cmake.definitions["H5PP_BUILD_EXAMPLES:BOOL"]       = self.options.examples
-        cmake.definitions["H5PP_PRINT_INFO:BOOL"]           = self.options.verbose
-        cmake.definitions["H5PP_DOWNLOAD_METHOD:STRING"]    = "conan"
+        cmake.definitions['BUILD_SHARED_LIBS']         = self.options.shared
+        cmake.definitions["H5PP_ENABLE_TESTS"]         = self.options.tests
+        cmake.definitions["H5PP_BUILD_EXAMPLES"]       = self.options.examples
+        cmake.definitions["H5PP_PRINT_INFO"]           = self.options.verbose
+        cmake.definitions["H5PP_DOWNLOAD_METHOD"]      = "conan"
         cmake.configure()
         cmake.build()
         cmake.test()
+
+    def package(self):
+        cmake = CMake(self)
         cmake.install()
 
     def package_id(self):
