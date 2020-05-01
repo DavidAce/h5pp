@@ -9,23 +9,6 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
     ###    hdf5/1.10.5                                            ###
     ##################################################################
 
-    # Check which packages to get with conan
-    if(H5PP_DOWNLOAD_METHOD MATCHES "find|fetch|native")
-        if(NOT TARGET hdf5::hdf5)
-            list(APPEND CONAN_REQUIRES REQUIRES hdf5/1.10.5)
-        endif()
-        if(H5PP_ENABLE_SPDLOG AND NOT TARGET spdlog::spdlog)
-            list(APPEND CONAN_REQUIRES REQUIRES spdlog/1.4.2@bincrafters/stable)
-        endif()
-        if(H5PP_ENABLE_EIGEN3 AND NOT TARGET Eigen3::Eigen)
-            list(APPEND CONAN_REQUIRES REQUIRES eigen/3.3.7@conan/stable)
-        endif()
-    else()
-        list(APPEND CONAN_REQUIRES CONANFILE conanfile.txt)
-    endif()
-
-
-
     find_program (
             CONAN_COMMAND
             conan
@@ -53,27 +36,13 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
     endif()
 
     conan_cmake_run(
-            ${CONAN_REQUIRES}
+            CONANFILE conanfile.txt
             CONAN_COMMAND ${CONAN_COMMAND}
             SETTINGS compiler.cppstd=17
             SETTINGS "${conan_libcxx}"
             BUILD_TYPE ${CMAKE_BUILD_TYPE}
             BASIC_SETUP CMAKE_TARGETS
             BUILD missing)
-
-    message(STATUS "CONAN TARGETS: ${CONAN_TARGETS}")
-    list(APPEND H5PP_POSSIBLE_TARGET_NAMES CONAN_PKG::HDF5 CONAN_PKG::hdf5 CONAN_PKG::Eigen3 CONAN_PKG::eigen CONAN_PKG::spdlog)
-
-    foreach(tgt ${H5PP_POSSIBLE_TARGET_NAMES})
-        if(TARGET ${tgt})
-            message(STATUS "Dependency found: [${tgt}]")
-            get_target_property(${tgt}_INCLUDE_DIR ${tgt} INTERFACE_INCLUDE_DIRECTORIES)
-            if(${tgt}_INCLUDE_DIR)
-                list(APPEND H5PP_DIRECTORY_HINTS ${tgt}_INCLUDE_DIR)
-            endif()
-        endif()
-    endforeach()
-
     ##################################################################
     ### Link all the things!                                       ###
     ##################################################################

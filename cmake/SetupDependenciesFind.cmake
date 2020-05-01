@@ -1,6 +1,6 @@
-if(H5PP_DOWNLOAD_METHOD MATCHES "find|native")
+if(H5PP_DOWNLOAD_METHOD MATCHES "find|fetch")
     # Append search paths for find_package and find_library calls
-    if(DMRG_PREFER_CONDA_LIBS)
+    if(H5PP_PREFER_CONDA_LIBS)
         list(APPEND CMAKE_PREFIX_PATH
                 $ENV{CONDA_PREFIX}
                 $ENV{HOME}/anaconda3
@@ -14,10 +14,12 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "find|native")
             $ENV{EBROOTHDF5}
             $ENV{EBROOTSPDLOG}
             $ENV{EBROOTEIGEN}
+            ${HDF5_ROOT}
+            $ENV{HDF5_ROOT}
             )
 
     # This makes sure to use h5pp's own modules to find dependencies!
-    list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)
+    list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 
     # Start finding the dependencies
