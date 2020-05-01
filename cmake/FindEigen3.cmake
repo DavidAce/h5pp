@@ -65,21 +65,16 @@ endif()
 
 
 # With this particular order we can manually override where we should look for Eigen first
-# Recall that H5PP_DIRECTORY_HINTS may have CONDA_PREFIX first inside if PREFER_CONDA_LIBS=ON
 list(APPEND EIGEN3_DIRECTORY_HINTS
         ${CONAN_EIGEN3_ROOT}
         $ENV{EBROOTEIGEN}
-        ${H5PP_DIRECTORY_HINTS}
         ${CMAKE_INSTALL_PREFIX}
-        ${CMAKE_BINARY_DIR}/h5pp-deps-install
-        ${CMAKE_INSTALL_PREFIX}/include
         )
 
 if(NOT EIGEN3_NO_CONFIG OR EIGEN3_CONFIG_ONLY)
 find_package(Eigen3 ${Eigen3_FIND_VERSION}
         HINTS ${EIGEN3_DIRECTORY_HINTS}
-        PATHS $ENV{CONDA_PREFIX}
-        PATH_SUFFIXES Eigen3 eigen3 include/Eigen3 include/eigen3 Eigen3/include/eigen3
+        PATH_SUFFIXES include Eigen3 eigen3 include/Eigen3 include/eigen3 Eigen3/include/eigen3
         ${NO_DEFAULT_PATH}
         ${NO_CMAKE_PACKAGE_REGISTRY}
         CONFIG QUIET)
@@ -101,7 +96,7 @@ if(NOT TARGET Eigen3::Eigen OR NOT EIGEN3_INCLUDE_DIR AND NOT EIGEN3_CONFIG_ONLY
 
     find_path(EIGEN3_INCLUDE_DIR NAMES signature_of_eigen3_matrix_library
             HINTS ${EIGEN3_DIRECTORY_HINTS}
-            PATHS $ENV{CONDA_PREFIX} ${KDE4_INCLUDE_DIR}
+            PATHS ${KDE4_INCLUDE_DIR}
             PATH_SUFFIXES include/eigen3 Eigen3 eigen3 include/Eigen3 Eigen3/include/eigen3
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}

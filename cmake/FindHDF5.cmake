@@ -261,24 +261,13 @@ endfunction()
 
 
 function(find_package_hdf5_exec_wrapper)
-    # Message try finding HDF5 using executable wrappers
-    # Check for the wrapper in these directories
-    list(APPEND HDF5_PATHS
-            ${HDF5_ROOT}
-            $ENV{HDF5_ROOT}
-            ${CONAN_HDF5_ROOT}
-            $ENV{EBROOTHDF5}
-            ${H5PP_DIRECTORY_HINTS}
-            ${CMAKE_BINARY_DIR}/h5pp-deps-install
-            ${CMAKE_INSTALL_PREFIX}
-            $ENV{CONDA_PREFIX}
-            )
+    # Find HDF5 using executable wrappers
     if(NOT NO_DEFAULT_PATH)
         list(APPEND HDF5_PATHS $ENV{PATH} /usr /usr/local)
     endif()
 
 
-    foreach(hdf5_root ${HDF5_PATHS})
+    foreach(hdf5_root "${CMAKE_PREFIX_PATH};${HDF5_PATHS}")
         find_package_hdf5_isolator("${hdf5_root}")
         if(HDF5_FOUND)
             set(HDF5_FOUND               ${HDF5_FOUND}                  PARENT_SCOPE)
@@ -302,8 +291,8 @@ function(find_package_hdf5_config_wrapper)
     set(HDF5_FIND_VERSION "") # The user has probably installed the latest version
     find_package(HDF5
             COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
-            HINTS ${hdf5_install_prefix} ${H5PP_DIRECTORY_HINTS} ${CMAKE_INSTALL_PREFIX} ${CMAKE_INSTALL_PREFIX}/hdf5  ${CMAKE_INSTALL_PREFIX}/hdf5/share/cmake
-            PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build
+            HINTS ${CMAKE_INSTALL_PREFIX}
+            PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build hdf5/share/cmake
             NO_DEFAULT_PATH CONFIG)
     if(HDF5_FOUND)
         register_hdf5_targets(HDF5_TARGETS)

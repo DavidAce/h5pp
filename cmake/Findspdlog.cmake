@@ -68,15 +68,11 @@ endif()
 
 
 # With this particular order we can manually override where we should look for spdlog first
-# Recall that H5PP_DIRECTORY_HINTS may have CONDA_PREFIX first inside if PREFER_CONDA_LIBS=ON
 list(APPEND SPDLOG_DIRECTORY_HINTS
         HINTS
         ${CONAN_SPDLOG_ROOT}
         $ENV{EBROOTSPDLOG}
-        ${H5PP_DIRECTORY_HINTS}
         ${CMAKE_INSTALL_PREFIX}
-        ${CMAKE_BINARY_DIR}/h5pp-deps-install
-        ${CMAKE_INSTALL_PREFIX}/include
         )
 
 # First try finding a config somewhere in the system
@@ -87,7 +83,7 @@ if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
             PATH_SUFFIXES include spdlog include/spdlog spdlog/include/spdlog
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
-            CONFIG
+            CONFIG QUIET
             )
 
     if(TARGET spdlog::spdlog)
