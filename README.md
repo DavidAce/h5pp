@@ -258,10 +258,10 @@ The CMake flag `H5PP_DOWNLOAD_METHOD` controls the automated behavior for findin
 | ---- | ---- |
 | `none`  **(default)**             | No handling of dependencies and linking is left to the user |
 | `find`                            | Use CMake's `find_package`  to find dependencies pre-installed on your system  |
-| `fetch`, a.k.a. `native` **(!)**  | Use CMake-only features to download and install dependencies automatically. Disregards pre-installed dependencies on your system |
-| `conan`   **(!!)**                | Use the [Conan package manager](https://conan.io/) to download and install dependencies automatically. Disregards pre-installed dependencies on your system  |
+| `fetch` **(!)**                   | Use CMake-only features to download and install dependencies automatically. Disregards pre-installed dependencies on your system |
+| `native`                          | Deprecated. Use `fetch` |
 | `find-or-fetch`                   | Start with `find` and then go to `fetch` if not found |
-| `find-or-conan`                   | Start with `find` and then go to `conan` if not found |
+| `conan`   **(!!)**                 | Use the [Conan package manager](https://conan.io/) to download and install dependencies automatically. Disregards pre-installed dependencies on your system  |
 
 There are several variables you can pass to CMake to guide `find_package` calls, see [CMake build options](#cmake-build-options) below. 
 
@@ -284,7 +284,7 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 | `BUILD_SHARED_LIBS`               | `OFF`      | Link dependencies with static or shared libraries    |
 | `H5PP_ENABLE_TESTS`               | `OFF`      | Build tests (recommended!) |
 | `H5PP_BUILD_EXAMPLES`             | `OFF`      | Build example programs |
-| `H5PP_DOWNLOAD_METHOD`            | `none`     | Download method for dependencies, select `none`, `find`, `fetch`, `native`, `conan`, `find-or-fetch`, `find-or-conan`. Note: that `fetch` and `native` are equivalent and imply downloading and building a source tarball |
+| `H5PP_DOWNLOAD_METHOD`            | `none`     | Download method for dependencies, select `none`, `find`, `fetch`, `find-or-fetch` or `conan`. `Fetch` downloads and builds from sources |
 | `H5PP_PRINT_INFO`                 | `OFF`      | Use h5pp with add_subdirectory() |
 | `H5PP_IS_SUBPROJECT`              | `OFF`      | Print extra CMake info about the host and generated targets during configure |
 | `H5PP_ENABLE_EIGEN3`              | `OFF`      | Enables Eigen3 linear algebra library support |
@@ -379,9 +379,9 @@ These are variables that can be used to guide the custom module:
 
 | Var | Where | Description |
 | ---- | ---- | ---- |
+| `CMAKE_MODULE_PATH`    | CMake     | List of directories where `CMake` should search for find-modules |
+| `CMAKE_PREFIX_PATH`    | CMake     | List of directories where `find_package` should look for dependencies|
 | `HDF5_ROOT`            | CMake/ENV | Path to HDF5 root install directory    |
-| `CONAN_HDF5_ROOT`      | CMake     | Path to HDF5 root installed through Conan    |
-| `H5PP_DIRECTORY_HINTS` | CMake     | List of directories where `h5pp` should search for dependencies |
 | `HDF5_FIND_VERBOSE`    | CMake     | Prints more information about the search for HDF5. See also `HDF5_FIND_DEBUG` in the original module |
 | `EBROOTHDF5`           | ENV       | Variable defined by Easybuild with `module load HDF5` |
 
