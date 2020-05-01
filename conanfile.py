@@ -4,7 +4,7 @@ import os, re
 
 class h5ppConan(ConanFile):
     name = "h5pp"
-    version = "1.7.0"
+    version = "1.7.1"
     author = "DavidAce <aceituno@kth.se>"
     topics = ("hdf5", "binary", "storage")
     url = "https://github.com/DavidAce/h5pp"
@@ -38,7 +38,6 @@ class h5ppConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.definitions['BUILD_SHARED_LIBS']         = self.options.shared
         cmake.definitions["H5PP_ENABLE_TESTS"]         = self.options.tests
         cmake.definitions["H5PP_BUILD_EXAMPLES"]       = self.options.examples
         cmake.definitions["H5PP_PRINT_INFO"]           = self.options.verbose
