@@ -1,6 +1,9 @@
 function(build_dependency dep_name install_dir extra_flags)
     set(build_dir    ${CMAKE_BINARY_DIR}/h5pp-deps-build/${dep_name})
-
+    if (H5PP_APPEND_LIBSUFFIX)
+        set(install_dir ${install_dir}/${dep_name})
+        mark_as_advanced(install_dir)
+    endif ()
 
     execute_process( COMMAND  ${CMAKE_COMMAND} -E make_directory ${build_dir})
     execute_process(
