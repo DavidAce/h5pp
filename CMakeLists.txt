@@ -37,6 +37,9 @@ if (NOT H5PP_IS_SUBPROJECT)
     endif ()
 endif ()
 
+if(H5PP_APPEND_LIBSUFFIX)
+    set(H5PP_LIBSUFFIX h5pp/)
+endif()
 
 # Let cmake find our Find<package>.cmake modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -163,11 +166,8 @@ CheckCXXOptional()
 target_compile_features(flags INTERFACE cxx_std_17)
 target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) # Need this for and/or logical operators on VS
 target_compile_definitions(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX>) # Otherwise std::min and std::max will not work as expected
-target_include_directories(headers INTERFACE
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/include>
-        $<INSTALL_INTERFACE:${H5PP_INSTALL_DIR}include>
-        )
-
+target_include_directories(headers INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/include>)
+target_include_directories(headers INTERFACE $<INSTALL_INTERFACE:${H5PP_LIBSUFFIX}include>)
 
 #Try to find or fetch all dependencies
 include(cmake/SetupDependenciesFind.cmake)
@@ -200,14 +200,14 @@ else()
 
     # Install library
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/include/ DESTINATION ${H5PP_INSTALL_DIR}include COMPONENT headers)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/include/ DESTINATION ${H5PP_LIBSUFFIX}include COMPONENT headers)
     install(TARGETS h5pp headers deps flags EXPORT h5ppTargets)
 
     #Export the targets to a script
     install(EXPORT
             h5ppTargets
             NAMESPACE h5pp::
-            DESTINATION ${H5PP_CONFIG_DIR})
+            DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake)
 
 
     #Create a ConfigVersion.cmake file
@@ -217,22 +217,19 @@ else()
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.cmake.in
             ${CMAKE_BINARY_DIR}/h5ppConfig.cmake
-            INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
-            PATH_VARS H5PP_CONFIG_DIR
+            INSTALL_DESTINATION ${H5PP_LIBSUFFIX}/share/h5pp/cmake
     )
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-fetch.cmake.in
             ${CMAKE_BINARY_DIR}/h5ppConfig.deps-fetch.cmake
-            INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
-            PATH_VARS H5PP_CONFIG_DIR
+            INSTALL_DESTINATION ${H5PP_LIBSUFFIX}/share/h5pp/cmake
     )
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-conan.cmake.in
             ${CMAKE_BINARY_DIR}/h5ppConfig.deps-conan.cmake
-            INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
-            PATH_VARS H5PP_CONFIG_DIR
+            INSTALL_DESTINATION ${H5PP_LIBSUFFIX}/share/h5pp/cmake
     )
 
     write_basic_package_version_file(
@@ -252,7 +249,7 @@ else()
             ${PROJECT_SOURCE_DIR}/cmake/Findspdlog.cmake
             ${PROJECT_SOURCE_DIR}/cmake/FindHDF5.cmake
             ${PROJECT_SOURCE_DIR}/cmake/FindFilesystem.cmake
-            DESTINATION ${H5PP_CONFIG_DIR}
+            DESTINATION ${H5PP_LIBSUFFIX}/share/h5pp/cmake
             COMPONENT config
             )
 
@@ -269,7 +266,7 @@ else()
         foreach (conan_file ${CONAN_INSTALL_FILES})
             if (EXISTS "${conan_file}")
                 install(FILES ${conan_file}
-                        DESTINATION ${H5PP_CONFIG_DIR}
+                        DESTINATION ${H5PP_LIBSUFFIX}/share/h5pp/cmake
                         COMPONENT config)
             endif ()
         endforeach ()
