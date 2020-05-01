@@ -217,19 +217,19 @@ else()
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.cmake.in
             ${CMAKE_BINARY_DIR}/h5ppConfig.cmake
-            INSTALL_DESTINATION ${H5PP_LIBSUFFIX}/share/h5pp/cmake
+            INSTALL_DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
     )
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-fetch.cmake.in
             ${CMAKE_BINARY_DIR}/h5ppConfig.deps-fetch.cmake
-            INSTALL_DESTINATION ${H5PP_LIBSUFFIX}/share/h5pp/cmake
+            INSTALL_DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
     )
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-conan.cmake.in
             ${CMAKE_BINARY_DIR}/h5ppConfig.deps-conan.cmake
-            INSTALL_DESTINATION ${H5PP_LIBSUFFIX}/share/h5pp/cmake
+            INSTALL_DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
     )
 
     write_basic_package_version_file(
@@ -249,7 +249,7 @@ else()
             ${PROJECT_SOURCE_DIR}/cmake/Findspdlog.cmake
             ${PROJECT_SOURCE_DIR}/cmake/FindHDF5.cmake
             ${PROJECT_SOURCE_DIR}/cmake/FindFilesystem.cmake
-            DESTINATION ${H5PP_LIBSUFFIX}/share/h5pp/cmake
+            DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
             COMPONENT config
             )
 
@@ -266,7 +266,7 @@ else()
         foreach (conan_file ${CONAN_INSTALL_FILES})
             if (EXISTS "${conan_file}")
                 install(FILES ${conan_file}
-                        DESTINATION ${H5PP_LIBSUFFIX}/share/h5pp/cmake
+                        DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
                         COMPONENT config)
             endif ()
         endforeach ()
