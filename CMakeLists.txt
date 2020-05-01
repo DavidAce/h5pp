@@ -17,7 +17,7 @@ option(H5PP_ENABLE_SPDLOG     "Enables Spdlog for logging h5pp internal info to 
 option(H5PP_ENABLE_MPI        "Enables use of MPI (work in progress)"                   OFF)
 
 # Make an "enum" for valid download methods: none find-only native conan
-set(H5PP_DOWNLOAD_METHODS_VALID none find fetch native conan find-or-fetch find-or-conan)
+set(H5PP_DOWNLOAD_METHODS_VALID none find fetch find-or-fetch conan)
 set(H5PP_DOWNLOAD_METHOD none CACHE STRING "Download method for external dependencies")
 set_property(CACHE H5PP_DOWNLOAD_METHOD PROPERTY STRINGS ${H5PP_DOWNLOAD_METHODS_VALID})
 if (NOT H5PP_DOWNLOAD_METHOD IN_LIST H5PP_DOWNLOAD_METHODS_VALID)
@@ -86,23 +86,6 @@ endif ()
 
 
 
-if (H5PP_APPEND_LIBSUFFIX)
-    set(H5PP_INSTALL_DIR h5pp/)
-    set(H5PP_CONFIG_DIR h5pp/share/h5pp/cmake)
-    set(eigen3_install_prefix ${CMAKE_INSTALL_PREFIX}/Eigen3)
-    set(spdlog_install_prefix ${CMAKE_INSTALL_PREFIX}/spdlog)
-    set(hdf5_install_prefix ${CMAKE_INSTALL_PREFIX}/hdf5)
-    set(ghcfilesystem_install_prefix ${CMAKE_INSTALL_PREFIX}/ghcFilesystem)
-else ()
-    set(H5PP_INSTALL_DIR)
-    set(H5PP_CONFIG_DIR share/h5pp/cmake)
-    set(eigen3_install_prefix ${CMAKE_INSTALL_PREFIX})
-    set(spdlog_install_prefix ${CMAKE_INSTALL_PREFIX})
-    set(hdf5_install_prefix ${CMAKE_INSTALL_PREFIX})
-    set(ghcfilesystem_install_prefix ${CMAKE_INSTALL_PREFIX})
-endif ()
-
-
 # Define main target and auxiliary for partial consumption
 add_library(h5pp INTERFACE)
 add_library(headers INTERFACE)
@@ -160,14 +143,14 @@ target_compile_definitions(deps INTERFACE H5PP_DOWNLOAD_METHOD=${H5PP_DOWNLOAD_M
 find_package(Filesystem COMPONENTS Final Experimental)
 if (TARGET std::filesystem)
     target_link_libraries(flags INTERFACE std::filesystem)
-elseif (H5PP_DOWNLOAD_METHOD MATCHES "fetch|native|conan")
+elseif (H5PP_DOWNLOAD_METHOD MATCHES "fetch|conan")
     message(STATUS "Your compiler lacks std::filesystem. A drop-in replacement ghc::filesystem will be downloaded")
     message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
     include(cmake/Fetch_ghcFilesystem.cmake)
     target_link_libraries(flags INTERFACE ghcFilesystem::ghc_filesystem)
     list(APPEND H5PP_TARGETS ghcFilesystem::ghc_filesystem)
 else ()
-    message(STATUS "Your compiler lacks std::filesystem. Set H5PP_DOWNLOAD_METHOD to 'conan' or 'native' to get the ghc::filesystem replacement")
+    message(STATUS "Your compiler lacks std::filesystem. Set H5PP_DOWNLOAD_METHOD to 'fetch' or 'conan' or to get the ghc::filesystem replacement")
     message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
     message(FATAL_ERROR "<filesystem> header and/or library not found")
 endif ()
@@ -239,8 +222,8 @@ else()
     )
 
     configure_package_config_file(
-            ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-native.cmake.in
-            ${CMAKE_BINARY_DIR}/h5ppConfig.deps-native.cmake
+            ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-fetch.cmake.in
+            ${CMAKE_BINARY_DIR}/h5ppConfig.deps-fetch.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
             PATH_VARS H5PP_CONFIG_DIR
     )
@@ -262,7 +245,7 @@ else()
     ##Install the config, configversion and custom find modules
     install(FILES
             ${CMAKE_BINARY_DIR}/h5ppConfig.cmake
-            ${CMAKE_BINARY_DIR}/h5ppConfig.deps-native.cmake
+            ${CMAKE_BINARY_DIR}/h5ppConfig.deps-fetch.cmake
             ${CMAKE_BINARY_DIR}/h5ppConfig.deps-conan.cmake
             ${CMAKE_BINARY_DIR}/h5ppConfigVersion.cmake
             ${PROJECT_SOURCE_DIR}/cmake/FindEigen3.cmake
