@@ -3,7 +3,6 @@
 set(h5pp_FOUND TRUE)
 set(H5PP_FOUND TRUE)
 set(H5PP_CONFIG_DIR                     @PACKAGE_H5PP_CONFIG_DIR@)
-set(H5PP_DIRECTORY_HINTS                @PACKAGE_H5PP_DIRECTORY_HINTS@)
 
 
 
@@ -43,8 +42,6 @@ include(${H5PP_CONFIG_DIR}/h5ppTargets.cmake)
 get_target_property(H5PP_DOWNLOAD_METHOD h5pp::deps INTERFACE_COMPILE_DEFINITIONS)
 
 
-
-
 # h5pp requires the filesystem header (and possibly stdc++fs library)
 find_package(Filesystem COMPONENTS Final Experimental)
 if (TARGET std::filesystem)
@@ -53,7 +50,7 @@ elseif (H5PP_DOWNLOAD_METHOD MATCHES "fetch|native|conan")
     message(STATUS "Your compiler lacks std::filesystem. Using ghc::filesystem replacement")
     message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
     include(CMakeFindDependencyMacro)
-    find_dependency(ghcFilesystem HINTS ${H5PP_DIRECTORY_HINTS})
+    find_dependency(ghcFilesystem )
     if(TARGET ghcFilesystem::ghc_filesystem)
         list(APPEND H5PP_FOUND_TARGETS ghcFilesystem::ghc_filesystem)
     endif()

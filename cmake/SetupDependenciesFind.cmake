@@ -1,12 +1,30 @@
-if(H5PP_DOWNLOAD_METHOD MATCHES "find")
-    # This makes sure we use our modules to find dependencies!
+if(H5PP_DOWNLOAD_METHOD MATCHES "find|native")
+    # Append search paths for find_package and find_library calls
+    if(DMRG_PREFER_CONDA_LIBS)
+        list(APPEND CMAKE_PREFIX_PATH
+                $ENV{CONDA_PREFIX}
+                $ENV{HOME}/anaconda3
+                $ENV{HOME}/anaconda
+                $ENV{HOME}/miniconda3
+                $ENV{HOME}/miniconda
+                $ENV{HOME}/.conda
+                )
+    endif()
+    list(APPEND CMAKE_PREFIX_PATH
+            $ENV{EBROOTHDF5}
+            $ENV{EBROOTSPDLOG}
+            $ENV{EBROOTEIGEN}
+            )
+
+    # This makes sure to use h5pp's own modules to find dependencies!
     list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)
+
+
+    # Start finding the dependencies
 
     if(H5PP_ENABLE_EIGEN3 AND NOT TARGET Eigen3::Eigen )
         find_package(Eigen3 3.3.4)
         if(TARGET Eigen3::Eigen)
-            get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
-            list(APPEND H5PP_DIRECTORY_HINTS ${EIGEN3_INCLUDE_DIR})
             list(APPEND H5PP_TARGETS Eigen3::Eigen)
             target_link_libraries(deps INTERFACE Eigen3::Eigen)
         endif()
@@ -18,8 +36,6 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "find")
             add_library(spdlog::spdlog ALIAS spdlog)
         endif()
         if(TARGET spdlog::spdlog)
-            get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
-            list(APPEND H5PP_DIRECTORY_HINTS ${SPDLOG_INCLUDE_DIR})
             list(APPEND H5PP_TARGETS spdlog::spdlog)
             target_link_libraries(deps INTERFACE spdlog::spdlog)
         endif()
@@ -28,8 +44,6 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "find")
     if (NOT TARGET hdf5::hdf5)
         find_package(HDF5 1.8 COMPONENTS C HL)
         if(TARGET hdf5::hdf5)
-            get_target_property(HDF5_INCLUDE_DIR hdf5::hdf5 INTERFACE_INCLUDE_DIRECTORIES)
-            list(APPEND H5PP_DIRECTORY_HINTS ${HDF5_INCLUDE_DIR})
             list(APPEND H5PP_TARGETS hdf5::hdf5)
             target_link_libraries(deps INTERFACE hdf5::hdf5)
         endif()

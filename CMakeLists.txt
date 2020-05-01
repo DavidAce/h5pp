@@ -165,7 +165,6 @@ elseif (H5PP_DOWNLOAD_METHOD MATCHES "fetch|native|conan")
     message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
     include(cmake/Fetch_ghcFilesystem.cmake)
     target_link_libraries(flags INTERFACE ghcFilesystem::ghc_filesystem)
-    list(APPEND H5PP_DIRECTORY_HINTS ${ghcfilesystem_install_prefix})
     list(APPEND H5PP_TARGETS ghcFilesystem::ghc_filesystem)
 else ()
     message(STATUS "Your compiler lacks std::filesystem. Set H5PP_DOWNLOAD_METHOD to 'conan' or 'native' to get the ghc::filesystem replacement")
@@ -185,21 +184,6 @@ target_include_directories(headers INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/include>
         $<INSTALL_INTERFACE:${H5PP_INSTALL_DIR}include>
         )
-
-
-# Setup dependency paths
-if (H5PP_PREFER_CONDA_LIBS)
-    # Prepend conda dirs for hints when using find_package
-    list(APPEND H5PP_DIRECTORY_HINTS
-            $ENV{CONDA_PREFIX}
-            $ENV{HOME}/anaconda3
-            $ENV{HOME}/anaconda
-            $ENV{HOME}/miniconda3
-            $ENV{HOME}/miniconda
-            $ENV{HOME}/.conda
-            )
-endif ()
-list(APPEND H5PP_DIRECTORY_HINTS ${CMAKE_INSTALL_PREFIX})
 
 
 #Try to find or fetch all dependencies
@@ -251,21 +235,21 @@ else()
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.cmake.in
             ${CMAKE_BINARY_DIR}/h5ppConfig.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
-            PATH_VARS H5PP_CONFIG_DIR H5PP_DIRECTORY_HINTS
+            PATH_VARS H5PP_CONFIG_DIR
     )
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-native.cmake.in
             ${CMAKE_BINARY_DIR}/h5ppConfig.deps-native.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
-            PATH_VARS H5PP_CONFIG_DIR H5PP_DIRECTORY_HINTS
+            PATH_VARS H5PP_CONFIG_DIR
     )
 
     configure_package_config_file(
             ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-conan.cmake.in
             ${CMAKE_BINARY_DIR}/h5ppConfig.deps-conan.cmake
             INSTALL_DESTINATION ${H5PP_CONFIG_DIR}
-            PATH_VARS H5PP_CONFIG_DIR H5PP_DIRECTORY_HINTS
+            PATH_VARS H5PP_CONFIG_DIR
     )
 
     write_basic_package_version_file(
