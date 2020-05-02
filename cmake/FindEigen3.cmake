@@ -74,7 +74,7 @@ list(APPEND EIGEN3_DIRECTORY_HINTS
 if(NOT EIGEN3_NO_CONFIG OR EIGEN3_CONFIG_ONLY)
 find_package(Eigen3 ${Eigen3_FIND_VERSION}
         HINTS ${EIGEN3_DIRECTORY_HINTS}
-        PATH_SUFFIXES include Eigen3 eigen3 include/Eigen3 include/eigen3 Eigen3/include/eigen3
+        PATH_SUFFIXES share/eigen3/cmake include Eigen3 eigen3 include/Eigen3 include/eigen3 Eigen3/include/eigen3
         ${NO_DEFAULT_PATH}
         ${NO_CMAKE_PACKAGE_REGISTRY}
         CONFIG QUIET)
