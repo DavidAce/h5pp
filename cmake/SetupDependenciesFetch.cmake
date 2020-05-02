@@ -1,9 +1,4 @@
 if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
-    # Append search paths for find_package and find_library calls
-    list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-    list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX}) # Works like HINTS but can be ignored by NO_DEFAULT_PATH NO_CMAKE_PATH and NO_CMAKE_ENVIRONMENT_PATH
-
-
     # Here we use find_package in config-mode, intended to find <packagename>Config.cmake
     # that is bundled with source installs of these packages.
 
