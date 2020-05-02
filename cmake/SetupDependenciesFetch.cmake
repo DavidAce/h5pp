@@ -1,6 +1,8 @@
 if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
-    # This makes sure we use our modules to find dependencies!
-    list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)
+    # Append search paths for find_package and find_library calls
+    list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+    list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX}) # Works like HINTS but can be ignored by NO_DEFAULT_PATH NO_CMAKE_PATH and NO_CMAKE_ENVIRONMENT_PATH
+
 
     # Here we use find_package in config-mode, intended to find <packagename>Config.cmake
     # that is bundled with source installs of these packages.
@@ -8,14 +10,12 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
     # Download spdlog
     if (H5PP_ENABLE_SPDLOG AND NOT TARGET spdlog::spdlog)
         find_package(spdlog 1.3
-                HINTS ${CMAKE_INSTALL_PREFIX}
                 NO_CMAKE_PACKAGE_REGISTRY)
         if(NOT TARGET spdlog::spdlog)
             message(STATUS "Spdlog will be installed into ${CMAKE_INSTALL_PREFIX}")
             include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)
             build_dependency(spdlog  "${CMAKE_INSTALL_PREFIX}" "")
             find_package(spdlog 1.3
-                    HINTS ${CMAKE_INSTALL_PREFIX}
                     NO_CMAKE_PACKAGE_REGISTRY)
             if(TARGET spdlog::spdlog)
                 message(STATUS "spdlog installed successfully")
@@ -32,7 +32,6 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
     # Download Eigen3
     if (H5PP_ENABLE_EIGEN3 AND NOT TARGET Eigen3::Eigen)
         find_package(Eigen3 3.3.7
-                HINTS ${CMAKE_INSTALL_PREFIX}
                 NO_CMAKE_PACKAGE_REGISTRY)
         if(NOT TARGET Eigen3::Eigen)
             message(STATUS "Eigen3 will be installed into ${CMAKE_INSTALL_PREFIX}")

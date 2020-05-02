@@ -1,5 +1,9 @@
-if(H5PP_DOWNLOAD_METHOD MATCHES "find|fetch")
+if(H5PP_DOWNLOAD_METHOD MATCHES "find")
     # Append search paths for find_package and find_library calls
+    list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+    list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX}) # Works like HINTS but can be ignored by NO_DEFAULT_PATH NO_CMAKE_PATH and NO_CMAKE_ENVIRONMENT_PATH
+
+
     if(H5PP_PREFER_CONDA_LIBS)
         list(APPEND CMAKE_PREFIX_PATH
                 $ENV{CONDA_PREFIX}
@@ -18,12 +22,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "find|fetch")
             $ENV{HDF5_ROOT}
             )
 
-    # This makes sure to use h5pp's own modules to find dependencies!
-    list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
-
     # Start finding the dependencies
-
     if(H5PP_ENABLE_EIGEN3 AND NOT TARGET Eigen3::Eigen )
         find_package(Eigen3 3.3.4)
         if(TARGET Eigen3::Eigen)
