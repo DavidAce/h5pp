@@ -170,6 +170,7 @@ target_include_directories(headers INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_
 target_include_directories(headers INTERFACE $<INSTALL_INTERFACE:${H5PP_LIBSUFFIX}include>)
 
 #Try to find or fetch all dependencies
+include(cmake/SetupSearchPaths.cmake)
 include(cmake/SetupDependenciesFind.cmake)
 include(cmake/SetupDependenciesFetch.cmake)
 include(cmake/SetupDependenciesConan.cmake)
