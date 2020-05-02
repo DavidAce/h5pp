@@ -293,7 +293,7 @@ function(find_package_hdf5_config_wrapper)
             COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
             HINTS ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build hdf5/share/cmake
-            NO_DEFAULT_PATH CONFIG)
+            ${NO_DEFAULT_PATH} ${NO_CMAKE_PACKAGE_REGISTRY} CONFIG)
     if(HDF5_FOUND)
         register_hdf5_targets(HDF5_TARGETS)
         register_found_components()
@@ -355,6 +355,10 @@ endif()
 
 if(HDF5_NO_DEFAULT_PATH)
     set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
+endif()
+
+if(HDF5_NO_CMAKE_PACKAGE_REGISTRY)
+    set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
 endif()
 
 if(NOT HDF5_FOUND)
