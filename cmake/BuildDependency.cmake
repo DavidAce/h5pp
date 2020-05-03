@@ -44,7 +44,7 @@ function(build_dependency dep_name install_dir extra_flags)
             ERROR_VARIABLE  build_error
     )
 
-    if(${build_result})
+    if(build_result)
         message(STATUS "Got non-zero exit code while building ${dep_name}")
         message(STATUS  "build_dir         : ${build_dir}")
         message(STATUS  "install_dir       : ${install_dir}")
@@ -57,6 +57,13 @@ function(build_dependency dep_name install_dir extra_flags)
             message(STATUS "Contents of stdout: \n  ${build_result} \n")
             message(STATUS "Contents of stderr: \n  ${build_error} \n")
         endif()
+    endif()
+
+    # Copy the install manifest if it exists
+    file(GLOB_RECURSE INSTALL_MANIFEST "${build_dir}/*/install_manifest.txt")
+    if(INSTALL_MANIFEST)
+        message(STATUS "Copying install manifest: ${INSTALL_MANIFEST}")
+        configure_file(${INSTALL_MANIFEST} ${CMAKE_CURRENT_BINARY_DIR}/install_manifest_${dep_name}.txt)
     endif()
 
 endfunction()
