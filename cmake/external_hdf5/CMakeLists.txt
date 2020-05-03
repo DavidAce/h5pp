@@ -83,8 +83,7 @@ ExternalProject_Add(external_hdf5
         URL_MD5     9e22217d22eb568e09f0cc15fb641d7c
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
-        BUILD_ALWAYS OFF
-
+        BUILD_ALWAYS TRUE
         CMAKE_ARGS
         -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
@@ -114,3 +113,4 @@ ExternalProject_Add(external_hdf5
         #        -DHDF5_USE_PREGEN:BOOL=ON
         #        -DHDF5_BATCH_H5DETECT:BOOL=ON
 )
+

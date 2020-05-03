@@ -6,6 +6,7 @@ ExternalProject_Add(external_ghcFilesystem
     URL         https://github.com/gulrak/filesystem/archive/v1.2.10.tar.gz
     PREFIX      ${CMAKE_BINARY_DIR}
     INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+    BUILD_ALWAYS TRUE
     CMAKE_ARGS
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
