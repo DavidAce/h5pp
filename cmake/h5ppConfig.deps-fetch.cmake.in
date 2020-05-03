@@ -5,33 +5,53 @@
 ### Append search paths for find_package and find_library calls  ###
 ####################################################################
 if(H5PP_DOWNLOAD_METHOD MATCHES "find|fetch")
-    # Append search paths for find_package and find_library calls
-    if(H5PP_PREFER_CONDA_LIBS)
-        list(APPEND CMAKE_PREFIX_PATH
-                $ENV{CONDA_PREFIX}
-                $ENV{HOME}/anaconda3
-                $ENV{HOME}/anaconda
-                $ENV{HOME}/miniconda3
-                $ENV{HOME}/miniconda
-                $ENV{HOME}/.conda
-                )
-    endif()
-    list(APPEND CMAKE_PREFIX_PATH
-            $ENV{EBROOTHDF5}
-            $ENV{EBROOTSPDLOG}
-            $ENV{EBROOTEIGEN}
-            ${HDF5_ROOT}
-            $ENV{HDF5_ROOT}
-            )
+  # Append search paths for find_package and find_library calls
+   list(INSERT 0 CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+   list(APPEND CMAKE_PREFIX_PATH ${PACKAGE_PREFIX_PATH} ${CMAKE_INSTALL_PREFIX})
 
-    # This makes sure to use h5pp's own modules to find dependencies!
-    list(INSERT CMAKE_MODULE_PATH 0  ${CMAKE_CURRENT_LIST_DIR})
+   list(APPEND CMAKE_PREFIX_PATH
+           ${H5PP_PREFIX_PATH}
+           ${EIGEN3_PREFIX_PATH}
+           ${SPDLOG_PREFIX_PATH}
+           ${HDF5_PREFIX_PATH}
+           ${H5PP_DIRECTORY_HINTS}
+           ${SPDLOG_DIRECTORY_HINTS}
+           ${EIGEN3_DIRECTORY_HINTS}
+           ${HDF5_DIRECTORY_HINTS}
+           )
+
+   if(H5PP_PREFER_CONDA_LIBS)
+       list(APPEND CONDA_CANDIDATE_PATHS
+               $ENV{CONDA_PREFIX}
+               $ENV{HOME}/anaconda3
+               $ENV{HOME}/anaconda
+               $ENV{HOME}/miniconda3
+               $ENV{HOME}/miniconda
+               $ENV{HOME}/.conda
+               )
+       foreach(path ${CONDA_CANDIDATE_PATHS})
+           if(EXISTS ${path})
+               list(APPEND CMAKE_PREFIX_PATH ${path})
+           endif()
+       endforeach()
+       unset(CONDA_CANDIDATE_PATHS)
+   endif()
+
+   list(APPEND CMAKE_PREFIX_PATH
+           $ENV{EBROOTHDF5}
+           $ENV{EBROOTSPDLOG}
+           $ENV{EBROOTEIGEN}
+           ${HDF5_ROOT}
+           $ENV{HDF5_ROOT}
+           )
+
+   list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
 endif()
 
 
 include(CMakeFindDependencyMacro)
 if (NOT TARGET Eigen3::Eigen)
-    find_dependency(Eigen3 3.3.4)
+    find_dependency(Eigen3 3.3.4 REQUIRED)
     if(TARGET Eigen3 AND NOT TARGET Eigen3::Eigen)
         add_library(Eigen3::Eigen ALIAS Eigen3)
     endif()
@@ -41,7 +61,7 @@ if(TARGET Eigen3::Eigen)
 endif()
 
 if (NOT TARGET spdlog::spdlog)
-    find_dependency(spdlog 1.3.1)
+    find_dependency(spdlog 1.3.1 REQUIRED)
     if(TARGET spdlog AND NOT TARGET spdlog::spdlog)
         add_library(spdlog::spdlog ALIAS spdlog)
     endif()
