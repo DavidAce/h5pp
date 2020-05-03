@@ -269,7 +269,7 @@ function(find_package_hdf5_exec_wrapper)
             ${HDF5_DIRECTORY_HINTS}
             ${H5PP_DIRECTORY_HINTS})
     if(NOT HDF5_NO_DEFAULT_PATH)
-        list(APPEND HDF5_PATHS ${CMAKE_PREFIX_PATH} $ENV{PATH})
+        list(APPEND HDF5_PATHS ${CMAKE_PREFIX_PATH} $ENV{PATH} /usr /usr/local)
     endif()
 
 
