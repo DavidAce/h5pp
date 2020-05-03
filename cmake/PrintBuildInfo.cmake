@@ -25,7 +25,7 @@ if(H5PP_PRINT_INFO)
             "-- | H5PP_ENABLE_MPI         : ${H5PP_ENABLE_MPI}\n"
             "-- | H5PP_IS_SUBPROJECT      : ${H5PP_IS_SUBPROJECT}\n"
             "-- | H5PP_DOWNLOAD_METHOD    : ${H5PP_DOWNLOAD_METHOD}\n"
-            "-- | H5PP_APPEND_LIBSUFFIX   : ${H5PP_APPEND_LIBSUFFIX}\n"
+            "-- | H5PP_DEPS_IN_SUBDIR     : ${H5PP_DEPS_IN_SUBDIR}\n"
             "-- | H5PP_PREFER_CONDA_LIBS  : ${H5PP_PREFER_CONDA_LIBS}\n"
             "-- | H5PP_PRINT_INFO         : ${H5PP_PRINT_INFO}\n"
             "-- | CMAKE_PREFIX_PATH       : ${CMAKE_PREFIX_PATH}\n"
