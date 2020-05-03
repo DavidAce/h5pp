@@ -1,20 +1,20 @@
  
 cmake_minimum_required(VERSION 3.12)
-project(h5pp VERSION 1.7.1
+project(h5pp VERSION 1.7.2
         DESCRIPTION "A C++17 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         )
 
-option(BUILD_SHARED_LIBS      "Builds shared libraries"                                 OFF)
-option(H5PP_BUILD_EXAMPLES    "Builds examples"                                         OFF)
-option(H5PP_ENABLE_TESTS      "Enable testing"                                          OFF)
-option(H5PP_IS_SUBPROJECT     "Use h5pp with add_subdirectory()"                        OFF)
-option(H5PP_APPEND_LIBSUFFIX  "Append <libname> to CMAKE_INSTALL_PREFIX"                OFF)
-option(H5PP_PREFER_CONDA_LIBS "Search for dependencies from anaconda first"             OFF)
-option(H5PP_PRINT_INFO        "Print info during cmake configuration"                   OFF)
-option(H5PP_ENABLE_EIGEN3     "Enables Eigen3 linear algebra library"                   OFF)
-option(H5PP_ENABLE_SPDLOG     "Enables Spdlog for logging h5pp internal info to stdout" OFF)
-option(H5PP_ENABLE_MPI        "Enables use of MPI (work in progress)"                   OFF)
+option(BUILD_SHARED_LIBS      "Builds shared libraries"                                     OFF)
+option(H5PP_BUILD_EXAMPLES    "Builds examples"                                             OFF)
+option(H5PP_ENABLE_TESTS      "Enable testing"                                              OFF)
+option(H5PP_IS_SUBPROJECT     "Use h5pp with add_subdirectory()"                            OFF)
+option(H5PP_DEPS_IN_SUBDIR    "Install dependencies into CMAKE_INSTALL_PREFIX/<libname>"    OFF)
+option(H5PP_PREFER_CONDA_LIBS "Search for dependencies from anaconda first"                 OFF)
+option(H5PP_PRINT_INFO        "Print info during cmake configuration"                       OFF)
+option(H5PP_ENABLE_EIGEN3     "Enables Eigen3 linear algebra library"                       OFF)
+option(H5PP_ENABLE_SPDLOG     "Enables Spdlog for logging h5pp internal info to stdout"     OFF)
+option(H5PP_ENABLE_MPI        "Enables use of MPI (work in progress)"                       OFF)
 
 # Make an "enum" for valid download methods: none find-only native conan
 set(H5PP_DOWNLOAD_METHODS_VALID none find fetch find-or-fetch conan)
@@ -36,10 +36,6 @@ if (NOT H5PP_IS_SUBPROJECT)
         set(H5PP_IS_SUBPROJECT ON)
     endif ()
 endif ()
-
-if(H5PP_APPEND_LIBSUFFIX)
-    set(H5PP_LIBSUFFIX h5pp/)
-endif()
 
 
 # Set default install directory for h5pp and its dependencies
@@ -139,7 +135,7 @@ target_compile_features(flags INTERFACE cxx_std_17)
 target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) # Need this for and/or logical operators on VS
 target_compile_definitions(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX>) # Otherwise std::min and std::max will not work as expected
 target_include_directories(headers INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/include>)
-target_include_directories(headers INTERFACE $<INSTALL_INTERFACE:${H5PP_LIBSUFFIX}include>)
+target_include_directories(headers INTERFACE $<INSTALL_INTERFACE:include>)
 
 #Try to find or fetch all dependencies
 include(cmake/SetupDependenciesFind.cmake)
@@ -172,14 +168,14 @@ else()
 
     # Install library
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/include/ DESTINATION ${H5PP_LIBSUFFIX}include COMPONENT headers)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/include/ DESTINATION include COMPONENT headers)
     install(TARGETS h5pp headers deps flags EXPORT h5ppTargets)
 
     #Export the targets to a script
     install(EXPORT
             h5ppTargets
             NAMESPACE h5pp::
-            DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake)
+            DESTINATION share/h5pp/cmake)
 
 
     #Create a ConfigVersion.cmake file
@@ -189,19 +185,19 @@ else()
     configure_package_config_file(
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
-            INSTALL_DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
+            INSTALL_DESTINATION share/h5pp/cmake
     )
 
     configure_package_config_file(
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-fetch.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-fetch.cmake
-            INSTALL_DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
+            INSTALL_DESTINATION share/h5pp/cmake
     )
 
     configure_package_config_file(
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-conan.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
-            INSTALL_DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
+            INSTALL_DESTINATION share/h5pp/cmake
     )
 
     write_basic_package_version_file(
@@ -221,7 +217,7 @@ else()
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findspdlog.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindHDF5.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake
-            DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
+            DESTINATION share/h5pp/cmake
             COMPONENT config
             )
 
@@ -238,7 +234,7 @@ else()
         foreach (conan_file ${CONAN_INSTALL_FILES})
             if (EXISTS "${conan_file}")
                 install(FILES ${conan_file}
-                        DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
+                        DESTINATION share/h5pp/cmake
                         COMPONENT config)
             endif ()
         endforeach ()
