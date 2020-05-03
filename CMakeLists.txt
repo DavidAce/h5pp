@@ -41,10 +41,6 @@ if(H5PP_APPEND_LIBSUFFIX)
     set(H5PP_LIBSUFFIX h5pp/)
 endif()
 
-# Setup paths that find_package should search and
-# let cmake find our Find<package>.cmake modules
-include(cmake/SetupSearchPaths.cmake)
-
 
 # Set default install directory for h5pp and its dependencies
 # Append directory <libname> to CMAKE_INSTALL_PREFIX
@@ -54,6 +50,12 @@ if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
     message(STATUS "Setting default install location: CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/install")
     set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "..." FORCE)
 endif ()
+
+# Setup paths that find_package should search and
+# let cmake find our Find<package>.cmake modules
+include(cmake/SetupSearchPaths.cmake)
+
+
 
 # Print cmake build info options and host properties
 include(cmake/PrintBuildInfo.cmake)
@@ -185,20 +187,20 @@ else()
 
 
     configure_package_config_file(
-            ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.cmake.in
-            ${CMAKE_BINARY_DIR}/h5ppConfig.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.cmake.in
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
             INSTALL_DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
     )
 
     configure_package_config_file(
-            ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-fetch.cmake.in
-            ${CMAKE_BINARY_DIR}/h5ppConfig.deps-fetch.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-fetch.cmake.in
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-fetch.cmake
             INSTALL_DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
     )
 
     configure_package_config_file(
-            ${PROJECT_SOURCE_DIR}/cmake/h5ppConfig.deps-conan.cmake.in
-            ${CMAKE_BINARY_DIR}/h5ppConfig.deps-conan.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-conan.cmake.in
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
             INSTALL_DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
     )
 
@@ -211,14 +213,14 @@ else()
 
     ##Install the config, configversion and custom find modules
     install(FILES
-            ${CMAKE_BINARY_DIR}/h5ppConfig.cmake
-            ${CMAKE_BINARY_DIR}/h5ppConfig.deps-fetch.cmake
-            ${CMAKE_BINARY_DIR}/h5ppConfig.deps-conan.cmake
-            ${CMAKE_BINARY_DIR}/h5ppConfigVersion.cmake
-            ${PROJECT_SOURCE_DIR}/cmake/FindEigen3.cmake
-            ${PROJECT_SOURCE_DIR}/cmake/Findspdlog.cmake
-            ${PROJECT_SOURCE_DIR}/cmake/FindHDF5.cmake
-            ${PROJECT_SOURCE_DIR}/cmake/FindFilesystem.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-fetch.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindEigen3.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findspdlog.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindHDF5.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake
             DESTINATION ${H5PP_LIBSUFFIX}share/h5pp/cmake
             COMPONENT config
             )
@@ -228,10 +230,10 @@ else()
         # Install conan related files to define dependency targets the same way
         # we've already done here.
         set(CONAN_INSTALL_FILES
-                ${PROJECT_SOURCE_DIR}/conanfile.txt
-                ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake
-                ${CMAKE_BINARY_DIR}/conanbuildinfo.txt
-                ${CMAKE_BINARY_DIR}/conaninfo.txt
+                ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt
+                ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake
+                ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.txt
+                ${CMAKE_CURRENT_BINARY_DIR}/conaninfo.txt
                 )
         foreach (conan_file ${CONAN_INSTALL_FILES})
             if (EXISTS "${conan_file}")
@@ -240,8 +242,20 @@ else()
                         COMPONENT config)
             endif ()
         endforeach ()
-
     endif ()
+
+    # Uninstall target
+    if(NOT TARGET uninstall)
+        configure_file(
+                ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppUninstall.cmake.in
+                ${CMAKE_CURRENT_BINARY_DIR}/h5ppUninstall.cmake
+                IMMEDIATE @ONLY)
+
+        add_custom_target(uninstall
+                COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/h5ppUninstall.cmake)
+    endif()
+
+
 endif ()
 
 
