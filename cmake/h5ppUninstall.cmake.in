@@ -1,0 +1,64 @@
+
+
+function(remove_empty_dir DIR)
+    if(NOT IS_ABSOLUTE "${DIR}")
+          get_filename_component(DIR "${DIR}" ABSOLUTE)
+          message(STATUS "Converted to absolute dir: ${DIR}")
+    endif()
+
+    if(NOT IS_DIRECTORY "${DIR}")
+        return()
+    endif()
+
+    if(NOT "${DIR}" MATCHES "@CMAKE_INSTALL_PREFIX@")
+        return()
+    endif()
+    if("${DIR}" STREQUAL "@CMAKE_INSTALL_PREFIX@")
+        return()
+    endif()
+    file(GLOB dir_contents "${DIR}/*")
+    if(NOT dir_contents)
+        message(STATUS "Uninstalling directory: ${DIR}")
+            execute_process(
+                    COMMAND ${CMAKE_COMMAND} -E remove_directory ${DIR}
+                    RESULT_VARIABLE rm_out
+                    ERROR_VARIABLE rm_error
+            )
+            if(EXISTS ${DIR})
+                message(FATAL_ERROR "Empty directory still exists: ${DIR}")
+            endif()
+            if(rm_error)
+                message(FATAL_ERROR "Problem when removing directory: ${DIR}")
+            endif()
+    endif()
+    get_filename_component(PARENT_DIR "${DIR}/.." ABSOLUTE)
+    remove_empty_dir(${PARENT_DIR})
+endfunction()
+
+file(GLOB INSTALL_MANIFEST "@CMAKE_BINARY_DIR@/install_manifest*.txt")
+
+foreach(manifest ${INSTALL_MANIFEST})
+    if(NOT EXISTS "${manifest}")
+        message(FATAL_ERROR "Cannot find install manifest: ${manifest}")
+    endif()
+
+    file(READ "${manifest}" files)
+    string(REGEX REPLACE "\n" ";" files "${files}")
+    foreach(file ${files})
+        message(STATUS "Uninstalling ${file}")
+        if(IS_SYMLINK "${file}" OR EXISTS "${file}")
+            execute_process(
+                    COMMAND ${CMAKE_COMMAND} -E remove ${file}
+                    RESULT_VARIABLE rm_out
+                    ERROR_VARIABLE rm_error
+            )
+            if(rm_error)
+                message(FATAL_ERROR "Problem when removing file: ${file}")
+            endif()
+        else(IS_SYMLINK "${file}" OR EXISTS "${file}")
+            message(STATUS "File ${file} does not exist.")
+        endif()
+        get_filename_component(filedir ${file} DIRECTORY)
+        remove_empty_dir(${filedir})
+    endforeach()
+endforeach()
