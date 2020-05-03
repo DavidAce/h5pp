@@ -31,6 +31,8 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
     *  [Option 2: Build and install with CMake](#option-2-build-and-install-with-cmake)
     *  [Opt-in automatic dependency installation](#opt-in-automatic-dependency-installation)
 *  [Linking](#linking)
+*  [Uninstall](#uninstall)
+
 
 ## Introduction
 [HDF5](https://www.hdfgroup.org/) is a popular format for portable binary storage of large datasets.
@@ -220,7 +222,7 @@ There are currently 4 ways to obtain `h5pp`:
 ## Optional dependencies:
 * [**Eigen**](http://eigen.tuxfamily.org): Write Eigen matrices and tensors directly. Tested with version >= 3.3.4
 * [**spdlog**](https://github.com/gabime/spdlog): Enables logging for debug purposes. Tested with version >= 1.3.1
-* [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_DOWNLOAD_METHOD=<fetch/native/conan>.`
+* [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_DOWNLOAD_METHOD=<fetch|conan>.`
 
 ## Build and install
 For full working examples see the directory `quickstart`. These examples are explained below
@@ -265,7 +267,7 @@ The CMake flag `H5PP_DOWNLOAD_METHOD` controls the automated behavior for findin
 
 There are several variables you can pass to CMake to guide `find_package` calls, see [CMake build options](#cmake-build-options) below. 
 
-**(!)** Dependencies are installed into `CMAKE_INSTALL_PREFIX`. Pass the CMake variable `H5PP_APPEND_LIBSUFFIX` to install into separate directories under `CMAKE_INSTALL_PREFIX`. 
+**(!)** Dependencies are installed into `CMAKE_INSTALL_PREFIX`. Pass the CMake variable `H5PP_DEPS_IN_SUBDIR` to install into separate directories under `CMAKE_INSTALL_PREFIX/<libname>`. 
    
 **(!!)** Conan is guided by `conanfile.txt` found in this project's root directory. This method requires conan to be installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
   * Add conan install (or bin) directory to the environment variable `PATH`.
@@ -289,7 +291,7 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 | `H5PP_IS_SUBPROJECT`              | `OFF`      | Print extra CMake info about the host and generated targets during configure |
 | `H5PP_ENABLE_EIGEN3`              | `OFF`      | Enables Eigen3 linear algebra library support |
 | `H5PP_ENABLE_SPDLOG`              | `OFF`      | Enables Spdlog support for logging `h5pp` internal info to stdout |
-| `H5PP_APPEND_LIBSUFFIX`           | `OFF`      | Append a directory with the library name to install directory, i.e. `CMAKE_INSTALL_PREFIX/<libname>/`. This is useful when you want `native` build to install `h5pp`, `hdf5`, `Eigen3` and `spdlog` into separate folders |
+| `H5PP_DEPS_IN_SUBDIR`             | `OFF`      | Appends `<libname>` to install location of dependencies, i.e. `CMAKE_INSTALL_PREFIX/<libname>`. This allows simple removal |
 | `H5PP_PREFER_CONDA_LIBS`          | `OFF`      | Prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda. No effect when `H5PP_DOWNLOAD_METHOD=conan`  |
 
 The following variables can be set to help guide CMake's `find_package` to your pre-installed software (no defaults):
@@ -386,6 +388,8 @@ These are variables that can be used to guide the custom module:
 | `EBROOTHDF5`           | ENV       | Variable defined by Easybuild with `module load HDF5` |
 
 
+
+
 # To-do
 In no particular order
 
@@ -406,3 +410,11 @@ In no particular order
   the data in an Eigen Map object).
   
   
+## Uninstall
+
+The target `uninstall` is defined by `h5pp` which removes installed headers and dependencies using their respective install manifests.
+From the build directory, run the following in the command-line to uninstall:
+
+```
+    cmake --build .  --target uninstall
+```
