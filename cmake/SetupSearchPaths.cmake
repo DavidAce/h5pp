@@ -21,9 +21,10 @@ if(H5PP_PREFER_CONDA_LIBS)
             $ENV{HOME}/miniconda3
             $ENV{HOME}/miniconda
             $ENV{HOME}/.conda
+            $ENV{HOME}/anaconda3/envs/dmrg
             )
     foreach(path ${CONDA_CANDIDATE_PATHS})
-        if(EXISTS path)
+        if(EXISTS ${path})
             list(APPEND CMAKE_PREFIX_PATH ${path})
         endif()
     endforeach()
