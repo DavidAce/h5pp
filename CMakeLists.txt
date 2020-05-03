@@ -186,6 +186,7 @@ else()
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
             INSTALL_DESTINATION share/h5pp/cmake
+            PATH_VARS H5PP_SEARCH_PATHS
     )
 
     configure_package_config_file(

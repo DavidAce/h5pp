@@ -7,44 +7,11 @@
 if(H5PP_DOWNLOAD_METHOD MATCHES "find|fetch")
   # Append search paths for find_package and find_library calls
    list(INSERT 0 CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
-   list(APPEND CMAKE_PREFIX_PATH ${PACKAGE_PREFIX_PATH} ${CMAKE_INSTALL_PREFIX})
-
-   list(APPEND CMAKE_PREFIX_PATH
-           ${H5PP_PREFIX_PATH}
-           ${EIGEN3_PREFIX_PATH}
-           ${SPDLOG_PREFIX_PATH}
-           ${HDF5_PREFIX_PATH}
-           ${H5PP_DIRECTORY_HINTS}
-           ${SPDLOG_DIRECTORY_HINTS}
-           ${EIGEN3_DIRECTORY_HINTS}
-           ${HDF5_DIRECTORY_HINTS}
-           )
-
-   if(H5PP_PREFER_CONDA_LIBS)
-       list(APPEND CONDA_CANDIDATE_PATHS
-               $ENV{CONDA_PREFIX}
-               $ENV{HOME}/anaconda3
-               $ENV{HOME}/anaconda
-               $ENV{HOME}/miniconda3
-               $ENV{HOME}/miniconda
-               $ENV{HOME}/.conda
-               )
-       foreach(path ${CONDA_CANDIDATE_PATHS})
-           if(EXISTS ${path})
-               list(APPEND CMAKE_PREFIX_PATH ${path})
-           endif()
-       endforeach()
-       unset(CONDA_CANDIDATE_PATHS)
+   if(EXISTS ${PACKAGE_PREFIX_PATH}/h5pp)
+      list(INSERT 0 CMAKE_PREFIX_PATH ${PACKAGE_PREFIX_PATH}/h5pp)
    endif()
-
-   list(APPEND CMAKE_PREFIX_PATH
-           $ENV{EBROOTHDF5}
-           $ENV{EBROOTSPDLOG}
-           $ENV{EBROOTEIGEN}
-           ${HDF5_ROOT}
-           $ENV{HDF5_ROOT}
-           )
-
+   list(INSERT 0 CMAKE_PREFIX_PATH ${PACKAGE_PREFIX_PATH})
+   list(APPEND CMAKE_PREFIX_PATH ${H5PP_SEARCH_PATHS})
    list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
 endif()
 
