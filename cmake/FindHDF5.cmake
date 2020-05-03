@@ -262,12 +262,18 @@ endfunction()
 
 function(find_package_hdf5_exec_wrapper)
     # Find HDF5 using executable wrappers
-    if(NOT NO_DEFAULT_PATH)
-        list(APPEND HDF5_PATHS $ENV{PATH} /usr /usr/local)
+    list(APPEND HDF5_PATHS
+            ${HDF5_ROOT}
+            $ENV{HDF5_ROOT}
+            ${HDF5_PREFIX_PATH}
+            ${HDF5_DIRECTORY_HINTS}
+            ${H5PP_DIRECTORY_HINTS})
+    if(NOT HDF5_NO_DEFAULT_PATH)
+        list(APPEND HDF5_PATHS ${CMAKE_PREFIX_PATH} $ENV{PATH})
     endif()
 
 
-    foreach(hdf5_root "${CMAKE_PREFIX_PATH};${HDF5_PATHS}")
+    foreach(hdf5_root "${HDF5_PATHS}")
         find_package_hdf5_isolator("${hdf5_root}")
         if(HDF5_FOUND)
             set(HDF5_FOUND               ${HDF5_FOUND}                  PARENT_SCOPE)
