@@ -1091,11 +1091,11 @@ namespace h5pp::hdf5 {
         internal::searchKey     = searchKey;
 
         #if defined(H5Ovisit_by_name3) || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 3)
-            herr_t err = H5Ovisit_by_name(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, H5O_INFO_ALL, link_access);
+            herr_t err = H5Ovisit_by_name3(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, H5O_INFO_ALL, link_access);
         #elif defined(H5Ovisit_by_name2)  || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 2)
-            herr_t err = H5Ovisit_by_name(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, H5O_INFO_ALL, link_access);
+            herr_t err = H5Ovisit_by_name2(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, H5O_INFO_ALL, link_access);
         #elif defined(H5Ovisit_by_name1)  || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 1)
-            herr_t err = H5Ovisit_by_name(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, link_access);
+            herr_t err = H5Ovisit_by_name1(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, link_access);
         #else
             herr_t err = H5Ovisit_by_name(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, link_access);
         #endif
