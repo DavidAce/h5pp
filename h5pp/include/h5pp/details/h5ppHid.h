@@ -139,7 +139,7 @@ namespace h5pp::hid {
     };
 
     // All our safe hid_t wrapper classes
-    class h5p : public hid_base<h5p, true> {
+    class h5p final: public hid_base<h5p, true> {
         public:
         using hid_base::hid_base;
         ~h5p() final { close(); }
@@ -153,7 +153,7 @@ namespace h5pp::hid {
         }
     };
 
-    class h5s : public hid_base<h5s> {
+    class h5s final: public hid_base<h5s> {
         public:
         using hid_base::hid_base;
         ~h5s() final { close(); }
@@ -167,7 +167,7 @@ namespace h5pp::hid {
         }
     };
 
-    class h5t : public hid_base<h5t> {
+    class h5t final: public hid_base<h5t> {
         public:
         using hid_base::hid_base;
         ~h5t() final { close(); }
@@ -181,7 +181,7 @@ namespace h5pp::hid {
         }
     };
 
-    class h5d : public hid_base<h5d> {
+    class h5d final: public hid_base<h5d> {
         public:
         using hid_base::hid_base;
         ~h5d() final { close(); }
@@ -195,7 +195,7 @@ namespace h5pp::hid {
         }
     };
 
-    class h5g : public hid_base<h5g> {
+    class h5g final: public hid_base<h5g> {
         public:
         using hid_base::hid_base;
         ~h5g() final { close(); }
@@ -209,10 +209,10 @@ namespace h5pp::hid {
         }
     };
 
-    class h5a : public hid_base<h5a> {
+    class h5a final: public hid_base<h5a> {
         public:
         using hid_base::hid_base;
-        ~h5a() { close(); }
+        ~h5a() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5a"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
@@ -223,7 +223,7 @@ namespace h5pp::hid {
         }
     };
 
-    class h5o : public hid_base<h5o> {
+    class h5o final: public hid_base<h5o> {
         public:
         using hid_base::hid_base;
         ~h5o() final { close(); }
@@ -237,7 +237,7 @@ namespace h5pp::hid {
         }
     };
 
-    class h5f : public hid_base<h5f> {
+    class h5f final: public hid_base<h5f> {
         public:
         using hid_base::hid_base;
         ~h5f() final { close(); }
@@ -251,7 +251,7 @@ namespace h5pp::hid {
         }
     };
 
-    class h5e : public hid_base<h5e, true> {
+    class h5e final: public hid_base<h5e, true> {
         public:
         using hid_base::hid_base;
         ~h5e() final { close(); }
