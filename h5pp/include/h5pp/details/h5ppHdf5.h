@@ -1089,11 +1089,18 @@ namespace h5pp::hdf5 {
         std::vector<std::string> matchList;
         internal::maxSearchHits = maxSearchHits;
         internal::searchKey     = searchKey;
-#if defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers > 1
-        herr_t err = H5Ovisit_by_name(file, searchRoot.data(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, H5O_INFO_ALL, link_access);
-#else
-        herr_t err = H5Ovisit_by_name(file, searchRoot.data(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, link_access);
-#endif
+
+        #if defined(H5Ovisit_by_name3) || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 3)
+            herr_t err = H5Ovisit_by_name(file, searchRoot.data(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, H5O_INFO_ALL, link_access);
+        #elif defined(H5Ovisit_by_name2)  || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 2)
+            herr_t err = H5Ovisit_by_name(file, searchRoot.data(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, H5O_INFO_ALL, link_access);
+        #elif defined(H5Ovisit_by_name1)  || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 1)
+            herr_t err = H5Ovisit_by_name(file, searchRoot.data(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, link_access);
+        #else
+            herr_t err = H5Ovisit_by_name(file, searchRoot.data(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, link_access);
+        #endif
+
+
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to iterate from group [{}]", searchRoot));
