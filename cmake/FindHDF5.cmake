@@ -267,13 +267,17 @@ function(find_package_hdf5_exec_wrapper)
             $ENV{HDF5_ROOT}
             ${HDF5_PREFIX_PATH}
             ${HDF5_DIRECTORY_HINTS}
-            ${H5PP_DIRECTORY_HINTS})
+            ${H5PP_DIRECTORY_HINTS}
+            ${EBROOTHDF5})
     if(NOT HDF5_NO_DEFAULT_PATH)
-        list(APPEND HDF5_PATHS ${CMAKE_PREFIX_PATH} $ENV{PATH} /usr /usr/local)
+        if($ENV{PATH})
+            string(REPLACE ":" ";" ENVPATH $ENV{PATH})
+        endif()
+        list(APPEND HDF5_PATHS ${CMAKE_PREFIX_PATH} ${ENVPATH} /usr /usr/local)
     endif()
 
 
-    foreach(hdf5_root "${HDF5_PATHS}")
+    foreach(hdf5_root ${HDF5_PATHS})
         find_package_hdf5_isolator("${hdf5_root}")
         if(HDF5_FOUND)
             set(HDF5_FOUND               ${HDF5_FOUND}                  PARENT_SCOPE)
