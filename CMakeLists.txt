@@ -127,21 +127,26 @@ include(cmake/SetupDependenciesFetch.cmake)
 include(cmake/SetupDependenciesConan.cmake)
 
 
+
+# Link all targets to one main h5pp target (the only one that users should need)
+# However, it's nice to have them separately also if need be.
+target_link_libraries(h5pp INTERFACE headers deps flags)
+
+
+
 # Print summary of CMake configuration
 if (H5PP_PRINT_INFO)
+    include(cmake/PrintTargetInfo.cmake)
+    include(cmake/getExpandedTarget.cmake)
+    expand_target_all_targets(h5pp H5PP_TARGETS_EXPANDED)
     message(STATUS "| H5PP TARGET SUMMARY")
     message(STATUS "|--------------------")
-    include(${PROJECT_SOURCE_DIR}/cmake/PrintTargetInfo.cmake)
-    foreach(tgt ${H5PP_TARGETS})
+    foreach(tgt ${H5PP_TARGETS_EXPANDED})
         print_target_info(${tgt} "| ")
     endforeach()
 endif()
 
 
-
-# Link all targets to one main h5pp target (the only one that users should need)
-# However, it's nice to have them separately also if need be.
-target_link_libraries(h5pp INTERFACE headers deps flags)
 
 if(H5PP_IS_SUBPROJECT)
     add_library(h5pp::h5pp ALIAS h5pp)
