@@ -1,6 +1,5 @@
 
 find_package(ghcFilesystem HINTS ${CMAKE_INSTALL_PREFIX} PATH_SUFFIXES ghcFilesystem)
-
 if  (NOT TARGET ghcFilesystem::ghc_filesystem)
     message(STATUS "ghcFilesystem will be installed into ${CMAKE_INSTALL_PREFIX}")
     include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)

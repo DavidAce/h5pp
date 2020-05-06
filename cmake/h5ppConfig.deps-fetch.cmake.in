@@ -21,7 +21,7 @@ endif()
 
 
 include(CMakeFindDependencyMacro)
-if (NOT TARGET Eigen3::Eigen)
+if (NOT TARGET Eigen3::Eigen AND Eigen3::Eigen IN_LIST H5PP_ENABLED_TARGETS)
     find_dependency(Eigen3 3.3.4 REQUIRED)
     if(TARGET Eigen3 AND NOT TARGET Eigen3::Eigen)
         add_library(Eigen3::Eigen ALIAS Eigen3)
@@ -31,7 +31,7 @@ if(TARGET Eigen3::Eigen)
     list(APPEND H5PP_FOUND_TARGETS Eigen3::Eigen)
 endif()
 
-if (NOT TARGET spdlog::spdlog)
+if (NOT TARGET spdlog::spdlog AND spdlog::spdlog IN_LIST H5PP_ENABLED_TARGETS)
     find_dependency(spdlog 1.3.1 REQUIRED)
     if(TARGET spdlog AND NOT TARGET spdlog::spdlog)
         add_library(spdlog::spdlog ALIAS spdlog)
@@ -41,7 +41,7 @@ if(TARGET spdlog::spdlog)
     list(APPEND H5PP_FOUND_TARGETS spdlog::spdlog)
 endif()
 
-if (NOT TARGET hdf5::hdf5)
+if (NOT TARGET hdf5::hdf5 AND hdf5::hdf5 IN_LIST H5PP_ENABLED_TARGETS)
     find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
 endif()
 

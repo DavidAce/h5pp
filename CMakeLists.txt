@@ -110,22 +110,6 @@ endif ()
 target_compile_definitions(deps INTERFACE H5PP_DOWNLOAD_METHOD=${H5PP_DOWNLOAD_METHOD})
 
 
-# h5pp requires the filesystem header (and possibly stdc++fs library)
-find_package(Filesystem COMPONENTS Final Experimental)
-if (TARGET std::filesystem)
-    target_link_libraries(flags INTERFACE std::filesystem)
-elseif (H5PP_DOWNLOAD_METHOD MATCHES "fetch|conan")
-    message(STATUS "Your compiler lacks std::filesystem. A drop-in replacement ghc::filesystem will be downloaded")
-    message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
-    include(cmake/Fetch_ghcFilesystem.cmake)
-    target_link_libraries(flags INTERFACE ghcFilesystem::ghc_filesystem)
-    list(APPEND H5PP_TARGETS ghcFilesystem::ghc_filesystem)
-else ()
-    message(STATUS "Your compiler lacks std::filesystem. Set H5PP_DOWNLOAD_METHOD to 'fetch' or 'conan' or to get the ghc::filesystem replacement")
-    message(STATUS "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem")
-    message(FATAL_ERROR "<filesystem> header and/or library not found")
-endif ()
-
 # Check  #include<optional> or #include<experimental/optional>
 include(${PROJECT_SOURCE_DIR}/cmake/CheckCXXOptional.cmake)
 CheckCXXOptional()
