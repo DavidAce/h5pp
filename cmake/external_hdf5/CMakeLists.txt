@@ -5,6 +5,9 @@ include(ExternalProject)
 option(HDF5_ENABLE_PARALLEL "" OFF)
 option(HDF5_EXTERNALLY_CONFIGURED "" ON)
 
+if(ENV{CONDA_PREFIX})
+    message(WARNING "The enabled conda environment may conflict with the build of HDF5: $ENV{CONDA_PREFIX}")
+endif()
 
 # The following check is needed because HDF5 will blindly use
 # find_package(ZLIB), which finds the shared library
