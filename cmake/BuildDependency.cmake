@@ -34,7 +34,6 @@ function(build_dependency dep_name install_dir extra_flags)
     execute_process(COMMAND  ${CMAKE_COMMAND} --build . --parallel ${num_threads}
             WORKING_DIRECTORY "${build_dir}"
             RESULT_VARIABLE build_result
-            ERROR_VARIABLE  build_error
     )
 
     if(build_result)
