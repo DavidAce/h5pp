@@ -1503,6 +1503,26 @@ namespace h5pp::hdf5 {
         h5pp::logger::log->debug(
             "Appending records to table [{}] | num records {} | record size {} bytes", tableProps.tableName.value(), tableProps.NRECORDS.value(), tableProps.entrySize.value());
 
+        // Make sure the given container and the registerd table entry have the same size.
+        // If there is a mismatch here it can cause horrible bugs/segfaults
+        if constexpr ( h5pp::type::sfinae::has_value_type_v<DataType>) {
+            if(sizeof(DataType::value_type) != tableProps.entrySize.value())
+                throw std::runtime_error(
+                    h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table entries on file are {} bytes each ",
+                                 h5pp::type::sfinae::type_name<DataType>(), sizeof(DataType::value_type), tableProps.entrySize.value()));
+        }else if constexpr(h5pp::type::sfinae::has_data_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>){
+            if(sizeof(&data.data()) != tableProps.entrySize.value())
+                throw std::runtime_error(
+                    h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table entries on file are {} bytes each ",
+                                 h5pp::type::sfinae::type_name<DataType>(), sizeof(&data.data()), tableProps.entrySize.value()));
+        }else{
+            if(sizeof(DataType) != tableProps.entrySize.value())
+                throw std::runtime_error(h5pp::format("Size mismatch: Given data type {} is of {} bytes, but the table entries on file are {} bytes each ",
+                                                      h5pp::type::sfinae::type_name<DataType>(),
+                                                      sizeof(DataType), tableProps.entrySize.value()));
+        }
+
+
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
             H5TBappend_records(file,
                                util::safe_str(tableProps.tableName.value()).c_str(),
@@ -1528,6 +1548,8 @@ namespace h5pp::hdf5 {
                                  const TableProperties &tableProps,
                                  std::optional<size_t>  startEntry = std::nullopt,
                                  std::optional<size_t>  numEntries = std::nullopt) {
+
+
         // If none of startEntry or numEntries are given:
         //          If data resizeable: startEntry = 0, numEntries = totalRecords
         //          If data not resizeable: startEntry = last entry, numEntries = 1.
@@ -1569,11 +1591,33 @@ namespace h5pp::hdf5 {
         if(startEntry.value() + numEntries.value() > totalRecords)
             throw std::logic_error(h5pp::format("Asked for more records than available in table [{}] | nrecords [{}]", tableProps.tableName.value(), totalRecords));
 
-        h5pp::logger::log->debug("Reading table [{}] | read from record {} | read num records {} | available records {}",
+        h5pp::logger::log->debug("Reading table [{}] | read from record {} | read num records {} | available records {} | record size {} bytes",
                                  tableProps.tableName.value(),
                                  startEntry.value(),
                                  numEntries.value(),
-                                 tableProps.NRECORDS.value());
+                                 tableProps.NRECORDS.value(),
+                                 tableProps.entrySize.value());
+
+
+        // Make sure the given container and the registerd table entry have the same size.
+        // If there is a mismatch here it can cause horrible bugs/segfaults
+        if constexpr ( h5pp::type::sfinae::has_value_type_v<DataType>) {
+            if(sizeof(DataType::value_type) != tableProps.entrySize.value())
+                throw std::runtime_error(
+                    h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table records on file are {} bytes each ",
+                                 h5pp::type::sfinae::type_name<DataType>(), sizeof(DataType::value_type), tableProps.entrySize.value()));
+        }else if constexpr(h5pp::type::sfinae::has_data_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>){
+            if(sizeof(&data.data()) != tableProps.entrySize.value())
+                throw std::runtime_error(
+                    h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table records on file are {} bytes each ",
+                                 h5pp::type::sfinae::type_name<DataType>(), sizeof(&data.data()), tableProps.entrySize.value()));
+        }else{
+            if(sizeof(DataType) != tableProps.entrySize.value())
+                throw std::runtime_error(h5pp::format("Size mismatch: Given data type {} is of {} bytes, but the table records on file are {} bytes each ",
+                                                      h5pp::type::sfinae::type_name<DataType>(),
+                                                      sizeof(DataType), tableProps.entrySize.value()));
+        }
+
 
         if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) { data.resize(numEntries.value()); }
 
