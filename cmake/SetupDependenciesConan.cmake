@@ -13,9 +13,11 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
             CONAN_COMMAND
             conan
             HINTS ${CONAN_PREFIX} ${CONDA_PREFIX} $ENV{CONAN_PREFIX} $ENV{CONDA_PREFIX}
-            PATHS $ENV{HOME}/anaconda3 $ENV{HOME}/miniconda $ENV{HOME}/.conda
+            PATHS $ENV{HOME}/anaconda3 $ENV{HOME}/miniconda3 $ENV{HOME}/anaconda $ENV{HOME}/miniconda $ENV{HOME}/.conda
             PATH_SUFFIXES bin envs/dmrg/bin
+            REQUIRED
     )
+
 
 
     # Download automatically, you can also just copy the conan.cmake file
