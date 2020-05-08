@@ -15,8 +15,13 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
             HINTS ${CONAN_PREFIX} ${CONDA_PREFIX} $ENV{CONAN_PREFIX} $ENV{CONDA_PREFIX}
             PATHS $ENV{HOME}/anaconda3 $ENV{HOME}/miniconda3 $ENV{HOME}/anaconda $ENV{HOME}/miniconda $ENV{HOME}/.conda
             PATH_SUFFIXES bin envs/dmrg/bin
-            REQUIRED
     )
+
+    if(NOT CONAN_COMMAND)
+        message(FATAL_ERROR "Could not find conan program executable")
+    else()
+        message(STATUS "Found conan: ${CONAN_COMMAND}")
+    endif()
 
 
 
