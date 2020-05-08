@@ -1602,10 +1602,10 @@ namespace h5pp::hdf5 {
         // Make sure the given container and the registerd table entry have the same size.
         // If there is a mismatch here it can cause horrible bugs/segfaults
         if constexpr ( h5pp::type::sfinae::has_value_type_v<DataType>) {
-            if(sizeof(DataType::value_type) != tableProps.entrySize.value())
+            if(sizeof(typename DataType::value_type) != tableProps.entrySize.value())
                 throw std::runtime_error(
                     h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table records on file are {} bytes each ",
-                                 h5pp::type::sfinae::type_name<DataType>(), sizeof(DataType::value_type), tableProps.entrySize.value()));
+                                 h5pp::type::sfinae::type_name<DataType>(), sizeof(typename DataType::value_type), tableProps.entrySize.value()));
         }else if constexpr(h5pp::type::sfinae::has_data_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>){
             if(sizeof(&data.data()) != tableProps.entrySize.value())
                 throw std::runtime_error(
