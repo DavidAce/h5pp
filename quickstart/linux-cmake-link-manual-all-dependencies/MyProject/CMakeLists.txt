@@ -36,7 +36,7 @@ target_link_libraries(MyProjectExecutable PUBLIC spdlog::spdlog)
 #   *  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`. On `MSVC` it sets `/permissive-` to enable logical `and`/`or` in C++.
 #
 #   Specifially for `h5pp::deps`:
-#   If `H5PP_DOWNLOAD_METHOD==find-or-fetch|fetch|native` the targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`,
+#   If `H5PP_DOWNLOAD_METHOD==find-or-fetch|fetch` the targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`,
 #   If `H5PP_DOWNLOAD_METHOD==conan` the targets are `CONAN_PKG::Eigen3`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`.
 #   If `H5PP_DOWNLOAD_METHOD==none` then `h5pp::deps` is empty.
 

@@ -119,7 +119,7 @@ target_compile_features(flags INTERFACE cxx_std_17)
 target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) # Need this for and/or logical operators on VS
 target_compile_definitions(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX>) # Otherwise std::min and std::max will not work as expected
 target_include_directories(headers INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/include>)
-target_include_directories(headers INTERFACE $<INSTALL_INTERFACE:include>)
+target_include_directories(headers SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
 
 #Try to find or fetch all dependencies
 include(cmake/SetupDependenciesFind.cmake)
