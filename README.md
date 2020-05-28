@@ -24,12 +24,13 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
     *  [Storage layout](#storage-layout)
     *  [Compression](#compression)
     *  [Load data into Python](#load-data-into-python)
-*  [Download](#download)
-*  [Requirements](#requirements)
-*  [Build and Install](#build-and-install)
-    *  [Option 1: Copy the headers](#option-1-copy-the-headers)
-    *  [Option 2: Build and install with CMake](#option-2-build-and-install-with-cmake)
-    *  [Opt-in automatic dependency installation](#opt-in-automatic-dependency-installation)
+*  [Installation](#download)
+    *  [Requirements](#requirements)
+    *  [Install methods](#install-methods)
+        *  [Option 1: Copy the headers](#option-1-copy-the-headers)
+        *  [Option 2: Install with CMake](#option-2-install-with-cmake)
+        *  [Option 3: Install with conan](#option-2-install-with-conan)
+    *  [Opt-in automatic dependency installation with CMake](#opt-in-automatic-dependency-installation-with-cmake)
 *  [Linking](#linking)
 *  [Uninstall](#uninstall)
 
@@ -206,7 +207,7 @@ Notice the cast to `dtype=np.complex128` which interprets each element of the ar
 
 
 
-## Download
+## Installation
 There are currently 4 ways to obtain `h5pp`:
 * `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
 * From conda: `conda install -c davidace h5pp`
@@ -214,27 +215,27 @@ There are currently 4 ways to obtain `h5pp`:
 * (Debian only) Download the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
 
 
-## Requirements
+### Requirements
 * C++17 capable compiler. GCC version >= 7 or Clang version >= 7.0
 * CMake version >= 3.12
 * [**HDF5**](https://support.hdfgroup.org/HDF5/)  library, version >= 1.8
 
-## Optional dependencies:
+#### Optional dependencies:
 * [**Eigen**](http://eigen.tuxfamily.org): Write Eigen matrices and tensors directly. Tested with version >= 3.3.4
 * [**spdlog**](https://github.com/gabime/spdlog): Enables logging for debug purposes. Tested with version >= 1.3.1
 * [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_DOWNLOAD_METHOD=<fetch|conan>.`
 
-## Build and install
-For full working examples see the directory `quickstart`. These examples are explained below
+### Install methods
+For full working examples see the directory `quickstart`. Find a summary below.
 
 
-### Option 1: Copy the headers
+#### Option 1: Copy the headers
 Copy the files under `h5pp/source/include` and add `#include<h5pp/h5pp.h>`.
 Make sure to compile with `-std=c++17 -lstdc++fs` and link the dependencies `hdf5`, `Eigen3` and `spdlog`. The actual linking
 is a non-trivial step, see [linking](#linking) below.
 
 
-### Option 2: Build and install with CMake
+#### Option 2: Install with CMake
 Build the library just as any CMake project. For instance, from the project's root in command-line:
 
 ```bash
@@ -251,9 +252,17 @@ These config files allow you to use`find_package(h5pp)` in your own projects, wh
 with everything you need to link `h5pp` correctly (including dependencies, if you so choose). 
 If not set, `CMAKE_INSTALL_PREFIX` defaults to `${CMAKE_BINARY_DIR}/install`, where `${CMAKE_BINARY_DIR}` is the directory you are building from.
 
+#### Option 3: Install with conan
+Make sure to install and configure conan first. Then, either use the CMake-conan integration by passing
+ `-DH5PP_DOWNLOAD_METHOD=conan` as an argument to CMake (see below) **or** use conan directly, for instance by running the following command:
+
+```
+$ conan install h5pp/1.7.2@davidace/stable --profile default
+```
+This is by far the simplest method and will also make sure to install HDF5 and the optional dependencies.
 
 
-#### Opt-in automatic dependency installation
+#### Opt-in automatic dependency installation with CMake
 The CMake flag `H5PP_DOWNLOAD_METHOD` controls the automated behavior for finding or installing dependencies. It can take one of three valid strings:
 
 | Option | Description |
