@@ -153,7 +153,7 @@ namespace h5pp {
                 try{
                     fs::remove(filePath);
                 }catch(const std::exception & err){
-                    h5pp::logger::log->error("Remove failed. File may be locked: {}",getFilePath());
+                    h5pp::logger::log->error("Remove failed. File may be locked: [{}]",getFilePath());
                 }
                 filePath = new_path;
             }
