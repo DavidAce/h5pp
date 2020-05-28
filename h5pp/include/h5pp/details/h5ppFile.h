@@ -151,7 +151,7 @@ namespace h5pp {
             if(fs::exists(new_path)){
                 h5pp::logger::log->debug("Removing file: {}",getFilePath());
                 try{
-                    fs::remove(getFilePath());
+                    fs::remove(filePath);
                 }catch(const std::exception & err){
                     h5pp::logger::log->error("Remove failed. File may be locked: {}",getFilePath());
                 }
