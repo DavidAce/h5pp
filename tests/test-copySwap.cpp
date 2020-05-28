@@ -53,7 +53,5 @@ int main() {
     auto fileA_move_read = fileA_move.readDataset<std::string>("groupA/A");
     if(fileA_move_read  != "A") throw std::runtime_error(h5pp::format("Move failed: [{}] != A",fileA_move_read));
 
-
-
     return 0;
 }

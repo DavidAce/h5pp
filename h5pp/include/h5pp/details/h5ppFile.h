@@ -146,10 +146,15 @@ namespace h5pp {
         }
 
         void move_file(const std::string & target_path, FilePermission permission = FilePermission::COLLISION_FAIL ){
+            h5pp::logger::log->debug("Moving file by copy+remove: {}",getFilePath());
             auto new_path = copy_file(target_path, permission);
             if(fs::exists(new_path)){
                 h5pp::logger::log->debug("Removing file: {}",getFilePath());
-                fs::remove(getFilePath());
+                try{
+                    fs::remove(getFilePath());
+                }catch(const std::exception & err){
+                    h5pp::logger::log->error("Remove failed. File may be locked: {}",getFilePath());
+                }
                 filePath = new_path;
             }
         }
