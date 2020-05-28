@@ -1063,7 +1063,7 @@ namespace h5pp::hdf5 {
         inline long        maxSearchHits = -1;
         inline std::string searchKey;
         template<H5O_type_t ObjType>
-        inline herr_t collector([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const H5O_info_t *oinfo, void *opdata) {
+        inline herr_t matcher([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const H5O_info_t *oinfo, void *opdata) {
             try {
                 if(oinfo->type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
                     auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
@@ -1073,7 +1073,15 @@ namespace h5pp::hdf5 {
                     }
                 }
                 return 0;
-            } catch(...) { throw std::logic_error(h5pp::format("Could not collect object [{}] | loc_id [{}]", name, id)); }
+            } catch(...) { throw std::logic_error(h5pp::format("Could not match object [{}] | loc_id [{}]", name, id)); }
+        }
+        template<H5O_type_t ObjType>
+        inline herr_t collector([[maybe_unused]] hid_t loc_id, const char *name, [[maybe_unused]] const H5L_info_t *linfo, void *opdata) {
+            try {
+                auto linkNames = reinterpret_cast<std::vector<std::string> *>(opdata);
+                linkNames->push_back(name);
+                return 0;
+            } catch(...) { throw std::logic_error(h5pp::format("Could not collect object [{}] | loc_id [{}]", name, loc_id)); }
         }
     }
 
@@ -1081,7 +1089,6 @@ namespace h5pp::hdf5 {
     inline std::vector<std::string>
         findLinks(const hid::h5f &file, std::string_view searchKey = "", std::string_view searchRoot = "/", long maxSearchHits = -1, const hid::h5p &link_access = H5P_DEFAULT) {
         std::string linkType = "any";
-        if(searchRoot.empty()) searchRoot = "/";
         if constexpr(ObjType == H5O_TYPE_DATASET) linkType = "dataset";
         if constexpr(ObjType == H5O_TYPE_NAMED_DATATYPE) linkType = "named datatype";
         if constexpr(ObjType == H5O_TYPE_GROUP) linkType = "group";
@@ -1091,13 +1098,13 @@ namespace h5pp::hdf5 {
         internal::searchKey     = searchKey;
 
         #if defined(H5Ovisit_by_name3) || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 3)
-            herr_t err = H5Ovisit_by_name3(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, H5O_INFO_ALL, link_access);
+            herr_t err = H5Ovisit_by_name3(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, H5O_INFO_ALL, link_access);
         #elif defined(H5Ovisit_by_name2)  || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 2)
-            herr_t err = H5Ovisit_by_name2(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, H5O_INFO_ALL, link_access);
+            herr_t err = H5Ovisit_by_name2(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, H5O_INFO_ALL, link_access);
         #elif defined(H5Ovisit_by_name1)  || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 1)
-            herr_t err = H5Ovisit_by_name1(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, link_access);
+            herr_t err = H5Ovisit_by_name1(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, link_access);
         #else
-            herr_t err = H5Ovisit_by_name(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::collector<ObjType>, &matchList, link_access);
+            herr_t err = H5Ovisit_by_name(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, link_access);
         #endif
 
 
@@ -1107,6 +1114,24 @@ namespace h5pp::hdf5 {
         }
         return matchList;
     }
+
+    template<H5O_type_t ObjType>
+    inline std::vector<std::string> getContentsOfLink(const hid::h5f &file, const std::string &linkName,const hid::h5p &link_access = H5P_DEFAULT) {
+        std::string linkType = "any";
+        if constexpr(ObjType == H5O_TYPE_DATASET) linkType = "dataset";
+        if constexpr(ObjType == H5O_TYPE_NAMED_DATATYPE) linkType = "named datatype";
+        if constexpr(ObjType == H5O_TYPE_GROUP) linkType = "group";
+        h5pp::logger::log->trace("Getting contents of link: {} | link type: {}", linkName, linkType);
+
+        std::vector<std::string> contents;
+        herr_t err = H5Literate_by_name(file, linkName.c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, internal::collector<ObjType>, &contents, link_access);
+        if(err < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Failed to iterate link [{}]",linkName));
+        }
+        return contents;
+    }
+
 
     inline void createDataset(const h5pp::MetaDset &metaDset, const PropertyLists &plists = PropertyLists()) {
         // Here we create, the dataset id and set its properties before writing data to it.
@@ -1240,14 +1265,16 @@ namespace h5pp::hdf5 {
             //
             if(H5Tis_variable_str(metaDset.h5_type.value())){
                 auto size = H5Sget_select_npoints(metaDset.h5_space.value());
-                std::vector<char *> vdata ((size_t) size); // Allocate pointers for "size" number of strings
+                std::vector<char *> vdata (static_cast<size_t>(size)); // Allocate pointers for "size" number of strings
                 retval = H5Dread(metaDset.h5_dset.value(), metaDset.h5_type.value(), H5S_ALL, metaDset.h5_space.value(), plists.dset_xfer, vdata.data());
                 // HDF5 allocates space for each string
                 // Now vdata contains the whole dataset and we need to put the data into the user-given container.
+
                 if constexpr(std::is_same_v<DataType, std::string>) {
+                    // A vector of strings (vdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
                     for(size_t i = 0; i < vdata.size(); i++) {
-                        data.append(vdata[i]);
+                        if(vdata[i] != nullptr) data.append(vdata[i]);;
                         if(i < vdata.size() - 1) data.append("\n");
                     }
                 } else if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::string> and h5pp::type::sfinae::has_resize_v<DataType>) {
@@ -1640,6 +1667,30 @@ namespace h5pp::hdf5 {
                              tableProps.fieldSizes.value().data(),
                              &data);
         }
+    }
+
+
+
+    inline fs::path copy_file(const hid::h5f & srcFile, const std::string & tgt, FilePermission permission = FilePermission::COLLISION_FAIL, PropertyLists plists = PropertyLists()){
+        // Set default to close srcFile strongly. This avoids dangling data
+        // which is not written to srcFile when moving the srcFile, for instance.
+        auto tgtPath = h5pp::hdf5::createFile(tgt, permission, plists);
+        hid::h5f tgtFile = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.file_access);
+        if(tgtFile < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error("Failed to open target srcFile in read-write mode: " + tgtPath.string());
+        }
+
+        // Copy all the groups in the file root recursively
+        for(const auto & link : getContentsOfLink<H5O_TYPE_UNKNOWN>(srcFile,"/",plists.link_access)){
+            auto retval = H5Ocopy(srcFile,link.c_str(),tgtFile,link.c_str(), H5P_DEFAULT,H5P_DEFAULT);
+            if(retval < 0){
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to copy contents into file: " + tgtPath.string());
+            }
+        }
+        // TODO: Find out how to copy attributes that are written on the root itself
+        return tgtPath;
     }
 
 }

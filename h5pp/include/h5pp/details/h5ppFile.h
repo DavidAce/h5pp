@@ -141,6 +141,20 @@ namespace h5pp {
         [[nodiscard]] std::string          getFilePath() const { return filePath.string(); }
         void                               setFilePermission(h5pp::FilePermission permission_) { permission = permission_; }
 
+        [[maybe_unused]] fs::path copy_file(const std::string & target_path, FilePermission permission = FilePermission::COLLISION_FAIL) const {
+            return h5pp::hdf5::copy_file(openFileHandle(), target_path, permission);
+        }
+
+        void move_file(const std::string & target_path, FilePermission permission = FilePermission::COLLISION_FAIL ){
+            auto new_path = copy_file(target_path, permission);
+            if(fs::exists(new_path)){
+                h5pp::logger::log->debug("Removing file: {}",getFilePath());
+                fs::remove(getFilePath());
+                filePath = new_path;
+            }
+        }
+
+
         /*
          *
          * Functions for logging
