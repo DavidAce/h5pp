@@ -1,4 +1,5 @@
-
+#define CATCH_CONFIG_RUNNER
+#include "catch.hpp"
 #include <h5pp/h5pp.h>
 #include <iostream>
 
@@ -14,18 +15,24 @@ std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
 }
 
 // Store some dummy data to an hdf5 file
+TEST_CASE("Multiline string compared", "[text]") {
+    std::string outputFilename2 = "output/readWriteText.h5";
+    size_t      logLevel2       = 0;
+    h5pp::File  file2(outputFilename2, H5F_ACC_TRUNC | H5F_ACC_RDWR, logLevel2);
+    REQUIRE_THAT(file2.readDataset<std::string>("vecString"), Catch::Matchers::Equals("this is a variable\nlength array"));
+}
 
 int main() {
     std::string outputFilename = "output/readWriteText.h5";
     size_t      logLevel       = 0;
     h5pp::File  file(outputFilename, H5F_ACC_TRUNC | H5F_ACC_RDWR, logLevel);
 
-
     std::vector<std::string> vecString;
     vecString.emplace_back("this is a variable");
     vecString.emplace_back("length array");
     file.writeDataset(vecString, "vecString");
     auto vecStringReadString = file.readDataset<std::string>("vecString");
+
     if(vecStringReadString != "this is a variable\nlength array") throw std::runtime_error(h5pp::format("String mismatch: [{}] != [{}]", vecString, vecStringReadString));
     auto vecstringReadVector = file.readDataset<std::vector<std::string>>("vecString");
     if(vecstringReadVector.size() != vecString.size())
@@ -48,15 +55,12 @@ int main() {
         file.writeDataset(charDummy, {2}, "charDummy_asarray_dims");
     } catch(std::exception &err) { std::cout << "Expected error: " << err.what() << std::endl; }
 
-
     auto stringDummyRead = file.readDataset<std::string>("stringDummy");
     if(stringDummy != stringDummyRead) throw std::runtime_error(h5pp::format("String dummy failed: [{}] != [{}]", stringDummy, stringDummyRead));
-
 
     file.writeDataset(charDummy, "charDummy");
     auto charDummyRead = file.readDataset<std::string>("charDummy");
     if(strcmp(charDummy, charDummyRead.c_str()) != 0) throw std::runtime_error(h5pp::format("Char dummy failed: [{}] != [{}]", charDummy, charDummyRead));
-
 
     file.writeDataset(charDummy, {17}, "charDummy_dims");
     auto charDummy_dims = file.readDataset<std::string>("charDummy_dims");
@@ -66,7 +70,6 @@ int main() {
     auto charDummy_size = file.readDataset<std::string>("charDummy_size");
     if(strcmp(charDummy, charDummy_size.c_str()) != 0) throw std::runtime_error(h5pp::format("Char dummy given size failed: [{}] != [{}]", charDummy, charDummy_size));
 
-
     file.writeDataset("Dummy string literal", "literalDummy");
     auto literalDummy = file.readDataset<std::string>("literalDummy");
     if("Dummy string literal" != literalDummy) throw std::runtime_error(h5pp::format("Literal dummy failed: [{}] != [{}]", "Dummy string literal", literalDummy));
@@ -75,7 +78,6 @@ int main() {
 
     // Write text data in various ways
     file.writeDataset(stringDummy, "stringDummy_chunked", H5D_CHUNKED);
-
 
     file.writeDataset(stringDummy, "stringDummy_extended");
     file.writeDataset("some other dummy text that makes it longer", "stringDummy_extended");
@@ -93,7 +95,6 @@ int main() {
     std::cout << "\nstringAttribute read:\n" << stringAttributeRead << std::endl;
     if(stringAttribute != stringAttributeRead) throw std::runtime_error(h5pp::format("stringAttribute failed: [{}] != [{}]", stringAttribute, stringAttributeRead));
 
-
     std::vector<std::string> multiStringAttribute = {"This is another dummy string attribute", "With many elements"};
     file.writeAttribute(multiStringAttribute, "multiStringAttribute", "vecString");
     auto multiStringAttributeRead = file.readAttribute<std::vector<std::string>>("multiStringAttribute", "vecString");
@@ -105,6 +106,12 @@ int main() {
     for(size_t i = 0; i < multiStringAttribute.size(); i++)
         if(multiStringAttribute[i] != multiStringAttributeRead[i])
             throw std::runtime_error(h5pp::format("Vecstring read element mismatch: [{}] != [{}]", multiStringAttribute[i], multiStringAttributeRead[i]));
+
+    // Test string views
+    std::string_view stringView = "This is a string view";
+    file.writeDataset(stringView, "stringView");
+    auto stringViewRead = file.readDataset<std::string>("stringView");
+    if(stringView != stringViewRead) throw std::runtime_error(h5pp::format("string view mismatch:  [{}] != [{}]", stringView, stringViewRead));
 
     return 0;
 }
