@@ -43,12 +43,12 @@ int main() {
 
     // Try copying the file
     fileA.writeAttribute("hidden_attr","sneaky_attribute","/"); // <-- unable to copy this
-    fileA.copy_file("output/copySwapA_copy.h5",h5pp::FilePermission::REPLACE);
+    fileA.copyFile("output/copySwapA_copy.h5",h5pp::FilePermission::REPLACE);
     h5pp::File fileA_copy("output/copySwapA_copy.h5", h5pp::FilePermission::READONLY, logLevel);
     auto fileA_copy_read = fileA_copy.readDataset<std::string>("groupA/A");
     if(fileA_copy_read  != "A") throw std::runtime_error(h5pp::format("Copy failed: [{}] != A",fileA_copy_read));
     // Try moving the file
-    fileA.move_file("output/copySwapA_move.h5",h5pp::FilePermission::REPLACE);
+    fileA.moveFile("output/copySwapA_move.h5",h5pp::FilePermission::REPLACE);
     h5pp::File fileA_move("output/copySwapA_move.h5", h5pp::FilePermission::READONLY, logLevel);
     auto fileA_move_read = fileA_move.readDataset<std::string>("groupA/A");
     if(fileA_move_read  != "A") throw std::runtime_error(h5pp::format("Move failed: [{}] != A",fileA_move_read));
