@@ -1671,26 +1671,68 @@ namespace h5pp::hdf5 {
 
 
 
-    inline fs::path copy_file(const hid::h5f & srcFile, const std::string & tgt, FilePermission permission = FilePermission::COLLISION_FAIL, PropertyLists plists = PropertyLists()){
-        // Set default to close srcFile strongly. This avoids dangling data
-        // which is not written to srcFile when moving the srcFile, for instance.
+    inline fs::path copyFile(const std::string & src, const std::string & tgt, FilePermission permission = FilePermission::COLLISION_FAIL, const PropertyLists & plists = PropertyLists()){
         auto tgtPath = h5pp::hdf5::createFile(tgt, permission, plists);
+        auto srcPath = fs::absolute(src);
+        if(not fs::exists(srcPath)){
+            h5pp::logger::log->warn(h5pp::format("Could not copy file: source path does not exist [{}]", srcPath.string()));
+            return fs::path();
+        }
+
+        if(tgtPath == srcPath) {
+            h5pp::logger::log->debug(h5pp::format("Could not copy file: source and target paths are the same [{}]", srcPath.string()));
+            return fs::path();
+        }
+
         hid::h5f tgtFile = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.file_access);
+        hid::h5f srcFile = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDONLY, plists.file_access);
+
         if(tgtFile < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to open target srcFile in read-write mode: " + tgtPath.string());
+            throw std::runtime_error(h5pp::format("Could not copy file: failed to open target file in read-write mode [{}]",tgtPath.string()));
         }
+
+        if(srcFile < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Could not copy file: failed to open source file in read-only mode [{}]", srcPath.string()));
+        }
+
 
         // Copy all the groups in the file root recursively
         for(const auto & link : getContentsOfLink<H5O_TYPE_UNKNOWN>(srcFile,"/",plists.link_access)){
             auto retval = H5Ocopy(srcFile,link.c_str(),tgtFile,link.c_str(), H5P_DEFAULT,H5P_DEFAULT);
             if(retval < 0){
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to copy contents into file: " + tgtPath.string());
+                throw std::runtime_error(h5pp::format("Could not copy file: failed to copy contents of source file [{}] into target file [{}] ",srcPath.string(), tgtPath.string()));
             }
         }
-        // TODO: Find out how to copy attributes that are written on the root itself
+        // ... Find out how to copy attributes that are written on the root itself
         return tgtPath;
     }
+
+
+    fs::path moveFile(const std::string & src, const std::string & tgt, FilePermission permission = FilePermission::COLLISION_FAIL, const PropertyLists &plists = PropertyLists()){
+        h5pp::logger::log->debug("Moving file by copy+remove: {}",src);
+        try{
+            auto tgtPath = copyFile(src,tgt, permission, plists); // Returns an empty path on copy failure
+            auto srcPath = fs::absolute(src);
+            if(fs::exists(tgtPath)){
+                h5pp::logger::log->debug("Removing file [{}]",srcPath.string());
+                try{
+                    fs::remove(srcPath);
+                }catch(const std::exception & err){
+                    throw std::runtime_error(h5pp::format("Remove failed. File may be locked: [{}]",srcPath.string()));
+                }
+                return tgtPath;
+            }else{
+                throw std::runtime_error(h5pp::format("Could not copy file [{}] to target [{}]",srcPath.string(), tgtPath.string()));
+            }
+            return tgtPath;
+        }catch(const std::exception & err){
+            h5pp::logger::log->error("Could not move file: [{}]",err.what());
+        }
+        return fs::path();
+    }
+
 
 }
