@@ -141,23 +141,17 @@ namespace h5pp {
         [[nodiscard]] std::string          getFilePath() const { return filePath.string(); }
         void                               setFilePermission(h5pp::FilePermission permission_) { permission = permission_; }
 
-        [[maybe_unused]] fs::path copy_file(const std::string & target_path, FilePermission permission = FilePermission::COLLISION_FAIL) const {
-            return h5pp::hdf5::copy_file(openFileHandle(), target_path, permission);
+        [[maybe_unused]] fs::path copyFile(const std::string & targetPath, const FilePermission & perm = FilePermission::COLLISION_FAIL) const {
+            return h5pp::hdf5::copyFile(getFilePath(), targetPath, perm ,plists);
         }
 
-        void move_file(const std::string & target_path, FilePermission permission = FilePermission::COLLISION_FAIL ){
-            h5pp::logger::log->debug("Moving file by copy+remove: {}",getFilePath());
-            auto new_path = copy_file(target_path, permission);
-            if(fs::exists(new_path)){
-                h5pp::logger::log->debug("Removing file: {}",getFilePath());
-                try{
-                    fs::remove(filePath);
-                }catch(const std::exception & err){
-                    h5pp::logger::log->error("Remove failed. File may be locked: [{}]",getFilePath());
-                }
-                filePath = new_path;
+        [[maybe_unused]] fs::path moveFile(const std::string & targetPath, const FilePermission & perm = FilePermission::COLLISION_FAIL ){
+            auto newPath =  h5pp::hdf5::moveFile(getFilePath(),targetPath, perm,plists);
+            if(fs::exists(newPath)){
+                filePath = newPath;
             }
-        }
+            return newPath;
+         }
 
 
         /*
