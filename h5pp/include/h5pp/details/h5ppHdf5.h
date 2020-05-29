@@ -1729,7 +1729,7 @@ namespace h5pp::hdf5 {
             }
             return tgtPath;
         }catch(const std::exception & err){
-            h5pp::logger::log->error("Could not move file: [{}]",err.what());
+            h5pp::logger::log->error("Could not move file: {}",err.what());
         }
         return fs::path();
     }
