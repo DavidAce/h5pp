@@ -4,7 +4,7 @@ import os, re
 
 class h5ppConan(ConanFile):
     name = "h5pp"
-    version = "1.7.3"
+    version = "1.7.4"
     author = "DavidAce <aceituno@kth.se>"
     topics = ("hdf5", "binary", "storage")
     url = "https://github.com/DavidAce/h5pp"
