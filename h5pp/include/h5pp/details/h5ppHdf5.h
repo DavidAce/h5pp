@@ -1111,8 +1111,6 @@ namespace h5pp::hdf5 {
         if constexpr(ObjType == H5O_TYPE_DATASET) linkType = "dataset";
         if constexpr(ObjType == H5O_TYPE_NAMED_DATATYPE) linkType = "named datatype";
         if constexpr(ObjType == H5O_TYPE_GROUP) linkType = "group";
-        h5pp::logger::log->trace("Getting contents of link: {} | link type: {}", linkName, linkType);
-
         std::vector<std::string> contents;
         herr_t                   err = H5Literate_by_name(file, linkName.c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, internal::collector<ObjType>, &contents, link_access);
         if(err < 0) {
@@ -1703,7 +1701,7 @@ namespace h5pp::hdf5 {
             h5pp::logger::log->trace("Removing file [{}]", srcPath.string());
             try {
                 fs::remove(srcPath);
-            } catch(const std::exception &err) { throw std::runtime_error(h5pp::format("Remove failed. File may be locked [{}] | what(): ", srcPath.string(), err.what())); }
+            } catch(const std::exception &err) { throw std::runtime_error(h5pp::format("Remove failed. File may be locked [{}] | what(): {} ", srcPath.string(), err.what())); }
             return tgtPath;
         } else
             throw std::runtime_error(h5pp::format("Could not copy file [{}] to target [{}]", srcPath.string(), tgt));
