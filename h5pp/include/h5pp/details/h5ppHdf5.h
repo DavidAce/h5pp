@@ -1712,7 +1712,7 @@ namespace h5pp::hdf5 {
 
 
     inline fs::path moveFile(const std::string & src, const std::string & tgt, FilePermission permission = FilePermission::COLLISION_FAIL, const PropertyLists &plists = PropertyLists()){
-        h5pp::logger::log->debug("Moving file by copy+remove: {}",src);
+        h5pp::logger::log->debug("Moving file by copy+remove: [{}] --> [{}]",src,tgt);
         try{
             auto tgtPath = copyFile(src,tgt, permission, plists); // Returns an empty path on copy failure
             auto srcPath = fs::absolute(src);
