@@ -575,7 +575,10 @@ namespace h5pp {
         }
 
         [[nodiscard]] TypeInfo getDatasetTypeInfo(std::string_view dsetPath) const {
-            return h5pp::hdf5::getDatasetTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.link_access);
+            return h5pp::hdf5::getTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.link_access);
+        }
+        [[nodiscard]] TableTypeInfo getTableTypeInfo(std::string_view tablePath) const {
+            return h5pp::hdf5::getTableTypeInfo(openFileHandle(), tablePath, std::nullopt, plists.link_access);
         }
 
         [[nodiscard]] TypeInfo getAttributeTypeInfo(std::string_view linkName, std::string_view attrName) const {

@@ -55,5 +55,7 @@ int main() {
                   << std::endl;
     }
 
+    auto info = file.getTableTypeInfo("somegroup/particleTable");
+
     return 0;
 }

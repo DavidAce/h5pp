@@ -575,12 +575,18 @@ namespace h5pp::hdf5 {
         if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_DOUBLE)) return getCppType<h5pp::type::compound::H5T_SCALAR3<double>>();
         if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_LDOUBLE)) return getCppType<h5pp::type::compound::H5T_SCALAR3<long double>>();
         if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_FLOAT)) return getCppType<h5pp::type::compound::H5T_SCALAR3<float>>();
-        auto        buf_size = H5Iget_name(type, nullptr, 0);
-        std::string name;
-        name.resize((std::string::size_type) buf_size + 1);
-        H5Iget_name(type, name.data(), (size_t) buf_size + 1);
-        H5Eprint(H5E_DEFAULT, stderr);
-        h5pp::logger::log->debug("No C++ type match for HDF5 type [{}]", name);
+        auto buf_size = H5Iget_name(type, nullptr, 0);
+        h5pp::logger::log->debug("buf_size {}", buf_size);
+        if(buf_size <= 0)
+            h5pp::logger::log->debug("No C++ type match for HDF5 type");
+        else {
+            std::string name;
+            name.resize(static_cast<std::string::size_type>(buf_size) + 1);
+            H5Iget_name(type, name.data(), static_cast<size_t>(buf_size) + 1);
+            H5Eprint(H5E_DEFAULT, stderr);
+            h5pp::logger::log->debug("No C++ type match for HDF5 type [{}]", name);
+        }
+
         return getCppType<std::nullopt_t>();
     }
 
@@ -605,9 +611,39 @@ namespace h5pp::hdf5 {
         return getTypeInfo(dset_path, std::nullopt, H5Dget_space(dataset), H5Dget_type(dataset));
     }
 
-    inline TypeInfo getDatasetTypeInfo(const hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
+    inline TypeInfo getTypeInfo(const hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
         auto dataset = openLink<hid::h5d>(file, dsetName, dsetExists, dset_access);
         return getTypeInfo(dataset);
+    }
+
+    inline TableTypeInfo
+        getTableTypeInfo(const hid::h5f &file, std::string_view tableName, std::optional<bool> tableExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
+        auto table_link = openLink<hid::h5d>(file, tableName, tableExists, dset_access);
+        TableTypeInfo table_info;
+        hsize_t       nfields, nrecords;
+        H5TBget_table_info(file, util::safe_str(tableName).c_str(), &nfields, &nrecords);
+
+        std::vector<size_t> field_sizes(nfields);
+        std::vector<size_t> field_offsets(nfields);
+        size_t              table_bytes;
+        char **             field_names = new char *[nfields];
+        for(size_t i = 0; i < nfields; i++) field_names[i] = new char[255];
+        H5TBget_field_info(file, util::safe_str(tableName).c_str(), field_names, field_sizes.data(), field_offsets.data(), &table_bytes);
+
+        std::vector<std::string> field_names_vec;
+        for(size_t i = 0; i < nfields; i++) field_names_vec.emplace_back(field_names[i]);
+        /* release array of char arrays */
+        for(size_t i = 0; i < nfields; i++) delete field_names[i];
+        delete[] field_names;
+        // Copy data to TableTypeInfo object
+        table_info.h5_type        = H5Dget_type(table_link);
+        table_info.nfields        = nfields;
+        table_info.nrecords       = nrecords;
+        table_info.bytesPerRecord = table_bytes;
+        table_info.fieldSizes     = field_sizes;
+        table_info.fieldOffsets   = field_offsets;
+        table_info.fieldNames     = field_names_vec;
+        return table_info;
     }
 
     inline TypeInfo getTypeInfo(const hid::h5a &attribute) {
@@ -1481,7 +1517,6 @@ namespace h5pp::hdf5 {
     inline void createTable(const hid::h5f &file, const TableProperties &tableProps, const PropertyLists &plists = PropertyLists()) {
         h5pp::logger::log->debug(
             "Creating table [{}] | num fields {} | record size {} bytes", tableProps.tableName.value(), tableProps.NFIELDS.value(), tableProps.entrySize.value());
-
         createGroup(file, tableProps.groupName.value(), std::nullopt, plists);
 
         if(checkIfLinkExists(file, tableProps.tableName.value(), std::nullopt, plists.link_access)) {
@@ -1510,6 +1545,9 @@ namespace h5pp::hdf5 {
                        (int) tableProps.compressionLevel.value(),
                        nullptr);
         h5pp::logger::log->trace("Successfully created table [{}]", tableProps.tableName.value());
+        //        h5pp::logger::log->trace("Committing new named table type [{}]", tableProps.tableTitle.value());
+        //        auto table = openLink<hid::h5d>(file,util::safe_str(tableProps.tableName.value()).c_str(),true,plists.link_access);
+        //        H5Tcommit(table, util::safe_str(tableProps.tableTitle.value()).c_str(),tableProps.entryType, H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
     }
 
     template<typename DataType>
