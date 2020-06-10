@@ -17,15 +17,15 @@ target_link_libraries(MyProjectExecutable PRIVATE h5pp::h5pp)
 #   sudo apt install libhdf5-dev libeigen3-dev libspdlog-dev
 
 find_package(HDF5 COMPONENTS C HL REQUIRED)
-target_link_libraries(MyProjectExecutable PUBLIC ${HDF5_LIBRARIES})
-target_include_directories(MyProjectExecutable SYSTEM PUBLIC ${HDF5_INCLUDE_DIRS})
+target_link_libraries(MyProjectExecutable PRIVATE ${HDF5_LIBRARIES})
+target_include_directories(MyProjectExecutable SYSTEM PRIVATE ${HDF5_INCLUDE_DIRS})
 
 
 find_package(Eigen3 3.3.4 REQUIRED)
-target_include_directories(MyProjectExecutable PUBLIC Eigen3::Eigen})
+target_include_directories(MyProjectExecutable PRIVATE Eigen3::Eigen})
 
 find_package(spdlog)
-target_link_libraries(MyProjectExecutable PUBLIC spdlog::spdlog)
+target_link_libraries(MyProjectExecutable PRIVATE spdlog::spdlog)
 
 
 # Note:

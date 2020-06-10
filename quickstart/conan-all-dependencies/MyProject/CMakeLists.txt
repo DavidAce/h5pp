@@ -24,4 +24,4 @@ conan_cmake_run(
 
 
 message("CONAN TARGETS: ${CONAN_TARGETS}")
-target_link_libraries(MyProjectExecutable INTERFACE ${CONAN_TARGETS})
+target_link_libraries(MyProjectExecutable PRIVATE ${CONAN_TARGETS})
