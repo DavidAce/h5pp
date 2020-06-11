@@ -38,15 +38,25 @@ namespace h5pp {
      * \brief Collects type information about existing tables
      */
     struct TableTypeInfo {
-        std::optional<size_t>                   nfields;
-        std::optional<size_t>                   nrecords;
+        std::optional<size_t>                   numFields;
+        std::optional<size_t>                   numRecords;
         std::optional<size_t>                   recordBytes;
         std::optional<std::vector<std::string>> fieldNames;
         std::optional<std::vector<size_t>>      fieldSizes;
         std::optional<std::vector<size_t>>      fieldOffsets;
-        std::optional<std::vector<hid::h5t>>    h5_field_types;
-        std::optional<hid::h5o>                 h5_table_link;
-        std::optional<hid::h5t>                 h5_table_type;
+        std::optional<std::vector<hid::h5t>>    fieldTypes;
+        std::optional<std::string>              tableName;
+        std::optional<hid::h5f>                 tableFile;
+        std::optional<hid::h5g>                 tableGroup;
+        std::optional<hid::h5d>                 tableDset;
+        std::optional<hid::h5t>                 tableType;
+        std::optional<size_t>                   compressionLevel;
+        void assertReadReady() const {
+//            if(not )
+        }
+        void assertWriteReady() const {
+//            if(not )
+        }
     };
 
 }

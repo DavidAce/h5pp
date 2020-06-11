@@ -535,12 +535,19 @@ namespace h5pp {
             auto     tableProps = h5pp::scan::getTableProperties_write(file, data, tableName, plists);
             h5pp::hdf5::appendTableEntries(file, data, tableProps);
         }
+        template<typename h5x_src,
+            typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
+        void addTableEntriesFrom(const h5x_src & srcLocation, std::string_view srcTableName, std::string_view tgtTableName, TableSelection tableSelection) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
+            h5pp::hdf5::addTableEntriesFrom(srcLocation,srcTableName,openFileHandle(),tgtTableName, tableSelection,plists);
+        }
 
-//        void appendTableEntries(const hid::h5d &otherTable, std::string_view tableName, TableSelection tableSelection) {
-//            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
-//            hid::h5f file       = openFileHandle();
-//            h5pp::hdf5::appendTableEntries(file, otherTable, tableSelection);
-//        }
+        template<typename h5x_src,
+            typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
+        void addTableEntriesFrom(const h5x_src & srcLocation, std::string_view srcTableName, std::string_view tgtTableName, hsize_t srcStartEntry, hsize_t tgtStartEntry, hsize_t numEntries) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
+            h5pp::hdf5::addTableEntriesFrom(srcLocation,srcTableName,openFileHandle(),tgtTableName, srcStartEntry,tgtStartEntry,numEntries,plists);
+        }
 
 
         template<typename DataType>

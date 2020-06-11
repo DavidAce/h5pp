@@ -55,12 +55,13 @@ int main() {
                   << std::endl;
     }
 
+
+    // Try copying a table entry to another file
     auto info = file.getTableInfo("somegroup/particleTable");
     h5pp::File file2("output/readWriteTablesCopy.h5", h5pp::FilePermission::REPLACE, 0);
 
     if(not file2.linkExists("somegroup/particleTable"))
-        file2.createTable(info.h5_table_type.value(),"somegroup/particleTable", "particleTable");
-
-    file2.appendTableEntries(info.h5_table_link.value(), "somegroup/ParticleTable", h5pp::TableSelection::LAST);
+        file2.createTable(info.tableType.value(),"somegroup/particleTable", "particleTable");
+    file2.addTableEntriesFrom(file.openFileHandle(),"somegroup/particleTable", "somegroup/particleTable",h5pp::TableSelection::LAST);
     return 0;
 }

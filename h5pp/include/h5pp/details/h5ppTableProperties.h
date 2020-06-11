@@ -9,12 +9,10 @@
 namespace h5pp {
     class TableProperties {
         public:
-        hid::h5t                   entryType;
-        std::optional<std::string> tableTitle;
-        std::optional<std::string> tableName;
-        //        std::optional<bool>                      tableExists;
-        std::optional<std::string> groupName;
-        //        std::optional<bool>                      groupExists;
+        hid::h5t                                entryType;
+        std::optional<std::string>              tableTitle;
+        std::optional<std::string>              tableName;
+        std::optional<std::string>              groupName;
         std::optional<hsize_t>                  NFIELDS;
         std::optional<hsize_t>                  NRECORDS;
         std::optional<hsize_t>                  chunkSize;

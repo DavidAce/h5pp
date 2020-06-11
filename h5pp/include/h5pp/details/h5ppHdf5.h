@@ -1,10 +1,10 @@
 #pragma once
 #include "h5ppEigen.h"
+#include "h5ppEnums.h"
 #include "h5ppFilesystem.h"
 #include "h5ppHyperSlab.h"
 #include "h5ppLogger.h"
 #include "h5ppMeta.h"
-#include "h5ppEnums.h"
 #include "h5ppPropertyLists.h"
 #include "h5ppTableProperties.h"
 #include "h5ppTypeInfo.h"
@@ -341,7 +341,7 @@ namespace h5pp::hdf5 {
         checkIfLinkExists(const h5x &loc, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
         if(linkExists) return linkExists.value();
         for(const auto &subPath : pathCumulativeSplit(linkName, "/")) {
-            int exists = H5Lexists(loc, std::string(subPath).c_str(), link_access);
+            int exists = H5Lexists(loc, util::safe_str(subPath).c_str(), link_access);
             if(exists == 0) {
                 h5pp::logger::log->trace("Checking if link exists [{}] ... false", linkName);
                 return false;
@@ -618,37 +618,40 @@ namespace h5pp::hdf5 {
 
     template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
     inline TableTypeInfo getTableTypeInfo(const h5x &loc, std::string_view tableName, std::optional<bool> tableExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
-        auto          table_link = openLink<hid::h5o>(loc, tableName, tableExists, dset_access);
-        hid::h5t      table_type = H5Dget_type(table_link);
-        TableTypeInfo table_info;
-        hsize_t       nfields, nrecords;
-        H5TBget_table_info(loc, util::safe_str(tableName).c_str(), &nfields, &nrecords);
+        TableTypeInfo info;
+        if constexpr (std::is_same_v<h5x,hid::h5g>) info.tableGroup = loc;
+        info.tableName = util::safe_str(tableName);
+        info.tableFile = H5Iget_file_id(loc);
+        info.tableDset = openLink<hid::h5d>(loc, tableName, tableExists, dset_access);
+        info.tableType = H5Dget_type(info.tableDset.value());
 
-        std::vector<size_t> field_sizes(nfields);
-        std::vector<size_t> field_offsets(nfields);
-        size_t              table_bytes;
-        char **             field_names = new char *[nfields];
-        for(size_t i = 0; i < nfields; i++) field_names[i] = new char[255];
-        H5TBget_field_info(loc, util::safe_str(tableName).c_str(), field_names, field_sizes.data(), field_offsets.data(), &table_bytes);
+        // Alloate temporaries
+        hsize_t             n_fields, n_records;
+        H5TBget_table_info(loc, util::safe_str(tableName).c_str(), &n_fields, &n_records);
+        std::vector<size_t> field_sizes(n_fields);
+        std::vector<size_t> field_offsets(n_fields);
+        size_t              record_bytes;
+        char **             field_names = new char *[n_fields];
+        for(size_t i = 0; i < n_fields; i++) field_names[i] = new char[255];
+        H5TBget_field_info(loc, util::safe_str(tableName).c_str(), field_names, field_sizes.data(), field_offsets.data(), &record_bytes);
 
-        std::vector<std::string> field_names_vec(nfields);
-        std::vector<hid::h5t>    field_types;
-        for(size_t i = 0; i < nfields; i++) field_names_vec[i] = field_names[i];
-        for(size_t i = 0; i < nfields; i++) field_types[i] = H5Tget_member_type(table_link, i);
+        // Copy results
+        std::vector<std::string> field_names_vec(n_fields);
+        std::vector<hid::h5t>    field_types(n_fields);
+        for(size_t i = 0; i < n_fields; i++) field_names_vec[i] = field_names[i];
+        for(size_t i = 0; i < n_fields; i++) field_types[i] = H5Tget_member_type(info.tableType.value(), static_cast<unsigned>(i));
+        info.numFields    = n_fields;
+        info.numRecords   = n_records;
+        info.recordBytes  = record_bytes;
+        info.fieldSizes   = field_sizes;
+        info.fieldOffsets = field_offsets;
+        info.fieldTypes   = field_types;
+        info.fieldNames   = field_names_vec;
+        return info;
+
         /* release array of char arrays */
-        for(size_t i = 0; i < nfields; i++) delete field_names[i];
+        for(size_t i = 0; i < n_fields; i++) delete field_names[i];
         delete[] field_names;
-        // Copy data to TableTypeInfo object
-        table_info.nfields        = nfields;
-        table_info.nrecords       = nrecords;
-        table_info.recordBytes    = table_bytes;
-        table_info.fieldSizes     = field_sizes;
-        table_info.fieldOffsets   = field_offsets;
-        table_info.h5_field_types = field_types;
-        table_info.fieldNames     = field_names_vec;
-        table_info.h5_table_link  = table_link;
-        table_info.h5_table_type  = table_type;
-        return table_info;
     }
 
     inline TypeInfo getTypeInfo(const hid::h5a &attribute) {
@@ -1601,41 +1604,128 @@ namespace h5pp::hdf5 {
         }
     }
 
+    inline void addTableEntriesFrom(const TableTypeInfo &srcInfo, const TableTypeInfo &tgtInfo, hsize_t srcStartEntry, hsize_t tgtStartEntry, hsize_t numEntries) {
+        srcInfo.assertReadReady();
+        tgtInfo.assertWriteReady();
+        // Sanity checks for table types
+        if(srcInfo.tableType.value() != tgtInfo.tableType.value())
+            throw std::runtime_error(h5pp::format("Failed to add table entries: table type mismatch"));
+        if(srcInfo.recordBytes.value() != tgtInfo.recordBytes.value())
+            throw std::runtime_error(
+                h5pp::format("Failed to add table entries: table entry byte size mismatch src {} != tgt {}", srcInfo.recordBytes.value(), tgtInfo.recordBytes.value()));
+        if(srcInfo.fieldSizes.value() != tgtInfo.fieldSizes.value())
+            throw std::runtime_error(
+                h5pp::format("Failed to add table entries: table field sizes mismatch src {} != tgt {}", srcInfo.fieldSizes.value(), tgtInfo.fieldSizes.value()));
+        if(srcInfo.fieldOffsets.value() != tgtInfo.fieldOffsets.value())
+            throw std::runtime_error(
+                h5pp::format("Failed to add table entries: table field offsets mismatch src {} != tgt {}", srcInfo.fieldOffsets.value(), tgtInfo.fieldOffsets.value()));
+
+        // Sanity check for entry ranges
+        if(srcInfo.numRecords.value() < srcStartEntry + numEntries)
+            throw std::runtime_error(h5pp::format("Failed to add table entries: Requeted entries out of bound: src table nrecords {} | src table start entry {} | num entries {}",
+                                                  srcInfo.numRecords.value(),
+                                                  srcStartEntry,
+                                                  numEntries));
+
+        // The locations may be files or groups, here we
+        // make sure that the locations are what the user intended,
+        // so that the given filename is relative to the correct
+        // location ID.
+        // Note that these hid_t will not increment the reference
+        // counters, so we don't need to release them.
+        hid_t srcLoc = srcInfo.tableFile.value();
+        hid_t tgtLoc = tgtInfo.tableFile.value();
+        if(srcInfo.tableGroup) srcLoc = srcInfo.tableGroup.value();
+        if(tgtInfo.tableGroup) tgtLoc = tgtInfo.tableGroup.value();
+
+        if(srcInfo.tableFile.value() == tgtInfo.tableFile.value()) {
+            h5pp::logger::log->debug("adding records to table [{}] from table [{}] | src start entry {} | tgt start entry {} | num entries {} | entry size {}",
+                                     srcInfo.tableName.value(),
+                                     tgtInfo.tableName.value(),
+                                     srcStartEntry,
+                                     tgtStartEntry,
+                                     numEntries,
+                                     tgtInfo.recordBytes.value());
+            H5TBadd_records_from(
+                srcLoc, util::safe_str(srcInfo.tableName.value()).c_str(), srcStartEntry, numEntries, util::safe_str(tgtInfo.tableName.value()).c_str(), tgtStartEntry);
+
+        } else {
+            // If the locations are on different files we need to make a temporary
+            h5pp::logger::log->debug("adding records to table [{}] from table [{}] on different file | src start entry {} | tgt start entry {} | num entries {} | entry size {}",
+                                     srcInfo.tableName.value(),
+                                     tgtInfo.tableName.value(),
+                                     srcStartEntry,
+                                     tgtStartEntry,
+                                     numEntries,
+                                     tgtInfo.recordBytes.value());
+            std::vector<std::byte> data(numEntries * tgtInfo.recordBytes.value());
+            H5TBread_records(srcLoc,
+                             util::safe_str(srcInfo.tableName.value()).c_str(),
+                             srcStartEntry,
+                             numEntries,
+                             srcInfo.recordBytes.value(),
+                             srcInfo.fieldOffsets.value().data(),
+                             srcInfo.fieldSizes.value().data(),
+                             data.data());
+
+            H5TBappend_records(tgtLoc,
+                               util::safe_str(tgtInfo.tableName.value()).c_str(),
+                               numEntries,
+                               tgtInfo.recordBytes.value(),
+                               tgtInfo.fieldOffsets.value().data(),
+                               tgtInfo.fieldSizes.value().data(),
+                               data.data());
+        }
+    }
+
     template<typename h5x_src,
              typename h5x_tgt,
              typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>,
              typename = std::enable_if_t<std::is_same_v<h5x_tgt, hid::h5f> or std::is_same_v<h5x_tgt, hid::h5g>>>
-    inline void appendTableEntries(const h5x_src &      srcLocation,
-                                   std::string_view     srcTableName,
-                                   const h5x_tgt &      tgtLocation,
-                                   std::string_view     tgtTableName,
-                                   size_t startEntry,
-                                   size_t numEntries,
-                                   const PropertyLists &plists = PropertyLists()) {
+    inline void addTableEntriesFrom(const h5x_src &      srcLocation,
+                                    std::string_view     srcTableName,
+                                    const h5x_tgt &      tgtLocation,
+                                    std::string_view     tgtTableName,
+                                    hsize_t               srcStartEntry,
+                                    hsize_t               tgtStartEntry,
+                                    hsize_t               numEntries,
+                                    const PropertyLists &plists = PropertyLists()) {
         auto srcInfo = getTableTypeInfo(srcLocation, srcTableName, plists.link_access);
         auto tgtInfo = getTableTypeInfo(tgtLocation, tgtTableName, plists.link_access);
-        if(srcInfo.h5_table_type != tgtInfo.h5_table_type) throw std::runtime_error("Table type mismatch");
-        if(srcInfo.recordBytes != tgtInfo.recordBytes) throw std::runtime_error("Table size mismatch");
+        addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
+    }
 
-
-
-        std::vector<std::byte> data(numEntries * tgtInfo.recordBytes.value());
-        H5TBread_records(srcLocation,
-                         util::safe_str(srcTableName).c_str(),
-                         startEntry,
-                         numEntries,
-                         srcInfo.recordBytes.value(),
-                         srcInfo.fieldOffsets.value().data(),
-                         srcInfo.fieldSizes.value().data(),
-                         data.data());
-
-        H5TBappend_records(tgtLocation,
-                           util::safe_str(tgtTableName).c_str(),
-                           numEntries,
-                           tgtInfo.recordBytes.value(),
-                           tgtInfo.fieldOffsets.value().data(),
-                           srcInfo.fieldSizes.value().data(),
-                           data.data());
+    template<typename h5x_src,
+             typename h5x_tgt,
+             typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>,
+             typename = std::enable_if_t<std::is_same_v<h5x_tgt, hid::h5f> or std::is_same_v<h5x_tgt, hid::h5g>>>
+    inline void addTableEntriesFrom(const h5x_src &      srcLocation,
+                                    std::string_view     srcTableName,
+                                    const h5x_tgt &      tgtLocation,
+                                    std::string_view     tgtTableName,
+                                    h5pp::TableSelection tableSelection,
+                                    const PropertyLists &plists = PropertyLists()) {
+        auto   srcInfo       = getTableTypeInfo(srcLocation, srcTableName);
+        auto   tgtInfo       = getTableTypeInfo(tgtLocation, tgtTableName);
+        hsize_t srcStartEntry = 0;
+        hsize_t tgtStartEntry = 0;
+        hsize_t numEntries    = 0;
+        switch(tableSelection) {
+            case h5pp::TableSelection::ALL: numEntries = srcInfo.numRecords.value(); break;
+            case h5pp::TableSelection::FIRST:
+                numEntries    = 1;
+                if(tgtInfo.numRecords.value() > 0)
+                    tgtStartEntry = tgtInfo.numRecords.value() - 1;
+                break;
+            case h5pp::TableSelection::LAST:
+                numEntries    = 1;
+                if(tgtInfo.numRecords.value() > 0)
+                    tgtStartEntry = tgtInfo.numRecords.value() - 1;
+                if(srcInfo.numRecords.value() > 0)
+                    srcStartEntry = srcInfo.numRecords.value() - 1;
+                break;
+        }
+        addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
     }
 
     template<typename DataType>
