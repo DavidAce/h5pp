@@ -536,11 +536,12 @@ namespace h5pp {
             h5pp::hdf5::appendTableEntries(file, data, tableProps);
         }
 
+
+
         template<typename h5x_src,
             typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
-        void addTableEntriesFrom(const h5x_src & srcLocation, std::string_view srcTableName, std::string_view tgtTableName, TableSelection tableSelection) {
+        void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, std::string_view tgtTableName, TableSelection tableSelection) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
-            auto   srcInfo       = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt);
             auto   tgtInfo       = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
             hsize_t srcStartEntry = 0;
             hsize_t tgtStartEntry = 0;
@@ -565,11 +566,24 @@ namespace h5pp {
 
         template<typename h5x_src,
             typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
+        void addTableEntriesFrom(const h5x_src & srcLocation, std::string_view srcTableName, std::string_view tgtTableName, TableSelection tableSelection) {
+            auto   srcInfo       = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt);
+            addTableEntriesFrom(srcInfo,tgtTableName, tableSelection);
+        }
+
+        template<typename h5x_src,
+            typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
         void addTableEntriesFrom(const h5x_src & srcLocation, std::string_view srcTableName, std::string_view tgtTableName, hsize_t srcStartEntry, hsize_t tgtStartEntry, hsize_t numEntries) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
             h5pp::hdf5::addTableEntriesFrom(srcLocation,srcTableName,openFileHandle(),tgtTableName, srcStartEntry,tgtStartEntry,numEntries,plists);
         }
 
+        template<typename h5x_src,
+            typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
+        void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, std::string_view tgtTableName, hsize_t srcStartEntry, hsize_t tgtStartEntry, hsize_t numEntries) {
+            auto   tgtInfo       = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt,plists);
+            h5pp::hdf5::addTableEntriesFrom(srcInfo,tgtInfo, srcStartEntry,tgtStartEntry,numEntries);
+        }
 
         template<typename DataType>
         void readTableEntries(DataType &data, std::string_view tableName, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt) const {
