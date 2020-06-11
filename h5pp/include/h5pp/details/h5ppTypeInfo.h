@@ -18,6 +18,7 @@ namespace h5pp {
         std::optional<int>                  h5_rank;
         std::optional<std::vector<hsize_t>> h5_dims;
         std::optional<hid::h5t>             h5_type;
+        std::optional<hid::h5o>             h5_link;
 
         [[nodiscard]] std::string string() {
             std::string msg;
@@ -37,13 +38,15 @@ namespace h5pp {
      * \brief Collects type information about existing tables
      */
     struct TableTypeInfo {
-        std::optional<hid::h5t>                 h5_type;
         std::optional<size_t>                   nfields;
         std::optional<size_t>                   nrecords;
-        std::optional<size_t>                   bytesPerRecord;
+        std::optional<size_t>                   recordBytes;
         std::optional<std::vector<std::string>> fieldNames;
         std::optional<std::vector<size_t>>      fieldSizes;
         std::optional<std::vector<size_t>>      fieldOffsets;
+        std::optional<std::vector<hid::h5t>>    h5_field_types;
+        std::optional<hid::h5o>                 h5_table_link;
+        std::optional<hid::h5t>                 h5_table_type;
     };
 
 }
