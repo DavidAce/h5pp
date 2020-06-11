@@ -9,7 +9,6 @@
 #include "h5ppHid.h"
 #include "h5ppLogger.h"
 #include "h5ppOptional.h"
-#include "h5ppPermissions.h"
 #include "h5ppPropertyLists.h"
 #include "h5ppPtrWrapper.h"
 #include "h5ppScan.h"
@@ -140,6 +139,15 @@ namespace h5pp {
         [[nodiscard]] std::string          getFileName() const { return filePath.filename().string(); }
         [[nodiscard]] std::string          getFilePath() const { return filePath.string(); }
         void                               setFilePermission(h5pp::FilePermission permission_) { permission = permission_; }
+
+
+        void setDriver_sec2(){H5Pset_fapl_sec2(plists.file_access);}
+        void setDriver_stdio(){H5Pset_fapl_stdio(plists.file_access);}
+        void setDriver_core(size_t bytesPerMalloc=10240000, bool writeOnClose = true){H5Pset_fapl_core(plists.file_access,bytesPerMalloc,static_cast<hbool_t>(writeOnClose));}
+        #ifdef H5_HAVE_PARALLEL
+        void setDriver_mpio(MPI_Comm comm, MPI_Info info){H5Pset_fapl_mpio(plists.file_access,comm,info);}
+        #endif
+
 
         [[maybe_unused]] fs::path copyFile(const std::string & targetPath, const FilePermission & perm = FilePermission::COLLISION_FAIL) const {
             return h5pp::hdf5::copyFile(getFilePath(), targetPath, perm ,plists);
@@ -528,6 +536,13 @@ namespace h5pp {
             h5pp::hdf5::appendTableEntries(file, data, tableProps);
         }
 
+//        void appendTableEntries(const hid::h5d &otherTable, std::string_view tableName, TableSelection tableSelection) {
+//            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
+//            hid::h5f file       = openFileHandle();
+//            h5pp::hdf5::appendTableEntries(file, otherTable, tableSelection);
+//        }
+
+
         template<typename DataType>
         void readTableEntries(DataType &data, std::string_view tableName, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt) const {
             hid::h5f file       = openFileHandle();
@@ -577,7 +592,7 @@ namespace h5pp {
         [[nodiscard]] TypeInfo getDatasetTypeInfo(std::string_view dsetPath) const {
             return h5pp::hdf5::getTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.link_access);
         }
-        [[nodiscard]] TableTypeInfo getTableTypeInfo(std::string_view tablePath) const {
+        [[nodiscard]] TableTypeInfo getTableInfo(std::string_view tablePath) const {
             return h5pp::hdf5::getTableTypeInfo(openFileHandle(), tablePath, std::nullopt, plists.link_access);
         }
 
