@@ -522,30 +522,30 @@ namespace h5pp {
          *
          */
 
-        void createTable(const hid::h5t &                  h5_entry_type,
-                         std::string_view                  tableName,
-                         std::string_view                  tableTitle,
-                         const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
-                         const std::optional<unsigned int> desiredCompressionLevel = std::nullopt
+        TableInfo createTable(const hid::h5t &                  h5_entry_type,
+                              std::string_view                  tableName,
+                              std::string_view                  tableTitle,
+                              const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                              const std::optional<unsigned int> desiredCompressionLevel = std::nullopt
 
         ) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
-            hid::h5f file       = openFileHandle();
-            auto     tableProps = h5pp::scan::newTableInfo(h5_entry_type, tableName, tableTitle, desiredChunkSize, desiredCompressionLevel);
-            h5pp::hdf5::createTable(file, tableProps, plists);
+            auto tableInfo = h5pp::scan::newTableInfo(h5_entry_type, tableName, tableTitle, desiredChunkSize, desiredCompressionLevel);
+            h5pp::hdf5::createTable(openFileHandle(), tableInfo, plists);
+            return tableInfo;
         }
 
         template<typename DataType>
-        void appendTableEntries(const DataType &data, std::string_view tableName) {
+        TableInfo appendTableEntries(const DataType &data, std::string_view tableName) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
-            hid::h5f file       = openFileHandle();
-            auto     tableProps = h5pp::scan::getTableInfo(file, tableName, std::nullopt, plists);
-            h5pp::hdf5::appendTableEntries(file, data, tableProps);
+            auto info = h5pp::scan::getTableInfo(openFileHandle(), tableName, std::nullopt, plists);
+            if(not info.tableExists.value()) throw std::runtime_error(h5pp::format("Cannot append to table [{}]: it does not exist", tableName));
+            h5pp::hdf5::appendTableEntries(data, info);
+            return info;
         }
 
-        void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, std::string_view tgtTableName, TableSelection tableSelection) {
+        void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, h5pp::TableInfo &tgtInfo, TableSelection tableSelection) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
-            auto    tgtInfo       = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
             hsize_t srcStartEntry = 0;
             hsize_t tgtStartEntry = 0;
             hsize_t numEntries    = 0;
@@ -564,34 +564,64 @@ namespace h5pp {
             h5pp::hdf5::addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
         }
 
-        template<typename h5x_src, typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
-        void addTableEntriesFrom(const h5x_src &srcLocation, std::string_view srcTableName, std::string_view tgtTableName, TableSelection tableSelection) {
-            auto srcInfo = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt);
-            addTableEntriesFrom(srcInfo, tgtTableName, tableSelection);
-        }
-
-        template<typename h5x_src, typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
-        void addTableEntriesFrom(const h5x_src &  srcLocation,
-                                 std::string_view srcTableName,
-                                 std::string_view tgtTableName,
-                                 hsize_t          srcStartEntry,
-                                 hsize_t          tgtStartEntry,
-                                 hsize_t          numEntries) {
-            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
-            h5pp::hdf5::addTableEntriesFrom(srcLocation, srcTableName, openFileHandle(), tgtTableName, srcStartEntry, tgtStartEntry, numEntries, plists);
-        }
-
-        template<typename h5x_src, typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
-        void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, std::string_view tgtTableName, hsize_t srcStartEntry, hsize_t tgtStartEntry, hsize_t numEntries) {
+        TableInfo addTableEntriesFrom(const h5pp::TableInfo &           srcInfo,
+                                      std::string_view                  tgtTableName,
+                                      TableSelection                    tableSelection,
+                                      const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                                      const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+            if(not srcInfo.tableExists) throw std::runtime_error("Source table info has not been initialized");
+            if(not srcInfo.tableExists.value()) throw std::runtime_error("Source table does not exist");
             auto tgtInfo = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
+            if(not tgtInfo.tableExists.value())
+                tgtInfo = createTable(srcInfo.tableType.value(), tgtTableName, srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
+            addTableEntriesFrom(srcInfo, tgtInfo, tableSelection);
+            return tgtInfo;
+        }
+
+        template<typename h5x_src, typename = h5pp::type::sfinae::is_h5_loc<h5x_src>>
+        TableInfo addTableEntriesFrom(const h5x_src &                   srcLocation,
+                                      std::string_view                  srcTableName,
+                                      std::string_view                  tgtTableName,
+                                      TableSelection                    tableSelection,
+                                      const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                                      const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+            auto srcInfo = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt, plists);
+            return addTableEntriesFrom(srcInfo, tgtTableName, tableSelection, desiredChunkSize, desiredCompressionLevel);
+        }
+
+        template<typename h5x_src, typename = h5pp::type::sfinae::is_h5_loc<h5x_src>>
+        TableInfo addTableEntriesFrom(const h5pp::TableInfo &           srcInfo,
+                                      std::string_view                  tgtTableName,
+                                      hsize_t                           srcStartEntry,
+                                      hsize_t                           tgtStartEntry,
+                                      hsize_t                           numEntries,
+                                      const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                                      const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+            auto tgtInfo = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
+            if(not tgtInfo.tableExists.value())
+                tgtInfo = createTable(srcInfo.tableType.value(), tgtTableName, srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
             h5pp::hdf5::addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
+            return tgtInfo;
+        }
+
+        template<typename h5x_src, typename = h5pp::type::sfinae::is_h5_loc<h5x_src>>
+        TableInfo addTableEntriesFrom(const h5x_src &                   srcLocation,
+                                      std::string_view                  srcTableName,
+                                      std::string_view                  tgtTableName,
+                                      hsize_t                           srcStartIdx,
+                                      hsize_t                           tgtStartIdx,
+                                      hsize_t                           numRecords,
+                                      const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                                      const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
+            auto srcInfo = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt, plists);
+            return addTableEntriesFrom(srcInfo, tgtTableName, srcStartIdx, tgtStartIdx, numRecords, desiredChunkSize,desiredCompressionLevel);
         }
 
         template<typename DataType>
         void readTableEntries(DataType &data, std::string_view tableName, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt) const {
-            hid::h5f file       = openFileHandle();
-            auto     tableProps = h5pp::scan::getTableInfo(file, tableName, std::nullopt, plists);
-            h5pp::hdf5::readTableEntries(file, data, tableProps, startEntry, numEntries);
+            auto info = h5pp::scan::getTableInfo(openFileHandle(), tableName, std::nullopt, plists);
+            h5pp::hdf5::readTableEntries(data, info, startEntry, numEntries);
         }
 
         template<typename DataType>

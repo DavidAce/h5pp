@@ -149,10 +149,8 @@ namespace h5pp::hid {
             if(valid()) {
                 if(H5Iget_ref(val) > 1)
                     H5Idec_ref(val);
-                else {
-                    herr_t err = H5Pclose(val);
-                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
-                }
+                else if(H5Pclose(val) < 0)
+                    H5Eprint(H5E_DEFAULT, stderr);
             }
         }
     };
@@ -167,10 +165,8 @@ namespace h5pp::hid {
             if(valid()) {
                 if(H5Iget_ref(val) > 1)
                     H5Idec_ref(val);
-                else {
-                    herr_t err = H5Sclose(val);
-                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
-                }
+                else if(H5Sclose(val) < 0)
+                    H5Eprint(H5E_DEFAULT, stderr);
             }
         }
     };
@@ -185,10 +181,8 @@ namespace h5pp::hid {
             if(valid()) {
                 if(H5Iget_ref(val) > 1)
                     H5Idec_ref(val);
-                else {
-                    herr_t err = H5Tclose(val);
-                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
-                }
+                else if(H5Tclose(val) < 0)
+                    H5Eprint(H5E_DEFAULT, stderr);
             }
         }
     };
@@ -203,10 +197,8 @@ namespace h5pp::hid {
             if(valid()) {
                 if(H5Iget_ref(val) > 1)
                     H5Idec_ref(val);
-                else {
-                    herr_t err = H5Dclose(val);
-                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
-                }
+                else if(H5Dclose(val) < 0)
+                    H5Eprint(H5E_DEFAULT, stderr);
             }
         }
     };
@@ -221,10 +213,8 @@ namespace h5pp::hid {
             if(valid()) {
                 if(H5Iget_ref(val) > 1)
                     H5Idec_ref(val);
-                else {
-                    herr_t err = H5Gclose(val);
-                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
-                }
+                else if(H5Gclose(val) < 0)
+                    H5Eprint(H5E_DEFAULT, stderr);
             }
         }
     };
@@ -239,10 +229,8 @@ namespace h5pp::hid {
             if(valid()) {
                 if(H5Iget_ref(val) > 1)
                     H5Idec_ref(val);
-                else {
-                    herr_t err = H5Aclose(val);
-                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
-                }
+                else if(H5Aclose(val) < 0)
+                    H5Eprint(H5E_DEFAULT, stderr);
             }
         }
     };
@@ -257,10 +245,8 @@ namespace h5pp::hid {
             if(valid()) {
                 if(H5Iget_ref(val) > 1)
                     H5Idec_ref(val);
-                else {
-                    herr_t err = H5Oclose(val);
-                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
-                }
+                else if(H5Oclose(val) < 0)
+                    H5Eprint(H5E_DEFAULT, stderr);
             }
         }
     };
@@ -274,10 +260,8 @@ namespace h5pp::hid {
         void                      close() final {
             if(H5Iget_ref(val) > 1)
                 H5Idec_ref(val);
-            else {
-                herr_t err = H5Fclose(val);
-                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
-            }
+            else if(H5Fclose(val) < 0)
+                H5Eprint(H5E_DEFAULT, stderr);
         }
     };
 
@@ -291,9 +275,8 @@ namespace h5pp::hid {
             if(valid()) {
                 if(H5Iget_ref(val) > 1)
                     H5Idec_ref(val);
-                else {
+                else
                     H5Eclose_stack(val);
-                }
             }
         }
     };

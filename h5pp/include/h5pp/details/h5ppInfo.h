@@ -311,11 +311,18 @@ namespace h5pp {
         std::optional<std::string>              tableGroupName;
         std::optional<hid::h5f>                 tableFile;
         std::optional<hid::h5g>                 tableGroup;
-        std::optional<hid_t>                    tableLocId;
+        std::optional<hid::h5o>                 tableObjLoc;
         std::optional<hid::h5d>                 tableDset;
         std::optional<hid::h5t>                 tableType;
         std::optional<size_t>                   compressionLevel;
         std::optional<hsize_t>                  chunkSize;
+        hid_t getTableLocId() const {
+            if(tableFile) return tableFile.value();
+            if(tableGroup) return tableGroup.value();
+            if(tableObjLoc) return tableObjLoc.value();
+            h5pp::logger::log->debug("Table location is not defined");
+            return -1;
+        }
         void assertCreateReady() const {
             std::string error_msg;
             if(not numFields        ) error_msg.append("\n\t numFields");
@@ -339,9 +346,10 @@ namespace h5pp {
             if(not fieldSizes   ) error_msg.append("\n\t fieldSizes");
             if(not fieldOffsets ) error_msg.append("\n\t fieldOffsets");
             if(not tableName    ) error_msg.append("\n\t tableName");
-            if(not tableLocId   ) error_msg.append("\n\t tableLocId");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot read from table: The following fields are not set: {}", error_msg));
+            if(getTableLocId() < 0)
+                throw std::runtime_error(h5pp::format("Cannot read from table [{}]: The location ID is not set: {}", tableName.value()));
 
         }
         void assertWriteReady() const {
@@ -350,9 +358,10 @@ namespace h5pp {
             if(not fieldSizes   ) error_msg.append("\n\t fieldSizes");
             if(not fieldOffsets ) error_msg.append("\n\t fieldOffsets");
             if(not tableName    ) error_msg.append("\n\t tableName");
-            if(not tableLocId   ) error_msg.append("\n\t tableLocId");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot write to table: The following fields are not set: {}", error_msg));
+            if(getTableLocId() < 0)
+                throw std::runtime_error(h5pp::format("Cannot write to table [{}]: The location ID is not set: {}", tableName.value()));
         }
     };
 

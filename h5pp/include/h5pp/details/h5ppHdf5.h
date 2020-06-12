@@ -1532,93 +1532,94 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
-    inline void createTable(const h5x &loc, const TableInfo &tableProps, const PropertyLists &plists = PropertyLists()) {
-        tableProps.assertCreateReady();
+    inline void createTable(const h5x &loc, TableInfo &info, const PropertyLists &plists = PropertyLists()) {
+        info.assertCreateReady();
         h5pp::logger::log->debug(
-            "Creating table [{}] | num fields {} | record size {} bytes", tableProps.tableName.value(), tableProps.numFields.value(), tableProps.recordBytes.value());
-        createGroup(loc, tableProps.tableGroupName.value(), std::nullopt, plists);
+            "Creating table [{}] | num fields {} | record size {} bytes", info.tableName.value(), info.numFields.value(), info.recordBytes.value());
+        createGroup(loc, info.tableGroupName.value(), std::nullopt, plists);
 
-        if(checkIfLinkExists(loc, tableProps.tableName.value(), std::nullopt, plists.link_access)) {
-            h5pp::logger::log->debug("Table [{}] already exists", tableProps.tableName.value());
+        if(checkIfLinkExists(loc, info.tableName.value(), info.tableExists, plists.link_access)) {
+            h5pp::logger::log->debug("Table [{}] already exists", info.tableName.value());
             return;
         }
 
         // Copy member type data to a vector of hid_t for compatibility
-        std::vector<hid_t> fieldTypesHidT(tableProps.fieldTypes.value().begin(), tableProps.fieldTypes.value().end());
+        std::vector<hid_t> fieldTypesHidT(info.fieldTypes.value().begin(), info.fieldTypes.value().end());
 
         // Copy member name data to a vector of const char * for compatibility
         std::vector<const char *> fieldNames;
-        for(auto &name : tableProps.fieldNames.value()) fieldNames.push_back(name.c_str());
-        H5TBmake_table(util::safe_str(tableProps.tableTitle.value()).c_str(),
+        for(auto &name : info.fieldNames.value()) fieldNames.push_back(name.c_str());
+        H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
                        loc,
-                       util::safe_str(tableProps.tableName.value()).c_str(),
-                       tableProps.numFields.value(),
-                       tableProps.numRecords.value(),
-                       tableProps.recordBytes.value(),
+                       util::safe_str(info.tableName.value()).c_str(),
+                       info.numFields.value(),
+                       info.numRecords.value(),
+                       info.recordBytes.value(),
                        fieldNames.data(),
-                       tableProps.fieldOffsets.value().data(),
+                       info.fieldOffsets.value().data(),
                        fieldTypesHidT.data(),
-                       tableProps.chunkSize.value(),
+                       info.chunkSize.value(),
                        nullptr,
-                       static_cast<int>(tableProps.compressionLevel.value()),
+                       static_cast<int>(info.compressionLevel.value()),
                        nullptr);
-        h5pp::logger::log->trace("Successfully created table [{}]", tableProps.tableName.value());
-        //        h5pp::logger::log->trace("Committing new named table type [{}]", tableProps.tableTitle.value());
-        //        auto table = openLink<hid::h5d>(file,util::safe_str(tableProps.tableName.value()).c_str(),true,plists.link_access);
-        //        H5Tcommit(table, util::safe_str(tableProps.tableTitle.value()).c_str(),tableProps.entryType, H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+        h5pp::logger::log->trace("Successfully created table [{}]", info.tableName.value());
+        info.tableExists = true;
+        if constexpr(std::is_same_v<h5x, hid::h5f>) info.tableFile = loc;
+        if constexpr(std::is_same_v<h5x, hid::h5g>) info.tableGroup = loc;
     }
 
-    template<typename DataType,typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
-    inline void appendTableEntries(const h5x &loc, const DataType &data, const TableInfo &tableProps) {
+    template<typename DataType>
+    inline void appendTableEntries(const DataType &data, TableInfo &info) {
         size_t numNewRecords = h5pp::util::getSize(data);
         h5pp::logger::log->debug("Appending {} new records to table [{}] | table num records {} | record size {} bytes",
                                  numNewRecords,
-                                 tableProps.tableName.value(),
-                                 tableProps.numRecords.value(),
-                                 tableProps.recordBytes.value());
+                                 info.tableName.value(),
+                                 info.numRecords.value(),
+                                 info.recordBytes.value());
 
         // Make sure the given container and the registered table entry have the same size.
         // If there is a mismatch here it can cause horrible bugs/segfaults
         if constexpr(h5pp::type::sfinae::has_value_type_v<DataType>) {
-            if(sizeof(typename DataType::value_type) != tableProps.recordBytes.value())
+            if(sizeof(typename DataType::value_type) != info.recordBytes.value())
                 throw std::runtime_error(h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table entries on file are {} bytes each ",
                                                       h5pp::type::sfinae::type_name<DataType>(),
                                                       sizeof(typename DataType::value_type),
-                                                      tableProps.recordBytes.value()));
+                                                      info.recordBytes.value()));
         } else if constexpr(h5pp::type::sfinae::has_data_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>) {
-            if(sizeof(&data.data()) != tableProps.recordBytes.value())
+            if(sizeof(&data.data()) != info.recordBytes.value())
                 throw std::runtime_error(h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table entries on file are {} bytes each ",
                                                       h5pp::type::sfinae::type_name<DataType>(),
                                                       sizeof(&data.data()),
-                                                      tableProps.recordBytes.value()));
+                                                      info.recordBytes.value()));
         } else {
-            if(sizeof(DataType) != tableProps.recordBytes.value())
+            if(sizeof(DataType) != info.recordBytes.value())
                 throw std::runtime_error(h5pp::format("Size mismatch: Given data type {} is of {} bytes, but the table entries on file are {} bytes each ",
                                                       h5pp::type::sfinae::type_name<DataType>(),
                                                       sizeof(DataType),
-                                                      tableProps.recordBytes.value()));
+                                                      info.recordBytes.value()));
         }
 
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
-            H5TBappend_records(loc,
-                               util::safe_str(tableProps.tableName.value()).c_str(),
+            H5TBappend_records(info.getTableLocId(),
+                               util::safe_str(info.tableName.value()).c_str(),
                                numNewRecords,
-                               tableProps.recordBytes.value(),
-                               tableProps.fieldOffsets.value().data(),
-                               tableProps.fieldSizes.value().data(),
+                               info.recordBytes.value(),
+                               info.fieldOffsets.value().data(),
+                               info.fieldSizes.value().data(),
                                data.data());
         } else {
-            H5TBappend_records(loc,
-                               util::safe_str(tableProps.tableName.value()).c_str(),
+            H5TBappend_records(info.getTableLocId(),
+                               util::safe_str(info.tableName.value()).c_str(),
                                numNewRecords,
-                               tableProps.recordBytes.value(),
-                               tableProps.fieldOffsets.value().data(),
-                               tableProps.fieldSizes.value().data(),
+                               info.recordBytes.value(),
+                               info.fieldOffsets.value().data(),
+                               info.fieldSizes.value().data(),
                                &data);
         }
+        info.numRecords.value() += numNewRecords;
     }
 
-    inline void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, const h5pp::TableInfo &tgtInfo, hsize_t srcStartEntry, hsize_t tgtStartEntry, hsize_t numEntries) {
+    inline void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, h5pp::TableInfo &tgtInfo, hsize_t srcStartIdx, hsize_t tgtStartIdx, hsize_t numNewRecords) {
         srcInfo.assertReadReady();
         tgtInfo.assertWriteReady();
         // Sanity checks for table types
@@ -1634,164 +1635,169 @@ namespace h5pp::hdf5 {
                 h5pp::format("Failed to add table entries: table field offsets mismatch src {} != tgt {}", srcInfo.fieldOffsets.value(), tgtInfo.fieldOffsets.value()));
 
         // Sanity check for entry ranges
-        if(srcInfo.numRecords.value() < srcStartEntry + numEntries)
+        if(srcInfo.numRecords.value() < srcStartIdx + numNewRecords)
             throw std::runtime_error(h5pp::format("Failed to add table entries: Requeted entries out of bound: src table nrecords {} | src table start entry {} | num entries {}",
                                                   srcInfo.numRecords.value(),
-                                                  srcStartEntry,
-                                                  numEntries));
+                                                  srcStartIdx,
+                                                  numNewRecords));
 
         if(srcInfo.tableFile.value() == tgtInfo.tableFile.value()) {
             h5pp::logger::log->debug("adding records to table [{}] from table [{}] | src start entry {} | tgt start entry {} | num entries {} | entry size {}",
                                      srcInfo.tableName.value(),
                                      tgtInfo.tableName.value(),
-                                     srcStartEntry,
-                                     tgtStartEntry,
-                                     numEntries,
+                                     srcStartIdx,
+                                     tgtStartIdx,
+                                     numNewRecords,
                                      tgtInfo.recordBytes.value());
             H5TBadd_records_from(
-                srcInfo.tableLocId.value(), util::safe_str(srcInfo.tableName.value()).c_str(), srcStartEntry, numEntries, util::safe_str(tgtInfo.tableName.value()).c_str(), tgtStartEntry);
+                srcInfo.getTableLocId(), util::safe_str(srcInfo.tableName.value()).c_str(),
+                                 srcStartIdx,
+                                 numNewRecords, util::safe_str(tgtInfo.tableName.value()).c_str(),
+                                 tgtStartIdx);
 
         } else {
             // If the locations are on different files we need to make a temporary
             h5pp::logger::log->debug("adding records to table [{}] from table [{}] on different file | src start entry {} | tgt start entry {} | num entries {} | entry size {}",
                                      srcInfo.tableName.value(),
                                      tgtInfo.tableName.value(),
-                                     srcStartEntry,
-                                     tgtStartEntry,
-                                     numEntries,
+                                     srcStartIdx,
+                                     tgtStartIdx,
+                                     numNewRecords,
                                      tgtInfo.recordBytes.value());
-            std::vector<std::byte> data(numEntries * tgtInfo.recordBytes.value());
-            H5TBread_records(srcInfo.tableLocId.value(),
+            std::vector<std::byte> data(numNewRecords * tgtInfo.recordBytes.value());
+            H5TBread_records(srcInfo.getTableLocId(),
                              util::safe_str(srcInfo.tableName.value()).c_str(),
-                             srcStartEntry,
-                             numEntries,
+                             srcStartIdx,
+                             numNewRecords,
                              srcInfo.recordBytes.value(),
                              srcInfo.fieldOffsets.value().data(),
                              srcInfo.fieldSizes.value().data(),
                              data.data());
 
-            H5TBappend_records(tgtInfo.tableLocId.value(),
+            H5TBappend_records(tgtInfo.getTableLocId(),
                                util::safe_str(tgtInfo.tableName.value()).c_str(),
-                               numEntries,
+                               numNewRecords,
                                tgtInfo.recordBytes.value(),
                                tgtInfo.fieldOffsets.value().data(),
                                tgtInfo.fieldSizes.value().data(),
                                data.data());
         }
+
+        tgtInfo.numRecords.value() += numNewRecords;
+
     }
 
-    template<typename h5x_src,
-             typename h5x_tgt,
-             typename = h5pp::type::sfinae::is_h5_loc<h5x_src>,
-             typename = h5pp::type::sfinae::is_h5_loc<h5x_tgt>>
-    inline void addTableEntriesFrom(const h5x_src &      srcLocation,
-                                    std::string_view     srcTableName,
-                                    const h5x_tgt &      tgtLocation,
-                                    std::string_view     tgtTableName,
-                                    hsize_t              srcStartEntry,
-                                    hsize_t              tgtStartEntry,
-                                    hsize_t              numEntries,
-                                    const PropertyLists &plists = PropertyLists()) {
-        auto srcInfo = getTableTypeInfo(srcLocation, srcTableName, plists.link_access);
-        auto tgtInfo = getTableTypeInfo(tgtLocation, tgtTableName, plists.link_access);
-        addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
-    }
+//    template<typename h5x_src,
+//             typename h5x_tgt,
+//             typename = h5pp::type::sfinae::is_h5_loc<h5x_src>,
+//             typename = h5pp::type::sfinae::is_h5_loc<h5x_tgt>>
+//    inline void addTableEntriesFrom(const h5x_src &      srcLocation,
+//                                    std::string_view     srcTableName,
+//                                    const h5x_tgt &      tgtLocation,
+//                                    std::string_view     tgtTableName,
+//                                    hsize_t              srcStartEntry,
+//                                    hsize_t              tgtStartEntry,
+//                                    hsize_t              numEntries,
+//                                    const PropertyLists &plists = PropertyLists()) {
+//        auto srcInfo = getTableTypeInfo(srcLocation, srcTableName, plists.link_access);
+//        auto tgtInfo = getTableTypeInfo(tgtLocation, tgtTableName, plists.link_access);
+//        addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
+//    }
 
     template<typename DataType>
-    inline void readTableEntries(const hid::h5f &      file,
-                                 DataType &            data,
-                                 const TableInfo &     tableProps,
-                                 std::optional<size_t> startEntry = std::nullopt,
-                                 std::optional<size_t> numEntries = std::nullopt) {
-        // If none of startEntry or numEntries are given:
-        //          If data resizeable: startEntry = 0, numEntries = totalRecords
-        //          If data not resizeable: startEntry = last entry, numEntries = 1.
-        // If startEntry given but numEntries is not:
+    inline void readTableEntries(DataType &            data,
+                                 const TableInfo &     info,
+                                 std::optional<size_t> startIdx   = std::nullopt,
+                                 std::optional<size_t> numReadRecords = std::nullopt) {
+        // If none of startIdx or numReadRecords are given:
+        //          If data resizeable: startIdx = 0, numReadRecords = totalRecords
+        //          If data not resizeable: startIdx = last entry, numReadRecords = 1.
+        // If startIdx given but numReadRecords is not:
         //          If data resizeable -> read from startEntries to the end
         //          If data not resizeable -> read from startEntries a single entry
-        // If numEntries given but startEntries is not -> read the last numEntries records
+        // If numReadRecords given but startEntries is not -> read the last numReadRecords records
 
-        hsize_t totalRecords = tableProps.numRecords.value();
-        if(not startEntry and not numEntries) {
+        hsize_t totalRecords = info.numRecords.value();
+        if(not startIdx and not numReadRecords) {
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
-                startEntry = 0;
-                numEntries = totalRecords;
+                startIdx   = 0;
+                numReadRecords = totalRecords;
 
             } else {
-                startEntry = totalRecords - 1;
-                numEntries = 1;
+                startIdx   = totalRecords - 1;
+                numReadRecords = 1;
             }
-        } else if(startEntry and not numEntries) {
-            if(startEntry.value() > totalRecords - 1)
+        } else if(startIdx and not numReadRecords) {
+            if(startIdx.value() > totalRecords - 1)
                 throw std::runtime_error(
-                    h5pp::format("Invalid start record for table [{}] | nrecords [{}] | start entry [{}]", tableProps.tableName.value(), totalRecords, startEntry.value()));
+                    h5pp::format("Invalid start record for table [{}] | nrecords [{}] | start entry [{}]", info.tableName.value(), totalRecords, startIdx.value()));
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
-                numEntries = totalRecords - startEntry.value();
+                numReadRecords = totalRecords - startIdx.value();
             } else {
-                numEntries = 1;
+                numReadRecords = 1;
             }
 
-        } else if(numEntries and not startEntry) {
-            if(numEntries and numEntries.value() > totalRecords)
+        } else if(numReadRecords and not startIdx) {
+            if(numReadRecords and numReadRecords.value() > totalRecords)
                 throw std::runtime_error(h5pp::format(
-                    "Asked for more records than available in table [{}] | nrecords [{}] | num_entries [{}]", tableProps.tableName.value(), totalRecords, numEntries.value()));
-            startEntry = totalRecords - numEntries.value();
+                    "Asked for more records than available in table [{}] | nrecords [{}] | num_entries [{}]", info.tableName.value(), totalRecords, numReadRecords.value()));
+            startIdx = totalRecords - numReadRecords.value();
         }
 
         // Sanity check
-        if(numEntries.value() > totalRecords)
-            throw std::logic_error(h5pp::format("Asked for more records than available in table [{}] | nrecords [{}]", tableProps.tableName.value(), totalRecords));
-        if(startEntry.value() + numEntries.value() > totalRecords)
-            throw std::logic_error(h5pp::format("Asked for more records than available in table [{}] | nrecords [{}]", tableProps.tableName.value(), totalRecords));
+        if(numReadRecords.value() > totalRecords)
+            throw std::logic_error(h5pp::format("Asked for more records than available in table [{}] | nrecords [{}]", info.tableName.value(), totalRecords));
+        if(startIdx.value() + numReadRecords.value() > totalRecords)
+            throw std::logic_error(h5pp::format("Asked for more records than available in table [{}] | nrecords [{}]", info.tableName.value(), totalRecords));
 
         h5pp::logger::log->debug("Reading table [{}] | read from record {} | read num records {} | available records {} | record size {} bytes",
-                                 tableProps.tableName.value(),
-                                 startEntry.value(),
-                                 numEntries.value(),
-                                 tableProps.numRecords.value(),
-                                 tableProps.recordBytes.value());
+                                 info.tableName.value(),
+                                 startIdx.value(),
+                                 numReadRecords.value(),
+                                 info.numRecords.value(),
+                                 info.recordBytes.value());
 
         // Make sure the given container and the registerd table entry have the same size.
         // If there is a mismatch here it can cause horrible bugs/segfaults
         if constexpr(h5pp::type::sfinae::has_value_type_v<DataType>) {
-            if(sizeof(typename DataType::value_type) != tableProps.recordBytes.value())
+            if(sizeof(typename DataType::value_type) != info.recordBytes.value())
                 throw std::runtime_error(h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table records on file are {} bytes each ",
                                                       h5pp::type::sfinae::type_name<DataType>(),
                                                       sizeof(typename DataType::value_type),
-                                                      tableProps.recordBytes.value()));
+                                                      info.recordBytes.value()));
         } else if constexpr(h5pp::type::sfinae::has_data_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>) {
-            if(sizeof(&data.data()) != tableProps.recordBytes.value())
+            if(sizeof(&data.data()) != info.recordBytes.value())
                 throw std::runtime_error(h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table records on file are {} bytes each ",
                                                       h5pp::type::sfinae::type_name<DataType>(),
                                                       sizeof(&data.data()),
-                                                      tableProps.recordBytes.value()));
+                                                      info.recordBytes.value()));
         } else {
-            if(sizeof(DataType) != tableProps.recordBytes.value())
+            if(sizeof(DataType) != info.recordBytes.value())
                 throw std::runtime_error(h5pp::format("Size mismatch: Given data type {} is of {} bytes, but the table records on file are {} bytes each ",
                                                       h5pp::type::sfinae::type_name<DataType>(),
                                                       sizeof(DataType),
-                                                      tableProps.recordBytes.value()));
+                                                      info.recordBytes.value()));
         }
 
-        if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) { data.resize(numEntries.value()); }
+        if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) { data.resize(numReadRecords.value()); }
 
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
-            H5TBread_records(file,
-                             util::safe_str(tableProps.tableName.value()).c_str(),
-                             startEntry.value(),
-                             numEntries.value(),
-                             tableProps.recordBytes.value(),
-                             tableProps.fieldOffsets.value().data(),
-                             tableProps.fieldSizes.value().data(),
+            H5TBread_records(info.getTableLocId(),
+                             util::safe_str(info.tableName.value()).c_str(),
+                             startIdx.value(),
+                             numReadRecords.value(),
+                             info.recordBytes.value(),
+                             info.fieldOffsets.value().data(),
+                             info.fieldSizes.value().data(),
                              data.data());
         } else {
-            H5TBread_records(file,
-                             util::safe_str(tableProps.tableName.value()).c_str(),
-                             startEntry.value(),
-                             numEntries.value(),
-                             tableProps.recordBytes.value(),
-                             tableProps.fieldOffsets.value().data(),
-                             tableProps.fieldSizes.value().data(),
+            H5TBread_records(info.getTableLocId(),
+                             util::safe_str(info.tableName.value()).c_str(),
+                             startIdx.value(),
+                             numReadRecords.value(),
+                             info.recordBytes.value(),
+                             info.fieldOffsets.value().data(),
+                             info.fieldSizes.value().data(),
                              &data);
         }
     }
