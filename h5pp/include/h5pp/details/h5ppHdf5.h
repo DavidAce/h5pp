@@ -1093,71 +1093,121 @@ namespace h5pp::hdf5 {
     }
 
     namespace internal {
-        inline long        maxSearchHits = -1;
+        inline long maxHits = -1;
+        inline long maxDepth = -1;
         inline std::string searchKey;
         template<H5O_type_t ObjType>
         inline herr_t matcher([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const H5O_info_t *oinfo, void *opdata) {
+            // If object type is the one requested, and name matches the search key, then add it to the match list (a vector<string>)
+            // If the search depth is passed the depth specified, return immediately
+            // Return 0 to continue searching
+            // Return 1 to finish the search. Normally when we've reached max search hits.
+            std::string_view name_view(name);
+            if(maxDepth >= 0 and std::count(name_view.begin(),name_view.end(),'/') > maxDepth) return 0;
             try {
                 if(oinfo->type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
                     auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
-                    if(searchKey.empty() or std::string_view(name).find(searchKey) != std::string::npos) {
+                    if(searchKey.empty() or name_view.find(searchKey) != std::string::npos) {
                         matchList->push_back(name);
-                        if(maxSearchHits > 0 and (long) matchList->size() >= maxSearchHits) return 1;
+                        if(maxHits > 0 and (long) matchList->size() >= maxHits) return 1;
                     }
                 }
                 return 0;
             } catch(...) { throw std::logic_error(h5pp::format("Could not match object [{}] | loc_id [{}]", name, id)); }
         }
-        template<H5O_type_t ObjType>
-        inline herr_t collector([[maybe_unused]] hid_t loc_id, const char *name, [[maybe_unused]] const H5L_info_t *linfo, void *opdata) {
+        template<H5O_type_t ObjType, typename InfoType>
+        inline herr_t matcher([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const InfoType *info, void *opdata) {
+            // If object type is the one requested, and name matches the search key, then add it to the match list (a vector<string>)
+            // If the search depth is passed the depth specified, return immediately
+            // Return 0 to continue searching
+            // Return 1 to finish the search. Normally when we've reached max search hits.
+            std::string_view name_view(name);
+            if(maxDepth >= 0 and std::count(name_view.begin(),name_view.end(),'/') > maxDepth) return 0;
             try {
-                auto linkNames = reinterpret_cast<std::vector<std::string> *>(opdata);
-                linkNames->push_back(name);
+                if constexpr(std::is_same_v<InfoType,H5O_info_t>){
+                    if(info->type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
+                        auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
+                        if(searchKey.empty() or name_view.find(searchKey) != std::string::npos) {
+                            matchList->push_back(name);
+                            if(maxHits > 0 and (long) matchList->size() >= maxHits) return 1;
+                        }
+                    }
+                }else{
+                    auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
+                    if(searchKey.empty() or name_view.find(searchKey) != std::string::npos) {
+                        matchList->push_back(name);
+                        if(maxHits > 0 and (long) matchList->size() >= maxHits) return 1;
+                    }
+                }
                 return 0;
-            } catch(...) { throw std::logic_error(h5pp::format("Could not collect object [{}] | loc_id [{}]", name, loc_id)); }
+            } catch(...) { throw std::logic_error(h5pp::format("Could not match object [{}] | loc_id [{}]", name, id)); }
         }
+
+
+
+
+
+        //        template<H5O_type_t ObjType>
+//        inline herr_t collector([[maybe_unused]] hid_t loc_id, const char *name, [[maybe_unused]] const H5O_info_t *oinfo, void *opdata) {
+//            try {
+//                auto linkNames = reinterpret_cast<std::vector<std::string> *>(opdata);
+//                linkNames->push_back(name);
+//                return 0;
+//            } catch(...) { throw std::logic_error(h5pp::format("Could not collect object [{}] | loc_id [{}]", name, loc_id)); }
+//        }
+        template<H5O_type_t ObjType>
+        inline constexpr std::string_view getObjTypeName(){
+            if constexpr(ObjType == H5O_type_t::H5O_TYPE_DATASET) return "dataset";
+            if constexpr(ObjType == H5O_type_t::H5O_TYPE_NAMED_DATATYPE) return "named datatype";
+            if constexpr(ObjType == H5O_type_t::H5O_TYPE_GROUP) return "group";
+            if constexpr(ObjType == H5O_type_t::H5O_TYPE_MAP) return "map";
+            if constexpr(ObjType == H5O_type_t::H5O_TYPE_UNKNOWN) return "unknown";
+            if constexpr(ObjType == H5O_type_t::H5O_TYPE_NTYPES) return "ntypes";
+        }
+        template<H5O_type_t ObjType, typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
+        inline herr_t visit_by_name (const h5x & loc, std::string_view root, std::vector<std::string> & matchList, const hid::h5p &link_access = H5P_DEFAULT) {
+            if(internal::maxDepth == 0)
+                // Faster when we don't need to iterate recursively
+                return H5Literate_by_name(loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, internal::matcher<ObjType>, &matchList, link_access);
+#if defined(H5Ovisit_by_name3) || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 3)
+            return H5Ovisit_by_name3(loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, H5O_INFO_ALL, link_access);
+#elif defined(H5Ovisit_by_name2) || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 2)
+            return H5Ovisit_by_name2(loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, H5O_INFO_ALL, link_access);
+#elif defined(H5Ovisit_by_name1) || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 1)
+            return H5Ovisit_by_name1(loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, link_access);
+#else
+            return H5Ovisit_by_name(loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, link_access);
+#endif
+        }
+
     }
 
-    template<H5O_type_t ObjType>
+    template<H5O_type_t ObjType, typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
     inline std::vector<std::string>
-        findLinks(const hid::h5f &file, std::string_view searchKey = "", std::string_view searchRoot = "/", long maxSearchHits = -1, const hid::h5p &link_access = H5P_DEFAULT) {
-        std::string linkType = "any";
-        if constexpr(ObjType == H5O_TYPE_DATASET) linkType = "dataset";
-        if constexpr(ObjType == H5O_TYPE_NAMED_DATATYPE) linkType = "named datatype";
-        if constexpr(ObjType == H5O_TYPE_GROUP) linkType = "group";
-        h5pp::logger::log->trace("Search key: {} | search root: {} | link type: {} | max search hits {}", searchKey, searchRoot, linkType, maxSearchHits);
+        findLinks(const h5x &loc, std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1, const hid::h5p &link_access = H5P_DEFAULT) {
+        h5pp::logger::log->trace("Search key: {} | target type: {} | search root: {} | max search hits {}", searchKey, searchRoot, internal::getObjTypeName<ObjType>(), maxHits);
         std::vector<std::string> matchList;
-        internal::maxSearchHits = maxSearchHits;
-        internal::searchKey     = searchKey;
-
-#if defined(H5Ovisit_by_name3) || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 3)
-        herr_t err = H5Ovisit_by_name3(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, H5O_INFO_ALL, link_access);
-#elif defined(H5Ovisit_by_name2) || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 2)
-        herr_t err = H5Ovisit_by_name2(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, H5O_INFO_ALL, link_access);
-#elif defined(H5Ovisit_by_name1) || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 1)
-        herr_t err = H5Ovisit_by_name1(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, link_access);
-#else
-        herr_t err = H5Ovisit_by_name(file, util::safe_str(searchRoot).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, link_access);
-#endif
-
+        internal::maxHits = maxHits;
+        internal::maxDepth =  maxDepth;
+        internal::searchKey = searchKey;
+        herr_t err = internal::visit_by_name<ObjType>(loc,searchRoot,matchList,link_access);
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Failed to iterate from group [{}]", searchRoot));
+            throw std::runtime_error(h5pp::format("Failed to find links of type [{}] while iterating from root [{}]",internal::getObjTypeName<ObjType>(), searchRoot));
         }
         return matchList;
     }
 
     template<H5O_type_t ObjType>
-    inline std::vector<std::string> getContentsOfLink(const hid::h5f &file, const std::string &linkName, const hid::h5p &link_access = H5P_DEFAULT) {
-        std::string linkType = "any";
-        if constexpr(ObjType == H5O_TYPE_DATASET) linkType = "dataset";
-        if constexpr(ObjType == H5O_TYPE_NAMED_DATATYPE) linkType = "named datatype";
-        if constexpr(ObjType == H5O_TYPE_GROUP) linkType = "group";
+    inline std::vector<std::string> getContentsOfLink(const hid::h5f &file, std::string_view linkName, long maxDepth = 1, const hid::h5p &link_access = H5P_DEFAULT) {
         std::vector<std::string> contents;
-        herr_t                   err = H5Literate_by_name(file, linkName.c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, internal::collector<ObjType>, &contents, link_access);
+        internal::maxHits   = -1;
+        internal::maxDepth  =  maxDepth;
+        internal::searchKey.clear();
+        herr_t err = internal::visit_by_name<ObjType>(file,linkName,contents,link_access);
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Failed to iterate link [{}]", linkName));
+            throw std::runtime_error(h5pp::format("Failed to iterate link [{}] of type [{}]", linkName, internal::getObjTypeName<ObjType>()));
         }
         return contents;
     }
@@ -1817,8 +1867,12 @@ namespace h5pp::hdf5 {
             throw std::runtime_error(h5pp::format("Could not copy file: failed to open source file in read-only mode [{}]", srcPath.string()));
         }
 
-        // Copy all the groups in the file root recursively
-        for(const auto &link : getContentsOfLink<H5O_TYPE_UNKNOWN>(srcFile, "/", plists.link_access)) {
+        // Copy all the groups in the file root recursively. Note that H5Ocopy does this recursively, so we don't need
+        // to iterate links recursively here. Therefore maxDepth = 0
+        long maxDepth = 0;
+        for(const auto &link : getContentsOfLink<H5O_TYPE_UNKNOWN>(srcFile, "/", maxDepth, plists.link_access)) {
+            if(link == ".") continue;
+            h5pp::logger::log->trace("Copying recursively: [{}]", link);
             auto retval = H5Ocopy(srcFile, link.c_str(), tgtFile, link.c_str(), H5P_DEFAULT, H5P_DEFAULT);
             if(retval < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);

@@ -102,9 +102,9 @@ namespace h5pp {
             return *this;
         }
 
-        void flush(){
+        void flush() {
             h5pp::logger::log->trace("Flushing caches");
-            H5Fflush(openFileHandle(),H5F_scope_t::H5F_SCOPE_GLOBAL);
+            H5Fflush(openFileHandle(), H5F_scope_t::H5F_SCOPE_GLOBAL);
             H5garbage_collect();
             H5Eprint(H5E_DEFAULT, stderr);
         }
@@ -140,27 +140,24 @@ namespace h5pp {
         [[nodiscard]] std::string          getFilePath() const { return filePath.string(); }
         void                               setFilePermission(h5pp::FilePermission permission_) { permission = permission_; }
 
+        void setDriver_sec2() { H5Pset_fapl_sec2(plists.file_access); }
+        void setDriver_stdio() { H5Pset_fapl_stdio(plists.file_access); }
+        void setDriver_core(bool writeOnClose = true, size_t bytesPerMalloc = 10240000) {
+            H5Pset_fapl_core(plists.file_access, bytesPerMalloc, static_cast<hbool_t>(writeOnClose));
+        }
+#ifdef H5_HAVE_PARALLEL
+        void setDriver_mpio(MPI_Comm comm, MPI_Info info) { H5Pset_fapl_mpio(plists.file_access, comm, info); }
+#endif
 
-        void setDriver_sec2(){H5Pset_fapl_sec2(plists.file_access);}
-        void setDriver_stdio(){H5Pset_fapl_stdio(plists.file_access);}
-        void setDriver_core(bool writeOnClose = true, size_t bytesPerMalloc=10240000){H5Pset_fapl_core(plists.file_access,bytesPerMalloc,static_cast<hbool_t>(writeOnClose));}
-        #ifdef H5_HAVE_PARALLEL
-        void setDriver_mpio(MPI_Comm comm, MPI_Info info){H5Pset_fapl_mpio(plists.file_access,comm,info);}
-        #endif
-
-
-        [[maybe_unused]] fs::path copyFile(const std::string & targetPath, const FilePermission & perm = FilePermission::COLLISION_FAIL) const {
-            return h5pp::hdf5::copyFile(getFilePath(), targetPath, perm ,plists);
+        [[maybe_unused]] fs::path copyFile(const std::string &targetPath, const FilePermission &perm = FilePermission::COLLISION_FAIL) const {
+            return h5pp::hdf5::copyFile(getFilePath(), targetPath, perm, plists);
         }
 
-        [[maybe_unused]] fs::path moveFile(const std::string & targetPath, const FilePermission & perm = FilePermission::COLLISION_FAIL ){
-            auto newPath =  h5pp::hdf5::moveFile(getFilePath(),targetPath, perm,plists);
-            if(fs::exists(newPath)){
-                filePath = newPath;
-            }
+        [[maybe_unused]] fs::path moveFile(const std::string &targetPath, const FilePermission &perm = FilePermission::COLLISION_FAIL) {
+            auto newPath = h5pp::hdf5::moveFile(getFilePath(), targetPath, perm, plists);
+            if(fs::exists(newPath)) { filePath = newPath; }
             return newPath;
-         }
-
+        }
 
         /*
          *
@@ -179,7 +176,7 @@ namespace h5pp {
          *
          */
 
-        void                 setCompressionLevel(unsigned int compressionLevelZeroToNine) { currentCompressionLevel = h5pp::hdf5::getValidCompressionLevel(compressionLevelZeroToNine); }
+        void setCompressionLevel(unsigned int compressionLevelZeroToNine) { currentCompressionLevel = h5pp::hdf5::getValidCompressionLevel(compressionLevelZeroToNine); }
         [[nodiscard]] unsigned int getCompressionLevel() const { return currentCompressionLevel; }
         [[nodiscard]] unsigned int getCompressionLevel(std::optional<unsigned int> desiredCompressionLevel) const {
             if(desiredCompressionLevel)
@@ -536,51 +533,48 @@ namespace h5pp {
             h5pp::hdf5::appendTableEntries(file, data, tableProps);
         }
 
-
-
         void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, std::string_view tgtTableName, TableSelection tableSelection) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
-            auto   tgtInfo       = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
+            auto    tgtInfo       = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
             hsize_t srcStartEntry = 0;
             hsize_t tgtStartEntry = 0;
             hsize_t numEntries    = 0;
             switch(tableSelection) {
                 case h5pp::TableSelection::ALL: numEntries = srcInfo.numRecords.value(); break;
                 case h5pp::TableSelection::FIRST:
-                    numEntries    = 1;
-                    if(tgtInfo.numRecords.value() > 0)
-                        tgtStartEntry = tgtInfo.numRecords.value() - 1;
+                    numEntries = 1;
+                    if(tgtInfo.numRecords.value() > 0) tgtStartEntry = tgtInfo.numRecords.value() - 1;
                     break;
                 case h5pp::TableSelection::LAST:
-                    numEntries    = 1;
-                    if(tgtInfo.numRecords.value() > 0)
-                        tgtStartEntry = tgtInfo.numRecords.value() - 1;
-                    if(srcInfo.numRecords.value() > 0)
-                        srcStartEntry = srcInfo.numRecords.value() - 1;
+                    numEntries = 1;
+                    if(tgtInfo.numRecords.value() > 0) tgtStartEntry = tgtInfo.numRecords.value() - 1;
+                    if(srcInfo.numRecords.value() > 0) srcStartEntry = srcInfo.numRecords.value() - 1;
                     break;
             }
             h5pp::hdf5::addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
         }
 
-        template<typename h5x_src,
-            typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
-        void addTableEntriesFrom(const h5x_src & srcLocation, std::string_view srcTableName, std::string_view tgtTableName, TableSelection tableSelection) {
-            auto   srcInfo       = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt);
-            addTableEntriesFrom(srcInfo,tgtTableName, tableSelection);
+        template<typename h5x_src, typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
+        void addTableEntriesFrom(const h5x_src &srcLocation, std::string_view srcTableName, std::string_view tgtTableName, TableSelection tableSelection) {
+            auto srcInfo = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt);
+            addTableEntriesFrom(srcInfo, tgtTableName, tableSelection);
         }
 
-        template<typename h5x_src,
-            typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
-        void addTableEntriesFrom(const h5x_src & srcLocation, std::string_view srcTableName, std::string_view tgtTableName, hsize_t srcStartEntry, hsize_t tgtStartEntry, hsize_t numEntries) {
+        template<typename h5x_src, typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
+        void addTableEntriesFrom(const h5x_src &  srcLocation,
+                                 std::string_view srcTableName,
+                                 std::string_view tgtTableName,
+                                 hsize_t          srcStartEntry,
+                                 hsize_t          tgtStartEntry,
+                                 hsize_t          numEntries) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
-            h5pp::hdf5::addTableEntriesFrom(srcLocation,srcTableName,openFileHandle(),tgtTableName, srcStartEntry,tgtStartEntry,numEntries,plists);
+            h5pp::hdf5::addTableEntriesFrom(srcLocation, srcTableName, openFileHandle(), tgtTableName, srcStartEntry, tgtStartEntry, numEntries, plists);
         }
 
-        template<typename h5x_src,
-            typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
+        template<typename h5x_src, typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
         void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, std::string_view tgtTableName, hsize_t srcStartEntry, hsize_t tgtStartEntry, hsize_t numEntries) {
-            auto   tgtInfo       = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt,plists);
-            h5pp::hdf5::addTableEntriesFrom(srcInfo,tgtInfo, srcStartEntry,tgtStartEntry,numEntries);
+            auto tgtInfo = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
+            h5pp::hdf5::addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
         }
 
         template<typename DataType>
@@ -617,24 +611,33 @@ namespace h5pp {
 
         [[nodiscard]] bool linkExists(std::string_view link) const { return h5pp::hdf5::checkIfLinkExists(openFileHandle(), link, std::nullopt, plists.link_access); }
 
-        [[nodiscard]] std::vector<std::string> findLinks(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxSearchHits = -1) const {
-            return h5pp::hdf5::findLinks<H5O_TYPE_UNKNOWN>(openFileHandle(), searchKey, searchRoot, maxSearchHits, plists.link_access);
+        [[nodiscard]] std::vector<std::string> getLinks(std::string_view root = "/", long maxDepth = 0) const {
+            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_UNKNOWN>(openFileHandle(), root,maxDepth, plists.link_access);
         }
 
-        [[nodiscard]] std::vector<std::string> findDatasets(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxSearchHits = -1) const {
-            return h5pp::hdf5::findLinks<H5O_TYPE_DATASET>(openFileHandle(), searchKey, searchRoot, maxSearchHits, plists.link_access);
+        [[nodiscard]] std::vector<std::string> getDatasets(std::string_view root = "/", long maxDepth = 0) const {
+            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_DATASET>(openFileHandle(), root,maxDepth, plists.link_access);
         }
 
-        [[nodiscard]] std::vector<std::string> findGroups(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxSearchHits = -1) const {
-            return h5pp::hdf5::findLinks<H5O_TYPE_GROUP>(openFileHandle(), searchKey, searchRoot, maxSearchHits, plists.link_access);
+        [[nodiscard]] std::vector<std::string> getGroups(std::string_view root = "/", long maxDepth = 0) const {
+            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_GROUP>(openFileHandle(), root,maxDepth, plists.link_access);
         }
 
-        [[nodiscard]] TypeInfo getDatasetTypeInfo(std::string_view dsetPath) const {
-            return h5pp::hdf5::getTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.link_access);
+        [[nodiscard]] std::vector<std::string> findLinks(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
+            return h5pp::hdf5::findLinks<H5O_TYPE_UNKNOWN>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.link_access);
         }
-        [[nodiscard]] TableInfo getTableInfo(std::string_view tablePath) const {
-            return h5pp::scan::getTableInfo(openFileHandle(), tablePath, std::nullopt, plists);
+
+        [[nodiscard]] std::vector<std::string> findDatasets(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
+            return h5pp::hdf5::findLinks<H5O_TYPE_DATASET>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.link_access);
         }
+
+        [[nodiscard]] std::vector<std::string> findGroups(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
+            return h5pp::hdf5::findLinks<H5O_TYPE_GROUP>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.link_access);
+        }
+
+        [[nodiscard]] TypeInfo getDatasetTypeInfo(std::string_view dsetPath) const { return h5pp::hdf5::getTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.link_access); }
+
+        [[nodiscard]] TableInfo getTableInfo(std::string_view tablePath) const { return h5pp::scan::getTableInfo(openFileHandle(), tablePath, std::nullopt, plists); }
 
         [[nodiscard]] TypeInfo getAttributeTypeInfo(std::string_view linkName, std::string_view attrName) const {
             return h5pp::hdf5::getTypeInfo(openFileHandle(), linkName, attrName, std::nullopt, std::nullopt, plists.link_access);

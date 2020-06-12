@@ -10,6 +10,10 @@
 namespace h5pp::util {
 
     inline std::string safe_str(std::string_view str){
+        // This function removes null-terminating characters inside of
+        // strings. This happens sometimes when strings are concatenated but
+        // for various reasons the middle null terminator is not removed.
+        // Note that the last null terminator is left where it is.
         if (str.empty()) return std::string(str);
         std::string tmp (str);
         size_t start_pos = 0;
@@ -19,6 +23,7 @@ namespace h5pp::util {
         }
         return tmp;
     }
+
 
     template<typename DataType>
     [[nodiscard]] hid::h5t getH5Type(const std::optional<hid::h5t> &h5type = std::nullopt) {
