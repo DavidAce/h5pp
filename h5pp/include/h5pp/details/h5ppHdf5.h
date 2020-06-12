@@ -334,7 +334,7 @@ namespace h5pp::hdf5 {
             }
         }
     }
-    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g> or std::is_same_v<h5x, hid_t>>>
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc_or_hid_t<h5x>>
     [[nodiscard]] inline bool
         checkIfLinkExists(const h5x &loc, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
         if(linkExists) return linkExists.value();
@@ -353,75 +353,51 @@ namespace h5pp::hdf5 {
         return true;
     }
 
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc_or_hid_t<h5x>>
     [[nodiscard]] inline bool
-        checkIfDatasetExists(const hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
+        checkIfDatasetExists(const h5x &loc, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
         if(dsetExists) return dsetExists.value();
-        for(const auto &subPath : pathCumulativeSplit(dsetName, "/")) {
-            int exists = H5Lexists(file, util::safe_str(subPath).c_str(), dset_access);
-            if(exists == 0) {
-                h5pp::logger::log->trace("Checking if dataset exists [{}] ... false", dsetName);
-                return false;
-            }
-            if(exists < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error(h5pp::format("Failed to check if dataset exists [{}]", dsetName));
-            }
-        }
-        hid::h5o   object     = H5Oopen(file, util::safe_str(dsetName).c_str(), dset_access);
+        dsetExists = checkIfLinkExists(loc,dsetName,dsetExists,dset_access);
+        if(not dsetExists.value()) return false;
+        hid::h5o   object     = H5Oopen(loc, util::safe_str(dsetName).c_str(), dset_access);
         H5I_type_t objectType = H5Iget_type(object);
         if(objectType != H5I_DATASET) {
-            h5pp::logger::log->trace("Checking if dataset exists [{}] ... false", dsetName);
+            h5pp::logger::log->trace("Checking if link is a dataset [{}] ... false", dsetName);
             return false;
         } else {
-            h5pp::logger::log->trace("Checking if dataset exists [{}] ... true", dsetName);
+            h5pp::logger::log->trace("Checking if link is a dataset [{}] ... true", dsetName);
             return true;
         }
     }
 
-    [[nodiscard]] inline hid::h5o
-        openObject(const hid::h5f &file, std::string_view objectName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &object_access = H5P_DEFAULT) {
-        if(checkIfLinkExists(file, objectName, linkExists, object_access)) {
-            h5pp::logger::log->trace("Opening link [{}]", objectName);
-            hid::h5o linkObject = H5Oopen(file, util::safe_str(objectName).c_str(), object_access);
-            if(linkObject < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error(h5pp::format("Failed to open existing object [{}]", objectName));
-            } else {
-                return linkObject;
-            }
-        } else {
-            throw std::runtime_error(h5pp::format("Object does not exist [{}]", objectName));
-        }
-    }
-
-    template<typename h5x, typename h5l, typename = std::enable_if_t<std::is_same_v<h5l, hid::h5f> or std::is_same_v<h5l, hid::h5g> or std::is_same_v<h5l, hid_t>>>
-    [[nodiscard]] h5x openLink(const h5l &loc, std::string_view linkName, std::optional<bool> objectExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
-        if(checkIfLinkExists(loc, linkName, objectExists)) {
+    template<typename h5x, typename h5x_loc, typename = h5pp::type::sfinae::is_h5_loc_or_hid_t<h5x_loc>>
+    [[nodiscard]] h5x openLink(const h5x_loc &loc, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
+        if(checkIfLinkExists(loc, linkName, linkExists)) {
             h5pp::logger::log->trace("Opening link [{}]", linkName);
-            h5x object;
-            if constexpr(std::is_same_v<h5x, hid::h5d>) object = H5Dopen(loc, util::safe_str(linkName).c_str(), link_access);
-            if constexpr(std::is_same_v<h5x, hid::h5g>) object = H5Gopen(loc, util::safe_str(linkName).c_str(), link_access);
-            if constexpr(std::is_same_v<h5x, hid::h5o>) object = H5Oopen(loc, util::safe_str(linkName).c_str(), link_access);
-
-            if(object < 0) {
+            h5x link;
+            if constexpr(std::is_same_v<h5x, hid::h5d>) link = H5Dopen(loc, util::safe_str(linkName).c_str(), link_access);
+            if constexpr(std::is_same_v<h5x, hid::h5g>) link = H5Gopen(loc, util::safe_str(linkName).c_str(), link_access);
+            if constexpr(std::is_same_v<h5x, hid::h5o>) link = H5Oopen(loc, util::safe_str(linkName).c_str(), link_access);
+            if(link < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error(h5pp::format("Failed to open existing link [{}]", linkName));
             } else {
-                return object;
+                return link;
             }
         } else {
             throw std::runtime_error(h5pp::format("Link does not exist [{}]", linkName));
         }
     }
 
-    [[nodiscard]] inline bool checkIfAttributeExists(const hid::h5f &    file,
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc_or_hid_t<h5x>>
+    [[nodiscard]] inline bool checkIfAttributeExists(const h5x &    loc,
                                                      std::string_view    linkName,
                                                      std::string_view    attrName,
                                                      std::optional<bool> linkExists  = std::nullopt,
                                                      std::optional<bool> attrExists  = std::nullopt,
                                                      const hid::h5p &    link_access = H5P_DEFAULT) {
         if(linkExists and attrExists and linkExists.value() and attrExists.value()) return true;
-        hid::h5o link = openObject(file, linkName, linkExists, link_access);
+        auto link = openLink<hid::h5o>(loc, linkName, linkExists, link_access);
         h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}]", attrName, linkName);
         bool exists = H5Aexists_by_name(link, std::string(".").c_str(), util::safe_str(attrName).c_str(), link_access) > 0;
         h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}] ... {}", attrName, linkName, exists);
@@ -497,7 +473,9 @@ namespace h5pp::hdf5 {
             return 0;
         }
     }
-    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5o> or std::is_same_v<h5x, hid::h5d> or std::is_same_v<h5x, hid::h5g>>>
+
+
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_link<h5x>>
     [[nodiscard]] inline std::vector<std::string> getAttributeNames(const h5x &link) {
         auto                     num_attrs = H5Aget_num_attrs(link);
         std::vector<std::string> attrNames;
@@ -515,11 +493,13 @@ namespace h5pp::hdf5 {
         return attrNames;
     }
 
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
     [[nodiscard]] inline std::vector<std::string>
-        getAttributeNames(const hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
-        hid::h5o link = openObject(file, linkName, linkExists, link_access);
+        getAttributeNames(const h5x &loc, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
+        auto link = openLink<hid::h5o>(loc, linkName, linkExists, link_access);
         return getAttributeNames(link);
     }
+
     template<typename T>
     std::tuple<std::type_index, std::string, size_t> getCppType() {
         return {typeid(T), std::string(h5pp::type::sfinae::type_name<T>()), sizeof(T)};
@@ -609,49 +589,12 @@ namespace h5pp::hdf5 {
         return getTypeInfo(dset_path, std::nullopt, H5Dget_space(dataset), H5Dget_type(dataset));
     }
 
-    inline TypeInfo getTypeInfo(const hid::h5f &file, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
-        auto dataset = openLink<hid::h5d>(file, dsetName, dsetExists, dset_access);
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
+    inline TypeInfo getTypeInfo(const h5x &loc, std::string_view dsetName, std::optional<bool> dsetExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
+        auto dataset = openLink<hid::h5d>(loc, dsetName, dsetExists, dset_access);
         return getTypeInfo(dataset);
     }
 
-    //    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
-    //    inline TableTypeInfo getTableTypeInfo(const h5x &loc, std::string_view tableName, std::optional<bool> tableExists = std::nullopt, const hid::h5p &dset_access =
-    //    H5P_DEFAULT) {
-    //        TableTypeInfo info;
-    //        if constexpr (std::is_same_v<h5x,hid::h5g>) info.tableGroup = loc;
-    //        info.tableName = util::safe_str(tableName);
-    //        info.tableFile = H5Iget_file_id(loc);
-    //        info.tableDset = openLink<hid::h5d>(loc, tableName, tableExists, dset_access);
-    //        info.tableType = H5Dget_type(info.tableDset.value());
-    //
-    //        // Alloate temporaries
-    //        hsize_t             n_fields, n_records;
-    //        H5TBget_table_info(loc, util::safe_str(tableName).c_str(), &n_fields, &n_records);
-    //        std::vector<size_t> field_sizes(n_fields);
-    //        std::vector<size_t> field_offsets(n_fields);
-    //        size_t              record_bytes;
-    //        char **             field_names = new char *[n_fields];
-    //        for(size_t i = 0; i < n_fields; i++) field_names[i] = new char[255];
-    //        H5TBget_field_info(loc, util::safe_str(tableName).c_str(), field_names, field_sizes.data(), field_offsets.data(), &record_bytes);
-    //
-    //        // Copy results
-    //        std::vector<std::string> field_names_vec(n_fields);
-    //        std::vector<hid::h5t>    field_types(n_fields);
-    //        for(size_t i = 0; i < n_fields; i++) field_names_vec[i] = field_names[i];
-    //        for(size_t i = 0; i < n_fields; i++) field_types[i] = H5Tget_member_type(info.tableType.value(), static_cast<unsigned>(i));
-    //        info.numFields    = n_fields;
-    //        info.numRecords   = n_records;
-    //        info.recordBytes  = record_bytes;
-    //        info.fieldSizes   = field_sizes;
-    //        info.fieldOffsets = field_offsets;
-    //        info.fieldTypes   = field_types;
-    //        info.fieldNames   = field_names_vec;
-    //
-    //        /* release array of char arrays */
-    //        for(size_t i = 0; i < n_fields; i++) delete field_names[i];
-    //        delete[] field_names;
-    //        return info;
-    //    }
 
     inline TypeInfo getTypeInfo(const hid::h5a &attribute) {
         auto        buf_size = H5Aget_name(attribute, 0, nullptr);
@@ -667,14 +610,16 @@ namespace h5pp::hdf5 {
         return getTypeInfo(link_path, attr_name, H5Aget_space(attribute), H5Aget_type(attribute));
     }
 
-    inline TypeInfo getTypeInfo(const hid::h5f &    file,
+
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
+    inline TypeInfo getTypeInfo(const h5x &         loc,
                                 std::string_view    linkName,
                                 std::string_view    attrName,
                                 std::optional<bool> linkExists  = std::nullopt,
                                 std::optional<bool> attrExists  = std::nullopt,
                                 const hid::h5p &    link_access = H5P_DEFAULT) {
-        auto link = openLink<hid::h5o>(file, linkName, linkExists, link_access);
-        if(checkIfAttributeExists(file, linkName, attrName, linkExists, attrExists, link_access)) {
+        auto link = openLink<hid::h5o>(loc, linkName, linkExists, link_access);
+        if(checkIfAttributeExists(loc, linkName, attrName, linkExists, attrExists, link_access)) {
             hid::h5a attribute = H5Aopen_name(link, util::safe_str(attrName).c_str());
             return getTypeInfo(attribute);
         } else {
@@ -682,7 +627,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5o> or std::is_same_v<h5x, hid::h5d> or std::is_same_v<h5x, hid::h5g>>>
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_link<h5x>>
     std::vector<TypeInfo> getTypeInfo_allAttributes(const h5x &link) {
         std::vector<TypeInfo> allAttrInfo;
         auto                  num_attrs = H5Aget_num_attrs(link);
@@ -693,20 +638,17 @@ namespace h5pp::hdf5 {
         return allAttrInfo;
     }
 
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
     inline std::vector<TypeInfo>
-        getTypeInfo_allAttributes(const hid::h5f &file, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
-        auto link = openLink<hid::h5o>(file, linkName, linkExists, link_access);
+        getTypeInfo_allAttributes(const h5x &loc, std::string_view linkName, std::optional<bool> linkExists = std::nullopt, const hid::h5p &link_access = H5P_DEFAULT) {
+        auto link = openLink<hid::h5o>(loc, linkName, linkExists, link_access);
         return getTypeInfo_allAttributes(link);
     }
 
-    inline void extendDataset(hid::h5f &          file,
-                              std::string_view    datasetRelativeName,
+    inline void extendDataset(const hid::h5d &    dataset,
                               const int           dim,
-                              const hsize_t       extent,
-                              std::optional<bool> linkExists  = std::nullopt,
-                              const hid::h5p &    dset_access = H5P_DEFAULT) {
-        auto dataset = openLink<hid::h5d>(file, datasetRelativeName, linkExists, dset_access);
-        h5pp::logger::log->trace("Extending dataset [ {} ] dimension [{}] to extent [{}]", datasetRelativeName, dim, extent);
+                              const hsize_t       extent) {
+        h5pp::logger::log->trace("Extending dataset dimension [{}] to extent [{}]", dim, extent);
         // Retrieve the current size of the memSpace (act as if you don't know its size and want to append)
         hid::h5a             dataSpace = H5Dget_space(dataset);
         const int            ndims     = H5Sget_simple_extent_ndims(dataSpace);
@@ -718,42 +660,55 @@ namespace h5pp::hdf5 {
         H5Dset_extent(dataset, newDims.data());
     }
 
-    template<typename DataType>
-    void extendDataset(hid::h5f &file, const DataType &data, std::string_view dsetPath) {
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
+    inline void extendDataset(const h5x &         loc,
+                              std::string_view    datasetRelativeName,
+                              const int           dim,
+                              const hsize_t       extent,
+                              std::optional<bool> linkExists  = std::nullopt,
+                              const hid::h5p &    dset_access = H5P_DEFAULT) {
+        auto dataset = openLink<hid::h5d>(loc, datasetRelativeName, linkExists, dset_access);
+        extendDataset(dataset,dim,extent);
+    }
+
+    template<typename DataType, typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
+    void extendDataset(const h5x &loc, const DataType &data, std::string_view dsetPath) {
 #ifdef H5PP_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_core_v<DataType>) {
-            extendDataset(file, dsetPath, 0, data.rows());
-            hid::h5d             dataSet   = openLink<hid::h5d>(file, dsetPath);
+            extendDataset(loc, dsetPath, 0, data.rows());
+            hid::h5d             dataSet   = openLink<hid::h5d>(loc, dsetPath);
             hid::h5s             fileSpace = H5Dget_space(dataSet);
             int                  ndims     = H5Sget_simple_extent_ndims(fileSpace);
             std::vector<hsize_t> dims((size_t) ndims);
             H5Sget_simple_extent_dims(fileSpace, dims.data(), nullptr);
             H5Sclose(fileSpace);
-            if(dims[1] < (hsize_t) data.cols()) extendDataset(file, dsetPath, 1, data.cols());
+            if(dims[1] < (hsize_t) data.cols()) extendDataset(loc, dsetPath, 1, data.cols());
         } else
 #endif
         {
-            extendDataset(file, dsetPath, 0, h5pp::util::getSize(data));
+            extendDataset(loc, dsetPath, 0, h5pp::util::getSize(data));
         }
     }
 
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
     inline void
-        createGroup(const hid::h5f &file, std::string_view groupRelativeName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
+        createGroup(const h5x &loc, std::string_view groupRelativeName, std::optional<bool> linkExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
         // Check if group exists already
-        linkExists = checkIfLinkExists(file, groupRelativeName, linkExists, plists.link_access);
+        linkExists = checkIfLinkExists(loc, groupRelativeName, linkExists, plists.link_access);
         if(linkExists.value()) {
             h5pp::logger::log->trace("Group already exists [{}]", groupRelativeName);
             return;
         } else {
             h5pp::logger::log->trace("Creating group link [{}]", groupRelativeName);
-            hid::h5g group = H5Gcreate(file, util::safe_str(groupRelativeName).c_str(), plists.link_create, plists.group_create, plists.group_access);
+            hid::h5g group = H5Gcreate(loc, util::safe_str(groupRelativeName).c_str(), plists.link_create, plists.group_create, plists.group_access);
         }
     }
 
-    inline void writeSymbolicLink(hid::h5f &file, std::string_view src_path, std::string_view tgt_path, const PropertyLists &plists = PropertyLists()) {
-        if(checkIfLinkExists(file, src_path, std::nullopt, plists.link_access)) {
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
+    inline void writeSymbolicLink(const h5x &loc, std::string_view src_path, std::string_view tgt_path, const PropertyLists &plists = PropertyLists()) {
+        if(checkIfLinkExists(loc, src_path, std::nullopt, plists.link_access)) {
             h5pp::logger::log->trace("Creating symbolic link [{}] --> [{}]", src_path, tgt_path);
-            herr_t retval = H5Lcreate_soft(util::safe_str(src_path).c_str(), file, util::safe_str(tgt_path).c_str(), plists.link_create, plists.link_access);
+            herr_t retval = H5Lcreate_soft(util::safe_str(src_path).c_str(), loc, util::safe_str(tgt_path).c_str(), plists.link_create, plists.link_access);
             if(retval < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error(h5pp::format("Failed to write symbolic link [{}]  ", src_path));
@@ -1166,7 +1121,7 @@ namespace h5pp::hdf5 {
                 return "ntypes";
             else return "map"; // Only in HDF5 v 1.12
         }
-        template<H5O_type_t ObjType, typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
+        template<H5O_type_t ObjType, typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
         inline herr_t visit_by_name(const h5x &loc, std::string_view root, std::vector<std::string> &matchList, const hid::h5p &link_access = H5P_DEFAULT) {
             if(internal::maxDepth == 0)
                 // Faster when we don't need to iterate recursively
@@ -1184,7 +1139,7 @@ namespace h5pp::hdf5 {
 
     }
 
-    template<H5O_type_t ObjType, typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
+    template<H5O_type_t ObjType, typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
     inline std::vector<std::string> findLinks(const h5x &      loc,
                                               std::string_view searchKey   = "",
                                               std::string_view searchRoot  = "/",
@@ -1204,13 +1159,13 @@ namespace h5pp::hdf5 {
         return matchList;
     }
 
-    template<H5O_type_t ObjType>
-    inline std::vector<std::string> getContentsOfLink(const hid::h5f &file, std::string_view linkName, long maxDepth = 1, const hid::h5p &link_access = H5P_DEFAULT) {
+    template<H5O_type_t ObjType, typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
+    inline std::vector<std::string> getContentsOfLink(const h5x &loc, std::string_view linkName, long maxDepth = 1, const hid::h5p &link_access = H5P_DEFAULT) {
         std::vector<std::string> contents;
         internal::maxHits  = -1;
         internal::maxDepth = maxDepth;
         internal::searchKey.clear();
-        herr_t err = internal::visit_by_name<ObjType>(file, linkName, contents, link_access);
+        herr_t err = internal::visit_by_name<ObjType>(loc, linkName, contents, link_access);
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to iterate link [{}] of type [{}]", linkName, internal::getObjTypeName<ObjType>()));
@@ -1576,13 +1531,14 @@ namespace h5pp::hdf5 {
         return fs::canonical(filePath);
     }
 
-    inline void createTable(const hid::h5f &file, const TableInfo &tableProps, const PropertyLists &plists = PropertyLists()) {
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
+    inline void createTable(const h5x &loc, const TableInfo &tableProps, const PropertyLists &plists = PropertyLists()) {
         tableProps.assertCreateReady();
         h5pp::logger::log->debug(
             "Creating table [{}] | num fields {} | record size {} bytes", tableProps.tableName.value(), tableProps.numFields.value(), tableProps.recordBytes.value());
-        createGroup(file, tableProps.tableGroupName.value(), std::nullopt, plists);
+        createGroup(loc, tableProps.tableGroupName.value(), std::nullopt, plists);
 
-        if(checkIfLinkExists(file, tableProps.tableName.value(), std::nullopt, plists.link_access)) {
+        if(checkIfLinkExists(loc, tableProps.tableName.value(), std::nullopt, plists.link_access)) {
             h5pp::logger::log->debug("Table [{}] already exists", tableProps.tableName.value());
             return;
         }
@@ -1594,7 +1550,7 @@ namespace h5pp::hdf5 {
         std::vector<const char *> fieldNames;
         for(auto &name : tableProps.fieldNames.value()) fieldNames.push_back(name.c_str());
         H5TBmake_table(util::safe_str(tableProps.tableTitle.value()).c_str(),
-                       file,
+                       loc,
                        util::safe_str(tableProps.tableName.value()).c_str(),
                        tableProps.numFields.value(),
                        tableProps.numRecords.value(),
@@ -1612,8 +1568,8 @@ namespace h5pp::hdf5 {
         //        H5Tcommit(table, util::safe_str(tableProps.tableTitle.value()).c_str(),tableProps.entryType, H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
     }
 
-    template<typename DataType>
-    inline void appendTableEntries(const hid::h5f &file, const DataType &data, const TableInfo &tableProps) {
+    template<typename DataType,typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
+    inline void appendTableEntries(const h5x &loc, const DataType &data, const TableInfo &tableProps) {
         size_t numNewRecords = h5pp::util::getSize(data);
         h5pp::logger::log->debug("Appending {} new records to table [{}] | table num records {} | record size {} bytes",
                                  numNewRecords,
@@ -1644,7 +1600,7 @@ namespace h5pp::hdf5 {
         }
 
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
-            H5TBappend_records(file,
+            H5TBappend_records(loc,
                                util::safe_str(tableProps.tableName.value()).c_str(),
                                numNewRecords,
                                tableProps.recordBytes.value(),
@@ -1652,7 +1608,7 @@ namespace h5pp::hdf5 {
                                tableProps.fieldSizes.value().data(),
                                data.data());
         } else {
-            H5TBappend_records(file,
+            H5TBappend_records(loc,
                                util::safe_str(tableProps.tableName.value()).c_str(),
                                numNewRecords,
                                tableProps.recordBytes.value(),
@@ -1684,17 +1640,6 @@ namespace h5pp::hdf5 {
                                                   srcStartEntry,
                                                   numEntries));
 
-        // The locations may be files or groups, here we
-        // make sure that the locations are what the user intended,
-        // so that the given filename is relative to the correct
-        // location ID.
-        // Note that these hid_t will not increment the reference
-        // counters, so we don't need to release them.
-        hid_t srcLoc = srcInfo.tableFile.value();
-        hid_t tgtLoc = tgtInfo.tableFile.value();
-        if(srcInfo.tableGroup) srcLoc = srcInfo.tableGroup.value();
-        if(tgtInfo.tableGroup) tgtLoc = tgtInfo.tableGroup.value();
-
         if(srcInfo.tableFile.value() == tgtInfo.tableFile.value()) {
             h5pp::logger::log->debug("adding records to table [{}] from table [{}] | src start entry {} | tgt start entry {} | num entries {} | entry size {}",
                                      srcInfo.tableName.value(),
@@ -1704,7 +1649,7 @@ namespace h5pp::hdf5 {
                                      numEntries,
                                      tgtInfo.recordBytes.value());
             H5TBadd_records_from(
-                srcLoc, util::safe_str(srcInfo.tableName.value()).c_str(), srcStartEntry, numEntries, util::safe_str(tgtInfo.tableName.value()).c_str(), tgtStartEntry);
+                srcInfo.tableLocId.value(), util::safe_str(srcInfo.tableName.value()).c_str(), srcStartEntry, numEntries, util::safe_str(tgtInfo.tableName.value()).c_str(), tgtStartEntry);
 
         } else {
             // If the locations are on different files we need to make a temporary
@@ -1716,7 +1661,7 @@ namespace h5pp::hdf5 {
                                      numEntries,
                                      tgtInfo.recordBytes.value());
             std::vector<std::byte> data(numEntries * tgtInfo.recordBytes.value());
-            H5TBread_records(srcLoc,
+            H5TBread_records(srcInfo.tableLocId.value(),
                              util::safe_str(srcInfo.tableName.value()).c_str(),
                              srcStartEntry,
                              numEntries,
@@ -1725,7 +1670,7 @@ namespace h5pp::hdf5 {
                              srcInfo.fieldSizes.value().data(),
                              data.data());
 
-            H5TBappend_records(tgtLoc,
+            H5TBappend_records(tgtInfo.tableLocId.value(),
                                util::safe_str(tgtInfo.tableName.value()).c_str(),
                                numEntries,
                                tgtInfo.recordBytes.value(),
@@ -1737,8 +1682,8 @@ namespace h5pp::hdf5 {
 
     template<typename h5x_src,
              typename h5x_tgt,
-             typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>,
-             typename = std::enable_if_t<std::is_same_v<h5x_tgt, hid::h5f> or std::is_same_v<h5x_tgt, hid::h5g>>>
+             typename = h5pp::type::sfinae::is_h5_loc<h5x_src>,
+             typename = h5pp::type::sfinae::is_h5_loc<h5x_tgt>>
     inline void addTableEntriesFrom(const h5x_src &      srcLocation,
                                     std::string_view     srcTableName,
                                     const h5x_tgt &      tgtLocation,

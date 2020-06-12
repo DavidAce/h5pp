@@ -182,19 +182,23 @@ namespace h5pp::scan {
         return attrInfo;
     }
 
-    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
+    template<typename h5x, typename = h5pp::type::sfinae::is_h5_loc<h5x>>
     inline TableInfo getTableInfo(const h5x &loc, std::string_view tableName, std::optional<bool> tableExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
         TableInfo info;
-        info.tableFile = H5Iget_file_id(loc);
+        // Copy the name and group name
         info.tableName = util::safe_str(tableName);
+        info.tableGroupName = "";
+        size_t pos          = info.tableName.value().find_last_of('/');
+        if(pos != std::string::npos) info.tableGroupName.value().assign(info.tableName.value().begin(), info.tableName.value().begin() + static_cast<long>(pos));
 
-        if constexpr(std::is_same_v<h5x, hid::h5g>)
-            info.tableGroup = loc;
-        else {
-            info.tableGroupName = "";
-            size_t pos          = info.tableName.value().find_last_of('/');
-            if(pos != std::string::npos) info.tableGroupName.value().assign(info.tableName.value().begin(), info.tableName.value().begin() + static_cast<long>(pos));
-        }
+        // Get the location
+        H5I_type_t type = H5Iget_type(loc);
+        if(type == H5I_type_t::H5I_GROUP or type == H5I_type_t::H5I_FILE)
+            info.tableLocId = loc;
+        else
+            throw std::runtime_error("Given object type for location is not a group or a file");
+        if constexpr(std::is_same_v<h5x, hid::h5f>) info.tableFile = loc;
+        if constexpr(std::is_same_v<h5x, hid::h5g>) info.tableGroup = loc;
 
         info.tableExists = h5pp::hdf5::checkIfLinkExists(loc, tableName, tableExists, plists.link_access);
         if(not info.tableExists.value()) return info;

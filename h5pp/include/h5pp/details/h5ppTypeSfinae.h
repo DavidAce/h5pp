@@ -213,6 +213,17 @@ namespace h5pp::type::sfinae {
     using is_iterable_or_nullopt = std::enable_if_t<is_iterable_v<T> or std::is_same_v<T, std::nullopt_t>>;
 
     template<typename T>
+    using is_h5_loc = std::enable_if_t<std::is_same_v<T,hid::h5f> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o> or std::is_same_v<T, hid_t>>;
+    template<typename T>
+    using is_h5_loc_or_hid_t = std::enable_if_t< std::is_same_v<T,hid::h5f> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o> or std::is_same_v<T, hid_t> or std::is_same_v<T,hid_t>>;
+    template<typename T>
+    using is_h5_link = std::enable_if_t< std::is_same_v<T,hid::h5f> or std::is_same_v<T, hid::h5d> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o> or std::is_same_v<T, hid_t>>;
+    template<typename T>
+    using is_h5_link_or_hid_t = std::enable_if_t< std::is_same_v<T,hid::h5f> or std::is_same_v<T, hid::h5d> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o> or std::is_same_v<T, hid_t> or std::is_same_v<T,hid_t>>;
+
+
+
+    template<typename T>
     struct is_text {
         private:
         template<typename U>

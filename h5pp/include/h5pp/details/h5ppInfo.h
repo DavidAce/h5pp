@@ -6,8 +6,9 @@
 #include <hdf5.h>
 #include <hdf5_hl.h>
 #include <string>
-#include <vector>
 #include <typeindex>
+#include <variant>
+#include <vector>
 
 namespace h5pp {
 
@@ -310,6 +311,7 @@ namespace h5pp {
         std::optional<std::string>              tableGroupName;
         std::optional<hid::h5f>                 tableFile;
         std::optional<hid::h5g>                 tableGroup;
+        std::optional<hid_t>                    tableLocId;
         std::optional<hid::h5d>                 tableDset;
         std::optional<hid::h5t>                 tableType;
         std::optional<size_t>                   compressionLevel;
@@ -337,6 +339,7 @@ namespace h5pp {
             if(not fieldSizes   ) error_msg.append("\n\t fieldSizes");
             if(not fieldOffsets ) error_msg.append("\n\t fieldOffsets");
             if(not tableName    ) error_msg.append("\n\t tableName");
+            if(not tableLocId   ) error_msg.append("\n\t tableLocId");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot read from table: The following fields are not set: {}", error_msg));
 
@@ -347,6 +350,7 @@ namespace h5pp {
             if(not fieldSizes   ) error_msg.append("\n\t fieldSizes");
             if(not fieldOffsets ) error_msg.append("\n\t fieldOffsets");
             if(not tableName    ) error_msg.append("\n\t tableName");
+            if(not tableLocId   ) error_msg.append("\n\t tableLocId");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot write to table: The following fields are not set: {}", error_msg));
         }
