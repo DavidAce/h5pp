@@ -139,7 +139,7 @@ namespace h5pp::hid {
     };
 
     // All our safe hid_t wrapper classes
-    class h5p final: public hid_base<h5p, true> {
+    class h5p final : public hid_base<h5p, true> {
         public:
         using hid_base::hid_base;
         ~h5p() final { close(); }
@@ -147,13 +147,17 @@ namespace h5pp::hid {
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return (val > 0 and rhs > 0 and H5Pequal(val, rhs)) or val == rhs; }
         void                      close() final {
             if(valid()) {
-                herr_t err = H5Pclose(val);
-                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                if(H5Iget_ref(val) > 1)
+                    H5Idec_ref(val);
+                else {
+                    herr_t err = H5Pclose(val);
+                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                }
             }
         }
     };
 
-    class h5s final: public hid_base<h5s> {
+    class h5s final : public hid_base<h5s> {
         public:
         using hid_base::hid_base;
         ~h5s() final { close(); }
@@ -161,13 +165,17 @@ namespace h5pp::hid {
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
             if(valid()) {
-                herr_t err = H5Sclose(val);
-                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                if(H5Iget_ref(val) > 1)
+                    H5Idec_ref(val);
+                else {
+                    herr_t err = H5Sclose(val);
+                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                }
             }
         }
     };
 
-    class h5t final: public hid_base<h5t> {
+    class h5t final : public hid_base<h5t> {
         public:
         using hid_base::hid_base;
         ~h5t() final { close(); }
@@ -175,13 +183,17 @@ namespace h5pp::hid {
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return (valid(val) and valid(rhs) and H5Tequal(val, rhs)) or val == rhs; }
         void                      close() final {
             if(valid()) {
-                herr_t err = H5Tclose(val);
-                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                if(H5Iget_ref(val) > 1)
+                    H5Idec_ref(val);
+                else {
+                    herr_t err = H5Tclose(val);
+                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                }
             }
         }
     };
 
-    class h5d final: public hid_base<h5d> {
+    class h5d final : public hid_base<h5d> {
         public:
         using hid_base::hid_base;
         ~h5d() final { close(); }
@@ -189,13 +201,17 @@ namespace h5pp::hid {
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
             if(valid()) {
-                herr_t err = H5Dclose(val);
-                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                if(H5Iget_ref(val) > 1)
+                    H5Idec_ref(val);
+                else {
+                    herr_t err = H5Dclose(val);
+                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                }
             }
         }
     };
 
-    class h5g final: public hid_base<h5g> {
+    class h5g final : public hid_base<h5g> {
         public:
         using hid_base::hid_base;
         ~h5g() final { close(); }
@@ -203,13 +219,17 @@ namespace h5pp::hid {
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
             if(valid()) {
-                herr_t err = H5Gclose(val);
-                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                if(H5Iget_ref(val) > 1)
+                    H5Idec_ref(val);
+                else {
+                    herr_t err = H5Gclose(val);
+                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                }
             }
         }
     };
 
-    class h5a final: public hid_base<h5a> {
+    class h5a final : public hid_base<h5a> {
         public:
         using hid_base::hid_base;
         ~h5a() final { close(); }
@@ -217,13 +237,17 @@ namespace h5pp::hid {
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
             if(valid()) {
-                herr_t err = H5Aclose(val);
-                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                if(H5Iget_ref(val) > 1)
+                    H5Idec_ref(val);
+                else {
+                    herr_t err = H5Aclose(val);
+                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                }
             }
         }
     };
 
-    class h5o final: public hid_base<h5o> {
+    class h5o final : public hid_base<h5o> {
         public:
         using hid_base::hid_base;
         ~h5o() final { close(); }
@@ -231,34 +255,46 @@ namespace h5pp::hid {
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
             if(valid()) {
-                herr_t err = H5Oclose(val);
-                if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                if(H5Iget_ref(val) > 1)
+                    H5Idec_ref(val);
+                else {
+                    herr_t err = H5Oclose(val);
+                    if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
+                }
             }
         }
     };
 
-    class h5f final: public hid_base<h5f> {
+    class h5f final : public hid_base<h5f> {
         public:
         using hid_base::hid_base;
         ~h5f() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5f"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
-            if(valid()) {
+            if(H5Iget_ref(val) > 1)
+                H5Idec_ref(val);
+            else {
                 herr_t err = H5Fclose(val);
                 if(err < 0) H5Eprint(H5E_DEFAULT, stderr);
             }
         }
     };
 
-    class h5e final: public hid_base<h5e, true> {
+    class h5e final : public hid_base<h5e, true> {
         public:
         using hid_base::hid_base;
         ~h5e() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5e"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
         void                      close() final {
-            if(valid()) H5Eclose_stack(val);
+            if(valid()) {
+                if(H5Iget_ref(val) > 1)
+                    H5Idec_ref(val);
+                else {
+                    H5Eclose_stack(val);
+                }
+            }
         }
     };
 }
