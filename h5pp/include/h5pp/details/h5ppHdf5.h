@@ -1164,8 +1164,7 @@ namespace h5pp::hdf5 {
                 return "named datatype";
             else if constexpr(ObjType == H5O_type_t::H5O_TYPE_NTYPES)
                 return "ntypes";
-            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_MAP)
-                return "map";
+            else return "map"; // Only in HDF5 v 1.12
         }
         template<H5O_type_t ObjType, typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
         inline herr_t visit_by_name(const h5x &loc, std::string_view root, std::vector<std::string> &matchList, const hid::h5p &link_access = H5P_DEFAULT) {
