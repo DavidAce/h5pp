@@ -614,43 +614,44 @@ namespace h5pp::hdf5 {
         return getTypeInfo(dataset);
     }
 
-//    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
-//    inline TableTypeInfo getTableTypeInfo(const h5x &loc, std::string_view tableName, std::optional<bool> tableExists = std::nullopt, const hid::h5p &dset_access = H5P_DEFAULT) {
-//        TableTypeInfo info;
-//        if constexpr (std::is_same_v<h5x,hid::h5g>) info.tableGroup = loc;
-//        info.tableName = util::safe_str(tableName);
-//        info.tableFile = H5Iget_file_id(loc);
-//        info.tableDset = openLink<hid::h5d>(loc, tableName, tableExists, dset_access);
-//        info.tableType = H5Dget_type(info.tableDset.value());
-//
-//        // Alloate temporaries
-//        hsize_t             n_fields, n_records;
-//        H5TBget_table_info(loc, util::safe_str(tableName).c_str(), &n_fields, &n_records);
-//        std::vector<size_t> field_sizes(n_fields);
-//        std::vector<size_t> field_offsets(n_fields);
-//        size_t              record_bytes;
-//        char **             field_names = new char *[n_fields];
-//        for(size_t i = 0; i < n_fields; i++) field_names[i] = new char[255];
-//        H5TBget_field_info(loc, util::safe_str(tableName).c_str(), field_names, field_sizes.data(), field_offsets.data(), &record_bytes);
-//
-//        // Copy results
-//        std::vector<std::string> field_names_vec(n_fields);
-//        std::vector<hid::h5t>    field_types(n_fields);
-//        for(size_t i = 0; i < n_fields; i++) field_names_vec[i] = field_names[i];
-//        for(size_t i = 0; i < n_fields; i++) field_types[i] = H5Tget_member_type(info.tableType.value(), static_cast<unsigned>(i));
-//        info.numFields    = n_fields;
-//        info.numRecords   = n_records;
-//        info.recordBytes  = record_bytes;
-//        info.fieldSizes   = field_sizes;
-//        info.fieldOffsets = field_offsets;
-//        info.fieldTypes   = field_types;
-//        info.fieldNames   = field_names_vec;
-//
-//        /* release array of char arrays */
-//        for(size_t i = 0; i < n_fields; i++) delete field_names[i];
-//        delete[] field_names;
-//        return info;
-//    }
+    //    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
+    //    inline TableTypeInfo getTableTypeInfo(const h5x &loc, std::string_view tableName, std::optional<bool> tableExists = std::nullopt, const hid::h5p &dset_access =
+    //    H5P_DEFAULT) {
+    //        TableTypeInfo info;
+    //        if constexpr (std::is_same_v<h5x,hid::h5g>) info.tableGroup = loc;
+    //        info.tableName = util::safe_str(tableName);
+    //        info.tableFile = H5Iget_file_id(loc);
+    //        info.tableDset = openLink<hid::h5d>(loc, tableName, tableExists, dset_access);
+    //        info.tableType = H5Dget_type(info.tableDset.value());
+    //
+    //        // Alloate temporaries
+    //        hsize_t             n_fields, n_records;
+    //        H5TBget_table_info(loc, util::safe_str(tableName).c_str(), &n_fields, &n_records);
+    //        std::vector<size_t> field_sizes(n_fields);
+    //        std::vector<size_t> field_offsets(n_fields);
+    //        size_t              record_bytes;
+    //        char **             field_names = new char *[n_fields];
+    //        for(size_t i = 0; i < n_fields; i++) field_names[i] = new char[255];
+    //        H5TBget_field_info(loc, util::safe_str(tableName).c_str(), field_names, field_sizes.data(), field_offsets.data(), &record_bytes);
+    //
+    //        // Copy results
+    //        std::vector<std::string> field_names_vec(n_fields);
+    //        std::vector<hid::h5t>    field_types(n_fields);
+    //        for(size_t i = 0; i < n_fields; i++) field_names_vec[i] = field_names[i];
+    //        for(size_t i = 0; i < n_fields; i++) field_types[i] = H5Tget_member_type(info.tableType.value(), static_cast<unsigned>(i));
+    //        info.numFields    = n_fields;
+    //        info.numRecords   = n_records;
+    //        info.recordBytes  = record_bytes;
+    //        info.fieldSizes   = field_sizes;
+    //        info.fieldOffsets = field_offsets;
+    //        info.fieldTypes   = field_types;
+    //        info.fieldNames   = field_names_vec;
+    //
+    //        /* release array of char arrays */
+    //        for(size_t i = 0; i < n_fields; i++) delete field_names[i];
+    //        delete[] field_names;
+    //        return info;
+    //    }
 
     inline TypeInfo getTypeInfo(const hid::h5a &attribute) {
         auto        buf_size = H5Aget_name(attribute, 0, nullptr);
@@ -1093,8 +1094,8 @@ namespace h5pp::hdf5 {
     }
 
     namespace internal {
-        inline long maxHits = -1;
-        inline long maxDepth = -1;
+        inline long        maxHits  = -1;
+        inline long        maxDepth = -1;
         inline std::string searchKey;
         template<H5O_type_t ObjType>
         inline herr_t matcher([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const H5O_info_t *oinfo, void *opdata) {
@@ -1103,7 +1104,7 @@ namespace h5pp::hdf5 {
             // Return 0 to continue searching
             // Return 1 to finish the search. Normally when we've reached max search hits.
             std::string_view name_view(name);
-            if(maxDepth >= 0 and std::count(name_view.begin(),name_view.end(),'/') > maxDepth) return 0;
+            if(maxDepth >= 0 and std::count(name_view.begin(), name_view.end(), '/') > maxDepth) return 0;
             try {
                 if(oinfo->type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
                     auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
@@ -1122,9 +1123,9 @@ namespace h5pp::hdf5 {
             // Return 0 to continue searching
             // Return 1 to finish the search. Normally when we've reached max search hits.
             std::string_view name_view(name);
-            if(maxDepth >= 0 and std::count(name_view.begin(),name_view.end(),'/') > maxDepth) return 0;
+            if(maxDepth >= 0 and std::count(name_view.begin(), name_view.end(), '/') > maxDepth) return 0;
             try {
-                if constexpr(std::is_same_v<InfoType,H5O_info_t>){
+                if constexpr(std::is_same_v<InfoType, H5O_info_t>) {
                     if(info->type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
                         auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
                         if(searchKey.empty() or name_view.find(searchKey) != std::string::npos) {
@@ -1132,7 +1133,7 @@ namespace h5pp::hdf5 {
                             if(maxHits > 0 and (long) matchList->size() >= maxHits) return 1;
                         }
                     }
-                }else{
+                } else {
                     auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
                     if(searchKey.empty() or name_view.find(searchKey) != std::string::npos) {
                         matchList->push_back(name);
@@ -1143,29 +1144,31 @@ namespace h5pp::hdf5 {
             } catch(...) { throw std::logic_error(h5pp::format("Could not match object [{}] | loc_id [{}]", name, id)); }
         }
 
-
-
-
-
         //        template<H5O_type_t ObjType>
-//        inline herr_t collector([[maybe_unused]] hid_t loc_id, const char *name, [[maybe_unused]] const H5O_info_t *oinfo, void *opdata) {
-//            try {
-//                auto linkNames = reinterpret_cast<std::vector<std::string> *>(opdata);
-//                linkNames->push_back(name);
-//                return 0;
-//            } catch(...) { throw std::logic_error(h5pp::format("Could not collect object [{}] | loc_id [{}]", name, loc_id)); }
-//        }
+        //        inline herr_t collector([[maybe_unused]] hid_t loc_id, const char *name, [[maybe_unused]] const H5O_info_t *oinfo, void *opdata) {
+        //            try {
+        //                auto linkNames = reinterpret_cast<std::vector<std::string> *>(opdata);
+        //                linkNames->push_back(name);
+        //                return 0;
+        //            } catch(...) { throw std::logic_error(h5pp::format("Could not collect object [{}] | loc_id [{}]", name, loc_id)); }
+        //        }
         template<H5O_type_t ObjType>
-        inline constexpr std::string_view getObjTypeName(){
-            if constexpr(ObjType == H5O_type_t::H5O_TYPE_DATASET) return "dataset";
-            if constexpr(ObjType == H5O_type_t::H5O_TYPE_NAMED_DATATYPE) return "named datatype";
-            if constexpr(ObjType == H5O_type_t::H5O_TYPE_GROUP) return "group";
-            if constexpr(ObjType == H5O_type_t::H5O_TYPE_MAP) return "map";
-            if constexpr(ObjType == H5O_type_t::H5O_TYPE_UNKNOWN) return "unknown";
-            if constexpr(ObjType == H5O_type_t::H5O_TYPE_NTYPES) return "ntypes";
+        inline constexpr std::string_view getObjTypeName() {
+            if constexpr(ObjType == H5O_type_t::H5O_TYPE_DATASET)
+                return "dataset";
+            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_GROUP)
+                return "group";
+            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_UNKNOWN)
+                return "unknown";
+            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_NAMED_DATATYPE)
+                return "named datatype";
+            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_NTYPES)
+                return "ntypes";
+            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_MAP)
+                return "map";
         }
         template<H5O_type_t ObjType, typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
-        inline herr_t visit_by_name (const h5x & loc, std::string_view root, std::vector<std::string> & matchList, const hid::h5p &link_access = H5P_DEFAULT) {
+        inline herr_t visit_by_name(const h5x &loc, std::string_view root, std::vector<std::string> &matchList, const hid::h5p &link_access = H5P_DEFAULT) {
             if(internal::maxDepth == 0)
                 // Faster when we don't need to iterate recursively
                 return H5Literate_by_name(loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, internal::matcher<ObjType>, &matchList, link_access);
@@ -1183,17 +1186,21 @@ namespace h5pp::hdf5 {
     }
 
     template<H5O_type_t ObjType, typename h5x, typename = std::enable_if_t<std::is_same_v<h5x, hid::h5f> or std::is_same_v<h5x, hid::h5g>>>
-    inline std::vector<std::string>
-        findLinks(const h5x &loc, std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1, const hid::h5p &link_access = H5P_DEFAULT) {
+    inline std::vector<std::string> findLinks(const h5x &      loc,
+                                              std::string_view searchKey   = "",
+                                              std::string_view searchRoot  = "/",
+                                              long             maxHits     = -1,
+                                              long             maxDepth    = -1,
+                                              const hid::h5p & link_access = H5P_DEFAULT) {
         h5pp::logger::log->trace("Search key: {} | target type: {} | search root: {} | max search hits {}", searchKey, searchRoot, internal::getObjTypeName<ObjType>(), maxHits);
         std::vector<std::string> matchList;
-        internal::maxHits = maxHits;
-        internal::maxDepth =  maxDepth;
+        internal::maxHits   = maxHits;
+        internal::maxDepth  = maxDepth;
         internal::searchKey = searchKey;
-        herr_t err = internal::visit_by_name<ObjType>(loc,searchRoot,matchList,link_access);
+        herr_t err          = internal::visit_by_name<ObjType>(loc, searchRoot, matchList, link_access);
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Failed to find links of type [{}] while iterating from root [{}]",internal::getObjTypeName<ObjType>(), searchRoot));
+            throw std::runtime_error(h5pp::format("Failed to find links of type [{}] while iterating from root [{}]", internal::getObjTypeName<ObjType>(), searchRoot));
         }
         return matchList;
     }
@@ -1201,10 +1208,10 @@ namespace h5pp::hdf5 {
     template<H5O_type_t ObjType>
     inline std::vector<std::string> getContentsOfLink(const hid::h5f &file, std::string_view linkName, long maxDepth = 1, const hid::h5p &link_access = H5P_DEFAULT) {
         std::vector<std::string> contents;
-        internal::maxHits   = -1;
-        internal::maxDepth  =  maxDepth;
+        internal::maxHits  = -1;
+        internal::maxDepth = maxDepth;
         internal::searchKey.clear();
-        herr_t err = internal::visit_by_name<ObjType>(file,linkName,contents,link_access);
+        herr_t err = internal::visit_by_name<ObjType>(file, linkName, contents, link_access);
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to iterate link [{}] of type [{}]", linkName, internal::getObjTypeName<ObjType>()));
@@ -1608,10 +1615,12 @@ namespace h5pp::hdf5 {
 
     template<typename DataType>
     inline void appendTableEntries(const hid::h5f &file, const DataType &data, const TableInfo &tableProps) {
-
         size_t numNewRecords = h5pp::util::getSize(data);
-        h5pp::logger::log->debug(
-            "Appending {} new records to table [{}] | table num records {} | record size {} bytes",numNewRecords, tableProps.tableName.value(), tableProps.numRecords.value(), tableProps.recordBytes.value());
+        h5pp::logger::log->debug("Appending {} new records to table [{}] | table num records {} | record size {} bytes",
+                                 numNewRecords,
+                                 tableProps.tableName.value(),
+                                 tableProps.numRecords.value(),
+                                 tableProps.recordBytes.value());
 
         // Make sure the given container and the registered table entry have the same size.
         // If there is a mismatch here it can cause horrible bugs/segfaults
@@ -1658,8 +1667,7 @@ namespace h5pp::hdf5 {
         srcInfo.assertReadReady();
         tgtInfo.assertWriteReady();
         // Sanity checks for table types
-        if(srcInfo.tableType.value() != tgtInfo.tableType.value())
-            throw std::runtime_error(h5pp::format("Failed to add table entries: table type mismatch"));
+        if(srcInfo.tableType.value() != tgtInfo.tableType.value()) throw std::runtime_error(h5pp::format("Failed to add table entries: table type mismatch"));
         if(srcInfo.recordBytes.value() != tgtInfo.recordBytes.value())
             throw std::runtime_error(
                 h5pp::format("Failed to add table entries: table entry byte size mismatch src {} != tgt {}", srcInfo.recordBytes.value(), tgtInfo.recordBytes.value()));
@@ -1736,22 +1744,21 @@ namespace h5pp::hdf5 {
                                     std::string_view     srcTableName,
                                     const h5x_tgt &      tgtLocation,
                                     std::string_view     tgtTableName,
-                                    hsize_t               srcStartEntry,
-                                    hsize_t               tgtStartEntry,
-                                    hsize_t               numEntries,
+                                    hsize_t              srcStartEntry,
+                                    hsize_t              tgtStartEntry,
+                                    hsize_t              numEntries,
                                     const PropertyLists &plists = PropertyLists()) {
         auto srcInfo = getTableTypeInfo(srcLocation, srcTableName, plists.link_access);
         auto tgtInfo = getTableTypeInfo(tgtLocation, tgtTableName, plists.link_access);
         addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
     }
 
-
     template<typename DataType>
-    inline void readTableEntries(const hid::h5f &       file,
-                                 DataType &             data,
-                                 const TableInfo &tableProps,
-                                 std::optional<size_t>  startEntry = std::nullopt,
-                                 std::optional<size_t>  numEntries = std::nullopt) {
+    inline void readTableEntries(const hid::h5f &      file,
+                                 DataType &            data,
+                                 const TableInfo &     tableProps,
+                                 std::optional<size_t> startEntry = std::nullopt,
+                                 std::optional<size_t> numEntries = std::nullopt) {
         // If none of startEntry or numEntries are given:
         //          If data resizeable: startEntry = 0, numEntries = totalRecords
         //          If data not resizeable: startEntry = last entry, numEntries = 1.
