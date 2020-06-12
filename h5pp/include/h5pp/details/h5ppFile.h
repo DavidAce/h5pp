@@ -140,13 +140,23 @@ namespace h5pp {
         [[nodiscard]] std::string          getFilePath() const { return filePath.string(); }
         void                               setFilePermission(h5pp::FilePermission permission_) { permission = permission_; }
 
-        void setDriver_sec2() { H5Pset_fapl_sec2(plists.file_access); }
-        void setDriver_stdio() { H5Pset_fapl_stdio(plists.file_access); }
+        void setDriver_sec2() {
+            plists.file_access = H5Fget_access_plist(openFileHandle());
+            H5Pset_fapl_sec2(plists.file_access);
+        }
+        void setDriver_stdio() {
+            plists.file_access = H5Fget_access_plist(openFileHandle());
+            H5Pset_fapl_stdio(plists.file_access);
+        }
         void setDriver_core(bool writeOnClose = true, size_t bytesPerMalloc = 10240000) {
+            plists.file_access = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_core(plists.file_access, bytesPerMalloc, static_cast<hbool_t>(writeOnClose));
         }
 #ifdef H5_HAVE_PARALLEL
-        void setDriver_mpio(MPI_Comm comm, MPI_Info info) { H5Pset_fapl_mpio(plists.file_access, comm, info); }
+        void setDriver_mpio(MPI_Comm comm, MPI_Info info) {
+            plists.file_access = H5Fget_access_plist(openFileHandle());
+            H5Pset_fapl_mpio(plists.file_access, comm, info);
+        }
 #endif
 
         [[maybe_unused]] fs::path copyFile(const std::string &targetPath, const FilePermission &perm = FilePermission::COLLISION_FAIL) const {
@@ -612,15 +622,15 @@ namespace h5pp {
         [[nodiscard]] bool linkExists(std::string_view link) const { return h5pp::hdf5::checkIfLinkExists(openFileHandle(), link, std::nullopt, plists.link_access); }
 
         [[nodiscard]] std::vector<std::string> getLinks(std::string_view root = "/", long maxDepth = 0) const {
-            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_UNKNOWN>(openFileHandle(), root,maxDepth, plists.link_access);
+            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_UNKNOWN>(openFileHandle(), root, maxDepth, plists.link_access);
         }
 
         [[nodiscard]] std::vector<std::string> getDatasets(std::string_view root = "/", long maxDepth = 0) const {
-            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_DATASET>(openFileHandle(), root,maxDepth, plists.link_access);
+            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_DATASET>(openFileHandle(), root, maxDepth, plists.link_access);
         }
 
         [[nodiscard]] std::vector<std::string> getGroups(std::string_view root = "/", long maxDepth = 0) const {
-            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_GROUP>(openFileHandle(), root,maxDepth, plists.link_access);
+            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_GROUP>(openFileHandle(), root, maxDepth, plists.link_access);
         }
 
         [[nodiscard]] std::vector<std::string> findLinks(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
