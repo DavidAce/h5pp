@@ -143,7 +143,7 @@ namespace h5pp {
 
         void setDriver_sec2(){H5Pset_fapl_sec2(plists.file_access);}
         void setDriver_stdio(){H5Pset_fapl_stdio(plists.file_access);}
-        void setDriver_core(size_t bytesPerMalloc=10240000, bool writeOnClose = true){H5Pset_fapl_core(plists.file_access,bytesPerMalloc,static_cast<hbool_t>(writeOnClose));}
+        void setDriver_core(bool writeOnClose = true, size_t bytesPerMalloc=10240000){H5Pset_fapl_core(plists.file_access,bytesPerMalloc,static_cast<hbool_t>(writeOnClose));}
         #ifdef H5_HAVE_PARALLEL
         void setDriver_mpio(MPI_Comm comm, MPI_Info info){H5Pset_fapl_mpio(plists.file_access,comm,info);}
         #endif
@@ -538,8 +538,6 @@ namespace h5pp {
 
 
 
-        template<typename h5x_src,
-            typename = std::enable_if_t<std::is_same_v<h5x_src, hid::h5f> or std::is_same_v<h5x_src, hid::h5g>>>
         void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, std::string_view tgtTableName, TableSelection tableSelection) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
             auto   tgtInfo       = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
