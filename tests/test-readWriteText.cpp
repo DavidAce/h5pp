@@ -27,6 +27,13 @@ int main() {
     size_t      logLevel       = 0;
     h5pp::File  file(outputFilename, H5F_ACC_TRUNC | H5F_ACC_RDWR, logLevel);
 
+    char charDummyTemp[100] = "Dummy char array";
+    file.writeDataset(charDummyTemp, "charDummy");
+    file.writeDataset(charDummyTemp, "charDummy_dims",{17});
+
+    auto charDummy_dims_temp = file.readDataset<std::string>("charDummy_dims");
+    if(strcmp(charDummyTemp, charDummy_dims_temp.c_str()) != 0) throw std::runtime_error(h5pp::format("Char dummy given dims failed: [{}] != [{}]", charDummyTemp, charDummy_dims_temp));
+
     std::vector<std::string> vecString;
     vecString.emplace_back("this is a variable");
     vecString.emplace_back("length array");
@@ -51,9 +58,9 @@ int main() {
     file.writeDataset(hugeString, "hugeString");
 
     // The following shouldn't work
-    try {
-        file.writeDataset(charDummy, {2}, "charDummy_asarray_dims");
-    } catch(std::exception &err) { std::cout << "Expected error: " << err.what() << std::endl; }
+//    try {
+//        file.writeDataset(charDummy, {2}, "charDummy_asarray_dims",{2}, std::nullopt,{});
+//    } catch(std::exception &err) { std::cout << "Expected error: " << err.what() << std::endl; }
 
     auto stringDummyRead = file.readDataset<std::string>("stringDummy");
     if(stringDummy != stringDummyRead) throw std::runtime_error(h5pp::format("String dummy failed: [{}] != [{}]", stringDummy, stringDummyRead));
@@ -62,11 +69,11 @@ int main() {
     auto charDummyRead = file.readDataset<std::string>("charDummy");
     if(strcmp(charDummy, charDummyRead.c_str()) != 0) throw std::runtime_error(h5pp::format("Char dummy failed: [{}] != [{}]", charDummy, charDummyRead));
 
-    file.writeDataset(charDummy, {17}, "charDummy_dims");
+    file.writeDataset(charDummy, "charDummy_dims", {17});
     auto charDummy_dims = file.readDataset<std::string>("charDummy_dims");
     if(strcmp(charDummy, charDummy_dims.c_str()) != 0) throw std::runtime_error(h5pp::format("Char dummy given dims failed: [{}] != [{}]", charDummy, charDummy_dims));
 
-    file.writeDataset(charDummy, 17, "charDummy_size");
+    file.writeDataset(charDummy, "charDummy_size",17);
     auto charDummy_size = file.readDataset<std::string>("charDummy_size");
     if(strcmp(charDummy, charDummy_size.c_str()) != 0) throw std::runtime_error(h5pp::format("Char dummy given size failed: [{}] != [{}]", charDummy, charDummy_size));
 
@@ -77,14 +84,14 @@ int main() {
     // Now try some outlier cases
 
     // Write text data in various ways
-    file.writeDataset(stringDummy, "stringDummy_chunked", H5D_CHUNKED);
+    file.writeDataset(stringDummy, "stringDummy_chunked", {stringDummy.size()}, H5D_CHUNKED);
 
     file.writeDataset(stringDummy, "stringDummy_extended");
     file.writeDataset("some other dummy text that makes it longer", "stringDummy_extended");
     auto stringDummy_extended = file.readDataset<std::string>("stringDummy_extended");
     if(stringDummy_extended != "some other dummy text that makes it longer") throw std::runtime_error(h5pp::format("Failed to extend string: [{}]", stringDummy_extended));
 
-    file.writeDataset("String with fixed size", 23, "stringDummy_fixedSize");
+    file.writeDataset("String with fixed size", "stringDummy_fixedSize",23);
     auto stringDummy_fixedSize = file.readDataset<std::string>("stringDummy_fixedSize");
     if(stringDummy_fixedSize != "String with fixed size") throw std::runtime_error(h5pp::format("Failed to write fixed-size string: [{}]", stringDummy_fixedSize));
 

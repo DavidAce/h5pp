@@ -2,6 +2,7 @@
 #pragma once
 
 #include "h5ppConstants.h"
+#include "h5ppDimensionType.h"
 #include "h5ppEigen.h"
 #include "h5ppEnums.h"
 #include "h5ppFilesystem.h"
@@ -20,6 +21,7 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <utility>
 
 namespace h5pp {
 
@@ -35,8 +37,7 @@ namespace h5pp {
         bool                 logTimestamp = false;
         hid::h5e             error_stack;
         unsigned int         currentCompressionLevel = 0;
-
-        void init() {
+        void                 init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
             h5pp::logger::log->debug("Initializing HDF5 file: [{}]", filePath.string());
             /* Set default error print output */
@@ -195,170 +196,217 @@ namespace h5pp {
                 return currentCompressionLevel;
         }
 
-        void createGroup(std::string_view group_relative_name) {
-            hid::h5f file = openFileHandle();
-            h5pp::hdf5::createGroup(file, group_relative_name, std::nullopt, plists);
+        void createGroup(std::string_view group_relative_name) { h5pp::hdf5::createGroup(openFileHandle(), group_relative_name, std::nullopt, plists); }
+
+        void resizeDataset(DsetInfo &info, const DimsType &newDimensions, std::optional<h5pp::ResizeMode> mode_override = std::nullopt) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to resize dataset on read-only file [{}]", filePath.string()));
+            h5pp::hdf5::resizeDataset(info, newDimensions.dims, mode_override);
         }
 
-        void createDataset(const DsetInfo &dsetInfo) { h5pp::hdf5::createDataset(dsetInfo, plists); }
-
-        template<typename DataType>
-        void createDataset(const DataType &data, std::string_view dsetPath, const Options &options) {
-            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
-            if constexpr(std::is_pointer_v<DataType>)
-                if(not options.dataDims)
-                    throw std::runtime_error(
-                        h5pp::format("Error creating dataset [{}]: Dimensions or size not specified for type [{}]", dsetPath, h5pp::type::sfinae::type_name<DataType>()));
-
-            hid::h5f file     = openFileHandle();
-            auto     dsetInfo = h5pp::scan::newDsetInfo(file, data, dsetPath, options, plists);
-            if(dsetInfo.dsetExists and dsetInfo.dsetExists.value()) {
-                auto dataInfo = h5pp::scan::getDataInfo(data, options);
-                h5pp::hdf5::resizeDataset(dsetInfo, dataInfo);
-            } else
-                h5pp::hdf5::createDataset(dsetInfo, plists);
-        }
-
-        template<typename DataType,
-                 typename DataDimsType  = std::initializer_list<hsize_t>,
-                 typename ChunkDimsType = std::initializer_list<hsize_t>,
-                 typename               = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<DataDimsType>>,
-                 typename               = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<ChunkDimsType>>>
-        void createDataset(const DataType &            data,
-                           const DataDimsType &        dataDims,
-                           std::string_view            dsetPath,
-                           const hid::h5t &            h5_type,
-                           std::optional<H5D_layout_t> h5_layout   = std::nullopt,
-                           const ChunkDimsType &       chunkDims   = {},
-                           std::optional<unsigned int> compression = std::nullopt) {
-            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
+        template<typename DsetDimsType = std::initializer_list<hsize_t>, typename = h5pp::type::sfinae::enable_if_is_integral_iterable_or_num<DsetDimsType>>
+        DsetInfo resizeDataset(std::string_view dsetPath, const DsetDimsType &newDimensions, std::optional<h5pp::ResizeMode> mode = std::nullopt) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to resize dataset on read-only file [{}]", filePath.string()));
             Options options;
-            options.h5_type     = h5_type;
-            options.h5_layout   = h5_layout;
-            options.dataDims    = h5pp::util::getOptionalIterable(dataDims);
-            options.chunkDims   = h5pp::util::getOptionalIterable(chunkDims);
-            options.compression = getCompressionLevel(compression);
-            createDataset(data, dsetPath, options);
+            options.linkPath   = dsetPath;
+            options.resizeMode = mode;
+            auto info          = h5pp::scan::getDsetInfo(openFileHandle(), dsetPath, options, plists);
+            if(not info.dsetExists.value()) throw std::runtime_error(h5pp::format("Failed to resize dataset [{}]: dataset does not exist", dsetPath));
+            h5pp::hdf5::resizeDataset(info, h5pp::util::getDimVector(newDimensions), mode);
+            return info;
         }
 
-        template<typename DataType,
-                 typename ChunkDimsType = std::initializer_list<hsize_t>,
-                 typename               = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<ChunkDimsType>>>
-        void createDataset(const DataType &            data,
-                           std::string_view            dsetPath,
-                           const hid::h5t &            h5_type,
-                           std::optional<H5D_layout_t> h5_layout   = std::nullopt,
-                           const ChunkDimsType &       chunkDims   = {},
-                           std::optional<unsigned int> compression = std::nullopt) {
-            Options options;
-            options.h5_type     = h5_type;
-            options.h5_layout   = h5_layout;
-            options.chunkDims   = h5pp::util::getOptionalIterable(chunkDims);
-            options.compression = getCompressionLevel(compression);
-            createDataset(data, dsetPath, options);
+        void createDataset(DsetInfo &info) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
+            h5pp::hdf5::createDataset(info, plists);
         }
 
-        template<typename DataType,
-                 typename ChunkDimsType = std::initializer_list<hsize_t>,
-                 typename               = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<ChunkDimsType>>>
-        void createDataset(const DataType &            data,
-                           std::string_view            dsetPath,
-                           std::optional<H5D_layout_t> h5_layout   = std::nullopt,
-                           const ChunkDimsType &       chunkDims   = {},
-                           std::optional<unsigned int> compression = std::nullopt) {
+        DsetInfo createDataset(const Options &options) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
+            options.assertWellDefined();
+            if(not options.linkPath) throw std::runtime_error(h5pp::format("Error creating dataset: No dataset path specified"));
+            if(not options.dataDims) throw std::runtime_error(h5pp::format("Error creating dataset [{}]: Dimensions or size not specified", options.linkPath.value()));
+            if(not options.h5_type) throw std::runtime_error(h5pp::format("Error creating dataset [{}]: HDF5 type not specified", options.linkPath.value()));
+            auto dsetInfo = h5pp::scan::getDsetInfo(openFileHandle(), options, plists);
+            h5pp::File::createDataset(dsetInfo);
+            return dsetInfo;
+        }
+
+        DsetInfo createDataset(std::optional<hid::h5t>     h5_type,
+                               std::string_view            dsetPath,
+                               const DimsType &            dsetDims,
+                               std::optional<H5D_layout_t> h5_layout     = std::nullopt,
+                               const OptDimsType &         dsetDimsChunk = std::nullopt,
+                               const OptDimsType &         dsetDimsMax   = std::nullopt,
+                               std::optional<unsigned int> compression   = std::nullopt) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
             Options options;
-            options.h5_layout   = h5_layout;
-            options.chunkDims   = h5pp::util::getOptionalIterable(chunkDims);
-            options.compression = getCompressionLevel(compression);
-            createDataset(data, dsetPath, options);
+            options.linkPath      = dsetPath;
+            options.dataDims      = dsetDims.dims;
+            options.dsetDimsChunk = dsetDimsChunk.dims;
+            options.dsetDimsMax   = dsetDimsMax.dims;
+            options.h5_type       = std::move(h5_type);
+            options.h5_layout     = h5_layout;
+            options.compression   = getCompressionLevel(compression);
+            return createDataset(dsetPath, options);
         }
 
         template<typename DataType>
-        void writeDataset(const DataType &data, std::string_view dsetPath, const Options &options) {
+        DsetInfo createDataset(const DataType &data, const Options &options) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
+            auto dsetInfo = h5pp::scan::getDsetInfo(openFileHandle(), data, options, plists);
+            h5pp::File::createDataset(dsetInfo);
+            return dsetInfo;
+        }
+
+        template<typename DataType>
+        DsetInfo createDataset(const DataType &            data,
+                               std::string_view            dsetPath,
+                               const OptDimsType &         dataDims      = std::nullopt,
+                               std::optional<H5D_layout_t> h5_layout     = std::nullopt,
+                               const OptDimsType &         dsetDimsChunk = std::nullopt,
+                               const OptDimsType &         dsetDimsMax   = std::nullopt,
+                               std::optional<unsigned int> compression   = std::nullopt) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
+            Options options;
+            options.linkPath      = dsetPath;
+            options.dataDims      = dataDims.dims;
+            options.dsetDimsChunk = dsetDimsChunk.dims;
+            options.dsetDimsMax   = dsetDimsMax.dims;
+            options.h5_type       = h5pp::util::getH5Type<DataType>();
+            options.h5_layout     = h5_layout;
+            options.compression   = getCompressionLevel(compression);
+            // If dsetdims is a nullopt we can infer its dimensions from the given dataset
+            return createDataset(data, dsetPath, options);
+        }
+
+        template<typename DataType>
+        void writeDataset(const DataType &data, const DataInfo &dataInfo, DsetInfo &dsetInfo) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
-            if constexpr(std::is_pointer_v<DataType>)
-                if(not options.dataDims)
-                    throw std::runtime_error(
-                        h5pp::format("Error writing dataset [{}]: Dimensions or size not specified for type [{}]", dsetPath, h5pp::type::sfinae::type_name<DataType>()));
-
-            createDataset(data, dsetPath, options);
-            hid::h5f file     = openFileHandle();
-            auto     dataInfo = h5pp::scan::getDataInfo(data, options);
-            auto     dsetInfo = h5pp::scan::getDsetInfo(file, dsetPath, options, plists);
+            // The infos passed should be parsed and ready to write with
+            if(not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
+            resizeDataset(dsetInfo, dataInfo.dataDims.value());
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
         }
 
-        template<typename DataType,
-                 typename DataDimsType  = std::initializer_list<hsize_t>,
-                 typename ChunkDimsType = std::initializer_list<hsize_t>,
-                 typename               = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<DataDimsType>>,
-                 typename               = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<ChunkDimsType>>>
-        void writeDataset(const DataType &            data,
-                          const DataDimsType &        dataDims,
-                          std::string_view            dsetPath,
-                          const hid::h5t &            h5_type,
-                          std::optional<H5D_layout_t> h5_layout   = std::nullopt,
-                          const ChunkDimsType &       chunkDims   = {},
-                          std::optional<unsigned int> compression = std::nullopt) {
-            Options options;
-            options.dataDims    = h5pp::util::getOptionalIterable(dataDims);
-            options.h5_type     = h5_type;
-            options.h5_layout   = h5_layout;
-            options.chunkDims   = h5pp::util::getOptionalIterable(chunkDims);
-            options.compression = getCompressionLevel(compression);
-            writeDataset(data, dsetPath, options);
+        template<typename DataType>
+        DsetInfo writeDataset(const DataType &data, const Options &options) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            options.assertWellDefined();
+            auto dataInfo = h5pp::scan::getDataInfo(data, options);
+            auto dsetInfo = h5pp::scan::getDsetInfo(openFileHandle(), data, options, plists); // Creates if it doesn't exist, otherwise it just fills the meta data
+            writeDataset(data, dataInfo, dsetInfo);
+            return dsetInfo;
         }
 
-        template<typename DataType,
-                 typename ChunkDimsType = std::initializer_list<hsize_t>,
-                 typename               = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<ChunkDimsType>>>
-        void writeDataset(const DataType &            data,
-                          std::string_view            dsetPath,
-                          const hid::h5t &            h5_type,
-                          std::optional<H5D_layout_t> h5_layout   = std::nullopt,
-                          const ChunkDimsType &       chunkDims   = {},
-                          std::optional<unsigned int> compression = std::nullopt) {
+        template<typename DataType>
+        DsetInfo writeDataset(const DataType &            data,                     /*!< Eigen, stl-like object or pointer to data buffer */
+                              std::string_view            dsetPath,                 /*!< Path to HDF5 dataset relative to the file root */
+                              const OptDimsType &         dataDims  = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
+                              std::optional<H5D_layout_t> h5_layout = std::nullopt, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
+                              const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
+                              const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
+                              std::optional<hid::h5t>     h5_type       = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
+                              std::optional<ResizeMode>   resizeMode    = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+                              std::optional<unsigned int> compression = std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+        {
             Options options;
-            options.h5_type     = h5_type;
-            options.h5_layout   = h5_layout;
-            options.chunkDims   = h5pp::util::getOptionalIterable(chunkDims);
-            options.compression = getCompressionLevel(compression);
-            writeDataset(data, dsetPath, options);
+            options.linkPath      = dsetPath;
+            options.dataDims      = dataDims.dims;
+            options.dsetDimsChunk = dsetDimsChunk.dims;
+            options.dsetDimsMax   = dsetDimsMax.dims;
+            options.h5_layout     = h5_layout;
+            options.h5_type       = std::move(h5_type);
+            options.resizeMode    = resizeMode;
+            options.compression   = getCompressionLevel(compression);
+            return writeDataset(data, options);
         }
 
-        template<typename DataType,
-                 typename DataDimsType  = std::initializer_list<hsize_t>,
-                 typename ChunkDimsType = std::initializer_list<hsize_t>,
-                 typename               = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<DataDimsType>>,
-                 typename               = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<ChunkDimsType>>>
-        void writeDataset(const DataType &            data,
-                          const DataDimsType &        dataDims,
-                          std::string_view            dsetPath,
-                          std::optional<H5D_layout_t> h5_layout   = std::nullopt,
-                          const ChunkDimsType &       chunkDims   = {},
-                          std::optional<unsigned int> compression = std::nullopt) {
+        template<typename DataType>
+        DsetInfo writeDataset(const DataType &            data,                     /*!< Eigen, stl-like object or pointer to data buffer */
+                              std::string_view            dsetPath,                 /*!< Path to HDF5 dataset relative to the file root */
+                              hid::h5t                    h5_type,                  /*!< (On create) Type of dataset. Override automatic type detection. */
+                              const OptDimsType &         dataDims  = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
+                              std::optional<H5D_layout_t> h5_layout = std::nullopt, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
+                              const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
+                              const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
+                              std::optional<ResizeMode>   resizeMode    = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+                              std::optional<unsigned int> compression = std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+        {
             Options options;
-            options.dataDims    = h5pp::util::getOptionalIterable(dataDims);
-            options.h5_layout   = h5_layout;
-            options.chunkDims   = h5pp::util::getOptionalIterable(chunkDims);
-            options.compression = getCompressionLevel(compression);
-            writeDataset(data, dsetPath, options);
+            options.linkPath      = dsetPath;
+            options.dataDims      = dataDims.dims;
+            options.dsetDimsChunk = dsetDimsChunk.dims;
+            options.dsetDimsMax   = dsetDimsMax.dims;
+            options.h5_layout     = h5_layout;
+            options.h5_type       = std::move(h5_type);
+            options.resizeMode    = resizeMode;
+            options.compression   = getCompressionLevel(compression);
+            return writeDataset(data, options);
         }
 
-        template<typename DataType,
-                 typename ChunkDimsType = std::initializer_list<hsize_t>,
-                 typename               = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<ChunkDimsType>>>
-        void writeDataset(const DataType &            data,
-                          std::string_view            dsetPath,
-                          std::optional<H5D_layout_t> h5_layout   = std::nullopt,
-                          const ChunkDimsType &       chunkDims   = {},
-                          std::optional<unsigned int> compression = std::nullopt) {
+        template<typename DataType>
+        DsetInfo writeDataset(const DataType &            data,      /*!< Eigen, stl-like object or pointer to data buffer */
+                              std::string_view            dsetPath,  /*!< Path to HDF5 dataset relative to the file root */
+                              H5D_layout_t                h5_layout, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
+                              const OptDimsType &         dataDims      = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
+                              const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
+                              const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
+                              std::optional<hid::h5t>     h5_type       = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
+                              std::optional<ResizeMode>   resizeMode    = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+                              std::optional<unsigned int> compression = std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+        {
             Options options;
-            options.h5_layout   = h5_layout;
-            options.chunkDims   = h5pp::util::getOptionalIterable(chunkDims);
-            options.compression = getCompressionLevel(compression);
-            writeDataset(data, dsetPath, options);
+            options.linkPath      = dsetPath;
+            options.dataDims      = dataDims.dims;
+            options.dsetDimsChunk = dsetDimsChunk.dims;
+            options.dsetDimsMax   = dsetDimsMax.dims;
+            options.h5_layout     = h5_layout;
+            options.h5_type       = std::move(h5_type);
+            options.resizeMode    = resizeMode;
+            options.compression   = getCompressionLevel(compression);
+            return writeDataset(data, options);
+        }
+
+        template<typename DataType>
+        DsetInfo writeDataset_compact(const DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt, std::optional<hid::h5t> h5_type = std::nullopt) {
+            Options options;
+            options.linkPath    = dsetPath;
+            options.dataDims    = dataDims.dims;
+            options.h5_layout   = H5D_COMPACT;
+            options.h5_type     = std::move(h5_type);
+            options.compression = 0;
+            return writeDataset(data, options);
+        }
+
+        template<typename DataType>
+        DsetInfo
+            writeDataset_contiguous(const DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt, std::optional<hid::h5t> h5_type = std::nullopt) {
+            Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty, ´,
+            options.linkPath    = dsetPath;
+            options.dataDims    = dataDims.dims;
+            options.h5_layout   = H5D_CONTIGUOUS;
+            options.h5_type     = std::move(h5_type);
+            options.compression = 0;
+            return writeDataset(data, options);
+        }
+
+        template<typename DataType>
+        DsetInfo writeDataset_chunked(const DataType &            data,
+                                      std::string_view            dsetPath,
+                                      const OptDimsType &         dataDims      = std::nullopt,
+                                      const OptDimsType &         dsetDimsChunk = std::nullopt,
+                                      const OptDimsType &         dsetDimsMax   = std::nullopt,
+                                      std::optional<hid::h5t>     h5_type       = std::nullopt,
+                                      std::optional<unsigned int> compression   = std::nullopt) {
+            Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty, ´,
+            options.linkPath      = dsetPath;
+            options.dataDims      = dataDims.dims;
+            options.dsetDimsChunk = dsetDimsChunk.dims;
+            options.dsetDimsMax   = dsetDimsMax.dims;
+            options.h5_layout     = H5D_CHUNKED;
+            options.h5_type       = std::move(h5_type);
+            options.compression   = getCompressionLevel(compression);
+            return writeDataset(data, options);
         }
 
         void writeSymbolicLink(std::string_view src_path, std::string_view tgt_path) {
@@ -367,44 +415,56 @@ namespace h5pp {
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        void readDataset(DataType &data, std::string_view dsetPath, const Options &options = Options()) const {
-            if constexpr(std::is_pointer_v<DataType>)
-                if(not options.dataDims)
-                    throw std::runtime_error(
-                        h5pp::format("Error reading dataset [{}]: Dimensions or size not specified for given type [{}]", dsetPath, h5pp::type::sfinae::type_name<DataType>()));
-
-            hid::h5f file     = openFileHandle();
-            auto     dsetInfo = h5pp::scan::getDsetInfo(file, dsetPath, options, plists);
-            if(dsetInfo.dsetExists and not dsetInfo.dsetExists.value()) { return h5pp::logger::log->error("Cannot read dataset [{}]: It does not exist", dsetPath); }
-            DataInfo dataInfo;
-            h5pp::hdf5::resizeData(data, dsetInfo.h5_dset.value());
-            h5pp::scan::fillDataInfo(data, dataInfo, options);
+        void readDataset(DataType &data, const Options &options) const {
+            options.assertWellDefined();
+            auto dsetInfo = h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
+            if(dsetInfo.dsetExists and not dsetInfo.dsetExists.value()) {
+                return h5pp::logger::log->error("Cannot read dataset [{}]: It does not exist", options.linkPath.value());
+            }
+            h5pp::hdf5::resizeData(data, dsetInfo);
+            auto dataInfo = h5pp::scan::getDataInfo(data, options);
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
         }
 
-        template<typename DataType,
-                 typename DataDimsType = std::initializer_list<hsize_t>,
-                 typename              = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<DataDimsType>>>
-        void readDataset(DataType &data, const DataDimsType &dataDims, std::string_view datasetPath) const {
+        template<typename DataType>
+        void readDataset(DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt) const {
             Options options;
-            options.dataDims = h5pp::util::getOptionalIterable(dataDims);
-            readDataset(data, datasetPath, options);
+            options.linkPath = dsetPath;
+            options.dataDims = dataDims.dims;
+            readDataset(data, options);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(std::string_view datasetPath) const {
+        DataType readDataset(std::string_view datasetPath, const OptDimsType &dataDims = std::nullopt) const {
             DataType data;
-            readDataset(data, datasetPath);
+            readDataset(data, datasetPath, dataDims);
             return data;
         }
 
-        template<typename DataType,
-                 typename DataDimsType = std::initializer_list<hsize_t>,
-                 typename              = std::enable_if_t<not std::is_const_v<DataType> and h5pp::type::sfinae::is_integral_num_or_list_v<DataDimsType>>>
-        DataType readDataset(const DataDimsType &dataDims, std::string_view datasetPath) const {
-            DataType data;
-            readDataset(data, dataDims, datasetPath);
-            return data;
+        template<typename DataType>
+        void appendToDataset(DataType &data, const DataInfo &dataInfo, DsetInfo &dsetInfo, size_t axis) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            h5pp::hdf5::extendDataset(dsetInfo, dataInfo, axis);
+            h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
+        }
+
+        template<typename DataType>
+        DsetInfo appendToDataset(DataType &data, size_t axis, const Options &options = Options()) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            options.assertWellDefined();
+            auto dataInfo = h5pp::scan::getDataInfo(data, options);
+            auto dsetInfo = h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
+            appendToDataset(data, dataInfo, dsetInfo, axis);
+            return dsetInfo;
+        }
+
+        template<typename DataType>
+        DsetInfo appendToDataset(DataType &data, std::string_view dsetPath, size_t axis, const OptDimsType &dataDims = std::nullopt) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            Options options;
+            options.linkPath = dsetPath;
+            options.dataDims = dataDims.dims;
+            return appendToDataset(data, axis, options);
         }
 
         /*
@@ -413,100 +473,82 @@ namespace h5pp {
          *
          */
 
-        void createAttribute(const AttrInfo &attrInfo) { h5pp::hdf5::createAttribute(attrInfo); }
+        void createAttribute(AttrInfo &attrInfo) { h5pp::hdf5::createAttribute(attrInfo); }
 
         template<typename DataType>
-        void createAttribute(const DataType &data, std::string_view attrName, std::string_view linkPath, const Options &options = Options()) {
+        AttrInfo createAttribute(const DataType &data, const Options &options) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to create attribute on read-only file [{}]", filePath.string()));
-            if constexpr(std::is_pointer_v<DataType>)
-                if(not options.dataDims)
-                    throw std::runtime_error(h5pp::format("Error creating attribute [{}] in link [{}]: Dimensions or size not specified for type [{}]",
-                                                          attrName,
-                                                          linkPath,
-                                                          h5pp::type::sfinae::type_name<DataType>()));
-
-            hid::h5f file     = openFileHandle();
-            auto     attrInfo = h5pp::scan::newAttrInfo(file, data, attrName, linkPath, options, plists);
-            h5pp::hdf5::createAttribute(attrInfo);
-        }
-
-        template<typename DataType, typename DataDimsType = std::initializer_list<hsize_t>, typename = h5pp::type::sfinae::is_iterable_or_nullopt<DataDimsType>>
-        void createAttribute(const DataType &data, const DataDimsType &dataDims, std::string_view attrName, std::string_view linkPath) {
-            Options options;
-            options.dataDims = h5pp::util::getOptionalIterable(dataDims);
-            createAttribute(data, attrName, linkPath, options);
+            auto attrInfo = h5pp::scan::getAttrInfo(openFileHandle(), data, options, plists);
+            createAttribute(attrInfo);
+            return attrInfo;
         }
 
         template<typename DataType>
-        void writeAttribute(const DataType &data, std::string_view attrName, std::string_view linkPath, const Options &options = Options()) {
-            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
-            if constexpr(std::is_pointer_v<DataType>)
-                if(not options.dataDims)
-                    throw std::runtime_error(h5pp::format("Error writing to attribute [{}] in link [{}]: Dimensions or size not specified for type [{}]",
-                                                          attrName,
-                                                          linkPath,
-                                                          h5pp::type::sfinae::type_name<DataType>()));
+        void createAttribute(const DataType &data, const DimsType &dataDims, std::string_view attrName, std::string_view linkPath) {
+            Options options;
+            options.linkPath = linkPath;
+            options.attrName = attrName;
+            options.dataDims = dataDims.dims;
+            createAttribute(data, options);
+        }
 
-            createAttribute(data, attrName, linkPath, options);
-            hid::h5f file     = openFileHandle();
-            auto     dataInfo = h5pp::scan::getDataInfo(data, options);
-            auto     attrInfo = h5pp::scan::getAttrInfo(file, attrName, linkPath, plists);
+        template<typename DataType>
+        void writeAttribute(const DataType &data, const Options &options) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            options.assertWellDefined();
+            auto dataInfo = h5pp::scan::getDataInfo(data, options);
+            auto attrInfo = createAttribute(data, options);
             h5pp::hdf5::writeAttribute(data, dataInfo, attrInfo);
         }
 
-        template<typename DataType,
-                 typename DataDimsType = std::initializer_list<hsize_t>,
-                 typename              = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<DataDimsType>>>
-        void writeAttribute(const DataType &data, const DataDimsType &dataDims, std::string_view attrName, std::string_view linkPath) {
-            Options options;
-            options.dataDims = dataDims;
-            h5pp::hdf5::writeAttribute(data, attrName, linkPath, options);
-        }
-
-        template<typename DataType,
-                 typename DataDimsType = std::initializer_list<hsize_t>,
-                 typename              = std::enable_if_t<h5pp::type::sfinae::is_integral_num_or_list_v<DataDimsType>>>
-        void writeAttribute(const DataType &data, const DataDimsType &dataDims, std::string_view attrName, std::string_view linkPath, const hid::h5t &h5_type) {
-            Options options;
-            options.h5_type  = h5_type;
-            options.dataDims = dataDims;
-            h5pp::hdf5::writeAttribute(data, attrName, linkPath, options);
-        }
-
         template<typename DataType>
-        void writeAttribute(const DataType &data, std::string_view attrName, std::string_view linkPath, const hid::h5t &h5_type) {
+        void writeAttribute(const DataType &        data,
+                            std::string_view        attrName,
+                            std::string_view        linkPath,
+                            const OptDimsType &     dataDims = std::nullopt,
+                            std::optional<hid::h5t> h5_type  = std::nullopt) {
             Options options;
-            options.h5_type = h5_type;
-            h5pp::hdf5::writeAttribute(data, attrName, linkPath, options);
+            options.linkPath = linkPath;
+            options.attrName = attrName;
+            options.dataDims = dataDims.dims;
+            options.h5_type  = std::move(h5_type);
+            writeAttribute(data, options);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        void readAttribute(DataType &data, std::string_view attrName, std::string_view linkPath, const Options &options = Options()) const {
-            if constexpr(std::is_pointer_v<DataType>)
-                if(not options.dataDims)
-                    throw std::runtime_error(h5pp::format("Error reading attribute [{}] in link [{}]: Dimensions or size not specified for type [{}]",
-                                                          attrName,
-                                                          linkPath,
-                                                          h5pp::type::sfinae::type_name<DataType>()));
-
-            hid::h5f file     = openFileHandle();
-            auto     attrInfo = h5pp::scan::getAttrInfo(file, attrName, linkPath, plists);
+        void readAttribute(DataType &data, const Options &options) const {
+            options.assertWellDefined();
+            auto attrInfo = h5pp::scan::readAttrInfo(openFileHandle(), options, plists);
             if(attrInfo.linkExists and not attrInfo.linkExists.value())
-                return h5pp::logger::log->error("Could not read attribute [{}] in link [{}]: Link does not exist", attrName, linkPath);
+                return h5pp::logger::log->error("Could not read attribute [{}] in link [{}]: "
+                                                "Link does not exist",
+                                                attrInfo.attrName.value(),
+                                                attrInfo.linkPath.value());
 
             if(attrInfo.attrExists and not attrInfo.attrExists.value())
-                return h5pp::logger::log->error("Could not read attribute [{}] in link [{}]: Attribute does not exist", attrName, linkPath);
+                return h5pp::logger::log->error("Could not read attribute [{}] in link [{}]: "
+                                                "Attribute does not exist",
+                                                attrInfo.attrName.value(),
+                                                attrInfo.linkPath.value());
 
-            DataInfo dataInfo;
-            h5pp::hdf5::resizeData(data, attrInfo.h5_attr.value());
-            h5pp::scan::fillDataInfo(data, dataInfo, options);
+            h5pp::hdf5::resizeData(data, attrInfo);
+            auto dataInfo = h5pp::scan::getDataInfo(data, options);
             h5pp::hdf5::readAttribute(data, dataInfo, attrInfo);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        [[nodiscard]] DataType readAttribute(std::string_view attrName, std::string_view linkName, const Options &options = Options()) const {
+        void readAttribute(DataType &data, std::string_view attrName, std::string_view linkPath, const OptDimsType &dataDims = std::nullopt) const {
+            Options options;
+            options.linkPath = linkPath;
+            options.attrName = attrName;
+            options.dataDims = dataDims.dims;
+            readAttribute(data, options);
+        }
+
+        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        [[nodiscard]] DataType readAttribute(std::string_view attrName, std::string_view linkPath, const OptDimsType &dataDims = std::nullopt) const {
             DataType data;
-            readAttribute(data, attrName, linkName, options);
+            readAttribute(data, attrName, linkPath, dataDims);
             return data;
         }
 
@@ -529,7 +571,7 @@ namespace h5pp {
                               const std::optional<unsigned int> desiredCompressionLevel = std::nullopt
 
         ) {
-            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             auto tableInfo = h5pp::scan::newTableInfo(h5_entry_type, tableName, tableTitle, desiredChunkSize, desiredCompressionLevel);
             h5pp::hdf5::createTable(openFileHandle(), tableInfo, plists);
             return tableInfo;
@@ -537,21 +579,23 @@ namespace h5pp {
 
         template<typename DataType>
         TableInfo appendTableEntries(const DataType &data, std::string_view tableName) {
-            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             auto info = h5pp::scan::getTableInfo(openFileHandle(), tableName, std::nullopt, plists);
             if(not info.tableExists.value()) throw std::runtime_error(h5pp::format("Cannot append to table [{}]: it does not exist", tableName));
             h5pp::hdf5::appendTableEntries(data, info);
             return info;
         }
 
-        void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, h5pp::TableInfo &tgtInfo, TableSelection tableSelection,
+        void addTableEntriesFrom(const h5pp::TableInfo &           srcInfo,
+                                 h5pp::TableInfo &                 tgtInfo,
+                                 TableSelection                    tableSelection,
                                  const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
                                  const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
-            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             if(not srcInfo.tableExists) throw std::runtime_error("Source table info has not been initialized");
             if(not srcInfo.tableExists.value()) throw std::runtime_error("Source table does not exist");
             if(not tgtInfo.tableExists.value())
-                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tableName.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
+                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
             hsize_t srcStartEntry = 0;
             hsize_t tgtStartEntry = 0;
             hsize_t numEntries    = 0;
@@ -576,11 +620,11 @@ namespace h5pp {
                                       const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
                                       const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             auto tgtInfo = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
-            addTableEntriesFrom(srcInfo, tgtInfo, tableSelection,desiredChunkSize,desiredCompressionLevel);
+            addTableEntriesFrom(srcInfo, tgtInfo, tableSelection, desiredChunkSize, desiredCompressionLevel);
             return tgtInfo;
         }
 
-        template<typename h5x_src, typename = h5pp::type::sfinae::is_h5_loc<h5x_src>>
+        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
         TableInfo addTableEntriesFrom(const h5x_src &                   srcLocation,
                                       std::string_view                  srcTableName,
                                       std::string_view                  tgtTableName,
@@ -591,23 +635,22 @@ namespace h5pp {
             return addTableEntriesFrom(srcInfo, tgtTableName, tableSelection, desiredChunkSize, desiredCompressionLevel);
         }
 
-
-
-        void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, h5pp::TableInfo &tgtInfo, hsize_t                           srcStartEntry,
+        void addTableEntriesFrom(const h5pp::TableInfo &           srcInfo,
+                                 h5pp::TableInfo &                 tgtInfo,
+                                 hsize_t                           srcStartEntry,
                                  hsize_t                           tgtStartEntry,
                                  hsize_t                           numEntries,
                                  const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
                                  const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
-            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error("Attempted to write to read-only file [" + filePath.filename().string() + "]");
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             if(not srcInfo.tableExists) throw std::runtime_error("Source table info has not been initialized");
             if(not srcInfo.tableExists.value()) throw std::runtime_error("Source table does not exist");
             if(not tgtInfo.tableExists.value())
-                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tableName.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
+                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
             h5pp::hdf5::addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
         }
 
-
-        template<typename h5x_src, typename = h5pp::type::sfinae::is_h5_loc<h5x_src>>
+        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
         TableInfo addTableEntriesFrom(const h5pp::TableInfo &           srcInfo,
                                       std::string_view                  tgtTableName,
                                       hsize_t                           srcStartEntry,
@@ -616,11 +659,11 @@ namespace h5pp {
                                       const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
                                       const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             auto tgtInfo = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
-            addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries,desiredChunkSize,desiredCompressionLevel);
+            addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries, desiredChunkSize, desiredCompressionLevel);
             return tgtInfo;
         }
 
-        template<typename h5x_src, typename = h5pp::type::sfinae::is_h5_loc<h5x_src>>
+        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
         TableInfo addTableEntriesFrom(const h5x_src &                   srcLocation,
                                       std::string_view                  srcTableName,
                                       std::string_view                  tgtTableName,
@@ -630,7 +673,7 @@ namespace h5pp {
                                       const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
                                       const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             auto srcInfo = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt, plists);
-            return addTableEntriesFrom(srcInfo, tgtTableName, srcStartIdx, tgtStartIdx, numRecords, desiredChunkSize,desiredCompressionLevel);
+            return addTableEntriesFrom(srcInfo, tgtTableName, srcStartIdx, tgtStartIdx, numRecords, desiredChunkSize, desiredCompressionLevel);
         }
 
         template<typename DataType>
@@ -694,12 +737,12 @@ namespace h5pp {
 
         [[nodiscard]] TableInfo getTableInfo(std::string_view tablePath) const { return h5pp::scan::getTableInfo(openFileHandle(), tablePath, std::nullopt, plists); }
 
-        [[nodiscard]] TypeInfo getAttributeTypeInfo(std::string_view linkName, std::string_view attrName) const {
-            return h5pp::hdf5::getTypeInfo(openFileHandle(), linkName, attrName, std::nullopt, std::nullopt, plists.link_access);
+        [[nodiscard]] TypeInfo getAttributeTypeInfo(std::string_view linkPath, std::string_view attrName) const {
+            return h5pp::hdf5::getTypeInfo(openFileHandle(), linkPath, attrName, std::nullopt, std::nullopt, plists.link_access);
         }
 
-        [[nodiscard]] std::vector<TypeInfo> getAttributeTypeInfoAll(std::string_view linkName) const {
-            return h5pp::hdf5::getTypeInfo_allAttributes(openFileHandle(), linkName, std::nullopt, plists.link_access);
+        [[nodiscard]] std::vector<TypeInfo> getAttributeTypeInfoAll(std::string_view linkPath) const {
+            return h5pp::hdf5::getTypeInfo_allAttributes(openFileHandle(), linkPath, std::nullopt, plists.link_access);
         }
 
         [[nodiscard]] bool fileIsValid() const { return h5pp::hdf5::fileIsValid(filePath); }

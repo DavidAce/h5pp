@@ -35,7 +35,7 @@ int main() {
     std::cout << "Writing stringDummy :" << stringDummy << std::endl;
     // Write data data
     file.writeDataset(stringDummy, "stringDummy");
-    std::cout << "Reading stringDummy: ";
+    std::cout << "Reading stringDummy" << std::endl;
     // Read the data back
     std::string stringDummyRead;
     file.readDataset(stringDummyRead, "stringDummy");
@@ -71,12 +71,11 @@ int main() {
 
     auto *cStyleDoubleArray = new double[10];
     for(int i = 0; i < 10; i++) cStyleDoubleArray[i] = (double) i;
-    file.writeDataset(cStyleDoubleArray, 10, "cStyleDoubleArray");
+    file.writeDataset(cStyleDoubleArray,"cStyleDoubleArray",10);
     auto *cStyleDoubleArrayRead = new double[10];
-    file.readDataset(cStyleDoubleArrayRead, 10, "cStyleDoubleArray");
+    file.readDataset(cStyleDoubleArrayRead,"cStyleDoubleArray", 10);
     delete[] cStyleDoubleArray;
     delete[] cStyleDoubleArrayRead;
-
     // Test new field2 type
     struct Field2 {
         double x;

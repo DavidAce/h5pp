@@ -137,7 +137,7 @@ namespace Catch {
 #endif
 
 // We have to avoid both ICC and Clang, because they try to mask themselves
-// as gcc, and we want only GCC in this block
+// as gcc, and we want only GCC in this blocks
 #if defined(__GNUC__) && !defined(__clang__) && !defined(__ICC)
 #    define CATCH_INTERNAL_START_WARNINGS_SUPPRESSION _Pragma( "GCC diagnostic push" )
 #    define CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION  _Pragma( "GCC diagnostic pop" )

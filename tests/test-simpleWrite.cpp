@@ -60,9 +60,9 @@ int main() {
     file.writeDataset(field3array, "simpleWriteGroup/field3array");
 
     // Test passing pointers
-    file.writeDataset(vectorInt.data(), vectorInt.size(), "simpleWriteGroup/vectorInt");
-    file.writeDataset(vectorDouble.data(), vectorDouble.size(), "simpleWriteGroup/vectorDouble");
-    file.writeDataset(vectorInt.data(), vectorInt.size(), "simpleWriteGroup/vectorInt");
+    file.writeDataset(vectorInt.data(), "simpleWriteGroup/vectorInt",vectorInt.size());
+    file.writeDataset(vectorDouble.data(), "simpleWriteGroup/vectorDouble",vectorDouble.size());
+    file.writeDataset(vectorInt.data(), "simpleWriteGroup/vectorInt",vectorInt.size());
 
 #ifdef H5PP_EIGEN3
     Eigen::MatrixXi  matrixInt(2, 2);

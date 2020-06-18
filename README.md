@@ -257,7 +257,7 @@ Make sure to install and configure conan first. Then, either use the CMake-conan
  `-DH5PP_DOWNLOAD_METHOD=conan` as an argument to CMake (see below) **or** use conan directly, for instance by running the following command:
 
 ```
-$ conan install h5pp/1.7.3@davidace/stable --profile default
+$ conan install h5pp/1.7.5@davidace/stable --profile default
 ```
 This is by far the simplest method and will also make sure to install HDF5 and the optional dependencies.
 
