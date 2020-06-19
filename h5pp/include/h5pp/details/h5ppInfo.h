@@ -13,7 +13,9 @@
 namespace h5pp {
     namespace debug {
         enum class DimSizeComparison { STRICT, PERMISSIVE };
-        auto reportCompatibility(std::optional<std::vector<hsize_t>> smallDims, std::optional<std::vector<hsize_t>> largeDims, DimSizeComparison dimComp = DimSizeComparison::STRICT) {
+        auto reportCompatibility(std::optional<std::vector<hsize_t>> smallDims,
+                                 std::optional<std::vector<hsize_t>> largeDims,
+                                 DimSizeComparison                   dimComp = DimSizeComparison::STRICT) {
             std::string msg;
             if(not smallDims) return msg;
             if(not largeDims) return msg;
@@ -45,7 +47,9 @@ namespace h5pp {
                 if(h5_layout.value() == H5D_COMPACT) {
                     if(dimsChunk)
                         error_msg.append(h5pp::format("Chunk dims {} | Layout is H5D_COMPACT | chunk dimensions are only meant for H5D_CHUNKED layouts\n", dimsChunk.value()));
-                    if(dimsMax and dims and dimsMax.value() != dims.value()) error_msg.append(h5pp::format("dims {} | max dims {} | layout is H5D_COMPACT | dims and max dims must be equal unless the layout is H5D_CHUNKED\n",dims.value(), dimsMax.value()));
+                    if(dimsMax and dims and dimsMax.value() != dims.value())
+                        error_msg.append(h5pp::format(
+                            "dims {} | max dims {} | layout is H5D_COMPACT | dims and max dims must be equal unless the layout is H5D_CHUNKED\n", dims.value(), dimsMax.value()));
                 }
                 if(h5_layout.value() == H5D_CONTIGUOUS) {
                     if(dimsChunk)
@@ -57,7 +61,7 @@ namespace h5pp {
                 }
             }
             std::string res1 = reportCompatibility(dims, dimsMax);
-            std::string res2 = reportCompatibility(dims, dimsChunk,DimSizeComparison::PERMISSIVE);
+            std::string res2 = reportCompatibility(dims, dimsChunk, DimSizeComparison::PERMISSIVE);
             std::string res3 = reportCompatibility(dimsChunk, dimsMax);
             if(not res1.empty()) error_msg.append(h5pp::format("\t{}: dims {} | max dims {}\n", res1, dims.value(), dimsMax.value()));
             if(not res2.empty()) error_msg.append(h5pp::format("\t{}: dims {} | chunk dims {}\n", res2, dims.value(), dimsChunk.value()));
@@ -68,19 +72,19 @@ namespace h5pp {
     }
 
     struct Options {
-        std::optional<std::string>          linkPath      = std::nullopt; /*!< Path to HDF5 dataset relative to the file root */
-        std::optional<std::string>          attrName      = std::nullopt; /*!< Name of attribute on group or dataset */
-        std::optional<std::vector<hsize_t>> dataDims      = std::nullopt; /*!< Data dimensions hint. Required for pointer data */
-        std::optional<std::vector<hsize_t>> dsetDimsChunk = std::nullopt; /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
-        std::optional<std::vector<hsize_t>> dsetDimsMax   = std::nullopt; /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
-        std::optional<hid::h5t>             h5_type       = std::nullopt; /*!< (On create) Type of dataset. Override automatic type detection. */
-        std::optional<H5D_layout_t>         h5_layout     = std::nullopt; /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
-        std::optional<unsigned int>         compression   = std::nullopt; /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
-        std::optional<HyperSlab>            dsetSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from the dataset  */
-        std::optional<HyperSlab>            attrSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from the attribute  */
-        std::optional<HyperSlab>            dataSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from memory  */
-        std::optional<h5pp::ResizeMode>     resizeMode    = std::nullopt; /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
-        [[nodiscard]] std::string           string() const {
+        std::optional<std::string>      linkPath      = std::nullopt; /*!< Path to HDF5 dataset relative to the file root */
+        std::optional<std::string>      attrName      = std::nullopt; /*!< Name of attribute on group or dataset */
+        OptDimsType                     dataDims      = std::nullopt; /*!< Data dimensions hint. Required for pointer data */
+        OptDimsType                     dsetDimsChunk = std::nullopt; /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
+        OptDimsType                     dsetDimsMax   = std::nullopt; /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
+        std::optional<Hyperslab>        dsetSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from the dataset  */
+        std::optional<Hyperslab>        attrSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from the attribute  */
+        std::optional<Hyperslab>        dataSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from memory  */
+        std::optional<hid::h5t>         h5_type       = std::nullopt; /*!< (On create) Type of dataset. Override automatic type detection. */
+        std::optional<H5D_layout_t>     h5_layout     = std::nullopt; /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
+        std::optional<unsigned int>     compression   = std::nullopt; /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+        std::optional<h5pp::ResizeMode> resizeMode    = std::nullopt; /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+        [[nodiscard]] std::string       string() const {
             std::string msg;
             /* clang-format off */
             if(dataDims) msg.append(h5pp::format(" | data dims {}", dataDims.value()));
@@ -113,14 +117,14 @@ namespace h5pp {
      * Struct with optional fields describing a C++ data type in memory
      */
     struct DataInfo {
-        std::optional<size_t>               dataByte = std::nullopt;
-        std::optional<hsize_t>              dataSize = std::nullopt;
-        std::optional<int>                  dataRank = std::nullopt;
-        std::optional<std::vector<hsize_t>> dataDims = std::nullopt;
-        std::optional<hid::h5s>             h5_space = std::nullopt;
-        std::optional<std::string>          cpp_type = std::nullopt;
-        std::optional<HyperSlab>            dataSlab = std::nullopt;
-        DataInfo()                                   = default;
+        std::optional<size_t>      dataByte = std::nullopt;
+        std::optional<hsize_t>     dataSize = std::nullopt;
+        std::optional<int>         dataRank = std::nullopt;
+        OptDimsType                dataDims = std::nullopt;
+        std::optional<hid::h5s>    h5_space = std::nullopt;
+        std::optional<std::string> cpp_type = std::nullopt;
+        std::optional<Hyperslab>   dataSlab = std::nullopt;
+        DataInfo()                          = default;
         explicit DataInfo(const hid::h5s &space) {
             h5_space = space;
             setFromSpace();
@@ -179,7 +183,7 @@ namespace h5pp {
             if(dataRank) msg.append(h5pp::format(" | rank {}", dataRank.value()));
             if(dataDims) msg.append(h5pp::format(" | dims {}", dataDims.value()));
             if (h5_space and H5Sget_select_type(h5_space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
-                HyperSlab slab(h5_space.value());
+                Hyperslab slab(h5_space.value());
                 msg.append(h5pp::format(" | [ Hyperslab {} ]", slab.string()));
             }
             if(cpp_type) msg.append(h5pp::format(" | type [{}]", cpp_type.value()));
@@ -193,27 +197,27 @@ namespace h5pp {
      * Struct with optional fields describing data on file, i.e. a dataset
      */
     struct DsetInfo {
-        std::optional<hid::h5f>             h5_file              = std::nullopt;
-        std::optional<hid::h5f>             h5_group             = std::nullopt;
-        std::optional<hid::h5f>             h5_objLoc            = std::nullopt;
-        std::optional<hid::h5d>             h5_dset              = std::nullopt;
-        std::optional<hid::h5t>             h5_type              = std::nullopt;
-        std::optional<H5D_layout_t>         h5_layout            = std::nullopt;
-        std::optional<hid::h5s>             h5_space             = std::nullopt;
-        std::optional<hid::h5p>             h5_plist_dset_create = std::nullopt;
-        std::optional<hid::h5p>             h5_plist_dset_access = std::nullopt;
-        std::optional<std::string>          dsetPath             = std::nullopt;
-        std::optional<bool>                 dsetExists           = std::nullopt;
-        std::optional<hsize_t>              dsetSize             = std::nullopt;
-        std::optional<size_t>               dsetByte             = std::nullopt;
-        std::optional<int>                  dsetRank             = std::nullopt;
-        std::optional<std::vector<hsize_t>> dsetDims             = std::nullopt;
-        std::optional<std::vector<hsize_t>> dsetDimsMax          = std::nullopt;
-        std::optional<std::vector<hsize_t>> dsetChunk            = std::nullopt;
-        std::optional<h5pp::ResizeMode>     resizeMode           = std::nullopt;
-        std::optional<unsigned int>         compression          = std::nullopt;
-        std::optional<HyperSlab>            dsetSlab             = std::nullopt;
-        hid_t                               getLocId() const {
+        std::optional<hid::h5f>         h5_file              = std::nullopt;
+        std::optional<hid::h5f>         h5_group             = std::nullopt;
+        std::optional<hid::h5f>         h5_objLoc            = std::nullopt;
+        std::optional<hid::h5d>         h5_dset              = std::nullopt;
+        std::optional<hid::h5t>         h5_type              = std::nullopt;
+        std::optional<H5D_layout_t>     h5_layout            = std::nullopt;
+        std::optional<hid::h5s>         h5_space             = std::nullopt;
+        std::optional<hid::h5p>         h5_plist_dset_create = std::nullopt;
+        std::optional<hid::h5p>         h5_plist_dset_access = std::nullopt;
+        std::optional<std::string>      dsetPath             = std::nullopt;
+        std::optional<bool>             dsetExists           = std::nullopt;
+        std::optional<hsize_t>          dsetSize             = std::nullopt;
+        std::optional<size_t>           dsetByte             = std::nullopt;
+        std::optional<int>              dsetRank             = std::nullopt;
+        OptDimsType                     dsetDims             = std::nullopt;
+        OptDimsType                     dsetDimsMax          = std::nullopt;
+        OptDimsType                     dsetChunk            = std::nullopt;
+        std::optional<h5pp::ResizeMode> resizeMode           = std::nullopt;
+        std::optional<unsigned int>     compression          = std::nullopt;
+        std::optional<Hyperslab>        dsetSlab             = std::nullopt;
+        hid_t                           getLocId() const {
             if(h5_file) return h5_file.value();
             if(h5_group) return h5_group.value();
             if(h5_objLoc) return h5_objLoc.value();
@@ -330,7 +334,7 @@ namespace h5pp {
                 msg.append(h5pp::format(" | max dims {}", maxDimsLong));
             }
             if (h5_space and H5Sget_select_type(h5_space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
-                HyperSlab slab(h5_space.value());
+                Hyperslab slab(h5_space.value());
                 msg.append(h5pp::format(" | [ Hyperslab {} ]", slab.string()));
             }
             if(resizeMode){
@@ -367,7 +371,7 @@ namespace h5pp {
         std::optional<size_t>               attrByte             = std::nullopt;
         std::optional<int>                  attrRank             = std::nullopt;
         std::optional<std::vector<hsize_t>> attrDims             = std::nullopt;
-        std::optional<HyperSlab>            attrSlab             = std::nullopt;
+        std::optional<Hyperslab>            attrSlab             = std::nullopt;
 
         void assertCreateReady() const {
             std::string error_msg;

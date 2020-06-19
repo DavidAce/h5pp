@@ -1,30 +1,27 @@
 #pragma once
+#include "h5ppDimensionType.h"
 #include "h5ppFormat.h"
 #include "h5ppOptional.h"
 #include "h5ppTypeSfinae.h"
 #include <hdf5.h>
 #include <type_traits>
+#include <utility>
 #include <vector>
 namespace h5pp {
-    class HyperSlab {
+    class Hyperslab {
         public:
         // Hyperslab properties. Read here https://support.hdfgroup.org/HDF5/doc/RM/RM_H5S.html#Dataspace-SelectHyperslab
 
-        std::optional<std::vector<hsize_t>> offset      = std::nullopt; /*!< The start position of a hyperslab */
-        std::optional<std::vector<hsize_t>> extent      = std::nullopt; /*!< The extent (or "count") of a hyperslab */
-        std::optional<std::vector<hsize_t>> stride      = std::nullopt; /*!< The stride of a hyperslab. Empty means contiguous */
-        std::optional<std::vector<hsize_t>> blocks      = std::nullopt; /*!< The blocks size of each element in  the hyperslab. Empty means 1x1 */
-        std::optional<H5S_sel_type>         select_type = std::nullopt;
-        HyperSlab()                                     = default;
-        template<typename DimType = std::initializer_list<hsize_t>>
-        HyperSlab(DimType slabOffset_, DimType slabExtent_, DimType slabStride_ = {}, DimType slabBlock_ = {}) {
-            offset = getOptionalIterable(slabOffset_);
-            extent = getOptionalIterable(slabExtent_);
-            stride = getOptionalIterable(slabStride_);
-            blocks = getOptionalIterable(slabBlock_);
-        }
+        OptDimsType                 offset      = std::nullopt; /*!< The start position of a hyperslab */
+        OptDimsType                 extent      = std::nullopt; /*!< The extent (or "count") of a hyperslab */
+        OptDimsType                 stride      = std::nullopt; /*!< The stride of a hyperslab. Empty means contiguous */
+        OptDimsType                 blocks      = std::nullopt; /*!< The blocks size of each element in  the hyperslab. Empty means 1x1 */
+        std::optional<H5S_sel_type> select_type = std::nullopt;
+        Hyperslab()                             = default;
+        Hyperslab(const DimsType &offset, const DimsType &extent, OptDimsType stride = std::nullopt, OptDimsType blocks = std::nullopt)
+            : offset(offset), extent(extent), stride(std::move(stride)), blocks(std::move(blocks)) {}
 
-        explicit HyperSlab(const hid::h5s &space) {
+        explicit Hyperslab(const hid::h5s &space) {
             int rank = H5Sget_simple_extent_ndims(space);
             if(rank < 0) throw std::runtime_error("Could not read ndims on given space");
             if(rank == 0) return;
@@ -65,29 +62,6 @@ namespace h5pp {
             if(stride) msg.append(h5pp::format(" | stride {}", stride.value()));
             if(blocks) msg.append(h5pp::format(" | blocks {}", blocks.value()));
             return msg;
-        }
-
-        private:
-        template<typename T, typename = std::void_t<>>
-        struct is_iterable : public std::false_type {};
-        template<typename T>
-        struct is_iterable<T, std::void_t<decltype(std::declval<T>().begin()), decltype(std::declval<T>().end()), typename T::value_type>> : public std::true_type {};
-        template<typename T>
-        static constexpr bool is_iterable_v = is_iterable<T>::value;
-
-        template<typename IterableType = std::initializer_list<hsize_t>, typename = std::enable_if_t<is_iterable_v<IterableType> or std::is_integral_v<IterableType>>>
-        [[nodiscard]] std::optional<std::vector<hsize_t>> getOptionalIterable(const IterableType &iterable) {
-            //            if constexpr(std::is_same_v<IterableType, std::optional<std::vector<hsize_t>>>) return iterable;
-            std::optional<std::vector<hsize_t>> optiter = std::nullopt;
-            if constexpr(h5pp::type::sfinae::is_iterable_v<IterableType>) {
-                if(iterable.size() > 0) {
-                    optiter = std::vector<hsize_t>();
-                    std::copy(iterable.begin(), iterable.end(), std::back_inserter(optiter.value()));
-                }
-            } else if constexpr(std::is_integral_v<IterableType>) {
-                optiter = {static_cast<hsize_t>(iterable)};
-            }
-            return optiter;
         }
     };
 

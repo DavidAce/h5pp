@@ -488,9 +488,9 @@ namespace h5pp::util {
     template<typename DataType>
     inline void resizeData(DataType &data, const std::vector<hsize_t> &newDims) {
         // This function may shrink a container!
-        auto newSize = getSizeFromDimensions(newDims);
 #ifdef H5PP_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
+            auto newSize = getSizeFromDimensions(newDims);
             if(newDims.size() != 1)
                 h5pp::logger::log->debug("Resizing given 1-dimensional Eigen type [{}] to fit dataset dimensions {}", type::sfinae::type_name<DataType>(), newDims);
             h5pp::logger::log->debug("Resizing eigen 1d container {} -> {}", std::initializer_list<Eigen::Index>{data.size()}, std::initializer_list<hsize_t>{newSize});
@@ -507,6 +507,7 @@ namespace h5pp::util {
                 h5pp::logger::log->debug("Resizing eigen tensor container {} -> {}", data.dimensions(), newDims);
                 data.resize(eigenDims);
             } else {
+                auto newSize = getSizeFromDimensions(newDims);
                 if(data.size() != static_cast<Eigen::Index>(newSize))
                     h5pp::logger::log->warn("Detected non-resizeable tensor container with wrong size: Given size {}. Required size {}", data.size(), newSize);
             }
@@ -514,7 +515,8 @@ namespace h5pp::util {
 #endif // H5PP_EIGEN3
             if constexpr(h5pp::type::sfinae::has_size_v<DataType> and h5pp::type::sfinae::has_resize_v<DataType>) {
             if(newDims.size() > 1) h5pp::logger::log->debug("Given data container is 1-dimensional but the desired dimensions are {}. Resizing to fit all the data", newDims);
-            h5pp::logger::log->debug("Resizing 1d container {} -> {}", std::initializer_list<size_t>{static_cast<size_t>(data.size())}, newDims);
+                auto newSize = getSizeFromDimensions(newDims);
+                h5pp::logger::log->debug("Resizing 1d container {} -> {}", std::initializer_list<size_t>{static_cast<size_t>(data.size())}, newDims);
             data.resize(newSize);
         } else if constexpr(std::is_scalar_v<DataType> or std::is_class_v<DataType>) {
             return;

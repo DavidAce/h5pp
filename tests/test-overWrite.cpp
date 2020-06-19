@@ -18,9 +18,7 @@ int main() {
     file.writeDataset_contiguous(vectorComplexDouble, "overWriteGroup_contiguous/vectorComplexDouble");
     vectorComplexDouble = std::vector<std::complex<double>> (5, {10.0, 5.0});
     h5pp::Options options;
-    h5pp::HyperSlab slab;
-    slab.offset = {0};
-    slab.extent = {5};
+    h5pp::Hyperslab slab({0},{5});
     options.dataSlab  = {slab};
     options.dsetSlab  = {slab};
     options.linkPath  = "overWriteGroup_contiguous/vectorComplexDouble";

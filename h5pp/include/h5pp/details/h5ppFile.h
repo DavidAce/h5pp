@@ -706,6 +706,15 @@ namespace h5pp {
             auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(), datasetPath);
             return h5pp::hdf5::getDimensions(dataset);
         }
+        [[nodiscard]] std::optional<std::vector<hsize_t>> getDatasetMaxDimensions(std::string_view datasetPath) const {
+            auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(), datasetPath);
+            return h5pp::hdf5::getMaxDimensions(dataset);
+        }
+
+        [[nodiscard]] std::optional<std::vector<hsize_t>> getDatasetChunkDimensions(std::string_view datasetPath) const {
+            auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(), datasetPath);
+            return h5pp::hdf5::getChunkDimensions(dataset);
+        }
 
         [[nodiscard]] bool linkExists(std::string_view link) const { return h5pp::hdf5::checkIfLinkExists(openFileHandle(), link, std::nullopt, plists.link_access); }
 
