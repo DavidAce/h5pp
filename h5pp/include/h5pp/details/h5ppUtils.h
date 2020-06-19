@@ -424,10 +424,10 @@ namespace h5pp::util {
         }
 
         auto rank             = dims.size();
-        auto bytesPerElem     = static_cast<size_t>(std::max(1ul, (bytes / std::max(1ul, size))));
+        auto bytesPerElem     = static_cast<size_t>(std::max<size_t>(1ul, (bytes / std::max<size_t>(1ul, size))));
         auto volumeChunkBytes = static_cast<size_t>(std::pow(*std::max_element(dims_ubound.begin(), dims_ubound.end()), rank)) * bytesPerElem;
-        auto targetChunkBytes = std::max(volumeChunkBytes, h5pp::constants::minChunkSize);
-        targetChunkBytes      = std::min(targetChunkBytes, h5pp::constants::maxChunkSize);
+        auto targetChunkBytes = std::max<size_t>(volumeChunkBytes, h5pp::constants::minChunkSize);
+        targetChunkBytes      = std::min<size_t>(targetChunkBytes, h5pp::constants::maxChunkSize);
         targetChunkBytes      = static_cast<size_t>(std::pow(2, std::ceil(std::log2(targetChunkBytes)))); // Next nearest power of two
         auto                 linearChunkSize = static_cast<hsize_t>(std::ceil(std::pow<size_t>(targetChunkBytes / bytesPerElem, 1.0 / static_cast<double>(rank))));
         std::vector<hsize_t> chunkDims(rank, linearChunkSize);
