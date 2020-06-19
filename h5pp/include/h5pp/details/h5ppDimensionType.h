@@ -23,8 +23,6 @@ namespace h5pp {
         DimsType(h5pp::DsetInfo)   = delete;
         DimsType(h5pp::DataInfo)   = delete;
         DimsType(h5pp::TableInfo)  = delete;
-        template<typename h5x, std::enable_if_t<std::is_base_of_v<hid::hid_base, h5x>>>
-        DimsType(h5x) = delete;
         DimsType(const std::nullopt_t &) { throw std::runtime_error("nullopt is not a valid dimension for this argument"); }
         DimsType(std::initializer_list<hsize_t> &&list) { std::copy(list.begin(), list.end(), std::back_inserter(dims)); }
         DimsType(std::optional<std::vector<hsize_t>> otherDims){
