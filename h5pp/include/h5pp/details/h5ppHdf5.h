@@ -896,12 +896,14 @@ namespace h5pp::hdf5 {
             H5Sselect_hyperslab(space, selectOp, hyperSlab.offset.value().data(), nullptr, hyperSlab.extent.value().data(), nullptr);
 
         /* clang-format on */
+#if H5_VERSION_GE(1, 10, 0)
         htri_t is_regular = H5Sis_regular_hyperslab(space);
         if(not is_regular) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Hyperslab selection is irregular (non-rectangular).\n"
                                                   "This is not yet supported by h5pp"));
         }
+#endif
         htri_t valid = H5Sselect_valid(space);
         if(valid < 0) {
             H5Eprint(H5E_DEFAULT, stderr);

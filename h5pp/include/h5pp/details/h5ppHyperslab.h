@@ -27,6 +27,7 @@ namespace h5pp {
             if(rank == 0) return;
             select_type = H5Sget_select_type(space);
             if(select_type.value() == H5S_SEL_HYPERSLABS) {
+#if H5_VERSION_GE(1, 10, 0)
                 htri_t is_regular = H5Sis_regular_hyperslab(space);
                 if(is_regular < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
@@ -35,6 +36,7 @@ namespace h5pp {
                 if(not is_regular)
                     throw std::runtime_error("The space has irregular (non-rectangular) hyperslab selection.\n"
                                              "This is not yet supported by h5pp");
+#endif
                 offset = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
                 extent = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
                 stride = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
