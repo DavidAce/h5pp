@@ -12,17 +12,17 @@
 
 namespace h5pp {
     namespace debug {
-        enum class DimSizeComparison { STRICT, PERMISSIVE };
+        enum class DimSizeComparison { ENFORCE, PERMISSIVE };
         auto reportCompatibility(std::optional<std::vector<hsize_t>> smallDims,
                                  std::optional<std::vector<hsize_t>> largeDims,
-                                 DimSizeComparison                   dimComp = DimSizeComparison::STRICT) {
+                                 DimSizeComparison                   dimComp = DimSizeComparison::ENFORCE) {
             std::string msg;
             if(not smallDims) return msg;
             if(not largeDims) return msg;
             if(smallDims->size() != largeDims->size()) msg.append("rank mismatch | ");
             bool ok = false;
             switch(dimComp) {
-                case DimSizeComparison::STRICT:
+                case DimSizeComparison::ENFORCE:
                     ok = std::equal(std::begin(smallDims.value()),
                                     std::end(smallDims.value()),
                                     std::begin(largeDims.value()),
