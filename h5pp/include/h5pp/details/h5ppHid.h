@@ -15,7 +15,6 @@ namespace h5pp::hid {
         public:
         hid_base() = default;
         hid_base(std::initializer_list<int>) = delete;
-
         // Use enable_if to avoid implicit conversion from hid_h5x and still have a non-explicit hid_t constructor
         template<typename T, typename = std::enable_if_t<std::is_same_v<T, hid_t>>>
         hid_base(const T &other) {

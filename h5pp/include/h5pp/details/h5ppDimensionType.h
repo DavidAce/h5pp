@@ -54,7 +54,7 @@ namespace h5pp {
         OptDimsType()                            = default;
         OptDimsType(H5D_layout_t)                = delete;
         OptDimsType(hid::h5t)                    = delete;
-        OptDimsType(hid_t)                       = delete;
+        explicit OptDimsType(hid_t&&)            = delete;
         OptDimsType(std::string)                 = delete;
         OptDimsType(std::string_view)            = delete;
         OptDimsType(const char *)                = delete;
