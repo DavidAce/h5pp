@@ -200,7 +200,7 @@ namespace h5pp {
 
         void resizeDataset(DsetInfo &info, const DimsType &newDimensions, std::optional<h5pp::ResizeMode> mode_override = std::nullopt) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to resize dataset on read-only file [{}]", filePath.string()));
-            h5pp::hdf5::resizeDataset(info, newDimensions.dims, mode_override);
+            h5pp::hdf5::resizeDataset(info, newDimensions, mode_override);
         }
 
         template<typename DsetDimsType = std::initializer_list<hsize_t>, typename = h5pp::type::sfinae::enable_if_is_integral_iterable_or_num<DsetDimsType>>
@@ -241,9 +241,9 @@ namespace h5pp {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
             Options options;
             options.linkPath      = dsetPath;
-            options.dataDims      = dsetDims.dims;
-            options.dsetDimsChunk = dsetDimsChunk.dims;
-            options.dsetDimsMax   = dsetDimsMax.dims;
+            options.dataDims      = dsetDims;
+            options.dsetDimsChunk = dsetDimsChunk;
+            options.dsetDimsMax   = dsetDimsMax;
             options.h5_type       = std::move(h5_type);
             options.h5_layout     = h5_layout;
             options.compression   = getCompressionLevel(compression);
@@ -269,9 +269,9 @@ namespace h5pp {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
             Options options;
             options.linkPath      = dsetPath;
-            options.dataDims      = dataDims.dims;
-            options.dsetDimsChunk = dsetDimsChunk.dims;
-            options.dsetDimsMax   = dsetDimsMax.dims;
+            options.dataDims      = dataDims;
+            options.dsetDimsChunk = dsetDimsChunk;
+            options.dsetDimsMax   = dsetDimsMax;
             options.h5_type       = h5pp::util::getH5Type<DataType>();
             options.h5_layout     = h5_layout;
             options.compression   = getCompressionLevel(compression);
@@ -311,9 +311,9 @@ namespace h5pp {
         {
             Options options;
             options.linkPath      = dsetPath;
-            options.dataDims      = dataDims.dims;
-            options.dsetDimsChunk = dsetDimsChunk.dims;
-            options.dsetDimsMax   = dsetDimsMax.dims;
+            options.dataDims      = dataDims;
+            options.dsetDimsChunk = dsetDimsChunk;
+            options.dsetDimsMax   = dsetDimsMax;
             options.h5_layout     = h5_layout;
             options.h5_type       = std::move(h5_type);
             options.resizeMode    = resizeMode;
@@ -334,9 +334,9 @@ namespace h5pp {
         {
             Options options;
             options.linkPath      = dsetPath;
-            options.dataDims      = dataDims.dims;
-            options.dsetDimsChunk = dsetDimsChunk.dims;
-            options.dsetDimsMax   = dsetDimsMax.dims;
+            options.dataDims      = dataDims;
+            options.dsetDimsChunk = dsetDimsChunk;
+            options.dsetDimsMax   = dsetDimsMax;
             options.h5_layout     = h5_layout;
             options.h5_type       = h5_type;
             options.resizeMode    = resizeMode;
@@ -357,9 +357,9 @@ namespace h5pp {
         {
             Options options;
             options.linkPath      = dsetPath;
-            options.dataDims      = dataDims.dims;
-            options.dsetDimsChunk = dsetDimsChunk.dims;
-            options.dsetDimsMax   = dsetDimsMax.dims;
+            options.dataDims      = dataDims;
+            options.dsetDimsChunk = dsetDimsChunk;
+            options.dsetDimsMax   = dsetDimsMax;
             options.h5_layout     = h5_layout;
             options.h5_type       = std::move(h5_type);
             options.resizeMode    = resizeMode;
@@ -371,7 +371,7 @@ namespace h5pp {
         DsetInfo writeDataset_compact(const DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt, std::optional<hid::h5t> h5_type = std::nullopt) {
             Options options;
             options.linkPath    = dsetPath;
-            options.dataDims    = dataDims.dims;
+            options.dataDims    = dataDims;
             options.h5_layout   = H5D_COMPACT;
             options.h5_type     = std::move(h5_type);
             options.compression = 0;
@@ -383,7 +383,7 @@ namespace h5pp {
             writeDataset_contiguous(const DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt, std::optional<hid::h5t> h5_type = std::nullopt) {
             Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty, ´,
             options.linkPath    = dsetPath;
-            options.dataDims    = dataDims.dims;
+            options.dataDims    = dataDims;
             options.h5_layout   = H5D_CONTIGUOUS;
             options.h5_type     = std::move(h5_type);
             options.compression = 0;
@@ -400,9 +400,9 @@ namespace h5pp {
                                       std::optional<unsigned int> compression   = std::nullopt) {
             Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty, ´,
             options.linkPath      = dsetPath;
-            options.dataDims      = dataDims.dims;
-            options.dsetDimsChunk = dsetDimsChunk.dims;
-            options.dsetDimsMax   = dsetDimsMax.dims;
+            options.dataDims      = dataDims;
+            options.dsetDimsChunk = dsetDimsChunk;
+            options.dsetDimsMax   = dsetDimsMax;
             options.h5_layout     = H5D_CHUNKED;
             options.h5_type       = std::move(h5_type);
             options.compression   = getCompressionLevel(compression);
@@ -430,7 +430,7 @@ namespace h5pp {
         void readDataset(DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt) const {
             Options options;
             options.linkPath = dsetPath;
-            options.dataDims = dataDims.dims;
+            options.dataDims = dataDims;
             readDataset(data, options);
         }
 
@@ -463,7 +463,7 @@ namespace h5pp {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             Options options;
             options.linkPath = dsetPath;
-            options.dataDims = dataDims.dims;
+            options.dataDims = dataDims;
             return appendToDataset(data, axis, options);
         }
 
@@ -488,7 +488,7 @@ namespace h5pp {
             Options options;
             options.linkPath = linkPath;
             options.attrName = attrName;
-            options.dataDims = dataDims.dims;
+            options.dataDims = dataDims;
             createAttribute(data, options);
         }
 
@@ -510,7 +510,7 @@ namespace h5pp {
             Options options;
             options.linkPath = linkPath;
             options.attrName = attrName;
-            options.dataDims = dataDims.dims;
+            options.dataDims = dataDims;
             options.h5_type  = std::move(h5_type);
             writeAttribute(data, options);
         }
@@ -541,7 +541,7 @@ namespace h5pp {
             Options options;
             options.linkPath = linkPath;
             options.attrName = attrName;
-            options.dataDims = dataDims.dims;
+            options.dataDims = dataDims;
             readAttribute(data, options);
         }
 
