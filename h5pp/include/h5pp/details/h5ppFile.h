@@ -324,7 +324,7 @@ namespace h5pp {
         template<typename DataType>
         DsetInfo writeDataset(const DataType &            data,                     /*!< Eigen, stl-like object or pointer to data buffer */
                               std::string_view            dsetPath,                 /*!< Path to HDF5 dataset relative to the file root */
-                              hid::h5t                    h5_type,                  /*!< (On create) Type of dataset. Override automatic type detection. */
+                              const hid::h5t &            h5_type,                  /*!< (On create) Type of dataset. Override automatic type detection. */
                               const OptDimsType &         dataDims  = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
                               std::optional<H5D_layout_t> h5_layout = std::nullopt, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
                               const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
@@ -338,7 +338,7 @@ namespace h5pp {
             options.dsetDimsChunk = dsetDimsChunk.dims;
             options.dsetDimsMax   = dsetDimsMax.dims;
             options.h5_layout     = h5_layout;
-            options.h5_type       = std::move(h5_type);
+            options.h5_type       = h5_type;
             options.resizeMode    = resizeMode;
             options.compression   = getCompressionLevel(compression);
             return writeDataset(data, options);
