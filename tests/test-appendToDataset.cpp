@@ -15,8 +15,13 @@ int main() {
     file.writeDataset(data, "group/VectorDoubletemp",{4,1},H5D_CHUNKED,{4,100});
     file.writeDataset(data, "group/VectorDoubletemp2",{});
 //    h5pp::Options options({})
+    h5pp::hid::h5t test = H5Tcopy(H5T_NATIVE_DOUBLE);
     file.writeDataset(data, "group/VectorDouble0");
-    file.writeDataset(data, "group/VectorDouble1",{4});
+    file.writeDataset(data, "group/VectorDouble1",{5});
+    file.writeDataset(data, "group/VectorDouble1", test);
+//    h5pp::hid::h5t test2 ({4});
+//    h5pp::hid::h5t test3 = {4};
+//    h5pp::hid::h5t test4 = 4;
 //    file.writeDataset(data,{4,1}, "group/VectorDouble2");
 //    file.writeDataset(data,{4,1}, "group/VectorDouble3",{5,100});
 //    file.writeDataset(data,{4,1}, "group/VectorDouble4",{6,100},std::nullopt);
