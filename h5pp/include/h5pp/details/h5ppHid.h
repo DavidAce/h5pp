@@ -14,7 +14,6 @@ namespace h5pp::hid {
 
         public:
         hid_base() = default;
-
         // Use enable_if to avoid implicit conversion from hid_h5x and still have a non-explicit hid_t constructor
         template<typename T, typename = std::enable_if_t<std::is_same_v<T, hid_t>>>
         hid_base(const T &other) {
@@ -33,16 +32,16 @@ namespace h5pp::hid {
                                  //            std::cout << "copy ctor: " << safe_print() << std::endl;
         }
 
-        hid_base &operator=(const hid_t &rhs) {
-            // Assignment from hid_t
-            assert((rhs == 0 or valid(rhs)) and "Given identifier must be valid");
-            if(not equal(rhs)) close(); // Drop current
-            val = rhs;
-            if(valid(val))
-                H5Iinc_ref(val); // Increment reference counter of identifier
-                                 //            std::cout << "hid_t assign: " << pretty_print() << std::endl;
-            return *this;
-        }
+//        hid_base &operator=(const hid_t &rhs) {
+//            // Assignment from hid_t
+//            assert((rhs == 0 or valid(rhs)) and "Given identifier must be valid");
+//            if(not equal(rhs)) close(); // Drop current
+//            val = rhs;
+//            if(valid(val))
+//                H5Iinc_ref(val); // Increment reference counter of identifier
+//                                 //            std::cout << "hid_t assign: " << pretty_print() << std::endl;
+//            return *this;
+//        }
 
         hid_base &operator=(const hid_base &rhs) {
             if(this == &rhs) return *this;
