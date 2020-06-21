@@ -743,6 +743,19 @@ namespace h5pp {
         }
 
         [[nodiscard]] TypeInfo getDatasetTypeInfo(std::string_view dsetPath) const { return h5pp::hdf5::getTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.link_access); }
+        [[nodiscard]] DsetInfo getDatasetInfo(std::string_view dsetPath) const {
+            Options options;
+            options.linkPath = h5pp::util::safe_str(dsetPath);
+            return h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
+        }
+
+        [[nodiscard]] AttrInfo getAttributeInfo(std::string_view linkPath, std::string_view attrName) const {
+            Options options;
+            options.linkPath = h5pp::util::safe_str(linkPath);
+            options.attrName = h5pp::util::safe_str(attrName);
+            return h5pp::scan::readAttrInfo(openFileHandle(), options, plists);
+        }
+
 
         [[nodiscard]] TableInfo getTableInfo(std::string_view tablePath) const { return h5pp::scan::getTableInfo(openFileHandle(), tablePath, std::nullopt, plists); }
 
