@@ -13,7 +13,7 @@
 namespace h5pp {
     namespace debug {
         enum class DimSizeComparison { ENFORCE, PERMISSIVE };
-        auto reportCompatibility(std::optional<std::vector<hsize_t>> smallDims,
+        inline auto reportCompatibility(std::optional<std::vector<hsize_t>> smallDims,
                                  std::optional<std::vector<hsize_t>> largeDims,
                                  DimSizeComparison                   dimComp = DimSizeComparison::ENFORCE) {
             std::string msg;
@@ -37,7 +37,7 @@ namespace h5pp {
             return msg;
         }
 
-        auto reportCompatibility(std::optional<H5D_layout_t>         h5_layout,
+        inline auto reportCompatibility(std::optional<H5D_layout_t>         h5_layout,
                                  std::optional<std::vector<hsize_t>> dims,
                                  std::optional<std::vector<hsize_t>> dimsChunk,
                                  std::optional<std::vector<hsize_t>> dimsMax) {
