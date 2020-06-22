@@ -428,6 +428,19 @@ namespace h5pp {
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        void readDataset(DataType &data, DsetInfo & dsetInfo,const Options &options) const {
+            auto dataInfo = h5pp::scan::getDataInfo(data, options);
+            readDataset(data, dataInfo, dsetInfo);
+        }
+
+        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        DataType readDataset(DsetInfo & dsetInfo,const Options &options) const {
+            DataType data;
+            readDataset(data, dsetInfo,options);
+            return data;
+        }
+
+        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
         void readDataset(DataType &data, const Options &options) const {
             options.assertWellDefined();
             auto dsetInfo = h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
