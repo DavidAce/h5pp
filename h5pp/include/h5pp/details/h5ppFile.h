@@ -484,6 +484,15 @@ namespace h5pp {
         }
 
         template<typename DataType>
+        void appendToDataset(DataType &data, DsetInfo &dsetInfo, size_t axis,  const OptDimsType & dataDims = std::nullopt) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            Options options;
+            options.dataDims = dataDims;
+            auto dataInfo = h5pp::scan::getDataInfo(data,options);
+            appendToDataset(data,dataInfo,dsetInfo,axis);
+        }
+
+        template<typename DataType>
         DsetInfo appendToDataset(DataType &data, size_t axis, const Options &options = Options()) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             options.assertWellDefined();
