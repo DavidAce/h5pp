@@ -415,20 +415,20 @@ namespace h5pp {
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        void readDataset(DataType &data, const DataInfo& dataInfo, DsetInfo & dsetInfo) const {
-            h5pp::hdf5::resizeData(data, dsetInfo);
+        void readDataset(DataType &data, const DataInfo& dataInfo, const DsetInfo & dsetInfo) const {
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(const DataInfo& dataInfo, DsetInfo & dsetInfo) const {
+        DataType readDataset(const DataInfo& dataInfo, const DsetInfo & dsetInfo) const {
             DataType data;
             readDataset(data, dataInfo, dsetInfo);
             return data;
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        void readDataset(DataType &data, DsetInfo & dsetInfo,const Options & options = Options()) const {
+        void readDataset(DataType &data, const DsetInfo & dsetInfo,const Options & options = Options()) const {
+            h5pp::hdf5::resizeData(data, dsetInfo);
             auto dataInfo = h5pp::scan::getDataInfo(data, options);
             readDataset(data, dataInfo, dsetInfo);
         }
