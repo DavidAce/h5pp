@@ -414,6 +414,13 @@ namespace h5pp {
             h5pp::hdf5::writeSymbolicLink(file, src_path, tgt_path, plists);
         }
 
+
+        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        void readDataset(DataType &data, const DataInfo& dataInfo, DsetInfo & dsetInfo) const {
+            h5pp::hdf5::resizeData(data, dsetInfo);
+            h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
+        }
+
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
         void readDataset(DataType &data, const Options &options) const {
             options.assertWellDefined();
