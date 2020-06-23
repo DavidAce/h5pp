@@ -30,7 +30,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
     # Download Eigen3
     if (H5PP_ENABLE_EIGEN3 AND NOT TARGET Eigen3::Eigen)
         find_package(Eigen3 3.3.7
-                HINTS ${CMAKE_INSTALL_PREFIX}
+                HINTS ${CMAKE_INSTALL_PREFIX} ${EIGEN3_DIRECTORY_HINTS} ${EIGEN3_INCLUDE_DIR}
                 NO_DEFAULT_PATH)
         if(NOT TARGET Eigen3::Eigen)
             message(STATUS "Eigen3 will be installed into ${CMAKE_INSTALL_PREFIX}")

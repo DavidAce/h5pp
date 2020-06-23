@@ -59,8 +59,7 @@ endmacro()
 # First we check if the EIGEN3_INCLUDE_DIR path is in the cache
 # We may already have run this script
 
-if (EIGEN3_INCLUDE_DIR)
-
+if (TARGET Eigen3::Eigen AND EIGEN3_INCLUDE_DIR)
     # in cache already
     _eigen3_check_version()
     set(Eigen3_FOUND ${EIGEN3_VERSION_OK})
@@ -78,6 +77,7 @@ if(NOT Eigen3_FOUND)
 
     # With this particular order we can manually override where we should look for Eigen first
     list(APPEND EIGEN3_DIRECTORY_HINTS
+            ${EIGEN3_INCLUDE_DIR}
             ${CONAN_EIGEN3_ROOT}
             $ENV{EBROOTEIGEN}
             ${CMAKE_INSTALL_PREFIX}
