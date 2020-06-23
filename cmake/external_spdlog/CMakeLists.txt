@@ -3,8 +3,8 @@ project(external-spdlog)
 
 include(ExternalProject)
 ExternalProject_Add(external_spdlog
-        URL         https://github.com/gabime/spdlog/archive/v1.4.2.tar.gz
-        URL_MD5     373bbb7ea7557cbe6726705463bcae16
+        URL         https://github.com/gabime/spdlog/archive/v1.6.1.tar.gz
+        URL_MD5     8447612b9263a5eec1b57019c21b85f8
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE
