@@ -247,7 +247,7 @@ namespace h5pp {
             options.h5_type       = std::move(h5_type);
             options.h5_layout     = h5_layout;
             options.compression   = getCompressionLevel(compression);
-            return createDataset(dsetPath, options);
+            return createDataset(options);
         }
 
         template<typename DataType>
@@ -276,7 +276,7 @@ namespace h5pp {
             options.h5_layout     = h5_layout;
             options.compression   = getCompressionLevel(compression);
             // If dsetdims is a nullopt we can infer its dimensions from the given dataset
-            return createDataset(data, dsetPath, options);
+            return createDataset(data, options);
         }
 
         template<typename DataType>

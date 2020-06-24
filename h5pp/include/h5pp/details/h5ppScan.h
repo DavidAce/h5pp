@@ -145,7 +145,7 @@ namespace h5pp::scan {
         if(not info.dsetByte)    info.dsetByte      = info.dsetSize.value() * h5pp::hdf5::getBytesPerElem(info.h5_type.value()); // Trick needed for strings.
         if(not info.h5_layout)   info.h5_layout     = h5pp::util::decideLayout(info.dsetByte.value());
         if(not info.dsetDimsMax) info.dsetDimsMax   = h5pp::util::decideDimensionsMax(info.dsetDims.value(), info.h5_layout.value());
-        if(not info.dsetChunk)   info.dsetChunk     = h5pp::util::getChunkDimensions(info.dsetSize.value(), info.dsetByte.value(), info.dsetDims.value(),info.dsetDimsMax,info.h5_layout);
+        if(not info.dsetChunk)   info.dsetChunk     = h5pp::util::getChunkDimensions(h5pp::hdf5::getBytesPerElem(info.h5_type.value()), info.dsetDims.value(),info.dsetDimsMax,info.h5_layout);
         if(not info.compression) info.compression   = h5pp::hdf5::getValidCompressionLevel(info.compression);
         if(not info.resizeMode) {
             if(info.h5_layout != H5D_CHUNKED)
@@ -242,7 +242,7 @@ namespace h5pp::scan {
         if(not info.dsetByte)    info.dsetByte      = h5pp::util::getBytesTotal(data,info.dsetSize);
         if(not info.h5_layout)   info.h5_layout     = h5pp::util::decideLayout(data,info.dsetDims, info.dsetDimsMax);
         if(not info.dsetDimsMax) info.dsetDimsMax   = h5pp::util::decideDimensionsMax(info.dsetDims.value(), info.h5_layout);
-        if(not info.dsetChunk)   info.dsetChunk     = h5pp::util::getChunkDimensions(info.dsetSize.value(), info.dsetByte.value(), info.dsetDims.value(),info.dsetDimsMax, info.h5_layout);
+        if(not info.dsetChunk)   info.dsetChunk     = h5pp::util::getChunkDimensions(h5pp::util::getBytesPerElem<DataType>(), info.dsetDims.value(),info.dsetDimsMax, info.h5_layout);
         if(not info.compression) info.compression   = h5pp::hdf5::getValidCompressionLevel(info.compression);
         if(not info.resizeMode) {
             if(info.h5_layout != H5D_CHUNKED)
