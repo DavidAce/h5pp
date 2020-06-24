@@ -727,9 +727,58 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        DataType readTableEntries(std::string_view tableName, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt) const {
+        DataType readTableEntries(std::string_view tablePath, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt) const {
             DataType data;
-            readTableEntries(data, tableName, startEntry, numEntries);
+            readTableEntries(data, tablePath, startEntry, numEntries);
+            return data;
+        }
+
+        template<typename DataType>
+        void readTableField(DataType &            data,
+                            std::string_view      tablePath,
+                            std::string_view      fieldNames,
+                            std::optional<size_t> startEntry = std::nullopt,
+                            std::optional<size_t> numEntries = std::nullopt) const {
+            auto info = h5pp::scan::getTableInfo(openFileHandle(), tablePath, std::nullopt, plists);
+            h5pp::hdf5::readTableField(data, info, fieldNames, startEntry, numEntries);
+        }
+
+        template<typename DataType>
+        DataType readTableField(std::string_view      tablePath,
+                                std::string_view      fieldName,
+                                std::optional<size_t> startEntry = std::nullopt,
+                                std::optional<size_t> numEntries = std::nullopt) const {
+            DataType data;
+            readTableField(data, tablePath, fieldName, startEntry, numEntries);
+            return data;
+        }
+
+        template<typename DataType>
+        void readTableField(DataType &data, std::string_view tablePath, std::string_view fieldNames, TableSelection tableSelection) const {
+            auto    info       = h5pp::scan::getTableInfo(openFileHandle(), tablePath, std::nullopt, plists);
+            hsize_t startEntry = 0;
+            hsize_t numEntries = 0;
+            switch(tableSelection) {
+                case h5pp::TableSelection::ALL:
+                    startEntry = 0;
+                    numEntries = info.numRecords.value();
+                    break;
+                case h5pp::TableSelection::FIRST:
+                    startEntry = 0;
+                    numEntries = 1;
+                    break;
+                case h5pp::TableSelection::LAST:
+                    startEntry = info.numRecords.value() - 1;
+                    numEntries = 1;
+                    break;
+            }
+            h5pp::hdf5::readTableField(data, info, fieldNames, startEntry, numEntries);
+        }
+
+        template<typename DataType>
+        DataType readTableField(std::string_view tablePath, std::string_view fieldName, TableSelection tableSelection) const {
+            DataType data;
+            readTableField(data, tablePath, fieldName, tableSelection);
             return data;
         }
 

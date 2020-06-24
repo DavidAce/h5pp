@@ -30,8 +30,8 @@ int main() {
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "y", HOFFSET(Particle, y), H5T_NATIVE_DOUBLE);
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "z", HOFFSET(Particle, z), H5T_NATIVE_DOUBLE);
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "t", HOFFSET(Particle, t), H5T_NATIVE_DOUBLE);
-    H5Tinsert(MY_HDF5_PARTICLE_TYPE, "name", HOFFSET(Particle, name), MY_HDF5_NAME_TYPE);
     H5Tinsert(MY_HDF5_PARTICLE_TYPE, "rho", HOFFSET(Particle, rho), MY_HDF5_RHO_TYPE);
+    H5Tinsert(MY_HDF5_PARTICLE_TYPE, "name", HOFFSET(Particle, name), MY_HDF5_NAME_TYPE);
 
     file.createTable(MY_HDF5_PARTICLE_TYPE, "somegroup/particleTable", "particleTable");
 
@@ -63,5 +63,16 @@ int main() {
     if(not file2.linkExists("somegroup/particleTable"))
         file2.createTable(info.tableType.value(),"somegroup/particleTable", "particleTable");
     file2.addTableEntriesFrom(file.openFileHandle(),"somegroup/particleTable", "somegroup/particleTable",h5pp::TableSelection::LAST);
+
+
+    // Try reading just a column in a table
+
+    struct Rho {double test[3];};
+    auto field = file.readTableField<std::vector<Rho>>("somegroup/particleTable","rho");
+    for(auto & f : field){
+        std::cout << f.test[0] << " " << f.test[1] << " " << f.test[2] << std::endl;
+    }
+
+
     return 0;
 }

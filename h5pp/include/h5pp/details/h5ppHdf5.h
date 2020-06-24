@@ -895,7 +895,7 @@ namespace h5pp::hdf5 {
         else if (hyperSlab.offset and hyperSlab.extent)
             H5Sselect_hyperslab(space, selectOp, hyperSlab.offset.value().data(), nullptr, hyperSlab.extent.value().data(), nullptr);
 
-        /* clang-format on */
+            /* clang-format on */
 #if H5_VERSION_GE(1, 10, 0)
         htri_t is_regular = H5Sis_regular_hyperslab(space);
         if(not is_regular) {
@@ -1487,6 +1487,13 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5_type.value());
         herr_t retval = 0;
 
+
+        void * data_ptr = nullptr;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>) data_ptr = data.data();
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) data_ptr = data;
+        else data_ptr = &data;
+
+
         // Read the data
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
             // When H5T_VARIABLE,
@@ -1521,20 +1528,12 @@ namespace h5pp::hdf5 {
                 H5Dvlen_reclaim(dsetInfo.h5_type->value(), dsetInfo.h5_space.value(), plists.dset_xfer, vdata.data());
             } else {
                 // We expect the given data container to be properly sized
-                if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
-                    retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data.data());
-                } else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-                    retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data);
+                retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data_ptr);
             }
 
         }
-
-        else if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data.data());
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-            retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data);
         else
-            retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, &data);
+            retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data_ptr);
 
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
@@ -1877,23 +1876,6 @@ namespace h5pp::hdf5 {
         tgtInfo.numRecords.value() += numNewRecords;
     }
 
-    //    template<typename h5x_src,
-    //             typename h5x_tgt,
-    //             typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>,
-    //             typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
-    //    inline void addTableEntriesFrom(const h5x_src &      srcLocation,
-    //                                    std::string_view     srcTableName,
-    //                                    const h5x_tgt &      tgtLocation,
-    //                                    std::string_view     tgtTableName,
-    //                                    hsize_t              srcStartEntry,
-    //                                    hsize_t              tgtStartEntry,
-    //                                    hsize_t              numEntries,
-    //                                    const PropertyLists &plists = PropertyLists()) {
-    //        auto srcInfo = getTableTypeInfo(srcLocation, srcTableName, plists.link_access);
-    //        auto tgtInfo = getTableTypeInfo(tgtLocation, tgtTableName, plists.link_access);
-    //        addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
-    //    }
-
     template<typename DataType>
     inline void readTableEntries(DataType &data, const TableInfo &info, std::optional<size_t> startIdx = std::nullopt, std::optional<size_t> numReadRecords = std::nullopt) {
         // If none of startIdx or numReadRecords are given:
@@ -1944,49 +1926,153 @@ namespace h5pp::hdf5 {
                                  info.numRecords.value(),
                                  info.recordBytes.value());
 
+        // Make sure the given container and the registered table entry have the same size.
+        // If there is a mismatch here it can cause horrible bugs/segfaults
+        size_t dataSize = 0;
+        if constexpr(h5pp::type::sfinae::has_value_type_v<DataType>)
+            dataSize = sizeof(typename DataType::value_type);
+        else if constexpr(h5pp::type::sfinae::has_data_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>)
+            dataSize = sizeof(&data.data());
+        else
+            dataSize = sizeof(DataType);
+
+        if(dataSize != info.recordBytes.value())
+            throw std::runtime_error(h5pp::format("Could not read from table [{}]: "
+                                                  "Size mismatch: "
+                                                  "Given data container size is {} bytes per element | "
+                                                  "Table is {} bytes per entry",
+                                                  info.tablePath.value(),
+                                                  dataSize,
+                                                  info.recordBytes.value()));
+
+        h5pp::util::resizeData(data, {numReadRecords.value()});
+        void * data_ptr = nullptr;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>) data_ptr = data.data();
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) data_ptr = data;
+        else data_ptr = &data;
+        H5TBread_records(info.getTableLocId(),
+                         util::safe_str(info.tablePath.value()).c_str(),
+                         startIdx.value(),
+                         numReadRecords.value(),
+                         info.recordBytes.value(),
+                         info.fieldOffsets.value().data(),
+                         info.fieldSizes.value().data(),
+                         data_ptr);
+    }
+
+    template<typename DataType>
+    inline void readTableField(DataType &            data,
+                               const TableInfo &     info,
+                               std::string_view      fieldName,
+                               std::optional<size_t> startIdx       = std::nullopt,
+                               std::optional<size_t> numReadRecords = std::nullopt) {
+        // If none of startIdx or numReadRecords are given:
+        //          If data resizeable: startIdx = 0, numReadRecords = totalRecords
+        //          If data not resizeable: startIdx = last entry, numReadRecords = 1.
+        // If startIdx given but numReadRecords is not:
+        //          If data resizeable -> read from startEntries to the end
+        //          If data not resizeable -> read from startEntries a single entry
+        // If numReadRecords given but startEntries is not -> read the last numReadRecords records
+
+        hsize_t totalRecords = info.numRecords.value();
+        if(not startIdx and not numReadRecords) {
+            if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
+                startIdx       = 0;
+                numReadRecords = totalRecords;
+
+            } else {
+                startIdx       = totalRecords - 1;
+                numReadRecords = 1;
+            }
+        } else if(startIdx and not numReadRecords) {
+            if(startIdx.value() > totalRecords - 1)
+                throw std::runtime_error(
+                    h5pp::format("Invalid start record for table [{}] | nrecords [{}] | start entry [{}]", info.tablePath.value(), totalRecords, startIdx.value()));
+            if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
+                numReadRecords = totalRecords - startIdx.value();
+            } else {
+                numReadRecords = 1;
+            }
+
+        } else if(numReadRecords and not startIdx) {
+            if(numReadRecords and numReadRecords.value() > totalRecords)
+                throw std::runtime_error(h5pp::format(
+                    "Asked for more records than available in table [{}] | nrecords [{}] | num_entries [{}]", info.tablePath.value(), totalRecords, numReadRecords.value()));
+            startIdx = totalRecords - numReadRecords.value();
+        }
+
+        // Sanity check
+        if(numReadRecords.value() > totalRecords)
+            throw std::logic_error(h5pp::format("Asked for more records than available in table [{}] | nrecords [{}]", info.tablePath.value(), totalRecords));
+        if(startIdx.value() + numReadRecords.value() > totalRecords)
+            throw std::logic_error(h5pp::format("Asked for more records than available in table [{}] | nrecords [{}]", info.tablePath.value(), totalRecords));
+
+        // Compute the field index
+        std::optional<size_t> optFieldIdx;
+        for(size_t idx = 0; idx < info.fieldNames->size(); idx++) {
+            if(fieldName == info.fieldNames.value()[idx]) {
+                optFieldIdx = idx;
+                break;
+            }
+        }
+        if(not optFieldIdx)
+            throw std::runtime_error(h5pp::format("Could not read field [{}] from table [{}]: "
+                                                  "Could not find field name [{}] | "
+                                                  "Available field names are {}",
+                                                  fieldName,
+                                                  info.tablePath.value(),
+                                                  fieldName,
+                                                  info.fieldNames.value()));
+        size_t fieldIdx    = optFieldIdx.value();
+        size_t fieldSize   = info.fieldSizes.value()[fieldIdx];
+        size_t fieldOffset = info.fieldOffsets.value()[fieldIdx];
+
         // Make sure the given container and the registerd table entry have the same size.
         // If there is a mismatch here it can cause horrible bugs/segfaults
-        if constexpr(h5pp::type::sfinae::has_value_type_v<DataType>) {
-            if(sizeof(typename DataType::value_type) != info.recordBytes.value())
-                throw std::runtime_error(h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table records on file are {} bytes each ",
-                                                      h5pp::type::sfinae::type_name<DataType>(),
-                                                      sizeof(typename DataType::value_type),
-                                                      info.recordBytes.value()));
-        } else if constexpr(h5pp::type::sfinae::has_data_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>) {
-            if(sizeof(&data.data()) != info.recordBytes.value())
-                throw std::runtime_error(h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table records on file are {} bytes each ",
-                                                      h5pp::type::sfinae::type_name<DataType>(),
-                                                      sizeof(&data.data()),
-                                                      info.recordBytes.value()));
-        } else {
-            if(sizeof(DataType) != info.recordBytes.value())
-                throw std::runtime_error(h5pp::format("Size mismatch: Given data type {} is of {} bytes, but the table records on file are {} bytes each ",
-                                                      h5pp::type::sfinae::type_name<DataType>(),
-                                                      sizeof(DataType),
-                                                      info.recordBytes.value()));
-        }
+        size_t dataSize = 0;
+        if constexpr(h5pp::type::sfinae::has_value_type_v<DataType>)
+            dataSize = sizeof(typename DataType::value_type);
+        else if constexpr(h5pp::type::sfinae::has_data_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>)
+            dataSize = sizeof(&data.data());
+        else
+            dataSize = sizeof(DataType);
 
-        if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) { data.resize(numReadRecords.value()); }
+        if(dataSize != fieldSize)
+            throw std::runtime_error(h5pp::format("Could not read field [{}] from table [{}]: "
+                                                  "Size mismatch: "
+                                                  "Given data container size is {} bytes per element | "
+                                                  "Field size is {} bytes per element",
+                                                  fieldName,
+                                                  info.tablePath.value(),
+                                                  dataSize,
+                                                  fieldSize));
 
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
-            H5TBread_records(info.getTableLocId(),
+        h5pp::util::resizeData(data, {numReadRecords.value()});
+        h5pp::logger::log->debug("Reading table [{}] | field [{}] | field index {} | field offset {} | field size {} bytes | read from record {} | read num records {} | available "
+                                 "records {} | record size {} bytes",
+                                 info.tablePath.value(),
+                                 fieldName,
+                                 fieldIdx,
+                                 fieldOffset,
+                                 fieldSize,
+                                 startIdx.value(),
+                                 numReadRecords.value(),
+                                 info.numRecords.value(),
+                                 info.recordBytes.value());
+        void * data_ptr = nullptr;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>) data_ptr = data.data();
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) data_ptr = data;
+        else data_ptr = &data;
+        H5TBread_fields_name(info.getTableLocId(),
                              util::safe_str(info.tablePath.value()).c_str(),
+                             util::safe_str(fieldName).c_str(),
                              startIdx.value(),
                              numReadRecords.value(),
-                             info.recordBytes.value(),
+                             fieldSize,
                              info.fieldOffsets.value().data(),
                              info.fieldSizes.value().data(),
-                             data.data());
-        } else {
-            H5TBread_records(info.getTableLocId(),
-                             util::safe_str(info.tablePath.value()).c_str(),
-                             startIdx.value(),
-                             numReadRecords.value(),
-                             info.recordBytes.value(),
-                             info.fieldOffsets.value().data(),
-                             info.fieldSizes.value().data(),
-                             &data);
-        }
+                             data_ptr);
+
     }
 
     inline fs::path
