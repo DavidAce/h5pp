@@ -486,14 +486,14 @@ namespace h5pp::scan {
     }
 
     inline h5pp::TableInfo newTableInfo(const hid::h5t &                  tableType,
-                                        std::string_view                  tableName,
+                                        std::string_view                  tablePath,
                                         std::string_view                  tableTitle,
                                         const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
                                         const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
         TableInfo info;
         info.tableType      = tableType;
         info.tableTitle     = tableTitle;
-        info.tablePath      = tableName;
+        info.tablePath      = tablePath;
         info.tableGroupName = "";
         size_t pos          = info.tablePath.value().find_last_of('/');
         if(pos != std::string::npos) info.tableGroupName.value().assign(info.tablePath.value().begin(), info.tablePath.value().begin() + static_cast<std::string::difference_type> (pos));
