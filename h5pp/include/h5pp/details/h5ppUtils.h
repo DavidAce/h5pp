@@ -389,7 +389,7 @@ namespace h5pp::util {
     }
 
     inline std::optional<std::vector<hsize_t>>
-        getChunkDimensions(size_t size, size_t bytes, const std::vector<hsize_t> &dims, std::optional<std::vector<hsize_t>> &dimsMax, std::optional<H5D_layout_t> layout) {
+        getChunkDimensions(size_t bytesPerElem, const std::vector<hsize_t> &dims, std::optional<std::vector<hsize_t>> &dimsMax, std::optional<H5D_layout_t> layout) {
         // Here we make a naive guess for chunk dimensions
         // We try to make a square in N dimensions with a target byte size of 10kb - 1MB.
         // Here is a great read for chunking considerations https://www.oreilly.com/library/view/python-and-hdf5/9781491944981/ch04.html
@@ -402,7 +402,9 @@ namespace h5pp::util {
         if(dims.empty()) return dims; // Scalar
         // We try to compute the maximum dimension to get a good estimate
         // of the data volume
-        std::vector<hsize_t> dims_ubound = dims;
+        std::vector<hsize_t> dims_effective = dims;
+        // Make sure the chunk dimensions have strictly nonzero volume
+        for(auto & dim : dims_effective) dim = std::max<hsize_t>(1,dim);
         if(dimsMax) {
             // If max dims are given, dims that are not H5S_UNLIMITED are used as an upper bound
             // for that dimension
@@ -418,14 +420,12 @@ namespace h5pp::util {
                                                           "dims {} | max dims {}",
                                                           dims,
                                                           dimsMax.value()));
-                if(dimsMax.value()[idx] != H5S_UNLIMITED)
-                    dims_ubound[idx] = std::max(dims[idx], dimsMax.value()[idx]);
+                if(dimsMax.value()[idx] != H5S_UNLIMITED) dims_effective[idx] = std::max(dims_effective[idx], dimsMax.value()[idx]);
             }
         }
 
         auto rank             = dims.size();
-        auto bytesPerElem     = static_cast<size_t>(std::max<size_t>(1ul, (bytes / std::max<size_t>(1ul, size))));
-        auto volumeChunkBytes = static_cast<size_t>(std::pow(*std::max_element(dims_ubound.begin(), dims_ubound.end()), rank)) * bytesPerElem;
+        auto volumeChunkBytes = static_cast<size_t>(std::pow(*std::max_element(dims_effective.begin(), dims_effective.end()), rank)) * bytesPerElem;
         auto targetChunkBytes = std::max<size_t>(volumeChunkBytes, h5pp::constants::minChunkSize);
         targetChunkBytes      = std::min<size_t>(targetChunkBytes, h5pp::constants::maxChunkSize);
         targetChunkBytes      = static_cast<size_t>(std::pow(2, std::ceil(std::log2(targetChunkBytes)))); // Next nearest power of two
@@ -433,12 +433,14 @@ namespace h5pp::util {
         std::vector<hsize_t> chunkDims(rank, linearChunkSize);
         // Now effective dims contains either dims or dimsMax (if not H5S_UNLIMITED) at each position.
         for(size_t idx = 0; idx < chunkDims.size(); idx++) {
-            if(dimsMax)
-                chunkDims[idx] = std::min(dims_ubound[idx], linearChunkSize);
+            if(dimsMax and dimsMax.value()[idx] == H5S_UNLIMITED)
+                chunkDims[idx] = linearChunkSize;
+            else if(dimsMax.value()[idx] != H5S_UNLIMITED)
+                chunkDims[idx] = std::min(dimsMax.value()[idx], linearChunkSize);
             else
                 chunkDims[idx] = linearChunkSize;
         }
-
+        h5pp::logger::log->debug("Chunk dimensions {}, max dims {}, effective dims {}", chunkDims,dimsMax.value(), dims_effective);
         return chunkDims;
     }
 
