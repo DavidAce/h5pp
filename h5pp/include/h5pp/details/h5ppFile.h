@@ -638,7 +638,7 @@ namespace h5pp {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             if(not srcInfo.tableExists) throw std::runtime_error("Source table info has not been initialized");
             if(not srcInfo.tableExists.value()) throw std::runtime_error("Source table does not exist");
-            if(not tgtInfo.tableExists or tgtInfo.tableExists.value())
+            if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
                 tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
             hsize_t srcStartEntry = 0;
             hsize_t tgtStartEntry = 0;
