@@ -68,8 +68,19 @@ int main() {
     // Try reading just a column in a table
 
     struct Rho {double test[3];};
-    auto field = file.readTableField<std::vector<Rho>>("somegroup/particleTable","rho");
-    for(auto & f : field){
+    // Read a single
+    auto rho_field = file.readTableField<Rho>("somegroup/particleTable","rho");
+    std::cout << rho_field.test[0] << " " << rho_field.test[1] << " " << rho_field.test[2] << std::endl;
+
+    // Read a few
+    auto rho_fields_few = file.readTableField<std::vector<Rho>>("somegroup/particleTable","rho",5,3);
+    for(auto & f : rho_fields_few){
+        std::cout << f.test[0] << " " << f.test[1] << " " << f.test[2] << std::endl;
+    }
+
+    // Read them all
+    auto rho_fields_all = file.readTableField<std::vector<Rho>>("somegroup/particleTable","rho");
+    for(auto & f : rho_fields_all){
         std::cout << f.test[0] << " " << f.test[1] << " " << f.test[2] << std::endl;
     }
 
