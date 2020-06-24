@@ -415,37 +415,37 @@ namespace h5pp {
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        void readDataset(DataType &data, const DataInfo& dataInfo, const DsetInfo & dsetInfo) const {
+        void readDataset(DataType &data, const DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(const DataInfo& dataInfo, const DsetInfo & dsetInfo) const {
+        DataType readDataset(const DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
             DataType data;
             readDataset(data, dataInfo, dsetInfo);
             return data;
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        void readDataset(DataType &data, const DsetInfo & dsetInfo,const Options & options = Options()) const {
+        void readDataset(DataType &data, const DsetInfo &dsetInfo, const Options &options = Options()) const {
             h5pp::hdf5::resizeData(data, dsetInfo);
             auto dataInfo = h5pp::scan::getDataInfo(data, options);
             readDataset(data, dataInfo, dsetInfo);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(DsetInfo & dsetInfo,const Options & options = Options()) const {
+        DataType readDataset(DsetInfo &dsetInfo, const Options &options = Options()) const {
             DataType data;
             readDataset(data, dsetInfo, options);
             return data;
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(DsetInfo & dsetInfo, const DimsType& dataDims) const {
+        DataType readDataset(DsetInfo &dsetInfo, const DimsType &dataDims) const {
             DataType data;
-            Options options;
+            Options  options;
             options.dataDims = dataDims;
-            readDataset(data, dsetInfo,options);
+            readDataset(data, dsetInfo, options);
             return data;
         }
 
@@ -453,9 +453,9 @@ namespace h5pp {
         void readDataset(DataType &data, const Options &options) const {
             options.assertWellDefined();
             auto dsetInfo = h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
-            if(dsetInfo.dsetExists and not dsetInfo.dsetExists.value()) {
-                return h5pp::logger::log->error("Cannot read dataset [{}]: It does not exist", options.linkPath.value());
-            }
+            if(dsetInfo.dsetExists and not dsetInfo.dsetExists.value())
+                throw std::runtime_error(h5pp::format("Cannot read dataset [{}]: It does not exist", options.linkPath.value()));
+
             h5pp::hdf5::resizeData(data, dsetInfo);
             auto dataInfo = h5pp::scan::getDataInfo(data, options);
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
@@ -484,12 +484,12 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        void appendToDataset(DataType &data, DsetInfo &dsetInfo, size_t axis,  const OptDimsType & dataDims = std::nullopt) {
+        void appendToDataset(DataType &data, DsetInfo &dsetInfo, size_t axis, const OptDimsType &dataDims = std::nullopt) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             Options options;
             options.dataDims = dataDims;
-            auto dataInfo = h5pp::scan::getDataInfo(data,options);
-            appendToDataset(data,dataInfo,dsetInfo,axis);
+            auto dataInfo    = h5pp::scan::getDataInfo(data, options);
+            appendToDataset(data, dataInfo, dsetInfo, axis);
         }
 
         template<typename DataType>
@@ -564,16 +564,16 @@ namespace h5pp {
             options.assertWellDefined();
             auto attrInfo = h5pp::scan::readAttrInfo(openFileHandle(), options, plists);
             if(attrInfo.linkExists and not attrInfo.linkExists.value())
-                return h5pp::logger::log->error("Could not read attribute [{}] in link [{}]: "
-                                                "Link does not exist",
-                                                attrInfo.attrName.value(),
-                                                attrInfo.linkPath.value());
+                throw std::runtime_error(h5pp::format("Could not read attribute [{}] in link [{}]: "
+                                                      "Link does not exist",
+                                                      attrInfo.attrName.value(),
+                                                      attrInfo.linkPath.value()));
 
             if(attrInfo.attrExists and not attrInfo.attrExists.value())
-                return h5pp::logger::log->error("Could not read attribute [{}] in link [{}]: "
-                                                "Attribute does not exist",
-                                                attrInfo.attrName.value(),
-                                                attrInfo.linkPath.value());
+                throw std::runtime_error(h5pp::format("Could not read attribute [{}] in link [{}]: "
+                                                      "Attribute does not exist",
+                                                      attrInfo.attrName.value(),
+                                                      attrInfo.linkPath.value()));
 
             h5pp::hdf5::resizeData(data, attrInfo);
             auto dataInfo = h5pp::scan::getDataInfo(data, options);
@@ -638,7 +638,7 @@ namespace h5pp {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             if(not srcInfo.tableExists) throw std::runtime_error("Source table info has not been initialized");
             if(not srcInfo.tableExists.value()) throw std::runtime_error("Source table does not exist");
-            if(not tgtInfo.tableExists.value())
+            if(not tgtInfo.tableExists or tgtInfo.tableExists.value())
                 tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
             hsize_t srcStartEntry = 0;
             hsize_t tgtStartEntry = 0;
@@ -799,7 +799,6 @@ namespace h5pp {
             options.attrName = h5pp::util::safe_str(attrName);
             return h5pp::scan::readAttrInfo(openFileHandle(), options, plists);
         }
-
 
         [[nodiscard]] TableInfo getTableInfo(std::string_view tablePath) const { return h5pp::scan::getTableInfo(openFileHandle(), tablePath, std::nullopt, plists); }
 
