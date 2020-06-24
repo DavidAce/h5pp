@@ -268,7 +268,7 @@ namespace h5pp {
             if(not h5_type->valid() )   error_msg.append("\t h5_type\n");
             if(not h5_space->valid() )  error_msg.append("\t h5_space\n");
             if(not error_msg.empty())
-                throw std::runtime_error(h5pp::format("Cannot resize dataset. The following fields are not valid\n{}", error_msg));
+                throw std::runtime_error(h5pp::format("Cannot resize dataset [{}]. The following fields are not valid\n{}",dsetPath.value(), error_msg));
             /* clang-format on */
         }
 
@@ -286,7 +286,7 @@ namespace h5pp {
             if(not h5_type->valid() ) error_msg.append("\t h5_type\n");
             if(not h5_space->valid() ) error_msg.append("\t h5_space\n");
             if(not error_msg.empty())
-                throw std::runtime_error("Cannot write into dataset. The following fields are not valid\n\t" + error_msg);
+                throw std::runtime_error(h5pp::format("Cannot write into dataset [{}]. The following fields are not valid\n",dsetPath.value(), error_msg));
             /* clang-format on */
         }
         void assertReadReady() const {
@@ -302,7 +302,11 @@ namespace h5pp {
             if(not h5_type->valid() ) error_msg.append("\t h5_type\n");
             if(not h5_space->valid() ) error_msg.append("\t h5_space\n");
             if(not error_msg.empty())
-                throw std::runtime_error("Cannot read from dataset. The following fields are not valid\n\t" + error_msg);
+                throw std::runtime_error(h5pp::format("Cannot read from dataset [{}]. The following fields are not valid\n{}",dsetPath.value(), error_msg));
+            if(not dsetExists.value())
+                throw std::runtime_error(h5pp::format("Cannot read from dataset [{}]: It does not exist", dsetPath.value()));
+
+
             /* clang-format on */
         }
         [[nodiscard]] std::string string() const {
