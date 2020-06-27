@@ -92,14 +92,13 @@ namespace h5pp::util {
     }
 
     template<typename DataType, size_t size>
-    [[nodiscard]] constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size]) {
-        //        return size; // We want to return the size including the null terminator if it's a char array!
+    [[nodiscard]] constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size], [[maybe_unused]] bool countChars = false) {
         if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
             // A C-style char array is a null-terminated array, that has size = characters + 1
             // Here we want to return the number of characters that can fit in the array,
             // and we are not interested in the number of characters currently there.
-            return strnlen(arr, size) + 1;
-            //            return std::max(strnlen(arr, size), size - 1);
+            if (countChars) return strnlen(arr, size) + 1; // Include null terminator
+            else return std::max(strnlen(arr, size), size-1) + 1; // Include null terminator
         } else
             return size;
     }
@@ -111,6 +110,20 @@ namespace h5pp::util {
     [[nodiscard]] constexpr std::array<size_t, 3> getArraySize([[maybe_unused]] const DataType (&arr)[rows][cols][depth]) {
         return {rows, cols, depth};
     }
+
+    template<typename DataType,
+        typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>,
+    typename = std::enable_if_t<h5pp::type::sfinae::is_text_v<DataType>>>
+    [[nodiscard]] size_t getCharArraySize(const DataType &data, [[maybe_unused]]  bool countChars = true) {
+        // With this function we are interested in the number of chars currently in a given buffer,
+        // including the null terminator.
+        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return data.size() + 1; // string and string_view
+        if constexpr(std::is_array_v<DataType>) return getArraySize(data,countChars); //Included null terminator already
+        if constexpr(h5pp::type::sfinae::has_c_str_v<DataType>) return strlen(data.c_str())+1;
+        if constexpr(std::is_pointer_v<DataType>) return strlen(data)+1;
+        return 1; //Probably a char?
+    }
+
 
     template<typename IntegralOrIterableType = std::initializer_list<hsize_t>, typename = h5pp::type::sfinae::enable_if_is_integral_iterable_or_num<IntegralOrIterableType>>
     [[nodiscard]] std::vector<hsize_t> getDimVector(const IntegralOrIterableType &iterable) {
@@ -150,6 +163,7 @@ namespace h5pp::util {
         // Add more checks here. As it is, these two checks above handle all cases I have encountered.
         return 1; // All others should be "H5S_SCALAR" of size 1.
     }
+
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] constexpr int getRank() {
@@ -208,10 +222,7 @@ namespace h5pp::util {
         else if constexpr(std::is_class_v<DataType>) {
             h5pp::logger::log->warn("Detected possible unsupported non-POD class. h5pp may fail.");
             return {};
-        }
-        //        else return {};
-        else {
-            //            h5pp::type::sfinae::print_type_and_exit_compile_time<DataType>();
+        } else {
             throw std::logic_error(h5pp::format("getDimensions can't match the type provided [{}]", h5pp::type::sfinae::type_name<DataType>()));
         }
     }
@@ -309,6 +320,7 @@ namespace h5pp::util {
         if constexpr(h5pp::type::sfinae::is_iterable_v<DataType> and h5pp::type::sfinae::has_value_type_v<DataType>) {
             using value_type = typename DataType::value_type;
             if constexpr(h5pp::type::sfinae::has_size_v<value_type>) { // E.g. std::vector<std::string>
+                // Count all the null terminators
                 size_t num      = 0;
                 size_t nullterm = h5pp::type::sfinae::is_text_v<value_type> ? 1 : 0;
                 for(auto &elem : data) num += elem.size() + nullterm;
@@ -321,20 +333,20 @@ namespace h5pp::util {
             }
         }
         auto bytesperelem = h5pp::util::getBytesPerElem<DataType>();
+        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
+            if(not size) size = getCharArraySize(data) + 1; // Add null terminator
+            return size.value() * bytesperelem;
+        }
         if constexpr(std::is_array_v<DataType>) {
-            if(not size) size      = h5pp::util::getArraySize(data);
+            if(not size) size = h5pp::util::getArraySize(data);
             return size.value() * bytesperelem;
         }
-        if constexpr(std::is_same_v<DataType,const char *> or std::is_same_v<DataType,char *>){
-            size = strlen(data);
-            return size.value() * bytesperelem;
-        }
-        if constexpr(std::is_pointer_v<DataType>){
+        if constexpr(std::is_pointer_v<DataType>) {
             if(not size) throw std::runtime_error("Could not determine total amount of bytes in buffer: Pointer data has no specified size");
             return size.value() * bytesperelem;
         }
 
-        if(not size) size  = h5pp::util::getSize(data);
+        if(not size) size = h5pp::util::getSize(data);
         return size.value() * bytesperelem;
     }
 
@@ -404,7 +416,7 @@ namespace h5pp::util {
         // of the data volume
         std::vector<hsize_t> dims_effective = dims;
         // Make sure the chunk dimensions have strictly nonzero volume
-        for(auto & dim : dims_effective) dim = std::max<hsize_t>(1,dim);
+        for(auto &dim : dims_effective) dim = std::max<hsize_t>(1, dim);
         if(dimsMax) {
             // If max dims are given, dims that are not H5S_UNLIMITED are used as an upper bound
             // for that dimension
@@ -424,11 +436,11 @@ namespace h5pp::util {
             }
         }
 
-        auto rank             = dims.size();
-        auto volumeChunkBytes = static_cast<size_t>(std::pow(*std::max_element(dims_effective.begin(), dims_effective.end()), rank)) * bytesPerElem;
-        auto targetChunkBytes = std::max<size_t>(volumeChunkBytes, h5pp::constants::minChunkSize);
-        targetChunkBytes      = std::min<size_t>(targetChunkBytes, h5pp::constants::maxChunkSize);
-        targetChunkBytes      = static_cast<size_t>(std::pow(2, std::ceil(std::log2(targetChunkBytes)))); // Next nearest power of two
+        auto rank                            = dims.size();
+        auto volumeChunkBytes                = static_cast<size_t>(std::pow(*std::max_element(dims_effective.begin(), dims_effective.end()), rank)) * bytesPerElem;
+        auto targetChunkBytes                = std::max<size_t>(volumeChunkBytes, h5pp::constants::minChunkSize);
+        targetChunkBytes                     = std::min<size_t>(targetChunkBytes, h5pp::constants::maxChunkSize);
+        targetChunkBytes                     = static_cast<size_t>(std::pow(2, std::ceil(std::log2(targetChunkBytes)))); // Next nearest power of two
         auto                 linearChunkSize = static_cast<hsize_t>(std::ceil(std::pow<size_t>(targetChunkBytes / bytesPerElem, 1.0 / static_cast<double>(rank))));
         std::vector<hsize_t> chunkDims(rank, linearChunkSize);
         // Now effective dims contains either dims or dimsMax (if not H5S_UNLIMITED) at each position.
@@ -440,12 +452,12 @@ namespace h5pp::util {
             else
                 chunkDims[idx] = linearChunkSize;
         }
-        h5pp::logger::log->debug("Chunk dimensions {}, max dims {}, effective dims {}", chunkDims,dimsMax.value(), dims_effective);
+        h5pp::logger::log->debug("Chunk dimensions {}, max dims {}, effective dims {}", chunkDims, dimsMax.value(), dims_effective);
         return chunkDims;
     }
 
     template<typename DataType>
-    inline void setStringSize(hsize_t &size, size_t &bytes, std::vector<hsize_t> &dims) {
+    inline void setStringSize(const DataType &data, hsize_t &size, size_t &bytes, std::vector<hsize_t> &dims) {
         // The datatype may either be text or a container of text.
         // Examples of pure text are std::string or char[]
         // Example of a container of text is std::vector<std::string>
@@ -470,7 +482,11 @@ namespace h5pp::util {
         //          * The dimensions remain the size of the container
         if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
             if(dims.empty()) {
-                // Should properties should already be correctly detected
+                h5pp::logger::log->debug("Passed case 1");
+                bytes = h5pp::util::getBytesTotal(data);
+                //                throw std::runtime_error("Testing case 1");
+                //                bytes = h5pp::util::
+                // Properties should already be correctly detected
                 // Case 1
                 //                retval = H5Tset_size(type, H5T_VARIABLE);
             } else {
@@ -482,6 +498,8 @@ namespace h5pp::util {
                 bytes = desiredSize * h5pp::util::getBytesPerElem<DataType>();
             }
         } else if(h5pp::type::sfinae::has_text_v<DataType>) {
+            h5pp::logger::log->debug("Passed case 3");
+            bytes = h5pp::util::getBytesTotal(data);
             // Case 3
             //            retval = H5Tset_size(type, H5T_VARIABLE);
         }
@@ -517,8 +535,8 @@ namespace h5pp::util {
 #endif // H5PP_EIGEN3
             if constexpr(h5pp::type::sfinae::has_size_v<DataType> and h5pp::type::sfinae::has_resize_v<DataType>) {
             if(newDims.size() > 1) h5pp::logger::log->debug("Given data container is 1-dimensional but the desired dimensions are {}. Resizing to fit all the data", newDims);
-                auto newSize = getSizeFromDimensions(newDims);
-                h5pp::logger::log->debug("Resizing 1d container {} -> {}", std::initializer_list<size_t>{static_cast<size_t>(data.size())}, newDims);
+            auto newSize = getSizeFromDimensions(newDims);
+            h5pp::logger::log->debug("Resizing 1d container {} -> {} of type [{}]", std::initializer_list<size_t>{static_cast<size_t>(data.size())}, newDims,h5pp::type::sfinae::type_name<DataType>());
             data.resize(newSize);
         } else if constexpr(std::is_scalar_v<DataType> or std::is_class_v<DataType>) {
             return;

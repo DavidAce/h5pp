@@ -217,16 +217,91 @@ namespace h5pp::hdf5 {
     [[nodiscard]] inline size_t getBytesSelected(const hid::h5s &space, const hid::h5t &type) { return getBytesPerElem(type) * getSizeSelected(space); }
 
     template<typename DataType>
-    void assertBufferSizeisLargeEnough(const DataType &data, const hid::h5s &space) {
-        if constexpr(std::is_pointer_v<DataType>) return;
-        if constexpr(not h5pp::type::sfinae::has_size_v<DataType>) return;
-        auto dataBytes     = h5pp::util::getBytesTotal(data);
-        auto dataSize      = h5pp::util::getSize(data);
-        auto selectedSize  = getSizeSelected(space);
-        auto selectedBytes = h5pp::util::getBytesPerElem<DataType>() * selectedSize;
-        if(dataBytes < selectedBytes)
-            throw std::runtime_error(h5pp::format(
-                "Buffer is too small for the selected space | memory data: size {} bytes {} | selected data: size {} bytes {}", dataSize, dataBytes, selectedSize, selectedBytes));
+    void assertWriteBufferIsLargeEnough(const DataType &data, const hid::h5s &space, const hid::h5t &type) {
+        if(H5Tget_class(type) == H5T_STRING) {
+            if(H5Tis_variable_str(type)) return; // This transfers the string from memory until finding a null terminator
+            if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
+                auto hdf5_byte = H5Tget_size(type); // Chars including null-terminator. The memory buffer must fit this size. Also, these many bytes will participate in IO
+                auto hdf5_size = getSizeSelected(space);
+                auto data_byte = h5pp::util::getCharArraySize(data,false); // Allocated chars including null terminator
+                auto data_size = h5pp::util::getSize(data);
+                if(data_byte < hdf5_byte)
+                    throw std::runtime_error(h5pp::format("The text buffer given for this write operation is smaller than the selected space in memory.\n"
+                                                          "\t Data transfer would read from memory out of bounds\n"
+                                                          "\t given    : num strings {} | bytes {} = {} chars + '\\0'\n"
+                                                          "\t selected : num strings {} | bytes {} = {} chars + '\\0'\n"
+                                                          "\t type     : [{}]",
+                                                          data_size,
+                                                          data_byte,
+                                                          data_byte - 1,
+                                                          hdf5_size,
+                                                          hdf5_byte,
+                                                          hdf5_byte - 1,
+                                                          h5pp::type::sfinae::type_name<DataType>()));
+            }
+        } else {
+            if constexpr(std::is_pointer_v<DataType>) return;
+            if constexpr(not h5pp::type::sfinae::has_size_v<DataType>) return;
+            auto hdf5_size = getSizeSelected(space);
+            auto hdf5_byte = h5pp::util::getBytesPerElem<DataType>() * hdf5_size;
+            auto data_byte = h5pp::util::getBytesTotal(data);
+            auto data_size = h5pp::util::getSize(data);
+            if(data_byte < hdf5_byte)
+                throw std::runtime_error(h5pp::format("The buffer given for this write operation is smaller than the selected space in memory.\n"
+                                                      "\t Data transfer would read from memory out of bounds\n"
+                                                      "\t given   : size {} | bytes {}\n"
+                                                      "\t selected: size {} | bytes {}\n"
+                                                      "\t type     : [{}]",
+                                                      data_size,
+                                                      data_byte,
+                                                      hdf5_size,
+                                                      hdf5_byte,
+                                                      h5pp::type::sfinae::type_name<DataType>()));
+        }
+    }
+
+    template<typename DataType>
+    void assertReadBufferIsLargeEnough(const DataType &data, const hid::h5s &space, const hid::h5t &type) {
+        if(H5Tget_class(type) == H5T_STRING) {
+            if(H5Tis_variable_str(type)) return; // These are resized on the fly
+            if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
+                auto hdf5_byte = H5Tget_size(type); // Chars including null-terminator. The memory buffer must fit this size. Also, these many bytes will participate in IO
+                auto hdf5_size = getSizeSelected(space);
+                auto data_byte = h5pp::util::getCharArraySize(data) + 1; // Chars including null terminator
+                auto data_size = h5pp::util::getSize(data);
+                if(data_byte < hdf5_byte)
+                    throw std::runtime_error(h5pp::format("The text buffer allocated for this read operation is smaller than the string buffer found on the dataset.\n"
+                                                          "\t Data transfer would write into memory out of bounds\n"
+                                                          "\t allocated buffer: num strings {} | bytes {} = {} chars + '\\0'\n"
+                                                          "\t selected  buffer: num strings {} | bytes {} = {} chars + '\\0'\n"
+                                                          "\t type     : [{}]",
+                                                          data_size,
+                                                          data_byte,
+                                                          data_byte - 1,
+                                                          hdf5_size,
+                                                          hdf5_byte,
+                                                          hdf5_byte - 1,
+                                                          h5pp::type::sfinae::type_name<DataType>()));
+            }
+        } else {
+            if constexpr(std::is_pointer_v<DataType>) return;
+            if constexpr(not h5pp::type::sfinae::has_size_v<DataType>) return;
+            auto hdf5_size = getSizeSelected(space);
+            auto hdf5_byte = h5pp::util::getBytesPerElem<DataType>() * hdf5_size;
+            auto data_byte = h5pp::util::getBytesTotal(data);
+            auto data_size = h5pp::util::getSize(data);
+            if(data_byte < hdf5_byte)
+                throw std::runtime_error(h5pp::format("The buffer allocated for this read operation is smaller than the selected space in memory.\n"
+                                                      "\t Data transfer would write into memory out of bounds\n"
+                                                      "\t allocated : size {} | bytes {}\n"
+                                                      "\t selected  : size {} | bytes {}\n"
+                                                      "\t type     : [{}]",
+                                                      data_size,
+                                                      data_byte,
+                                                      hdf5_size,
+                                                      hdf5_byte,
+                                                      h5pp::type::sfinae::type_name<DataType>()));
+        }
     }
 
     template<typename userDataType>
@@ -356,7 +431,7 @@ namespace h5pp::hdf5 {
     //    }
 
     template<typename DataType>
-    inline void setStringSize(hid::h5t &type, hsize_t &size, size_t &bytes, std::vector<hsize_t> &dims) {
+    inline void setStringSize(const DataType &data, hid::h5t &type, hsize_t &size, size_t &bytes, std::vector<hsize_t> &dims) {
         //        if(not info.h5_type) throw std::runtime_error("Failed to set string size: h5_type is not defined");
         //        if(not info.dsetDims) throw std::runtime_error("Failed to set string size: dataset dimensions are not defined");
         H5T_class_t dataclass = H5Tget_class(type);
@@ -383,22 +458,38 @@ namespace h5pp::hdf5 {
             //          * The space size is the number of strings in the container
             //          * We set size H5T_VARIABLE
             //          * The dimensions remain the size of the container
+
+            if(H5Tget_size(type) != 1) return; // String properties have already been set, probably by the user
+
             herr_t retval = 0;
             if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
                 if(dims.empty()) {
                     // Case 1
                     retval = H5Tset_size(type, H5T_VARIABLE);
+                    bytes  = h5pp::util::getBytesTotal(data);
                 } else {
                     // Case 2
                     hsize_t desiredSize = h5pp::util::getSizeFromDimensions(dims);
-                    retval              = H5Tset_size(type, desiredSize);
-                    dims                = {};
-                    size                = 1;
-                    bytes               = H5Tget_size(type);
+                    // Consider a case where the text is "this is a text"
+                    // but the desired size is 12.
+                    // The resulting string should be "this is a t'\0'",
+                    // with 12 characters in total including the null terminator.
+                    // HDF5 seems to do this automatically. From the manual:
+                    // "If the short string is H5T_STR_NULLTERM, it is truncated
+                    // and a null terminator is appended."
+                    // Furthermore
+                    // "The size set for a string datatype should include space for
+                    // the null-terminator character, otherwise it will not be
+                    // stored on (or retrieved from) disk"
+                    retval = H5Tset_size(type, desiredSize); // Desired size should be num chars + null terminator
+                    dims   = {};
+                    size   = 1;
+                    bytes  = desiredSize;
                 }
             } else if(h5pp::type::sfinae::has_text_v<DataType>) {
                 // Case 3
                 retval = H5Tset_size(type, H5T_VARIABLE);
+                bytes  = h5pp::util::getBytesTotal(data);
             }
 
             if(retval < 0) {
@@ -406,11 +497,17 @@ namespace h5pp::hdf5 {
                 throw std::runtime_error("Failed to set size on string");
             }
             // The following makes sure there is a single "\0" at the end of the string when written to file.
-            // Note however that size here is supposed to be the number of characters NOT including null terminator.
+            // Note however that bytes here is supposed to be the number of characters including null terminator.
             retval = H5Tset_strpad(type, H5T_STR_NULLTERM);
             if(retval < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error("Failed to set strpad");
+            }
+            // Sets the character set to UTF-8
+            retval = H5Tset_cset(type, H5T_cset_t::H5T_CSET_UTF8);
+            if(retval < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to set char-set UTF-8");
             }
         }
     }
@@ -1169,11 +1266,19 @@ namespace h5pp::hdf5 {
         if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) return; // h5pp never uses malloc
         if(bytes == 0) return;
         if(H5Tget_class(type) == H5T_STRING) {
-            //            if(H5Tis_variable_str(type) > 0)return; // These are resized on the fly
             if constexpr(h5pp::type::sfinae::is_text_v<DataType>)
-                h5pp::util::resizeData(data, {static_cast<hsize_t>(bytes) - 1}); // Minus one: String resize allocates the null-terminator automatically
-            else
-                h5pp::util::resizeData(data, {static_cast<hsize_t>(H5Sget_simple_extent_npoints(space))});
+                // Minus one: String resize allocates the null-terminator automatically, and bytes is the number of characters including null-terminator
+                h5pp::util::resizeData(data, {static_cast<hsize_t>(bytes) - 1});
+            else{
+                auto size = getSizeSelected(space);
+                h5pp::util::resizeData(data, {static_cast<hsize_t>(size)});
+                // In variable length arrays each string element is dynamically resized when read.
+                // For fixed-size we can resize already.
+                if(not H5Tis_variable_str(type))  {
+                    auto fixedStringSize = H5Tget_size(type)-1; // Subtract null terminator
+                    for(auto & str : data) h5pp::util::resizeData(str,{static_cast<hsize_t>(fixedStringSize)});
+                }
+            }
         } else if(H5Sget_simple_extent_type(space) == H5S_SCALAR)
             h5pp::util::resizeData(data, {static_cast<hsize_t>(1)});
         else {
@@ -1420,7 +1525,30 @@ namespace h5pp::hdf5 {
                 else
                     sv.push_back(&elem); // Takes care of other things?
             }
+        else throw std::runtime_error(h5pp::format("Failed to get char pointer of datatype [{}]", h5pp::type::sfinae::type_name<DataType>()));
         return sv;
+    }
+
+    void print_raw(const void *raw, size_t bytes) {
+        const char *in  = reinterpret_cast<const char *>(raw);
+        size_t      len = std::max(bytes, strlen(in) + 1);
+        for(size_t i = 0; i < len; i++) {
+            int c = in[i];
+            if(isprint(c))
+                printf("%c", c);
+            else
+                switch(c) {
+                    case '\0': printf("\\0"); break;
+                    case '\a': printf("\\a"); break;
+                    case '\b': printf("\\b"); break;
+                    case '\f': printf("\\f"); break;
+                    case '\n': printf("\\n"); break;
+                    case '\r': printf("\\r"); break;
+                    case '\v': printf("\\v"); break;
+                    default: printf("?");
+                }
+        }
+        printf("\n");
     }
 
     template<typename DataType>
@@ -1439,24 +1567,46 @@ namespace h5pp::hdf5 {
         if(dsetInfo.dsetSlab) selectHyperslab(dsetInfo.h5_space.value(), dsetInfo.dsetSlab.value());
         h5pp::logger::log->debug("Writing from memory  {}", dataInfo.string());
         h5pp::logger::log->debug("Writing into dataset {}", dsetInfo.string());
-        h5pp::hdf5::assertBufferSizeisLargeEnough(data, dataInfo.h5_space.value());
+        h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5_space.value(), dsetInfo.h5_type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5_type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5_space.value(), dsetInfo.h5_space.value(), dsetInfo.h5_type.value());
         herr_t retval = 0;
+        const void *data_ptr = nullptr;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
+            data_ptr = data.data();
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
+            data_ptr = data;
+        else
+            data_ptr = &data;
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
             auto vec = getCharPtrVector(data);
             // When H5T_VARIABLE, this function expects [const char **], which is what we get from vec.data()
             if(H5Tis_variable_str(dsetInfo.h5_type->value()) > 0)
                 retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, vec.data());
-            else
-                retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, *vec.data());
-        } else if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data.data());
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-            retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data);
-        else
-            retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, &data);
-
+            else{
+                if(vec.size() == 1){
+                    retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, *vec.data());
+                }else{
+                    if constexpr(h5pp::type::sfinae::has_text_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>){
+                        //We have a fixed-size string array now. We have to copy the strings to a contiguous array
+                        // vdata already contains the pointer to each string, and bytes should be the size of the whole array
+                        // including null terminators. so
+                        std::string str_contiguous;
+                        size_t bytesPerStr = H5Tget_size(dsetInfo.h5_type.value()); //Includes null term
+                        str_contiguous.resize(bytesPerStr * vec.size());
+                        for (size_t i = 0; i < vec.size(); i++){
+                            auto start_src = str_contiguous.data() + static_cast<long>(i*bytesPerStr);
+                            strncpy(start_src, vec[i], strnlen(vec[i],bytesPerStr-1)); // Do not copy the null term
+                        }
+                        retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, str_contiguous.data());
+                    }else {
+                        // Assume contigous array and hope for the best
+                        retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data_ptr);
+                    }
+                }
+            }
+        } else
+            retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data_ptr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to write into dataset \n\t {} \n from memory \n\t {}", dsetInfo.string(), dataInfo.string()));
@@ -1482,17 +1632,18 @@ namespace h5pp::hdf5 {
         if(dsetInfo.dsetSlab) selectHyperslab(dsetInfo.h5_space.value(), dsetInfo.dsetSlab.value());
         h5pp::logger::log->debug("Reading into memory  {}", dataInfo.string());
         h5pp::logger::log->debug("Reading from dataset {}", dsetInfo.string());
-        h5pp::hdf5::assertBufferSizeisLargeEnough(data, dataInfo.h5_space.value());
+        h5pp::hdf5::assertReadBufferIsLargeEnough(data, dataInfo.h5_space.value(), dsetInfo.h5_type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5_space.value(), dsetInfo.h5_space.value(), dsetInfo.h5_type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5_type.value());
         herr_t retval = 0;
 
-
-        void * data_ptr = nullptr;
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>) data_ptr = data.data();
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) data_ptr = data;
-        else data_ptr = &data;
-
+        void *data_ptr = nullptr;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
+            data_ptr = data.data();
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
+            data_ptr = data;
+        else
+            data_ptr = &data;
 
         // Read the data
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
@@ -1502,19 +1653,18 @@ namespace h5pp::hdf5 {
             // Otherwise,
             //      1) H5Dread expects [char *], i.e. *vdata.data()
             //      2) Allocation on char * must be done before reading.
-            //
+
             if(H5Tis_variable_str(dsetInfo.h5_type.value())) {
                 auto                size = H5Sget_select_npoints(dsetInfo.h5_space.value());
                 std::vector<char *> vdata(static_cast<size_t>(size)); // Allocate pointers for "size" number of strings
+                // HDF5 allocates space for each string in vdata
                 retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), H5S_ALL, dsetInfo.h5_space.value(), plists.dset_xfer, vdata.data());
-                // HDF5 allocates space for each string
                 // Now vdata contains the whole dataset and we need to put the data into the user-given container.
-
                 if constexpr(std::is_same_v<DataType, std::string>) {
                     // A vector of strings (vdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
                     for(size_t i = 0; i < vdata.size(); i++) {
-                        if(vdata[i] != nullptr) data.append(vdata[i]);
+                        if(!vdata.empty() and vdata[i] != nullptr) data.append(vdata[i]);
                         if(i < vdata.size() - 1) data.append("\n");
                     }
                 } else if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::string> and h5pp::type::sfinae::has_resize_v<DataType>) {
@@ -1525,12 +1675,34 @@ namespace h5pp::hdf5 {
                     throw std::runtime_error("To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
                 }
                 // Free memory allocated by HDF5
-                H5Dvlen_reclaim(dsetInfo.h5_type->value(), dsetInfo.h5_space.value(), plists.dset_xfer, vdata.data());
+                H5Dvlen_reclaim(dsetInfo.h5_type.value(), dsetInfo.h5_space.value(), plists.dset_xfer, vdata.data());
             } else {
-                // We expect the given data container to be properly sized
-                retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data_ptr);
+                // All the elements in the dataset have the same string size
+                // The whole dataset is read into a contiguous block of memory.
+                size_t bytesPerString = H5Tget_size(dsetInfo.h5_type.value()); // Includes null terminator
+                auto size = H5Sget_select_npoints(dsetInfo.h5_space.value());
+                std::string fdata;
+                fdata.resize(static_cast<size_t>(size)*bytesPerString);
+                retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, fdata.data());
+                // Now fdata contains the whole dataset and we need to put the data into the user-given container.
+                if constexpr(std::is_same_v<DataType, std::string>) {
+                    // A vector of strings (fdata) can be put into a single string (data) with entries separated by new-lines
+                    data.clear();
+                    for(size_t i = 0; i < static_cast<size_t>(size); i++) {
+                        data.append(fdata.substr(i*bytesPerString,bytesPerString));
+                        if(data.size() < fdata.size() - 1) data.append("\n");
+                    }
+                    data.erase(std::find(data.begin(), data.end(), '\0'), data.end()); // Prune all but the last null terminator
+                } else if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::string> and h5pp::type::sfinae::has_resize_v<DataType>) {
+                    if(data.size() != static_cast<size_t>(size)) throw std::runtime_error(h5pp::format("Given container of strings has the wrong size: dset size {} | container size {}", size,data.size()));
+                    for (size_t i = 0; i < static_cast<size_t>(size); i++){
+                        strncpy(data[i].data(), fdata.data()+i*bytesPerString,bytesPerString);
+                        data[i].erase(std::find(data[i].begin(), data[i].end(), '\0'), data[i].end());  // Prune all but the last null terminator
+                    }
+                } else {
+                    throw std::runtime_error("To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
+                }
             }
-
         }
         else
             retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data_ptr);
@@ -1557,19 +1729,26 @@ namespace h5pp::hdf5 {
         if(attrInfo.attrSlab) selectHyperslab(attrInfo.h5_space.value(), attrInfo.attrSlab.value());
         h5pp::logger::log->debug("Writing from memory    {}", dataInfo.string());
         h5pp::logger::log->debug("Writing into attribute {}", attrInfo.string());
-        h5pp::hdf5::assertBufferSizeisLargeEnough(data, dataInfo.h5_space.value());
+        h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5_space.value(), attrInfo.h5_type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5_type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5_space.value(), attrInfo.h5_space.value(), attrInfo.h5_type.value());
         herr_t retval = 0;
+        const void *data_ptr = nullptr;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
+            data_ptr = data.data();
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
+            data_ptr = data;
+        else
+            data_ptr = &data;
+
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
             auto vec = getCharPtrVector(data);
-            retval   = H5Awrite(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), vec.data());
-        } else if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            retval = H5Awrite(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), data.data());
-        else if constexpr(std::is_pointer_v<DataType>)
-            retval = H5Awrite(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), data);
-        else
-            retval = H5Awrite(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), &data);
+            if(H5Tis_variable_str(attrInfo.h5_type->value()) > 0)
+                retval   = H5Awrite(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), vec.data());
+            else
+                retval   = H5Awrite(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), *vec.data());
+        } else
+            retval = H5Awrite(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), data_ptr);
 
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
@@ -1593,42 +1772,77 @@ namespace h5pp::hdf5 {
         attrInfo.assertReadReady();
         h5pp::logger::log->debug("Reading into memory {}", dataInfo.string());
         h5pp::logger::log->debug("Reading from file   {}", attrInfo.string());
-        h5pp::hdf5::assertBufferSizeisLargeEnough(data, dataInfo.h5_space.value());
+        h5pp::hdf5::assertReadBufferIsLargeEnough(data, dataInfo.h5_space.value(), attrInfo.h5_type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5_type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5_space.value(), attrInfo.h5_space.value(), attrInfo.h5_type.value());
         herr_t retval = 0;
-
+        void *data_ptr = nullptr;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
+            data_ptr = data.data();
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
+            data_ptr = data;
+        else
+            data_ptr = &data;
         // Read the data
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
-            //            if (H5Tis_variable_str(attrInfo.h5_type.value()) > 0) {
-            std::vector<const char *> vdata{attrInfo.attrSize.value()}; // Allocate for pointers for "size" number of strings
-            // HDF5 allocates space for each string
-            retval = H5Aread(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), vdata.data());
-            // Now sdata contains the whole dataset and we need to put the data into the user-given container.
-            if constexpr(std::is_same_v<DataType, std::string>) {
-                data.clear();
-                for(size_t i = 0; i < vdata.size(); i++) {
-                    data.append(vdata[i]);
-                    if(i < vdata.size() - 1) data.append("\n");
+            // When H5T_VARIABLE,
+            //      1) H5Aread expects [const char **], which is what we get from vdata.data().
+            //      2) H5Aread allocates memory on each const char * which has to be reclaimed later.
+            // Otherwise,
+            //      1) H5Aread expects [char *], i.e. *vdata.data()
+            //      2) Allocation on char * must be done before reading.
+            if (H5Tis_variable_str(attrInfo.h5_type.value()) > 0) {
+                auto                size = H5Sget_select_npoints(attrInfo.h5_space.value());
+                std::vector<char *> vdata(static_cast<size_t>(size)); // Allocate pointers for "size" number of strings
+                // HDF5 allocates space for each string
+                retval = H5Aread(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), vdata.data());
+                // Now vdata contains the whole dataset and we need to put the data into the user-given container.
+                if constexpr(std::is_same_v<DataType, std::string>) {
+                    // A vector of strings (vdata) can be put into a single string (data) with entries separated by new-lines
+                    data.clear();
+                    for(size_t i = 0; i < vdata.size(); i++) {
+                        if(!vdata.empty() and vdata[i] != nullptr) data.append(vdata[i]);
+                        if(i < vdata.size() - 1) data.append("\n");
+                    }
+                } else if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::string> and h5pp::type::sfinae::has_resize_v<DataType>) {
+                    data.clear();
+                    data.resize(vdata.size());
+                    for(size_t i = 0; i < data.size(); i++) data[i] = std::string(vdata[i]);
+                } else {
+                    throw std::runtime_error("To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
                 }
-            } else if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::string> and h5pp::type::sfinae::has_resize_v<DataType>) {
-                data.clear();
-                data.resize(vdata.size());
-                for(size_t i = 0; i < data.size(); i++) data[i] = std::string(vdata[i]);
+                                // Free memory allocated by HDF5
+                H5Dvlen_reclaim(attrInfo.h5_type.value(), attrInfo.h5_space.value(), H5P_DEFAULT, vdata.data());
             } else {
-                throw std::runtime_error("To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
+                // All the elements in the dataset have the same string size
+                // The whole dataset is read into a contiguous block of memory.
+                size_t bytesPerString = H5Tget_size(attrInfo.h5_type.value()); // Includes null terminator
+                auto size = H5Sget_select_npoints(attrInfo.h5_space.value());
+                std::string fdata;
+                fdata.resize(static_cast<size_t>(size)*bytesPerString);
+                retval = H5Aread(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), fdata.data());
+                // Now fdata contains the whole dataset and we need to put the data into the user-given container.
+                if constexpr(std::is_same_v<DataType, std::string>) {
+                    // A vector of strings (fdata) can be put into a single string (data) with entries separated by new-lines
+                    data.clear();
+                    for(size_t i = 0; i < static_cast<size_t>(size); i++) {
+                        data.append(fdata.substr(i*bytesPerString,bytesPerString));
+                        if(data.size() < fdata.size() - 1) data.append("\n");
+                    }
+                }else if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::string> and h5pp::type::sfinae::has_resize_v<DataType>) {
+                    data.clear();
+                    data.resize(static_cast<size_t>(size));
+                    for(size_t i = 0; i < static_cast<size_t>(size); i++) data[i] = fdata.substr(i*bytesPerString,bytesPerString);
+                }else {
+                    throw std::runtime_error("To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
+                }
             }
-            // Free memory allocated by HDF5
-            H5Dvlen_reclaim(attrInfo.h5_type.value(), attrInfo.h5_space.value(), H5P_DEFAULT, vdata.data());
-            //            }
+            if constexpr(std::is_same_v<DataType, std::string>){
+                data.erase(std::find(data.begin(), data.end(), '\0'), data.end()); // Prune all but the last null terminator
+            }
         }
-
-        else if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            retval = H5Aread(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), data.data());
-        else if constexpr(std::is_pointer_v<DataType>)
-            retval = H5Aread(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), data);
         else
-            retval = H5Aread(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), &data);
+            retval = H5Aread(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), data_ptr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to read from attribute \n\t {} \n into memory \n\t {}", attrInfo.string(), dataInfo.string()));
@@ -1946,10 +2160,13 @@ namespace h5pp::hdf5 {
                                                   info.recordBytes.value()));
 
         h5pp::util::resizeData(data, {numReadRecords.value()});
-        void * data_ptr = nullptr;
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>) data_ptr = data.data();
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) data_ptr = data;
-        else data_ptr = &data;
+        void *data_ptr = nullptr;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
+            data_ptr = data.data();
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
+            data_ptr = data;
+        else
+            data_ptr = &data;
         H5TBread_records(info.getTableLocId(),
                          util::safe_str(info.tablePath.value()).c_str(),
                          startIdx.value(),
@@ -2059,10 +2276,13 @@ namespace h5pp::hdf5 {
                                  numReadRecords.value(),
                                  info.numRecords.value(),
                                  info.recordBytes.value());
-        void * data_ptr = nullptr;
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>) data_ptr = data.data();
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) data_ptr = data;
-        else data_ptr = &data;
+        void *data_ptr = nullptr;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
+            data_ptr = data.data();
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
+            data_ptr = data;
+        else
+            data_ptr = &data;
         H5TBread_fields_name(info.getTableLocId(),
                              util::safe_str(info.tablePath.value()).c_str(),
                              util::safe_str(fieldName).c_str(),
@@ -2072,7 +2292,6 @@ namespace h5pp::hdf5 {
                              info.fieldOffsets.value().data(),
                              info.fieldSizes.value().data(),
                              data_ptr);
-
     }
 
     inline fs::path

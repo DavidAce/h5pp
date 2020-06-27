@@ -50,7 +50,7 @@ namespace h5pp::scan {
         if(not info.h5_plist_dset_access) info.h5_plist_dset_access = H5Dget_access_plist(info.h5_dset.value());
         if(not info.h5_layout) info.h5_layout = H5Pget_layout(info.h5_plist_dset_create.value());
         if(not info.dsetChunk) info.dsetChunk = h5pp::hdf5::getChunkDimensions(info.h5_plist_dset_create.value());
-        if(not info.dsetDimsMax) info.dsetDimsMax = h5pp::hdf5::getMaxDimensions(info.h5_space.value(),info.h5_layout.value());
+        if(not info.dsetDimsMax) info.dsetDimsMax = h5pp::hdf5::getMaxDimensions(info.h5_space.value(), info.h5_layout.value());
 
         if(not info.resizeMode) info.resizeMode = options.resizeMode;
         if(not info.resizeMode) {
@@ -127,16 +127,13 @@ namespace h5pp::scan {
                                                       "Dataset chunk dimensions {} requires H5D_CHUNKED layout",
                                                       info.dsetPath.value(),
                                                       info.dsetChunk.value()));
-
-
         }
 
         // If dsetDimsMax has been given and any of them is H5S_UNLIMITED then the layout is supposed to be chunked
-        if(info.dsetDimsMax){
+        if(info.dsetDimsMax) {
             // If dsetDimsMax has been given then the layout is supposed to be chunked
             if(not info.h5_layout) info.h5_layout = H5D_CHUNKED;
         }
-
 
         // Next infer the missing properties
         /* clang-format off */
@@ -216,12 +213,10 @@ namespace h5pp::scan {
                                                       "Dataset chunk dimensions {} requires H5D_CHUNKED layout",
                                                       info.dsetPath.value(),
                                                       info.dsetChunk.value()));
-
-
         }
 
         // If dsetDimsMax has been given and any of them is H5S_UNLIMITED then the layout is supposed to be chunked
-        if(info.dsetDimsMax){
+        if(info.dsetDimsMax) {
             // If dsetDimsMax has been given then the layout is supposed to be chunked
             if(not info.h5_layout) info.h5_layout = H5D_CHUNKED;
             if(info.h5_layout != H5D_CHUNKED)
@@ -229,10 +224,8 @@ namespace h5pp::scan {
                                                       "Dataset max dimensions {} requires H5D_CHUNKED layout",
                                                       info.dsetPath.value(),
                                                       info.dsetDimsMax.value()));
-
         }
 
-        
         // Next infer the missing properties
         /* clang-format off */
         if(not info.dsetDims)    info.dsetDims      = h5pp::util::getDimensions(data);
@@ -251,7 +244,7 @@ namespace h5pp::scan {
                 info.resizeMode = h5pp::ResizeMode::RESIZE_TO_FIT;
         }
 
-        h5pp::hdf5::setStringSize<DataType>(info.h5_type.value(), info.dsetSize.value(), info.dsetByte.value(), info.dsetDims.value());       // String size will be H5T_VARIABLE unless explicitly specified
+        h5pp::hdf5::setStringSize<DataType>(data, info.h5_type.value(), info.dsetSize.value(), info.dsetByte.value(), info.dsetDims.value());       // String size will be H5T_VARIABLE unless explicitly specified
         /* clang-format on */
         info.h5_space             = h5pp::util::getDsetSpace(info.dsetSize.value(), info.dsetDims.value(), info.h5_layout.value(), info.dsetDimsMax);
         info.h5_plist_dset_create = H5Pcreate(H5P_DATASET_CREATE);
@@ -297,7 +290,8 @@ namespace h5pp::scan {
         if(not info.dataRank) info.dataRank = h5pp::util::getRankFromDimensions(info.dataDims.value());
         if(not info.dataByte) info.dataByte = info.dataSize.value() * h5pp::util::getBytesPerElem<DataType>();
         if(not info.cpp_type) info.cpp_type = h5pp::type::sfinae::type_name<DataType>();
-        h5pp::util::setStringSize<DataType>(info.dataSize.value(), info.dataByte.value(), info.dataDims.value()); // String size will be H5T_VARIABLE unless explicitly specified
+        h5pp::util::setStringSize<DataType>(
+            data, info.dataSize.value(), info.dataByte.value(), info.dataDims.value()); // String size will be H5T_VARIABLE unless explicitly specified
         if(not info.h5_space) info.h5_space = h5pp::util::getMemSpace(info.dataSize.value(), info.dataDims.value());
         h5pp::logger::log->trace("Scanned metadata {}", info.string());
     }
@@ -393,7 +387,9 @@ namespace h5pp::scan {
     template<typename DataType, typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
     inline h5pp::AttrInfo getAttrInfo(const h5x &loc, const DataType &data, const Options &options, const PropertyLists &plists = PropertyLists()) {
         auto info = readAttrInfo(loc, options, plists);
-        if(info.attrExists.value()) return info;
+        if(not info.linkExists) throw std::runtime_error(h5pp::format("Could not get attribute info for link [{}]: Link does not exist.",options.linkPath.value()));
+        if(not info.linkExists.value()) throw std::runtime_error(h5pp::format("Could not get attribute info for link [{}]: Link does not exist.",options.linkPath.value()));
+        if(info.attrExists and info.attrExists.value()) return info;
         h5pp::logger::log->debug("Creating new attribute info for [{}] at link [{}]", options.attrName.value(), options.linkPath.value());
 
         // First copy the parameters given in options
@@ -402,11 +398,12 @@ namespace h5pp::scan {
         if(not info.h5_type) info.h5_type = options.h5_type;
         // Some sanity checks
         if constexpr(std::is_pointer_v<DataType>) {
-            if(not info.attrDims)
-                throw std::runtime_error(h5pp::format("Error creating attribute [{}] on link [{}]: Dimensions for new attribute must be specified for pointer data of type [{}]",
-                                                      options.attrName.value(),
-                                                      options.linkPath.value(),
-                                                      h5pp::type::sfinae::type_name<DataType>()));
+                if(not info.attrDims)
+                    throw std::runtime_error(
+                        h5pp::format("Error creating attribute [{}] on link [{}]: Dimensions for new attribute must be specified for pointer data of type [{}]",
+                                     options.attrName.value(),
+                                     options.linkPath.value(),
+                                     h5pp::type::sfinae::type_name<DataType>()));
         }
 
         // Next infer the missing properties
@@ -416,7 +413,7 @@ namespace h5pp::scan {
         if(not info.attrSize)    info.attrSize      = h5pp::util::getSizeFromDimensions(info.attrDims.value());
         if(not info.attrRank)    info.attrRank      = h5pp::util::getRankFromDimensions(info.attrDims.value());
         if(not info.attrByte)    info.attrByte      = h5pp::util::getBytesTotal(data,info.attrSize);
-        h5pp::hdf5::setStringSize<DataType>(info.h5_type.value(), info.attrSize.value(), info.attrByte.value(), info.attrDims.value());       // String size will be H5T_VARIABLE unless explicitly specified
+        h5pp::hdf5::setStringSize<DataType>(data,info.h5_type.value(), info.attrSize.value(), info.attrByte.value(), info.attrDims.value());       // String size will be H5T_VARIABLE unless explicitly specified
         if(not info.h5_space) info.h5_space = h5pp::util::getDsetSpace(info.attrSize.value(), info.attrDims.value(), H5D_COMPACT);
         /* clang-format on */
 
@@ -496,7 +493,8 @@ namespace h5pp::scan {
         info.tablePath      = tablePath;
         info.tableGroupName = "";
         size_t pos          = info.tablePath.value().find_last_of('/');
-        if(pos != std::string::npos) info.tableGroupName.value().assign(info.tablePath.value().begin(), info.tablePath.value().begin() + static_cast<std::string::difference_type> (pos));
+        if(pos != std::string::npos)
+            info.tableGroupName.value().assign(info.tablePath.value().begin(), info.tablePath.value().begin() + static_cast<std::string::difference_type>(pos));
 
         info.numFields        = H5Tget_nmembers(tableType);
         info.numRecords       = 0;

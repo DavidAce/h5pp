@@ -259,6 +259,7 @@ namespace h5pp::type::sfinae {
         public:
         static constexpr bool value = test<T>();
     };
+
     template<typename T>
     inline constexpr bool is_text_v = is_text<T>::value;
 
