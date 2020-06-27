@@ -1269,7 +1269,8 @@ namespace h5pp::hdf5 {
             if constexpr(h5pp::type::sfinae::is_text_v<DataType>)
                 // Minus one: String resize allocates the null-terminator automatically, and bytes is the number of characters including null-terminator
                 h5pp::util::resizeData(data, {static_cast<hsize_t>(bytes) - 1});
-            else{
+            else if constexpr(h5pp::type::sfinae::has_text_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>){
+                // We have a container such as std::vector<std::string> here, and the dataset may have multiple string elements
                 auto size = getSizeSelected(space);
                 h5pp::util::resizeData(data, {static_cast<hsize_t>(size)});
                 // In variable length arrays each string element is dynamically resized when read.
@@ -1278,6 +1279,8 @@ namespace h5pp::hdf5 {
                     auto fixedStringSize = H5Tget_size(type)-1; // Subtract null terminator
                     for(auto & str : data) h5pp::util::resizeData(str,{static_cast<hsize_t>(fixedStringSize)});
                 }
+            }else{
+                throw std::runtime_error(h5pp::format("Could not resize given container for text data: Unrecognized type for text [{}]",h5pp::type::sfinae::type_name<DataType>()));
             }
         } else if(H5Sget_simple_extent_type(space) == H5S_SCALAR)
             h5pp::util::resizeData(data, {static_cast<hsize_t>(1)});
