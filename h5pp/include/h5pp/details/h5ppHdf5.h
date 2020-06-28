@@ -223,7 +223,7 @@ namespace h5pp::hdf5 {
             if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
                 auto hdf5_byte = H5Tget_size(type); // Chars including null-terminator. The memory buffer must fit this size. Also, these many bytes will participate in IO
                 auto hdf5_size = getSizeSelected(space);
-                auto data_byte = h5pp::util::getCharArraySize(data,false); // Allocated chars including null terminator
+                auto data_byte = h5pp::util::getCharArraySize(data, false); // Allocated chars including null terminator
                 auto data_size = h5pp::util::getSize(data);
                 if(data_byte < hdf5_byte)
                     throw std::runtime_error(h5pp::format("The text buffer given for this write operation is smaller than the selected space in memory.\n"
@@ -1269,18 +1269,19 @@ namespace h5pp::hdf5 {
             if constexpr(h5pp::type::sfinae::is_text_v<DataType>)
                 // Minus one: String resize allocates the null-terminator automatically, and bytes is the number of characters including null-terminator
                 h5pp::util::resizeData(data, {static_cast<hsize_t>(bytes) - 1});
-            else if constexpr(h5pp::type::sfinae::has_text_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>){
+            else if constexpr(h5pp::type::sfinae::has_text_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>) {
                 // We have a container such as std::vector<std::string> here, and the dataset may have multiple string elements
                 auto size = getSizeSelected(space);
                 h5pp::util::resizeData(data, {static_cast<hsize_t>(size)});
                 // In variable length arrays each string element is dynamically resized when read.
                 // For fixed-size we can resize already.
-                if(not H5Tis_variable_str(type))  {
-                    auto fixedStringSize = H5Tget_size(type)-1; // Subtract null terminator
-                    for(auto & str : data) h5pp::util::resizeData(str,{static_cast<hsize_t>(fixedStringSize)});
+                if(not H5Tis_variable_str(type)) {
+                    auto fixedStringSize = H5Tget_size(type) - 1; // Subtract null terminator
+                    for(auto &str : data) h5pp::util::resizeData(str, {static_cast<hsize_t>(fixedStringSize)});
                 }
-            }else{
-                throw std::runtime_error(h5pp::format("Could not resize given container for text data: Unrecognized type for text [{}]",h5pp::type::sfinae::type_name<DataType>()));
+            } else {
+                throw std::runtime_error(
+                    h5pp::format("Could not resize given container for text data: Unrecognized type for text [{}]", h5pp::type::sfinae::type_name<DataType>()));
             }
         } else if(H5Sget_simple_extent_type(space) == H5S_SCALAR)
             h5pp::util::resizeData(data, {static_cast<hsize_t>(1)});
@@ -1528,7 +1529,8 @@ namespace h5pp::hdf5 {
                 else
                     sv.push_back(&elem); // Takes care of other things?
             }
-        else throw std::runtime_error(h5pp::format("Failed to get char pointer of datatype [{}]", h5pp::type::sfinae::type_name<DataType>()));
+        else
+            throw std::runtime_error(h5pp::format("Failed to get char pointer of datatype [{}]", h5pp::type::sfinae::type_name<DataType>()));
         return sv;
     }
 
@@ -1573,7 +1575,7 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5_space.value(), dsetInfo.h5_type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5_type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5_space.value(), dsetInfo.h5_space.value(), dsetInfo.h5_type.value());
-        herr_t retval = 0;
+        herr_t      retval   = 0;
         const void *data_ptr = nullptr;
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
             data_ptr = data.data();
@@ -1586,23 +1588,24 @@ namespace h5pp::hdf5 {
             // When H5T_VARIABLE, this function expects [const char **], which is what we get from vec.data()
             if(H5Tis_variable_str(dsetInfo.h5_type->value()) > 0)
                 retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, vec.data());
-            else{
-                if(vec.size() == 1){
+            else {
+                if(vec.size() == 1) {
                     retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, *vec.data());
-                }else{
-                    if constexpr(h5pp::type::sfinae::has_text_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>){
-                        //We have a fixed-size string array now. We have to copy the strings to a contiguous array
+                } else {
+                    if constexpr(h5pp::type::sfinae::has_text_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>) {
+                        // We have a fixed-size string array now. We have to copy the strings to a contiguous array
                         // vdata already contains the pointer to each string, and bytes should be the size of the whole array
                         // including null terminators. so
                         std::string str_contiguous;
-                        size_t bytesPerStr = H5Tget_size(dsetInfo.h5_type.value()); //Includes null term
+                        size_t      bytesPerStr = H5Tget_size(dsetInfo.h5_type.value()); // Includes null term
                         str_contiguous.resize(bytesPerStr * vec.size());
-                        for (size_t i = 0; i < vec.size(); i++){
-                            auto start_src = str_contiguous.data() + static_cast<long>(i*bytesPerStr);
-                            strncpy(start_src, vec[i], strnlen(vec[i],bytesPerStr-1)); // Do not copy the null term
+                        for(size_t i = 0; i < vec.size(); i++) {
+                            auto start_src = str_contiguous.data() + static_cast<long>(i * bytesPerStr);
+                            strncpy(start_src, vec[i], strnlen(vec[i], bytesPerStr - 1)); // Do not copy the null term
                         }
-                        retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, str_contiguous.data());
-                    }else {
+                        retval = H5Dwrite(
+                            dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, str_contiguous.data());
+                    } else {
                         // Assume contigous array and hope for the best
                         retval = H5Dwrite(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data_ptr);
                     }
@@ -1682,32 +1685,32 @@ namespace h5pp::hdf5 {
             } else {
                 // All the elements in the dataset have the same string size
                 // The whole dataset is read into a contiguous block of memory.
-                size_t bytesPerString = H5Tget_size(dsetInfo.h5_type.value()); // Includes null terminator
-                auto size = H5Sget_select_npoints(dsetInfo.h5_space.value());
+                size_t      bytesPerString = H5Tget_size(dsetInfo.h5_type.value()); // Includes null terminator
+                auto        size           = H5Sget_select_npoints(dsetInfo.h5_space.value());
                 std::string fdata;
-                fdata.resize(static_cast<size_t>(size)*bytesPerString);
+                fdata.resize(static_cast<size_t>(size) * bytesPerString);
                 retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, fdata.data());
                 // Now fdata contains the whole dataset and we need to put the data into the user-given container.
                 if constexpr(std::is_same_v<DataType, std::string>) {
                     // A vector of strings (fdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
                     for(size_t i = 0; i < static_cast<size_t>(size); i++) {
-                        data.append(fdata.substr(i*bytesPerString,bytesPerString));
+                        data.append(fdata.substr(i * bytesPerString, bytesPerString));
                         if(data.size() < fdata.size() - 1) data.append("\n");
                     }
                     data.erase(std::find(data.begin(), data.end(), '\0'), data.end()); // Prune all but the last null terminator
                 } else if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::string> and h5pp::type::sfinae::has_resize_v<DataType>) {
-                    if(data.size() != static_cast<size_t>(size)) throw std::runtime_error(h5pp::format("Given container of strings has the wrong size: dset size {} | container size {}", size,data.size()));
-                    for (size_t i = 0; i < static_cast<size_t>(size); i++){
-                        strncpy(data[i].data(), fdata.data()+i*bytesPerString,bytesPerString);
-                        data[i].erase(std::find(data[i].begin(), data[i].end(), '\0'), data[i].end());  // Prune all but the last null terminator
+                    if(data.size() != static_cast<size_t>(size))
+                        throw std::runtime_error(h5pp::format("Given container of strings has the wrong size: dset size {} | container size {}", size, data.size()));
+                    for(size_t i = 0; i < static_cast<size_t>(size); i++) {
+                        strncpy(data[i].data(), fdata.data() + i * bytesPerString, bytesPerString);
+                        data[i].erase(std::find(data[i].begin(), data[i].end(), '\0'), data[i].end()); // Prune all but the last null terminator
                     }
                 } else {
                     throw std::runtime_error("To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
                 }
             }
-        }
-        else
+        } else
             retval = H5Dread(dsetInfo.h5_dset.value(), dsetInfo.h5_type.value(), dataInfo.h5_space.value(), dsetInfo.h5_space.value(), plists.dset_xfer, data_ptr);
 
         if(retval < 0) {
@@ -1735,7 +1738,7 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5_space.value(), attrInfo.h5_type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5_type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5_space.value(), attrInfo.h5_space.value(), attrInfo.h5_type.value());
-        herr_t retval = 0;
+        herr_t      retval   = 0;
         const void *data_ptr = nullptr;
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
             data_ptr = data.data();
@@ -1747,9 +1750,9 @@ namespace h5pp::hdf5 {
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
             auto vec = getCharPtrVector(data);
             if(H5Tis_variable_str(attrInfo.h5_type->value()) > 0)
-                retval   = H5Awrite(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), vec.data());
+                retval = H5Awrite(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), vec.data());
             else
-                retval   = H5Awrite(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), *vec.data());
+                retval = H5Awrite(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), *vec.data());
         } else
             retval = H5Awrite(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), data_ptr);
 
@@ -1778,8 +1781,8 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertReadBufferIsLargeEnough(data, dataInfo.h5_space.value(), attrInfo.h5_type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5_type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5_space.value(), attrInfo.h5_space.value(), attrInfo.h5_type.value());
-        herr_t retval = 0;
-        void *data_ptr = nullptr;
+        herr_t retval   = 0;
+        void * data_ptr = nullptr;
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
             data_ptr = data.data();
         else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
@@ -1794,7 +1797,7 @@ namespace h5pp::hdf5 {
             // Otherwise,
             //      1) H5Aread expects [char *], i.e. *vdata.data()
             //      2) Allocation on char * must be done before reading.
-            if (H5Tis_variable_str(attrInfo.h5_type.value()) > 0) {
+            if(H5Tis_variable_str(attrInfo.h5_type.value()) > 0) {
                 auto                size = H5Sget_select_npoints(attrInfo.h5_space.value());
                 std::vector<char *> vdata(static_cast<size_t>(size)); // Allocate pointers for "size" number of strings
                 // HDF5 allocates space for each string
@@ -1814,37 +1817,36 @@ namespace h5pp::hdf5 {
                 } else {
                     throw std::runtime_error("To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
                 }
-                                // Free memory allocated by HDF5
+                // Free memory allocated by HDF5
                 H5Dvlen_reclaim(attrInfo.h5_type.value(), attrInfo.h5_space.value(), H5P_DEFAULT, vdata.data());
             } else {
                 // All the elements in the dataset have the same string size
                 // The whole dataset is read into a contiguous block of memory.
-                size_t bytesPerString = H5Tget_size(attrInfo.h5_type.value()); // Includes null terminator
-                auto size = H5Sget_select_npoints(attrInfo.h5_space.value());
+                size_t      bytesPerString = H5Tget_size(attrInfo.h5_type.value()); // Includes null terminator
+                auto        size           = H5Sget_select_npoints(attrInfo.h5_space.value());
                 std::string fdata;
-                fdata.resize(static_cast<size_t>(size)*bytesPerString);
+                fdata.resize(static_cast<size_t>(size) * bytesPerString);
                 retval = H5Aread(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), fdata.data());
                 // Now fdata contains the whole dataset and we need to put the data into the user-given container.
                 if constexpr(std::is_same_v<DataType, std::string>) {
                     // A vector of strings (fdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
                     for(size_t i = 0; i < static_cast<size_t>(size); i++) {
-                        data.append(fdata.substr(i*bytesPerString,bytesPerString));
+                        data.append(fdata.substr(i * bytesPerString, bytesPerString));
                         if(data.size() < fdata.size() - 1) data.append("\n");
                     }
-                }else if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::string> and h5pp::type::sfinae::has_resize_v<DataType>) {
+                } else if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::string> and h5pp::type::sfinae::has_resize_v<DataType>) {
                     data.clear();
                     data.resize(static_cast<size_t>(size));
-                    for(size_t i = 0; i < static_cast<size_t>(size); i++) data[i] = fdata.substr(i*bytesPerString,bytesPerString);
-                }else {
+                    for(size_t i = 0; i < static_cast<size_t>(size); i++) data[i] = fdata.substr(i * bytesPerString, bytesPerString);
+                } else {
                     throw std::runtime_error("To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
                 }
             }
-            if constexpr(std::is_same_v<DataType, std::string>){
+            if constexpr(std::is_same_v<DataType, std::string>) {
                 data.erase(std::find(data.begin(), data.end(), '\0'), data.end()); // Prune all but the last null terminator
             }
-        }
-        else
+        } else
             retval = H5Aread(attrInfo.h5_attr.value(), attrInfo.h5_type.value(), data_ptr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
@@ -1949,7 +1951,8 @@ namespace h5pp::hdf5 {
             return;
         }
 
-        // Copy member type data to a vector of hid_t for compatibility
+        // Copy member type data to a vector of hid_t for compatibility.
+        // Note that there is no need to close thes hid_t since info will close them.
         std::vector<hid_t> fieldTypesHidT(info.fieldTypes.value().begin(), info.fieldTypes.value().end());
 
         // Copy member name data to a vector of const char * for compatibility
@@ -2297,43 +2300,95 @@ namespace h5pp::hdf5 {
                              data_ptr);
     }
 
+    template<typename h5x_src,
+             typename h5x_tgt,
+             typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>,
+             typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
+    inline void
+        copyLink(const h5x_src &srcLocId, const std::string &srcLinkPath, const h5x_tgt &tgtLocId, const std::string &tgtLinkPath, const PropertyLists &plists = PropertyLists()) {
+        h5pp::logger::log->trace("Copying link [{}] --> [{}]", srcLinkPath, tgtLinkPath);
+        // Copy the link srcLinkPath to tgtLinkPath. Note that H5Ocopy does this recursively, so we don't need
+        // to iterate links recursively here.
+        auto retval = H5Ocopy(srcLocId, srcLinkPath.c_str(), tgtLocId, tgtLinkPath.c_str(), H5P_DEFAULT, plists.link_create);
+        if(retval < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Could not copy link [{}] --> [{}]", srcLinkPath, tgtLinkPath));
+        }
+    }
+
+    inline void copyLink(const std::string &  srcFilePath,
+                         const std::string &  srcLinkPath,
+                         const std::string &  tgtFilePath,
+                         const std::string &  tgtLinkPath,
+                         FilePermission       targetFileCreatePermission = FilePermission::READWRITE,
+                         const PropertyLists &plists                     = PropertyLists()) {
+        h5pp::logger::log->trace("Copying link: source link [{}] | source file [{}]  -->  target link [{}] | target file [{}]", srcLinkPath, srcFilePath, tgtLinkPath, tgtFilePath);
+
+        try {
+            auto srcPath = fs::absolute(srcFilePath);
+            if(not fs::exists(srcPath))
+                throw std::runtime_error(h5pp::format("Could not copy link [{}] from file [{}]: source file does not exist [{}]", srcLinkPath, srcFilePath, srcPath.string()));
+            auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, targetFileCreatePermission, plists);
+
+            hid_t hid_src = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDONLY, plists.file_access);
+            hid_t hid_tgt = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.file_access);
+            if(hid_src < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error(h5pp::format("Failed to open source file [{}] in read-only mode", srcPath.string()));
+            }
+            if(hid_tgt < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error(h5pp::format("Failed to open target file [{}] in read-write mode", tgtPath.string()));
+            }
+            hid::h5f srcFile = hid_src;
+            hid::h5f tgtFile = hid_tgt;
+            copyLink(srcFile, srcLinkPath, tgtFile, tgtLinkPath);
+        } catch(const std::exception &ex) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Could not copy link [{}] from file [{}]: {}", srcLinkPath, srcFilePath, ex.what()));
+        }
+    }
+
     inline fs::path
         copyFile(const std::string &src, const std::string &tgt, FilePermission permission = FilePermission::COLLISION_FAIL, const PropertyLists &plists = PropertyLists()) {
         h5pp::logger::log->trace("Copying file [{}] --> [{}]", src, tgt);
         auto tgtPath = h5pp::hdf5::createFile(tgt, permission, plists);
         auto srcPath = fs::absolute(src);
-        if(not fs::exists(srcPath)) throw std::runtime_error(h5pp::format("Could not copy file: source path does not exist [{}]", srcPath.string()));
+        try {
+            if(not fs::exists(srcPath)) throw std::runtime_error(h5pp::format("Could not copy file [{}] --> [{}]: source file does not exist [{}]", src, tgt, srcPath.string()));
+            if(tgtPath == srcPath) h5pp::logger::log->debug("Skipped copying file: source and target files have the same path [{}]", srcPath.string());
 
-        if(tgtPath == srcPath) throw std::runtime_error(h5pp::format("Could not copy file: source and target paths are the same [{}]", srcPath.string()));
-
-        hid::h5f tgtFile = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.file_access);
-        hid::h5f srcFile = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDONLY, plists.file_access);
-
-        if(tgtFile < 0) {
-            H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Could not copy file: failed to open target file in read-write mode [{}]", tgtPath.string()));
-        }
-
-        if(srcFile < 0) {
-            H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Could not copy file: failed to open source file in read-only mode [{}]", srcPath.string()));
-        }
-
-        // Copy all the groups in the file root recursively. Note that H5Ocopy does this recursively, so we don't need
-        // to iterate links recursively here. Therefore maxDepth = 0
-        long maxDepth = 0;
-        for(const auto &link : getContentsOfLink<H5O_TYPE_UNKNOWN>(srcFile, "/", maxDepth, plists.link_access)) {
-            if(link == ".") continue;
-            h5pp::logger::log->trace("Copying recursively: [{}]", link);
-            auto retval = H5Ocopy(srcFile, link.c_str(), tgtFile, link.c_str(), H5P_DEFAULT, H5P_DEFAULT);
-            if(retval < 0) {
+            hid_t hid_src = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDONLY, plists.file_access);
+            hid_t hid_tgt = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.file_access);
+            if(hid_src < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error(
-                    h5pp::format("Could not copy file: failed to copy contents of source file [{}] into target file [{}] ", srcPath.string(), tgtPath.string()));
+                throw std::runtime_error(h5pp::format("Failed to open source file [{}] in read-only mode", srcPath.string()));
             }
+            if(hid_tgt < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error(h5pp::format("Failed to open target file [{}] in read-write mode", tgtPath.string()));
+            }
+            hid::h5f srcFile = hid_src;
+            hid::h5f tgtFile = hid_tgt;
+
+            // Copy all the groups in the file root recursively. Note that H5Ocopy does this recursively, so we don't need
+            // to iterate links recursively here. Therefore maxDepth = 0
+            long maxDepth = 0;
+            for(const auto &link : getContentsOfLink<H5O_TYPE_UNKNOWN>(srcFile, "/", maxDepth, plists.link_access)) {
+                if(link == ".") continue;
+                h5pp::logger::log->trace("Copying recursively: [{}]", link);
+                auto retval = H5Ocopy(srcFile, link.c_str(), tgtFile, link.c_str(), H5P_DEFAULT, plists.link_create);
+                if(retval < 0) {
+                    H5Eprint(H5E_DEFAULT, stderr);
+                    throw std::runtime_error(h5pp::format("Failed to copy file contents with H5Ocopy(srcFile,{},tgtFile,{},H5P_DEFAULT,link_create_propery_list)", link, link));
+                }
+            }
+            // ... Find out how to copy attributes that are written on the root itself
+            return tgtPath;
+        } catch(const std::exception &ex) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Could not copy file [{}] --> [{}]: ", src, tgt, ex.what()));
         }
-        // ... Find out how to copy attributes that are written on the root itself
-        return tgtPath;
     }
 
     inline fs::path

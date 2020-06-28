@@ -160,15 +160,49 @@ namespace h5pp {
         }
 #endif
 
-        [[maybe_unused]] fs::path copyFile(const std::string &targetPath, const FilePermission &perm = FilePermission::COLLISION_FAIL) const {
-            return h5pp::hdf5::copyFile(getFilePath(), targetPath, perm, plists);
+
+       /*
+       *
+       * Functions for managing file location
+       *
+       */
+
+        [[maybe_unused]] fs::path copyFileTo(const std::string &targetFilePath, const FilePermission &perm = FilePermission::COLLISION_FAIL) const {
+            return h5pp::hdf5::copyFile(getFilePath(), targetFilePath, perm, plists);
         }
 
-        [[maybe_unused]] fs::path moveFile(const std::string &targetPath, const FilePermission &perm = FilePermission::COLLISION_FAIL) {
-            auto newPath = h5pp::hdf5::moveFile(getFilePath(), targetPath, perm, plists);
+        [[maybe_unused]] fs::path moveFileTo(const std::string &targetFilePath, const FilePermission &perm = FilePermission::COLLISION_FAIL) {
+            auto newPath = h5pp::hdf5::moveFile(getFilePath(), targetFilePath, perm, plists);
             if(fs::exists(newPath)) { filePath = newPath; }
             return newPath;
         }
+
+        /*
+        *
+        * Functions for transfering contents between locations or files
+        *
+        */
+
+        void copyLinkToFile(const std::string & localLinkPath,  const std::string &targetFilePath, const std::string & targetLinkPath, const FilePermission &targetFileCreatePermission = FilePermission::READWRITE) const {
+            return h5pp::hdf5::copyLink(getFilePath(),localLinkPath, targetFilePath, targetLinkPath, targetFileCreatePermission, plists);
+        }
+
+        void copyLinkFromFile(const std::string & localLinkPath, const std::string &sourceFilePath, const std::string & sourceLinkPath) {
+            return h5pp::hdf5::copyLink(sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
+        }
+
+        template<typename h5x_tgt,
+            typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
+        void copyLinkToLocation(const std::string & localLinkPath, const h5x_tgt & targetLocationId, const std::string & targetLinkPath) const {
+            return h5pp::hdf5::copyLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath,plists);
+        }
+
+        template<typename h5x_src,
+            typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
+        void copyLinkFromLocation(const std::string & localLinkPath, const h5x_src & sourceLocationId, const std::string & sourceLinkPath) {
+            return h5pp::hdf5::copyLink(sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
+        }
+
 
         /*
          *
