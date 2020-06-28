@@ -1,4 +1,3 @@
-
 #include <complex>
 #include <h5pp/h5pp.h>
 #include <iostream>
@@ -22,25 +21,9 @@ int main() {
                   "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     size_t     logLevel = 0;
-    h5pp::File fileA("output/copySwapA.h5", h5pp::FilePermission::REPLACE, logLevel);
-    h5pp::File fileB("output/copySwapB.h5", h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File fileA("output/copyLinkA.h5", h5pp::FilePermission::REPLACE, logLevel);
 
     fileA.writeDataset("A", "groupA/A");
-    fileB.writeDataset("B", "groupB/B");
-
-    h5pp::File fileC;
-
-    fileC = fileB;
-    fileC.writeDataset("C", "groupC/C");
-
-    h5pp::File fileD(fileC);
-    fileD.writeDataset("D", "groupD/D");
-
-    h5pp::File fileE(h5pp::File("output/copySwapE.h5", h5pp::FilePermission::REPLACE, logLevel));
-    fileE.writeDataset("E", "groupE/E");
-
-    fileD = fileB;
-
-
-    return 0;
+    fileA.copyLinkToFile("groupA/A", "output/copyLinkB.h5", "groupA_from_file_A/A", h5pp::FilePermission::REPLACE);
+    fileA.copyLinkFromFile("groupA_from_file_B/A", "output/copyLinkB.h5", "groupA_from_file_A/A");
 }
