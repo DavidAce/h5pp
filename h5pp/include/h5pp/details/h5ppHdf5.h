@@ -1533,28 +1533,28 @@ namespace h5pp::hdf5 {
             throw std::runtime_error(h5pp::format("Failed to get char pointer of datatype [{}]", h5pp::type::sfinae::type_name<DataType>()));
         return sv;
     }
-
-    void print_raw(const void *raw, size_t bytes) {
-        const char *in  = reinterpret_cast<const char *>(raw);
-        size_t      len = std::max(bytes, strlen(in) + 1);
-        for(size_t i = 0; i < len; i++) {
-            int c = in[i];
-            if(isprint(c))
-                printf("%c", c);
-            else
-                switch(c) {
-                    case '\0': printf("\\0"); break;
-                    case '\a': printf("\\a"); break;
-                    case '\b': printf("\\b"); break;
-                    case '\f': printf("\\f"); break;
-                    case '\n': printf("\\n"); break;
-                    case '\r': printf("\\r"); break;
-                    case '\v': printf("\\v"); break;
-                    default: printf("?");
-                }
-        }
-        printf("\n");
-    }
+//
+//    inline void print_raw(const void *raw, size_t bytes) {
+//        const char *in  = reinterpret_cast<const char *>(raw);
+//        size_t      len = std::max(bytes, strlen(in) + 1);
+//        for(size_t i = 0; i < len; i++) {
+//            int c = in[i];
+//            if(isprint(c))
+//                printf("%c", c);
+//            else
+//                switch(c) {
+//                    case '\0': printf("\\0"); break;
+//                    case '\a': printf("\\a"); break;
+//                    case '\b': printf("\\b"); break;
+//                    case '\f': printf("\\f"); break;
+//                    case '\n': printf("\\n"); break;
+//                    case '\r': printf("\\r"); break;
+//                    case '\v': printf("\\v"); break;
+//                    default: printf("?");
+//                }
+//        }
+//        printf("\n");
+//    }
 
     template<typename DataType>
     void writeDataset(const DataType &data, const DataInfo &dataInfo, const DsetInfo &dsetInfo, const PropertyLists &plists = PropertyLists()) {
