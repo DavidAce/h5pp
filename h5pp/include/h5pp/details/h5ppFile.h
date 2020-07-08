@@ -114,18 +114,18 @@ namespace h5pp {
             h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
             if(permission == h5pp::FilePermission::READONLY) {
                 h5pp::logger::log->trace("Opening file in READONLY mode");
-                hid::h5f fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.file_access);
+                hid_t fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.file_access);
                 if(fileHandle < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to open file in read-only mode: " + filePath.string());
+                    throw std::runtime_error(h5pp::format("Failed to open file in read-only mode [{}]",filePath.string()));
                 } else
                     return fileHandle;
             } else {
                 h5pp::logger::log->trace("Opening file in READWRITE mode");
-                hid::h5f fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDWR, plists.file_access);
+                hid_t fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDWR, plists.file_access);
                 if(fileHandle < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to open file in read-write mode: " + filePath.string());
+                    throw std::runtime_error(h5pp::format("Failed to open file in read-write mode [{}]", filePath.string()));
                 } else
                     return fileHandle;
             }
