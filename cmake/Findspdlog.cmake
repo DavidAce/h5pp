@@ -87,7 +87,6 @@ if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
             )
 
     if(TARGET spdlog::spdlog)
-        target_compile_definitions(spdlog::spdlog INTERFACE H5PP_SPDLOG)
         get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
         spdlog_check_version(SPDLOG_INCLUDE_DIR)
         if(NOT SPDLOG_VERSION_OK OR NOT SPDLOG_VERSION)
@@ -120,7 +119,6 @@ if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
             set(spdlog_FOUND TRUE)
             add_library(spdlog::spdlog INTERFACE IMPORTED)
             target_include_directories(spdlog::spdlog SYSTEM INTERFACE ${SPDLOG_INCLUDE_DIR})
-            target_compile_definitions(spdlog::spdlog INTERFACE H5PP_SPDLOG)
             if(SPDLOG_INCLUDE_DIR MATCHES "conda")
                 # Conda libraries sometimes give weird linking errors, such as:
                 # /usr/bin/ld:

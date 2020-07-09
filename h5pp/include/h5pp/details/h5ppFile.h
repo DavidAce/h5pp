@@ -65,7 +65,7 @@ namespace h5pp {
 
         File() {
             h5pp::logger::setLogger("h5pp", logLevel, logTimestamp);
-            h5pp::logger::log->debug("Default-constructing null file");
+            h5pp::logger::log->debug("Default-constructing h5pp file object");
         }
 
         File(const File &other) {

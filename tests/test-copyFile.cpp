@@ -20,7 +20,7 @@ int main() {
     static_assert(h5pp::type::sfinae::has_data<std::vector<double>>() and
                   "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
-    size_t     logLevel = 0;
+    size_t     logLevel = 2;
     h5pp::File fileA("output/copyFileA.h5", h5pp::FilePermission::REPLACE, logLevel);
     h5pp::File fileB("output/copyFileB.h5", h5pp::FilePermission::REPLACE, logLevel);
 

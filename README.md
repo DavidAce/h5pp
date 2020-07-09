@@ -58,21 +58,20 @@ The goal of `h5pp` is to make HDF5 simple to use in the following sense:
 ## Features
 *  Header-only C++17 template library
 *  Support for common data types:
-    *  `short`,`int`,`long`, `long long`, `float`, `double`, `long double` (and unsigned versions)
+    *  `short`,`int`,`long`, `long long` (+ unsigned versions), `float`, `double`, `long double`
         *  any of the above in C-style arrays
-        *  any of the above in `std::complex<>` form
+        *  any of the above in **`std::complex<>`** form
         *  any of the above in POD-structs with x,y or x,y,z data members. In `h5pp` these go by the name `Scalar2` and `Scalar3`.
             These work well together with types such as `double2` or `float3` found in CUDA.
     *  `std::string` and `char` arrays.
-    *  Contiguous containers, such as `std::vector`, with `.data()` methods.
+    *  Any container such as std::vector with `.data()` member for accessing a contiguous buffer (without conversion to/from row major).
     *  `Eigen` types such as `Matrix`, `Array` and `Tensor`, with automatic conversion to/from row major storage layout.
-    *  Any multi-dimensional container with access to a C-style contiguous buffer (without conversion to/from row major).
     *  Support for user-defined compound HDF5 types
     *  Support for creating HDF5 tables from user-defined compound HDF5 types.  
-*  Modern CMake build, install and linking using targets.
-*  (Opt-in) Automatically find or download dependencies using either [conan package manager](https://conan.io/) or native "CMake-only" methods.
-*  Multi-platform: Linux, Windows, OSX. (Developed under Linux)
+*  Modern CMake installation providing targets for simple linking to your projects.
 *  Installation with package managers: conan, conda (and apt using .deb installation file)
+*  (Opt-in) Automatically find or download dependencies using either [conan package manager](https://conan.io/) or "CMake-only" methods.
+*  Multi-platform: Linux, Windows, OSX. (Developed under Linux)
 
 
 

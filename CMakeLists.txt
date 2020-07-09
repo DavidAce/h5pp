@@ -16,7 +16,7 @@ option(H5PP_ENABLE_EIGEN3     "Enables Eigen3 linear algebra library"           
 option(H5PP_ENABLE_SPDLOG     "Enables Spdlog for logging h5pp internal info to stdout"     OFF)
 option(H5PP_ENABLE_MPI        "Enables use of MPI (work in progress)"                       OFF)
 
-# Make an "enum" for valid download methods: none find-only native conan
+# Make an "enum" for valid download methods: none find fetch find-or-fetch conan
 set(H5PP_DOWNLOAD_METHODS_VALID none find fetch find-or-fetch conan)
 set(H5PP_DOWNLOAD_METHOD none CACHE STRING "Download method for external dependencies")
 set_property(CACHE H5PP_DOWNLOAD_METHOD PROPERTY STRINGS ${H5PP_DOWNLOAD_METHODS_VALID})
@@ -32,7 +32,7 @@ if (NOT H5PP_IS_SUBPROJECT)
     if ("^${CMAKE_SOURCE_DIR}$" STREQUAL "^${PROJECT_SOURCE_DIR}$")
         set(H5PP_IS_SUBPROJECT OFF)
     else ()
-        message(STATUS "Detected usage as subproject")
+        message(STATUS "Detected h5pp as subproject")
         set(H5PP_IS_SUBPROJECT ON)
     endif ()
 endif ()
@@ -67,15 +67,16 @@ list(APPEND H5PP_TARGETS h5pp headers deps flags)
 
 ########################## IMPORTANT #############################
 ### Preempt Threads::Threads                                   ###
-### It's looked for in dependency configs, so we make it right ###
-### before it's done wrong, i.e. with pthread instead of       ###
-### -lpthread. If this is undesirable you can preempt it       ###
-### yourself similarly. The reason is that downstream I often  ###
-### need to avoid a static linking segfault by using:          ###
-### -Wl, -whole-archive pthread -Wl, -no-whole-archive         ###
+### Threads::Threads is looked for in dependencies, so we make ###
+### it right before it's done wrong, i.e. by linking with      ###
+### "pthread" instead of "-lpthread". If this is undesirable   ###
+### you can preempt it yourself similarly.                     ###
+### The reason behind this is that downstream I often need to  ###
+### avoid a static linking segfault by using:                  ###
+###     -Wl, -whole-archive pthread -Wl, -no-whole-archive     ###
 ### and cmake is unable to identify "-lpthread" as being the   ###
 ### same as pthread --> multiple declaration errors. Note that ###
-### CMake changes it into                                      ###
+### CMake changes the link flags into                          ###
 ### -Wl, -whole-archive -lpthread -Wl, -no-whole-archive       ###
 ### anyway. If an entire dependency tree had only "-lpthread"  ###
 ### or only "pthread" this wouldn't be a problem, but          ###

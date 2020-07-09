@@ -2,17 +2,24 @@
 #include "h5ppFormat.h"
 #include "h5ppOptional.h"
 
-#if defined(H5PP_SPDLOG)
+#if __has_include(<spdlog/spdlog.h>) && __has_include(<spdlog/sinks/stdout_color_sinks.h>)
     #include <spdlog/sinks/stdout_color_sinks.h>
     #include <spdlog/spdlog.h>
+    #define H5PP_SPDLOG
 #endif
 
 namespace h5pp::logger {
 #ifdef H5PP_SPDLOG
     inline std::shared_ptr<spdlog::logger> log;
 
-    inline void enableTimestamp() { log->set_pattern("[%Y-%m-%d %H:%M:%S][%n]%^[%=8l]%$ %v"); }
-    inline void disableTimestamp() { log->set_pattern("[%n]%^[%=8l]%$ %v"); }
+    inline void enableTimestamp() {
+        log->trace("Enabled timestamp");
+        log->set_pattern("[%Y-%m-%d %H:%M:%S][%n]%^[%=8l]%$ %v");
+    }
+    inline void disableTimestamp() {
+        log->trace("Disabled timestamp");
+        log->set_pattern("[%n]%^[%=8l]%$ %v");
+    }
 
     inline size_t getLogLevel() {
         if(log != nullptr)
@@ -27,11 +34,20 @@ namespace h5pp::logger {
             log->set_level(levelZeroToFive);
         else if constexpr(std::is_integral_v<levelType>) {
             if(levelZeroToFive > 5) { throw std::runtime_error("Expected verbosity level integer in [0-5]. Got: " + std::to_string(levelZeroToFive)); }
-            auto lvlEnum = static_cast<spdlog::level::level_enum>(levelZeroToFive);
-            log->set_level(lvlEnum);
+            return setLogLevel(static_cast<spdlog::level::level_enum>(levelZeroToFive));
+        }else if constexpr(std::is_same_v<levelType, std::optional<size_t>>) {
+            if(levelZeroToFive)
+                return setLogLevel(levelZeroToFive.value());
+            else
+                return;
+        }else if constexpr(std::is_same_v<levelType, std::optional<spdlog::level::level_enum>>){
+            if(levelZeroToFive) return setLogLevel(levelZeroToFive.value());
+            else return;
         } else {
             throw std::runtime_error("Given wrong type for spdlog verbosity level");
         }
+//        log->info("Log verbosity level: {}   | trace:0 | debug:1 | info:2 | warn:3 | error:4 | critical:5 |", static_cast<int>(log->level()));
+        log->debug("Log verbosity level: {}", static_cast<int>(log->level()));
     }
 
     inline void setLogger(const std::string &name, std::optional<size_t> levelZeroToFive = std::nullopt, std::optional<bool> timestamp = std::nullopt) {
@@ -39,19 +55,10 @@ namespace h5pp::logger {
             log = spdlog::stdout_color_mt(name);
         else
             log = spdlog::get(name);
-
-        spdlog::level::level_enum lvlEnum;
-        if(levelZeroToFive and levelZeroToFive.value() <= 5)
-            lvlEnum = static_cast<spdlog::level::level_enum>(levelZeroToFive.value());
-        else
-            lvlEnum = log->level();
-
-        log->set_level(lvlEnum);
-
+        log->set_pattern("[%n]%^[%=8l]%$ %v"); // Disabled timestamp is the default
+        setLogLevel(levelZeroToFive);
         if(timestamp and timestamp.value())
             enableTimestamp();
-        else if(timestamp and not timestamp.value())
-            disableTimestamp();
     }
 
 #else
@@ -99,7 +106,18 @@ namespace h5pp::logger {
     }
     template<typename levelType>
     inline void setLogLevel([[maybe_unused]] levelType levelZeroToFive) {
-        if(log != nullptr) log->logLevel = levelZeroToFive;
+        if constexpr (std::is_integral_v<levelType>){
+            if(levelZeroToFive > 5) { throw std::runtime_error("Expected verbosity level integer in [0-5]. Got: " + std::to_string(levelZeroToFive)); }
+//            log->info("Log verbosity level: {}   | trace:0 | debug:1 | info:2 | warn:3 | error:4 | critical:5 |", levelZeroToFive);
+            log->debug("Log verbosity level: {}");
+            if(log != nullptr) log->logLevel = levelZeroToFive;
+        }
+        else if constexpr(std::is_same_v<levelType, std::optional<size_t>>){
+            if(levelZeroToFive) return setLogLevel(levelZeroToFive.value());
+            else return;
+        } else {
+            throw std::runtime_error("Given wrong type for spdlog verbosity level");
+        }
     }
 
     inline void setLogger([[maybe_unused]] const std::string &   name_,
@@ -107,7 +125,7 @@ namespace h5pp::logger {
                           [[maybe_unused]] std::optional<bool>   timestamp       = std::nullopt) {
         log          = std::make_shared<ManualLogger>();
         log->logName = name_;
-        if(levelZeroToFive.has_value()) log->logLevel = levelZeroToFive.value();
+        setLogLevel(levelZeroToFive);
     }
 #endif
 
