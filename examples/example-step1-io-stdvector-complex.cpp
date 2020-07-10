@@ -4,7 +4,7 @@ int main() {
     // Initialize a file
     h5pp::File file("exampledir/example-step1-read-stdvector.h5", h5pp::FilePermission::REPLACE);
 
-    // Initialize an empty a vector of doubles
+    // Initialize an empty a vector of doubles. This also works with std::complex<double>
     std::vector<double> v(10,3.14);
     // Write data (see example 1)
     file.writeDataset(v,"myStdVector");
