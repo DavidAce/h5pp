@@ -41,6 +41,11 @@ int main() {
 
     fileD = fileB;
 
+    std::cout << "h5pp::File is move constructible : " << std::boolalpha <<  std::is_move_constructible_v<h5pp::File> << std::endl;
+    std::cout << "h5pp::File is move assignable    : " << std::boolalpha <<  std::is_move_assignable_v<h5pp::File> << std::endl;
+    std::cout << "h5pp::File is copy constructible : " << std::boolalpha <<  std::is_copy_constructible_v<h5pp::File> << std::endl;
+    std::cout << "h5pp::File is copy assignable    : " << std::boolalpha <<  std::is_copy_assignable_v<h5pp::File> << std::endl;
+
 
     return 0;
 }
