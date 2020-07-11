@@ -401,7 +401,7 @@ namespace h5pp::util {
     }
 
     inline std::optional<std::vector<hsize_t>>
-        getChunkDimensions(size_t bytesPerElem, const std::vector<hsize_t> &dims, std::optional<std::vector<hsize_t>> &dimsMax, std::optional<H5D_layout_t> layout) {
+        getChunkDimensions(size_t bytesPerElem, const std::vector<hsize_t> &dims, std::optional<std::vector<hsize_t>> dimsMax, std::optional<H5D_layout_t> layout) {
         // Here we make a naive guess for chunk dimensions
         // We try to make a square in N dimensions with a target byte size of 10kb - 1MB.
         // Here is a great read for chunking considerations https://www.oreilly.com/library/view/python-and-hdf5/9781491944981/ch04.html
@@ -447,12 +447,12 @@ namespace h5pp::util {
         for(size_t idx = 0; idx < chunkDims.size(); idx++) {
             if(dimsMax and dimsMax.value()[idx] == H5S_UNLIMITED)
                 chunkDims[idx] = linearChunkSize;
-            else if(dimsMax.value()[idx] != H5S_UNLIMITED)
+            else if(dimsMax and dimsMax.value()[idx] != H5S_UNLIMITED)
                 chunkDims[idx] = std::min(dimsMax.value()[idx], linearChunkSize);
             else
                 chunkDims[idx] = linearChunkSize;
         }
-        h5pp::logger::log->debug("Chunk dimensions {}, max dims {}, effective dims {}", chunkDims, dimsMax.value(), dims_effective);
+        h5pp::logger::log->debug("Estimated reasonable chunk dimensions: {}", chunkDims);
         return chunkDims;
     }
 

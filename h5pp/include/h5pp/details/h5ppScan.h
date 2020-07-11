@@ -306,30 +306,32 @@ namespace h5pp::scan {
 
     template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
     inline void fillAttrInfo(AttrInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+        /* clang-format off */
         if(not options.linkPath) throw std::runtime_error("Could not fill attribute info: No link path was given in options");
         if(not options.attrName) throw std::runtime_error("Could not fill attribute info: No attribute name was given in options");
-        if(not info.linkPath) info.linkPath = h5pp::util::safe_str(options.linkPath.value());
-        if(not info.attrName) info.attrName = h5pp::util::safe_str(options.attrName.value());
-        if(not info.attrSlab) info.attrSlab = options.attrSlab;
+        if(not info.linkPath)    info.linkPath      = h5pp::util::safe_str(options.linkPath.value());
+        if(not info.attrName)    info.attrName      = h5pp::util::safe_str(options.attrName.value());
+        if(not info.attrSlab)    info.attrSlab      = options.attrSlab;
         h5pp::logger::log->debug("Scanning metadata of attribute [{}] in link [{}]", info.attrName.value(), info.linkPath.value());
-        if(not info.linkExists) info.linkExists = h5pp::hdf5::checkIfLinkExists(loc, info.linkPath.value(), std::nullopt, plists.link_access);
+        if(not info.linkExists)  info.linkExists = h5pp::hdf5::checkIfLinkExists(loc, info.linkPath.value(), std::nullopt, plists.link_access);
         // If the dataset does not exist, there isn't much else to do so we return;
         if(info.linkExists and not info.linkExists.value()) return;
         // From here on the link exists
-        if(not info.h5_link) info.h5_link = h5pp::hdf5::openLink<hid::h5o>(loc, info.linkPath.value(), info.linkExists, plists.link_access);
+        if(not info.h5_link)     info.h5_link       = h5pp::hdf5::openLink<hid::h5o>(loc, info.linkPath.value(), info.linkExists, plists.link_access);
         if(not info.attrExists)
             info.attrExists = h5pp::hdf5::checkIfAttributeExists(info.h5_link.value(), info.linkPath.value(), info.attrName.value(), std::nullopt, plists.link_access);
         if(info.attrExists and not info.attrExists.value()) return;
         // From here on the attribute exists
-        if(not info.h5_attr) info.h5_attr = H5Aopen_name(info.h5_link.value(), h5pp::util::safe_str(info.attrName.value()).c_str());
-        if(not info.h5_type) info.h5_type = H5Aget_type(info.h5_attr.value());
-        if(not info.h5_space) info.h5_space = H5Aget_space(info.h5_attr.value());
+        if(not info.h5_attr)    info.h5_attr        = H5Aopen_name(info.h5_link.value(), h5pp::util::safe_str(info.attrName.value()).c_str());
+        if(not info.h5_type)    info.h5_type        = H5Aget_type(info.h5_attr.value());
+        if(not info.h5_space)   info.h5_space = H5Aget_space(info.h5_attr.value());
         // Get the properties of the selected space
-        if(not info.attrByte) info.attrByte = h5pp::hdf5::getBytesTotal(info.h5_attr.value(), info.h5_space, info.h5_type);
-        if(not info.attrSize) info.attrSize = h5pp::hdf5::getSize(info.h5_space.value());
-        if(not info.attrDims) info.attrDims = h5pp::hdf5::getDimensions(info.h5_space.value());
-        if(not info.attrRank) info.attrRank = h5pp::hdf5::getRank(info.h5_space.value());
+        if(not info.attrByte)   info.attrByte       = h5pp::hdf5::getBytesTotal(info.h5_attr.value(), info.h5_space, info.h5_type);
+        if(not info.attrSize)   info.attrSize       = h5pp::hdf5::getSize(info.h5_space.value());
+        if(not info.attrDims)   info.attrDims       = h5pp::hdf5::getDimensions(info.h5_space.value());
+        if(not info.attrRank)   info.attrRank       = h5pp::hdf5::getRank(info.h5_space.value());
         if(not info.h5_plist_attr_create) info.h5_plist_attr_create = H5Aget_create_plist(info.h5_attr.value());
+            /* clang-format on */
 #if H5_VERSION_GE(1, 10, 0)
         if(not info.h5_plist_attr_access) info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
 #else
@@ -378,7 +380,7 @@ namespace h5pp::scan {
 #if H5_VERSION_GE(1, 10, 0)
         info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
 #else
-        info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_CREATE);                                   // Missing access property in HDF5 1.8.x
+        info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
 #endif
         h5pp::logger::log->trace("Created  metadata  {}", info.string());
         return info;
@@ -387,8 +389,8 @@ namespace h5pp::scan {
     template<typename DataType, typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
     inline h5pp::AttrInfo getAttrInfo(const h5x &loc, const DataType &data, const Options &options, const PropertyLists &plists = PropertyLists()) {
         auto info = readAttrInfo(loc, options, plists);
-        if(not info.linkExists) throw std::runtime_error(h5pp::format("Could not get attribute info for link [{}]: Link does not exist.",options.linkPath.value()));
-        if(not info.linkExists.value()) throw std::runtime_error(h5pp::format("Could not get attribute info for link [{}]: Link does not exist.",options.linkPath.value()));
+        if(not info.linkExists) throw std::runtime_error(h5pp::format("Could not get attribute info for link [{}]: Link does not exist.", options.linkPath.value()));
+        if(not info.linkExists.value()) throw std::runtime_error(h5pp::format("Could not get attribute info for link [{}]: Link does not exist.", options.linkPath.value()));
         if(info.attrExists and info.attrExists.value()) return info;
         h5pp::logger::log->debug("Creating new attribute info for [{}] at link [{}]", options.attrName.value(), options.linkPath.value());
 
@@ -398,12 +400,11 @@ namespace h5pp::scan {
         if(not info.h5_type) info.h5_type = options.h5_type;
         // Some sanity checks
         if constexpr(std::is_pointer_v<DataType>) {
-                if(not info.attrDims)
-                    throw std::runtime_error(
-                        h5pp::format("Error creating attribute [{}] on link [{}]: Dimensions for new attribute must be specified for pointer data of type [{}]",
-                                     options.attrName.value(),
-                                     options.linkPath.value(),
-                                     h5pp::type::sfinae::type_name<DataType>()));
+            if(not info.attrDims)
+                throw std::runtime_error(h5pp::format("Error creating attribute [{}] on link [{}]: Dimensions for new attribute must be specified for pointer data of type [{}]",
+                                                      options.attrName.value(),
+                                                      options.linkPath.value(),
+                                                      h5pp::type::sfinae::type_name<DataType>()));
         }
 
         // Next infer the missing properties
@@ -421,7 +422,7 @@ namespace h5pp::scan {
 #if H5_VERSION_GE(1, 10, 0)
         info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
 #else
-        info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_CREATE);                                   // Missing access property in HDF5 1.8.x
+        info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
 #endif
         h5pp::logger::log->trace("Created  metadata  {}", info.string());
         return info;
@@ -498,8 +499,9 @@ namespace h5pp::scan {
 
         info.numFields        = H5Tget_nmembers(tableType);
         info.numRecords       = 0;
-        info.chunkSize        = desiredChunkSize.has_value() ? desiredChunkSize : 10;
         info.recordBytes      = H5Tget_size(info.tableType.value());
+        info.chunkSize        = desiredChunkSize.has_value() ? desiredChunkSize.value()
+                                                             : h5pp::util::getChunkDimensions(info.recordBytes.value(), {1}, std::nullopt, H5D_layout_t::H5D_CHUNKED).value()[0];
         info.compressionLevel = h5pp::hdf5::getValidCompressionLevel(desiredCompressionLevel);
 
         info.fieldTypes   = std::vector<h5pp::hid::h5t>();

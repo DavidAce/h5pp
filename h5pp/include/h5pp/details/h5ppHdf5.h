@@ -1958,6 +1958,7 @@ namespace h5pp::hdf5 {
         // Copy member name data to a vector of const char * for compatibility
         std::vector<const char *> fieldNames;
         for(auto &name : info.fieldNames.value()) fieldNames.push_back(name.c_str());
+        int compression = info.compressionLevel.value() == 0 ? 0 : 1; // Only true/false (1/0). Is set to level 6 in HDF5 sources
         H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
                        loc,
                        util::safe_str(info.tablePath.value()).c_str(),
@@ -1969,7 +1970,7 @@ namespace h5pp::hdf5 {
                        fieldTypesHidT.data(),
                        info.chunkSize.value(),
                        nullptr,
-                       static_cast<int>(info.compressionLevel.value()),
+                       compression,
                        nullptr);
         h5pp::logger::log->trace("Successfully created table [{}]", info.tablePath.value());
         info.tableExists = true;
