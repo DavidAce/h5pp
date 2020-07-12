@@ -15,6 +15,7 @@ function(build_dependency dep_name install_dir extra_flags)
             -DCMAKE_INSTALL_PREFIX:PATH=${install_dir}
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+            -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
             -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
             -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
