@@ -2,6 +2,36 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
     # Here we use find_package in config-mode, intended to find <packagename>Config.cmake
     # that is bundled with source installs of these packages.
 
+    # Download fmt
+    if (H5PP_ENABLE_SPDLOG AND NOT TARGET fmt::fmt)
+        # fmt is a dependency of spdlog
+        # We fetch it here to get the latest version and to make sure we use the
+        # compile library and avoid compile-time overhead in projects consuming h5pp.
+        find_package(fmt 7.0.0
+                HINTS ${CMAKE_INSTALL_PREFIX}
+                NO_DEFAULT_PATH)
+        if(NOT TARGET fmt::fmt)
+            message(STATUS "fmt will be installed into ${CMAKE_INSTALL_PREFIX}")
+            list(APPEND FMT_CMAKE_OPTIONS  "-DFMT_TEST:BOOL=OFF")
+            list(APPEND FMT_CMAKE_OPTIONS  "-DFMT_DOC:BOOL=OFF")
+            include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)
+            build_dependency(fmt  "${CMAKE_INSTALL_PREFIX}" "")
+            find_package(fmt 7.0.0
+                    HINTS ${CMAKE_INSTALL_PREFIX}
+                    NO_DEFAULT_PATH
+                    REQUIRED)
+            if(TARGET fmt::fmt)
+                message(STATUS "fmt installed successfully")
+            endif()
+        endif()
+        if(TARGET fmt::fmt)
+            list(APPEND H5PP_TARGETS fmt::fmt)
+        else()
+            message(FATAL_ERROR "fmt could not be downloaded and built from source")
+        endif()
+    endif()
+
+
     # Download spdlog
     if (H5PP_ENABLE_SPDLOG AND NOT TARGET spdlog::spdlog)
         find_package(spdlog 1.3
@@ -9,8 +39,12 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
                 NO_DEFAULT_PATH)
         if(NOT TARGET spdlog::spdlog)
             message(STATUS "Spdlog will be installed into ${CMAKE_INSTALL_PREFIX}")
+            if(TARGET fmt::fmt)
+                list(APPEND SPDLOG_CMAKE_OPTIONS  "-DSPDLOG_FMT_EXTERNAL:BOOL=ON")
+                list(APPEND SPDLOG_CMAKE_OPTIONS  "-Dfmt_ROOT:PATH=${CMAKE_INSTALL_PREFIX}/fmt")
+            endif()
             include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)
-            build_dependency(spdlog  "${CMAKE_INSTALL_PREFIX}" "")
+            build_dependency(spdlog  "${CMAKE_INSTALL_PREFIX}" "${SPDLOG_CMAKE_OPTIONS}")
             find_package(spdlog 1.3
                     HINTS ${CMAKE_INSTALL_PREFIX}
                     NO_DEFAULT_PATH
@@ -22,8 +56,13 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
         if(TARGET spdlog::spdlog)
             list(APPEND H5PP_TARGETS spdlog::spdlog)
             target_link_libraries(deps INTERFACE spdlog::spdlog)
+            if(TARGET fmt::fmt)
+                target_link_libraries(spdlog::spdlog INTERFACE fmt::fmt)
+            else()
+                message(FATAL_ERROR "Missing target fmt::fmt is required for Spdlog")
+            endif()
         else()
-            message(WARNING "Spdlog could not be downloaded and built from source")
+            message(FATAL_ERROR "Spdlog could not be downloaded and built from source")
         endif()
     endif()
 
@@ -48,7 +87,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
             list(APPEND H5PP_TARGETS Eigen3::Eigen)
             target_link_libraries(deps INTERFACE Eigen3::Eigen)
         else()
-            message(WARNING "Eigen3 could not be downloaded and built from source")
+            message(FATAL_ERROR "Eigen3 could not be downloaded and built from source")
         endif()
     endif()
 
@@ -73,7 +112,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
             list(APPEND H5PP_TARGETS hdf5::hdf5)
             target_link_libraries(deps INTERFACE hdf5::hdf5)
         else()
-            message(WARNING "HDF5 could not be downloaded and built from source")
+            message(FATAL_ERROR "HDF5 could not be downloaded and built from source")
         endif()
     endif()
 endif()

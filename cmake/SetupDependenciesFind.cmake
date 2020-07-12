@@ -37,6 +37,8 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "find")
     endif()
 
     if(H5PP_ENABLE_SPDLOG AND NOT TARGET spdlog::spdlog)
+        # We don't need to find fmt here because
+        # spdlog will try to find it in its config script
         find_package(spdlog 1.3.1 ${REQUIRED})
         if(TARGET spdlog)
             add_library(spdlog::spdlog ALIAS spdlog)
