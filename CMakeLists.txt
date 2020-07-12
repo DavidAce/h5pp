@@ -5,16 +5,17 @@ project(h5pp VERSION 1.8.0
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         )
 
-option(BUILD_SHARED_LIBS      "Builds shared libraries"                                     OFF)
-option(H5PP_BUILD_EXAMPLES    "Builds examples"                                             OFF)
-option(H5PP_ENABLE_TESTS      "Enable testing"                                              OFF)
-option(H5PP_IS_SUBPROJECT     "Use h5pp with add_subdirectory()"                            OFF)
-option(H5PP_DEPS_IN_SUBDIR    "Install dependencies into CMAKE_INSTALL_PREFIX/<libname>"    OFF)
-option(H5PP_PREFER_CONDA_LIBS "Search for dependencies from anaconda first"                 OFF)
-option(H5PP_PRINT_INFO        "Print info during cmake configuration"                       OFF)
-option(H5PP_ENABLE_EIGEN3     "Enables Eigen3 linear algebra library"                       OFF)
-option(H5PP_ENABLE_SPDLOG     "Enables Spdlog for logging h5pp internal info to stdout"     OFF)
-option(H5PP_ENABLE_MPI        "Enables use of MPI (work in progress)"                       OFF)
+option(BUILD_SHARED_LIBS               "Builds shared libraries"                                     OFF)
+option(H5PP_BUILD_EXAMPLES             "Builds examples"                                             OFF)
+option(H5PP_ENABLE_TESTS               "Enable testing"                                              OFF)
+option(H5PP_IS_SUBPROJECT              "Use h5pp with add_subdirectory()"                            OFF)
+option(H5PP_DEPS_IN_SUBDIR             "Install dependencies into CMAKE_INSTALL_PREFIX/<libname>"    OFF)
+option(H5PP_PREFER_CONDA_LIBS          "Search for dependencies from anaconda first"                 OFF)
+option(H5PP_PRINT_INFO                 "Print info during cmake configuration"                       OFF)
+option(H5PP_ENABLE_EIGEN3              "Enables Eigen3 linear algebra library"                       OFF)
+option(H5PP_ENABLE_SPDLOG              "Enables Spdlog for logging h5pp internal info to stdout"     OFF)
+option(H5PP_ENABLE_MPI                 "Enables use of MPI (work in progress)"                       OFF)
+option(CMAKE_POSITION_INDEPENDENT_CODE "Use -fPIC when compiling shared libraries"                   ON)
 
 # Make an "enum" for valid download methods: none find fetch find-or-fetch conan
 set(H5PP_DOWNLOAD_METHODS_VALID none find fetch find-or-fetch conan)
@@ -121,7 +122,6 @@ target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) 
 target_compile_definitions(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX>) # Otherwise std::min and std::max will not work as expected
 target_include_directories(headers INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/include>)
 target_include_directories(headers SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
-
 #Try to find or fetch all dependencies
 include(cmake/SetupDependenciesFind.cmake)
 include(cmake/SetupDependenciesFetch.cmake)
@@ -131,7 +131,7 @@ include(cmake/SetupDependenciesConan.cmake)
 
 # Link all targets to one main h5pp target (the only one that users should need)
 # However, it's nice to have them separately also if need be.
-target_link_libraries(h5pp INTERFACE headers deps flags)
+target_link_libraries(h5pp INTERFACE -fsanitize=address  -fsanitize=leak -fsanitize=undefined -fsanitize=alignment headers deps flags)
 
 
 
