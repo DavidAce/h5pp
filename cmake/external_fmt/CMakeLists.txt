@@ -3,8 +3,9 @@ project(external-fmt)
 
 include(ExternalProject)
 ExternalProject_Add(external_fmt
-        URL         https://github.com/fmtlib/fmt/archive/7.0.1.tar.gz
-        URL_MD5     0cafa0aa67c0e28e9d79a2ebf8fc7732
+        URL         https://github.com/fmtlib/fmt/archive/6.2.1.tar.gz
+        URL_MD5     f77569874b25ff3ece7f0229a4236feb # 6.2.1
+        URL_MD5     0cafa0aa67c0e28e9d79a2ebf8fc7732 # 7.0.1
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE
