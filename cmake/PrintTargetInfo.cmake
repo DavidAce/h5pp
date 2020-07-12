@@ -46,10 +46,6 @@ function(print_target_info target_name prefix)
             remove_genexpr(INFO_FTR)
         endif()
 
-
-
-
-
         pad_string(padded_target "32" " " "${prefix}[${target_name}]" )
         if(INFO_LIB)
             list(REMOVE_DUPLICATES INFO_LIB)
