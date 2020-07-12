@@ -18,7 +18,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
             list(APPEND FMT_CMAKE_OPTIONS  "-DFMT_DOC:BOOL=OFF")
             include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)
             build_dependency(fmt  "${CMAKE_INSTALL_PREFIX}" "")
-            find_package(fmt 7.0.0
+            find_package(fmt 6.2.1
                     HINTS ${CMAKE_INSTALL_PREFIX}
                     NO_DEFAULT_PATH
                     REQUIRED)
