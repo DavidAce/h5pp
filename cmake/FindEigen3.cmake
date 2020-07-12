@@ -13,8 +13,10 @@
 # EIGEN3_NO_CONFIG
 # EIGEN3_CONFIG_ONLY
 
-# As well as many search directory hints from CMake or environment, such as
-# EIGEN3_DIR, Eigen3_DIR, EIGEN3_ROOT Eigen3_ROOT, etc.
+# As well as search directory hints from CMake or environment, such as
+# Eigen3_ROOT
+# Eigen3_DIR
+# EIGEN3_INCLUDE_DIR
 
 if(NOT Eigen3_FIND_VERSION)
     if(NOT Eigen3_FIND_VERSION_MAJOR)
