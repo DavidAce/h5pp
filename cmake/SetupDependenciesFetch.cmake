@@ -9,7 +9,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
         # compile library and avoid compile-time overhead in projects consuming h5pp.
         # Note that spdlog may already have been found in if H5PP_DOWNLOAD_METHOD=find|fetch
         # then we can assume that spdlog already knows how and where to get fmt.
-        find_package(fmt 7.0.0
+        find_package(fmt 6.2.1
                 HINTS ${CMAKE_INSTALL_PREFIX}
                 NO_DEFAULT_PATH)
         if(NOT TARGET fmt::fmt)
@@ -57,12 +57,12 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
         endif()
         if(TARGET spdlog::spdlog)
             list(APPEND H5PP_TARGETS spdlog::spdlog)
-            target_link_libraries(deps INTERFACE spdlog::spdlog)
             if(TARGET fmt::fmt)
                 target_link_libraries(spdlog::spdlog INTERFACE fmt::fmt)
             else()
                 message(FATAL_ERROR "Missing target fmt::fmt is required for Spdlog")
             endif()
+            target_link_libraries(deps INTERFACE spdlog::spdlog)
         else()
             message(FATAL_ERROR "Spdlog could not be downloaded and built from source")
         endif()
