@@ -3,10 +3,12 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
     # that is bundled with source installs of these packages.
 
     # Download fmt
-    if (H5PP_ENABLE_SPDLOG AND NOT TARGET fmt::fmt)
+    if (H5PP_ENABLE_SPDLOG AND NOT TARGET fmt::fmt AND NOT TARGET spdlog::spdlog)
         # fmt is a dependency of spdlog
         # We fetch it here to get the latest version and to make sure we use the
         # compile library and avoid compile-time overhead in projects consuming h5pp.
+        # Note that spdlog may already have been found in if H5PP_DOWNLOAD_METHOD=find|fetch
+        # then we can assume that spdlog already knows how and where to get fmt.
         find_package(fmt 7.0.0
                 HINTS ${CMAKE_INSTALL_PREFIX}
                 NO_DEFAULT_PATH)
