@@ -155,8 +155,7 @@ jobs:
                 -DCMAKE_BUILD_TYPE=Debug \
                 -DH5PP_ENABLE_TESTS:BOOL=ON \
                 -DH5PP_BUILD_EXAMPLES:BOOL=ON \
-                ${{ matrix.sanitizer }} \
-                ${{ matrix.flags }} ${{ matrix.generator }} ../../
+                ${{ matrix.flags }} ${{ matrix.sanitizer }} ${{ matrix.generator }} ../../
           cat CMakeFiles/CMakeError.log
 
       - name: Build
