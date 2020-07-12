@@ -128,6 +128,7 @@ jobs:
             - libaec-dev
             - libeigen3-dev
             - libspdlog-dev
+            - libfmt-dev
 
     - name: "bionic gcc | apt | find"
       dist: bionic
@@ -148,6 +149,7 @@ jobs:
             - libaec-dev
             - libeigen3-dev
             - libspdlog-dev
+            - libfmt-dev
 
     - name: "bionic clang | conan"
       dist: bionic
