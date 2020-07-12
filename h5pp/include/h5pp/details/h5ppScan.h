@@ -477,7 +477,7 @@ namespace h5pp::scan {
         info.fieldNames   = field_names_vec;
 
         /* release array of char arrays */
-        for(size_t i = 0; i < n_fields; i++) delete field_names[i];
+        for(size_t i = 0; i < n_fields; i++) delete[] field_names[i];
         delete[] field_names;
 
         return info;
