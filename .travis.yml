@@ -158,7 +158,6 @@ jobs:
             - libaec-dev
             - libeigen3-dev
             - libspdlog-dev
-            - libfmt-dev
 
     - name: "bionic gcc | static | apt | find"
       dist: bionic
