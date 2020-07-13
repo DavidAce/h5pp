@@ -1782,7 +1782,7 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5_type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5_space.value(), attrInfo.h5_space.value(), attrInfo.h5_type.value());
         herr_t retval   = 0;
-        void * data_ptr = nullptr;
+        [[maybe_unused]] void * data_ptr = nullptr;
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
             data_ptr = data.data();
         else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
