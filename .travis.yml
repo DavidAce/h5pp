@@ -37,7 +37,7 @@ jobs:
       env:
         - CXX=g++-8 CC=gcc-8
         - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DBUILD_SHARED_LIBS:BOOL=ON"
-        - CMAKE_SANITIZE="-fsanitize=address  -fsanitize=leak -fsanitize=undefined -fsanitize=alignment  -fno-omit-frame-pointer"
+        - CMAKE_SANITIZE="-fsanitize=address  -fsanitize=leak  -fno-omit-frame-pointer"
         - CMAKE_GEN="Unix Makefiles"
       addons:
         apt:
@@ -167,7 +167,7 @@ jobs:
       env:
         - H5PP_DOWNLOAD_METHOD=find
         - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find  -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_SANITIZE="-fsanitize=address  -fsanitize=leak -fsanitize=undefined -fsanitize=alignment  -fno-omit-frame-pointer"
+        - CMAKE_SANITIZE="-fsanitize=address -fsanitize=leak -fno-omit-frame-pointer"
         - CMAKE_GEN="Unix Makefiles"
       addons:
         apt:
@@ -188,7 +188,7 @@ jobs:
       env:
         - H5PP_DOWNLOAD_METHOD=conan
         - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=conan  -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_SANITIZE="-fsanitize=address  -fsanitize=leak -fsanitize=undefined -fsanitize=alignment  -fno-omit-frame-pointer"
+        - CMAKE_SANITIZE="-fsanitize=address  -fsanitize=leak -fno-omit-frame-pointer"
         - CMAKE_GEN="Unix Makefiles"
         - CXX=clang++ CC=clang
 
