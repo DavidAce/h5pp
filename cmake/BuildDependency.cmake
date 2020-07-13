@@ -9,6 +9,7 @@ function(build_dependency dep_name install_dir extra_flags)
     execute_process( COMMAND  ${CMAKE_COMMAND} -E make_directory ${build_dir})
     execute_process(
             COMMAND  ${CMAKE_COMMAND}
+            -DCMAKE_EXE_LINKER_FLAGS_INIT=${CMAKE_EXE_LINKER_FLAGS}
             -DCMAKE_INSTALL_PREFIX:PATH=${install_dir}
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
