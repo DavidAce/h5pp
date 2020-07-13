@@ -131,7 +131,7 @@ include(cmake/SetupDependenciesConan.cmake)
 
 # Link all targets to one main h5pp target (the only one that users should need)
 # However, it's nice to have them separately also if need be.
-target_link_libraries(h5pp INTERFACE -fsanitize=address  -fsanitize=leak -fsanitize=undefined -fsanitize=alignment headers deps flags)
+target_link_libraries(h5pp INTERFACE headers deps flags)
 
 
 
