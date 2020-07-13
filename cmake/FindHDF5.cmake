@@ -270,7 +270,7 @@ function(find_package_hdf5_exec_wrapper)
             ${H5PP_DIRECTORY_HINTS}
             ${EBROOTHDF5})
     if(NOT HDF5_NO_DEFAULT_PATH)
-        if($ENV{PATH})
+        if(DEFINED ENV{PATH})
             string(REPLACE ":" ";" ENVPATH $ENV{PATH})
         endif()
         list(APPEND HDF5_PATHS ${CMAKE_PREFIX_PATH} ${ENVPATH} /usr /usr/local)
