@@ -9,7 +9,7 @@ branches:
 jobs:
   fast_finish: true
   include:
-    - name: "xenial gcc-8 | find-or-fetch"
+    - name: "xenial gcc-8 | static | find-or-fetch"
       os: linux
       dist: xenial
       compiler: gcc
@@ -30,13 +30,34 @@ jobs:
         directories:
           - $TRAVIS_BUILD_DIR/build/Debug/install
 
-    - name: "xenial clang | find-or-fetch"
+    - name: "xenial gcc-8 | shared | find-or-fetch"
+        os: linux
+        dist: xenial
+        compiler: gcc
+        env:
+          - CXX=g++-8 CC=gcc-8
+          - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DBUILD_SHARED_LIBS:BOOL=ON"
+          - CMAKE_SANITIZE="-fsanitize=address  -fsanitize=leak -fsanitize=undefined -fsanitize=alignment  -fno-omit-frame-pointer"
+          - CMAKE_GEN="Unix Makefiles"
+        addons:
+          apt:
+            update: true
+            sources:
+              - sourceline: "ppa:ubuntu-toolchain-r/test"
+            packages:
+              - gcc-8
+              - g++-8
+              - zlib1g-dev
+        cache:
+          directories:
+            - $TRAVIS_BUILD_DIR/build/Debug/install
+
+    - name: "xenial clang | static | find-or-fetch"
       os: linux
       dist: xenial
       compiler: clang
       env:
         - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_SANITIZE="-fsanitize=address  -fsanitize=leak -fsanitize=undefined -fsanitize=alignment  -fno-omit-frame-pointer"
         - CMAKE_GEN="Unix Makefiles"
         - CXX=clang++ CC=clang
       addons:
@@ -51,31 +72,42 @@ jobs:
         directories:
           - $TRAVIS_BUILD_DIR/build/Debug/install
 
-    - name: "bionic gcc | find-or-fetch"
+    - name: "bionic gcc | static | find-or-fetch"
       os: linux
       dist: bionic
       compiler: gcc
       env:
         - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_SANITIZE="-fsanitize=address  -fsanitize=leak -fsanitize=undefined -fsanitize=alignment  -fno-omit-frame-pointer"
         - CMAKE_GEN="Unix Makefiles"
       cache:
         directories:
           - $TRAVIS_BUILD_DIR/build/Debug/install
 
-    - name: "bionic clang | find-or-fetch"
+    - name: "bionic clang | static | find-or-fetch"
       os: linux
       dist: bionic
       compiler: clang
       env:
         - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_SANITIZE=""
+        - CMAKE_GEN="Unix Makefiles"
+      cache:
+        directories:
+          - $TRAVIS_BUILD_DIR/build/Debug/install
+
+    - name: "bionic clang | shared | find-or-fetch"
+      os: linux
+      dist: bionic
+      compiler: clang
+      env:
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DBUILD_SHARED_LIBS:BOOL=ON"
         - CMAKE_SANITIZE="-fsanitize=address  -fsanitize=leak -fsanitize=undefined -fsanitize=alignment  -fno-omit-frame-pointer"
         - CMAKE_GEN="Unix Makefiles"
       cache:
         directories:
           - $TRAVIS_BUILD_DIR/build/Debug/install
 
-    - name: "xenial gcc-8 | conda-forge | find-or-fetch"
+    - name: "xenial gcc-8 | static | conda-forge | find-or-fetch"
       os: linux
       dist: xenial
       compiler: gcc
@@ -95,19 +127,18 @@ jobs:
             - g++-8
 
 
-    - name: "bionic gcc | conda-forge | find-or-fetch"
+    - name: "bionic gcc | static | conda-forge | find-or-fetch"
       dist: bionic
       os: linux
       compiler: gcc
       env:
         - H5PP_DOWNLOAD_METHOD=find-or-fetch
         - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DH5PP_PREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_SANITIZE="-fsanitize=address  -fsanitize=leak -fsanitize=undefined -fsanitize=alignment  -fno-omit-frame-pointer"
         - CMAKE_GEN="Unix Makefiles"
         - CONDA_PACKAGES="hdf5 hdf5-static eigen spdlog"
 
 
-    - name: "xenial gcc-8 | apt | find"
+    - name: "xenial gcc-8 | static | apt | find"
       dist: xenial
       os: linux
       compiler: gcc
@@ -130,7 +161,7 @@ jobs:
             - libspdlog-dev
             - libfmt-dev
 
-    - name: "bionic gcc | apt | find"
+    - name: "bionic gcc | static | apt | find"
       dist: bionic
       os: linux
       compiler: gcc
@@ -151,7 +182,7 @@ jobs:
             - libspdlog-dev
             - libfmt-dev
 
-    - name: "bionic clang | conan"
+    - name: "bionic clang | static | conan"
       dist: bionic
       os: linux
       compiler: clang
@@ -162,7 +193,7 @@ jobs:
         - CMAKE_GEN="Unix Makefiles"
         - CXX=clang++ CC=clang
 
-    - name: "osx clang | conan"
+    - name: "osx clang | static | conan"
       os: osx
       compiler: clang
       osx_image: xcode11.3
@@ -180,7 +211,7 @@ jobs:
           packages:
             - conan
 
-    - name: "osx clang | find-or-fetch"
+    - name: "osx clang | static | find-or-fetch"
       os: osx
       compiler: clang
       osx_image: xcode11.3
@@ -193,7 +224,7 @@ jobs:
         directories:
           - $TRAVIS_BUILD_DIR/build/Debug/install
 
-    - name: "osx clang | homebrew | find-or-fetch"
+    - name: "osx clang | static | homebrew | find-or-fetch"
       os: osx
       compiler: clang
       osx_image: xcode11.3
@@ -212,7 +243,7 @@ jobs:
             - szip
 
 
-    - name: "windows msvc 2017 | conan"
+    - name: "windows msvc 2017 | static | conan"
       os: windows
       env:
         - H5PP_DOWNLOAD_METHOD=conan
@@ -223,7 +254,7 @@ jobs:
         directories:
           - $HOME/.conan/data
 
-    - name: "windows msvc 2017 | find-or-fetch"
+    - name: "windows msvc 2017 | static | find-or-fetch"
       os: windows
       env:
         - H5PP_DOWNLOAD_METHOD=find-or-fetch
