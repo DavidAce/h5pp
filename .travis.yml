@@ -31,26 +31,26 @@ jobs:
           - $TRAVIS_BUILD_DIR/build/Debug/install
 
     - name: "xenial gcc-8 | shared | find-or-fetch"
-        os: linux
-        dist: xenial
-        compiler: gcc
-        env:
-          - CXX=g++-8 CC=gcc-8
-          - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DBUILD_SHARED_LIBS:BOOL=ON"
-          - CMAKE_SANITIZE="-fsanitize=address  -fsanitize=leak -fsanitize=undefined -fsanitize=alignment  -fno-omit-frame-pointer"
-          - CMAKE_GEN="Unix Makefiles"
-        addons:
-          apt:
-            update: true
-            sources:
-              - sourceline: "ppa:ubuntu-toolchain-r/test"
-            packages:
-              - gcc-8
-              - g++-8
-              - zlib1g-dev
-        cache:
-          directories:
-            - $TRAVIS_BUILD_DIR/build/Debug/install
+      os: linux
+      dist: xenial
+      compiler: gcc
+      env:
+        - CXX=g++-8 CC=gcc-8
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DBUILD_SHARED_LIBS:BOOL=ON"
+        - CMAKE_SANITIZE="-fsanitize=address  -fsanitize=leak -fsanitize=undefined -fsanitize=alignment  -fno-omit-frame-pointer"
+        - CMAKE_GEN="Unix Makefiles"
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+          packages:
+            - gcc-8
+            - g++-8
+            - zlib1g-dev
+      cache:
+        directories:
+          - $TRAVIS_BUILD_DIR/build/Debug/install
 
     - name: "xenial clang | static | find-or-fetch"
       os: linux
@@ -89,7 +89,6 @@ jobs:
       compiler: clang
       env:
         - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DBUILD_SHARED_LIBS:BOOL=OFF"
-        - CMAKE_SANITIZE=""
         - CMAKE_GEN="Unix Makefiles"
       cache:
         directories:
