@@ -31,10 +31,10 @@ function(build_dependency dep_name install_dir extra_flags)
             -DCMAKE_CXX_FLAGS_DEBUG_INIT:STRING=${CMAKE_CXX_FLAGS_DEBUG}
             -DCMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT:STRING=${CMAKE_CXX_FLAGS_RELWITHDEBINFO}
             -DCMAKE_CXX_FLAGS_MINSIZEREL_INIT:STRING=${CMAKE_CXX_FLAGS_MINSIZEREL}
-            -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
             -DCMAKE_INSTALL_MESSAGE=NEVER #Avoid unnecessary output to console
             -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
             -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
+            -DCMAKE_INSTALL_PREFIX:PATH=${install_dir}
             ${extra_flags}
             ${PROJECT_SOURCE_DIR}/cmake/external_${dep_name}
             WORKING_DIRECTORY ${build_dir}
