@@ -309,6 +309,7 @@ The following variables can be set to help guide CMake's `find_package` to your 
 | `Eigen3_DIR`          | Eigen3Config.cmake  |
 | `Eigen3_ROOT_DIR`     | Eigen3 install directory    |
 | `EIGEN3_INCLUDE_DIR`  | Eigen3 include directory    |
+| `spdlog_ROOT`         | Spdlog install directory    |
 | `spdlog_DIR`          | spdlogConfig.cmake    |
 | `HDF5_ROOT`           | HDF5 install directory |
 | `HDF5_DIR`            | HDF5Config.cmake |
