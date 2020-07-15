@@ -10,7 +10,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
         # Note that spdlog may already have been found in if H5PP_DOWNLOAD_METHOD=find|fetch
         # then we can assume that spdlog already knows how and where to get fmt.
         find_package(fmt 6.2.1
-                HINTS ${CMAKE_INSTALL_PREFIX}
+                HINTS ${fmt_ROOT} ${CMAKE_INSTALL_PREFIX}
                 NO_DEFAULT_PATH)
         if(NOT TARGET fmt::fmt)
             message(STATUS "fmt will be installed into ${CMAKE_INSTALL_PREFIX}")
@@ -19,7 +19,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
             include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)
             build_dependency(fmt  "${CMAKE_INSTALL_PREFIX}" "${FMT_CMAKE_OPTIONS}")
             find_package(fmt 6.2.1
-                    HINTS ${CMAKE_INSTALL_PREFIX}
+                    HINTS ${fmt_ROOT} ${CMAKE_INSTALL_PREFIX}
                     NO_DEFAULT_PATH
                     REQUIRED)
             if(TARGET fmt::fmt)
@@ -37,7 +37,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
     # Download spdlog
     if (H5PP_ENABLE_SPDLOG AND NOT TARGET spdlog::spdlog)
         find_package(spdlog 1.3
-                HINTS ${CMAKE_INSTALL_PREFIX}
+                HINTS ${spdlog_ROOT} ${CMAKE_INSTALL_PREFIX}
                 NO_DEFAULT_PATH)
         if(NOT TARGET spdlog::spdlog)
             message(STATUS "Spdlog will be installed into ${CMAKE_INSTALL_PREFIX}")
@@ -53,7 +53,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
             include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)
             build_dependency(spdlog  "${CMAKE_INSTALL_PREFIX}" "${SPDLOG_CMAKE_OPTIONS}")
             find_package(spdlog 1.3
-                    HINTS ${CMAKE_INSTALL_PREFIX}
+                    HINTS ${spdlog_ROOT} ${CMAKE_INSTALL_PREFIX}
                     NO_DEFAULT_PATH
                     REQUIRED)
             if(TARGET spdlog::spdlog)
@@ -76,7 +76,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
     # Download Eigen3
     if (H5PP_ENABLE_EIGEN3 AND NOT TARGET Eigen3::Eigen)
         find_package(Eigen3 3.3.7
-                HINTS ${CMAKE_INSTALL_PREFIX} ${EIGEN3_DIRECTORY_HINTS} ${EIGEN3_INCLUDE_DIR}
+                HINTS ${Eigen3_ROOT} ${CMAKE_INSTALL_PREFIX} ${EIGEN3_DIRECTORY_HINTS} ${EIGEN3_INCLUDE_DIR}
                 NO_DEFAULT_PATH)
         if(NOT TARGET Eigen3::Eigen)
             message(STATUS "Eigen3 will be installed into ${CMAKE_INSTALL_PREFIX}")
@@ -101,7 +101,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
 
     # Download HDF5
     if(NOT TARGET hdf5::hdf5)
-        set(HDF5_ROOT ${CMAKE_INSTALL_PREFIX})
+        list(APPEND HDF5_ROOT ${CMAKE_INSTALL_PREFIX})
         set(HDF5_NO_DEFAULT_PATH ON)
         find_package(HDF5 1.8 COMPONENTS C HL)
         if(NOT TARGET hdf5::hdf5)
