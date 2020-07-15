@@ -15,6 +15,7 @@ option(H5PP_PRINT_INFO                 "Print info during cmake configuration"  
 option(H5PP_ENABLE_EIGEN3              "Enables Eigen3 linear algebra library"                       OFF)
 option(H5PP_ENABLE_SPDLOG              "Enables Spdlog for logging h5pp internal info to stdout"     OFF)
 option(H5PP_ENABLE_MPI                 "Enables use of MPI (work in progress)"                       OFF)
+option(H5PP_ENABLE_ASAN                "Enable runtime address sanitizer -fsanitize=address"         OFF)
 option(CMAKE_POSITION_INDEPENDENT_CODE "Use -fPIC when compiling shared libraries"                   ON)
 
 # Make an "enum" for valid download methods: none find fetch find-or-fetch conan
@@ -122,6 +123,17 @@ target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) 
 target_compile_definitions(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX>) # Otherwise std::min and std::max will not work as expected
 target_include_directories(headers INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/include>)
 target_include_directories(headers SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
+
+
+#######################################
+# Settings for sanitizers           ###
+#######################################
+if(H5PP_ENABLE_ASAN)
+    target_compile_options(flags INTERFACE -fsanitize=address -fno-omit-frame-pointer)
+    target_link_options(flags INTERFACE -fsanitize=address)
+endif()
+
+
 #Try to find or fetch all dependencies
 include(cmake/SetupDependenciesFind.cmake)
 include(cmake/SetupDependenciesFetch.cmake)
