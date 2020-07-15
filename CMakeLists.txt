@@ -130,7 +130,7 @@ target_include_directories(headers SYSTEM INTERFACE $<INSTALL_INTERFACE:include>
 #######################################
 if(H5PP_ENABLE_ASAN)
     target_compile_options(flags INTERFACE -fsanitize=address -fno-omit-frame-pointer)
-    target_link_options(flags INTERFACE -fsanitize=address)
+    target_link_libraries(flags INTERFACE -fsanitize=address)
 endif()
 
 
