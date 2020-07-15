@@ -79,6 +79,7 @@ if(NOT Eigen3_FOUND)
 
     # With this particular order we can manually override where we should look for Eigen first
     list(APPEND EIGEN3_DIRECTORY_HINTS
+            ${Eigen3_ROOT}
             ${EIGEN3_INCLUDE_DIR}
             ${CONAN_EIGEN3_ROOT}
             $ENV{EBROOTEIGEN}
