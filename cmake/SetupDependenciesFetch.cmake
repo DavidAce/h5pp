@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.12)
+
 if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
     # Here we use find_package in config-mode, intended to find <packagename>Config.cmake
     # that is bundled with source installs of these packages.

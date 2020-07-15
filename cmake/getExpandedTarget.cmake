@@ -1,4 +1,4 @@
-
+cmake_minimum_required(VERSION 3.12)
 
 function(expand_target_libs target_names expanded_list)
     unset(target_expanded)

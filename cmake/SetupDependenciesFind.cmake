@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.12)
 
 # h5pp requires the filesystem header (and possibly stdc++fs library)
 find_package(Filesystem COMPONENTS Final Experimental)

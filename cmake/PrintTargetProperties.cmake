@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.12)
+
 # Get all propreties that cmake supports
 execute_process(COMMAND cmake --help-property-list OUTPUT_VARIABLE CMAKE_PROPERTY_LIST)
 list(APPEND CMAKE_PROPERTY_LIST IMPORTED_LOCATION IMPORTED_LOCATION_RELEASE IMPORTED_LOCATION_DEBUG)

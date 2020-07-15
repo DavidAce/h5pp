@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.12)
+
 # Append search paths for find_package and find_library calls
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX}) # Works like HINTS but can be ignored by NO_DEFAULT_PATH NO_CMAKE_PATH and NO_CMAKE_ENVIRONMENT_PATH
@@ -35,8 +37,11 @@ list(APPEND CMAKE_PREFIX_PATH
         $ENV{EBROOTHDF5}
         $ENV{EBROOTSPDLOG}
         $ENV{EBROOTEIGEN}
+        ${fmt_ROOT}
+        ${spdlog_ROOT}
         ${HDF5_ROOT}
         $ENV{HDF5_ROOT}
+        ${Eigen3_ROOT}
         )
 
 list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)

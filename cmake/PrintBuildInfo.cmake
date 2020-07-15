@@ -1,4 +1,4 @@
-
+cmake_minimum_required(VERSION 3.12)
 if(H5PP_PRINT_INFO)
 
     # Print host properties

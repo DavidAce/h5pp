@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.12)
 function(get_num_threads num_threads)
     cmake_host_system_information(RESULT _host_name   QUERY HOSTNAME)
     if(${_host_name} MATCHES "travis|TRAVIS|Travis")

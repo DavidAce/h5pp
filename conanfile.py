@@ -5,13 +5,15 @@ import os, re
 class h5ppConan(ConanFile):
     name = "h5pp"
     version = "1.8.0"
+    description = "A C++17 wrapper for HDF5 with focus on simplicity"
+    homepage = "https://github.com/DavidAce/h5pp"
     author = "DavidAce <aceituno@kth.se>"
     topics = ("hdf5", "binary", "storage")
     url = "https://github.com/DavidAce/h5pp"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
-    requires = "eigen/3.3.7@conan/stable", "spdlog/1.6.1", "hdf5/1.12.0"
+    requires = "eigen/3.3.7", "spdlog/1.6.1", "hdf5/1.12.0"
     build_policy    = "missing"
     scm = {
         "type": "git",
