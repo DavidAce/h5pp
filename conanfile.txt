@@ -5,7 +5,7 @@
 [requires]
 eigen/3.3.7@conan/stable
 spdlog/1.6.1
-hdf5/1.10.5
+hdf5/1.12.0
 
 [generators]
 cmake
