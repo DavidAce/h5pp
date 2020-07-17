@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.12)
+cmake_policy(SET CMP0074 NEW)
 project(external-hdf5)
 
 include(ExternalProject)
-option(HDF5_ENABLE_PARALLEL "" OFF)
+option(HDF5_ENABLE_PARALLEL "Enables HDF5 Parallel MPI" OFF)
 option(HDF5_EXTERNALLY_CONFIGURED "" ON)
 
 if(ENV{CONDA_PREFIX})
-    message(WARNING "The enabled conda environment may conflict with the build of HDF5: $ENV{CONDA_PREFIX}")
+    message(WARNING "The current conda environment may conflict with the build of HDF5: $ENV{CONDA_PREFIX}")
 endif()
 
 # The following check is needed because HDF5 will blindly use
@@ -85,7 +86,7 @@ ExternalProject_Add(external_hdf5
         BUILD_ALWAYS TRUE
         CMAKE_ARGS
         # CMake flags
-        -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
+        -DCMAKE_POLICY_DEFAULT_CMP0074=${CMAKE_POLICY_DEFAULT_CMP0074}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -106,7 +107,7 @@ ExternalProject_Add(external_hdf5
         -DCMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT:STRING=${CMAKE_CXX_FLAGS_RELWITHDEBINFO}
         -DCMAKE_CXX_FLAGS_MINSIZEREL_INIT:STRING=${CMAKE_CXX_FLAGS_MINSIZEREL}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-        -DCMAKE_INSTALL_MESSAGE=NEVER #Avoid unnecessary output to console
+        -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
         -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
         -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
         # HDF5 flags

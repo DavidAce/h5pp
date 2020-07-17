@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
+cmake_policy(SET CMP0074 NEW)
 project(external-fmt)
-
 include(ExternalProject)
 ExternalProject_Add(external_fmt
         URL         https://github.com/fmtlib/fmt/archive/6.2.1.tar.gz
@@ -32,7 +32,7 @@ ExternalProject_Add(external_fmt
         -DCMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT:STRING=${CMAKE_CXX_FLAGS_RELWITHDEBINFO}
         -DCMAKE_CXX_FLAGS_MINSIZEREL_INIT:STRING=${CMAKE_CXX_FLAGS_MINSIZEREL}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-        -DCMAKE_INSTALL_MESSAGE=NEVER #Avoid unnecessary output to console
+        -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
         -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
         -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
         # fmt flags
