@@ -98,7 +98,7 @@ most of the work can be achieved using just two member functions `.writeDataset(
     }
 ```
 
-Find more code examples in the [Wiki](https://github.com/DavidAce/h5pp/wiki).
+Find more code examples in the [examples directory](https://github.com/DavidAce/h5pp/tree/master/examples) or in the [Wiki](https://github.com/DavidAce/h5pp/wiki).
 
 
 ### File permissions
@@ -326,7 +326,7 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 
 
 ```cmake
-    cmake_minimum_required(VERSION 3.10)
+    cmake_minimum_required(VERSION 3.12)
     project(myProject)
     add_executable(myExecutable main.cpp)
     find_package(h5pp PATHS <path-to-h5pp-install-dir> REQUIRED) # If h5pp is installed through conda the path may be $ENV{CONDA_PREFIX}
@@ -350,7 +350,7 @@ From the command-line you can of course link using linker flags such as `-std=c+
 You could also use CMake's `find_package(...)` mechanism. A minimal `CMakeLists.txt` could be:
 
 ```cmake
-    cmake_minimum_required(VERSION 3.10)
+    cmake_minimum_required(VERSION 3.12)
     project(myProject)
     
     add_executable(myExecutable main.cpp)
@@ -397,33 +397,29 @@ These are variables that can be used to guide the custom module:
 | `EBROOTHDF5`           | ENV       | Variable defined by Easybuild with `module load HDF5` |
 
 
-
-
-# To-do
-In no particular order
-
-* Expand documentation. Perhaps a doxygen webpage
-* Many more examples
-* Expand testing for more edge-cases in
-    * filesystem permissions
-    * user-defined types
-    * tables
-* Expose more of the C-API:
-    * Support for packed user-defined types. Read more: [H5TPack](https://support.hdfgroup.org/HDF5/doc/RM/RM_H5T.html#Datatype-Pack)
-    * Support for reading portions (or "slabs") of datasets. (This is currently only supported for tables).
-    * True support for parallel read/write with MPI
-* Better automatic choice of chunking dimensions. The current naive heuristic may be suboptimal.
-* More diverse CI-testing for Windows/OSX platforms.
-* Support row-major <-> col-major transformation for types other than Eigen3 matrices and tensors. For instance,
-  when raw pointers are passed together with dimension initializer list {x,y,z..}. (Although, this can be done by wrapping 
-  the data in an Eigen Map object).
-  
   
 ## Uninstall
 
 The target `uninstall` is defined by `h5pp` which removes installed headers and dependencies using their respective install manifests.
 From the build directory, run the following in the command-line to uninstall:
 
+
 ```
     cmake --build .  --target uninstall
 ```
+
+# To-do
+In no particular order
+
+* Expand documentation. Perhaps a doxygen webpage
+* Expand testing for more edge-cases in
+    * filesystem permissions
+    * user-defined types
+    * tables
+* Expose more of the C-API:
+    * Support for packed user-defined types. Read more: [H5TPack](https://support.hdfgroup.org/HDF5/doc/RM/RM_H5T.html#Datatype-Pack)
+    * True support for parallel read/write with MPI
+* Support row-major <-> col-major transformation for types other than Eigen3 matrices and tensors. For instance,
+  when raw pointers are passed together with dimension initializer list {x,y,z..}. (Although, this can be done by wrapping 
+  the data in an Eigen Map object).
+  
