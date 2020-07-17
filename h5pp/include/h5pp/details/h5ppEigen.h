@@ -26,15 +26,13 @@ namespace h5pp {
  */
 #ifdef H5PP_EIGEN3
     namespace eigen {
-        // The default type for an index varies wildly between compilers/archs, so we query here
-//        using Eigen::Index = typename Eigen::Index;
         template<typename Scalar>
         using MatrixType = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
         template<typename Scalar>
         using VectorType = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
-        template<Eigen::Index rank>
+        template<auto rank>
         using array = Eigen::array<Eigen::Index, rank>;
-        template<Eigen::Index rank>
+        template<auto rank>
         using DSizes = Eigen::DSizes<Eigen::Index, rank>;
         using array8 = array<8>;
         using array7 = array<7>;
@@ -44,10 +42,6 @@ namespace h5pp {
         using array3 = array<3>;
         using array2 = array<2>;
         using array1 = array<1>;
-
-        // Shorthand for the list of index pairs.
-        template<typename T, auto length>
-        using idxlistpair = Eigen::array<Eigen::IndexPair<T>, length>;
 
         // Handy functions to copy lists of dimensions
         template<typename T, auto rank, typename Container>
@@ -78,37 +72,37 @@ namespace h5pp {
             return dsizes;
         }
 
-        H5PP_CONSTEXPR idxlistpair<Eigen::Index, 0> idx() {
-            Eigen::array<Eigen::IndexPair<Eigen::Index>, 0> empty_index_list = {};
-            return empty_index_list;
-        }
+        // Shorthand for the list of index pairs.
+        template<auto N>
+        using idxlistpair = Eigen::array<Eigen::IndexPair<Eigen::Index>, N>;
 
-        template<typename T, size_t N>
-        H5PP_CONSTEXPR idxlistpair<Eigen::Index, N> idx(const T (&list1)[N], const T (&list2)[N]) {
+        inline H5PP_CONSTEXPR idxlistpair<0> idx() { return {}; }
+
+        template<std::size_t N, typename idxType>
+        H5PP_CONSTEXPR idxlistpair<N> idx(const idxType (&list1)[N], const idxType (&list2)[N]) {
             // Use numpy-style indexing for contraction. Each list contains a list of indices to be contracted for the respective
             // tensors. This function zips them together into pairs as used in Eigen::Tensor module. This does not sort the indices in decreasing order.
-            static_assert(std::is_integral_v<T>);
-            Eigen::array<Eigen::IndexPair<Eigen::Index>, N> pairlistOut;
-            for(size_t i = 0; i < N; i++) { pairlistOut[i] = Eigen::IndexPair<Eigen::Index>{list1[i], list2[i]}; }
+            static_assert(std::is_integral_v<idxType>);
+            idxlistpair<N> pairlistOut;
+            for(size_t i = 0; i < N; i++) { pairlistOut[i] = Eigen::IndexPair<Eigen::Index>{static_cast<Eigen::Index>(list1[i]), static_cast<Eigen::Index>(list2[i])}; }
             return pairlistOut;
         }
 
-        template<typename T>
         struct idx_dim_pair {
-            T idxA;
-            T idxB;
-            T dimB;
+            Eigen::Index idxA;
+            Eigen::Index idxB;
+            Eigen::Index dimB;
         };
 
-        template<size_t NB, size_t N>
-        H5PP_CONSTEXPR idxlistpair<Eigen::Index, N> sortIdx(const array<NB> &dimensions, const Eigen::Index (&idx_ctrct_A)[N], const Eigen::Index (&idx_ctrct_B)[N]) {
+        template<std::size_t NB, std::size_t N>
+        H5PP_CONSTEXPR idxlistpair<N> sortIdx(const Eigen::array<Eigen::Index, NB> &dimensions, const Eigen::Index (&idx_ctrct_A)[N], const Eigen::Index (&idx_ctrct_B)[N]) {
             // When doing contractions, some indices may be larger than others. For performance, you want to
             // contract the largest indices first. This will return a sorted index list in decreasing order.
-            Eigen::array<idx_dim_pair<Eigen::Index>, N> idx_dim_pair_list;
+            Eigen::array<idx_dim_pair, N> idx_dim_pair_list;
             for(size_t i = 0; i < N; i++) { idx_dim_pair_list[i] = {idx_ctrct_A[i], idx_ctrct_B[i], dimensions[idx_ctrct_B[i]]}; }
             std::sort(idx_dim_pair_list.begin(), idx_dim_pair_list.end(), [](const auto &i, const auto &j) { return i.dimB > j.dimB; });
-            idxlistpair<Eigen::Index, N> pairlistOut;
-            for(size_t i = 0; i < N; i++) { pairlistOut[i] = Eigen::IndexPair<Eigen::Index>{idx_dim_pair_list[i].idxA, idx_dim_pair_list[i].idxB}; }
+            idxlistpair<N> pairlistOut;
+            for(size_t i = 0; i < N; i++) { pairlistOut[i] = Eigen::IndexPair<long>{idx_dim_pair_list[i].idxA, idx_dim_pair_list[i].idxB}; }
             return pairlistOut;
         }
 
