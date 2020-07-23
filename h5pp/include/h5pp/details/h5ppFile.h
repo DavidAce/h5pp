@@ -11,15 +11,11 @@
 #include "h5ppLogger.h"
 #include "h5ppOptional.h"
 #include "h5ppPropertyLists.h"
-#include "h5ppPtrWrapper.h"
 #include "h5ppScan.h"
 #include "h5ppTypeCompoundCreate.h"
 #include "h5ppUtils.h"
-#include <cassert>
 #include <hdf5.h>
 #include <hdf5_hl.h>
-#include <iomanip>
-#include <iostream>
 #include <string>
 #include <utility>
 

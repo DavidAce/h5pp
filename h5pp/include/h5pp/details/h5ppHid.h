@@ -1,7 +1,5 @@
 #pragma once
-#include <cassert>
 #include <hdf5.h>
-#include <iostream>
 #include <string>
 
 namespace h5pp::hid {
@@ -19,40 +17,39 @@ namespace h5pp::hid {
         template<typename T, typename = std::enable_if_t<std::is_same_v<T, hid_t>>>
         hid_base(const T &other) {
             // constructor from hid_t
-            assert((other == 0 or valid(other)) and "Given identifier must be valid");
+            if constexpr(zeroValueIsOK){
+                if(other > 0 and not valid(other)) throw std::runtime_error("Given identifier must be valid");
+            }else{
+                if(not valid(other)) throw std::runtime_error("Given identifier must be valid");
+            }
             val = other;
-            //            std::cout << "hid_t ctor: " << safe_print() << std::endl;
         }
 
         hid_base(const hid_base &other) {
             // Copy constructor
-            assert((other.val == 0 or valid(other.val)) and "Given identifier must be valid");
+            if constexpr(zeroValueIsOK){
+                if(other.val > 0 and not valid(other.val)) throw std::runtime_error("Given identifier must be valid");
+            }else{
+                if(not valid(other.val)) throw std::runtime_error("Given identifier must be valid");
+            }
             val = other.val; // Checks that we got a valid identifier through .value() (throws)
             if(valid(other.val))
                 H5Iinc_ref(val); // Increment reference counter of identifier
-                                 //            std::cout << "copy ctor: " << safe_print() << std::endl;
         }
 
-//        hid_base &operator=(const hid_t &rhs) {
-//            // Assignment from hid_t
-//            assert((rhs == 0 or valid(rhs)) and "Given identifier must be valid");
-//            if(not equal(rhs)) close(); // Drop current
-//            val = rhs;
-//            if(valid(val))
-//                H5Iinc_ref(val); // Increment reference counter of identifier
-//                                 //            std::cout << "hid_t assign: " << pretty_print() << std::endl;
-//            return *this;
-//        }
 
         hid_base &operator=(const hid_base &rhs) {
             if(this == &rhs) return *this;
             // Copy assignment
-            assert((rhs.val == 0 or valid(rhs.val)) and "Given identifier must be valid");
+            if constexpr(zeroValueIsOK){
+                if(rhs.val > 0 and not valid(rhs.val)) throw std::runtime_error("Given identifier must be valid");
+            }else{
+                if(not valid(rhs.val)) throw std::runtime_error("Given identifier must be valid");
+            }
             if(not equal(rhs.val)) close(); // Drop current
             val = rhs.val;
             if(valid(val))
                 H5Iinc_ref(val); // Increment reference counter of identifier
-                                 //            std::cout << "copy assign: " << pretty_print() << std::endl;
             return *this;
         }
         virtual void                      close()     = 0;
@@ -86,7 +83,10 @@ namespace h5pp::hid {
 
         [[nodiscard]] bool valid(const hid_t &other) const {
             auto result = H5Iis_valid(other);
-            assert(result >= 0 and "Error when determining validity of identifier");
+            if(result < 0){
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error("Failed to determine validity of identifier");
+            }
             return result > 0;
         }
         [[nodiscard]] bool valid() const { return valid(val); }

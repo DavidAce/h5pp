@@ -198,7 +198,7 @@ namespace h5pp::util {
 
 #ifdef H5PP_EIGEN3
         else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
-            assert(data.dimensions().size() == rank and "given dimensions do not match detected rank");
+            if(data.dimensions().size() != rank) throw std::runtime_error("given dimensions do not match detected rank");
             std::vector<hsize_t> dims(data.dimensions().begin(),
                                       data.dimensions().end()); // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
             return dims;

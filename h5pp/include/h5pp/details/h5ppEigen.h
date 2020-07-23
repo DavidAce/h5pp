@@ -6,7 +6,6 @@
     #include <unsupported/Eigen/CXX11/Tensor>
 #endif
 
-#include <iostream>
 #include <iterator>
 #include <numeric>
 #if !defined(_MSC_VER)
@@ -116,7 +115,7 @@ namespace h5pp {
         constexpr Eigen::Tensor<Scalar, 1> extractDiagonal(const Eigen::Tensor<Scalar, 2> &tensor) {
             auto rows = tensor.dimension(0);
             auto cols = tensor.dimension(1);
-            assert(tensor.dimension(0) == tensor.dimension(1) and "extractDiagonal expects a square tensor");
+            if(tensor.dimension(0) != tensor.dimension(1)) throw std::runtime_error("extractDiagonal expects a square tensor");
 
             Eigen::Tensor<Scalar, 1> diagonals(rows);
             for(auto i = 0; i < rows; i++) { diagonals(i) = tensor(i, i); }
@@ -140,9 +139,8 @@ namespace h5pp {
 
         template<typename Scalar>
         constexpr auto asDiagonalInversed(const Eigen::Tensor<Scalar, 2> &tensor) {
-            assert(tensor.dimension(0) == tensor.dimension(1) and "Textra::asDiagonalInversed expects a square tensor");
+            if(tensor.dimension(0) != tensor.dimension(1)) throw std::runtime_error("Textra::asDiagonalInversed expects a square tensor");
             Eigen::Tensor<Scalar, 2> inversed = asDiagonalInversed(extractDiagonal(tensor));
-            std::cout << "inversed:\n" << inversed << std::endl;
             return inversed;
         }
 
