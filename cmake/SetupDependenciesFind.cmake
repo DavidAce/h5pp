@@ -30,7 +30,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "find")
     endif()
     # Start finding the dependencies
     if(H5PP_ENABLE_EIGEN3 AND NOT TARGET Eigen3::Eigen )
-        find_package(Eigen3 3.3.4 ${REQUIRED})
+        find_package(Eigen3 3.3 ${REQUIRED})
         if(TARGET Eigen3::Eigen)
             list(APPEND H5PP_TARGETS Eigen3::Eigen)
             target_link_libraries(deps INTERFACE Eigen3::Eigen)
