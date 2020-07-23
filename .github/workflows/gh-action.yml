@@ -159,7 +159,7 @@ jobs:
         shell: bash
         run: |
           cd build/Debug
-          cmake --build .
+          cmake --build . --parallel 2
           cmake --build . --target install
 
       - name: Test

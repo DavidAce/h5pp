@@ -342,7 +342,7 @@ script:
           -G "$CMAKE_GEN" \
           -DCMAKE_GENERATOR_PLATFORM=$CMAKE_PLATFORM \
           ../../
-  - cmake --build . --parallel 1
+  - cmake --build . --parallel 2
   - cmake --build . --target install
   - ctest -C Debug --output-on-failure
 
