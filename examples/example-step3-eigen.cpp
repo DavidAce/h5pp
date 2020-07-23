@@ -1,9 +1,9 @@
+#if __has_include(<Eigen/Core>)
 #include <h5pp/h5pp.h>
 
 int main() {
-#if __has_include(<Eigen/Core>)
     // Initialize a file
-    h5pp::File file("exampledir/example-step2-eigen.h5", h5pp::FilePermission::REPLACE,0);
+    h5pp::File file("exampledir/example-step3-eigen.h5", h5pp::FilePermission::REPLACE,0);
 
     // Initialize a 10x10 Eigen matrix with random complex entries
     Eigen::MatrixXcd m1 = Eigen::MatrixXcd::Random(5, 5);
@@ -16,8 +16,5 @@ int main() {
     auto m2 = file.readDataset<Eigen::MatrixXcd>("myGroup/myEigenMatrix");
 
     std::cout << m2 << std::endl;
-#else
-    std::cout << "Example 3 skipped: Eigen 3 is disabled" << std::endl;
+    return 0;}
 #endif
-    return 0;
-}

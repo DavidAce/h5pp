@@ -17,7 +17,7 @@ struct Double3 {
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-step1-io-stdvector-struct.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-step1-stdvector-struct.h5", h5pp::FilePermission::REPLACE);
 
     std::vector<Int2>    coord2dWrite(10, {1, 2});
     std::vector<Double3> coord3dWrite(10, {10, 20, 30});

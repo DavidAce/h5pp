@@ -1,6 +1,6 @@
 #include <h5pp/h5pp.h>
 
-// In this example we write text-data to a file.
+// In this example we write text-data to a file in a
 // In h5pp, each string is treated as a single "scalar" unit of variable-length
 // Hence, size corresponds to the number of strings, not the length of a string.
 
