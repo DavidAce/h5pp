@@ -1,6 +1,6 @@
 #if __has_include(<Eigen/Core>)
 #include <h5pp/h5pp.h>
-
+#include <iostream>
 int main() {
     // Initialize a file
     h5pp::File file("exampledir/example-step3-eigen.h5", h5pp::FilePermission::REPLACE,0);
