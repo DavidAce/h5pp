@@ -25,7 +25,7 @@ include(CMakeFindDependencyMacro)
 ### anyway. If an entire dependency tree had only "-lpthread"  ###
 ### or only "pthread" this wouldn't be a problem, but          ###
 ### unfortunately different dependencies do it differently.    ###
-### Since conan prefers "pthread", I'll do the same here.      ###
+### Since conan prefers "pthread", we do the same here.        ###
 ##################################################################
 ### Read more about pthread segfault
 ### https://stackoverflow.com/questions/35116327/when-g-static-link-pthread-cause-segmentation-fault-why

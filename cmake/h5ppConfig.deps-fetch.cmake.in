@@ -22,7 +22,7 @@ endif()
 
 include(CMakeFindDependencyMacro)
 if (NOT TARGET Eigen3::Eigen AND Eigen3::Eigen IN_LIST H5PP_ENABLED_TARGETS)
-    find_dependency(Eigen3 3.3.4 REQUIRED)
+    find_dependency(Eigen3 3.3 REQUIRED)
     if(TARGET Eigen3 AND NOT TARGET Eigen3::Eigen)
         add_library(Eigen3::Eigen ALIAS Eigen3)
     endif()
