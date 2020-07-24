@@ -4,9 +4,9 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
     ##################################################################
     ### Install conan-modules/conanfile.txt dependencies          ###
     ### This uses conan to get spdlog/eigen3/h5pp/ceres           ###
-    ###    eigen/3.3.7@conan/stable                               ###
-    ###    spdlog/1.4.2@bincrafters/stable                        ###
-    ###    hdf5/1.10.5                                            ###
+    ###    eigen/3.3.7@                                           ###
+    ###    spdlog/1.7.0                                           ###
+    ###    hdf5/1.12.0                                            ###
     ##################################################################
 
     find_program (
@@ -47,6 +47,8 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
             CONAN_COMMAND ${CONAN_COMMAND}
             SETTINGS compiler.cppstd=17
             SETTINGS "${conan_libcxx}"
+            SETTINGS compiler.cppstd=17
+            PROFILE_AUTO ALL
             BUILD_TYPE ${CMAKE_BUILD_TYPE}
             BASIC_SETUP CMAKE_TARGETS
             BUILD missing)
