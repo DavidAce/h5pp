@@ -187,10 +187,10 @@ jobs:
         - CMAKE_GEN="Unix Makefiles"
         - CXX=clang++ CC=clang
 
-    - name: "osx clang | static | conan"
+    - name: "osx | xcode11.6 | clang | static | conan"
       os: osx
       compiler: clang
-      osx_image: xcode11.3
+      osx_image: xcode11.6
       env:
         - CC=clang
         - CXX=clang++
@@ -205,10 +205,10 @@ jobs:
           packages:
             - conan
 
-    - name: "osx clang | static | find-or-fetch"
+    - name: "osx | xcode11.6 | clang | static | find-or-fetch"
       os: osx
       compiler: clang
-      osx_image: xcode11.3
+      osx_image: xcode11.6
       env:
         - CC=clang
         - CXX=clang++
@@ -218,10 +218,10 @@ jobs:
         directories:
           - $TRAVIS_BUILD_DIR/build/Debug/install
 
-    - name: "osx clang | static | homebrew | find-or-fetch"
+    - name: "osx | xcode11.6 | clang | static | homebrew | find-or-fetch"
       os: osx
       compiler: clang
-      osx_image: xcode11.3
+      osx_image: xcode11.6
       env:
         - CC=clang
         - CXX=clang++
@@ -236,6 +236,54 @@ jobs:
             - zlib
             - szip
 
+    - name: "osx | xcode12| clang | static | conan"
+      os: osx
+      compiler: clang
+      osx_image: xcode12
+      env:
+        - CC=clang
+        - CXX=clang++
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=conan -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+        - H5PP_DOWNLOAD_METHOD=conan
+      cache:
+        directories:
+          - $HOME/.conan/data
+      addons:
+        homebrew:
+          packages:
+            - conan
+
+    - name: "osx | xcode12 | clang | static | find-or-fetch"
+      os: osx
+      compiler: clang
+      osx_image: xcode12
+      env:
+        - CC=clang
+        - CXX=clang++
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DBUILD_SHARED_LIBS:BOOL=OFF"
+        - CMAKE_GEN="Unix Makefiles"
+      cache:
+        directories:
+          - $TRAVIS_BUILD_DIR/build/Debug/install
+
+    - name: "osx | xcode12 | clang | static | homebrew | find-or-fetch"
+      os: osx
+      compiler: clang
+      osx_image: xcode12
+      env:
+        - CC=clang
+        - CXX=clang++
+        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DBUILD_SHARED_LIBS:BOOL=ON"
+        - CMAKE_GEN="Unix Makefiles"
+      addons:
+        homebrew:
+          packages:
+            - eigen
+            - hdf5
+            - spdlog
+            - zlib
+            - szip
 
     - name: "windows msvc 2017 | static | conan"
       os: windows
