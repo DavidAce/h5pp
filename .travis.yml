@@ -202,6 +202,7 @@ jobs:
           - $HOME/.conan/data
       addons:
         homebrew:
+          update: true
           packages:
             - conan
 
@@ -229,6 +230,7 @@ jobs:
         - CMAKE_GEN="Unix Makefiles"
       addons:
         homebrew:
+          update: true
           packages:
             - eigen
             - hdf5
@@ -251,6 +253,7 @@ jobs:
           - $HOME/.conan/data
       addons:
         homebrew:
+          update: true
           packages:
             - conan
 
