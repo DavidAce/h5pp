@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(examples)
+project(examples CXX)
 file(GLOB EXAMPLES "*.cpp")
 add_custom_target(build-all-examples)
 foreach (ex ${EXAMPLES})

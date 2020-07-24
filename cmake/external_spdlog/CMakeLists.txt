@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 cmake_policy(SET CMP0074 NEW)
-project(external-spdlog)
+project(external-spdlog CXX)
 include(ExternalProject)
 ExternalProject_Add(external_spdlog
         URL         https://github.com/gabime/spdlog/archive/v1.7.0.tar.gz

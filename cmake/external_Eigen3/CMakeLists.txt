@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 cmake_policy(SET CMP0074 NEW)
-project(external-eigen3)
+project(external-eigen3 CXX)
 include(ExternalProject)
 ExternalProject_Add(external_eigen3
         GIT_REPOSITORY https://github.com/eigenteam/eigen-git-mirror.git

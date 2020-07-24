@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 cmake_policy(SET CMP0074 NEW)
-project(external-hdf5)
+project(external-hdf5 C CXX)
 
 include(ExternalProject)
 option(HDF5_ENABLE_PARALLEL "Enables HDF5 Parallel MPI" OFF)

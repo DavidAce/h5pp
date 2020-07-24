@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(external-ghcFilesystem)
+project(external-ghcFilesystem CXX)
 
 include(ExternalProject)
 ExternalProject_Add(external_ghcFilesystem

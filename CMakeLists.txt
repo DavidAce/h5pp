@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 project(h5pp VERSION 1.8.0
         DESCRIPTION "A C++17 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
+        LANGUAGES CXX
         )
 
 option(BUILD_SHARED_LIBS               "Builds shared libraries"                                     OFF)

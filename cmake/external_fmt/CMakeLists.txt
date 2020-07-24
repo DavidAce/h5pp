@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 cmake_policy(SET CMP0074 NEW)
-project(external-fmt)
+project(external-fmt CXX)
 include(ExternalProject)
 ExternalProject_Add(external_fmt
         URL         https://github.com/fmtlib/fmt/archive/7.0.1.tar.gz

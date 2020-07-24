@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(tests)
+project(tests CXX)
 file(GLOB TESTS "*.cpp")
 add_custom_target(all-tests)
 foreach (test ${TESTS})
