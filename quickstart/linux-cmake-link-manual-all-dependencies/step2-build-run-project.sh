@@ -12,7 +12,7 @@ cmake -DCMAKE_BUILD_TYPE=Release \
       ../../
 
 # Build the executable
-cmake --build . --parallel $(nproc)
+cmake --build . --parallel 4
 
 # Run the executable
 ./MyProjectExecutable

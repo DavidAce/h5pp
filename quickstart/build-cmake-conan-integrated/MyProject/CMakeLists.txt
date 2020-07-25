@@ -11,7 +11,7 @@ target_compile_features(MyProjectExecutable PRIVATE cxx_std_17)
 # Download Conan-CMake integration automatically, you can also just copy the conan.cmake file
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
     message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-    file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.14/conan.cmake"
+    file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
             "${CMAKE_BINARY_DIR}/conan.cmake")
 endif()
 
@@ -20,8 +20,9 @@ conan_cmake_run(
         CONANFILE conanfile.txt
         BUILD_TYPE ${CMAKE_BUILD_TYPE}
         BASIC_SETUP CMAKE_TARGETS
+	PROFILE_AUTO ALL
         BUILD missing)
 
 
-message("CONAN TARGETS: ${CONAN_TARGETS}")
+message(STATUS "Found Conan targets: ${CONAN_TARGETS}")
 target_link_libraries(MyProjectExecutable PRIVATE ${CONAN_TARGETS})

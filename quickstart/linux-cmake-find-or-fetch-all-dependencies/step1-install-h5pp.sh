@@ -26,11 +26,13 @@ cmake -DCMAKE_BUILD_TYPE=Release \
 
 # Build the targets if any were selected.
 # In this case, it would only be the enabled tests.
-cmake --build . --parallel $(nproc)
+cmake --build . --parallel 4
 
 
 # Install the headers and other files to the location specified in CMAKE_INSTALL_PREFIX
 cmake --build . --target install
 
 # Run the tests to make sure everything is in order. This step is optional.
-ctest -C Debug --output-on-failure
+ctest -C Release --output-on-failure
+
+

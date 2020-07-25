@@ -57,6 +57,7 @@ The goal of `h5pp` is to make HDF5 simple to use in the following sense:
 
 ## Features
 *  Header-only C++17 template library
+*  High-level front-end to the C API of HDF5
 *  Support for common data types:
     *  `short`,`int`,`long`, `long long` (+ unsigned versions), `float`, `double`, `long double`
         *  any of the above in C-style arrays
@@ -70,7 +71,7 @@ The goal of `h5pp` is to make HDF5 simple to use in the following sense:
     *  Support for creating HDF5 tables from user-defined compound HDF5 types.  
 *  Modern CMake installation providing targets for simple linking to your projects.
 *  Installation with package managers: conan, conda (and apt using .deb installation file)
-*  (Opt-in) Automatically find or download dependencies using either [conan package manager](https://conan.io/) or "CMake-only" methods.
+*  (Opt-in) Automatically find or download dependencies using either the [Conan package manager](https://conan.io/) or "CMake-only" methods.
 *  Multi-platform: Linux, Windows, OSX. (Developed under Linux)
 
 
