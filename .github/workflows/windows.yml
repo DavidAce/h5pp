@@ -1,0 +1,76 @@
+name: Windows
+# INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+
+jobs:
+  ci:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # True stops all on first error. Stick to false when debugging
+      matrix:
+        # Github Actions requires a single row to be added to the build matrix.
+        # See https://help.github.com/en/articles/workflow-syntax-for-github-actions.
+        name: [windows-2019-msvc-conan,windows-2019-msvc-fetch]
+        include:
+          - name: windows-2019-msvc-conan
+            os: windows-2019
+            compiler: cl
+            generator: -G "Visual Studio 16 2019" -A x64
+            sources: conan
+            flags: -DH5PP_DOWNLOAD_METHOD:STRING=conan -DBUILD_SHARED_LIBS:BOOL=ON
+
+          - name: windows-2019-msvc-fetch
+            os: windows-2019
+            compiler: cl
+            sources: native
+            generator: -G "Visual Studio 16 2019" -A x64
+            flags: -DH5PP_DOWNLOAD_METHOD:STRING=fetch -DBUILD_SHARED_LIBS:BOOL=OFF
+
+    steps:
+      - uses: actions/checkout@v1
+      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: actions/setup-python@v1
+          with:
+            python-version: '3.x'
+      - name: Install packages
+        run: pip install conan
+
+      - name: Configure
+        run: |
+          cmake -E make_directory build/Debug
+          cd build/Debug
+          |
+          cmake
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+          -DH5PP_ENABLE_EIGEN3:BOOL=ON
+          -DH5PP_ENABLE_SPDLOG:BOOL=ON
+          -DH5PP_PRINT_INFO:BOOL=ON
+          -DH5PP_ENABLE_TESTS:BOOL=ON
+          -DH5PP_BUILD_EXAMPLES:BOOL=ON
+          ${{ matrix.flags }} ${{ matrix.generator }}
+          ../../
+
+      - name: Build
+        run: |
+          cd build/Debug
+          cmake --build . --parallel 2
+      - name: Install
+        run: |
+          cd build/Debug
+          cmake --build . --target install
+
+      - name: Test
+        run: |
+          cd build/Debug
+          ctest -C Debug --output-on-failure
+
+
+
