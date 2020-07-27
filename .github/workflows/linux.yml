@@ -89,13 +89,28 @@ jobs:
             flags: -DH5PP_DOWNLOAD_METHOD:STRING=conan -DBUILD_SHARED_LIBS:BOOL=OFF
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
-    - name: Install packages
+
+    - name: Install conan
+      if: matrix.sources == 'conan'
       run: |
         pip install conan
+        conan user
+
+    - name: Cache conan
+      if: matrix.sources == 'conan'
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-conan
+      with:
+        path: ~/.conan/data
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('conanfile.py') }}
+
+    - name: Install packages
+      run: |
         # LLVM 9 is not in Bionic's repositories so we add the official LLVM repository.
         if [ "${{ matrix.compiler }}" = "clang" ] && [ "${{ matrix.version }}" = "9" ]; then
           sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
