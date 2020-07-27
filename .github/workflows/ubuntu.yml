@@ -89,62 +89,62 @@ jobs:
             flags: -DH5PP_DOWNLOAD_METHOD:STRING=conan -DBUILD_SHARED_LIBS:BOOL=OFF
 
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-          with:
-            python-version: '3.x'
-      - name: Install packages
-        run: |
-          pip install conan
-          # LLVM 9 is not in Bionic's repositories so we add the official LLVM repository.
-          if [ "${{ matrix.compiler }}" = "clang" ] && [ "${{ matrix.version }}" = "9" ]; then
-            sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
-          fi
-          sudo apt update
-          if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            sudo apt install -y g++-${{ matrix.version }} gfortran ${{ matrix.apt }} g++-${{ matrix.version }}-multilib
-            echo "::set-env name=CC::gcc-${{ matrix.version }}"
-            echo "::set-env name=CXX::g++-${{ matrix.version }}"
-          else
-            sudo apt-get install -y clang-${{ matrix.version }} g++-multilib gfortran ${{ matrix.apt }}
-            echo "::set-env name=CC::clang-${{ matrix.version }}"
-            echo "::set-env name=CXX::clang++-${{ matrix.version }}"
-          fi
-          echo "::set-env name=FC::gfortran"
-          if [[ "${{ matrix.sources }}" == *"conan"* ]]; then
-            conan user
-          fi
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - name: Install packages
+      run: |
+        pip install conan
+        # LLVM 9 is not in Bionic's repositories so we add the official LLVM repository.
+        if [ "${{ matrix.compiler }}" = "clang" ] && [ "${{ matrix.version }}" = "9" ]; then
+          sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
+        fi
+        sudo apt update
+        if [ "${{ matrix.compiler }}" = "gcc" ]; then
+          sudo apt install -y g++-${{ matrix.version }} gfortran ${{ matrix.apt }} g++-${{ matrix.version }}-multilib
+          echo "::set-env name=CC::gcc-${{ matrix.version }}"
+          echo "::set-env name=CXX::g++-${{ matrix.version }}"
+        else
+          sudo apt-get install -y clang-${{ matrix.version }} g++-multilib gfortran ${{ matrix.apt }}
+          echo "::set-env name=CC::clang-${{ matrix.version }}"
+          echo "::set-env name=CXX::clang++-${{ matrix.version }}"
+        fi
+        echo "::set-env name=FC::gfortran"
+        if [[ "${{ matrix.sources }}" == *"conan"* ]]; then
+          conan user
+        fi
 
-      - name: Configure
-        run: |
-          cmake -E make_directory build/Debug
-          cd build/Debug
-          |
-          cmake
-          -DCMAKE_BUILD_TYPE=Debug
-          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-          -DH5PP_ENABLE_EIGEN3:BOOL=ON
-          -DH5PP_ENABLE_SPDLOG:BOOL=ON
-          -DH5PP_PRINT_INFO:BOOL=ON
-          -DH5PP_ENABLE_TESTS:BOOL=ON
-          -DH5PP_BUILD_EXAMPLES:BOOL=ON
-          ${{ matrix.flags }} ${{ matrix.generator }}
-          ../../
+    - name: Configure
+      run: |
+        cmake -E make_directory build/Debug
+        cd build/Debug
+        |
+        cmake
+        -DCMAKE_BUILD_TYPE=Debug
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        -DH5PP_ENABLE_EIGEN3:BOOL=ON
+        -DH5PP_ENABLE_SPDLOG:BOOL=ON
+        -DH5PP_PRINT_INFO:BOOL=ON
+        -DH5PP_ENABLE_TESTS:BOOL=ON
+        -DH5PP_BUILD_EXAMPLES:BOOL=ON
+        ${{ matrix.flags }} ${{ matrix.generator }}
+        ../../
 
-      - name: Build
-        shell: bash
-        run: |
-          cd build/Debug
-          cmake --build . --parallel 2
-      - name: Install
-        run: |
-          cd build/Debug
-          cmake --build . --target install
+    - name: Build
+      shell: bash
+      run: |
+        cd build/Debug
+        cmake --build . --parallel 2
+    - name: Install
+      run: |
+        cd build/Debug
+        cmake --build . --target install
 
-      - name: Test
-        run: |
-          cd build/Debug
-          ctest -C Debug --output-on-failure
+    - name: Test
+      run: |
+        cd build/Debug
+        ctest -C Debug --output-on-failure
 
 
 
