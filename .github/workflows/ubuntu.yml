@@ -90,17 +90,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - name: Install (Linux)
-        if: runner.os == 'Linux'
+      - uses: actions/setup-python@v1
+          with:
+            python-version: '3.x'
+      - name: Install packages
         run: |
+          pip install conan
           # LLVM 9 is not in Bionic's repositories so we add the official LLVM repository.
           if [ "${{ matrix.compiler }}" = "clang" ] && [ "${{ matrix.version }}" = "9" ]; then
             sudo add-apt-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
           fi
-          sudo apt-get update
+          sudo apt update
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            sudo apt-get install -y g++-${{ matrix.version }} gfortran ${{ matrix.apt }}
-          # g++-${{ matrix.version }}-multilib
+            sudo apt install -y g++-${{ matrix.version }} gfortran ${{ matrix.apt }} g++-${{ matrix.version }}-multilib
             echo "::set-env name=CC::gcc-${{ matrix.version }}"
             echo "::set-env name=CXX::g++-${{ matrix.version }}"
           else
@@ -109,16 +111,6 @@ jobs:
             echo "::set-env name=CXX::clang++-${{ matrix.version }}"
           fi
           echo "::set-env name=FC::gfortran"
-
-          if [[ "${{ matrix.sources }}" == *"conda"* ]]; then
-            wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-            chmod +x miniconda.sh
-            ./miniconda.sh -b -p $HOME/miniconda
-            export PATH=$HOME/miniconda/bin:$PATH
-            conda update --yes conda
-            conda config --add channels conda-forge
-            conda install --yes ${{ matrix.conda }}
-          fi
           if [[ "${{ matrix.sources }}" == *"conan"* ]]; then
             conan user
           fi
