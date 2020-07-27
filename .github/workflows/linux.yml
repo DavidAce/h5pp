@@ -92,12 +92,10 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
-
-    - name: Install conan
-      if: matrix.sources == 'conan'
-      run: |
-        pip install conan
-        conan user
+    - uses: s-weigand/setup-conda@v1
+      with:
+        update-conda: false
+        conda-channels: conda-forge
 
     - name: Cache conan
       if: contains(matrix.sources, 'conan')
@@ -117,12 +115,14 @@ jobs:
         path: build/Debug/install
         key: ${{ runner.os }}-build-${{ env.cache-name }}
 
+    - name: Setup conan
+      if: matrix.sources == 'conan'
+      run: |
+        pip install conan
+        conan user
+
     - name: Setup conda
       if: contains(matrix.sources, 'conda')
-      uses: s-weigand/setup-conda@v1
-      with:
-        update-conda: false
-        conda-channels: conda-forge
       run: conda install ${{ matrix.conda }}
 
     - name: Install packages
