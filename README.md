@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/DavidAce/h5pp.svg?branch=master)](https://travis-ci.org/DavidAce/h5pp)
 [![Build Status](https://github.com/DavidAce/h5pp/workflows/Actions/badge.svg)](https://github.com/DavidAce/h5pp/actions)
+[![Linux](https://github.com/DavidAce/h5pp/workflows/Linux/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions?query=workflow%3ALinux)
+[![Windows](https://github.com/DavidAce/h5pp/workflows/Windows/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions?query=workflow%3AWindows)
 [![Anaconda-Server Badge](https://anaconda.org/davidace/h5pp/badges/installer/conda.svg)](https://conda.anaconda.org/davidace)
 [![Download](https://img.shields.io/badge/Install%20with-conan-green)](https://bintray.com/davidace/conan-public/h5pp%3Adavidace/_latestVersion)
 [![Download](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)
