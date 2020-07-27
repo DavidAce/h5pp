@@ -26,12 +26,12 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
     *  [Storage layout](#storage-layout)
     *  [Compression](#compression)
     *  [Load data into Python](#load-data-into-python)
-*  [Installation](#download)
+*  [Installation](#installation)
     *  [Requirements](#requirements)
     *  [Install methods](#install-methods)
         *  [Option 1: Copy the headers](#option-1-copy-the-headers)
         *  [Option 2: Install with CMake](#option-2-install-with-cmake)
-        *  [Option 3: Install with conan](#option-2-install-with-conan)
+        *  [Option 3: Install with conan](#option-3-install-with-conan)
     *  [Opt-in automatic dependency installation with CMake](#opt-in-automatic-dependency-installation-with-cmake)
 *  [Linking](#linking)
 *  [Uninstall](#uninstall)
@@ -376,7 +376,7 @@ You could also use CMake's `find_package(...)` mechanism. A minimal `CMakeLists.
 The difficult part is linking to HDF5 libraries and its dependencies.
 #### Use the custom FindHDF5.cmake bundled with `h5pp`
 When installing `h5pp`, finding HDF5 and setting up the CMake target `hdf5::hdf5` for linking is handled by a custom module for finding HDF5, defined in `cmake/FindHDF5.cmake`. 
-This module wraps the default `FindHDF5.cmake` which comes with CMake and uses the same call signature, but fixes some annoyances with naming convensions in different versions of CMake and HDF5 executables.
+This module wraps the default `FindHDF5.cmake` which comes with CMake and uses the same call signature, but fixes some annoyances with naming conventions in different versions of CMake and HDF5 executables.
 It reads hints passed through CMake flags to find HDF5 somewhere on your system (e.g. installed via `conda`,`apt`, `brew`, `Easybuild`,etc) and defines a CMake target `hdf5::hdf5` with everything you need to link correctly.
 Most importantly, it avoids injecting shared versions of libraries (dl, zlib, szip, aec) during static builds. 
 You can use the custom module too! Add the path pointing to `FindHDF5.cmake` to the variable `CMAKE_MODULE_PATH` from within your own project, e.g.:
