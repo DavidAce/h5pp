@@ -84,8 +84,7 @@ jobs:
             compiler: clang
             version: "6.0"
             generator: -G "Unix Makefiles"
-            sources: conda conan
-            conda: conan
+            sources: conan
             flags: -DH5PP_DOWNLOAD_METHOD:STRING=conan -DBUILD_SHARED_LIBS:BOOL=OFF
 
     steps:
@@ -101,13 +100,30 @@ jobs:
         conan user
 
     - name: Cache conan
-      if: matrix.sources == 'conan'
+      if: contains(matrix.sources, 'conan')
       uses: actions/cache@v2
       env:
-        cache-name: cache-conan
+        cache-name: ${{ matrix.name }}
       with:
         path: ~/.conan/data
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('conanfile.py') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}
+
+    - name: Cache fetch
+      if: matrix.sources != 'conan'
+      uses: actions/cache@v2
+      env:
+        cache-name: ${{ matrix.name }}
+      with:
+        path: build/Debug/install
+        key: ${{ runner.os }}-build-${{ env.cache-name }}
+
+    - name: Setup conda
+      if: contains(matrix.sources, 'conda')
+      uses: s-weigand/setup-conda@v1
+      with:
+        update-conda: false
+        conda-channels: conda-forge
+      run: conda install ${{ matrix.conda }}
 
     - name: Install packages
       run: |
