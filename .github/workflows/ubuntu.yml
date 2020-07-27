@@ -116,19 +116,19 @@ jobs:
         fi
 
     - name: Configure
+      shell: bash
       run: |
         cmake -E make_directory build/Debug
         cd build/Debug
-        |
-        cmake
-        -DCMAKE_BUILD_TYPE=Debug
-        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-        -DH5PP_ENABLE_EIGEN3:BOOL=ON
-        -DH5PP_ENABLE_SPDLOG:BOOL=ON
-        -DH5PP_PRINT_INFO:BOOL=ON
-        -DH5PP_ENABLE_TESTS:BOOL=ON
-        -DH5PP_BUILD_EXAMPLES:BOOL=ON
-        ${{ matrix.flags }} ${{ matrix.generator }}
+        cmake                                            \
+        -DCMAKE_BUILD_TYPE=Debug                         \
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                 \
+        -DH5PP_ENABLE_EIGEN3:BOOL=ON                     \
+        -DH5PP_ENABLE_SPDLOG:BOOL=ON                     \
+        -DH5PP_PRINT_INFO:BOOL=ON                        \
+        -DH5PP_ENABLE_TESTS:BOOL=ON                      \
+        -DH5PP_BUILD_EXAMPLES:BOOL=ON                    \
+        ${{ matrix.flags }} ${{ matrix.generator }}      \
         ../../
 
     - name: Build
