@@ -10,7 +10,7 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.linkage }}-${{ matrix.compiler }}-${{ matrix.source }}
+    name: ${{ matrix.linkage }}-${{ matrix.compiler }}-${{ matrix.source }}-conda-${{prefer-conda}}
     runs-on: ubuntu-16.04
     strategy:
       fail-fast: false # True stops all on first error. Stick to false when debugging
@@ -18,12 +18,12 @@ jobs:
         linkage: [static, shared]
         compiler: [gcc,clang]
         source: [find-or-fetch,fetch,conan]
-        prefer-conda: ["OFF"]
+        prefer-conda: [OFF]
         include:
           - linkage: [static,shared]
             compiler: [gcc,clang]
             source: find-or-fetch
-            prefer-conda: ["ON"]
+            prefer-conda: [ON]
 
     steps:
       - uses: actions/checkout@v2
