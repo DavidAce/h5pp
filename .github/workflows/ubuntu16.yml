@@ -79,8 +79,7 @@ jobs:
 
       - name: Set shared linkage
         if: matrix.linkage == 'shared'
-        env:
-          shared-libs: "ON"
+        run: echo "::set-env name=shared-libs::ON"
 
       - name: Configure
         shell: bash
@@ -103,10 +102,10 @@ jobs:
           ../../
 
       - name: Build
-        shell: bash
         run: |
           cd build/Debug
           cmake --build . --parallel 2
+
       - name: Install
         run: |
           cd build/Debug
