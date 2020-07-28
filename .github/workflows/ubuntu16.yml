@@ -10,7 +10,7 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.linkage }}-${{ matrix.compiler }}-${{ matrix.source }}-conda-${{prefer-conda}}
+    name: ${{ matrix.linkage }}-${{ matrix.compiler }}-${{ matrix.source }}-conda-${{ matrix.prefer-conda }}
     runs-on: ubuntu-16.04
     strategy:
       fail-fast: false # True stops all on first error. Stick to false when debugging
