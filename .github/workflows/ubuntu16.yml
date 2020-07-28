@@ -1,0 +1,121 @@
+name: Ubuntu 16.04
+# INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+
+jobs:
+  ci:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-16.04
+    strategy:
+      fail-fast: false # True stops all on first error. Stick to false when debugging
+      matrix:
+        linkage: [static, shared]
+        compiler: [gcc,clang]
+        source: [find-or-fetch,fetch,conda,conan]
+        generator: -G "Unix Makefiles"
+        name: ${{ matrix.linkage }}-${{ matrix.compiler }}-${{ matrix.source }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        if: contains(matrix.source, 'conan')
+        with:
+          python-version: '3.x'
+
+      - uses: s-weigand/setup-conda@v1
+        if: contains(matrix.source,'conda')
+        with:
+          update-conda: false
+          conda-channels: conda-forge
+        env:
+          prefer-conda: "ON"
+
+      - name: Setup gcc
+        if: matrix.compiler == 'gcc'
+        run: sudo apt install gcc-7 g++-7 gfortran -y
+        env:
+          CC: gcc-7
+          CXX: g++-7
+          FC: gfortran
+
+      - name: Setup clang
+        if: matrix.compiler == 'clang'
+        run: sudo apt install clang-6.0 clang++-6.0 gfortran -y
+        env:
+          CC: clang-6.0
+          CXX: clang++-6.0
+          FC: gfortran
+
+      - name: Setup apt packages
+        if: contains(matrix.sources,'find')
+        run: sudo apt install libhdf5-dev libspdlog-dev libeigen3-dev -y
+
+      - name: Setup conan
+        if: matrix.sources == 'conan'
+        run: |
+          pip install conan
+          conan user
+
+      - name: Setup conda
+        if: matrix.source == 'conda'
+        run: conda install spdlog hdf5 hdf5-static eigen
+
+      - name: Setup cache
+        uses: actions/cache@v2
+        env:
+          cache-name: ${{ matrix.name }}
+        with:
+          path: |
+            ~/.conan/data
+            build/Debug/install
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+
+
+      - name: Set shared linkage
+        if: matrix.linkage == 'shared'
+        env:
+          shared-libs: "ON"
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake -E make_directory build/Debug
+          cd build/Debug
+          cmake                                                 \
+          -DCMAKE_BUILD_TYPE=Debug                              \
+          -DBUILD_SHARED_LIBS:BOOL=${{ env.shared-libs }}       \
+          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                      \
+          -DH5PP_ENABLE_EIGEN3:BOOL=ON                          \
+          -DH5PP_ENABLE_SPDLOG:BOOL=ON                          \
+          -DH5PP_ENABLE_ASAN:BOOL=ON                            \
+          -DH5PP_ENABLE_TESTS:BOOL=ON                           \
+          -DH5PP_DOWNLOAD_METHOD:STRING=${{ matrix.source }}    \
+          -DH5PP_PREFER_CONDA_LIBS:BOOL=${{ env.prefer-conda }} \
+          -DH5PP_PRINT_INFO:BOOL=ON                             \
+          -DH5PP_BUILD_EXAMPLES:BOOL=ON                         \
+          ${{ matrix.generator }}                               \
+          ../../
+
+      - name: Build
+        shell: bash
+        run: |
+          cd build/Debug
+          cmake --build . --parallel 2
+      - name: Install
+        run: |
+          cd build/Debug
+          cmake --build . --target install
+
+      - name: Test
+        run: |
+          cd build/Debug
+          ctest -C Debug --output-on-failure
+
+
+
