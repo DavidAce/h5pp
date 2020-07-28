@@ -10,7 +10,7 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.name }}
+    name: ${{ matrix.linkage }}-${{ matrix.compiler }}-${{ matrix.source }}
     runs-on: ubuntu-16.04
     strategy:
       fail-fast: false # True stops all on first error. Stick to false when debugging
@@ -18,8 +18,6 @@ jobs:
         linkage: [static, shared]
         compiler: [gcc,clang]
         source: [find-or-fetch,fetch,conda,conan]
-#        generator:
-#        name: ${{ matrix.linkage }}-${{ matrix.compiler }}-${{ matrix.source }}
 
     steps:
       - uses: actions/checkout@v2
@@ -53,11 +51,11 @@ jobs:
           FC: gfortran
 
       - name: Setup apt packages
-        if: contains(matrix.sources,'find')
+        if: contains(matrix.source,'find')
         run: sudo apt install libhdf5-dev libspdlog-dev libeigen3-dev -y
 
       - name: Setup conan
-        if: matrix.sources == 'conan'
+        if: matrix.source == 'conan'
         run: |
           pip install conan
           conan user
