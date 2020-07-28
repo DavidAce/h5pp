@@ -18,8 +18,8 @@ jobs:
         linkage: [static, shared]
         compiler: [gcc,clang]
         source: [find-or-fetch,fetch,conda,conan]
-        generator: -G "Unix Makefiles"
-        name: ${{ matrix.linkage }}-${{ matrix.compiler }}-${{ matrix.source }}
+#        generator:
+#        name: ${{ matrix.linkage }}-${{ matrix.compiler }}-${{ matrix.source }}
 
     steps:
       - uses: actions/checkout@v2
@@ -98,7 +98,7 @@ jobs:
           -DH5PP_PREFER_CONDA_LIBS:BOOL=${{ env.prefer-conda }} \
           -DH5PP_PRINT_INFO:BOOL=ON                             \
           -DH5PP_BUILD_EXAMPLES:BOOL=ON                         \
-          ${{ matrix.generator }}                               \
+          -G "Unix Makefiles"                                   \
           ../../
 
       - name: Build
