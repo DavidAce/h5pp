@@ -36,17 +36,19 @@ jobs:
 
       - name: Setup gcc
         if: matrix.compiler == 'gcc'
-        - run: sudo apt install gcc-7 g++-7 gfortran -y
-        - run: echo "::set-env name=FC::gfortran"
-        - run: echo "::set-env name=CC::gcc-7"
-        - run: echo "::set-env name=CXX::g++-7"
+        run: |
+          sudo apt-get install gcc-7 g++-7 gfortran -y
+          echo "::set-env name=FC::gfortran"
+          echo "::set-env name=CC::gcc-7"
+          echo "::set-env name=CXX::g++-7"
 
       - name: Setup clang
         if: matrix.compiler == 'clang'
-        - run: sudo apt install clang-6.0 clang++-6.0 gfortran -y
-        - run: echo "::set-env name=FC::gfortran"
-        - run: echo "::set-env name=CC::clang-6.0"
-        - run: echo "::set-env name=CXX::clang++-6.0"
+        run: |
+          sudo apt-get install clang-6.0 clang++-6.0 gfortran -y
+          echo "::set-env name=FC::gfortran"
+          echo "::set-env name=CC::clang-6.0"
+          echo "::set-env name=CXX::clang++-6.0"
 
       - name: Setup apt packages
         if: contains(matrix.source,'find')
