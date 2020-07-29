@@ -656,15 +656,13 @@ namespace h5pp::hdf5 {
         if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_FLOAT)) return getCppType<h5pp::type::compound::H5T_SCALAR3<float>>();
         auto bufSize = H5Iget_name(type, nullptr, 0);
         h5pp::logger::log->debug("buf_size {}", bufSize);
-        if(bufSize <= 0)
-            h5pp::logger::log->debug("No C++ type match for HDF5 type");
-        else {
-            std::string name;
+        std::string name;
+        if(bufSize > 0){
             name.resize(static_cast<std::string::size_type>(bufSize) + 1);
             H5Iget_name(type, name.data(), static_cast<size_t>(bufSize) + 1);
             H5Eprint(H5E_DEFAULT, stderr);
-            h5pp::logger::log->debug("No C++ type match for HDF5 type [{}]", name);
         }
+        h5pp::logger::log->debug("No C++ type match for HDF5 type [{}]", name);
 
         return getCppType<std::nullopt_t>();
     }
