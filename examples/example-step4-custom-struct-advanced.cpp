@@ -17,7 +17,7 @@ void print_point(const SpaceTimePoint &p) {
 }
 
 int main() {
-    h5pp::File file("exampledir/example-step3-custom-struct-advanced.h5", h5pp::FilePermission::REPLACE, 0);
+    h5pp::File file("exampledir/example-step4-custom-struct-advanced.h5", h5pp::FilePermission::REPLACE, 0);
 
     // We can create a multi-dimensional array using H5Tarray_create. It takes the
     // rank (i.e. number of indices) and the size of each dimension in a c-style array pointer.
