@@ -39,6 +39,16 @@ jobs:
           update-conda: false
           conda-channels: conda-forge
 
+      - name: Setup cache
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-${{ matrix.name }}
+        with:
+          path: |
+            ~/.conan/data
+            build/Debug/install
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+
       - name: Setup conan
         if: matrix.source == 'conan'
         run: |
@@ -48,14 +58,6 @@ jobs:
       - name: Setup conda
         if: matrix.source == 'conda'
         run: conda install spdlog hdf5 hdf5-static eigen
-
-      - name: Setup cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.conan/data
-            build/Debug/install
-          key: ${{ runner.os }}-build-cache-${{ matrix.name }}
 
       - name: Configure
         shell: bash
