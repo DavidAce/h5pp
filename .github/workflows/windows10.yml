@@ -39,15 +39,12 @@ jobs:
           update-conda: false
           conda-channels: conda-forge
 
-      - name: Setup cache
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-${{ matrix.name }}
+      - uses: actions/cache@v2
         with:
           path: |
             ~/.conan/data
             build/Debug/install
-          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          key: ${{ runner.os }}-build-${{ jobs.ci.name }}
 
       - name: Setup conan
         if: matrix.source == 'conan'
