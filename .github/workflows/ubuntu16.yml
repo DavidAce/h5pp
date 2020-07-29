@@ -78,10 +78,12 @@ jobs:
       - name: Setup cache
         uses: actions/cache@v2
         with:
+          env:
+            cache-name: ${{ matrix.name }}
           path: |
             ~/.conan/data
             build/Debug/install
-          key: ${{ runner.os }}-build-${{ matrix.name }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
 
       - name: Configure
         shell: bash
