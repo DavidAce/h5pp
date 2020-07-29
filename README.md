@@ -259,9 +259,9 @@ Make sure to install and configure conan first. Then, either use the CMake-conan
  `-DH5PP_DOWNLOAD_METHOD=conan` as an argument to CMake (see below) **or** use conan directly, for instance by running the following command:
 
 ```
-$ conan install h5pp/1.7.5@davidace/stable --profile default
+$ conan install h5pp/1.8.0@davidace/stable --profile default
 ```
-This is by far the simplest method and will also make sure to install HDF5 and the optional dependencies.
+This is by far the simplest method and will also make sure to install dependencies HDF5, Eigen3 and spdlog.
 
 
 #### Opt-in automatic dependency installation with CMake
@@ -310,14 +310,13 @@ The following variables can be set to help guide CMake's `find_package` to your 
 | Var | Path to |
 | ---- | ---- |
 | `Eigen3_DIR`          | Eigen3Config.cmake  |
-| `Eigen3_ROOT_DIR`     | Eigen3 install directory    |
+| `Eigen3_ROOT`         | Eigen3 install directory    |
 | `EIGEN3_INCLUDE_DIR`  | Eigen3 include directory    |
-| `spdlog_ROOT`         | Spdlog install directory    |
 | `spdlog_DIR`          | spdlogConfig.cmake    |
-| `HDF5_ROOT`           | HDF5 install directory |
+| `spdlog_ROOT`         | Spdlog install directory    |
 | `HDF5_DIR`            | HDF5Config.cmake |
+| `HDF5_ROOT`           | HDF5 install directory |
 | `CONAN_PREFIX`        | conan install directory |
-
 
 
 ## Linking
@@ -341,7 +340,7 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 *  `h5pp::h5pp` is the main target including "everything" and should normally be the only target that you need -- headers,flags and (if enabled) the found/downloaded dependencies.
 *  `h5pp::headers` links the `h5pp` headers only.
 *  `h5pp::deps` collects library targets to link all the dependencies that were found/downloaded when `h5pp` was built. These can of course be used independently.
-    * If `H5PP_DOWNLOAD_METHOD==find-or-fetch|fetch|native` the targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, 
+    * If `H5PP_DOWNLOAD_METHOD==find|find-or-fetch|fetch` the targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, 
     * If `H5PP_DOWNLOAD_METHOD==conan` the targets are `CONAN_PKG::Eigen3`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. 
     * If `H5PP_DOWNLOAD_METHOD==none` then `h5pp::deps` is empty.
 *  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`. 
@@ -369,7 +368,7 @@ You could also use CMake's `find_package(...)` mechanism. A minimal `CMakeLists.
     target_include_directories(myExecutable PRIVATE <path-to-spdlog-include-dir>) 
     target_include_directories(myExecutable PRIVATE <path-to-hdf5-include-dir>) 
     # Link dependencies (this is the difficult part). Note that you only need the C libs for HDF5.
-    target_link_libraries(myExecutable PRIVATE hdf5_hl hdf5 rt dl m z pthread) # Possibly more libs, such as aec.
+    target_link_libraries(myExecutable PRIVATE hdf5_hl hdf5 rt dl m z pthread) # Possibly more libs, such as aec, dependending on your HDF5 installation
 
 ```
 
@@ -378,8 +377,8 @@ The difficult part is linking to HDF5 libraries and its dependencies.
 When installing `h5pp`, finding HDF5 and setting up the CMake target `hdf5::hdf5` for linking is handled by a custom module for finding HDF5, defined in `cmake/FindHDF5.cmake`. 
 This module wraps the default `FindHDF5.cmake` which comes with CMake and uses the same call signature, but fixes some annoyances with naming conventions in different versions of CMake and HDF5 executables.
 It reads hints passed through CMake flags to find HDF5 somewhere on your system (e.g. installed via `conda`,`apt`, `brew`, `Easybuild`,etc) and defines a CMake target `hdf5::hdf5` with everything you need to link correctly.
-Most importantly, it avoids injecting shared versions of libraries (dl, zlib, szip, aec) during static builds. 
-You can use the custom module too! Add the path pointing to `FindHDF5.cmake` to the variable `CMAKE_MODULE_PATH` from within your own project, e.g.:
+Most importantly, it avoids injecting shared versions of libraries (dl, zlib, szip, aec) during static builds on older platforms.
+You can use the custom module too. Add the path pointing to `FindHDF5.cmake` to the variable `CMAKE_MODULE_PATH` from within your own project, e.g.:
 
 ```cmake
     list(APPEND CMAKE_MODULE_PATH path/to/h5pp/cmake/FindHDF5.cmake)
@@ -389,7 +388,7 @@ You can use the custom module too! Add the path pointing to `FindHDF5.cmake` to 
     endif()
 ```
 
-These are variables that can be used to guide the custom module:
+These are variables that can be used to guide the custom `FindHDF5.cmake` module:
 
 | Var | Where | Description |
 | ---- | ---- | ---- |
@@ -414,7 +413,7 @@ From the build directory, run the following in the command-line to uninstall:
 # To-do
 In no particular order
 
-* Expand documentation. Perhaps a doxygen webpage
+* Expand documentation. Perhaps a doxygen/sphinx webpage
 * Expand testing for more edge-cases in
     * filesystem permissions
     * user-defined types

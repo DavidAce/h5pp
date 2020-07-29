@@ -20,7 +20,7 @@ option(H5PP_ENABLE_ASAN                "Enable runtime address sanitizer -fsanit
 option(CMAKE_POSITION_INDEPENDENT_CODE "Use -fPIC when compiling shared libraries"                   ON)
 
 # Make an "enum" for valid download methods: none find fetch find-or-fetch conan
-set(H5PP_DOWNLOAD_METHODS_VALID none find fetch find-or-fetch conan conda)
+set(H5PP_DOWNLOAD_METHODS_VALID none find fetch find-or-fetch conan)
 set(H5PP_DOWNLOAD_METHOD none CACHE STRING "Download method for external dependencies")
 set_property(CACHE H5PP_DOWNLOAD_METHOD PROPERTY STRINGS ${H5PP_DOWNLOAD_METHODS_VALID})
 if (NOT H5PP_DOWNLOAD_METHOD IN_LIST H5PP_DOWNLOAD_METHODS_VALID)
