@@ -110,15 +110,15 @@ namespace h5pp {
             h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
             if(permission == h5pp::FilePermission::READONLY) {
                 h5pp::logger::log->trace("Opening file in READONLY mode");
-                hid_t fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.file_access);
+                hid_t fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
                 if(fileHandle < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error(h5pp::format("Failed to open file in read-only mode [{}]",filePath.string()));
+                    throw std::runtime_error(h5pp::format("Failed to open file in read-only mode [{}]", filePath.string()));
                 } else
                     return fileHandle;
             } else {
                 h5pp::logger::log->trace("Opening file in READWRITE mode");
-                hid_t fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDWR, plists.file_access);
+                hid_t fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
                 if(fileHandle < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
                     throw std::runtime_error(h5pp::format("Failed to open file in read-write mode [{}]", filePath.string()));
@@ -138,30 +138,29 @@ namespace h5pp {
         void                               setFilePermission(h5pp::FilePermission permission_) { permission = permission_; }
 
         void setDriver_sec2() {
-            plists.file_access = H5Fget_access_plist(openFileHandle());
-            H5Pset_fapl_sec2(plists.file_access);
+            plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            H5Pset_fapl_sec2(plists.fileAccess);
         }
         void setDriver_stdio() {
-            plists.file_access = H5Fget_access_plist(openFileHandle());
-            H5Pset_fapl_stdio(plists.file_access);
+            plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            H5Pset_fapl_stdio(plists.fileAccess);
         }
         void setDriver_core(bool writeOnClose = true, size_t bytesPerMalloc = 10240000) {
-            plists.file_access = H5Fget_access_plist(openFileHandle());
-            H5Pset_fapl_core(plists.file_access, bytesPerMalloc, static_cast<hbool_t>(writeOnClose));
+            plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            H5Pset_fapl_core(plists.fileAccess, bytesPerMalloc, static_cast<hbool_t>(writeOnClose));
         }
 #ifdef H5_HAVE_PARALLEL
         void setDriver_mpio(MPI_Comm comm, MPI_Info info) {
-            plists.file_access = H5Fget_access_plist(openFileHandle());
-            H5Pset_fapl_mpio(plists.file_access, comm, info);
+            plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            H5Pset_fapl_mpio(plists.fileAccess, comm, info);
         }
 #endif
 
-
-       /*
-       *
-       * Functions for managing file location
-       *
-       */
+        /*
+         *
+         * Functions for managing file location
+         *
+         */
 
         [[maybe_unused]] fs::path copyFileTo(const std::string &targetFilePath, const FilePermission &perm = FilePermission::COLLISION_FAIL) const {
             return h5pp::hdf5::copyFile(getFilePath(), targetFilePath, perm, plists);
@@ -174,31 +173,31 @@ namespace h5pp {
         }
 
         /*
-        *
-        * Functions for transfering contents between locations or files
-        *
-        */
+         *
+         * Functions for transfering contents between locations or files
+         *
+         */
 
-        void copyLinkToFile(const std::string & localLinkPath,  const std::string &targetFilePath, const std::string & targetLinkPath, const FilePermission &targetFileCreatePermission = FilePermission::READWRITE) const {
-            return h5pp::hdf5::copyLink(getFilePath(),localLinkPath, targetFilePath, targetLinkPath, targetFileCreatePermission, plists);
+        void copyLinkToFile(const std::string &   localLinkPath,
+                            const std::string &   targetFilePath,
+                            const std::string &   targetLinkPath,
+                            const FilePermission &targetFileCreatePermission = FilePermission::READWRITE) const {
+            return h5pp::hdf5::copyLink(getFilePath(), localLinkPath, targetFilePath, targetLinkPath, targetFileCreatePermission, plists);
         }
 
-        void copyLinkFromFile(const std::string & localLinkPath, const std::string &sourceFilePath, const std::string & sourceLinkPath) {
+        void copyLinkFromFile(const std::string &localLinkPath, const std::string &sourceFilePath, const std::string &sourceLinkPath) {
             return h5pp::hdf5::copyLink(sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
         }
 
-        template<typename h5x_tgt,
-            typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
-        void copyLinkToLocation(const std::string & localLinkPath, const h5x_tgt & targetLocationId, const std::string & targetLinkPath) const {
-            return h5pp::hdf5::copyLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath,plists);
+        template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
+        void copyLinkToLocation(const std::string &localLinkPath, const h5x_tgt &targetLocationId, const std::string &targetLinkPath) const {
+            return h5pp::hdf5::copyLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath, plists);
         }
 
-        template<typename h5x_src,
-            typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
-        void copyLinkFromLocation(const std::string & localLinkPath, const h5x_src & sourceLocationId, const std::string & sourceLinkPath) {
+        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
+        void copyLinkFromLocation(const std::string &localLinkPath, const h5x_src &sourceLocationId, const std::string &sourceLinkPath) {
             return h5pp::hdf5::copyLink(sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
         }
-
 
         /*
          *
@@ -255,13 +254,13 @@ namespace h5pp {
             options.assertWellDefined();
             if(not options.linkPath) throw std::runtime_error(h5pp::format("Error creating dataset: No dataset path specified"));
             if(not options.dataDims) throw std::runtime_error(h5pp::format("Error creating dataset [{}]: Dimensions or size not specified", options.linkPath.value()));
-            if(not options.h5_type) throw std::runtime_error(h5pp::format("Error creating dataset [{}]: HDF5 type not specified", options.linkPath.value()));
+            if(not options.h5Type) throw std::runtime_error(h5pp::format("Error creating dataset [{}]: HDF5 type not specified", options.linkPath.value()));
             auto dsetInfo = h5pp::scan::getDsetInfo(openFileHandle(), options, plists);
             h5pp::File::createDataset(dsetInfo);
             return dsetInfo;
         }
 
-        DsetInfo createDataset(std::optional<hid::h5t>     h5_type,
+        DsetInfo createDataset(std::optional<hid::h5t>     h5Type,
                                std::string_view            dsetPath,
                                const DimsType &            dsetDims,
                                std::optional<H5D_layout_t> h5_layout     = std::nullopt,
@@ -274,8 +273,8 @@ namespace h5pp {
             options.dataDims      = dsetDims;
             options.dsetDimsChunk = dsetDimsChunk;
             options.dsetDimsMax   = dsetDimsMax;
-            options.h5_type       = std::move(h5_type);
-            options.h5_layout     = h5_layout;
+            options.h5Type        = std::move(h5Type);
+            options.h5Layout      = h5_layout;
             options.compression   = getCompressionLevel(compression);
             return createDataset(options);
         }
@@ -302,8 +301,8 @@ namespace h5pp {
             options.dataDims      = dataDims;
             options.dsetDimsChunk = dsetDimsChunk;
             options.dsetDimsMax   = dsetDimsMax;
-            options.h5_type       = h5pp::util::getH5Type<DataType>();
-            options.h5_layout     = h5_layout;
+            options.h5Type        = h5pp::util::getH5Type<DataType>();
+            options.h5Layout      = h5_layout;
             options.compression   = getCompressionLevel(compression);
             // If dsetdims is a nullopt we can infer its dimensions from the given dataset
             return createDataset(data, options);
@@ -335,7 +334,7 @@ namespace h5pp {
                               std::optional<H5D_layout_t> h5_layout = std::nullopt, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
                               const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
                               const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
-                              std::optional<hid::h5t>     h5_type       = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
+                              std::optional<hid::h5t>     h5Type        = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
                               std::optional<ResizeMode>   resizeMode    = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
                               std::optional<unsigned int> compression = std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
         {
@@ -344,8 +343,8 @@ namespace h5pp {
             options.dataDims      = dataDims;
             options.dsetDimsChunk = dsetDimsChunk;
             options.dsetDimsMax   = dsetDimsMax;
-            options.h5_layout     = h5_layout;
-            options.h5_type       = std::move(h5_type);
+            options.h5Layout      = h5_layout;
+            options.h5Type        = std::move(h5Type);
             options.resizeMode    = resizeMode;
             options.compression   = getCompressionLevel(compression);
             return writeDataset(data, options);
@@ -354,7 +353,7 @@ namespace h5pp {
         template<typename DataType>
         DsetInfo writeDataset(const DataType &            data,                     /*!< Eigen, stl-like object or pointer to data buffer */
                               std::string_view            dsetPath,                 /*!< Path to HDF5 dataset relative to the file root */
-                              hid::h5t &                  h5_type,                  /*!< (On create) Type of dataset. Override automatic type detection. */
+                              hid::h5t &                  h5Type,                   /*!< (On create) Type of dataset. Override automatic type detection. */
                               const OptDimsType &         dataDims  = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
                               std::optional<H5D_layout_t> h5_layout = std::nullopt, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
                               const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
@@ -367,8 +366,8 @@ namespace h5pp {
             options.dataDims      = dataDims;
             options.dsetDimsChunk = dsetDimsChunk;
             options.dsetDimsMax   = dsetDimsMax;
-            options.h5_layout     = h5_layout;
-            options.h5_type       = h5_type;
+            options.h5Layout      = h5_layout;
+            options.h5Type        = h5Type;
             options.resizeMode    = resizeMode;
             options.compression   = getCompressionLevel(compression);
             return writeDataset(data, options);
@@ -381,7 +380,7 @@ namespace h5pp {
                               const OptDimsType &         dataDims      = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
                               const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
                               const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
-                              std::optional<hid::h5t>     h5_type       = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
+                              std::optional<hid::h5t>     h5Type        = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
                               std::optional<ResizeMode>   resizeMode    = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
                               std::optional<unsigned int> compression = std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
         {
@@ -390,32 +389,32 @@ namespace h5pp {
             options.dataDims      = dataDims;
             options.dsetDimsChunk = dsetDimsChunk;
             options.dsetDimsMax   = dsetDimsMax;
-            options.h5_layout     = h5_layout;
-            options.h5_type       = std::move(h5_type);
+            options.h5Layout      = h5_layout;
+            options.h5Type        = std::move(h5Type);
             options.resizeMode    = resizeMode;
             options.compression   = getCompressionLevel(compression);
             return writeDataset(data, options);
         }
 
         template<typename DataType>
-        DsetInfo writeDataset_compact(const DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt, std::optional<hid::h5t> h5_type = std::nullopt) {
+        DsetInfo writeDataset_compact(const DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt, std::optional<hid::h5t> h5Type = std::nullopt) {
             Options options;
             options.linkPath    = dsetPath;
             options.dataDims    = dataDims;
-            options.h5_layout   = H5D_COMPACT;
-            options.h5_type     = std::move(h5_type);
+            options.h5Layout    = H5D_COMPACT;
+            options.h5Type      = std::move(h5Type);
             options.compression = 0;
             return writeDataset(data, options);
         }
 
         template<typename DataType>
         DsetInfo
-            writeDataset_contiguous(const DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt, std::optional<hid::h5t> h5_type = std::nullopt) {
+            writeDataset_contiguous(const DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt, std::optional<hid::h5t> h5Type = std::nullopt) {
             Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty, ´,
             options.linkPath    = dsetPath;
             options.dataDims    = dataDims;
-            options.h5_layout   = H5D_CONTIGUOUS;
-            options.h5_type     = std::move(h5_type);
+            options.h5Layout    = H5D_CONTIGUOUS;
+            options.h5Type      = std::move(h5Type);
             options.compression = 0;
             return writeDataset(data, options);
         }
@@ -426,15 +425,15 @@ namespace h5pp {
                                       const OptDimsType &         dataDims      = std::nullopt,
                                       const OptDimsType &         dsetDimsChunk = std::nullopt,
                                       const OptDimsType &         dsetDimsMax   = std::nullopt,
-                                      std::optional<hid::h5t>     h5_type       = std::nullopt,
+                                      std::optional<hid::h5t>     h5Type        = std::nullopt,
                                       std::optional<unsigned int> compression   = std::nullopt) {
             Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty, ´,
             options.linkPath      = dsetPath;
             options.dataDims      = dataDims;
             options.dsetDimsChunk = dsetDimsChunk;
             options.dsetDimsMax   = dsetDimsMax;
-            options.h5_layout     = H5D_CHUNKED;
-            options.h5_type       = std::move(h5_type);
+            options.h5Layout      = H5D_CHUNKED;
+            options.h5Type        = std::move(h5Type);
             options.compression   = getCompressionLevel(compression);
             return writeDataset(data, options);
         }
@@ -580,12 +579,12 @@ namespace h5pp {
                             std::string_view        attrName,
                             std::string_view        linkPath,
                             const OptDimsType &     dataDims = std::nullopt,
-                            std::optional<hid::h5t> h5_type  = std::nullopt) {
+                            std::optional<hid::h5t> h5Type   = std::nullopt) {
             Options options;
             options.linkPath = linkPath;
             options.attrName = attrName;
             options.dataDims = dataDims;
-            options.h5_type  = std::move(h5_type);
+            options.h5Type   = std::move(h5Type);
             writeAttribute(data, options);
         }
 
@@ -627,7 +626,7 @@ namespace h5pp {
         }
 
         [[nodiscard]] inline std::vector<std::string> getAttributeNames(std::string_view linkPath) const {
-            return h5pp::hdf5::getAttributeNames(openFileHandle(), linkPath, std::nullopt, plists.link_access);
+            return h5pp::hdf5::getAttributeNames(openFileHandle(), linkPath, std::nullopt, plists.linkAccess);
         }
 
         /*
@@ -839,33 +838,32 @@ namespace h5pp {
             return h5pp::hdf5::getChunkDimensions(dataset);
         }
 
-        [[nodiscard]] bool linkExists(std::string_view link) const { return h5pp::hdf5::checkIfLinkExists(openFileHandle(), link, std::nullopt, plists.link_access); }
+        [[nodiscard]] bool linkExists(std::string_view link) const { return h5pp::hdf5::checkIfLinkExists(openFileHandle(), link, std::nullopt, plists.linkAccess); }
 
         [[nodiscard]] std::vector<std::string> getLinks(std::string_view root = "/", long maxDepth = 0) const {
-            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_UNKNOWN>(openFileHandle(), root, maxDepth, plists.link_access);
+            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_UNKNOWN>(openFileHandle(), root, maxDepth, plists.linkAccess);
         }
 
         [[nodiscard]] std::vector<std::string> getDatasets(std::string_view root = "/", long maxDepth = 0) const {
-            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_DATASET>(openFileHandle(), root, maxDepth, plists.link_access);
+            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_DATASET>(openFileHandle(), root, maxDepth, plists.linkAccess);
         }
 
         [[nodiscard]] std::vector<std::string> getGroups(std::string_view root = "/", long maxDepth = 0) const {
-            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_GROUP>(openFileHandle(), root, maxDepth, plists.link_access);
+            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_GROUP>(openFileHandle(), root, maxDepth, plists.linkAccess);
         }
 
         [[nodiscard]] std::vector<std::string> findLinks(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
-            return h5pp::hdf5::findLinks<H5O_TYPE_UNKNOWN>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.link_access);
+            return h5pp::hdf5::findLinks<H5O_TYPE_UNKNOWN>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.linkAccess);
         }
 
         [[nodiscard]] std::vector<std::string> findDatasets(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
-            return h5pp::hdf5::findLinks<H5O_TYPE_DATASET>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.link_access);
+            return h5pp::hdf5::findLinks<H5O_TYPE_DATASET>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.linkAccess);
         }
 
         [[nodiscard]] std::vector<std::string> findGroups(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
-            return h5pp::hdf5::findLinks<H5O_TYPE_GROUP>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.link_access);
+            return h5pp::hdf5::findLinks<H5O_TYPE_GROUP>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.linkAccess);
         }
 
-        [[nodiscard]] TypeInfo getDatasetTypeInfo(std::string_view dsetPath) const { return h5pp::hdf5::getTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.link_access); }
         [[nodiscard]] DsetInfo getDatasetInfo(std::string_view dsetPath) const {
             Options options;
             options.linkPath = h5pp::util::safe_str(dsetPath);
@@ -881,12 +879,14 @@ namespace h5pp {
 
         [[nodiscard]] TableInfo getTableInfo(std::string_view tablePath) const { return h5pp::scan::getTableInfo(openFileHandle(), tablePath, std::nullopt, plists); }
 
+        [[nodiscard]] TypeInfo getDatasetTypeInfo(std::string_view dsetPath) const { return h5pp::hdf5::getTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.linkAccess); }
+
         [[nodiscard]] TypeInfo getAttributeTypeInfo(std::string_view linkPath, std::string_view attrName) const {
-            return h5pp::hdf5::getTypeInfo(openFileHandle(), linkPath, attrName, std::nullopt, std::nullopt, plists.link_access);
+            return h5pp::hdf5::getTypeInfo(openFileHandle(), linkPath, attrName, std::nullopt, std::nullopt, plists.linkAccess);
         }
 
         [[nodiscard]] std::vector<TypeInfo> getAttributeTypeInfoAll(std::string_view linkPath) const {
-            return h5pp::hdf5::getTypeInfo_allAttributes(openFileHandle(), linkPath, std::nullopt, plists.link_access);
+            return h5pp::hdf5::getTypeInfo_allAttributes(openFileHandle(), linkPath, std::nullopt, plists.linkAccess);
         }
 
         [[nodiscard]] bool fileIsValid() const { return h5pp::hdf5::fileIsValid(filePath); }

@@ -14,14 +14,14 @@ std::vector<std::string>                 layout_names = {"auto", "compact", "con
 
 TEST_CASE("Test createDataset given options call signatures", "[options]") {
     h5pp::Options options;
-    options.h5_type       = H5Tcopy(H5T_NATIVE_DOUBLE);
+    options.h5Type       = H5Tcopy(H5T_NATIVE_DOUBLE);
     options.dataDims      = {4};
     std::string dsetGroup = "optionsCreateGroup/";
     for(size_t idx = 0; idx < layouts.size(); idx++) {
         SECTION(h5pp::format("Create from options only: {}", layout_names[idx])) {
             std::string dsetName = dsetGroup + "vectorDouble_" + layout_names[idx];
             options.linkPath = dsetName;
-            options.h5_layout    = layouts[idx];
+            options.h5Layout     = layouts[idx];
             file.createDataset(options);
             REQUIRE_THAT(file.readDataset<std::vector<double>>(dsetName), Catch::Equals<double>({0, 0, 0, 0}));
         }
@@ -37,7 +37,7 @@ TEST_CASE("Test createDataset inferred call signatures", "[infer]") {
         SECTION(h5pp::format("Create inferred from data: {}", layout_names[idx])) {
             std::string dsetPath = dsetGroup + "vectorDouble_" + layout_names[idx];
             options.linkPath     = dsetPath;
-            options.h5_layout    = layouts[idx];
+            options.h5Layout     = layouts[idx];
             file.createDataset(data, options);
             REQUIRE_THAT(file.readDataset<std::vector<double>>(dsetPath), Catch::Equals<double>({0, 0, 0, 0}));
         }

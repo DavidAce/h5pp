@@ -19,48 +19,48 @@ namespace h5pp::scan {
         if(not options.linkPath) throw std::runtime_error("Could not fill dataset info: No dataset path was given in options");
         h5pp::logger::log->debug("Scanning metadata of dataset [{}]", options.linkPath.value());
         // Copy the location
-        if constexpr(std::is_same_v<h5x, hid::h5f>) info.h5_file = loc;
-        if constexpr(std::is_same_v<h5x, hid::h5g>) info.h5_group = loc;
+        if constexpr(std::is_same_v<h5x, hid::h5f>) info.h5File = loc;
+        if constexpr(std::is_same_v<h5x, hid::h5g>) info.h5Group = loc;
         if constexpr(std::is_same_v<h5x, hid::h5o>) {
             H5I_type_t type = H5Iget_type(loc);
             if(type == H5I_type_t::H5I_GROUP or type == H5I_type_t::H5I_FILE)
-                info.h5_objLoc = loc;
+                info.h5ObjLoc = loc;
             else
                 throw std::runtime_error("Given object type for location is not a group or a file");
         }
         if(not info.dsetPath) info.dsetPath = h5pp::util::safe_str(options.linkPath.value());
-        if(not info.dsetExists) info.dsetExists = h5pp::hdf5::checkIfDatasetExists(info.getLocId(), info.dsetPath.value(), std::nullopt, plists.link_access);
+        if(not info.dsetExists) info.dsetExists = h5pp::hdf5::checkIfDatasetExists(info.getLocId(), info.dsetPath.value(), std::nullopt, plists.linkAccess);
         if(not info.dsetSlab) info.dsetSlab = options.dsetSlab;
         // If the dataset does not exist, there isn't much else to do so we return;
         if(info.dsetExists and not info.dsetExists.value()) return;
         // From here on the dataset exists
-        if(not info.h5_dset) info.h5_dset = h5pp::hdf5::openLink<hid::h5d>(loc, options.linkPath.value(), info.dsetExists, plists.link_access);
-        if(not info.h5_type) info.h5_type = H5Dget_type(info.h5_dset.value());
-        if(not info.h5_space) info.h5_space = H5Dget_space(info.h5_dset.value());
+        if(not info.h5Dset) info.h5Dset = h5pp::hdf5::openLink<hid::h5d>(loc, options.linkPath.value(), info.dsetExists, plists.linkAccess);
+        if(not info.h5Type) info.h5Type = H5Dget_type(info.h5Dset.value());
+        if(not info.h5Space) info.h5Space = H5Dget_space(info.h5Dset.value());
 
         // Get the properties of the selected space
-        if(not info.dsetByte) info.dsetByte = h5pp::hdf5::getBytesTotal(info.h5_dset.value(), info.h5_space, info.h5_type);
-        if(not info.dsetSize) info.dsetSize = h5pp::hdf5::getSize(info.h5_space.value());
-        if(not info.dsetRank) info.dsetRank = h5pp::hdf5::getRank(info.h5_space.value());
-        if(not info.dsetDims) info.dsetDims = h5pp::hdf5::getDimensions(info.h5_space.value());
+        if(not info.dsetByte) info.dsetByte = h5pp::hdf5::getBytesTotal(info.h5Dset.value(), info.h5Space, info.h5Type);
+        if(not info.dsetSize) info.dsetSize = h5pp::hdf5::getSize(info.h5Space.value());
+        if(not info.dsetRank) info.dsetRank = h5pp::hdf5::getRank(info.h5Space.value());
+        if(not info.dsetDims) info.dsetDims = h5pp::hdf5::getDimensions(info.h5Space.value());
 
         // We read the layout from file. Note that it is not possible to change the layout on existing datasets! Read more here
         // https://support.hdfgroup.org/HDF5/Tutor/layout.html
-        if(not info.h5_plist_dset_create) info.h5_plist_dset_create = H5Dget_create_plist(info.h5_dset.value());
-        if(not info.h5_plist_dset_access) info.h5_plist_dset_access = H5Dget_access_plist(info.h5_dset.value());
-        if(not info.h5_layout) info.h5_layout = H5Pget_layout(info.h5_plist_dset_create.value());
-        if(not info.dsetChunk) info.dsetChunk = h5pp::hdf5::getChunkDimensions(info.h5_plist_dset_create.value());
-        if(not info.dsetDimsMax) info.dsetDimsMax = h5pp::hdf5::getMaxDimensions(info.h5_space.value(), info.h5_layout.value());
+        if(not info.h5PlistDsetCreate) info.h5PlistDsetCreate = H5Dget_create_plist(info.h5Dset.value());
+        if(not info.h5PlistDsetAccess) info.h5PlistDsetAccess = H5Dget_access_plist(info.h5Dset.value());
+        if(not info.h5Layout) info.h5Layout = H5Pget_layout(info.h5PlistDsetCreate.value());
+        if(not info.dsetChunk) info.dsetChunk = h5pp::hdf5::getChunkDimensions(info.h5PlistDsetCreate.value());
+        if(not info.dsetDimsMax) info.dsetDimsMax = h5pp::hdf5::getMaxDimensions(info.h5Space.value(), info.h5Layout.value());
 
         if(not info.resizeMode) info.resizeMode = options.resizeMode;
         if(not info.resizeMode) {
-            if(info.h5_layout != H5D_CHUNKED)
+            if(info.h5Layout != H5D_CHUNKED)
                 info.resizeMode = h5pp::ResizeMode::DO_NOT_RESIZE;
             else
                 info.resizeMode = h5pp::ResizeMode::RESIZE_TO_FIT;
         }
         h5pp::logger::log->trace("Scanned metadata {}", info.string());
-        auto error_msg = h5pp::debug::reportCompatibility(info.h5_layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
+        auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
         if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Scanned dataset metadata is not well defined: \n{}", error_msg));
     }
 
@@ -94,8 +94,8 @@ namespace h5pp::scan {
         info.dsetDimsMax = options.dsetDimsMax;
         info.dsetChunk   = options.dsetDimsChunk;
         info.dsetSlab    = options.dsetSlab;
-        info.h5_type     = options.h5_type;
-        info.h5_layout   = options.h5_layout;
+        info.h5Type      = options.h5Type;
+        info.h5Layout    = options.h5Layout;
         info.compression = options.compression;
         info.resizeMode  = options.resizeMode;
 
@@ -104,14 +104,14 @@ namespace h5pp::scan {
             throw std::runtime_error(h5pp::format("Error creating metadata for new dataset [{}]: "
                                                   "Dimensions for new dataset must be specified when no data is given",
                                                   info.dsetPath.value()));
-        if(not info.h5_type)
+        if(not info.h5Type)
             throw std::runtime_error(h5pp::format("Error creating metadata for new dataset [{}]: "
                                                   "The HDF5 type for a new dataset must be specified when no data is given",
                                                   info.dsetPath.value()));
 
         if(info.dsetChunk) {
             // If dsetDimsChunk has been given then the layout is supposed to be chunked
-            if(not info.h5_layout) info.h5_layout = H5D_CHUNKED;
+            if(not info.h5Layout) info.h5Layout = H5D_CHUNKED;
 
             // Check that chunking options are sane
             if(info.dsetDims and info.dsetDims->size() != info.dsetChunk->size())
@@ -122,7 +122,7 @@ namespace h5pp::scan {
                                                       info.dsetDims.value(),
                                                       info.dsetChunk.value()));
 
-            if(info.h5_layout != H5D_CHUNKED)
+            if(info.h5Layout != H5D_CHUNKED)
                 throw std::runtime_error(h5pp::format("Error creating metadata for new dataset [{}]: "
                                                       "Dataset chunk dimensions {} requires H5D_CHUNKED layout",
                                                       info.dsetPath.value(),
@@ -132,35 +132,35 @@ namespace h5pp::scan {
         // If dsetDimsMax has been given and any of them is H5S_UNLIMITED then the layout is supposed to be chunked
         if(info.dsetDimsMax) {
             // If dsetDimsMax has been given then the layout is supposed to be chunked
-            if(not info.h5_layout) info.h5_layout = H5D_CHUNKED;
+            if(not info.h5Layout) info.h5Layout = H5D_CHUNKED;
         }
 
         // Next infer the missing properties
         /* clang-format off */
         if(not info.dsetSize)    info.dsetSize      = h5pp::util::getSizeFromDimensions(info.dsetDims.value());
         if(not info.dsetRank)    info.dsetRank      = h5pp::util::getRankFromDimensions(info.dsetDims.value());
-        if(not info.dsetByte)    info.dsetByte      = info.dsetSize.value() * h5pp::hdf5::getBytesPerElem(info.h5_type.value()); // Trick needed for strings.
-        if(not info.h5_layout)   info.h5_layout     = h5pp::util::decideLayout(info.dsetByte.value());
-        if(not info.dsetDimsMax) info.dsetDimsMax   = h5pp::util::decideDimensionsMax(info.dsetDims.value(), info.h5_layout.value());
-        if(not info.dsetChunk)   info.dsetChunk     = h5pp::util::getChunkDimensions(h5pp::hdf5::getBytesPerElem(info.h5_type.value()), info.dsetDims.value(),info.dsetDimsMax,info.h5_layout);
+        if(not info.dsetByte)    info.dsetByte      = info.dsetSize.value() * h5pp::hdf5::getBytesPerElem(info.h5Type.value()); // Trick needed for strings.
+        if(not info.h5Layout)   info.h5Layout     = h5pp::util::decideLayout(info.dsetByte.value());
+        if(not info.dsetDimsMax) info.dsetDimsMax   = h5pp::util::decideDimensionsMax(info.dsetDims.value(), info.h5Layout.value());
+        if(not info.dsetChunk)   info.dsetChunk     = h5pp::util::getChunkDimensions(h5pp::hdf5::getBytesPerElem(info.h5Type.value()), info.dsetDims.value(),info.dsetDimsMax,info.h5Layout);
         if(not info.compression) info.compression   = h5pp::hdf5::getValidCompressionLevel(info.compression);
         if(not info.resizeMode) {
-            if(info.h5_layout != H5D_CHUNKED)
+            if(info.h5Layout != H5D_CHUNKED)
                 info.resizeMode = h5pp::ResizeMode::DO_NOT_RESIZE;
             else
                 info.resizeMode = h5pp::ResizeMode::RESIZE_TO_FIT;
         }
         /* clang-format on */
 
-        info.h5_plist_dset_create = H5Pcreate(H5P_DATASET_CREATE);
-        info.h5_plist_dset_access = H5Pcreate(H5P_DATASET_ACCESS);
-        info.h5_space             = h5pp::util::getDsetSpace(info.dsetSize.value(), info.dsetDims.value(), info.h5_layout.value(), info.dsetDimsMax);
+        info.h5PlistDsetCreate = H5Pcreate(H5P_DATASET_CREATE);
+        info.h5PlistDsetAccess = H5Pcreate(H5P_DATASET_ACCESS);
+        info.h5Space           = h5pp::util::getDsetSpace(info.dsetSize.value(), info.dsetDims.value(), info.h5Layout.value(), info.dsetDimsMax);
         h5pp::hdf5::setProperty_layout(info);    // Must go before setting chunk dims
         h5pp::hdf5::setProperty_chunkDims(info); // Will nullify chunkdims if not H5D_CHUNKED
         h5pp::hdf5::setProperty_compression(info);
         h5pp::hdf5::setSpaceExtent(info);
         h5pp::logger::log->trace("Created metadata {}", info.string());
-        auto error_msg = h5pp::debug::reportCompatibility(info.h5_layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
+        auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
         if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Created dataset metadata is not well defined: \n{}", error_msg));
         return info;
     }
@@ -183,8 +183,8 @@ namespace h5pp::scan {
         info.dsetDimsMax = options.dsetDimsMax;
         info.dsetChunk   = options.dsetDimsChunk;
         info.dsetSlab    = options.dsetSlab;
-        info.h5_type     = options.h5_type;
-        info.h5_layout   = options.h5_layout;
+        info.h5Type      = options.h5Type;
+        info.h5Layout    = options.h5Layout;
         info.resizeMode  = options.resizeMode;
         info.compression = options.compression;
         if constexpr(std::is_pointer_v<DataType>) {
@@ -197,7 +197,7 @@ namespace h5pp::scan {
 
         if(info.dsetChunk) {
             // If dsetDimsChunk has been given then the layout is supposed to be chunked
-            if(not info.h5_layout) info.h5_layout = H5D_CHUNKED;
+            if(not info.h5Layout) info.h5Layout = H5D_CHUNKED;
 
             // Check that chunking options are sane
             if(info.dsetDims and info.dsetDims->size() != info.dsetChunk->size())
@@ -208,7 +208,7 @@ namespace h5pp::scan {
                                                       info.dsetDims.value(),
                                                       info.dsetChunk.value()));
 
-            if(info.h5_layout != H5D_CHUNKED)
+            if(info.h5Layout != H5D_CHUNKED)
                 throw std::runtime_error(h5pp::format("Error creating metadata for new dataset [{}]: "
                                                       "Dataset chunk dimensions {} requires H5D_CHUNKED layout",
                                                       info.dsetPath.value(),
@@ -218,8 +218,8 @@ namespace h5pp::scan {
         // If dsetDimsMax has been given and any of them is H5S_UNLIMITED then the layout is supposed to be chunked
         if(info.dsetDimsMax) {
             // If dsetDimsMax has been given then the layout is supposed to be chunked
-            if(not info.h5_layout) info.h5_layout = H5D_CHUNKED;
-            if(info.h5_layout != H5D_CHUNKED)
+            if(not info.h5Layout) info.h5Layout = H5D_CHUNKED;
+            if(info.h5Layout != H5D_CHUNKED)
                 throw std::runtime_error(h5pp::format("Error creating metadata for new dataset [{}]: "
                                                       "Dataset max dimensions {} requires H5D_CHUNKED layout",
                                                       info.dsetPath.value(),
@@ -229,32 +229,32 @@ namespace h5pp::scan {
         // Next infer the missing properties
         /* clang-format off */
         if(not info.dsetDims)    info.dsetDims      = h5pp::util::getDimensions(data);
-        if(not info.h5_type)     info.h5_type       = h5pp::util::getH5Type<DataType>();
+        if(not info.h5Type)      info.h5Type        = h5pp::util::getH5Type<DataType>();
         if(not info.dsetSize)    info.dsetSize      = h5pp::util::getSizeFromDimensions(info.dsetDims.value());
         if(not info.dsetRank)    info.dsetRank      = h5pp::util::getRankFromDimensions(info.dsetDims.value());
         if(not info.dsetByte)    info.dsetByte      = h5pp::util::getBytesTotal(data,info.dsetSize);
-        if(not info.h5_layout)   info.h5_layout     = h5pp::util::decideLayout(data,info.dsetDims, info.dsetDimsMax);
-        if(not info.dsetDimsMax) info.dsetDimsMax   = h5pp::util::decideDimensionsMax(info.dsetDims.value(), info.h5_layout);
-        if(not info.dsetChunk)   info.dsetChunk     = h5pp::util::getChunkDimensions(h5pp::util::getBytesPerElem<DataType>(), info.dsetDims.value(),info.dsetDimsMax, info.h5_layout);
+        if(not info.h5Layout)    info.h5Layout      = h5pp::util::decideLayout(data,info.dsetDims, info.dsetDimsMax);
+        if(not info.dsetDimsMax) info.dsetDimsMax   = h5pp::util::decideDimensionsMax(info.dsetDims.value(), info.h5Layout);
+        if(not info.dsetChunk)   info.dsetChunk     = h5pp::util::getChunkDimensions(h5pp::util::getBytesPerElem<DataType>(), info.dsetDims.value(),info.dsetDimsMax, info.h5Layout);
         if(not info.compression) info.compression   = h5pp::hdf5::getValidCompressionLevel(info.compression);
         if(not info.resizeMode) {
-            if(info.h5_layout != H5D_CHUNKED)
+            if(info.h5Layout != H5D_CHUNKED)
                 info.resizeMode = h5pp::ResizeMode::DO_NOT_RESIZE;
             else
                 info.resizeMode = h5pp::ResizeMode::RESIZE_TO_FIT;
         }
 
-        h5pp::hdf5::setStringSize<DataType>(data, info.h5_type.value(), info.dsetSize.value(), info.dsetByte.value(), info.dsetDims.value());       // String size will be H5T_VARIABLE unless explicitly specified
+        h5pp::hdf5::setStringSize<DataType>(data, info.h5Type.value(), info.dsetSize.value(), info.dsetByte.value(), info.dsetDims.value());       // String size will be H5T_VARIABLE unless explicitly specified
         /* clang-format on */
-        info.h5_space             = h5pp::util::getDsetSpace(info.dsetSize.value(), info.dsetDims.value(), info.h5_layout.value(), info.dsetDimsMax);
-        info.h5_plist_dset_create = H5Pcreate(H5P_DATASET_CREATE);
-        info.h5_plist_dset_access = H5Pcreate(H5P_DATASET_ACCESS);
+        info.h5Space           = h5pp::util::getDsetSpace(info.dsetSize.value(), info.dsetDims.value(), info.h5Layout.value(), info.dsetDimsMax);
+        info.h5PlistDsetCreate = H5Pcreate(H5P_DATASET_CREATE);
+        info.h5PlistDsetAccess = H5Pcreate(H5P_DATASET_ACCESS);
         h5pp::hdf5::setProperty_layout(info);    // Must go before setting chunk dims
         h5pp::hdf5::setProperty_chunkDims(info); // Will nullify chunkdims if not H5D_CHUNKED
         h5pp::hdf5::setProperty_compression(info);
         h5pp::hdf5::setSpaceExtent(info);
         h5pp::logger::log->trace("Created metadata {}", info.string());
-        auto error_msg = h5pp::debug::reportCompatibility(info.h5_layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
+        auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
         if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Created dataset metadata is not well defined: \n{}", error_msg));
         return info;
     }
@@ -289,10 +289,10 @@ namespace h5pp::scan {
         if(not info.dataSize) info.dataSize = h5pp::util::getSizeFromDimensions(info.dataDims.value());
         if(not info.dataRank) info.dataRank = h5pp::util::getRankFromDimensions(info.dataDims.value());
         if(not info.dataByte) info.dataByte = info.dataSize.value() * h5pp::util::getBytesPerElem<DataType>();
-        if(not info.cpp_type) info.cpp_type = h5pp::type::sfinae::type_name<DataType>();
+        if(not info.cppType) info.cppType = h5pp::type::sfinae::type_name<DataType>();
         h5pp::util::setStringSize<DataType>(
             data, info.dataSize.value(), info.dataByte.value(), info.dataDims.value()); // String size will be H5T_VARIABLE unless explicitly specified
-        if(not info.h5_space) info.h5_space = h5pp::util::getMemSpace(info.dataSize.value(), info.dataDims.value());
+        if(not info.h5Space) info.h5Space = h5pp::util::getMemSpace(info.dataSize.value(), info.dataDims.value());
         h5pp::logger::log->trace("Scanned metadata {}", info.string());
     }
 
@@ -313,29 +313,29 @@ namespace h5pp::scan {
         if(not info.attrName)    info.attrName      = h5pp::util::safe_str(options.attrName.value());
         if(not info.attrSlab)    info.attrSlab      = options.attrSlab;
         h5pp::logger::log->debug("Scanning metadata of attribute [{}] in link [{}]", info.attrName.value(), info.linkPath.value());
-        if(not info.linkExists)  info.linkExists = h5pp::hdf5::checkIfLinkExists(loc, info.linkPath.value(), std::nullopt, plists.link_access);
+        if(not info.linkExists)  info.linkExists = h5pp::hdf5::checkIfLinkExists(loc, info.linkPath.value(), std::nullopt, plists.linkAccess);
         // If the dataset does not exist, there isn't much else to do so we return;
         if(info.linkExists and not info.linkExists.value()) return;
         // From here on the link exists
-        if(not info.h5_link)     info.h5_link       = h5pp::hdf5::openLink<hid::h5o>(loc, info.linkPath.value(), info.linkExists, plists.link_access);
+        if(not info.h5Link)     info.h5Link       = h5pp::hdf5::openLink<hid::h5o>(loc, info.linkPath.value(), info.linkExists, plists.linkAccess);
         if(not info.attrExists)
-            info.attrExists = h5pp::hdf5::checkIfAttributeExists(info.h5_link.value(), info.linkPath.value(), info.attrName.value(), std::nullopt, plists.link_access);
+            info.attrExists = h5pp::hdf5::checkIfAttributeExists(info.h5Link.value(), info.linkPath.value(), info.attrName.value(), std::nullopt, plists.linkAccess);
         if(info.attrExists and not info.attrExists.value()) return;
         // From here on the attribute exists
-        if(not info.h5_attr)    info.h5_attr        = H5Aopen_name(info.h5_link.value(), h5pp::util::safe_str(info.attrName.value()).c_str());
-        if(not info.h5_type)    info.h5_type        = H5Aget_type(info.h5_attr.value());
-        if(not info.h5_space)   info.h5_space = H5Aget_space(info.h5_attr.value());
+        if(not info.h5Attr)    info.h5Attr        = H5Aopen_name(info.h5Link.value(), h5pp::util::safe_str(info.attrName.value()).c_str());
+        if(not info.h5Type)    info.h5Type        = H5Aget_type(info.h5Attr.value());
+        if(not info.h5Space)   info.h5Space = H5Aget_space(info.h5Attr.value());
         // Get the properties of the selected space
-        if(not info.attrByte)   info.attrByte       = h5pp::hdf5::getBytesTotal(info.h5_attr.value(), info.h5_space, info.h5_type);
-        if(not info.attrSize)   info.attrSize       = h5pp::hdf5::getSize(info.h5_space.value());
-        if(not info.attrDims)   info.attrDims       = h5pp::hdf5::getDimensions(info.h5_space.value());
-        if(not info.attrRank)   info.attrRank       = h5pp::hdf5::getRank(info.h5_space.value());
-        if(not info.h5_plist_attr_create) info.h5_plist_attr_create = H5Aget_create_plist(info.h5_attr.value());
+        if(not info.attrByte)   info.attrByte       = h5pp::hdf5::getBytesTotal(info.h5Attr.value(), info.h5Space, info.h5Type);
+        if(not info.attrSize)   info.attrSize       = h5pp::hdf5::getSize(info.h5Space.value());
+        if(not info.attrDims)   info.attrDims       = h5pp::hdf5::getDimensions(info.h5Space.value());
+        if(not info.attrRank)   info.attrRank       = h5pp::hdf5::getRank(info.h5Space.value());
+        if(not info.h5PlistAttrCreate) info.h5PlistAttrCreate = H5Aget_create_plist(info.h5Attr.value());
             /* clang-format on */
 #if H5_VERSION_GE(1, 10, 0)
-        if(not info.h5_plist_attr_access) info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
+        if(not info.h5PlistAttrAccess) info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
 #else
-        if(not info.h5_plist_attr_access) info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
+        if(not info.h5PlistAttrAccess) info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
 #endif
         h5pp::logger::log->trace("Scanned metadata {}", info.string());
     }
@@ -356,7 +356,7 @@ namespace h5pp::scan {
         // First copy the parameters given in options
         if(not info.attrDims) info.attrDims = options.dataDims;
         if(not info.attrSlab) info.attrSlab = options.attrSlab;
-        if(not info.h5_type) info.h5_type = options.h5_type;
+        if(not info.h5Type) info.h5Type = options.h5Type;
 
         // Some sanity checks
         if(not info.attrDims)
@@ -364,7 +364,7 @@ namespace h5pp::scan {
                                                   "Dimensions for new attribute must be specified when no data is given",
                                                   info.attrName.value(),
                                                   info.linkPath.value()));
-        if(not info.h5_type)
+        if(not info.h5Type)
             throw std::runtime_error(h5pp::format("Error creating info for attribute [{}] in link [{}]: "
                                                   "The HDF5 type for a new dataset must be specified when no data is given",
                                                   info.attrName.value(),
@@ -373,14 +373,14 @@ namespace h5pp::scan {
         // Next we infer the missing properties
         if(not info.attrSize) info.attrSize = h5pp::util::getSizeFromDimensions(info.attrDims.value());
         if(not info.attrRank) info.attrRank = h5pp::util::getRankFromDimensions(info.attrDims.value());
-        if(not info.attrByte) info.attrByte = info.attrSize.value() * h5pp::hdf5::getBytesPerElem(info.h5_type.value());
-        if(not info.h5_space) info.h5_space = h5pp::util::getDsetSpace(info.attrSize.value(), info.attrDims.value(), H5D_COMPACT);
+        if(not info.attrByte) info.attrByte = info.attrSize.value() * h5pp::hdf5::getBytesPerElem(info.h5Type.value());
+        if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.attrSize.value(), info.attrDims.value(), H5D_COMPACT);
 
-        info.h5_plist_attr_create = H5Pcreate(H5P_ATTRIBUTE_CREATE);
+        info.h5PlistAttrCreate = H5Pcreate(H5P_ATTRIBUTE_CREATE);
 #if H5_VERSION_GE(1, 10, 0)
-        info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
+        info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
 #else
-        info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
+        info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
 #endif
         h5pp::logger::log->trace("Created  metadata  {}", info.string());
         return info;
@@ -397,7 +397,7 @@ namespace h5pp::scan {
         // First copy the parameters given in options
         if(not info.attrDims) info.attrDims = options.dataDims;
         if(not info.attrSlab) info.attrSlab = options.attrSlab;
-        if(not info.h5_type) info.h5_type = options.h5_type;
+        if(not info.h5Type) info.h5Type = options.h5Type;
         // Some sanity checks
         if constexpr(std::is_pointer_v<DataType>) {
             if(not info.attrDims)
@@ -410,19 +410,19 @@ namespace h5pp::scan {
         // Next infer the missing properties
         /* clang-format off */
         if(not info.attrDims)    info.attrDims      = h5pp::util::getDimensions(data);
-        if(not info.h5_type)     info.h5_type       = h5pp::util::getH5Type<DataType>();
+        if(not info.h5Type)      info.h5Type        = h5pp::util::getH5Type<DataType>();
         if(not info.attrSize)    info.attrSize      = h5pp::util::getSizeFromDimensions(info.attrDims.value());
         if(not info.attrRank)    info.attrRank      = h5pp::util::getRankFromDimensions(info.attrDims.value());
         if(not info.attrByte)    info.attrByte      = h5pp::util::getBytesTotal(data,info.attrSize);
-        h5pp::hdf5::setStringSize<DataType>(data,info.h5_type.value(), info.attrSize.value(), info.attrByte.value(), info.attrDims.value());       // String size will be H5T_VARIABLE unless explicitly specified
-        if(not info.h5_space) info.h5_space = h5pp::util::getDsetSpace(info.attrSize.value(), info.attrDims.value(), H5D_COMPACT);
+        h5pp::hdf5::setStringSize<DataType>(data,info.h5Type.value(), info.attrSize.value(), info.attrByte.value(), info.attrDims.value());       // String size will be H5T_VARIABLE unless explicitly specified
+        if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.attrSize.value(), info.attrDims.value(), H5D_COMPACT);
         /* clang-format on */
 
-        info.h5_plist_attr_create = H5Pcreate(H5P_ATTRIBUTE_CREATE);
+        info.h5PlistAttrCreate = H5Pcreate(H5P_ATTRIBUTE_CREATE);
 #if H5_VERSION_GE(1, 10, 0)
-        info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
+        info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
 #else
-        info.h5_plist_attr_access = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
+        info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
 #endif
         h5pp::logger::log->trace("Created  metadata  {}", info.string());
         return info;
@@ -448,10 +448,10 @@ namespace h5pp::scan {
                 throw std::runtime_error("Given object type for location is not a group or a file");
         }
 
-        info.tableExists = h5pp::hdf5::checkIfLinkExists(loc, tableName, tableExists, plists.link_access);
+        info.tableExists = h5pp::hdf5::checkIfLinkExists(loc, tableName, tableExists, plists.linkAccess);
         if(not info.tableExists.value()) return info;
 
-        info.tableDset = hdf5::openLink<hid::h5d>(loc, tableName, info.tableExists, plists.link_access);
+        info.tableDset = hdf5::openLink<hid::h5d>(loc, tableName, info.tableExists, plists.linkAccess);
         info.tableType = H5Dget_type(info.tableDset.value());
         // Alloate temporaries
         hsize_t n_fields, n_records;
@@ -519,34 +519,4 @@ namespace h5pp::scan {
         }
         return info;
     }
-    //
-    //    template<typename DataType>
-    //    inline h5pp::TableInfo getMetaTable_write(const hid::h5f &file, const DataType &data, std::string_view tablePath, const PropertyLists &plists = PropertyLists()) {
-    //        bool exists = h5pp::hdf5::checkIfLinkExists(file,tablePath,plists.link_access);
-    //        if(exists)
-    //            return getTableInfo(file,tablePath,exists,plists);
-    //        else {
-    //            hid::h5d dataset      = h5pp::hdf5::openLink<hid::h5d>(file, tablePath, std::nullopt, plists.link_access);
-    //            hid::h5t entryType    = H5Dget_type(dataset);
-    //            auto     tableProps   = newTableInfo(entryType, tablePath, "", std::nullopt, std::nullopt);
-    //            tableProps.numRecords = h5pp::util::getSize(data);
-    //            return newTableInfo(entryType, tablePath, "", std::nullopt, std::nullopt);
-    //        }
-    //    }
-
-    //    inline h5pp::TableInfo getTableProperties_read(const hid::h5f &file, std::string_view tablePath, const PropertyLists &plists = PropertyLists()) {
-    //        hid::h5d dataset    = h5pp::hdf5::openLink<hid::h5d>(file, tablePath, std::nullopt, plists.link_access);
-    //        hid::h5t entryType  = H5Dget_type(dataset);
-    //        auto     tableProps = newTableInfo(entryType, tablePath, "", std::nullopt, std::nullopt);
-    //        hsize_t  NFIELDS, NRECORDS;
-    //        herr_t   err = H5TBget_table_info(file, h5pp::util::safe_str(tablePath).c_str(), &NFIELDS, &NRECORDS);
-    //        if(err < 0) {
-    //            H5Eprint(H5E_DEFAULT, stderr);
-    //            throw std::runtime_error("Failed to get table information");
-    //        }
-    //        tableProps.numFields  = NFIELDS;
-    //        tableProps.numRecords = NRECORDS;
-    //        return tableProps;
-    //    }
-
 }
