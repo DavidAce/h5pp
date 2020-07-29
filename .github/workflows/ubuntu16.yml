@@ -10,28 +10,28 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.compiler }}-${{ matrix.source }}-shared-libs-[${{ matrix.shared-libs }}]-prefer-conda-[${{ matrix.prefer-conda }}]
+    name: ${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
     runs-on: ubuntu-16.04
     strategy:
       fail-fast: false # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { source: fetch , prefer-conda : OFF, shared-libs: OFF, compiler: gcc }
-          - { source: fetch , prefer-conda : OFF, shared-libs: OFF, compiler: clang }
-          - { source: fetch , prefer-conda : OFF, shared-libs: ON , compiler: gcc }
-          - { source: fetch , prefer-conda : OFF, shared-libs: ON , compiler: clang }
-          - { source: conan , prefer-conda : OFF, shared-libs: OFF, compiler: gcc }
-          - { source: conan , prefer-conda : OFF, shared-libs: OFF, compiler: clang }
-          - { source: conan , prefer-conda : OFF, shared-libs: ON , compiler: gcc }
-          - { source: conan , prefer-conda : OFF, shared-libs: ON , compiler: clang }
-          - { source: find-or-fetch , prefer-conda : OFF, shared-libs: OFF, compiler: gcc }
-          - { source: find-or-fetch , prefer-conda : OFF, shared-libs: OFF, compiler: clang }
-          - { source: find-or-fetch , prefer-conda : OFF, shared-libs: ON , compiler: gcc }
-          - { source: find-or-fetch , prefer-conda : OFF, shared-libs: ON , compiler: clang }
-          - { source: find-or-fetch , prefer-conda : ON , shared-libs: OFF, compiler: gcc }
-          - { source: find-or-fetch , prefer-conda : ON , shared-libs: OFF, compiler: clang }
-          - { source: find-or-fetch , prefer-conda : ON , shared-libs: ON , compiler: gcc }
-          - { source: find-or-fetch , prefer-conda : ON , shared-libs: ON , compiler: clang }
+          - { compiler: gcc,   conda : OFF, shared: OFF, source: fetch }
+          - { compiler: gcc,   conda : OFF, shared: ON , source: fetch }
+          - { compiler: gcc,   conda : OFF, shared: OFF, source: conan }
+          - { compiler: gcc,   conda : OFF, shared: ON , source: conan }
+          - { compiler: gcc,   conda : OFF, shared: OFF, source: find-or-fetch }
+          - { compiler: gcc,   conda : OFF, shared: ON , source: find-or-fetch }
+          - { compiler: gcc,   conda : ON , shared: OFF, source: find-or-fetch }
+          - { compiler: gcc,   conda : ON , shared: ON , source: find-or-fetch }
+          - { compiler: clang, conda : OFF, shared: OFF, source: fetch }
+          - { compiler: clang, conda : OFF, shared: ON , source: fetch }
+          - { compiler: clang, conda : OFF, shared: OFF, source: conan }
+          - { compiler: clang, conda : OFF, shared: ON , source: conan }
+          - { compiler: clang, conda : OFF, shared: OFF, source: find-or-fetch }
+          - { compiler: clang, conda : OFF, shared: ON , source: find-or-fetch }
+          - { compiler: clang, conda : ON , shared: OFF, source: find-or-fetch }
+          - { compiler: clang, conda : ON , shared: ON , source: find-or-fetch }
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
@@ -44,8 +44,6 @@ jobs:
         with:
           update-conda: false
           conda-channels: conda-forge
-        env:
-          prefer-conda: "ON"
 
       - name: Setup gcc
         if: matrix.compiler == 'gcc'
@@ -92,14 +90,14 @@ jobs:
           cd build/Debug
           cmake                                                    \
           -DCMAKE_BUILD_TYPE=Debug                                 \
-          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared-libs }}       \
+          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared }}            \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                         \
           -DH5PP_ENABLE_EIGEN3:BOOL=ON                             \
           -DH5PP_ENABLE_SPDLOG:BOOL=ON                             \
           -DH5PP_ENABLE_ASAN:BOOL=ON                               \
           -DH5PP_ENABLE_TESTS:BOOL=ON                              \
           -DH5PP_DOWNLOAD_METHOD:STRING=${{ matrix.source }}       \
-          -DH5PP_PREFER_CONDA_LIBS:BOOL=${{ matrix.prefer-conda }} \
+          -DH5PP_PREFER_CONDA_LIBS:BOOL=${{ matrix.conda }}        \
           -DH5PP_PRINT_INFO:BOOL=ON                                \
           -DH5PP_BUILD_EXAMPLES:BOOL=ON                            \
           -G "Unix Makefiles"                                      \

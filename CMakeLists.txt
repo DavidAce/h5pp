@@ -11,7 +11,7 @@ option(H5PP_BUILD_EXAMPLES             "Builds examples"                        
 option(H5PP_ENABLE_TESTS               "Enable testing"                                              OFF)
 option(H5PP_IS_SUBPROJECT              "Use h5pp with add_subdirectory()"                            OFF)
 option(H5PP_DEPS_IN_SUBDIR             "Install dependencies into CMAKE_INSTALL_PREFIX/<libname>"    OFF)
-option(H5PP_PREFER_CONDA_LIBS          "Search for dependencies from anaconda first"                 OFF)
+option(H5PP_PREFER_CONDA_LIBS          "Search for libraries in anaconda/miniconda first"            OFF)
 option(H5PP_PRINT_INFO                 "Print info during cmake configuration"                       OFF)
 option(H5PP_ENABLE_EIGEN3              "Enables Eigen3 linear algebra library"                       OFF)
 option(H5PP_ENABLE_SPDLOG              "Enables Spdlog for logging h5pp internal info to stdout"     OFF)
@@ -20,7 +20,7 @@ option(H5PP_ENABLE_ASAN                "Enable runtime address sanitizer -fsanit
 option(CMAKE_POSITION_INDEPENDENT_CODE "Use -fPIC when compiling shared libraries"                   ON)
 
 # Make an "enum" for valid download methods: none find fetch find-or-fetch conan
-set(H5PP_DOWNLOAD_METHODS_VALID none find fetch find-or-fetch conan)
+set(H5PP_DOWNLOAD_METHODS_VALID none find fetch find-or-fetch conan conda)
 set(H5PP_DOWNLOAD_METHOD none CACHE STRING "Download method for external dependencies")
 set_property(CACHE H5PP_DOWNLOAD_METHOD PROPERTY STRINGS ${H5PP_DOWNLOAD_METHODS_VALID})
 if (NOT H5PP_DOWNLOAD_METHOD IN_LIST H5PP_DOWNLOAD_METHODS_VALID)
