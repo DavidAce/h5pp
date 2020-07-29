@@ -309,10 +309,19 @@ namespace h5pp {
         }
 
         template<typename DataType>
+        void writeDataset(const DataType &data, DsetInfo &dsetInfo, const Options &options = Options()) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
+            auto dataInfo = h5pp::scan::getDataInfo(data,options);
+            resizeDataset(dsetInfo, dataInfo.dataDims.value());
+            h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
+        }
+
+        template<typename DataType>
         void writeDataset(const DataType &data, const DataInfo &dataInfo, DsetInfo &dsetInfo) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             // The infos passed should be parsed and ready to write with
-            if(not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
+            if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
             resizeDataset(dsetInfo, dataInfo.dataDims.value());
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
         }
@@ -879,13 +888,13 @@ namespace h5pp {
 
         [[nodiscard]] TableInfo getTableInfo(std::string_view tablePath) const { return h5pp::scan::getTableInfo(openFileHandle(), tablePath, std::nullopt, plists); }
 
-        [[nodiscard]] TypeInfo getDatasetTypeInfo(std::string_view dsetPath) const { return h5pp::hdf5::getTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.linkAccess); }
+        [[nodiscard]] TypeInfo getTypeInfoDataset(std::string_view dsetPath) const { return h5pp::hdf5::getTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.linkAccess); }
 
-        [[nodiscard]] TypeInfo getAttributeTypeInfo(std::string_view linkPath, std::string_view attrName) const {
+        [[nodiscard]] TypeInfo getTypeInfoAttribute(std::string_view linkPath, std::string_view attrName) const {
             return h5pp::hdf5::getTypeInfo(openFileHandle(), linkPath, attrName, std::nullopt, std::nullopt, plists.linkAccess);
         }
 
-        [[nodiscard]] std::vector<TypeInfo> getAttributeTypeInfoAll(std::string_view linkPath) const {
+        [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes(std::string_view linkPath) const {
             return h5pp::hdf5::getTypeInfo_allAttributes(openFileHandle(), linkPath, std::nullopt, plists.linkAccess);
         }
 
