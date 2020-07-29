@@ -1,4 +1,4 @@
-name: Ubuntu 16.04
+name: Ubuntu 20.04
 # INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
 
 on:
@@ -11,7 +11,7 @@ on:
 jobs:
   ci:
     name: ${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: true # True stops all on first error. Stick to false when debugging
       matrix:
@@ -48,18 +48,18 @@ jobs:
       - name: Setup gcc
         if: matrix.compiler == 'gcc'
         run: |
-          sudo apt-get install gcc-7 g++-7 gfortran -y
+          sudo apt-get install gcc-10 g++-10 gfortran -y
           echo "::set-env name=FC::gfortran"
-          echo "::set-env name=CC::gcc-7"
-          echo "::set-env name=CXX::g++-7"
+          echo "::set-env name=CC::gcc-10"
+          echo "::set-env name=CXX::g++-10"
 
       - name: Setup clang
         if: matrix.compiler == 'clang'
         run: |
-          sudo apt-get install clang-6.0 clang++-6.0 gfortran -y
+          sudo apt-get install clang-10 clang++-10 gfortran -y
           echo "::set-env name=FC::gfortran"
-          echo "::set-env name=CC::clang-6.0"
-          echo "::set-env name=CXX::clang++-6.0"
+          echo "::set-env name=CC::clang-10"
+          echo "::set-env name=CXX::clang++-10"
 
       - name: Setup apt packages
         if: contains(matrix.source,'find')

@@ -1,4 +1,4 @@
-name: Ubuntu 16.04
+name: Windows 10
 # INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
 
 on:
@@ -11,27 +11,20 @@ on:
 jobs:
   ci:
     name: ${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
-    runs-on: ubuntu-16.04
+    runs-on: windows-2019
     strategy:
       fail-fast: true # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { compiler: gcc,   conda : OFF, shared: OFF, source: fetch }
-          - { compiler: gcc,   conda : OFF, shared: ON , source: fetch }
-          - { compiler: gcc,   conda : OFF, shared: OFF, source: conan }
-          - { compiler: gcc,   conda : OFF, shared: ON , source: conan }
-          - { compiler: gcc,   conda : OFF, shared: OFF, source: find-or-fetch }
-          - { compiler: gcc,   conda : OFF, shared: ON , source: find-or-fetch }
-          - { compiler: gcc,   conda : ON , shared: OFF, source: find-or-fetch }
-          - { compiler: gcc,   conda : ON , shared: ON , source: find-or-fetch }
-          - { compiler: clang, conda : OFF, shared: OFF, source: fetch }
-          - { compiler: clang, conda : OFF, shared: ON , source: fetch }
-          - { compiler: clang, conda : OFF, shared: OFF, source: conan }
-          - { compiler: clang, conda : OFF, shared: ON , source: conan }
-          - { compiler: clang, conda : OFF, shared: OFF, source: find-or-fetch }
-          - { compiler: clang, conda : OFF, shared: ON , source: find-or-fetch }
-          - { compiler: clang, conda : ON , shared: OFF, source: find-or-fetch }
-          - { compiler: clang, conda : ON , shared: ON , source: find-or-fetch }
+          - { compiler: cl, shared: OFF, conda: OFF, source: conan }
+          - { compiler: cl, shared: OFF, conda: OFF, source: fetch }
+          - { compiler: cl, shared: OFF, conda: OFF, source: find-or-fetch }
+          - { compiler: cl, shared: OFF, conda: ON , source: find-or-fetch }
+          - { compiler: cl, shared: OFF, conda: OFF, source: conan }
+          - { compiler: cl, shared: OFF, conda: OFF, source: fetch }
+          - { compiler: cl, shared: OFF, conda: OFF, source: find-or-fetch }
+          - { compiler: cl, shared: OFF, conda: ON , source: find-or-fetch }
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
@@ -44,26 +37,6 @@ jobs:
         with:
           update-conda: false
           conda-channels: conda-forge
-
-      - name: Setup gcc
-        if: matrix.compiler == 'gcc'
-        run: |
-          sudo apt-get install gcc-7 g++-7 gfortran -y
-          echo "::set-env name=FC::gfortran"
-          echo "::set-env name=CC::gcc-7"
-          echo "::set-env name=CXX::g++-7"
-
-      - name: Setup clang
-        if: matrix.compiler == 'clang'
-        run: |
-          sudo apt-get install clang-6.0 clang++-6.0 gfortran -y
-          echo "::set-env name=FC::gfortran"
-          echo "::set-env name=CC::clang-6.0"
-          echo "::set-env name=CXX::clang++-6.0"
-
-      - name: Setup apt packages
-        if: contains(matrix.source,'find')
-        run: sudo apt install libhdf5-dev libspdlog-dev libeigen3-dev -y
 
       - name: Setup conan
         if: matrix.source == 'conan'
@@ -100,7 +73,7 @@ jobs:
           -DH5PP_PREFER_CONDA_LIBS:BOOL=${{ matrix.conda }}        \
           -DH5PP_PRINT_INFO:BOOL=ON                                \
           -DH5PP_BUILD_EXAMPLES:BOOL=ON                            \
-          -G "Unix Makefiles"                                      \
+           -G "Visual Studio 16 2019" -A x64                       \
           ../../
 
       - name: Build
