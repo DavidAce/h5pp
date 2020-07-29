@@ -15,17 +15,23 @@ jobs:
     strategy:
       fail-fast: false # True stops all on first error. Stick to false when debugging
       matrix:
-        linkage: [static, shared]
-        compiler: [gcc,clang]
-        source: [find-or-fetch,fetch,conan]
-        prefer-conda: [OFF]
         include:
-          - { source: fetch , prefer-conda : OFF }
-          - { source: conan , prefer-conda : OFF }
-          - { source: find-or-fetch , prefer-conda : OFF }
-          - { source: find-or-fetch , prefer-conda : ON }
-
-
+          - { source: fetch , prefer-conda : OFF, linkage: static, compiler: gcc }
+          - { source: fetch , prefer-conda : OFF, linkage: static, compiler: clang }
+          - { source: fetch , prefer-conda : OFF, linkage: shared, compiler: gcc }
+          - { source: fetch , prefer-conda : OFF, linkage: shared, compiler: clang }
+          - { source: conan , prefer-conda : OFF, linkage: static, compiler: gcc }
+          - { source: conan , prefer-conda : OFF, linkage: static, compiler: clang }
+          - { source: conan , prefer-conda : OFF, linkage: shared, compiler: gcc }
+          - { source: conan , prefer-conda : OFF, linkage: shared, compiler: clang }
+          - { source: find-or-fetch , prefer-conda : OFF, linkage: static, compiler: gcc }
+          - { source: find-or-fetch , prefer-conda : OFF, linkage: static, compiler: clang }
+          - { source: find-or-fetch , prefer-conda : OFF, linkage: shared, compiler: gcc }
+          - { source: find-or-fetch , prefer-conda : OFF, linkage: shared, compiler: clang }
+          - { source: find-or-fetch , prefer-conda : ON , linkage: static, compiler: gcc }
+          - { source: find-or-fetch , prefer-conda : ON , linkage: static, compiler: clang }
+          - { source: find-or-fetch , prefer-conda : ON , linkage: shared, compiler: gcc }
+          - { source: find-or-fetch , prefer-conda : ON , linkage: shared, compiler: clang }
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
