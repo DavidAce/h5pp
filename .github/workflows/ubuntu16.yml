@@ -20,10 +20,11 @@ jobs:
         source: [find-or-fetch,fetch,conan]
         prefer-conda: [OFF]
         include:
-          - linkage: [static,shared]
-            compiler: [gcc,clang]
-            source: find-or-fetch
-            prefer-conda: [ON]
+          - { source: fetch , prefer-conda : OFF }
+          - { source: conan , prefer-conda : OFF }
+          - { source: find-or-fetch , prefer-conda : OFF }
+          - { source: find-or-fetch , prefer-conda : ON }
+
 
     steps:
       - uses: actions/checkout@v2
