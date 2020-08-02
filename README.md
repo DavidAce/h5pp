@@ -31,7 +31,7 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
     *  [Install methods](#install-methods)
         *  [Option 1: Copy the headers](#option-1-copy-the-headers)
         *  [Option 2: Install with CMake](#option-2-install-with-cmake)
-        *  [Option 3: Install with conan](#option-3-install-with-conan)
+        *  [Option 3: Install with Conan](#option-3-install-with-conan)
     *  [Opt-in automatic dependency installation with CMake](#opt-in-automatic-dependency-installation-with-cmake)
 *  [Linking](#linking)
 *  [Uninstall](#uninstall)
@@ -254,9 +254,9 @@ These config files allow you to use`find_package(h5pp)` in your own projects, wh
 with everything you need to link `h5pp` correctly (including dependencies, if you so choose). 
 If not set, `CMAKE_INSTALL_PREFIX` defaults to `${CMAKE_BINARY_DIR}/install`, where `${CMAKE_BINARY_DIR}` is the directory you are building from.
 
-#### Option 3: Install with conan
-Make sure to install and configure conan first. Then, either use the CMake-conan integration by passing
- `-DH5PP_DOWNLOAD_METHOD=conan` as an argument to CMake (see below) **or** use conan directly, for instance by running the following command:
+#### Option 3: Install with Conan
+Make sure to install and configure Conan first. Then, either use the [cmake-conan](https://github.com/conan-io/cmake-conan) integration by passing
+ `-DH5PP_DOWNLOAD_METHOD=conan` as an argument to CMake (see below) **or** use Conan directly, for instance by running the following command:
 
 ```
 $ conan install h5pp/1.8.0@davidace/stable --profile default
@@ -281,8 +281,8 @@ There are several variables you can pass to CMake to guide `find_package` calls,
 **(!)** Dependencies are installed into `CMAKE_INSTALL_PREFIX`. Pass the CMake variable `H5PP_DEPS_IN_SUBDIR` to install into separate directories under `CMAKE_INSTALL_PREFIX/<libname>`. 
    
 **(!!)** Conan is guided by `conanfile.txt` found in this project's root directory. This method requires conan to be installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
-  * Add conan install (or bin) directory to the environment variable `PATH`.
-  * Export conan install (or bin) directory in the environment variable `CONAN_PREFIX`, i.e. from command line: `export CONAN_PREFIX=<path-to-conan>` 
+  * Add Conan install (or bin) directory to the environment variable `PATH`.
+  * Export Conan install (or bin) directory in the environment variable `CONAN_PREFIX`, i.e. from command line: `export CONAN_PREFIX=<path-to-conan>` 
   * Give the variable `CONAN_PREFIX` directly to CMake, i.e. from command line: `cmake -DCONAN_PREFIX:PATH=<path-to-conan> ...`
 
 
