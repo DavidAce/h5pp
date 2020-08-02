@@ -140,7 +140,7 @@ namespace h5pp::scan {
         if(not info.dsetSize)    info.dsetSize      = h5pp::util::getSizeFromDimensions(info.dsetDims.value());
         if(not info.dsetRank)    info.dsetRank      = h5pp::util::getRankFromDimensions(info.dsetDims.value());
         if(not info.dsetByte)    info.dsetByte      = info.dsetSize.value() * h5pp::hdf5::getBytesPerElem(info.h5Type.value()); // Trick needed for strings.
-        if(not info.h5Layout)   info.h5Layout     = h5pp::util::decideLayout(info.dsetByte.value());
+        if(not info.h5Layout)    info.h5Layout      = h5pp::util::decideLayout(info.dsetByte.value());
         if(not info.dsetDimsMax) info.dsetDimsMax   = h5pp::util::decideDimensionsMax(info.dsetDims.value(), info.h5Layout.value());
         if(not info.dsetChunk)   info.dsetChunk     = h5pp::util::getChunkDimensions(h5pp::hdf5::getBytesPerElem(info.h5Type.value()), info.dsetDims.value(),info.dsetDimsMax,info.h5Layout);
         if(not info.compression) info.compression   = h5pp::hdf5::getValidCompressionLevel(info.compression);
@@ -459,15 +459,18 @@ namespace h5pp::scan {
         std::vector<size_t> field_sizes(n_fields);
         std::vector<size_t> field_offsets(n_fields);
         size_t              record_bytes;
+        char                table_title[255];
         char **             field_names = new char *[n_fields];
         for(size_t i = 0; i < n_fields; i++) field_names[i] = new char[255];
         H5TBget_field_info(loc, util::safe_str(tableName).c_str(), field_names, field_sizes.data(), field_offsets.data(), &record_bytes);
-
+        H5TBAget_title(info.tableDset.value(), table_title);
         // Copy results
         std::vector<std::string> field_names_vec(n_fields);
         std::vector<hid::h5t>    field_types(n_fields);
         for(size_t i = 0; i < n_fields; i++) field_names_vec[i] = field_names[i];
         for(size_t i = 0; i < n_fields; i++) field_types[i] = H5Tget_member_type(info.tableType.value(), static_cast<unsigned>(i));
+
+        info.tableTitle   = table_title;
         info.numFields    = n_fields;
         info.numRecords   = n_records;
         info.recordBytes  = record_bytes;
@@ -475,6 +478,9 @@ namespace h5pp::scan {
         info.fieldOffsets = field_offsets;
         info.fieldTypes   = field_types;
         info.fieldNames   = field_names_vec;
+        hid::h5p plist = H5Dget_create_plist(info.tableDset->value());
+        auto chunkVec = h5pp::hdf5::getChunkDimensions(plist);
+        if(chunkVec and chunkVec->size() > 0) info.chunkSize = chunkVec.value()[0];
 
         /* release array of char arrays */
         for(size_t i = 0; i < n_fields; i++) delete[] field_names[i];
