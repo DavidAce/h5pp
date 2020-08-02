@@ -13,7 +13,6 @@ struct Particle {
     double x = 0, y = 0, z = 0, t = 0;
 };
 
-void print_particle(const Particle &p) { std::cout << " \t x: " << p.x << " \t y: " << p.y << " \t z: " << p.z << " \t t: " << p.t << std::endl; }
 
 int main() {
     // Initialize a file
@@ -30,12 +29,15 @@ int main() {
     file.createTable(MY_HDF5_PARTICLE_TYPE, "somegroup/particleTable", "Title");
 
     // Write table entries
-    std::vector<Particle> particles(10);
+    std::vector<Particle> particles(10,{1,2,3,4});
     file.appendTableEntries(particles, "somegroup/particleTable");
 
     // Read single entry
 
     // NOTE
+    // The full signature is
+    // readTableEntries(std::string_view tablePath, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt)
+    //
     // If none of startEntry or numEntries (arguments 3 and 4) are given to readTableEntries:
     //          If container is resizeable: startEntry = 0, numEntries = totalRecords
     //          If container is not resizeable: startEntry = last entry, numEntries = 1.
@@ -46,13 +48,13 @@ int main() {
 
     auto particle_read = file.readTableEntries<Particle>("somegroup/particleTable");
     std::cout << "Single entry read \n";
-    print_particle(particle_read);
+    printf("x:%g y:%g z:%g t:%g\n",particle_read.x,particle_read.y,particle_read.z,particle_read.t);
 
 
     // Or read multiple entries into a resizeable container. Start from entry 0 and read 10 entries.
     auto particles_read = file.readTableEntries<std::vector<Particle>>("somegroup/particleTable", 0, 10);
     std::cout << "Multiple entries read \n";
-    for(auto &p : particles_read) print_particle(p);
+    for(auto &p : particles_read) printf("x:%g y:%g z:%g t:%g\n",p.x,p.y,p.z,p.t);
 
     return 0;
 }
