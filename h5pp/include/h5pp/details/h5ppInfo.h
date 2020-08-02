@@ -476,9 +476,9 @@ namespace h5pp {
             h5pp::logger::log->debug("Table location is not defined");
             return -1;
         }
+        /* clang-format off */
         void assertCreateReady() const {
             std::string error_msg;
-            /* clang-format off */
             if(not numFields)           error_msg.append("\t numFields\n");
             if(not numRecords)          error_msg.append("\t numRecords\n");
             if(not recordBytes)         error_msg.append("\t recordBytes\n");
@@ -511,7 +511,17 @@ namespace h5pp {
             if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot write to table: The following fields are not set:\n{}", error_msg));
             if(getTableLocId() < 0) throw std::runtime_error(h5pp::format("Cannot write to table [{}]: The location ID is not set", tablePath.value()));
         }
-        /* clang-format off */
+
+        [[nodiscard]] std::string string() const {
+            std::string msg;
+            if(tableTitle) msg.append(h5pp::format("Table title [{}]", tableTitle.value()));
+            if(numFields)  msg.append(h5pp::format(" | num fields [{}]", numFields.value()));
+            if(numRecords) msg.append(h5pp::format(" | num records [{}]", numRecords.value()));
+            if(chunkSize)  msg.append(h5pp::format(" | chunk size [{}]", chunkSize.value()));
+            if(tablePath)  msg.append(h5pp::format(" | path [{}]",tablePath.value()));
+            return msg;
+        }
+        /* clang-format on */
     };
 
     /*!
