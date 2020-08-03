@@ -117,19 +117,16 @@ namespace h5pp {
      * Struct with optional fields describing a C++ data type in memory
      */
     struct DataInfo {
-        std::optional<hsize_t>     dataSize = std::nullopt;
-        std::optional<size_t>      dataByte = std::nullopt;
-        OptDimsType                dataDims = std::nullopt;
-        std::optional<int>         dataRank = std::nullopt;
-        std::optional<Hyperslab>   dataSlab = std::nullopt;
-        std::optional<hid::h5s>    h5Space  = std::nullopt;
-        std::optional<std::string> cppType  = std::nullopt;
+        std::optional<hsize_t>         dataSize     = std::nullopt;
+        std::optional<size_t>          dataByte     = std::nullopt;
+        OptDimsType                    dataDims     = std::nullopt;
+        std::optional<int>             dataRank     = std::nullopt;
+        std::optional<Hyperslab>       dataSlab     = std::nullopt;
+        std::optional<hid::h5s>        h5Space      = std::nullopt;
+        std::optional<std::string>     cppTypeName  = std::nullopt;
+        std::optional<size_t>          cppTypeSize  = std::nullopt;
+        std::optional<std::type_index> cppTypeIndex = std::nullopt;
 
-        DataInfo() = default;
-        explicit DataInfo(const hid::h5s &space) {
-            h5Space = space;
-            setFromSpace();
-        }
         void setFromSpace() {
             if(not h5Space) return;
             dataRank = H5Sget_simple_extent_ndims(h5Space.value());
@@ -187,7 +184,7 @@ namespace h5pp {
                 Hyperslab slab(h5Space.value());
                 msg.append(h5pp::format(" | [ Hyperslab {} ]", slab.string()));
             }
-            if(cppType) msg.append(h5pp::format(" | type [{}]", cppType.value()));
+            if(cppTypeName) msg.append(h5pp::format(" | type [{}]", cppTypeName.value()));
             return msg;
             /* clang-format on */
         }
@@ -218,7 +215,11 @@ namespace h5pp {
         std::optional<Hyperslab>        dsetSlab          = std::nullopt;
         std::optional<h5pp::ResizeMode> resizeMode        = std::nullopt;
         std::optional<unsigned int>     compression       = std::nullopt;
-        hid_t                           getLocId() const {
+        std::optional<std::string>      cppTypeName       = std::nullopt;
+        std::optional<size_t>           cppTypeSize       = std::nullopt;
+        std::optional<std::type_index>  cppTypeIndex      = std::nullopt;
+
+        [[nodiscard]] hid_t getLocId() const {
             if(h5File) return h5File.value();
             if(h5Group) return h5Group.value();
             if(h5ObjLoc) return h5ObjLoc.value();
@@ -350,7 +351,10 @@ namespace h5pp {
                     default: break;
                 }
             }
+            if(compression) msg.append(h5pp::format(" | compression {}", compression.value()));
             if(dsetPath)    msg.append(h5pp::format(" | dset path [{}]",dsetPath.value()));
+            if(cppTypeName) msg.append(h5pp::format(" | c++ type [{}]",cppTypeName.value()));
+            if(cppTypeSize) msg.append(h5pp::format(" | c++ size [{}] bytes",cppTypeSize.value()));
             return msg;
             /* clang-format on */
         }
@@ -376,6 +380,9 @@ namespace h5pp {
         std::optional<int>                  attrRank          = std::nullopt;
         std::optional<std::vector<hsize_t>> attrDims          = std::nullopt;
         std::optional<Hyperslab>            attrSlab          = std::nullopt;
+        std::optional<std::string>          cppTypeName       = std::nullopt;
+        std::optional<size_t>               cppTypeSize       = std::nullopt;
+        std::optional<std::type_index>      cppTypeIndex      = std::nullopt;
 
         void assertCreateReady() const {
             std::string error_msg;
@@ -451,25 +458,29 @@ namespace h5pp {
      * \brief Information about tables
      */
     struct TableInfo {
-        std::optional<size_t>                   numFields;
-        std::optional<size_t>                   numRecords;
-        std::optional<size_t>                   recordBytes;
-        std::optional<std::vector<std::string>> fieldNames;
-        std::optional<std::vector<size_t>>      fieldSizes;
-        std::optional<std::vector<size_t>>      fieldOffsets;
-        std::optional<std::vector<hid::h5t>>    fieldTypes;
-        std::optional<bool>                     tableExists;
-        std::optional<std::string>              tableTitle;
-        std::optional<std::string>              tablePath;
-        std::optional<std::string>              tableGroupName;
-        std::optional<hid::h5f>                 tableFile;
-        std::optional<hid::h5g>                 tableGroup;
-        std::optional<hid::h5o>                 tableObjLoc;
-        std::optional<hid::h5d>                 tableDset;
-        std::optional<hid::h5t>                 tableType;
-        std::optional<size_t>                   compressionLevel;
-        std::optional<hsize_t>                  chunkSize;
-        hid_t                                   getTableLocId() const {
+        std::optional<size_t>                       numFields        = std::nullopt;
+        std::optional<size_t>                       numRecords       = std::nullopt;
+        std::optional<size_t>                       recordBytes      = std::nullopt;
+        std::optional<std::vector<std::string>>     fieldNames       = std::nullopt;
+        std::optional<std::vector<size_t>>          fieldSizes       = std::nullopt;
+        std::optional<std::vector<size_t>>          fieldOffsets     = std::nullopt;
+        std::optional<std::vector<hid::h5t>>        fieldTypes       = std::nullopt;
+        std::optional<bool>                         tableExists      = std::nullopt;
+        std::optional<std::string>                  tableTitle       = std::nullopt;
+        std::optional<std::string>                  tablePath        = std::nullopt;
+        std::optional<std::string>                  tableGroupName   = std::nullopt;
+        std::optional<hid::h5f>                     tableFile        = std::nullopt;
+        std::optional<hid::h5g>                     tableGroup       = std::nullopt;
+        std::optional<hid::h5o>                     tableObjLoc      = std::nullopt;
+        std::optional<hid::h5d>                     tableDset        = std::nullopt;
+        std::optional<hid::h5t>                     tableType        = std::nullopt;
+        std::optional<size_t>                       compressionLevel = std::nullopt;
+        std::optional<hsize_t>                      chunkSize        = std::nullopt;
+        std::optional<std::vector<std::string>>     cppTypeName      = std::nullopt;
+        std::optional<std::vector<size_t>>          cppTypeSize      = std::nullopt;
+        std::optional<std::vector<std::type_index>> cppTypeIndex     = std::nullopt;
+
+        [[nodiscard]] hid_t getTableLocId() const {
             if(tableFile) return tableFile.value();
             if(tableGroup) return tableGroup.value();
             if(tableObjLoc) return tableObjLoc.value();
