@@ -849,17 +849,17 @@ namespace h5pp {
 
         [[nodiscard]] bool linkExists(std::string_view link) const { return h5pp::hdf5::checkIfLinkExists(openFileHandle(), link, std::nullopt, plists.linkAccess); }
 
-        [[nodiscard]] std::vector<std::string> getLinks(std::string_view root = "/", long maxDepth = 0) const {
-            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_UNKNOWN>(openFileHandle(), root, maxDepth, plists.linkAccess);
-        }
-
-        [[nodiscard]] std::vector<std::string> getDatasets(std::string_view root = "/", long maxDepth = 0) const {
-            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_DATASET>(openFileHandle(), root, maxDepth, plists.linkAccess);
-        }
-
-        [[nodiscard]] std::vector<std::string> getGroups(std::string_view root = "/", long maxDepth = 0) const {
-            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_GROUP>(openFileHandle(), root, maxDepth, plists.linkAccess);
-        }
+//        [[nodiscard]] std::vector<std::string> getLinks(std::string_view root = "/", long maxDepth = 0) const {
+//            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_UNKNOWN>(openFileHandle(), root, maxDepth, plists.linkAccess);
+//        }
+//
+//        [[nodiscard]] std::vector<std::string> getDatasets(std::string_view root = "/", long maxDepth = 0) const {
+//            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_DATASET>(openFileHandle(), root, maxDepth, plists.linkAccess);
+//        }
+//
+//        [[nodiscard]] std::vector<std::string> getGroups(std::string_view root = "/", long maxDepth = 0) const {
+//            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_GROUP>(openFileHandle(), root, maxDepth, plists.linkAccess);
+//        }
 
         [[nodiscard]] std::vector<std::string> findLinks(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
             return h5pp::hdf5::findLinks<H5O_TYPE_UNKNOWN>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.linkAccess);
