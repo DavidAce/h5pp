@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceh5pp_1_1util_1a35003e09ae6a3d740c99e37a4a37cbf6:
+
+Template Function h5pp::util::getBytesPerElem
+=============================================
+
+- Defined in :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppUtils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: h5pp::util::getBytesPerElem()

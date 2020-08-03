@@ -8,6 +8,7 @@ project(h5pp VERSION 1.8.0
 
 option(BUILD_SHARED_LIBS               "Builds shared libraries"                                     OFF)
 option(H5PP_BUILD_EXAMPLES             "Builds examples"                                             OFF)
+option(H5PP_BUILD_DOCS                 "Builds documentation (Requires doxygen, sphinx and breathe)" OFF)
 option(H5PP_ENABLE_TESTS               "Enable testing"                                              OFF)
 option(H5PP_IS_SUBPROJECT              "Use h5pp with add_subdirectory()"                            OFF)
 option(H5PP_DEPS_IN_SUBDIR             "Install dependencies into CMAKE_INSTALL_PREFIX/<libname>"    OFF)
@@ -273,6 +274,11 @@ if (NOT H5PP_IS_SUBPROJECT AND H5PP_BUILD_EXAMPLES AND TARGET h5pp)
 endif ()
 
 
+# Build docs
+if(H5PP_BUILD_DOCS)
+    add_subdirectory(docs)
+endif()
+
 # Use CPACK to generate .deb install file
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_ALL headers config)
@@ -287,3 +293,5 @@ set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_GENERATOR "DEB")
 include(CPack)
+
+
