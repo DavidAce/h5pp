@@ -59,6 +59,10 @@ namespace h5pp::scan {
             else
                 info.resizeMode = h5pp::ResizeMode::RESIZE_TO_FIT;
         }
+
+        // Get c++ properties
+        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+
         h5pp::logger::log->trace("Scanned metadata {}", info.string());
         auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
         if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Scanned dataset metadata is not well defined: \n{}", error_msg));
@@ -159,6 +163,10 @@ namespace h5pp::scan {
         h5pp::hdf5::setProperty_chunkDims(info); // Will nullify chunkdims if not H5D_CHUNKED
         h5pp::hdf5::setProperty_compression(info);
         h5pp::hdf5::setSpaceExtent(info);
+
+        // Get c++ properties
+        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+
         h5pp::logger::log->trace("Created metadata {}", info.string());
         auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
         if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Created dataset metadata is not well defined: \n{}", error_msg));
@@ -253,6 +261,10 @@ namespace h5pp::scan {
         h5pp::hdf5::setProperty_chunkDims(info); // Will nullify chunkdims if not H5D_CHUNKED
         h5pp::hdf5::setProperty_compression(info);
         h5pp::hdf5::setSpaceExtent(info);
+
+        // Get c++ properties
+        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+
         h5pp::logger::log->trace("Created metadata {}", info.string());
         auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
         if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Created dataset metadata is not well defined: \n{}", error_msg));
@@ -289,7 +301,7 @@ namespace h5pp::scan {
         if(not info.dataSize) info.dataSize = h5pp::util::getSizeFromDimensions(info.dataDims.value());
         if(not info.dataRank) info.dataRank = h5pp::util::getRankFromDimensions(info.dataDims.value());
         if(not info.dataByte) info.dataByte = info.dataSize.value() * h5pp::util::getBytesPerElem<DataType>();
-        if(not info.cppType) info.cppType = h5pp::type::sfinae::type_name<DataType>();
+        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType<DataType>();
         h5pp::util::setStringSize<DataType>(
             data, info.dataSize.value(), info.dataByte.value(), info.dataDims.value()); // String size will be H5T_VARIABLE unless explicitly specified
         if(not info.h5Space) info.h5Space = h5pp::util::getMemSpace(info.dataSize.value(), info.dataDims.value());
@@ -337,6 +349,9 @@ namespace h5pp::scan {
 #else
         if(not info.h5PlistAttrAccess) info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
 #endif
+        // Get c++ properties
+        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+
         h5pp::logger::log->trace("Scanned metadata {}", info.string());
     }
 
@@ -382,6 +397,9 @@ namespace h5pp::scan {
 #else
         info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
 #endif
+        // Get c++ properties
+        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+
         h5pp::logger::log->trace("Created  metadata  {}", info.string());
         return info;
     }
@@ -424,6 +442,9 @@ namespace h5pp::scan {
 #else
         info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
 #endif
+        // Get c++ properties
+        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+
         h5pp::logger::log->trace("Created  metadata  {}", info.string());
         return info;
     }
@@ -478,13 +499,24 @@ namespace h5pp::scan {
         info.fieldOffsets = field_offsets;
         info.fieldTypes   = field_types;
         info.fieldNames   = field_names_vec;
-        hid::h5p plist = H5Dget_create_plist(info.tableDset->value());
-        auto chunkVec = h5pp::hdf5::getChunkDimensions(plist);
-        if(chunkVec and chunkVec->size() > 0) info.chunkSize = chunkVec.value()[0];
+        hid::h5p plist    = H5Dget_create_plist(info.tableDset->value());
+        auto     chunkVec = h5pp::hdf5::getChunkDimensions(plist);
+        if(chunkVec and not chunkVec->empty()) info.chunkSize = chunkVec.value()[0];
 
         /* release array of char arrays */
         for(size_t i = 0; i < n_fields; i++) delete[] field_names[i];
         delete[] field_names;
+
+        // Get c++ properties
+        info.cppTypeIndex = std::vector<std::type_index>();
+        info.cppTypeName  = std::vector<std::string>();
+        info.cppTypeSize  = std::vector<size_t>();
+        for(size_t i = 0; i < n_fields; i++) {
+            auto cppInfo = h5pp::hdf5::getCppType(info.fieldTypes.value()[i]);
+            info.cppTypeIndex->emplace_back(std::get<0>(cppInfo));
+            info.cppTypeName->emplace_back(std::get<1>(cppInfo));
+            info.cppTypeSize->emplace_back(std::get<2>(cppInfo));
+        }
 
         return info;
     }
@@ -523,6 +555,18 @@ namespace h5pp::scan {
             info.fieldNames.value().emplace_back(name);
             H5free_memory((void *) name);
         }
+
+        // Get c++ properties
+        info.cppTypeIndex = std::vector<std::type_index>();
+        info.cppTypeName  = std::vector<std::string>();
+        info.cppTypeSize  = std::vector<size_t>();
+        for(size_t idx = 0; idx < info.numFields.value(); idx++) {
+            auto cppInfo = h5pp::hdf5::getCppType(info.fieldTypes.value()[idx]);
+            info.cppTypeIndex->emplace_back(std::get<0>(cppInfo));
+            info.cppTypeName->emplace_back(std::get<1>(cppInfo));
+            info.cppTypeSize->emplace_back(std::get<2>(cppInfo));
+        }
+
         return info;
     }
 }
