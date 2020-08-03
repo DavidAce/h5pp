@@ -48,14 +48,13 @@ There are many C/C++ libraries already that simplify the user experience, but as
 things could be even simpler.
 
 `h5pp` makes HDF5 simple in the following sense:
-*  Read/write common C++ types in a single line of code.
+*  Read and write common C++ types in a single line of code.
 *  No prior knowledge of HDF5 is required.
 *  Default settings let simple tasks stay simple, e.g., storage layout, chunking and compression.
 *  Advanced tasks remain possible, e.g. MPI parallelism.
 *  Meaningful logs and error messages even for beginners.
 *  Simple installation with modular dependencies and opt-in automation.
  
-
 
 ## Features
 *  Header-only C++17 template library
