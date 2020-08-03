@@ -654,15 +654,19 @@ namespace h5pp::hdf5 {
         if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_DOUBLE)) return getCppType<h5pp::type::compound::H5T_SCALAR3<double>>();
         if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_LDOUBLE)) return getCppType<h5pp::type::compound::H5T_SCALAR3<long double>>();
         if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_FLOAT)) return getCppType<h5pp::type::compound::H5T_SCALAR3<float>>();
-        auto bufSize = H5Iget_name(type, nullptr, 0);
-        h5pp::logger::log->debug("buf_size {}", bufSize);
-        std::string name;
-        if(bufSize > 0){
-            name.resize(static_cast<std::string::size_type>(bufSize) + 1);
-            H5Iget_name(type, name.data(), static_cast<size_t>(bufSize) + 1);
-            H5Eprint(H5E_DEFAULT, stderr);
+        if(H5Tcommitted(type) > 0) {
+            auto bufSize = H5Iget_name(type, nullptr, 0);
+            h5pp::logger::log->debug("buf_size {}", bufSize);
+            std::string name;
+            if(bufSize > 0) {
+                name.resize(static_cast<std::string::size_type>(bufSize) + 1);
+                H5Iget_name(type, name.data(), static_cast<size_t>(bufSize) + 1);
+                H5Eprint(H5E_DEFAULT, stderr);
+            }
+            h5pp::logger::log->debug("No C++ type match for HDF5 type [{}]", name);
+        } else {
+            h5pp::logger::log->debug("No C++ type match for non-committed HDF5 type");
         }
-        h5pp::logger::log->debug("No C++ type match for HDF5 type [{}]", name);
 
         return getCppType<std::nullopt_t>();
     }
@@ -1280,23 +1284,41 @@ namespace h5pp::hdf5 {
             // Return 1 to finish the search. Normally when we've reached max search hits.
             std::string_view nameView(name);
             if(maxDepth >= 0 and std::count(nameView.begin(), nameView.end(), '/') > maxDepth) return 0;
+            auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
             try {
                 if constexpr(std::is_same_v<InfoType, H5O_info_t>) {
                     if(info->type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
-                        auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
-                        if(searchKey.empty() or nameView.find(searchKey) != std::string::npos) {
-                            matchList->push_back(name);
-                            if(maxHits > 0 and static_cast<long>(matchList->size()) >= maxHits) return 1;
-                        }
-                    }
-                } else {
-                    auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
-                    if(searchKey.empty() or nameView.find(searchKey) != std::string::npos) {
-                        matchList->push_back(name);
-                        if(maxHits > 0 and static_cast<long>(matchList->size()) >= maxHits) return 1;
+                        if(searchKey.empty() or nameView.find(searchKey) != std::string::npos) matchList->push_back(name);
                     }
                 }
-                return 0;
+
+                else if constexpr(std::is_same_v<InfoType, H5L_info_t>) {
+                    H5O_info_t oInfo;
+                    hid::h5o   obj_id = H5Oopen(id, name, H5P_DEFAULT);
+                    /* clang-format off */
+                    #if defined(H5Ovisit_vers)
+                        #if H5Ovisit_vers == 1
+                            H5Oget_info(obj_id, &oInfo);
+                        #elif H5Ovisit_vers == 2
+                            H5Oget_info2(obj_id, &oInfo, H5O_INFO_ALL);
+                        #elif H5Ovisit_vers == 3
+                            H5Oget_info3(obj_id, &oInfo, H5O_INFO_ALL);
+                        #endif
+                    #else
+                        H5Oget_info(obj_id, &oInfo);
+                    #endif
+                    /* clang-format on */
+                    if(oInfo.type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
+                        if(searchKey.empty() or nameView.find(searchKey) != std::string::npos) matchList->push_back(name);
+                    }
+                } else {
+                    if(searchKey.empty() or nameView.find(searchKey) != std::string::npos) { matchList->push_back(name); }
+                }
+
+                if(maxHits > 0 and static_cast<long>(matchList->size()) >= maxHits)
+                    return 1;
+                else
+                    return 0;
             } catch(...) { throw std::logic_error(h5pp::format("Could not match object [{}] | loc_id [{}]", name, id)); }
         }
 
@@ -1340,7 +1362,7 @@ namespace h5pp::hdf5 {
                                               long             maxHits    = -1,
                                               long             maxDepth   = -1,
                                               const hid::h5p & linkAccess = H5P_DEFAULT) {
-        h5pp::logger::log->trace("Search key: {} | target type: {} | search root: {} | max search hits {}", searchKey, searchRoot, internal::getObjTypeName<ObjType>(), maxHits);
+        h5pp::logger::log->trace("Search key: {} | target type: {} | search root: {} | max search hits {}", searchKey, internal::getObjTypeName<ObjType>(), searchRoot, maxHits);
         std::vector<std::string> matchList;
         internal::maxHits   = maxHits;
         internal::maxDepth  = maxDepth;
@@ -1498,7 +1520,7 @@ namespace h5pp::hdf5 {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
     void readDataset(DataType &data, const DataInfo &dataInfo, const DsetInfo &dsetInfo, const PropertyLists &plists = PropertyLists()) {
-// Transpose the data container before reading
+        // Transpose the data container before reading
 #ifdef H5PP_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_colmajor_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting data to row-major storage order");
@@ -1849,6 +1871,7 @@ namespace h5pp::hdf5 {
                        nullptr,
                        compression,
                        nullptr);
+
         h5pp::logger::log->trace("Successfully created table [{}]", info.tablePath.value());
         info.tableExists = true;
         if constexpr(std::is_same_v<h5x, hid::h5f>) info.tableFile = loc;
@@ -2205,8 +2228,8 @@ namespace h5pp::hdf5 {
                 throw std::runtime_error(h5pp::format("Could not copy link [{}] from file [{}]: source file does not exist [{}]", srcLinkPath, srcFilePath, srcPath.string()));
             auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, targetFileCreatePermission, plists);
 
-            hid_t hidSrc  = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
-            hid_t hidTgt  = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
+            hid_t hidSrc = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
+            hid_t hidTgt = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
             if(hidSrc < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error(h5pp::format("Failed to open source file [{}] in read-only mode", srcPath.string()));
@@ -2233,8 +2256,8 @@ namespace h5pp::hdf5 {
             if(not fs::exists(srcPath)) throw std::runtime_error(h5pp::format("Could not copy file [{}] --> [{}]: source file does not exist [{}]", src, tgt, srcPath.string()));
             if(tgtPath == srcPath) h5pp::logger::log->debug("Skipped copying file: source and target files have the same path [{}]", srcPath.string());
 
-            hid_t hidSrc  = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
-            hid_t hidTgt  = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
+            hid_t hidSrc = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
+            hid_t hidTgt = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
             if(hidSrc < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error(h5pp::format("Failed to open source file [{}] in read-only mode", srcPath.string()));
