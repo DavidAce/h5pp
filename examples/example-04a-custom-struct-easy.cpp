@@ -16,7 +16,7 @@ struct Particle {
 void print_particle(const Particle &p) { std::cout << " \t x: " << p.x << " \t y: " << p.y << " \t z: " << p.z << " \t t: " << p.t << " \t id: " << p.id << std::endl; }
 
 int main() {
-    h5pp::File file("exampledir/example-step4-struct-easy.h5", h5pp::FilePermission::REPLACE,0);
+    h5pp::File file("exampledir/example-04a-custom-struct-easy.h5", h5pp::FilePermission::REPLACE,0);
 
     // Register the compound type
     h5pp::hid::h5t H5_PARTICLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Particle));

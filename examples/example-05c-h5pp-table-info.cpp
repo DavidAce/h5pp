@@ -19,7 +19,7 @@ struct Stats {
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-step5-table-info.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-05c-table-info.h5", h5pp::FilePermission::REPLACE);
 
     // Create a type for the char array from the template H5T_C_S1
     // The template describes a string with a single char.
@@ -44,10 +44,10 @@ int main() {
     if(tableInfo.tablePath) printf("Table path     : %s \n", tableInfo.tablePath->c_str());
     if(tableInfo.tableTitle) printf("Table title   : %s \n", tableInfo.tableTitle->c_str());
     if(tableInfo.numRecords) printf("Table records : %lu \n", tableInfo.numRecords.value());
-    if(tableInfo.numFields and tableInfo.fieldNames and tableInfo.fieldSizes)
-        for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++) {
-            printf("-- Field name: %s | %lu bytes\n", tableInfo.fieldNames.value()[idx].c_str(), tableInfo.fieldSizes.value()[idx]);
-        }
+    if(tableInfo.numFields and tableInfo.fieldNames and tableInfo.fieldSizes and tableInfo.cppTypeName)
+        for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++)
+            printf("-- Field name [%s] | Size [%lu] bytes | Type [%s] \n", tableInfo.fieldNames.value()[idx].c_str(), tableInfo.fieldSizes.value()[idx], tableInfo.cppTypeName.value()[idx].c_str());
+
     // Or get a preformated string with .string()
     printf("%s\n", tableInfo.string().c_str());
 
@@ -62,10 +62,10 @@ int main() {
     if(tableInfo.tablePath) printf("Table path     : %s \n", tableInfo.tablePath->c_str());
     if(tableInfo.tableTitle) printf("Table title   : %s \n", tableInfo.tableTitle->c_str());
     if(tableInfo.numRecords) printf("Table records : %lu \n", tableInfo.numRecords.value());
-    if(tableInfo.numFields and tableInfo.fieldNames and tableInfo.fieldSizes)
-        for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++) {
-            printf("-- Field name: %s | %lu bytes\n", tableInfo.fieldNames.value()[idx].c_str(), tableInfo.fieldSizes.value()[idx]);
-        }
+    if(tableInfo.numFields and tableInfo.fieldNames and tableInfo.fieldSizes and tableInfo.cppTypeName)
+        for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++)
+            printf("-- Field name [%s] | Size [%lu] bytes | Type [%s] \n", tableInfo.fieldNames.value()[idx].c_str(), tableInfo.fieldSizes.value()[idx], tableInfo.cppTypeName.value()[idx].c_str());
+
     printf("%s\n", tableInfo.string().c_str());
 
     return 0;

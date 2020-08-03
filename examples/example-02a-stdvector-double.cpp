@@ -2,7 +2,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-step2-stdvector-double.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-02a-stdvector-double.h5", h5pp::FilePermission::REPLACE);
 
     // Initialize a vector of doubles.
     std::vector<double> v_write(10, 3.14);

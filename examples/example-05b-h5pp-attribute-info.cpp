@@ -5,7 +5,7 @@
 int main() {
 
     // Initialize a file
-    h5pp::File file("exampledir/example-step5-attribute-info.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-05b-attribute-info.h5", h5pp::FilePermission::REPLACE);
 
     // Write a dummy dataset to file
     file.writeDataset(42, "dummyGroup/dummyDataset");

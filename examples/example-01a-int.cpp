@@ -2,7 +2,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-step1-int.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-01a-int.h5", h5pp::FilePermission::REPLACE);
 
     int writeInt = 42;
     file.writeDataset(42,"integerData");     // Write data to file in dataset named "integerData"

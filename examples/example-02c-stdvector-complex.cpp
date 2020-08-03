@@ -2,7 +2,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-step2-stdvector-complex.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-02c-stdvector-complex.h5", h5pp::FilePermission::REPLACE);
 
     // Initialize  a vector of complex doubles.
     std::vector<std::complex<double>> v_write(10, {3.14, -2.71});

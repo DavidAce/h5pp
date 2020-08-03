@@ -6,7 +6,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File  file("exampledir/example-step2-text.h5", h5pp::FilePermission::REPLACE, 0);
+    h5pp::File  file("exampledir/example-02b-text.h5", h5pp::FilePermission::REPLACE, 0);
     std::string singleString = "This is a dummy string";
 
     // Write to file

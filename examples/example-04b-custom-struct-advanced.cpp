@@ -9,15 +9,13 @@
 // i.e., struct byte layout has to be known at compile-time.
 struct SpaceTimePoint {
     std::array<double, 4>                   coordinates = {0, 0, 0, 0}; // Specify the array "coordinates" as rank-1 array of length 4
-    char                                    type[10]    = "minkowski";
+    char                                    type[32]    = "spacetime";
     void                                    dummy_function(int) {} // Functions are OK
 };
 
-void print_point(const SpaceTimePoint &p) {
-}
-
 int main() {
-    h5pp::File file("exampledir/example-step4-custom-struct-advanced.h5", h5pp::FilePermission::REPLACE, 0);
+    int logLevel = 2; // Default log level is 2: "info"
+    h5pp::File file("exampledir/example-04b-custom-struct-advanced.h5", h5pp::FilePermission::REPLACE, logLevel);
 
     // We can create a multi-dimensional array using H5Tarray_create. It takes the
     // rank (i.e. number of indices) and the size of each dimension in a c-style array pointer.
@@ -43,7 +41,7 @@ int main() {
     // Now we can write single points or even containers with points.
 
     // Write a single point
-    SpaceTimePoint point;
+    SpaceTimePoint point {{1,2,3,0},"space"};
     file.writeDataset(point, "point", H5_POINT_TYPE);
 
     // Or write a container full of them! Let's make a vector with 10 points.
@@ -65,11 +63,12 @@ int main() {
     // Read a single points read some specific entries
     auto point_read = file.readDataset<SpaceTimePoint>("point");
     std::cout << "Single entry read \n";
-    print_point(point_read);
     printf("x:%f y: %f z: %f t: %f type: %s\n",  point_read.coordinates[0], point_read.coordinates[1], point_read.coordinates[2], point_read.coordinates[3], point_read.type);
+
+
     // ...or read all 10 points into a new vector
     auto points_read = file.readDataset<std::vector<SpaceTimePoint>>("points");
     std::cout << "Multiple entries read \n";
-    for(auto &p : points_read)     printf("x:%f y: %f z: %f t: %f type: %s\n",  p.coordinates[0], p.coordinates[1], p.coordinates[2], p.coordinates[3], p.type);
+    for(auto &p : points_read)  printf("x:%f y: %f z: %f t: %f type: %s\n",  p.coordinates[0], p.coordinates[1], p.coordinates[2], p.coordinates[3], p.type);
     return 0;
 }
