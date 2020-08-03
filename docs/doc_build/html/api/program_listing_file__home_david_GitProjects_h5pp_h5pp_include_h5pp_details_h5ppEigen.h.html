@@ -1,0 +1,462 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Program Listing for File h5ppEigen.h &mdash; h5pp  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js"></script>
+        <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/collapsible-lists/css/tree_view.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> h5pp
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">h5pp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../README.html#to-do">To-do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">Library API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">h5pp</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Program Listing for File h5ppEigen.h</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/program_listing_file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppEigen.h.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="program-listing-for-file-h5ppeigen-h">
+<span id="program-listing-file-home-david-gitprojects-h5pp-h5pp-include-h5pp-details-h5ppeigen-h"></span><h1>Program Listing for File h5ppEigen.h<a class="headerlink" href="#program-listing-for-file-h5ppeigen-h" title="Permalink to this headline">¶</a></h1>
+<p>↰ <a class="reference internal" href="file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppEigen.h.html#file-home-david-gitprojects-h5pp-h5pp-include-h5pp-details-h5ppeigen-h"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEigen.h</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#pragma once</span>
+
+<span class="cp">#if __has_include(&lt;Eigen/Core&gt;)</span>
+    <span class="cp">#define H5PP_EIGEN3</span>
+    <span class="cp">#include</span> <span class="cpf">&lt;Eigen/Core&gt;</span><span class="cp"></span>
+    <span class="cp">#include</span> <span class="cpf">&lt;unsupported/Eigen/CXX11/Tensor&gt;</span><span class="cp"></span>
+<span class="cp">#endif</span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;iterator&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;numeric&gt;</span><span class="cp"></span>
+<span class="cp">#if !defined(_MSC_VER)</span>
+    <span class="cp">#define H5PP_CONSTEXPR constexpr</span>
+<span class="cp">#else</span>
+    <span class="cp">#define H5PP_CONSTEXPR</span>
+<span class="cp">#endif</span>
+
+<span class="k">namespace</span> <span class="n">h5pp</span> <span class="p">{</span>
+<span class="cp">#ifdef H5PP_EIGEN3</span>
+    <span class="k">namespace</span> <span class="n">eigen</span> <span class="p">{</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Scalar</span><span class="o">&gt;</span>
+        <span class="k">using</span> <span class="n">MatrixType</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Dynamic</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Dynamic</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Scalar</span><span class="o">&gt;</span>
+        <span class="k">using</span> <span class="n">VectorType</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Dynamic</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">auto</span> <span class="n">rank</span><span class="o">&gt;</span>
+        <span class="k">using</span> <span class="n">array</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span><span class="p">,</span> <span class="n">rank</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">auto</span> <span class="n">rank</span><span class="o">&gt;</span>
+        <span class="k">using</span> <span class="n">DSizes</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">DSizes</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span><span class="p">,</span> <span class="n">rank</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="k">using</span> <span class="n">array8</span> <span class="o">=</span> <span class="n">array</span><span class="o">&lt;</span><span class="mi">8</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="k">using</span> <span class="n">array7</span> <span class="o">=</span> <span class="n">array</span><span class="o">&lt;</span><span class="mi">7</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="k">using</span> <span class="n">array6</span> <span class="o">=</span> <span class="n">array</span><span class="o">&lt;</span><span class="mi">6</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="k">using</span> <span class="n">array5</span> <span class="o">=</span> <span class="n">array</span><span class="o">&lt;</span><span class="mi">5</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="k">using</span> <span class="n">array4</span> <span class="o">=</span> <span class="n">array</span><span class="o">&lt;</span><span class="mi">4</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="k">using</span> <span class="n">array3</span> <span class="o">=</span> <span class="n">array</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="k">using</span> <span class="n">array2</span> <span class="o">=</span> <span class="n">array</span><span class="o">&lt;</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">;</span>
+        <span class="k">using</span> <span class="n">array1</span> <span class="o">=</span> <span class="n">array</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span>
+
+        <span class="c1">// Handy functions to copy lists of dimensions</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">auto</span> <span class="n">rank</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Container</span><span class="o">&gt;</span>
+        <span class="kt">void</span> <span class="n">copy_dims</span><span class="p">(</span><span class="n">Eigen</span><span class="o">::</span><span class="n">DSizes</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">rank</span><span class="o">&gt;</span> <span class="n">dsizes</span><span class="p">,</span> <span class="k">const</span> <span class="n">Container</span> <span class="o">&amp;</span><span class="n">container</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">constexpr</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_array_v</span><span class="o">&lt;</span><span class="n">Container</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">copy_n</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span><span class="n">container</span><span class="p">),</span> <span class="n">rank</span><span class="p">,</span> <span class="n">dsizes</span><span class="p">.</span><span class="n">begin</span><span class="p">());</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">container</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">!=</span> <span class="n">rank</span><span class="p">)</span> <span class="k">throw</span> <span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;copy_dims: Wrong container size, can&#39;t copy dimensions.&quot;</span><span class="p">);</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">copy</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span><span class="n">container</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">end</span><span class="p">(</span><span class="n">container</span><span class="p">),</span> <span class="n">dsizes</span><span class="p">.</span><span class="n">begin</span><span class="p">());</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">auto</span> <span class="n">rank</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Container</span><span class="o">&gt;</span>
+        <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="n">H5PP_CONSTEXPR</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">DSizes</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span><span class="p">,</span> <span class="n">rank</span><span class="o">&gt;</span> <span class="n">copy_dims</span><span class="p">(</span><span class="k">const</span> <span class="n">Container</span> <span class="o">&amp;</span><span class="n">container</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">Eigen</span><span class="o">::</span><span class="n">DSizes</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span><span class="p">,</span> <span class="n">rank</span><span class="o">&gt;</span> <span class="n">dsizes</span><span class="p">;</span>
+            <span class="k">if</span> <span class="nf">constexpr</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_array_v</span><span class="o">&lt;</span><span class="n">Container</span><span class="o">&gt;</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">copy_n</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span><span class="n">container</span><span class="p">),</span> <span class="n">rank</span><span class="p">,</span> <span class="n">dsizes</span><span class="p">.</span><span class="n">begin</span><span class="p">());</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">container</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">!=</span> <span class="n">rank</span><span class="p">)</span> <span class="k">throw</span> <span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;copy_dims: Wrong container size, can&#39;t copy dimensions.&quot;</span><span class="p">);</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">copy</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span><span class="n">container</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">end</span><span class="p">(</span><span class="n">container</span><span class="p">),</span> <span class="n">dsizes</span><span class="p">.</span><span class="n">begin</span><span class="p">());</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="n">dsizes</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">auto</span> <span class="n">rank</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Container</span><span class="o">&gt;</span>
+        <span class="p">[[</span><span class="n">nodiscard</span><span class="p">]]</span> <span class="n">H5PP_CONSTEXPR</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">DSizes</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span><span class="p">,</span> <span class="n">rank</span><span class="o">&gt;</span> <span class="n">copy_dims</span><span class="p">(</span><span class="k">const</span> <span class="n">Container</span> <span class="o">*</span><span class="n">container</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">Eigen</span><span class="o">::</span><span class="n">DSizes</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span><span class="p">,</span> <span class="n">rank</span><span class="o">&gt;</span> <span class="n">dsizes</span><span class="p">;</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">copy_n</span><span class="p">(</span><span class="n">container</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">dsizes</span><span class="p">.</span><span class="n">begin</span><span class="p">());</span>
+            <span class="k">return</span> <span class="n">dsizes</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Shorthand for the list of index pairs.</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">auto</span> <span class="n">N</span><span class="o">&gt;</span>
+        <span class="k">using</span> <span class="n">idxlistpair</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">IndexPair</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">N</span><span class="o">&gt;</span><span class="p">;</span>
+
+        <span class="kr">inline</span> <span class="n">H5PP_CONSTEXPR</span> <span class="n">idxlistpair</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span> <span class="n">idx</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="p">{};</span> <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span> <span class="n">N</span><span class="p">,</span> <span class="k">typename</span> <span class="n">idxType</span><span class="o">&gt;</span>
+        <span class="n">H5PP_CONSTEXPR</span> <span class="n">idxlistpair</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="n">idx</span><span class="p">(</span><span class="k">const</span> <span class="n">idxType</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">list1</span><span class="p">)[</span><span class="n">N</span><span class="p">],</span> <span class="k">const</span> <span class="n">idxType</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">list2</span><span class="p">)[</span><span class="n">N</span><span class="p">])</span> <span class="p">{</span>
+            <span class="c1">// Use numpy-style indexing for contraction. Each list contains a list of indices to be contracted for the respective</span>
+            <span class="c1">// tensors. This function zips them together into pairs as used in Eigen::Tensor module. This does not sort the indices in decreasing order.</span>
+            <span class="k">static_assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_integral_v</span><span class="o">&lt;</span><span class="n">idxType</span><span class="o">&gt;</span><span class="p">);</span>
+            <span class="n">idxlistpair</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="n">pairlistOut</span><span class="p">;</span>
+            <span class="k">for</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span> <span class="n">pairlistOut</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">IndexPair</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span><span class="o">&gt;</span><span class="p">{</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span><span class="o">&gt;</span><span class="p">(</span><span class="n">list1</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span><span class="o">&gt;</span><span class="p">(</span><span class="n">list2</span><span class="p">[</span><span class="n">i</span><span class="p">])};</span> <span class="p">}</span>
+            <span class="k">return</span> <span class="n">pairlistOut</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">struct</span> <span class="n">idx_dim_pair</span> <span class="p">{</span>
+            <span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span> <span class="n">idxA</span><span class="p">;</span>
+            <span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span> <span class="n">idxB</span><span class="p">;</span>
+            <span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span> <span class="n">dimB</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span> <span class="n">NB</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="kt">size_t</span> <span class="n">N</span><span class="o">&gt;</span>
+        <span class="n">H5PP_CONSTEXPR</span> <span class="n">idxlistpair</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="n">sortIdx</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span><span class="p">,</span> <span class="n">NB</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">dimensions</span><span class="p">,</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">idx_ctrct_A</span><span class="p">)[</span><span class="n">N</span><span class="p">],</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Index</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">idx_ctrct_B</span><span class="p">)[</span><span class="n">N</span><span class="p">])</span> <span class="p">{</span>
+            <span class="c1">// When doing contractions, some indices may be larger than others. For performance, you want to</span>
+            <span class="c1">// contract the largest indices first. This will return a sorted index list in decreasing order.</span>
+            <span class="n">Eigen</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">idx_dim_pair</span><span class="p">,</span> <span class="n">N</span><span class="o">&gt;</span> <span class="n">idx_dim_pair_list</span><span class="p">;</span>
+            <span class="k">for</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span> <span class="n">idx_dim_pair_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">idx_ctrct_A</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">idx_ctrct_B</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">dimensions</span><span class="p">[</span><span class="n">idx_ctrct_B</span><span class="p">[</span><span class="n">i</span><span class="p">]]};</span> <span class="p">}</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">sort</span><span class="p">(</span><span class="n">idx_dim_pair_list</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">idx_dim_pair_list</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="p">[](</span><span class="k">const</span> <span class="k">auto</span> <span class="o">&amp;</span><span class="n">i</span><span class="p">,</span> <span class="k">const</span> <span class="k">auto</span> <span class="o">&amp;</span><span class="n">j</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">i</span><span class="p">.</span><span class="n">dimB</span> <span class="o">&gt;</span> <span class="n">j</span><span class="p">.</span><span class="n">dimB</span><span class="p">;</span> <span class="p">});</span>
+            <span class="n">idxlistpair</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="n">pairlistOut</span><span class="p">;</span>
+            <span class="k">for</span><span class="p">(</span><span class="kt">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span> <span class="n">pairlistOut</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">IndexPair</span><span class="o">&lt;</span><span class="kt">long</span><span class="o">&gt;</span><span class="p">{</span><span class="n">idx_dim_pair_list</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">idxA</span><span class="p">,</span> <span class="n">idx_dim_pair_list</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">idxB</span><span class="p">};</span> <span class="p">}</span>
+            <span class="k">return</span> <span class="n">pairlistOut</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="c1">//</span>
+        <span class="c1">//    //***************************************//</span>
+        <span class="c1">//    //Different views for rank 1 and 2 tensors//</span>
+        <span class="c1">//    //***************************************//</span>
+        <span class="c1">//</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Scalar</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="n">extractDiagonal</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">tensor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">auto</span> <span class="n">rows</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">.</span><span class="n">dimension</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+            <span class="k">auto</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">.</span><span class="n">dimension</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">dimension</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="n">tensor</span><span class="p">.</span><span class="n">dimension</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="k">throw</span> <span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;extractDiagonal expects a square tensor&quot;</span><span class="p">);</span>
+
+            <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="n">diagonals</span><span class="p">(</span><span class="n">rows</span><span class="p">);</span>
+            <span class="k">for</span><span class="p">(</span><span class="k">auto</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">rows</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span> <span class="n">diagonals</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span> <span class="p">}</span>
+            <span class="k">return</span> <span class="n">diagonals</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Scalar</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="k">auto</span> <span class="n">asDiagonal</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">tensor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">tensor</span><span class="p">.</span><span class="n">inflate</span><span class="p">(</span><span class="n">array1</span><span class="p">{</span><span class="n">tensor</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">}).</span><span class="n">reshape</span><span class="p">(</span><span class="n">array2</span><span class="p">{</span><span class="n">tensor</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">tensor</span><span class="p">.</span><span class="n">size</span><span class="p">()});</span>
+        <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Scalar</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="k">auto</span> <span class="n">asDiagonalSquared</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">tensor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">tensor</span><span class="p">.</span><span class="n">square</span><span class="p">().</span><span class="n">inflate</span><span class="p">(</span><span class="n">array1</span><span class="p">{</span><span class="n">tensor</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">}).</span><span class="n">reshape</span><span class="p">(</span><span class="n">array2</span><span class="p">{</span><span class="n">tensor</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">tensor</span><span class="p">.</span><span class="n">size</span><span class="p">()});</span>
+        <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Scalar</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="k">auto</span> <span class="n">asDiagonalInversed</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">tensor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">tensor</span><span class="p">.</span><span class="n">inverse</span><span class="p">().</span><span class="n">inflate</span><span class="p">(</span><span class="n">array1</span><span class="p">{</span><span class="n">tensor</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">}).</span><span class="n">reshape</span><span class="p">(</span><span class="n">array2</span><span class="p">{</span><span class="n">tensor</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">tensor</span><span class="p">.</span><span class="n">size</span><span class="p">()});</span>
+        <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Scalar</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="k">auto</span> <span class="n">asDiagonalInversed</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">tensor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">dimension</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="n">tensor</span><span class="p">.</span><span class="n">dimension</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="k">throw</span> <span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Textra::asDiagonalInversed expects a square tensor&quot;</span><span class="p">);</span>
+            <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="n">inversed</span> <span class="o">=</span> <span class="n">asDiagonalInversed</span><span class="p">(</span><span class="n">extractDiagonal</span><span class="p">(</span><span class="n">tensor</span><span class="p">));</span>
+            <span class="k">return</span> <span class="n">inversed</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Scalar</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="k">auto</span> <span class="n">asNormalized</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">tensor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">Eigen</span><span class="o">::</span><span class="n">Map</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">VectorType</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="o">&gt;&gt;</span> <span class="n">map</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">tensor</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+            <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">TensorMap</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Scalar</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">map</span><span class="p">.</span><span class="n">normalized</span><span class="p">().</span><span class="n">eval</span><span class="p">().</span><span class="n">data</span><span class="p">(),</span> <span class="n">array1</span><span class="p">{</span><span class="n">map</span><span class="p">.</span><span class="n">size</span><span class="p">()});</span>
+        <span class="p">}</span>
+
+        <span class="c1">//    //****************************//</span>
+        <span class="c1">//    //Matrix to tensor conversions//</span>
+        <span class="c1">//    //****************************//</span>
+
+        <span class="c1">// Detects if Derived is a plain object, like &quot;MatrixXd&quot; or similar.</span>
+        <span class="c1">// std::decay removes pointer or ref qualifiers if present</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">&gt;</span>
+        <span class="k">using</span> <span class="n">is_plainObject</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">is_base_of</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">PlainObjectBase</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">decay_t</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">decay_t</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;&gt;</span><span class="p">;</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">&gt;</span>
+        <span class="k">using</span> <span class="n">is_matrixObject</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">is_base_of</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixBase</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">decay_t</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">decay_t</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;&gt;</span><span class="p">;</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">&gt;</span>
+        <span class="k">using</span> <span class="n">is_arrayObject</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">is_base_of</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">ArrayBase</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">decay_t</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">decay_t</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;&gt;</span><span class="p">;</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="p">,</span> <span class="k">auto</span> <span class="n">rank</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">rank</span><span class="o">&gt;</span> <span class="n">Matrix_to_Tensor</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">EigenBase</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">matrix</span><span class="p">,</span> <span class="k">const</span> <span class="n">array</span><span class="o">&lt;</span><span class="n">rank</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">dims</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">constexpr</span><span class="p">(</span><span class="n">is_plainObject</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">// Return map from raw input.</span>
+                <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">TensorMap</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="k">const</span> <span class="k">typename</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">rank</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">matrix</span><span class="p">.</span><span class="n">derived</span><span class="p">().</span><span class="n">eval</span><span class="p">().</span><span class="n">data</span><span class="p">(),</span> <span class="n">dims</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="c1">// Create a temporary</span>
+                <span class="n">MatrixType</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Scalar</span><span class="o">&gt;</span> <span class="n">matref</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">;</span>
+                <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">TensorMap</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">rank</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">matref</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">dims</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Helpful overload</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Dims</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Scalar</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">...(</span><span class="n">Dims</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">Matrix_to_Tensor</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">EigenBase</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">matrix</span><span class="p">,</span> <span class="k">const</span> <span class="n">Dims</span><span class="p">...</span> <span class="n">dims</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">Matrix_to_Tensor</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">array</span><span class="o">&lt;</span><span class="k">sizeof</span><span class="p">...(</span><span class="n">Dims</span><span class="p">)</span><span class="o">&gt;</span><span class="p">{</span><span class="n">dims</span><span class="p">...});</span>
+        <span class="p">}</span>
+        <span class="c1">// Helpful overload</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="p">,</span> <span class="k">auto</span> <span class="n">rank</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">rank</span><span class="o">&gt;</span> <span class="n">Matrix_to_Tensor</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">EigenBase</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">matrix</span><span class="p">,</span> <span class="k">const</span> <span class="n">DSizes</span><span class="o">&lt;</span><span class="n">rank</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">dims</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">array</span><span class="o">&lt;</span><span class="n">rank</span><span class="o">&gt;</span> <span class="n">dim_array</span> <span class="o">=</span> <span class="n">dims</span><span class="p">;</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">copy</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span><span class="n">dims</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">end</span><span class="p">(</span><span class="n">dims</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span><span class="n">dim_array</span><span class="p">));</span>
+            <span class="k">return</span> <span class="nf">Matrix_to_Tensor</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">dim_array</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="k">auto</span> <span class="n">Matrix_to_Tensor1</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">EigenBase</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">matrix</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">Matrix_to_Tensor</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">matrix</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+        <span class="p">}</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="k">auto</span> <span class="n">Matrix_to_Tensor2</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">EigenBase</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">matrix</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">Matrix_to_Tensor</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">matrix</span><span class="p">.</span><span class="n">rows</span><span class="p">(),</span> <span class="n">matrix</span><span class="p">.</span><span class="n">cols</span><span class="p">());</span>
+        <span class="p">}</span>
+
+        <span class="c1">//****************************//</span>
+        <span class="c1">// Tensor to matrix conversions//</span>
+        <span class="c1">//****************************//</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Scalar</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="n">MatrixType</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="o">&gt;</span> <span class="n">Tensor2_to_Matrix</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">tensor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Map</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">MatrixType</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">tensor</span><span class="p">.</span><span class="n">dimension</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">tensor</span><span class="p">.</span><span class="n">dimension</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+        <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Scalar</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="n">MatrixType</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="o">&gt;</span> <span class="n">Tensor1_to_Vector</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">tensor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Map</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">VectorType</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">tensor</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+        <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Scalar</span><span class="p">,</span> <span class="k">auto</span> <span class="n">rank</span><span class="p">,</span> <span class="k">typename</span> <span class="n">sizeType</span><span class="o">&gt;</span>
+        <span class="k">constexpr</span> <span class="n">MatrixType</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="o">&gt;</span> <span class="n">Tensor_to_Matrix</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">rank</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">tensor</span><span class="p">,</span> <span class="k">const</span> <span class="n">sizeType</span> <span class="n">rows</span><span class="p">,</span> <span class="k">const</span> <span class="n">sizeType</span> <span class="n">cols</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Map</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">MatrixType</span><span class="o">&lt;</span><span class="n">Scalar</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="c1">//************************//</span>
+        <span class="c1">// change storage layout //</span>
+        <span class="c1">//************************//</span>
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">&gt;</span>
+        <span class="k">auto</span> <span class="n">to_RowMajor</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">TensorBase</span><span class="o">&lt;</span><span class="n">Derived</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">ReadOnlyAccessors</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">tensor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">constexpr</span><span class="p">(</span><span class="n">Eigen</span><span class="o">::</span><span class="n">RowMajor</span> <span class="o">==</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">StorageOptions</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Derived</span><span class="o">::</span><span class="n">Layout</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">tensor</span><span class="p">;</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="n">array</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">::</span><span class="n">NumIndices</span><span class="o">&gt;</span> <span class="n">neworder</span><span class="p">;</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">iota</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span><span class="n">neworder</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">end</span><span class="p">(</span><span class="n">neworder</span><span class="p">),</span> <span class="mi">0</span><span class="p">);</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">reverse</span><span class="p">(</span><span class="n">neworder</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">neworder</span><span class="p">.</span><span class="n">data</span><span class="p">()</span> <span class="o">+</span> <span class="n">neworder</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+                <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">Derived</span><span class="o">::</span><span class="n">NumIndices</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">RowMajor</span><span class="o">&gt;</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">swap_layout</span><span class="p">().</span><span class="n">shuffle</span><span class="p">(</span><span class="n">neworder</span><span class="p">));</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">&gt;</span>
+        <span class="k">auto</span> <span class="n">to_ColMajor</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">TensorBase</span><span class="o">&lt;</span><span class="n">Derived</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">ReadOnlyAccessors</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">tensor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">constexpr</span><span class="p">(</span><span class="n">Eigen</span><span class="o">::</span><span class="n">ColMajor</span> <span class="o">==</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">StorageOptions</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Derived</span><span class="o">::</span><span class="n">Layout</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">tensor</span><span class="p">;</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="n">array</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">::</span><span class="n">NumIndices</span><span class="o">&gt;</span> <span class="n">neworder</span><span class="p">;</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">iota</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">begin</span><span class="p">(</span><span class="n">neworder</span><span class="p">),</span> <span class="n">std</span><span class="o">::</span><span class="n">end</span><span class="p">(</span><span class="n">neworder</span><span class="p">),</span> <span class="mi">0</span><span class="p">);</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">reverse</span><span class="p">(</span><span class="n">neworder</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">neworder</span><span class="p">.</span><span class="n">data</span><span class="p">()</span> <span class="o">+</span> <span class="n">neworder</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+                <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">Derived</span><span class="o">::</span><span class="n">NumIndices</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">ColMajor</span><span class="o">&gt;</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">swap_layout</span><span class="p">().</span><span class="n">shuffle</span><span class="p">(</span><span class="n">neworder</span><span class="p">));</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">&gt;</span>
+        <span class="k">auto</span> <span class="n">to_RowMajor</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">DenseBase</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">dense</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">constexpr</span><span class="p">(</span><span class="n">Derived</span><span class="o">::</span><span class="n">IsRowMajor</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">dense</span><span class="p">;</span> <span class="p">}</span>
+            <span class="k">if</span> <span class="k">constexpr</span><span class="p">(</span><span class="n">is_matrixObject</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">Derived</span><span class="o">::</span><span class="n">RowsAtCompileTime</span><span class="p">,</span> <span class="n">Derived</span><span class="o">::</span><span class="n">ColsAtCompileTime</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">RowMajor</span><span class="o">&gt;</span><span class="p">(</span><span class="n">dense</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="k">constexpr</span><span class="p">(</span><span class="n">is_arrayObject</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">Derived</span><span class="o">::</span><span class="n">RowsAtCompileTime</span><span class="p">,</span> <span class="n">Derived</span><span class="o">::</span><span class="n">ColsAtCompileTime</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">RowMajor</span><span class="o">&gt;</span><span class="p">(</span><span class="n">dense</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="k">throw</span> <span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Wrong dense type?? Report this bug!&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">&gt;</span>
+        <span class="k">auto</span> <span class="n">to_ColMajor</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">DenseBase</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">dense</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="k">constexpr</span><span class="p">(</span><span class="n">not</span> <span class="n">Derived</span><span class="o">::</span><span class="n">IsRowMajor</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">dense</span><span class="p">;</span> <span class="p">}</span>
+            <span class="k">if</span> <span class="k">constexpr</span><span class="p">(</span><span class="n">is_matrixObject</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">Derived</span><span class="o">::</span><span class="n">RowsAtCompileTime</span><span class="p">,</span> <span class="n">Derived</span><span class="o">::</span><span class="n">ColsAtCompileTime</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">ColMajor</span><span class="o">&gt;</span><span class="p">(</span><span class="n">dense</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="k">constexpr</span><span class="p">(</span><span class="n">is_arrayObject</span><span class="o">&lt;</span><span class="n">Derived</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Derived</span><span class="o">::</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">Derived</span><span class="o">::</span><span class="n">RowsAtCompileTime</span><span class="p">,</span> <span class="n">Derived</span><span class="o">::</span><span class="n">ColsAtCompileTime</span><span class="p">,</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">ColMajor</span><span class="o">&gt;</span><span class="p">(</span><span class="n">dense</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="k">throw</span> <span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">&quot;Wrong dense type?? Report this bug!&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+<span class="cp">#endif</span>
+
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020-present, David Ace
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

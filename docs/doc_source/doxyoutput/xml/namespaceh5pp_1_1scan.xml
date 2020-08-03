@@ -1,0 +1,654 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="namespaceh5pp_1_1scan" kind="namespace" language="C++">
+    <compoundname>h5pp::scan</compoundname>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespaceh5pp_1_1scan_1ae4ec96a718b44c4488ea91734fc44d47" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename h5x</type>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc</ref>&lt;h5x&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void h5pp::scan::fillDsetInfo</definition>
+        <argsstring>(h5pp::DsetInfo &amp;info, const h5x &amp;loc, const Options &amp;options, const PropertyLists &amp;plists=PropertyLists())</argsstring>
+        <name>fillDsetInfo</name>
+        <param>
+          <type><ref refid="structh5pp_1_1_dset_info" kindref="compound">h5pp::DsetInfo</ref> &amp;</type>
+          <declname>info</declname>
+        </param>
+        <param>
+          <type>const h5x &amp;</type>
+          <declname>loc</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_options" kindref="compound">Options</ref> &amp;</type>
+          <declname>options</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref> &amp;</type>
+          <declname>plists</declname>
+          <defval><ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="18" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" bodystart="18" bodyend="69"/>
+        <references refid="structh5pp_1_1_options_1a742bc51e348367beda138648d17bbc4a" compoundref="h5pp_info_8h" startline="75">h5pp::Options::linkPath</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">h5pp::logger::setLogger</references>
+        <references refid="structh5pp_1_1_dset_info_1a9df252e6c046f3b31d25f94eb8a05b67" compoundref="h5pp_info_8h" startline="198">h5pp::DsetInfo::h5File</references>
+        <references refid="structh5pp_1_1_dset_info_1a066416eedbcdf8f35e2904bc35c67d31" compoundref="h5pp_info_8h" startline="199">h5pp::DsetInfo::h5Group</references>
+        <references refid="structh5pp_1_1_dset_info_1a6db23ff2c7954df6784951896d6cf9f6" compoundref="h5pp_info_8h" startline="200">h5pp::DsetInfo::h5ObjLoc</references>
+        <references refid="structh5pp_1_1_dset_info_1a02695282a2d094bc7aabd6bfa4bb9fc0" compoundref="h5pp_info_8h" startline="207">h5pp::DsetInfo::dsetPath</references>
+        <references refid="namespaceh5pp_1_1util_1ae6c73a0989d482fb452c89d604c1adee" compoundref="h5pp_utils_8h" startline="12" endline="25">h5pp::util::safe_str</references>
+        <references refid="structh5pp_1_1_dset_info_1a671c7bb8ad1a168e91e0d3eaf463553b" compoundref="h5pp_info_8h" startline="208">h5pp::DsetInfo::dsetExists</references>
+        <references refid="namespaceh5pp_1_1hdf5_1aa50d2e158c1a2ab184e48b1986214773" compoundref="h5pp_hdf5_8h" startline="445" endline="458">h5pp::hdf5::checkIfDatasetExists</references>
+        <references refid="structh5pp_1_1_dset_info_1a7a0a0b79ebf03553a5f5bf47a9d2b717" compoundref="h5pp_info_8h" startline="222" endline="228">h5pp::DsetInfo::getLocId</references>
+        <references refid="structh5pp_1_1_property_lists_1a23d97920661e220edc6fc72260798515" compoundref="h5pp_property_lists_8h" startline="16">h5pp::PropertyLists::linkAccess</references>
+        <references refid="structh5pp_1_1_dset_info_1a58f15a74dd4f320566755d053702504e" compoundref="h5pp_info_8h" startline="215">h5pp::DsetInfo::dsetSlab</references>
+        <references refid="structh5pp_1_1_options_1ae6b603baf0961d5ce150a659340f3613" compoundref="h5pp_info_8h" startline="80">h5pp::Options::dsetSlab</references>
+        <references refid="structh5pp_1_1_dset_info_1a0698a4d87df3f4b39dc268de56b9533c" compoundref="h5pp_info_8h" startline="201">h5pp::DsetInfo::h5Dset</references>
+        <references refid="structh5pp_1_1_dset_info_1a7055f1166e9a5cce06324d9502310ee6" compoundref="h5pp_info_8h" startline="202">h5pp::DsetInfo::h5Type</references>
+        <references refid="structh5pp_1_1_dset_info_1a6fe259f61912c853063b78fe88b568cb" compoundref="h5pp_info_8h" startline="204">h5pp::DsetInfo::h5Space</references>
+        <references refid="structh5pp_1_1_dset_info_1a9f9fbefffa7655fce0fd129584ce13c9" compoundref="h5pp_info_8h" startline="210">h5pp::DsetInfo::dsetByte</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a24ec8a944e3eba035246370d2e99ca03" compoundref="h5pp_hdf5_8h" startline="190" endline="202">h5pp::hdf5::getBytesTotal</references>
+        <references refid="structh5pp_1_1_dset_info_1a04ea6079208921bca11c32b54d89bb83" compoundref="h5pp_info_8h" startline="209">h5pp::DsetInfo::dsetSize</references>
+        <references refid="namespaceh5pp_1_1hdf5_1ae9c89449ff6f65f8312b2438ef453ad1" compoundref="h5pp_hdf5_8h" startline="55" endline="55">h5pp::hdf5::getSize</references>
+        <references refid="structh5pp_1_1_dset_info_1acb16320a29dd53c18a8eb4f1bf23a756" compoundref="h5pp_info_8h" startline="211">h5pp::DsetInfo::dsetRank</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a217b9497758c097d45cc2d74441bf2a6" compoundref="h5pp_hdf5_8h" startline="43" endline="43">h5pp::hdf5::getRank</references>
+        <references refid="structh5pp_1_1_dset_info_1a7f14b6321a342a6589de458fcc6b7247" compoundref="h5pp_info_8h" startline="212">h5pp::DsetInfo::dsetDims</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a13e315ec366df21c69d4a718e2a09ef6" compoundref="h5pp_hdf5_8h" startline="69" endline="78">h5pp::hdf5::getDimensions</references>
+        <references refid="structh5pp_1_1_dset_info_1ad1a3ffef5237a54a2e91b9bbbd1c7789" compoundref="h5pp_info_8h" startline="205">h5pp::DsetInfo::h5PlistDsetCreate</references>
+        <references refid="structh5pp_1_1_dset_info_1af634783657b1cf3c2642aa2157c07ee3" compoundref="h5pp_info_8h" startline="206">h5pp::DsetInfo::h5PlistDsetAccess</references>
+        <references refid="structh5pp_1_1_dset_info_1ac51824f123de75a50c3a81ebc73b5f60" compoundref="h5pp_info_8h" startline="203">h5pp::DsetInfo::h5Layout</references>
+        <references refid="structh5pp_1_1_dset_info_1a76ab42997bd4a82ce7ee796187663ad0" compoundref="h5pp_info_8h" startline="214">h5pp::DsetInfo::dsetChunk</references>
+        <references refid="namespaceh5pp_1_1hdf5_1af1da3a25187be4f7c4f7b89080f04c5f" compoundref="h5pp_hdf5_8h" startline="97" endline="110">h5pp::hdf5::getChunkDimensions</references>
+        <references refid="structh5pp_1_1_dset_info_1abcb6dea25729e1ba3f35769d5979af34" compoundref="h5pp_info_8h" startline="213">h5pp::DsetInfo::dsetDimsMax</references>
+        <references refid="namespaceh5pp_1_1hdf5_1ab553655036e9987da70ffefb1e07f262" compoundref="h5pp_hdf5_8h" startline="117" endline="128">h5pp::hdf5::getMaxDimensions</references>
+        <references refid="structh5pp_1_1_dset_info_1a6822176f32ad86d84553fc5fba02056a" compoundref="h5pp_info_8h" startline="216">h5pp::DsetInfo::resizeMode</references>
+        <references refid="structh5pp_1_1_options_1a76649212c140d597c8c02b85ac2e3dea" compoundref="h5pp_info_8h" startline="86">h5pp::Options::resizeMode</references>
+        <references refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a0894c203073521ad32840dd9657949ab">h5pp::DO_NOT_RESIZE</references>
+        <references refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a6cd43a637f8b733c23575092197f3ebb">h5pp::RESIZE_TO_FIT</references>
+        <references refid="structh5pp_1_1_dset_info_1a0415458e8810298f4573e4216d7386cc" compoundref="h5pp_info_8h" startline="220">h5pp::DsetInfo::cppTypeIndex</references>
+        <references refid="structh5pp_1_1_dset_info_1ae129451db2d91b0701c59156db624515" compoundref="h5pp_info_8h" startline="218">h5pp::DsetInfo::cppTypeName</references>
+        <references refid="structh5pp_1_1_dset_info_1a3c35adc9022fb9e5b33da2948acd8a11" compoundref="h5pp_info_8h" startline="219">h5pp::DsetInfo::cppTypeSize</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a97be622cb9d6be8a8c224e3c71125d7d" compoundref="h5pp_hdf5_8h" startline="609" endline="672">h5pp::hdf5::getCppType</references>
+        <references refid="namespaceh5pp_1_1debug_1aff3a16d65569dd5d2e7f63a03ff0c210" compoundref="h5pp_info_8h" startline="40" endline="70">h5pp::debug::reportCompatibility</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1scan_1a183b782a3c122acc58cf8da63c233d1e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename h5x</type>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc</ref>&lt;h5x&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structh5pp_1_1_dset_info" kindref="compound">h5pp::DsetInfo</ref></type>
+        <definition>h5pp::DsetInfo h5pp::scan::readDsetInfo</definition>
+        <argsstring>(const h5x &amp;loc, const Options &amp;options, const PropertyLists &amp;plists=PropertyLists())</argsstring>
+        <name>readDsetInfo</name>
+        <param>
+          <type>const h5x &amp;</type>
+          <declname>loc</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_options" kindref="compound">Options</ref> &amp;</type>
+          <declname>options</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref> &amp;</type>
+          <declname>plists</declname>
+          <defval><ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="78" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" bodystart="78" bodyend="83"/>
+        <references refid="structh5pp_1_1_options_1a742bc51e348367beda138648d17bbc4a" compoundref="h5pp_info_8h" startline="75">h5pp::Options::linkPath</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1scan_1a9776b8177114fe0bf8eb6ec13948de04" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename h5x</type>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc</ref>&lt;h5x&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structh5pp_1_1_dset_info" kindref="compound">h5pp::DsetInfo</ref></type>
+        <definition>h5pp::DsetInfo h5pp::scan::getDsetInfo</definition>
+        <argsstring>(const h5x &amp;loc, const Options &amp;options, const PropertyLists &amp;plists=PropertyLists())</argsstring>
+        <name>getDsetInfo</name>
+        <param>
+          <type>const h5x &amp;</type>
+          <declname>loc</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_options" kindref="compound">Options</ref> &amp;</type>
+          <declname>options</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref> &amp;</type>
+          <declname>plists</declname>
+          <defval><ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="92" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" bodystart="92" bodyend="174"/>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">h5pp::logger::setLogger</references>
+        <references refid="structh5pp_1_1_options_1a742bc51e348367beda138648d17bbc4a" compoundref="h5pp_info_8h" startline="75">h5pp::Options::linkPath</references>
+        <references refid="structh5pp_1_1_options_1a87c5b5bd80325d98f021b9f1b60b858d" compoundref="h5pp_info_8h" startline="77">h5pp::Options::dataDims</references>
+        <references refid="structh5pp_1_1_options_1a11129e7c8f1501a66882c1cf3daf5954" compoundref="h5pp_info_8h" startline="79">h5pp::Options::dsetDimsMax</references>
+        <references refid="structh5pp_1_1_options_1a5644c69c592b1fb2e35455f03ba1189e" compoundref="h5pp_info_8h" startline="78">h5pp::Options::dsetDimsChunk</references>
+        <references refid="structh5pp_1_1_options_1ae6b603baf0961d5ce150a659340f3613" compoundref="h5pp_info_8h" startline="80">h5pp::Options::dsetSlab</references>
+        <references refid="structh5pp_1_1_options_1ad8eaf0ae5755411adfcf4b22fc556d8e" compoundref="h5pp_info_8h" startline="83">h5pp::Options::h5Type</references>
+        <references refid="structh5pp_1_1_options_1ab1c7919dda95e0edddc17bb2b4710b57" compoundref="h5pp_info_8h" startline="84">h5pp::Options::h5Layout</references>
+        <references refid="structh5pp_1_1_options_1afa678ec8e743b4ae30e5b3f4dce16a19" compoundref="h5pp_info_8h" startline="85">h5pp::Options::compression</references>
+        <references refid="structh5pp_1_1_options_1a76649212c140d597c8c02b85ac2e3dea" compoundref="h5pp_info_8h" startline="86">h5pp::Options::resizeMode</references>
+        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="153" endline="155">h5pp::util::getSizeFromDimensions</references>
+        <references refid="namespaceh5pp_1_1util_1adef11453affa0b4886885661e217a8e4" compoundref="h5pp_utils_8h" startline="182" endline="182">h5pp::util::getRankFromDimensions</references>
+        <references refid="namespaceh5pp_1_1hdf5_1ad5cf4c6a513a3abf8e499158fd239b26" compoundref="h5pp_hdf5_8h" startline="186" endline="186">h5pp::hdf5::getBytesPerElem</references>
+        <references refid="namespaceh5pp_1_1util_1aa1a1b298bd7d9baa9acd2bfb1464766b" compoundref="h5pp_utils_8h" startline="230" endline="245">h5pp::util::decideDimensionsMax</references>
+        <references refid="namespaceh5pp_1_1util_1ab497c3103b3f9fa58d0cc9b3711a6ec6" compoundref="h5pp_utils_8h" startline="404" endline="457">h5pp::util::getChunkDimensions</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a7353721a9be096aa00d5e44e0e0e52ad" compoundref="h5pp_hdf5_8h" startline="558" endline="574">h5pp::hdf5::getValidCompressionLevel</references>
+        <references refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a0894c203073521ad32840dd9657949ab">h5pp::DO_NOT_RESIZE</references>
+        <references refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a6cd43a637f8b733c23575092197f3ebb">h5pp::RESIZE_TO_FIT</references>
+        <references refid="namespaceh5pp_1_1util_1a470d92244e2113e96e7f9b2cd88a2f3a" compoundref="h5pp_utils_8h" startline="248" endline="282">h5pp::util::getDsetSpace</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a48dce0da41feb5ff6e90611e7cb240aa" compoundref="h5pp_hdf5_8h" startline="780" endline="794">h5pp::hdf5::setProperty_layout</references>
+        <references refid="namespaceh5pp_1_1hdf5_1ac29eb3dbb28dd9598638379a6be51404" compoundref="h5pp_hdf5_8h" startline="796" endline="834">h5pp::hdf5::setProperty_chunkDims</references>
+        <references refid="namespaceh5pp_1_1hdf5_1ab6bb8f2a9446f6251bbdad39f92e3e3e" compoundref="h5pp_hdf5_8h" startline="836" endline="857">h5pp::hdf5::setProperty_compression</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1scan_1adf766191545d5a08d132c77a8c749f6f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename DataType</type>
+          </param>
+          <param>
+            <type>typename h5x</type>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc</ref>&lt;h5x&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structh5pp_1_1_dset_info" kindref="compound">h5pp::DsetInfo</ref></type>
+        <definition>h5pp::DsetInfo h5pp::scan::getDsetInfo</definition>
+        <argsstring>(const h5x &amp;loc, const DataType &amp;data, const Options &amp;options=Options(), const PropertyLists &amp;plists=PropertyLists())</argsstring>
+        <name>getDsetInfo</name>
+        <param>
+          <type>const h5x &amp;</type>
+          <declname>loc</declname>
+        </param>
+        <param>
+          <type>const DataType &amp;</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_options" kindref="compound">Options</ref> &amp;</type>
+          <declname>options</declname>
+          <defval><ref refid="structh5pp_1_1_options" kindref="compound">Options</ref>()</defval>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref> &amp;</type>
+          <declname>plists</declname>
+          <defval><ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="184" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" bodystart="184" bodyend="272"/>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">h5pp::logger::setLogger</references>
+        <references refid="structh5pp_1_1_options_1a742bc51e348367beda138648d17bbc4a" compoundref="h5pp_info_8h" startline="75">h5pp::Options::linkPath</references>
+        <references refid="structh5pp_1_1_options_1a87c5b5bd80325d98f021b9f1b60b858d" compoundref="h5pp_info_8h" startline="77">h5pp::Options::dataDims</references>
+        <references refid="structh5pp_1_1_options_1a11129e7c8f1501a66882c1cf3daf5954" compoundref="h5pp_info_8h" startline="79">h5pp::Options::dsetDimsMax</references>
+        <references refid="structh5pp_1_1_options_1a5644c69c592b1fb2e35455f03ba1189e" compoundref="h5pp_info_8h" startline="78">h5pp::Options::dsetDimsChunk</references>
+        <references refid="structh5pp_1_1_options_1ae6b603baf0961d5ce150a659340f3613" compoundref="h5pp_info_8h" startline="80">h5pp::Options::dsetSlab</references>
+        <references refid="structh5pp_1_1_options_1ad8eaf0ae5755411adfcf4b22fc556d8e" compoundref="h5pp_info_8h" startline="83">h5pp::Options::h5Type</references>
+        <references refid="structh5pp_1_1_options_1ab1c7919dda95e0edddc17bb2b4710b57" compoundref="h5pp_info_8h" startline="84">h5pp::Options::h5Layout</references>
+        <references refid="structh5pp_1_1_options_1a76649212c140d597c8c02b85ac2e3dea" compoundref="h5pp_info_8h" startline="86">h5pp::Options::resizeMode</references>
+        <references refid="structh5pp_1_1_options_1afa678ec8e743b4ae30e5b3f4dce16a19" compoundref="h5pp_info_8h" startline="85">h5pp::Options::compression</references>
+        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="153" endline="155">h5pp::util::getSizeFromDimensions</references>
+        <references refid="namespaceh5pp_1_1util_1adef11453affa0b4886885661e217a8e4" compoundref="h5pp_utils_8h" startline="182" endline="182">h5pp::util::getRankFromDimensions</references>
+        <references refid="namespaceh5pp_1_1util_1aa1a1b298bd7d9baa9acd2bfb1464766b" compoundref="h5pp_utils_8h" startline="230" endline="245">h5pp::util::decideDimensionsMax</references>
+        <references refid="namespaceh5pp_1_1util_1ab497c3103b3f9fa58d0cc9b3711a6ec6" compoundref="h5pp_utils_8h" startline="404" endline="457">h5pp::util::getChunkDimensions</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a7353721a9be096aa00d5e44e0e0e52ad" compoundref="h5pp_hdf5_8h" startline="558" endline="574">h5pp::hdf5::getValidCompressionLevel</references>
+        <references refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a0894c203073521ad32840dd9657949ab">h5pp::DO_NOT_RESIZE</references>
+        <references refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a6cd43a637f8b733c23575092197f3ebb">h5pp::RESIZE_TO_FIT</references>
+        <references refid="namespaceh5pp_1_1util_1a470d92244e2113e96e7f9b2cd88a2f3a" compoundref="h5pp_utils_8h" startline="248" endline="282">h5pp::util::getDsetSpace</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a48dce0da41feb5ff6e90611e7cb240aa" compoundref="h5pp_hdf5_8h" startline="780" endline="794">h5pp::hdf5::setProperty_layout</references>
+        <references refid="namespaceh5pp_1_1hdf5_1ac29eb3dbb28dd9598638379a6be51404" compoundref="h5pp_hdf5_8h" startline="796" endline="834">h5pp::hdf5::setProperty_chunkDims</references>
+        <references refid="namespaceh5pp_1_1hdf5_1ab6bb8f2a9446f6251bbdad39f92e3e3e" compoundref="h5pp_hdf5_8h" startline="836" endline="857">h5pp::hdf5::setProperty_compression</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1scan_1aa19b57006bc165ca57f29df43d35ee70" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename DataType</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void h5pp::scan::fillDataInfo</definition>
+        <argsstring>(const DataType &amp;data, DataInfo &amp;info, const Options &amp;options=Options())</argsstring>
+        <name>fillDataInfo</name>
+        <param>
+          <type>const DataType &amp;</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type><ref refid="structh5pp_1_1_data_info" kindref="compound">DataInfo</ref> &amp;</type>
+          <declname>info</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_options" kindref="compound">Options</ref> &amp;</type>
+          <declname>options</declname>
+          <defval><ref refid="structh5pp_1_1_options" kindref="compound">Options</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="284" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" bodystart="284" bodyend="309"/>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">h5pp::logger::setLogger</references>
+        <references refid="structh5pp_1_1_data_info_1a5367c7635d47ed6665efd7b82d5e7457" compoundref="h5pp_info_8h" startline="122">h5pp::DataInfo::dataDims</references>
+        <references refid="structh5pp_1_1_options_1a87c5b5bd80325d98f021b9f1b60b858d" compoundref="h5pp_info_8h" startline="77">h5pp::Options::dataDims</references>
+        <references refid="structh5pp_1_1_data_info_1a0a10f49efbf6f9ba4e936feb304e3d1a" compoundref="h5pp_info_8h" startline="124">h5pp::DataInfo::dataSlab</references>
+        <references refid="structh5pp_1_1_options_1a3504635391c048c4de91fbdf50521b95" compoundref="h5pp_info_8h" startline="82">h5pp::Options::dataSlab</references>
+        <references refid="structh5pp_1_1_data_info_1a049a5e215c85aceadabe6d127ac82eb4" compoundref="h5pp_info_8h" startline="120">h5pp::DataInfo::dataSize</references>
+        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="153" endline="155">h5pp::util::getSizeFromDimensions</references>
+        <references refid="structh5pp_1_1_opt_dims_type_1ae823a511f8e2b297e1de4f015ed64499" compoundref="h5pp_dimension_type_8h" startline="86" endline="86">h5pp::OptDimsType::value</references>
+        <references refid="structh5pp_1_1_data_info_1afa7dbb0fe70e65374bbdd5888c32ea2e" compoundref="h5pp_info_8h" startline="123">h5pp::DataInfo::dataRank</references>
+        <references refid="namespaceh5pp_1_1util_1adef11453affa0b4886885661e217a8e4" compoundref="h5pp_utils_8h" startline="182" endline="182">h5pp::util::getRankFromDimensions</references>
+        <references refid="structh5pp_1_1_data_info_1ac4b0da9ef8c1bc77e4dd180b0d0e9f01" compoundref="h5pp_info_8h" startline="121">h5pp::DataInfo::dataByte</references>
+        <references refid="structh5pp_1_1_data_info_1aea3ba23c0fa2160e30b64216d8e9be56" compoundref="h5pp_info_8h" startline="128">h5pp::DataInfo::cppTypeIndex</references>
+        <references refid="structh5pp_1_1_data_info_1a9b10a7a521d50519a8474b0d4ae7dcfd" compoundref="h5pp_info_8h" startline="126">h5pp::DataInfo::cppTypeName</references>
+        <references refid="structh5pp_1_1_data_info_1a2d1ac69649492264ed76b8174d4ff568" compoundref="h5pp_info_8h" startline="127">h5pp::DataInfo::cppTypeSize</references>
+        <references refid="structh5pp_1_1_data_info_1ab48df514a7fdfb04606b94550cd69a26" compoundref="h5pp_info_8h" startline="125">h5pp::DataInfo::h5Space</references>
+        <references refid="namespaceh5pp_1_1util_1a5b62df990ff2d31cd5dc0843592941cd" compoundref="h5pp_utils_8h" startline="291" endline="301">h5pp::util::getMemSpace</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1scan_1a05e41728c1daca40dc70f57b20330c3e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename DataType</type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structh5pp_1_1_data_info" kindref="compound">h5pp::DataInfo</ref></type>
+        <definition>h5pp::DataInfo h5pp::scan::getDataInfo</definition>
+        <argsstring>(const DataType &amp;data, const Options &amp;options=Options())</argsstring>
+        <name>getDataInfo</name>
+        <param>
+          <type>const DataType &amp;</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_options" kindref="compound">Options</ref> &amp;</type>
+          <declname>options</declname>
+          <defval><ref refid="structh5pp_1_1_options" kindref="compound">Options</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="312" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" bodystart="312" bodyend="317"/>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1scan_1ac5db6b86aa35f6f081b2fb652cb61447" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename h5x</type>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc</ref>&lt;h5x&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void h5pp::scan::fillAttrInfo</definition>
+        <argsstring>(AttrInfo &amp;info, const h5x &amp;loc, const Options &amp;options, const PropertyLists &amp;plists=PropertyLists())</argsstring>
+        <name>fillAttrInfo</name>
+        <param>
+          <type><ref refid="structh5pp_1_1_attr_info" kindref="compound">AttrInfo</ref> &amp;</type>
+          <declname>info</declname>
+        </param>
+        <param>
+          <type>const h5x &amp;</type>
+          <declname>loc</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_options" kindref="compound">Options</ref> &amp;</type>
+          <declname>options</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref> &amp;</type>
+          <declname>plists</declname>
+          <defval><ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="320" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" bodystart="320" bodyend="356"/>
+        <references refid="structh5pp_1_1_options_1a742bc51e348367beda138648d17bbc4a" compoundref="h5pp_info_8h" startline="75">h5pp::Options::linkPath</references>
+        <references refid="structh5pp_1_1_options_1a8b8e0901aae85fddea3ee474ae599d29" compoundref="h5pp_info_8h" startline="76">h5pp::Options::attrName</references>
+        <references refid="structh5pp_1_1_attr_info_1aaeef426a56e2f79375cbda2f8a7c68f2" compoundref="h5pp_info_8h" startline="375">h5pp::AttrInfo::linkPath</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="namespaceh5pp_1_1util_1ae6c73a0989d482fb452c89d604c1adee" compoundref="h5pp_utils_8h" startline="12" endline="25">h5pp::util::safe_str</references>
+        <references refid="structh5pp_1_1_attr_info_1a9c92b7b99b87bf78d7e54171b76945da" compoundref="h5pp_info_8h" startline="374">h5pp::AttrInfo::attrName</references>
+        <references refid="structh5pp_1_1_attr_info_1a5a67b3704e021e54c7876c39b62816eb" compoundref="h5pp_info_8h" startline="382">h5pp::AttrInfo::attrSlab</references>
+        <references refid="structh5pp_1_1_options_1a24d6176353acdf5e2577c509e67cb929" compoundref="h5pp_info_8h" startline="81">h5pp::Options::attrSlab</references>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">h5pp::logger::setLogger</references>
+        <references refid="structh5pp_1_1_attr_info_1a8ed327321a9513fae2eb98b9b17e02e3" compoundref="h5pp_info_8h" startline="377">h5pp::AttrInfo::linkExists</references>
+        <references refid="structh5pp_1_1_property_lists_1a23d97920661e220edc6fc72260798515" compoundref="h5pp_property_lists_8h" startline="16">h5pp::PropertyLists::linkAccess</references>
+        <references refid="structh5pp_1_1_attr_info_1a3dc884fb4dea53c9f1d04727d362b8e7" compoundref="h5pp_info_8h" startline="369">h5pp::AttrInfo::h5Link</references>
+        <references refid="structh5pp_1_1_attr_info_1a3bb46c9770d1b841eb153930ac287f9e" compoundref="h5pp_info_8h" startline="376">h5pp::AttrInfo::attrExists</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a76337fecfd065ad46ef8e9a9092d22c1" compoundref="h5pp_hdf5_8h" startline="482" endline="492">h5pp::hdf5::checkIfAttributeExists</references>
+        <references refid="structh5pp_1_1_attr_info_1a2e40d23cce20a2eb3d0c15ceb351422a" compoundref="h5pp_info_8h" startline="368">h5pp::AttrInfo::h5Attr</references>
+        <references refid="structh5pp_1_1_attr_info_1acf3777d2114862a7596b1801aee6bbf8" compoundref="h5pp_info_8h" startline="370">h5pp::AttrInfo::h5Type</references>
+        <references refid="structh5pp_1_1_attr_info_1ac198b5639d790e136f768e518b8d9ef0" compoundref="h5pp_info_8h" startline="371">h5pp::AttrInfo::h5Space</references>
+        <references refid="structh5pp_1_1_attr_info_1a25e9278fd323f04394e5cd6d708cd83d" compoundref="h5pp_info_8h" startline="379">h5pp::AttrInfo::attrByte</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a0977eba6f1ab37131a69210ef47a1b65" compoundref="h5pp_hdf5_8h" startline="204" endline="216">h5pp::hdf5::getBytesTotal</references>
+        <references refid="structh5pp_1_1_attr_info_1aaaa31a96a16bf4df645a4bcba2bfb0e2" compoundref="h5pp_info_8h" startline="378">h5pp::AttrInfo::attrSize</references>
+        <references refid="namespaceh5pp_1_1hdf5_1ae9c89449ff6f65f8312b2438ef453ad1" compoundref="h5pp_hdf5_8h" startline="55" endline="55">h5pp::hdf5::getSize</references>
+        <references refid="structh5pp_1_1_attr_info_1a907906fd31c3aea3260d2b1f7e75025a" compoundref="h5pp_info_8h" startline="381">h5pp::AttrInfo::attrDims</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a13e315ec366df21c69d4a718e2a09ef6" compoundref="h5pp_hdf5_8h" startline="69" endline="78">h5pp::hdf5::getDimensions</references>
+        <references refid="structh5pp_1_1_attr_info_1a67f821c59b84d89c7ab4cb70dfccaab3" compoundref="h5pp_info_8h" startline="380">h5pp::AttrInfo::attrRank</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a217b9497758c097d45cc2d74441bf2a6" compoundref="h5pp_hdf5_8h" startline="43" endline="43">h5pp::hdf5::getRank</references>
+        <references refid="structh5pp_1_1_attr_info_1a6010f0d5ea9269dd16ed7abfaf111931" compoundref="h5pp_info_8h" startline="372">h5pp::AttrInfo::h5PlistAttrCreate</references>
+        <references refid="structh5pp_1_1_attr_info_1a04a3819a2995078fd4b342ca8874d7cd" compoundref="h5pp_info_8h" startline="373">h5pp::AttrInfo::h5PlistAttrAccess</references>
+        <references refid="structh5pp_1_1_attr_info_1aa815113479f4ad44aeaab5d78d4c42e8" compoundref="h5pp_info_8h" startline="385">h5pp::AttrInfo::cppTypeIndex</references>
+        <references refid="structh5pp_1_1_attr_info_1ae45a884c16bfd2af419d74ffc412bada" compoundref="h5pp_info_8h" startline="383">h5pp::AttrInfo::cppTypeName</references>
+        <references refid="structh5pp_1_1_attr_info_1a874b3e3c9f4fb89160ffc0ac0a283884" compoundref="h5pp_info_8h" startline="384">h5pp::AttrInfo::cppTypeSize</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a97be622cb9d6be8a8c224e3c71125d7d" compoundref="h5pp_hdf5_8h" startline="609" endline="672">h5pp::hdf5::getCppType</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1scan_1a9df5e49bb0b376954740037afadff60e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename h5x</type>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc</ref>&lt;h5x&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structh5pp_1_1_attr_info" kindref="compound">h5pp::AttrInfo</ref></type>
+        <definition>h5pp::AttrInfo h5pp::scan::readAttrInfo</definition>
+        <argsstring>(const h5x &amp;loc, const Options &amp;options, const PropertyLists &amp;plists=PropertyLists())</argsstring>
+        <name>readAttrInfo</name>
+        <param>
+          <type>const h5x &amp;</type>
+          <declname>loc</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_options" kindref="compound">Options</ref> &amp;</type>
+          <declname>options</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref> &amp;</type>
+          <declname>plists</declname>
+          <defval><ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="359" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" bodystart="359" bodyend="363"/>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1scan_1a6b3ed20640045f946298703037649734" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename h5x</type>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc</ref>&lt;h5x&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structh5pp_1_1_attr_info" kindref="compound">h5pp::AttrInfo</ref></type>
+        <definition>h5pp::AttrInfo h5pp::scan::getAttrInfo</definition>
+        <argsstring>(const h5x &amp;loc, const Options &amp;options, const PropertyLists &amp;plists=PropertyLists())</argsstring>
+        <name>getAttrInfo</name>
+        <param>
+          <type>const h5x &amp;</type>
+          <declname>loc</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_options" kindref="compound">Options</ref> &amp;</type>
+          <declname>options</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref> &amp;</type>
+          <declname>plists</declname>
+          <defval><ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="366" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" bodystart="366" bodyend="405"/>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">h5pp::logger::setLogger</references>
+        <references refid="structh5pp_1_1_options_1a8b8e0901aae85fddea3ee474ae599d29" compoundref="h5pp_info_8h" startline="76">h5pp::Options::attrName</references>
+        <references refid="structh5pp_1_1_options_1a742bc51e348367beda138648d17bbc4a" compoundref="h5pp_info_8h" startline="75">h5pp::Options::linkPath</references>
+        <references refid="structh5pp_1_1_options_1a87c5b5bd80325d98f021b9f1b60b858d" compoundref="h5pp_info_8h" startline="77">h5pp::Options::dataDims</references>
+        <references refid="structh5pp_1_1_options_1a24d6176353acdf5e2577c509e67cb929" compoundref="h5pp_info_8h" startline="81">h5pp::Options::attrSlab</references>
+        <references refid="structh5pp_1_1_options_1ad8eaf0ae5755411adfcf4b22fc556d8e" compoundref="h5pp_info_8h" startline="83">h5pp::Options::h5Type</references>
+        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="153" endline="155">h5pp::util::getSizeFromDimensions</references>
+        <references refid="namespaceh5pp_1_1util_1adef11453affa0b4886885661e217a8e4" compoundref="h5pp_utils_8h" startline="182" endline="182">h5pp::util::getRankFromDimensions</references>
+        <references refid="namespaceh5pp_1_1hdf5_1ad5cf4c6a513a3abf8e499158fd239b26" compoundref="h5pp_hdf5_8h" startline="186" endline="186">h5pp::hdf5::getBytesPerElem</references>
+        <references refid="namespaceh5pp_1_1util_1a470d92244e2113e96e7f9b2cd88a2f3a" compoundref="h5pp_utils_8h" startline="248" endline="282">h5pp::util::getDsetSpace</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1scan_1abd7186da307f469668319da35f95db36" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename DataType</type>
+          </param>
+          <param>
+            <type>typename h5x</type>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc</ref>&lt;h5x&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structh5pp_1_1_attr_info" kindref="compound">h5pp::AttrInfo</ref></type>
+        <definition>h5pp::AttrInfo h5pp::scan::getAttrInfo</definition>
+        <argsstring>(const h5x &amp;loc, const DataType &amp;data, const Options &amp;options, const PropertyLists &amp;plists=PropertyLists())</argsstring>
+        <name>getAttrInfo</name>
+        <param>
+          <type>const h5x &amp;</type>
+          <declname>loc</declname>
+        </param>
+        <param>
+          <type>const DataType &amp;</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_options" kindref="compound">Options</ref> &amp;</type>
+          <declname>options</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref> &amp;</type>
+          <declname>plists</declname>
+          <defval><ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="408" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" bodystart="408" bodyend="450"/>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="structh5pp_1_1_options_1a742bc51e348367beda138648d17bbc4a" compoundref="h5pp_info_8h" startline="75">h5pp::Options::linkPath</references>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">h5pp::logger::setLogger</references>
+        <references refid="structh5pp_1_1_options_1a8b8e0901aae85fddea3ee474ae599d29" compoundref="h5pp_info_8h" startline="76">h5pp::Options::attrName</references>
+        <references refid="structh5pp_1_1_options_1a87c5b5bd80325d98f021b9f1b60b858d" compoundref="h5pp_info_8h" startline="77">h5pp::Options::dataDims</references>
+        <references refid="structh5pp_1_1_options_1a24d6176353acdf5e2577c509e67cb929" compoundref="h5pp_info_8h" startline="81">h5pp::Options::attrSlab</references>
+        <references refid="structh5pp_1_1_options_1ad8eaf0ae5755411adfcf4b22fc556d8e" compoundref="h5pp_info_8h" startline="83">h5pp::Options::h5Type</references>
+        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="153" endline="155">h5pp::util::getSizeFromDimensions</references>
+        <references refid="namespaceh5pp_1_1util_1adef11453affa0b4886885661e217a8e4" compoundref="h5pp_utils_8h" startline="182" endline="182">h5pp::util::getRankFromDimensions</references>
+        <references refid="namespaceh5pp_1_1util_1a470d92244e2113e96e7f9b2cd88a2f3a" compoundref="h5pp_utils_8h" startline="248" endline="282">h5pp::util::getDsetSpace</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1scan_1a798e1ccb0529838dddb0c2983707d469" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename h5x</type>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc</ref>&lt;h5x&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structh5pp_1_1_table_info" kindref="compound">TableInfo</ref></type>
+        <definition>TableInfo h5pp::scan::getTableInfo</definition>
+        <argsstring>(const h5x &amp;loc, std::string_view tableName, std::optional&lt; bool &gt; tableExists=std::nullopt, const PropertyLists &amp;plists=PropertyLists())</argsstring>
+        <name>getTableInfo</name>
+        <param>
+          <type>const h5x &amp;</type>
+          <declname>loc</declname>
+        </param>
+        <param>
+          <type>std::string_view</type>
+          <declname>tableName</declname>
+        </param>
+        <param>
+          <type>std::optional&lt; bool &gt;</type>
+          <declname>tableExists</declname>
+          <defval>std::nullopt</defval>
+        </param>
+        <param>
+          <type>const <ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref> &amp;</type>
+          <declname>plists</declname>
+          <defval><ref refid="structh5pp_1_1_property_lists" kindref="compound">PropertyLists</ref>()</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="453" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" bodystart="453" bodyend="522"/>
+        <references refid="structh5pp_1_1_table_info_1a4626b42c8a042f9bd7e6c17f9047b2da" compoundref="h5pp_info_8h" startline="470">h5pp::TableInfo::tablePath</references>
+        <references refid="namespaceh5pp_1_1util_1ae6c73a0989d482fb452c89d604c1adee" compoundref="h5pp_utils_8h" startline="12" endline="25">h5pp::util::safe_str</references>
+        <references refid="structh5pp_1_1_table_info_1aa99afd50684d01bc05f42b0168ad85f2" compoundref="h5pp_info_8h" startline="471">h5pp::TableInfo::tableGroupName</references>
+        <references refid="structh5pp_1_1_table_info_1a9c8236361ecedce52d982899ada5d4be" compoundref="h5pp_info_8h" startline="472">h5pp::TableInfo::tableFile</references>
+        <references refid="structh5pp_1_1_table_info_1ab1d7151b1949391e84af9e052fd47f21" compoundref="h5pp_info_8h" startline="473">h5pp::TableInfo::tableGroup</references>
+        <references refid="structh5pp_1_1_table_info_1ae3d7403c62f5b6ff40162778eaabd56c" compoundref="h5pp_info_8h" startline="474">h5pp::TableInfo::tableObjLoc</references>
+        <references refid="structh5pp_1_1_table_info_1ad9db6683bff24f33b3239d939fc5fbbd" compoundref="h5pp_info_8h" startline="468">h5pp::TableInfo::tableExists</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="structh5pp_1_1_property_lists_1a23d97920661e220edc6fc72260798515" compoundref="h5pp_property_lists_8h" startline="16">h5pp::PropertyLists::linkAccess</references>
+        <references refid="structh5pp_1_1_table_info_1a8e531556d516fd498be6a3778fcfcb95" compoundref="h5pp_info_8h" startline="475">h5pp::TableInfo::tableDset</references>
+        <references refid="structh5pp_1_1_table_info_1a97c6b36d21a3f463d09a2d763093218a" compoundref="h5pp_info_8h" startline="476">h5pp::TableInfo::tableType</references>
+        <references refid="structh5pp_1_1_table_info_1adca1998058259900599381c2463db726" compoundref="h5pp_info_8h" startline="469">h5pp::TableInfo::tableTitle</references>
+        <references refid="structh5pp_1_1_table_info_1a0134faaab1a3c70a5c07cef6f1862815" compoundref="h5pp_info_8h" startline="461">h5pp::TableInfo::numFields</references>
+        <references refid="structh5pp_1_1_table_info_1a87a13274deaf940626cfe88cae4ca846" compoundref="h5pp_info_8h" startline="462">h5pp::TableInfo::numRecords</references>
+        <references refid="structh5pp_1_1_table_info_1a88371ba4eb5150ceffdffa7b6bd3c737" compoundref="h5pp_info_8h" startline="463">h5pp::TableInfo::recordBytes</references>
+        <references refid="structh5pp_1_1_table_info_1abbfc434ceb8ac00af3b5f9c3475795e0" compoundref="h5pp_info_8h" startline="465">h5pp::TableInfo::fieldSizes</references>
+        <references refid="structh5pp_1_1_table_info_1adecb4f11e350debab888de21482c485f" compoundref="h5pp_info_8h" startline="466">h5pp::TableInfo::fieldOffsets</references>
+        <references refid="structh5pp_1_1_table_info_1afbbda9cf5c07f618f545c2084259b3e4" compoundref="h5pp_info_8h" startline="467">h5pp::TableInfo::fieldTypes</references>
+        <references refid="structh5pp_1_1_table_info_1aefd7e9bdb90c1add04e7be8582374004" compoundref="h5pp_info_8h" startline="464">h5pp::TableInfo::fieldNames</references>
+        <references refid="classh5pp_1_1hid_1_1hid__base_1a49d7564677e93a9b92fbf6eb06987e52" compoundref="h5pp_hid_8h" startline="57" endline="64">h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::value</references>
+        <references refid="namespaceh5pp_1_1hdf5_1af1da3a25187be4f7c4f7b89080f04c5f" compoundref="h5pp_hdf5_8h" startline="97" endline="110">h5pp::hdf5::getChunkDimensions</references>
+        <references refid="structh5pp_1_1_table_info_1a781a212c634da1c444c724285c80024d" compoundref="h5pp_info_8h" startline="478">h5pp::TableInfo::chunkSize</references>
+        <references refid="structh5pp_1_1_table_info_1a1e4afb6d75b3951b15d8d49b173ad151" compoundref="h5pp_info_8h" startline="481">h5pp::TableInfo::cppTypeIndex</references>
+        <references refid="structh5pp_1_1_table_info_1af76e3cd5090b4c63cf76c98c470554f2" compoundref="h5pp_info_8h" startline="479">h5pp::TableInfo::cppTypeName</references>
+        <references refid="structh5pp_1_1_table_info_1acc7b5799753cf3fc1c8fcfab4b98758a" compoundref="h5pp_info_8h" startline="480">h5pp::TableInfo::cppTypeSize</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a97be622cb9d6be8a8c224e3c71125d7d" compoundref="h5pp_hdf5_8h" startline="609" endline="672">h5pp::hdf5::getCppType</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1scan_1a62a2dfa24730798c6a51575e36f12bfe" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="structh5pp_1_1_table_info" kindref="compound">h5pp::TableInfo</ref></type>
+        <definition>h5pp::TableInfo h5pp::scan::newTableInfo</definition>
+        <argsstring>(const hid::h5t &amp;tableType, std::string_view tablePath, std::string_view tableTitle, const std::optional&lt; hsize_t &gt; desiredChunkSize=std::nullopt, const std::optional&lt; unsigned int &gt; desiredCompressionLevel=std::nullopt)</argsstring>
+        <name>newTableInfo</name>
+        <param>
+          <type>const <ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref> &amp;</type>
+          <declname>tableType</declname>
+        </param>
+        <param>
+          <type>std::string_view</type>
+          <declname>tablePath</declname>
+        </param>
+        <param>
+          <type>std::string_view</type>
+          <declname>tableTitle</declname>
+        </param>
+        <param>
+          <type>const std::optional&lt; hsize_t &gt;</type>
+          <declname>desiredChunkSize</declname>
+          <defval>std::nullopt</defval>
+        </param>
+        <param>
+          <type>const std::optional&lt; unsigned int &gt;</type>
+          <declname>desiredCompressionLevel</declname>
+          <defval>std::nullopt</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="524" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" bodystart="524" bodyend="571"/>
+        <references refid="structh5pp_1_1_table_info_1a97c6b36d21a3f463d09a2d763093218a" compoundref="h5pp_info_8h" startline="476">h5pp::TableInfo::tableType</references>
+        <references refid="structh5pp_1_1_table_info_1adca1998058259900599381c2463db726" compoundref="h5pp_info_8h" startline="469">h5pp::TableInfo::tableTitle</references>
+        <references refid="structh5pp_1_1_table_info_1a4626b42c8a042f9bd7e6c17f9047b2da" compoundref="h5pp_info_8h" startline="470">h5pp::TableInfo::tablePath</references>
+        <references refid="structh5pp_1_1_table_info_1aa99afd50684d01bc05f42b0168ad85f2" compoundref="h5pp_info_8h" startline="471">h5pp::TableInfo::tableGroupName</references>
+        <references refid="structh5pp_1_1_table_info_1a0134faaab1a3c70a5c07cef6f1862815" compoundref="h5pp_info_8h" startline="461">h5pp::TableInfo::numFields</references>
+        <references refid="structh5pp_1_1_table_info_1a87a13274deaf940626cfe88cae4ca846" compoundref="h5pp_info_8h" startline="462">h5pp::TableInfo::numRecords</references>
+        <references refid="structh5pp_1_1_table_info_1a88371ba4eb5150ceffdffa7b6bd3c737" compoundref="h5pp_info_8h" startline="463">h5pp::TableInfo::recordBytes</references>
+        <references refid="structh5pp_1_1_table_info_1a781a212c634da1c444c724285c80024d" compoundref="h5pp_info_8h" startline="478">h5pp::TableInfo::chunkSize</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="namespaceh5pp_1_1util_1ab497c3103b3f9fa58d0cc9b3711a6ec6" compoundref="h5pp_utils_8h" startline="404" endline="457">h5pp::util::getChunkDimensions</references>
+        <references refid="structh5pp_1_1_table_info_1aeae14b48cded957e54b302a779334d85" compoundref="h5pp_info_8h" startline="477">h5pp::TableInfo::compressionLevel</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a7353721a9be096aa00d5e44e0e0e52ad" compoundref="h5pp_hdf5_8h" startline="558" endline="574">h5pp::hdf5::getValidCompressionLevel</references>
+        <references refid="structh5pp_1_1_table_info_1afbbda9cf5c07f618f545c2084259b3e4" compoundref="h5pp_info_8h" startline="467">h5pp::TableInfo::fieldTypes</references>
+        <references refid="structh5pp_1_1_table_info_1adecb4f11e350debab888de21482c485f" compoundref="h5pp_info_8h" startline="466">h5pp::TableInfo::fieldOffsets</references>
+        <references refid="structh5pp_1_1_table_info_1abbfc434ceb8ac00af3b5f9c3475795e0" compoundref="h5pp_info_8h" startline="465">h5pp::TableInfo::fieldSizes</references>
+        <references refid="structh5pp_1_1_table_info_1aefd7e9bdb90c1add04e7be8582374004" compoundref="h5pp_info_8h" startline="464">h5pp::TableInfo::fieldNames</references>
+        <references refid="structh5pp_1_1_table_info_1a1e4afb6d75b3951b15d8d49b173ad151" compoundref="h5pp_info_8h" startline="481">h5pp::TableInfo::cppTypeIndex</references>
+        <references refid="structh5pp_1_1_table_info_1af76e3cd5090b4c63cf76c98c470554f2" compoundref="h5pp_info_8h" startline="479">h5pp::TableInfo::cppTypeName</references>
+        <references refid="structh5pp_1_1_table_info_1acc7b5799753cf3fc1c8fcfab4b98758a" compoundref="h5pp_info_8h" startline="480">h5pp::TableInfo::cppTypeSize</references>
+        <references refid="namespaceh5pp_1_1hdf5_1a97be622cb9d6be8a8c224e3c71125d7d" compoundref="h5pp_hdf5_8h" startline="609" endline="672">h5pp::hdf5::getCppType</references>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h" line="7" column="20"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,269 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Program Listing for File h5ppEnums.h &mdash; h5pp  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js"></script>
+        <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/collapsible-lists/css/tree_view.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> h5pp
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">h5pp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../README.html#to-do">To-do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">Library API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">h5pp</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Program Listing for File h5ppEnums.h</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/program_listing_file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppEnums.h.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="program-listing-for-file-h5ppenums-h">
+<span id="program-listing-file-home-david-gitprojects-h5pp-h5pp-include-h5pp-details-h5ppenums-h"></span><h1>Program Listing for File h5ppEnums.h<a class="headerlink" href="#program-listing-for-file-h5ppenums-h" title="Permalink to this headline">¶</a></h1>
+<p>↰ <a class="reference internal" href="file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppEnums.h.html#file-home-david-gitprojects-h5pp-h5pp-include-h5pp-details-h5ppenums-h"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#pragma once</span>
+
+<span class="k">namespace</span> <span class="n">h5pp</span> <span class="p">{</span>
+
+
+    <span class="k">enum</span> <span class="k">class</span> <span class="nc">FilePermission</span> <span class="p">{</span>
+
+        <span class="c1">// Read more about the original HDF5 file permissions here:</span>
+        <span class="c1">// https://portal.hdfgroup.org/display/HDF5/H5F_CREATE</span>
+        <span class="c1">// and</span>
+        <span class="c1">// https://portal.hdfgroup.org/display/HDF5/H5F_OPEN</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         *</span>
+<span class="cm">         `h5pp` offers more flags for file access permissions than HDF5. The new flags are primarily intended to</span>
+<span class="cm">          prevent accidental loss of data, but also to clarify intent and avoid mutually exclusive options.</span>
+
+<span class="cm">         The flags are listed in the order of increasing &quot;danger&quot; that they pose to previously existing files.</span>
+
+<span class="cm">         | Flag | File exists | No file exists | Comment |</span>
+<span class="cm">         | ---- | ---- | ---- | ---- |</span>
+<span class="cm">         | `READONLY`                | Open with read-only permission       | Throw error     | Never writes to disk, fails if the file is not found |</span>
+<span class="cm">         | `COLLISION_FAIL`          | Throw error                          | Create new file | Never deletes existing files and fails if it already exists |</span>
+<span class="cm">         | `RENAME` **(default)**    | Create renamed file                  | Create new file | Never deletes existing files. Invents a new filename to avoid collision by appending &quot;-#&quot; (#=1,2,3...) to the stem of the filename |</span>
+<span class="cm">         | `READWRITE`               | Open with read-write permission      | Create new file | Never deletes existing files, but is allowed to open/modify |</span>
+<span class="cm">         | `BACKUP`                  | Rename existing file and create new  | Create new file | Avoids collision by backing up the existing file, appending &quot;.bak_#&quot; (#=1,2,3...) to the filename |</span>
+<span class="cm">         | `REPLACE`                 | Truncate (overwrite)                 | Create new file | Deletes the existing file and create a new one in place |</span>
+
+
+<span class="cm">         * When a new file is created, the intermediate directories are always created automatically.</span>
+<span class="cm">         * When a new file is created, `READWRITE` permission to it is implied.</span>
+<span class="cm">         *</span>
+<span class="cm">         */</span>
+        <span class="n">READONLY</span><span class="p">,</span> <span class="n">COLLISION_FAIL</span><span class="p">,</span> <span class="n">RENAME</span><span class="p">,</span> <span class="n">READWRITE</span><span class="p">,</span> <span class="n">BACKUP</span><span class="p">,</span> <span class="n">REPLACE</span>
+    <span class="p">};</span>
+
+    <span class="k">enum</span> <span class="k">class</span> <span class="nc">FileDriver</span><span class="p">{</span>
+        <span class="cm">/*</span>
+<span class="cm">        From the HDF5 manual:</span>
+<span class="cm">        ------------------</span>
+<span class="cm">        Supported file drivers in HDF5</span>
+<span class="cm">        Driver Name         Driver Identifier   Description</span>
+<span class="cm">        POSIX               H5FD_SEC2           This driver uses POSIX file-system functions like read and write to perform I/O to a single, permanent file on local disk with no system buffering. This driver is POSIX-compliant and is the default file driver for all systems.</span>
+<span class="cm">        Direct              H5FD_DIRECT         This is the H5FD_SEC2 driver except data is written to or read from the file synchronously without being cached by the system.</span>
+<span class="cm">        Log                 H5FD_LOG            This is the H5FD_SEC2 driver with logging capabilities.     H5Pset_fapl_log</span>
+<span class="cm">        Windows             H5FD_WINDOWS        This driver was modified in HDF5-1.8.8 to be a wrapper of the POSIX driver, H5FD_SEC2. This change should not affect user applications.</span>
+<span class="cm">        STDIO               H5FD_STDIO          This driver uses functions from the standard C stdio.h to perform I/O to a single, permanent file on local disk with additional system buffering.</span>
+<span class="cm">        Memory              H5FD_CORE           With this driver, an application can work with a file in memory for faster reads and writes. File contents are kept in memory until the file is closed. At closing, the memory version of the file can be written back to disk or abandoned.</span>
+<span class="cm">        Family              H5FD_FAMILY         With this driver, the HDF5 file�s address space is partitioned into pieces and sent to separate storage files using an underlying driver of the user’s choice. This driver is for systems that do not support files larger than 2 gigabytes.</span>
+<span class="cm">        Multi               H5FD_MULTI          With this driver, data can be stored in multiple files according to the type of the data. I/O might work better if data is stored in separate files based on the type of data. The Split driver is a special case of this driver.</span>
+<span class="cm">        Split               H5FD_SPLIT          This file driver splits a file into two parts. One part stores metadata, and the other part stores raw data. This splitting a file into two parts is a limited case of the Multi driver.</span>
+<span class="cm">        Parallel            H5FD_MPIO           This is the standard HDF5 file driver for parallel file systems. This driver uses the MPI standard for both communication and file I/O.</span>
+<span class="cm">        */</span>
+
+        <span class="n">SEC2</span><span class="p">,</span><span class="n">DIRECT</span><span class="p">,</span><span class="n">LOG</span><span class="p">,</span><span class="n">WINDOWS</span><span class="p">,</span><span class="n">STDIO</span><span class="p">,</span><span class="n">CORE</span><span class="p">,</span><span class="n">FAMILY</span><span class="p">,</span><span class="n">MULTI</span><span class="p">,</span><span class="n">SPLIT</span><span class="p">,</span><span class="n">MPIO</span>
+    <span class="p">};</span>
+
+
+    <span class="k">enum</span> <span class="k">class</span> <span class="nc">TableSelection</span> <span class="p">{</span>
+        <span class="n">FIRST</span><span class="p">,</span>  <span class="c1">// First element in a table</span>
+        <span class="n">LAST</span><span class="p">,</span>   <span class="c1">// Last element in a table</span>
+        <span class="n">ALL</span><span class="p">,</span>    <span class="c1">// All elements of a table</span>
+    <span class="p">};</span>
+
+    <span class="k">enum</span> <span class="k">class</span> <span class="nc">ResizeMode</span> <span class="p">{</span>
+        <span class="n">RESIZE_TO_FIT</span><span class="p">,</span> <span class="c1">// (Default)</span>
+        <span class="n">INCREASE_ONLY</span><span class="p">,</span>
+        <span class="n">DO_NOT_RESIZE</span><span class="p">,</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020-present, David Ace
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

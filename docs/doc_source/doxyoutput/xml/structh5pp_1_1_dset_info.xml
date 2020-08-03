@@ -1,0 +1,515 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="structh5pp_1_1_dset_info" kind="struct" language="C++" prot="public">
+    <compoundname>h5pp::DsetInfo</compoundname>
+    <includes refid="h5pp_info_8h" local="no">h5ppInfo.h</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a9df252e6c046f3b31d25f94eb8a05b67" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classh5pp_1_1hid_1_1h5f" kindref="compound">hid::h5f</ref> &gt;</type>
+        <definition>std::optional&lt;hid::h5f&gt; h5pp::DsetInfo::h5File</definition>
+        <argsstring></argsstring>
+        <name>h5File</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="198" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="198" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a066416eedbcdf8f35e2904bc35c67d31" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classh5pp_1_1hid_1_1h5f" kindref="compound">hid::h5f</ref> &gt;</type>
+        <definition>std::optional&lt;hid::h5f&gt; h5pp::DsetInfo::h5Group</definition>
+        <argsstring></argsstring>
+        <name>h5Group</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="199" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="199" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a6db23ff2c7954df6784951896d6cf9f6" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classh5pp_1_1hid_1_1h5f" kindref="compound">hid::h5f</ref> &gt;</type>
+        <definition>std::optional&lt;hid::h5f&gt; h5pp::DsetInfo::h5ObjLoc</definition>
+        <argsstring></argsstring>
+        <name>h5ObjLoc</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="200" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="200" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a0698a4d87df3f4b39dc268de56b9533c" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classh5pp_1_1hid_1_1h5d" kindref="compound">hid::h5d</ref> &gt;</type>
+        <definition>std::optional&lt;hid::h5d&gt; h5pp::DsetInfo::h5Dset</definition>
+        <argsstring></argsstring>
+        <name>h5Dset</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="201" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="201" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a7055f1166e9a5cce06324d9502310ee6" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref> &gt;</type>
+        <definition>std::optional&lt;hid::h5t&gt; h5pp::DsetInfo::h5Type</definition>
+        <argsstring></argsstring>
+        <name>h5Type</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="202" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="202" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1ac51824f123de75a50c3a81ebc73b5f60" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; H5D_layout_t &gt;</type>
+        <definition>std::optional&lt;H5D_layout_t&gt; h5pp::DsetInfo::h5Layout</definition>
+        <argsstring></argsstring>
+        <name>h5Layout</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="203" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="203" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a6fe259f61912c853063b78fe88b568cb" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classh5pp_1_1hid_1_1h5s" kindref="compound">hid::h5s</ref> &gt;</type>
+        <definition>std::optional&lt;hid::h5s&gt; h5pp::DsetInfo::h5Space</definition>
+        <argsstring></argsstring>
+        <name>h5Space</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="204" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="204" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1ad1a3ffef5237a54a2e91b9bbbd1c7789" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classh5pp_1_1hid_1_1h5p" kindref="compound">hid::h5p</ref> &gt;</type>
+        <definition>std::optional&lt;hid::h5p&gt; h5pp::DsetInfo::h5PlistDsetCreate</definition>
+        <argsstring></argsstring>
+        <name>h5PlistDsetCreate</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="205" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="205" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1af634783657b1cf3c2642aa2157c07ee3" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classh5pp_1_1hid_1_1h5p" kindref="compound">hid::h5p</ref> &gt;</type>
+        <definition>std::optional&lt;hid::h5p&gt; h5pp::DsetInfo::h5PlistDsetAccess</definition>
+        <argsstring></argsstring>
+        <name>h5PlistDsetAccess</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="206" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="206" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a02695282a2d094bc7aabd6bfa4bb9fc0" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; std::string &gt;</type>
+        <definition>std::optional&lt;std::string&gt; h5pp::DsetInfo::dsetPath</definition>
+        <argsstring></argsstring>
+        <name>dsetPath</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="207" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="207" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a671c7bb8ad1a168e91e0d3eaf463553b" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; bool &gt;</type>
+        <definition>std::optional&lt;bool&gt; h5pp::DsetInfo::dsetExists</definition>
+        <argsstring></argsstring>
+        <name>dsetExists</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="208" column="35" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="208" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a04ea6079208921bca11c32b54d89bb83" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; hsize_t &gt;</type>
+        <definition>std::optional&lt;hsize_t&gt; h5pp::DsetInfo::dsetSize</definition>
+        <argsstring></argsstring>
+        <name>dsetSize</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="209" column="32" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="209" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a9f9fbefffa7655fce0fd129584ce13c9" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; size_t &gt;</type>
+        <definition>std::optional&lt;size_t&gt; h5pp::DsetInfo::dsetByte</definition>
+        <argsstring></argsstring>
+        <name>dsetByte</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="210" column="33" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="210" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1acb16320a29dd53c18a8eb4f1bf23a756" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; int &gt;</type>
+        <definition>std::optional&lt;int&gt; h5pp::DsetInfo::dsetRank</definition>
+        <argsstring></argsstring>
+        <name>dsetRank</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="211" column="36" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="211" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a7f14b6321a342a6589de458fcc6b7247" prot="public" static="no" mutable="no">
+        <type><ref refid="structh5pp_1_1_opt_dims_type" kindref="compound">OptDimsType</ref></type>
+        <definition>OptDimsType h5pp::DsetInfo::dsetDims</definition>
+        <argsstring></argsstring>
+        <name>dsetDims</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="212" column="41" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="212" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1abcb6dea25729e1ba3f35769d5979af34" prot="public" static="no" mutable="no">
+        <type><ref refid="structh5pp_1_1_opt_dims_type" kindref="compound">OptDimsType</ref></type>
+        <definition>OptDimsType h5pp::DsetInfo::dsetDimsMax</definition>
+        <argsstring></argsstring>
+        <name>dsetDimsMax</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="213" column="41" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="213" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a76ab42997bd4a82ce7ee796187663ad0" prot="public" static="no" mutable="no">
+        <type><ref refid="structh5pp_1_1_opt_dims_type" kindref="compound">OptDimsType</ref></type>
+        <definition>OptDimsType h5pp::DsetInfo::dsetChunk</definition>
+        <argsstring></argsstring>
+        <name>dsetChunk</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="214" column="41" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="214" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a58f15a74dd4f320566755d053702504e" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classh5pp_1_1_hyperslab" kindref="compound">Hyperslab</ref> &gt;</type>
+        <definition>std::optional&lt;Hyperslab&gt; h5pp::DsetInfo::dsetSlab</definition>
+        <argsstring></argsstring>
+        <name>dsetSlab</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="215" column="30" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="215" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a6822176f32ad86d84553fc5fba02056a" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26" kindref="member">h5pp::ResizeMode</ref> &gt;</type>
+        <definition>std::optional&lt;h5pp::ResizeMode&gt; h5pp::DsetInfo::resizeMode</definition>
+        <argsstring></argsstring>
+        <name>resizeMode</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="216" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="216" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a0318702d366ec2ef747fc22d6406cd4a" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; unsigned int &gt;</type>
+        <definition>std::optional&lt;unsigned int&gt; h5pp::DsetInfo::compression</definition>
+        <argsstring></argsstring>
+        <name>compression</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="217" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="217" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1ae129451db2d91b0701c59156db624515" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; std::string &gt;</type>
+        <definition>std::optional&lt;std::string&gt; h5pp::DsetInfo::cppTypeName</definition>
+        <argsstring></argsstring>
+        <name>cppTypeName</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="218" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="218" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a3c35adc9022fb9e5b33da2948acd8a11" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; size_t &gt;</type>
+        <definition>std::optional&lt;size_t&gt; h5pp::DsetInfo::cppTypeSize</definition>
+        <argsstring></argsstring>
+        <name>cppTypeSize</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="219" column="33" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="219" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_dset_info_1a0415458e8810298f4573e4216d7386cc" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; std::type_index &gt;</type>
+        <definition>std::optional&lt;std::type_index&gt; h5pp::DsetInfo::cppTypeIndex</definition>
+        <argsstring></argsstring>
+        <name>cppTypeIndex</name>
+        <initializer>= std::nullopt</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="220" column="24" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="220" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structh5pp_1_1_dset_info_1a7a0a0b79ebf03553a5f5bf47a9d2b717" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>hid_t</type>
+        <definition>hid_t h5pp::DsetInfo::getLocId</definition>
+        <argsstring>() const</argsstring>
+        <name>getLocId</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="222" column="16" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="222" bodyend="228"/>
+        <references refid="structh5pp_1_1_dset_info_1a9df252e6c046f3b31d25f94eb8a05b67" compoundref="h5pp_info_8h" startline="198">h5File</references>
+        <references refid="structh5pp_1_1_dset_info_1a066416eedbcdf8f35e2904bc35c67d31" compoundref="h5pp_info_8h" startline="199">h5Group</references>
+        <references refid="structh5pp_1_1_dset_info_1a6db23ff2c7954df6784951896d6cf9f6" compoundref="h5pp_info_8h" startline="200">h5ObjLoc</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">h5pp::logger::setLogger</references>
+      </memberdef>
+      <memberdef kind="function" id="structh5pp_1_1_dset_info_1afa1fdbce887aa50986847c8dddb0a8c2" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void h5pp::DsetInfo::assertCreateReady</definition>
+        <argsstring>() const</argsstring>
+        <name>assertCreateReady</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="229" column="14" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="229" bodyend="250"/>
+        <references refid="structh5pp_1_1_dset_info_1a02695282a2d094bc7aabd6bfa4bb9fc0" compoundref="h5pp_info_8h" startline="207">dsetPath</references>
+        <references refid="structh5pp_1_1_dset_info_1a671c7bb8ad1a168e91e0d3eaf463553b" compoundref="h5pp_info_8h" startline="208">dsetExists</references>
+        <references refid="structh5pp_1_1_dset_info_1a7055f1166e9a5cce06324d9502310ee6" compoundref="h5pp_info_8h" startline="202">h5Type</references>
+        <references refid="structh5pp_1_1_dset_info_1a6fe259f61912c853063b78fe88b568cb" compoundref="h5pp_info_8h" startline="204">h5Space</references>
+        <references refid="structh5pp_1_1_dset_info_1ad1a3ffef5237a54a2e91b9bbbd1c7789" compoundref="h5pp_info_8h" startline="205">h5PlistDsetCreate</references>
+        <references refid="structh5pp_1_1_dset_info_1af634783657b1cf3c2642aa2157c07ee3" compoundref="h5pp_info_8h" startline="206">h5PlistDsetAccess</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="classh5pp_1_1hid_1_1hid__base_1a1833b03ce5f3e20d952680a8de5ab136" compoundref="h5pp_hid_8h" startline="92" endline="92">h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::valid</references>
+        <references refid="structh5pp_1_1_dset_info_1a7a0a0b79ebf03553a5f5bf47a9d2b717" compoundref="h5pp_info_8h" startline="222" endline="228">getLocId</references>
+      </memberdef>
+      <memberdef kind="function" id="structh5pp_1_1_dset_info_1adb84c08bf0001752d4e825901b9bc500" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void h5pp::DsetInfo::assertResizeReady</definition>
+        <argsstring>() const</argsstring>
+        <name>assertResizeReady</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="251" column="14" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="251" bodyend="275"/>
+        <references refid="structh5pp_1_1_dset_info_1a671c7bb8ad1a168e91e0d3eaf463553b" compoundref="h5pp_info_8h" startline="208">dsetExists</references>
+        <references refid="structh5pp_1_1_dset_info_1a02695282a2d094bc7aabd6bfa4bb9fc0" compoundref="h5pp_info_8h" startline="207">dsetPath</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="structh5pp_1_1_dset_info_1a6822176f32ad86d84553fc5fba02056a" compoundref="h5pp_info_8h" startline="216">resizeMode</references>
+        <references refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a0894c203073521ad32840dd9657949ab">h5pp::DO_NOT_RESIZE</references>
+        <references refid="structh5pp_1_1_dset_info_1a0698a4d87df3f4b39dc268de56b9533c" compoundref="h5pp_info_8h" startline="201">h5Dset</references>
+        <references refid="structh5pp_1_1_dset_info_1a7055f1166e9a5cce06324d9502310ee6" compoundref="h5pp_info_8h" startline="202">h5Type</references>
+        <references refid="structh5pp_1_1_dset_info_1a6fe259f61912c853063b78fe88b568cb" compoundref="h5pp_info_8h" startline="204">h5Space</references>
+        <references refid="structh5pp_1_1_dset_info_1ac51824f123de75a50c3a81ebc73b5f60" compoundref="h5pp_info_8h" startline="203">h5Layout</references>
+        <references refid="classh5pp_1_1hid_1_1hid__base_1a1833b03ce5f3e20d952680a8de5ab136" compoundref="h5pp_hid_8h" startline="92" endline="92">h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::valid</references>
+      </memberdef>
+      <memberdef kind="function" id="structh5pp_1_1_dset_info_1ad68517bc487536ce6dfd7d70307fbdc4" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void h5pp::DsetInfo::assertWriteReady</definition>
+        <argsstring>() const</argsstring>
+        <name>assertWriteReady</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="277" column="14" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="277" bodyend="293"/>
+        <references refid="structh5pp_1_1_dset_info_1a02695282a2d094bc7aabd6bfa4bb9fc0" compoundref="h5pp_info_8h" startline="207">dsetPath</references>
+        <references refid="structh5pp_1_1_dset_info_1a671c7bb8ad1a168e91e0d3eaf463553b" compoundref="h5pp_info_8h" startline="208">dsetExists</references>
+        <references refid="structh5pp_1_1_dset_info_1a0698a4d87df3f4b39dc268de56b9533c" compoundref="h5pp_info_8h" startline="201">h5Dset</references>
+        <references refid="structh5pp_1_1_dset_info_1a7055f1166e9a5cce06324d9502310ee6" compoundref="h5pp_info_8h" startline="202">h5Type</references>
+        <references refid="structh5pp_1_1_dset_info_1a6fe259f61912c853063b78fe88b568cb" compoundref="h5pp_info_8h" startline="204">h5Space</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="classh5pp_1_1hid_1_1hid__base_1a1833b03ce5f3e20d952680a8de5ab136" compoundref="h5pp_hid_8h" startline="92" endline="92">h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::valid</references>
+      </memberdef>
+      <memberdef kind="function" id="structh5pp_1_1_dset_info_1aefa40603adeb9406a4608a0c12bca6db" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void h5pp::DsetInfo::assertReadReady</definition>
+        <argsstring>() const</argsstring>
+        <name>assertReadReady</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="294" column="14" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="294" bodyend="312"/>
+        <references refid="structh5pp_1_1_dset_info_1a02695282a2d094bc7aabd6bfa4bb9fc0" compoundref="h5pp_info_8h" startline="207">dsetPath</references>
+        <references refid="structh5pp_1_1_dset_info_1a671c7bb8ad1a168e91e0d3eaf463553b" compoundref="h5pp_info_8h" startline="208">dsetExists</references>
+        <references refid="structh5pp_1_1_dset_info_1a0698a4d87df3f4b39dc268de56b9533c" compoundref="h5pp_info_8h" startline="201">h5Dset</references>
+        <references refid="structh5pp_1_1_dset_info_1a7055f1166e9a5cce06324d9502310ee6" compoundref="h5pp_info_8h" startline="202">h5Type</references>
+        <references refid="structh5pp_1_1_dset_info_1a6fe259f61912c853063b78fe88b568cb" compoundref="h5pp_info_8h" startline="204">h5Space</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="classh5pp_1_1hid_1_1hid__base_1a1833b03ce5f3e20d952680a8de5ab136" compoundref="h5pp_hid_8h" startline="92" endline="92">h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::valid</references>
+      </memberdef>
+      <memberdef kind="function" id="structh5pp_1_1_dset_info_1a51ca59ddb506fcc9265bb50f7619e513" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string h5pp::DsetInfo::string</definition>
+        <argsstring>() const</argsstring>
+        <name>string</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="313" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="313" bodyend="360"/>
+        <references refid="structh5pp_1_1_dset_info_1a04ea6079208921bca11c32b54d89bb83" compoundref="h5pp_info_8h" startline="209">dsetSize</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="structh5pp_1_1_dset_info_1a9f9fbefffa7655fce0fd129584ce13c9" compoundref="h5pp_info_8h" startline="210">dsetByte</references>
+        <references refid="structh5pp_1_1_dset_info_1acb16320a29dd53c18a8eb4f1bf23a756" compoundref="h5pp_info_8h" startline="211">dsetRank</references>
+        <references refid="structh5pp_1_1_dset_info_1ac51824f123de75a50c3a81ebc73b5f60" compoundref="h5pp_info_8h" startline="203">h5Layout</references>
+        <references refid="structh5pp_1_1_dset_info_1a6fe259f61912c853063b78fe88b568cb" compoundref="h5pp_info_8h" startline="204">h5Space</references>
+        <references refid="structh5pp_1_1_dset_info_1a6822176f32ad86d84553fc5fba02056a" compoundref="h5pp_info_8h" startline="216">resizeMode</references>
+        <references refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a6cd43a637f8b733c23575092197f3ebb">h5pp::RESIZE_TO_FIT</references>
+        <references refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a181a1e17c5afb4561e6b966d995c46f9">h5pp::INCREASE_ONLY</references>
+        <references refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a0894c203073521ad32840dd9657949ab">h5pp::DO_NOT_RESIZE</references>
+        <references refid="structh5pp_1_1_dset_info_1a0318702d366ec2ef747fc22d6406cd4a" compoundref="h5pp_info_8h" startline="217">compression</references>
+        <references refid="structh5pp_1_1_dset_info_1a02695282a2d094bc7aabd6bfa4bb9fc0" compoundref="h5pp_info_8h" startline="207">dsetPath</references>
+        <references refid="structh5pp_1_1_dset_info_1ae129451db2d91b0701c59156db624515" compoundref="h5pp_info_8h" startline="218">cppTypeName</references>
+        <references refid="structh5pp_1_1_dset_info_1a3c35adc9022fb9e5b33da2948acd8a11" compoundref="h5pp_info_8h" startline="219">cppTypeSize</references>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Struct with optional fields describing data on file, i.e. a dataset </para>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>h5pp::DsetInfo</label>
+        <link refid="structh5pp_1_1_dset_info"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>dsetChunk</edgelabel>
+          <edgelabel>dsetDimsMax</edgelabel>
+          <edgelabel>dsetDims</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>h5pp::OptDimsType</label>
+        <link refid="structh5pp_1_1_opt_dims_type"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="197" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="197" bodyend="361"/>
+    <listofallmembers>
+      <member refid="structh5pp_1_1_dset_info_1afa1fdbce887aa50986847c8dddb0a8c2" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>assertCreateReady</name></member>
+      <member refid="structh5pp_1_1_dset_info_1aefa40603adeb9406a4608a0c12bca6db" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>assertReadReady</name></member>
+      <member refid="structh5pp_1_1_dset_info_1adb84c08bf0001752d4e825901b9bc500" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>assertResizeReady</name></member>
+      <member refid="structh5pp_1_1_dset_info_1ad68517bc487536ce6dfd7d70307fbdc4" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>assertWriteReady</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a0318702d366ec2ef747fc22d6406cd4a" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>compression</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a0415458e8810298f4573e4216d7386cc" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>cppTypeIndex</name></member>
+      <member refid="structh5pp_1_1_dset_info_1ae129451db2d91b0701c59156db624515" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>cppTypeName</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a3c35adc9022fb9e5b33da2948acd8a11" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>cppTypeSize</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a9f9fbefffa7655fce0fd129584ce13c9" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>dsetByte</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a76ab42997bd4a82ce7ee796187663ad0" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>dsetChunk</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a7f14b6321a342a6589de458fcc6b7247" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>dsetDims</name></member>
+      <member refid="structh5pp_1_1_dset_info_1abcb6dea25729e1ba3f35769d5979af34" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>dsetDimsMax</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a671c7bb8ad1a168e91e0d3eaf463553b" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>dsetExists</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a02695282a2d094bc7aabd6bfa4bb9fc0" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>dsetPath</name></member>
+      <member refid="structh5pp_1_1_dset_info_1acb16320a29dd53c18a8eb4f1bf23a756" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>dsetRank</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a04ea6079208921bca11c32b54d89bb83" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>dsetSize</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a58f15a74dd4f320566755d053702504e" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>dsetSlab</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a7a0a0b79ebf03553a5f5bf47a9d2b717" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>getLocId</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a0698a4d87df3f4b39dc268de56b9533c" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>h5Dset</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a9df252e6c046f3b31d25f94eb8a05b67" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>h5File</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a066416eedbcdf8f35e2904bc35c67d31" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>h5Group</name></member>
+      <member refid="structh5pp_1_1_dset_info_1ac51824f123de75a50c3a81ebc73b5f60" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>h5Layout</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a6db23ff2c7954df6784951896d6cf9f6" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>h5ObjLoc</name></member>
+      <member refid="structh5pp_1_1_dset_info_1af634783657b1cf3c2642aa2157c07ee3" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>h5PlistDsetAccess</name></member>
+      <member refid="structh5pp_1_1_dset_info_1ad1a3ffef5237a54a2e91b9bbbd1c7789" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>h5PlistDsetCreate</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a6fe259f61912c853063b78fe88b568cb" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>h5Space</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a7055f1166e9a5cce06324d9502310ee6" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>h5Type</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a6822176f32ad86d84553fc5fba02056a" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>resizeMode</name></member>
+      <member refid="structh5pp_1_1_dset_info_1a51ca59ddb506fcc9265bb50f7619e513" prot="public" virt="non-virtual"><scope>h5pp::DsetInfo</scope><name>string</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

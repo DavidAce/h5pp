@@ -1,0 +1,648 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>h5pp &mdash; h5pp  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script src="_static/collapsible-lists/js/CollapsibleLists.compressed.js"></script>
+        <script src="_static/collapsible-lists/js/apply-collapsible-lists.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/collapsible-lists/css/tree_view.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Library API" href="api/library_root.html" />
+    <link rel="prev" title="h5pp docs (in construction)" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> h5pp
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">h5pp</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#example-writing-an-std-vector">Example: Writing an <code class="docutils literal notranslate"><span class="pre">std::vector</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#file-permissions">File permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#storage-layout">Storage Layout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compression">Compression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#debug-and-logging">Debug and logging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#load-data-into-python">Load data into Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optional-dependencies">Optional dependencies:</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#install-methods">Install methods</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#option-1-copy-the-headers">Option 1: Copy the headers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#option-2-install-with-cmake">Option 2: Install with CMake</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#option-3-install-with-conan">Option 3: Install with Conan</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#opt-in-automatic-dependency-installation-with-cmake">Opt-in automatic dependency installation with CMake</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cmake-build-options">CMake build options</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#linking">Linking</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#link-using-cmake-targets-easy">Link using CMake targets (easy)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#targets-explained">Targets explained</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#link-manually-not-as-easy">Link manually (not as easy)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#use-the-custom-findhdf5-cmake-bundled-with-h5pp">Use the custom FindHDF5.cmake bundled with <code class="docutils literal notranslate"><span class="pre">h5pp</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#uninstall">Uninstall</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#to-do">To-do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/library_root.html">Library API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">h5pp</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>h5pp</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p><a class="reference external" href="https://travis-ci.org/DavidAce/h5pp"><img alt="Build Status" src="https://travis-ci.org/DavidAce/h5pp.svg?branch=master" /></a>
+<a class="reference external" href="https://github.com/DavidAce/h5pp/actions"><img alt="Ubuntu 16.04" src="https://github.com/DavidAce/h5pp/workflows/Ubuntu%2016.04/badge.svg?branch=master" /></a>
+<a class="reference external" href="https://github.com/DavidAce/h5pp/actions"><img alt="Ubuntu 20.04" src="https://github.com/DavidAce/h5pp/workflows/Ubuntu%2020.04/badge.svg?branch=master" /></a>
+<a class="reference external" href="https://github.com/DavidAce/h5pp/actions"><img alt="Windows 10" src="https://github.com/DavidAce/h5pp/workflows/Windows%2010/badge.svg?branch=master" /></a>
+<a class="reference external" href="https://conda.anaconda.org/davidace"><img alt="Anaconda-Server Badge" src="https://anaconda.org/davidace/h5pp/badges/installer/conda.svg" /></a>
+<a class="reference external" href="https://bintray.com/davidace/conan-public/h5pp%3Adavidace/_latestVersion"><img alt="Download" src="https://img.shields.io/badge/Install%20with-conan-green" /></a>
+<a class="reference external" href="https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue"><img alt="Download" src="https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue" /></a></p>
+<div class="section" id="h5pp">
+<h1>h5pp<a class="headerlink" href="#h5pp" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">h5pp</span></code> is a C++17 wrapper for HDF5 with focus on simplicity.</p>
+<p>In just a few lines of code, <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> lets users read and write to <a class="reference external" href="https://www.hdfgroup.org/">HDF5</a> files, a portable binary format.
+<code class="docutils literal notranslate"><span class="pre">h5pp</span></code> supports common data types and common containers, such as std::vector.
+In particular, <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> makes it easy to read and write <a class="reference external" href="http://eigen.tuxfamily.org"><strong>Eigen</strong></a> matrices and tensors.</p>
+<p><a class="reference external" href="https://github.com/DavidAce/h5pp/releases">Latest release</a></p>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://www.hdfgroup.org/">HDF5</a> is a popular format for portable binary storage of large datasets.
+With bindings to languages such as Python, Julia, Matlab and many others,
+it is straightforward to export, import and analyze data in a collaborative setting.</p>
+<p>In C/C++ using HDF5 directly is not straightforward.
+Beginners are met with a steep learning curve to the vast API of HDF5.
+There are many C/C++ libraries already that simplify the user experience, but as a matter of opinion,
+things could be even simpler.</p>
+<p>The goal of <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> is to make HDF5 simple to use in the following sense:</p>
+<ul class="simple">
+<li><p>Users should be able to read/write common C++ data-types in a single line of code.</p></li>
+<li><p>Users should not need prior knowledge of HDF5 for simple tasks.</p></li>
+<li><p>Sensible defaults should let simple tasks stay simple, e.g., specifying storage layout, chunk dimensions or compression.</p></li>
+<li><p>Advanced tasks should stay possible, e.g. MPI parallelism.</p></li>
+<li><p>Logs and error messages should be meaningful to beginners.</p></li>
+<li><p>Installation should be simple and scalable with opt-in automation.</p></li>
+</ul>
+</div>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Header-only C++17 template library</p></li>
+<li><p>High-level front-end to the C API of HDF5</p></li>
+<li><p>Support for common data types:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">short</span></code>,<code class="docutils literal notranslate"><span class="pre">int</span></code>,<code class="docutils literal notranslate"><span class="pre">long</span></code>, <code class="docutils literal notranslate"><span class="pre">long</span> <span class="pre">long</span></code> (+ unsigned versions), <code class="docutils literal notranslate"><span class="pre">float</span></code>, <code class="docutils literal notranslate"><span class="pre">double</span></code>, <code class="docutils literal notranslate"><span class="pre">long</span> <span class="pre">double</span></code></p>
+<ul>
+<li><p>any of the above in C-style arrays</p></li>
+<li><p>any of the above in <strong><code class="docutils literal notranslate"><span class="pre">std::complex&lt;&gt;</span></code></strong> form</p></li>
+<li><p>any of the above in POD-structs with x,y or x,y,z data members. In <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> these go by the name <code class="docutils literal notranslate"><span class="pre">Scalar2</span></code> and <code class="docutils literal notranslate"><span class="pre">Scalar3</span></code>.
+These work well together with types such as <code class="docutils literal notranslate"><span class="pre">double2</span></code> or <code class="docutils literal notranslate"><span class="pre">float3</span></code> found in CUDA.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">std::string</span></code> and <code class="docutils literal notranslate"><span class="pre">char</span></code> arrays.</p></li>
+<li><p>Any container such as std::vector with <code class="docutils literal notranslate"><span class="pre">.data()</span></code> member for accessing a contiguous buffer (without conversion to/from row major).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Eigen</span></code> types such as <code class="docutils literal notranslate"><span class="pre">Matrix</span></code>, <code class="docutils literal notranslate"><span class="pre">Array</span></code> and <code class="docutils literal notranslate"><span class="pre">Tensor</span></code>, with automatic conversion to/from row major storage layout.</p></li>
+<li><p>Support for user-defined compound HDF5 types</p></li>
+<li><p>Support for creating HDF5 tables from user-defined compound HDF5 types.</p></li>
+</ul>
+</li>
+<li><p>Modern CMake installation providing targets for simple linking to your projects.</p></li>
+<li><p>Installation with package managers: conan, conda (and apt using .deb installation file)</p></li>
+<li><p>(Opt-in) Automatically find or download dependencies using either the <a class="reference external" href="https://conan.io/">Conan package manager</a> or “CMake-only” methods.</p></li>
+<li><p>Multi-platform: Linux, Windows, OSX. (Developed under Linux)</p></li>
+</ul>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Using <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> is intended to be simple. After initializing a file,
+most of the work can be achieved using just two member functions <code class="docutils literal notranslate"><span class="pre">.writeDataset(...)</span></code> and <code class="docutils literal notranslate"><span class="pre">.readDataset(...)</span></code>.</p>
+<div class="section" id="example-writing-an-std-vector">
+<h3>Example: Writing an <code class="docutils literal notranslate"><span class="pre">std::vector</span></code><a class="headerlink" href="#example-writing-an-std-vector" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>    <span class="cp">#include</span> <span class="cpf">&lt;h5pp/h5pp.h&gt;</span><span class="cp"></span>
+    
+    <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+        
+        <span class="c1">// Initialize a file</span>
+        <span class="n">h5pp</span><span class="o">::</span><span class="n">File</span> <span class="n">file</span><span class="p">(</span><span class="s">&quot;myDir/someFile.h5&quot;</span><span class="p">);</span>
+    
+        <span class="c1">// Initialize a vector with 10 doubles</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">v</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">);</span>
+        
+        <span class="c1">// Write the vector to file.</span>
+        <span class="c1">// Inside the file, the data will be stored in a dataset named &quot;myStdVector&quot;</span>
+        <span class="n">file</span><span class="p">.</span><span class="n">writeDataset</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s">&quot;myStdVector&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+<p>Find more code examples in the <a class="reference external" href="https://github.com/DavidAce/h5pp/tree/master/examples">examples directory</a> or in the <a class="reference external" href="https://github.com/DavidAce/h5pp/wiki">Wiki</a>.</p>
+</div>
+<div class="section" id="file-permissions">
+<h3>File permissions<a class="headerlink" href="#file-permissions" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">h5pp</span></code> offers more flags for file access permissions than HDF5. The new flags are primarily intended to
+prevent accidental loss of data, but also to clarify intent and avoid mutually exclusive options.</p>
+<p>The flags are listed in the order of increasing “danger” that they pose to previously existing files.</p>
+<p>| Flag | File exists | No file exists | Comment |
+| —- | —- | —- | —- |
+| <code class="docutils literal notranslate"><span class="pre">READONLY</span></code>                | Open with read-only permission       | Throw error     | Never writes to disk, fails if the file is not found |
+| <code class="docutils literal notranslate"><span class="pre">COLLISION_FAIL</span></code>          | Throw error                          | Create new file | Never deletes existing files and fails if it already exists |
+| <code class="docutils literal notranslate"><span class="pre">RENAME</span></code> <strong>(default)</strong>    | Create renamed file                  | Create new file | Never deletes existing files. Invents a new filename to avoid collision by appending “-#” (#=1,2,3…) to the stem of the filename |
+| <code class="docutils literal notranslate"><span class="pre">READWRITE</span></code>               | Open with read-write permission      | Create new file | Never deletes existing files, but is allowed to open/modify |
+| <code class="docutils literal notranslate"><span class="pre">BACKUP</span></code>                  | Rename existing file and create new  | Create new file | Avoids collision by backing up the existing file, appending “.bak_#” (#=1,2,3…) to the filename |
+| <code class="docutils literal notranslate"><span class="pre">REPLACE</span></code>                 | Truncate (overwrite)                 | Create new file | Deletes the existing file and creates a new one in place |</p>
+<ul class="simple">
+<li><p>When a new file is created, the intermediate directories are always created automatically.</p></li>
+<li><p>When a new file is created, <code class="docutils literal notranslate"><span class="pre">READWRITE</span></code> permission to it is implied.</p></li>
+</ul>
+<p>To give a concrete example, the syntax works as follows</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>    <span class="n">h5pp</span><span class="o">::</span><span class="n">File</span> <span class="n">file</span><span class="p">(</span><span class="s">&quot;myDir/someFile.h5&quot;</span><span class="p">,</span> <span class="n">h5pp</span><span class="o">::</span><span class="n">FilePermission</span><span class="o">::</span><span class="n">REPLACE</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="storage-layout">
+<h3>Storage Layout<a class="headerlink" href="#storage-layout" title="Permalink to this headline">¶</a></h3>
+<p>Unless specified, <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> will automatically decide the best storage layout for each dataset. The possible layouts are</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">H5D_COMPACT</span></code>:  For scalar or small datasets which can fit in the metadata header. Default on datasets smaller than 32 KB.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">H5D_CONTIGUOUS</span></code>: For medium size datasets.  Default on datasets smaller than 512 KB.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">H5D_CHUNKED</span></code>: For large datasets. Default on datasets larger than 512 KB. This layout has some additional features:</p>
+<ul>
+<li><p>Chunking, portioning of the data to improve IO performance by caching more efficiently. Chunk dimensions are calculated by <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> if not given specifically.</p></li>
+<li><p>Compression, disabled by default, and only available if HDF5 was built with zlib enabled.</p></li>
+<li><p>Overwrite with different size (note that the file size never decreases, for instance after overwriting with a smaller dataset).</p></li>
+</ul>
+</li>
+</ul>
+<p>To specify the layout, pass it as a third argument when writing a new dataset, for instance:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>    <span class="n">file</span><span class="p">.</span><span class="n">writeDataset</span><span class="p">(</span><span class="n">myData</span><span class="p">,</span> <span class="s">&quot;science/myChunkedData&quot;</span><span class="p">,</span> <span class="n">H5D_CHUNKED</span><span class="p">);</span>      <span class="c1">// Creates a chunked dataset</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="compression">
+<h3>Compression<a class="headerlink" href="#compression" title="Permalink to this headline">¶</a></h3>
+<p>Extendable (or chunked) datasets can also be compressed if HDF5 was built with zlib support. Use these
+functions to set or check the compression level:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>    <span class="n">file</span><span class="p">.</span><span class="n">setCompressionLevel</span><span class="p">(</span><span class="mi">9</span><span class="p">);</span>            <span class="c1">// 0 to 9: 0 to disable compression, 9 for maximum compression.</span>
+    <span class="n">file</span><span class="p">.</span><span class="n">getCompressionLevel</span><span class="p">();</span>             <span class="c1">// Gets the current compression level</span>
+    <span class="n">h5pp</span><span class="o">::</span><span class="n">checkIfCompressionIsAvailable</span><span class="p">();</span>         <span class="c1">// True if your installation of HDF5 has zlib support </span>
+</pre></div>
+</div>
+<p>or pass a temporary compression level as the fifth argument when writing a dataset:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>    <span class="n">file</span><span class="p">.</span><span class="n">writeDataset</span><span class="p">(</span><span class="n">myData</span><span class="p">,</span> <span class="s">&quot;science/myCompressedData&quot;</span><span class="p">,</span> <span class="n">H5D_CHUNKED</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">nullopt</span><span class="p">,</span> <span class="mi">8</span><span class="p">);</span> <span class="c1">// Creates a chunked dataset with compression level 8.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="debug-and-logging">
+<h3>Debug and logging<a class="headerlink" href="#debug-and-logging" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://github.com/gabime/spdlog">Spdlog</a> can be used to emit debugging information efficiently.
+The amount of console output (verbosity) can be set to any level between <code class="docutils literal notranslate"><span class="pre">0</span></code> and <code class="docutils literal notranslate"><span class="pre">5</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">0:</span> <span class="pre">trace</span></code> (highest verbosity)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">1:</span> <span class="pre">debug</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">2:</span> <span class="pre">info</span></code>  (default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">3:</span> <span class="pre">warn</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">4:</span> <span class="pre">error</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">5:</span> <span class="pre">critical</span></code>  (lowest verbosity)</p></li>
+</ul>
+<p>Set the level when constructing a h5pp::File or by calling the function <code class="docutils literal notranslate"><span class="pre">.setLogLevel(int)</span></code>:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>    <span class="kt">int</span> <span class="n">logLevel</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// Highest verbosity</span>
+    <span class="c1">// This way...</span>
+    <span class="n">h5pp</span><span class="o">::</span><span class="n">File</span> <span class="n">file</span><span class="p">(</span><span class="s">&quot;myDir/someFile.h5&quot;</span><span class="p">,</span> <span class="n">h5pp</span><span class="o">::</span><span class="n">FilePermission</span><span class="o">::</span><span class="n">REPLACE</span><span class="p">,</span> <span class="n">logLevel</span><span class="p">);</span> 
+    <span class="c1">// or this way</span>
+    <span class="n">file</span><span class="p">.</span><span class="n">setLogLevel</span><span class="p">(</span><span class="n">logLevel</span><span class="p">);</span>                                                                       
+</pre></div>
+</div>
+<p><strong>NOTE:</strong> Logging works the same with or without <a class="reference external" href="https://github.com/gabime/spdlog">Spdlog</a> enabled. When Spdlog is <em>not</em> found,
+a hand-crafted logger is used in its place to give identical output but without any performance
+considerations (implemented with STL lists, strings and streams).</p>
+</div>
+<div class="section" id="load-data-into-python">
+<h3>Load data into Python<a class="headerlink" href="#load-data-into-python" title="Permalink to this headline">¶</a></h3>
+<p>HDF5 data is easy to load into Python. Loading integer and floating point data is straightforward. compound data is almost as simple.
+HDF5 does not support complex types specifically, but <code class="docutils literal notranslate"><span class="pre">h5pp</span></code>enables this through compound HDF5 types. Here is a python example which uses <code class="docutils literal notranslate"><span class="pre">h5py</span></code>
+to load 1D arrays from an HDF5 file generated with <code class="docutils literal notranslate"><span class="pre">h5pp</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="kn">import</span> <span class="nn">h5py</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="n">file</span>  <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;myFile.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Originally written as std::vector&lt;double&gt; in h5pp</span>
+    <span class="n">myDoubleArray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">file</span><span class="p">[</span><span class="s1">&#39;double-array-dataset&#39;</span><span class="p">])</span>                                     
+    
+    <span class="c1"># Originally written as std::vector&lt;std::complex&lt;double&gt;&gt; in h5pp</span>
+    <span class="n">myComplexArray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">file</span><span class="p">[</span><span class="s1">&#39;complex-double-array-dataset&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span> 
+</pre></div>
+</div>
+<p>Notice the cast to <code class="docutils literal notranslate"><span class="pre">dtype=np.complex128</span></code> which interprets each element of the array as two <code class="docutils literal notranslate"><span class="pre">doubles</span></code>, i.e. the real and imaginary parts are <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">64</span> <span class="pre">=</span> <span class="pre">128</span></code> bits.</p>
+</div>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>There are currently 4 ways to obtain <code class="docutils literal notranslate"><span class="pre">h5pp</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/DavidAce/h5pp.git</span></code> and install (see below)</p></li>
+<li><p>From conda: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">davidace</span> <span class="pre">h5pp</span></code></p></li>
+<li><p>From <a class="reference external" href="https://bintray.com/davidace/conan-public/h5pp%3Adavidace">conan bintray repo</a></p></li>
+<li><p>(Debian only) Download the <a class="reference external" href="https://github.com/DavidAce/h5pp/releases">latest release</a> and install with apt: <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">./h5pp_&lt;version&gt;_amd64.deb</span></code></p></li>
+</ul>
+<div class="section" id="requirements">
+<h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>C++17 capable compiler. GCC version &gt;= 7 or Clang version &gt;= 7.0</p></li>
+<li><p>CMake version &gt;= 3.12</p></li>
+<li><p><a class="reference external" href="https://support.hdfgroup.org/HDF5/"><strong>HDF5</strong></a>  library, version &gt;= 1.8</p></li>
+</ul>
+<div class="section" id="optional-dependencies">
+<h4>Optional dependencies:<a class="headerlink" href="#optional-dependencies" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p><a class="reference external" href="http://eigen.tuxfamily.org"><strong>Eigen</strong></a>: Write Eigen matrices and tensors directly. Tested with version &gt;= 3.3.4</p></li>
+<li><p><a class="reference external" href="https://github.com/gabime/spdlog"><strong>spdlog</strong></a>: Enables logging for debug purposes. Tested with version &gt;= 1.3.1</p></li>
+<li><p><a class="reference external" href="https://github.com/gulrak/filesystem"><strong>ghc::filesystem</strong></a>: This drop-in replacement for <code class="docutils literal notranslate"><span class="pre">std::filesystem</span></code> is downloaded and installed automatically when needed, but only if <code class="docutils literal notranslate"><span class="pre">H5PP_DOWNLOAD_METHOD=&lt;fetch|conan&gt;.</span></code></p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="install-methods">
+<h3>Install methods<a class="headerlink" href="#install-methods" title="Permalink to this headline">¶</a></h3>
+<p>For full working examples see the directory <code class="docutils literal notranslate"><span class="pre">quickstart</span></code>. Find a summary below.</p>
+<div class="section" id="option-1-copy-the-headers">
+<h4>Option 1: Copy the headers<a class="headerlink" href="#option-1-copy-the-headers" title="Permalink to this headline">¶</a></h4>
+<p>Copy the files under <code class="docutils literal notranslate"><span class="pre">h5pp/source/include</span></code> and add <code class="docutils literal notranslate"><span class="pre">#include&lt;h5pp/h5pp.h&gt;</span></code>.
+Make sure to compile with <code class="docutils literal notranslate"><span class="pre">-std=c++17</span> <span class="pre">-lstdc++fs</span></code> and link the dependencies <code class="docutils literal notranslate"><span class="pre">hdf5</span></code>, <code class="docutils literal notranslate"><span class="pre">Eigen3</span></code> and <code class="docutils literal notranslate"><span class="pre">spdlog</span></code>. The actual linking
+is a non-trivial step, see <a class="reference external" href="#linking">linking</a> below.</p>
+</div>
+<div class="section" id="option-2-install-with-cmake">
+<h4>Option 2: Install with CMake<a class="headerlink" href="#option-2-install-with-cmake" title="Permalink to this headline">¶</a></h4>
+<p>Build the library just as any CMake project. For instance, from the project’s root in command-line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    mkdir build
+    <span class="nb">cd</span> build
+    cmake -DCMAKE_INSTALL_PREFIX<span class="o">=</span>&lt;install-dir&gt; ../
+    make
+    make install
+</pre></div>
+</div>
+<p>Headers will be installed under <code class="docutils literal notranslate"><span class="pre">&lt;install-dir&gt;/include</span></code> and config files under <code class="docutils literal notranslate"><span class="pre">&lt;install-dir&gt;/share/h5pp/cmake</span></code>.
+These config files allow you to use<code class="docutils literal notranslate"><span class="pre">find_package(h5pp)</span></code> in your own projects, which in turn defines the target <code class="docutils literal notranslate"><span class="pre">h5pp::h5pp</span></code>
+with everything you need to link <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> correctly (including dependencies, if you so choose).
+If not set, <code class="docutils literal notranslate"><span class="pre">CMAKE_INSTALL_PREFIX</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">${CMAKE_BINARY_DIR}/install</span></code>, where <code class="docutils literal notranslate"><span class="pre">${CMAKE_BINARY_DIR}</span></code> is the directory you are building from.</p>
+</div>
+<div class="section" id="option-3-install-with-conan">
+<h4>Option 3: Install with Conan<a class="headerlink" href="#option-3-install-with-conan" title="Permalink to this headline">¶</a></h4>
+<p>Make sure to install and configure Conan first. Then, either use the <a class="reference external" href="https://github.com/conan-io/cmake-conan">cmake-conan</a> integration by passing
+<code class="docutils literal notranslate"><span class="pre">-DH5PP_DOWNLOAD_METHOD=conan</span></code> as an argument to CMake (see below) <strong>or</strong> use Conan directly, for instance by running the following command:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>$ conan install h5pp/1.8.0@davidace/stable --profile default
+</pre></div>
+</div>
+<p>This is by far the simplest method and will also make sure to install dependencies HDF5, Eigen3 and spdlog.</p>
+</div>
+<div class="section" id="opt-in-automatic-dependency-installation-with-cmake">
+<h4>Opt-in automatic dependency installation with CMake<a class="headerlink" href="#opt-in-automatic-dependency-installation-with-cmake" title="Permalink to this headline">¶</a></h4>
+<p>The CMake flag <code class="docutils literal notranslate"><span class="pre">H5PP_DOWNLOAD_METHOD</span></code> controls the automated behavior for finding or installing dependencies. It can take one of three valid strings:</p>
+<p>| Option | Description |
+| —- | —- |
+| <code class="docutils literal notranslate"><span class="pre">none</span></code>  <strong>(default)</strong>             | No handling of dependencies and linking is left to the user |
+| <code class="docutils literal notranslate"><span class="pre">find</span></code>                            | Use CMake’s <code class="docutils literal notranslate"><span class="pre">find_package</span></code>  to find dependencies pre-installed on your system  |
+| <code class="docutils literal notranslate"><span class="pre">fetch</span></code> <strong>(!)</strong>                   | Use CMake-only features to download and install dependencies automatically. Disregards pre-installed dependencies on your system |
+| <code class="docutils literal notranslate"><span class="pre">native</span></code>                          | Deprecated. Use <code class="docutils literal notranslate"><span class="pre">fetch</span></code> |
+| <code class="docutils literal notranslate"><span class="pre">find-or-fetch</span></code>                   | Start with <code class="docutils literal notranslate"><span class="pre">find</span></code> and then go to <code class="docutils literal notranslate"><span class="pre">fetch</span></code> if not found |
+| <code class="docutils literal notranslate"><span class="pre">conan</span></code>   <strong>(!!)</strong>                 | Use the <a class="reference external" href="https://conan.io/">Conan package manager</a> to download and install dependencies automatically. Disregards pre-installed dependencies on your system  |</p>
+<p>There are several variables you can pass to CMake to guide <code class="docutils literal notranslate"><span class="pre">find_package</span></code> calls, see <a class="reference external" href="#cmake-build-options">CMake build options</a> below.</p>
+<p><strong>(!)</strong> Dependencies are installed into <code class="docutils literal notranslate"><span class="pre">CMAKE_INSTALL_PREFIX</span></code>. Pass the CMake variable <code class="docutils literal notranslate"><span class="pre">H5PP_DEPS_IN_SUBDIR</span></code> to install into separate directories under <code class="docutils literal notranslate"><span class="pre">CMAKE_INSTALL_PREFIX/&lt;libname&gt;</span></code>.</p>
+<p><strong>(!!)</strong> Conan is guided by <code class="docutils literal notranslate"><span class="pre">conanfile.txt</span></code> found in this project’s root directory. This method requires conan to be installed prior (for instance through <code class="docutils literal notranslate"><span class="pre">pip</span></code>, <code class="docutils literal notranslate"><span class="pre">conda</span></code>, <code class="docutils literal notranslate"><span class="pre">apt</span></code>, etc). To let CMake find conan you have three options:</p>
+<ul class="simple">
+<li><p>Add Conan install (or bin) directory to the environment variable <code class="docutils literal notranslate"><span class="pre">PATH</span></code>.</p></li>
+<li><p>Export Conan install (or bin) directory in the environment variable <code class="docutils literal notranslate"><span class="pre">CONAN_PREFIX</span></code>, i.e. from command line: <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">CONAN_PREFIX=&lt;path-to-conan&gt;</span></code></p></li>
+<li><p>Give the variable <code class="docutils literal notranslate"><span class="pre">CONAN_PREFIX</span></code> directly to CMake, i.e. from command line: <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">-DCONAN_PREFIX:PATH=&lt;path-to-conan&gt;</span> <span class="pre">...</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="cmake-build-options">
+<h4>CMake build options<a class="headerlink" href="#cmake-build-options" title="Permalink to this headline">¶</a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">cmake</span></code> step above takes several options, <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">[-DOPTIONS=var]</span> <span class="pre">../</span> </code>:</p>
+<p>| Var | Default | Description |
+| —- | —- | —- |
+| <code class="docutils literal notranslate"><span class="pre">CMAKE_INSTALL_PREFIX</span></code>            | <code class="docutils literal notranslate"><span class="pre">${CMAKE_BINARY_DIR}/install</span></code> | Specify <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> install directory  |
+| <code class="docutils literal notranslate"><span class="pre">BUILD_SHARED_LIBS</span></code>               | <code class="docutils literal notranslate"><span class="pre">OFF</span></code>      | Link dependencies with static or shared libraries    |
+| <code class="docutils literal notranslate"><span class="pre">H5PP_ENABLE_TESTS</span></code>               | <code class="docutils literal notranslate"><span class="pre">OFF</span></code>      | Build tests (recommended!) |
+| <code class="docutils literal notranslate"><span class="pre">H5PP_BUILD_EXAMPLES</span></code>             | <code class="docutils literal notranslate"><span class="pre">OFF</span></code>      | Build example programs |
+| <code class="docutils literal notranslate"><span class="pre">H5PP_DOWNLOAD_METHOD</span></code>            | <code class="docutils literal notranslate"><span class="pre">none</span></code>     | Download method for dependencies, select <code class="docutils literal notranslate"><span class="pre">none</span></code>, <code class="docutils literal notranslate"><span class="pre">find</span></code>, <code class="docutils literal notranslate"><span class="pre">fetch</span></code>, <code class="docutils literal notranslate"><span class="pre">find-or-fetch</span></code> or <code class="docutils literal notranslate"><span class="pre">conan</span></code>. <code class="docutils literal notranslate"><span class="pre">Fetch</span></code> downloads and builds from sources |
+| <code class="docutils literal notranslate"><span class="pre">H5PP_PRINT_INFO</span></code>                 | <code class="docutils literal notranslate"><span class="pre">OFF</span></code>      | Use h5pp with add_subdirectory() |
+| <code class="docutils literal notranslate"><span class="pre">H5PP_IS_SUBPROJECT</span></code>              | <code class="docutils literal notranslate"><span class="pre">OFF</span></code>      | Print extra CMake info about the host and generated targets during configure |
+| <code class="docutils literal notranslate"><span class="pre">H5PP_ENABLE_EIGEN3</span></code>              | <code class="docutils literal notranslate"><span class="pre">OFF</span></code>      | Enables Eigen3 linear algebra library support |
+| <code class="docutils literal notranslate"><span class="pre">H5PP_ENABLE_SPDLOG</span></code>              | <code class="docutils literal notranslate"><span class="pre">OFF</span></code>      | Enables Spdlog support for logging <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> internal info to stdout |
+| <code class="docutils literal notranslate"><span class="pre">H5PP_DEPS_IN_SUBDIR</span></code>             | <code class="docutils literal notranslate"><span class="pre">OFF</span></code>      | Appends <code class="docutils literal notranslate"><span class="pre">&lt;libname&gt;</span></code> to install location of dependencies, i.e. <code class="docutils literal notranslate"><span class="pre">CMAKE_INSTALL_PREFIX/&lt;libname&gt;</span></code>. This allows simple removal |
+| <code class="docutils literal notranslate"><span class="pre">H5PP_PREFER_CONDA_LIBS</span></code>          | <code class="docutils literal notranslate"><span class="pre">OFF</span></code>      | Prioritize finding dependencies  <code class="docutils literal notranslate"><span class="pre">hdf5</span></code>, <code class="docutils literal notranslate"><span class="pre">Eigen3</span></code> and <code class="docutils literal notranslate"><span class="pre">spdlog</span></code> installed through conda. No effect when <code class="docutils literal notranslate"><span class="pre">H5PP_DOWNLOAD_METHOD=conan</span></code>  |</p>
+<p>The following variables can be set to help guide CMake’s <code class="docutils literal notranslate"><span class="pre">find_package</span></code> to your pre-installed software (no defaults):</p>
+<p>| Var | Path to |
+| —- | —- |
+| <code class="docutils literal notranslate"><span class="pre">Eigen3_DIR</span></code>          | Eigen3Config.cmake  |
+| <code class="docutils literal notranslate"><span class="pre">Eigen3_ROOT</span></code>         | Eigen3 install directory    |
+| <code class="docutils literal notranslate"><span class="pre">EIGEN3_INCLUDE_DIR</span></code>  | Eigen3 include directory    |
+| <code class="docutils literal notranslate"><span class="pre">spdlog_DIR</span></code>          | spdlogConfig.cmake    |
+| <code class="docutils literal notranslate"><span class="pre">spdlog_ROOT</span></code>         | Spdlog install directory    |
+| <code class="docutils literal notranslate"><span class="pre">HDF5_DIR</span></code>            | HDF5Config.cmake |
+| <code class="docutils literal notranslate"><span class="pre">HDF5_ROOT</span></code>           | HDF5 install directory |
+| <code class="docutils literal notranslate"><span class="pre">CONAN_PREFIX</span></code>        | conan install directory |</p>
+</div>
+</div>
+</div>
+<div class="section" id="linking">
+<h2>Linking<a class="headerlink" href="#linking" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="link-using-cmake-targets-easy">
+<h3>Link using CMake targets (easy)<a class="headerlink" href="#link-using-cmake-targets-easy" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">h5pp</span></code> is easily imported into your project using CMake’s <code class="docutils literal notranslate"><span class="pre">find_package</span></code>. Just point it to the <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> install directory.
+When found, targets are made available to compile and link to dependencies correctly.
+A minimal <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> to use <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> would look like:</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span>    <span class="nb">cmake_minimum_required</span><span class="p">(</span><span class="s">VERSION</span> <span class="s">3.12</span><span class="p">)</span>
+    <span class="nb">project</span><span class="p">(</span><span class="s">myProject</span><span class="p">)</span>
+    <span class="nb">add_executable</span><span class="p">(</span><span class="s">myExecutable</span> <span class="s">main.cpp</span><span class="p">)</span>
+    <span class="nb">find_package</span><span class="p">(</span><span class="s">h5pp</span> <span class="s">PATHS</span> <span class="s">&lt;path-to-h5pp-install-dir&gt;</span> <span class="s">REQUIRED</span><span class="p">)</span> <span class="c"># If h5pp is installed through conda the path may be $ENV{CONDA_PREFIX}</span>
+    <span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">myExecutable</span> <span class="s">PRIVATE</span> <span class="s">h5pp::h5pp</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="targets-explained">
+<h4>Targets explained<a class="headerlink" href="#targets-explained" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">h5pp::h5pp</span></code> is the main target including “everything” and should normally be the only target that you need – headers,flags and (if enabled) the found/downloaded dependencies.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">h5pp::headers</span></code> links the <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> headers only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">h5pp::deps</span></code> collects library targets to link all the dependencies that were found/downloaded when <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> was built. These can of course be used independently.</p>
+<ul>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">H5PP_DOWNLOAD_METHOD==find|find-or-fetch|fetch</span></code> the targets are <code class="docutils literal notranslate"><span class="pre">Eigen3::Eigen</span></code>, <code class="docutils literal notranslate"><span class="pre">spdlog::spdlog</span></code> and <code class="docutils literal notranslate"><span class="pre">hdf5::hdf5</span></code>,</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">H5PP_DOWNLOAD_METHOD==conan</span></code> the targets are <code class="docutils literal notranslate"><span class="pre">CONAN_PKG::Eigen3</span></code>, <code class="docutils literal notranslate"><span class="pre">CONAN_PKG::spdlog</span></code> and <code class="docutils literal notranslate"><span class="pre">CONAN_PKG::HDF5</span></code>.</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">H5PP_DOWNLOAD_METHOD==none</span></code> then <code class="docutils literal notranslate"><span class="pre">h5pp::deps</span></code> is empty.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">h5pp::flags</span></code> sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. <code class="docutils literal notranslate"><span class="pre">-std=c++17</span></code> and <code class="docutils literal notranslate"><span class="pre">-lstdc++fs</span></code>.
+On <code class="docutils literal notranslate"><span class="pre">MSVC</span></code> it sets <code class="docutils literal notranslate"><span class="pre">/permissive-</span></code> to enable logical <code class="docutils literal notranslate"><span class="pre">and</span></code>/<code class="docutils literal notranslate"><span class="pre">or</span></code> in C++.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="link-manually-not-as-easy">
+<h3>Link manually (not as easy)<a class="headerlink" href="#link-manually-not-as-easy" title="Permalink to this headline">¶</a></h3>
+<p>From the command-line you can of course link using linker flags such as <code class="docutils literal notranslate"><span class="pre">-std=c++17</span> <span class="pre">-lstdc++fs</span> <span class="pre">-leigen3</span> <span class="pre">-lspdlog</span> <span class="pre">-lhdf5_hl</span> <span class="pre">-lhdf5</span></code> provided these flags make sense on your system.
+You could also use CMake’s <code class="docutils literal notranslate"><span class="pre">find_package(...)</span></code> mechanism. A minimal <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> could be:</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span>    <span class="nb">cmake_minimum_required</span><span class="p">(</span><span class="s">VERSION</span> <span class="s">3.12</span><span class="p">)</span>
+    <span class="nb">project</span><span class="p">(</span><span class="s">myProject</span><span class="p">)</span>
+    
+    <span class="nb">add_executable</span><span class="p">(</span><span class="s">myExecutable</span> <span class="s">main.cpp</span><span class="p">)</span>
+    <span class="nb">target_include_directories</span><span class="p">(</span><span class="s">myExecutable</span> <span class="s">PRIVATE</span> <span class="s">&lt;path-to-h5pp-headers&gt;</span><span class="p">)</span>
+    <span class="c"># Setup h5pp</span>
+    <span class="nb">target_compile_features</span><span class="p">(</span><span class="s">myExecutable</span> <span class="s">PRIVATE</span> <span class="s">cxx_std_17</span><span class="p">)</span>
+    <span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">myExecutable</span> <span class="s">PRIVATE</span>  <span class="s">stdc++fs</span><span class="p">)</span>
+    
+    <span class="c"># Possibly use find_package() here</span>
+
+    <span class="c"># Link dependencies (this is the tricky part)</span>
+    <span class="nb">target_include_directories</span><span class="p">(</span><span class="s">myExecutable</span> <span class="s">PRIVATE</span> <span class="s">&lt;path-to-Eigen3-include-dir&gt;</span><span class="p">)</span> 
+    <span class="nb">target_include_directories</span><span class="p">(</span><span class="s">myExecutable</span> <span class="s">PRIVATE</span> <span class="s">&lt;path-to-spdlog-include-dir&gt;</span><span class="p">)</span> 
+    <span class="nb">target_include_directories</span><span class="p">(</span><span class="s">myExecutable</span> <span class="s">PRIVATE</span> <span class="s">&lt;path-to-hdf5-include-dir&gt;</span><span class="p">)</span> 
+    <span class="c"># Link dependencies (this is the difficult part). Note that you only need the C libs for HDF5.</span>
+    <span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">myExecutable</span> <span class="s">PRIVATE</span> <span class="s">hdf5_hl</span> <span class="s">hdf5</span> <span class="s">rt</span> <span class="s">dl</span> <span class="s">m</span> <span class="s">z</span> <span class="s">pthread</span><span class="p">)</span> <span class="c"># Possibly more libs, such as aec, dependending on your HDF5 installation</span>
+</pre></div>
+</div>
+<p>The difficult part is linking to HDF5 libraries and its dependencies.</p>
+<div class="section" id="use-the-custom-findhdf5-cmake-bundled-with-h5pp">
+<h4>Use the custom FindHDF5.cmake bundled with <code class="docutils literal notranslate"><span class="pre">h5pp</span></code><a class="headerlink" href="#use-the-custom-findhdf5-cmake-bundled-with-h5pp" title="Permalink to this headline">¶</a></h4>
+<p>When installing <code class="docutils literal notranslate"><span class="pre">h5pp</span></code>, finding HDF5 and setting up the CMake target <code class="docutils literal notranslate"><span class="pre">hdf5::hdf5</span></code> for linking is handled by a custom module for finding HDF5, defined in <code class="docutils literal notranslate"><span class="pre">cmake/FindHDF5.cmake</span></code>.
+This module wraps the default <code class="docutils literal notranslate"><span class="pre">FindHDF5.cmake</span></code> which comes with CMake and uses the same call signature, but fixes some annoyances with naming conventions in different versions of CMake and HDF5 executables.
+It reads hints passed through CMake flags to find HDF5 somewhere on your system (e.g. installed via <code class="docutils literal notranslate"><span class="pre">conda</span></code>,<code class="docutils literal notranslate"><span class="pre">apt</span></code>, <code class="docutils literal notranslate"><span class="pre">brew</span></code>, <code class="docutils literal notranslate"><span class="pre">Easybuild</span></code>,etc) and defines a CMake target <code class="docutils literal notranslate"><span class="pre">hdf5::hdf5</span></code> with everything you need to link correctly.
+Most importantly, it avoids injecting shared versions of libraries (dl, zlib, szip, aec) during static builds on older platforms.
+You can use the custom module too. Add the path pointing to <code class="docutils literal notranslate"><span class="pre">FindHDF5.cmake</span></code> to the variable <code class="docutils literal notranslate"><span class="pre">CMAKE_MODULE_PATH</span></code> from within your own project, e.g.:</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span>    <span class="nb">list</span><span class="p">(</span><span class="s">APPEND</span> <span class="s">CMAKE_MODULE_PATH</span> <span class="s">path/to/h5pp/cmake/FindHDF5.cmake</span><span class="p">)</span>
+    <span class="nb">find_package</span><span class="p">(</span><span class="s">HDF5</span> <span class="s">1.10</span> <span class="s">COMPONENTS</span> <span class="s">C</span> <span class="s">HL</span> <span class="s">REQUIRED</span><span class="p">)</span>
+    <span class="nb">if</span><span class="p">(</span><span class="s">TARGET</span> <span class="s">hdf5::hdf5</span><span class="p">)</span>
+            <span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">myExecutable</span> <span class="s">PRIVATE</span> <span class="s">hdf5::hdf5</span><span class="p">)</span>
+    <span class="nb">endif</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>These are variables that can be used to guide the custom <code class="docutils literal notranslate"><span class="pre">FindHDF5.cmake</span></code> module:</p>
+<p>| Var | Where | Description |
+| —- | —- | —- |
+| <code class="docutils literal notranslate"><span class="pre">CMAKE_MODULE_PATH</span></code>    | CMake     | List of directories where <code class="docutils literal notranslate"><span class="pre">CMake</span></code> should search for find-modules |
+| <code class="docutils literal notranslate"><span class="pre">CMAKE_PREFIX_PATH</span></code>    | CMake     | List of directories where <code class="docutils literal notranslate"><span class="pre">find_package</span></code> should look for dependencies|
+| <code class="docutils literal notranslate"><span class="pre">HDF5_ROOT</span></code>            | CMake/ENV | Path to HDF5 root install directory    |
+| <code class="docutils literal notranslate"><span class="pre">HDF5_FIND_VERBOSE</span></code>    | CMake     | Prints more information about the search for HDF5. See also <code class="docutils literal notranslate"><span class="pre">HDF5_FIND_DEBUG</span></code> in the original module |
+| <code class="docutils literal notranslate"><span class="pre">EBROOTHDF5</span></code>           | ENV       | Variable defined by Easybuild with <code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">load</span> <span class="pre">HDF5</span></code> |</p>
+</div>
+</div>
+</div>
+<div class="section" id="uninstall">
+<h2>Uninstall<a class="headerlink" href="#uninstall" title="Permalink to this headline">¶</a></h2>
+<p>The target <code class="docutils literal notranslate"><span class="pre">uninstall</span></code> is defined by <code class="docutils literal notranslate"><span class="pre">h5pp</span></code> which removes installed headers and dependencies using their respective install manifests.
+From the build directory, run the following in the command-line to uninstall:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>    <span class="n">cmake</span> <span class="o">--</span><span class="n">build</span> <span class="p">.</span>  <span class="o">--</span><span class="n">target</span> <span class="n">uninstall</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="to-do">
+<h1>To-do<a class="headerlink" href="#to-do" title="Permalink to this headline">¶</a></h1>
+<p>In no particular order</p>
+<ul class="simple">
+<li><p>Expand documentation. Perhaps a doxygen/sphinx webpage</p></li>
+<li><p>Expand testing for more edge-cases in</p>
+<ul>
+<li><p>filesystem permissions</p></li>
+<li><p>user-defined types</p></li>
+<li><p>tables</p></li>
+</ul>
+</li>
+<li><p>Expose more of the C-API:</p>
+<ul>
+<li><p>Support for packed user-defined types. Read more: <a class="reference external" href="https://support.hdfgroup.org/HDF5/doc/RM/RM_H5T.html#Datatype-Pack">H5TPack</a></p></li>
+<li><p>True support for parallel read/write with MPI</p></li>
+</ul>
+</li>
+<li><p>Support row-major &lt;-&gt; col-major transformation for types other than Eigen3 matrices and tensors. For instance,
+when raw pointers are passed together with dimension initializer list {x,y,z..}. (Although, this can be done by wrapping
+the data in an Eigen Map object).</p></li>
+</ul>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api/library_root.html" class="btn btn-neutral float-right" title="Library API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="h5pp docs (in construction)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020-present, David Ace
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
