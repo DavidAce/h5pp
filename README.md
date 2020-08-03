@@ -7,14 +7,14 @@
 [![Download](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)
 
 # h5pp
-`h5pp` is a C++17 wrapper for HDF5 with focus on simplicity.
+`h5pp` is a high-level C++17 wrapper for the [HDF5](https://www.hdfgroup.org/) C library.
 
-In just a few lines of code, `h5pp` lets users read and write to [HDF5](https://www.hdfgroup.org/) files, a portable binary format.
-`h5pp` supports common data types and common containers, such as std::vector.
+With simplicity in mind, `h5pp` lets users store common C++ data types into portable binary [HDF5](https://www.hdfgroup.org/) files.
 In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.tuxfamily.org) matrices and tensors.
 
 [Latest release](https://github.com/DavidAce/h5pp/releases) 
 
+Go to [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart) to see install examples.
 
 ## Table of Contents
 *  [Introduction](#introduction)
@@ -47,13 +47,13 @@ Beginners are met with a steep learning curve to the vast API of HDF5.
 There are many C/C++ libraries already that simplify the user experience, but as a matter of opinion,
 things could be even simpler.
 
-The goal of `h5pp` is to make HDF5 simple to use in the following sense:
-*  Users should be able to read/write common C++ data-types in a single line of code.
-*  Users should not need prior knowledge of HDF5 for simple tasks.
-*  Sensible defaults should let simple tasks stay simple, e.g., specifying storage layout, chunk dimensions or compression.
-*  Advanced tasks should stay possible, e.g. MPI parallelism.
-*  Logs and error messages should be meaningful to beginners.
-*  Installation should be simple and scalable with opt-in automation.
+`h5pp` makes HDF5 simple in the following sense:
+*  Read/write common C++ types in a single line of code.
+*  No prior knowledge of HDF5 is required.
+*  Default settings let simple tasks stay simple, e.g., storage layout, chunking and compression.
+*  Advanced tasks remain possible, e.g. MPI parallelism.
+*  Meaningful logs and error messages even for beginners.
+*  Simple installation with modular dependencies and opt-in automation.
  
 
 
@@ -68,7 +68,7 @@ The goal of `h5pp` is to make HDF5 simple to use in the following sense:
             These work well together with types such as `double2` or `float3` found in CUDA.
     *  `std::string` and `char` arrays.
     *  Any container such as std::vector with `.data()` member for accessing a contiguous buffer (without conversion to/from row major).
-    *  `Eigen` types such as `Matrix`, `Array` and `Tensor`, with automatic conversion to/from row major storage layout.
+    *  `Eigen` types such as `Matrix`, `Array` and `Tensor`, with automatic conversion to/from row-major storage.
     *  Support for user-defined compound HDF5 types
     *  Support for creating HDF5 tables from user-defined compound HDF5 types.  
 *  Modern CMake installation providing targets for simple linking to your projects.
@@ -210,12 +210,6 @@ Notice the cast to `dtype=np.complex128` which interprets each element of the ar
 
 
 ## Installation
-There are currently 4 ways to obtain `h5pp`:
-* `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
-* From conda: `conda install -c davidace h5pp`
-* From [conan bintray repo](https://bintray.com/davidace/conan-public/h5pp%3Adavidace)
-* (Debian only) Download the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
-
 
 ### Requirements
 * C++17 capable compiler. GCC version >= 7 or Clang version >= 7.0
@@ -228,8 +222,13 @@ There are currently 4 ways to obtain `h5pp`:
 * [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_DOWNLOAD_METHOD=<fetch|conan>.`
 
 ### Install methods
-For full working examples see the directory `quickstart`. Find a summary below.
+There are currently 4 ways to obtain `h5pp`:
+* `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
+* From conda: `conda install -c davidace h5pp`
+* From [conan bintray repo](https://bintray.com/davidace/conan-public/h5pp%3Adavidace)
+* (Debian only) Download the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
 
+For full working examples see the directory `quickstart`. Find a summary below.
 
 #### Option 1: Copy the headers
 Copy the files under `h5pp/source/include` and add `#include<h5pp/h5pp.h>`.
