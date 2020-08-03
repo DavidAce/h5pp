@@ -1,0 +1,255 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="h5pp_spdlog_8h" kind="file" language="C++">
+    <compoundname>h5ppSpdlog.h</compoundname>
+    <includes refid="h5pp_type_sfinae_8h" local="yes">h5ppTypeSfinae.h</includes>
+    <includes local="no">algorithm</includes>
+    <includes local="no">iostream</includes>
+    <includes local="no">list</includes>
+    <includes local="no">memory</includes>
+    <includes local="no">sstream</includes>
+    <includes local="no">string</includes>
+    <includedby refid="h5pp_format_8h" local="yes">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h</includedby>
+    <includedby refid="h5pp_logger_8h" local="yes">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h</includedby>
+    <incdepgraph>
+      <node id="19">
+        <label>list</label>
+      </node>
+      <node id="1">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppSpdlog.h</label>
+        <link refid="h5pp_spdlog_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>iterator</label>
+      </node>
+      <node id="7">
+        <label>h5ppTypeCompound.h</label>
+        <link refid="h5pp_type_compound_8h"/>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>numeric</label>
+      </node>
+      <node id="10">
+        <label>string</label>
+      </node>
+      <node id="2">
+        <label>h5ppTypeSfinae.h</label>
+        <link refid="h5pp_type_sfinae_8h"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>string_view</label>
+      </node>
+      <node id="8">
+        <label>h5ppHid.h</label>
+        <link refid="h5pp_hid_8h"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>h5ppEigen.h</label>
+        <link refid="h5pp_eigen_8h"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="16">
+        <label>vector</label>
+      </node>
+      <node id="12">
+        <label>array</label>
+      </node>
+      <node id="13">
+        <label>sstream</label>
+      </node>
+      <node id="9">
+        <label>hdf5.h</label>
+      </node>
+      <node id="18">
+        <label>iostream</label>
+      </node>
+      <node id="6">
+        <label>h5ppOptional.h</label>
+        <link refid="h5pp_optional_8h"/>
+      </node>
+      <node id="15">
+        <label>type_traits</label>
+      </node>
+      <node id="11">
+        <label>complex</label>
+      </node>
+      <node id="17">
+        <label>algorithm</label>
+      </node>
+      <node id="20">
+        <label>memory</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="1">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppSpdlog.h</label>
+        <link refid="h5pp_spdlog_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h</label>
+        <link refid="h5pp_logger_8h"/>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/h5pp.h</label>
+        <link refid="h5pp_8h"/>
+      </node>
+      <node id="3">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h</label>
+        <link refid="h5pp_dimension_type_8h"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h</label>
+        <link refid="h5pp_hdf5_8h"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h</label>
+        <link refid="h5pp_hyperslab_8h"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h</label>
+        <link refid="h5pp_format_8h"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFile.h</label>
+        <link refid="h5pp_file_8h"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h</label>
+        <link refid="h5pp_info_8h"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h</label>
+        <link refid="h5pp_scan_8h"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>defined<sp/>(SPDLOG_FMT_EXTERNAL)<sp/>&amp;&amp;<sp/>__has_include(&lt;fmt/core.h&gt;)<sp/>&amp;&amp;<sp/><sp/>__has_include(&lt;fmt/format.h&gt;)<sp/>&amp;&amp;<sp/>__has_include(&lt;fmt/ranges.h&gt;)<sp/>&amp;&amp;<sp/><sp/>__has_include(&lt;fmt/ostream.h&gt;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;fmt/core.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;fmt/format.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;fmt/ostream.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;fmt/ranges.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#elif<sp/>!defined(SPDLOG_FMT_EXTERNAL)<sp/>&amp;&amp;<sp/>__has_include(&lt;spdlog/fmt/fmt.h&gt;)<sp/>&amp;&amp;<sp/>__has_include(&lt;spdlog/fmt/bundled/ranges.h&gt;)<sp/>&amp;&amp;<sp/><sp/>__has_include(&lt;spdlog/fmt/bundled/ostream.h&gt;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;spdlog/fmt/bundled/ostream.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;spdlog/fmt/bundled/ranges.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;spdlog/fmt/fmt.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#elif<sp/>__has_include(&lt;fmt/core.h&gt;)<sp/>&amp;&amp;<sp/><sp/>__has_include(&lt;fmt/format.h&gt;)<sp/>&amp;&amp;<sp/>__has_include(&lt;fmt/ranges.h&gt;)<sp/>&amp;&amp;<sp/><sp/>__has_include(&lt;fmt/ostream.h&gt;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Check<sp/>if<sp/>there<sp/>are<sp/>already<sp/>fmt<sp/>headers<sp/>installed<sp/>independently<sp/>from<sp/>Spdlog</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Note<sp/>that<sp/>in<sp/>this<sp/>case<sp/>the<sp/>user<sp/>hasn&apos;t<sp/>enabled<sp/>Spdlog<sp/>for<sp/>h5pp,<sp/>so<sp/>the<sp/>build<sp/>hasn&apos;t<sp/>linked<sp/>any<sp/>compiled<sp/>FMT<sp/>libraries</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>To<sp/>avoid<sp/>undefined<sp/>references<sp/>we<sp/>coult<sp/>opt<sp/>in<sp/>to<sp/>the<sp/>header-only<sp/>mode<sp/>of<sp/>FMT.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Note<sp/>that<sp/>this<sp/>check<sp/>should<sp/>be<sp/>skipped<sp/>if<sp/>using<sp/>conan.<sp/>Then,<sp/>SPDLOG_FMT_EXTERNAL<sp/>is<sp/>defined</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#ifdef<sp/>FMT_HEADER_ONLY</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>#pragma<sp/>message<sp/>&quot;{fmt}<sp/>has<sp/>been<sp/>included<sp/>as<sp/>header-only<sp/>library<sp/>by<sp/>defining<sp/>the<sp/>compile<sp/>option<sp/>FMT_HEADER_ONLY.<sp/>This<sp/>may<sp/>cause<sp/>a<sp/>large<sp/>compile-time<sp/>overhead&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;fmt/core.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;fmt/format.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;fmt/ostream.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;fmt/ranges.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="comment">//<sp/>In<sp/>this<sp/>case<sp/>there<sp/>is<sp/>no<sp/>fmt<sp/>so<sp/>we<sp/>make<sp/>our<sp/>own<sp/>simple<sp/>formatter</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&quot;<ref refid="h5pp_type_sfinae_8h" kindref="compound">h5ppTypeSfinae.h</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;algorithm&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;memory&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;sstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>__has_include(&lt;spdlog/spdlog.h&gt;)<sp/>&amp;&amp;<sp/>__has_include(&lt;spdlog/sinks/stdout_color_sinks.h&gt;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="38"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;spdlog/sinks/stdout_color_sinks.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="39"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;spdlog/spdlog.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="40"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>H5PP_SPDLOG</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="41"><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>message(&quot;h5pp<sp/>warning:<sp/>could<sp/>not<sp/>find<sp/>header<sp/>&lt;spdlog/spdlog.h&gt;:<sp/>A<sp/>hand-made<sp/>replacement<sp/>logger<sp/>will<sp/>be<sp/>used<sp/>instead.<sp/>Consider<sp/>using<sp/>spdlog<sp/>for<sp/>maximum<sp/>performance&quot;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="43"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight></codeline>
+    </programlisting>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppSpdlog.h"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,211 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="classh5pp_1_1hid_1_1h5f" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>h5pp::hid::h5f</compoundname>
+    <basecompoundref refid="classh5pp_1_1hid_1_1hid__base" prot="public" virt="non-virtual">h5pp::hid::hid_base&lt; h5f &gt;</basecompoundref>
+    <includes refid="h5pp_hid_8h" local="no">h5ppHid.h</includes>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classh5pp_1_1hid_1_1h5f_1ab32929b81298049754bb2cc2f34cfdee" prot="public" static="no" const="no" explicit="no" inline="yes" final="yes" virt="non-virtual">
+        <type></type>
+        <definition>h5pp::hid::h5f::~h5f</definition>
+        <argsstring>() final</argsstring>
+        <name>~h5f</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="257" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="257" bodyend="257"/>
+        <references refid="classh5pp_1_1hid_1_1h5f_1ac062a2a3829f69d2702db39df9a51648" compoundref="h5pp_hid_8h" startline="260" endline="265">close</references>
+      </memberdef>
+      <memberdef kind="function" id="classh5pp_1_1hid_1_1h5f_1a5a8430e665521db8d7bbde94ffc2a091" prot="public" static="no" const="yes" explicit="no" inline="yes" final="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string h5pp::hid::h5f::tag</definition>
+        <argsstring>() const final</argsstring>
+        <name>tag</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="258" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="258" bodyend="258"/>
+      </memberdef>
+      <memberdef kind="function" id="classh5pp_1_1hid_1_1h5f_1ac33da5cf1877ff421171703aa0579572" prot="public" static="no" const="yes" explicit="no" inline="yes" final="yes" virt="virtual">
+        <type>bool</type>
+        <definition>bool h5pp::hid::h5f::equal</definition>
+        <argsstring>(const hid_t &amp;rhs) const final</argsstring>
+        <name>equal</name>
+        <reimplements refid="classh5pp_1_1hid_1_1hid__base_1a226cb2c35132b089507883a812c8c1f1">equal</reimplements>
+        <param>
+          <type>const hid_t &amp;</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="259" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="259" bodyend="259"/>
+      </memberdef>
+      <memberdef kind="function" id="classh5pp_1_1hid_1_1h5f_1ac062a2a3829f69d2702db39df9a51648" prot="public" static="no" const="no" explicit="no" inline="yes" final="yes" virt="virtual">
+        <type>void</type>
+        <definition>void h5pp::hid::h5f::close</definition>
+        <argsstring>() final</argsstring>
+        <name>close</name>
+        <reimplements refid="classh5pp_1_1hid_1_1hid__base_1a1f8dac368247bbf15f1ae2485df5a720">close</reimplements>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="260" column="35" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="260" bodyend="265"/>
+      </memberdef>
+      <memberdef kind="function" id="classh5pp_1_1hid_1_1h5f_1a17cf65eae2f3b0cdce61164a6e63e18a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::hid_base</definition>
+        <argsstring>()=default</argsstring>
+        <name>hid_base</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="256" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classh5pp_1_1hid_1_1h5f_1ad362fd74c0539b93ed2c58e6a36a10a0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::hid_base</definition>
+        <argsstring>(std::initializer_list&lt; int &gt;)=delete</argsstring>
+        <name>hid_base</name>
+        <param>
+          <type>std::initializer_list&lt; int &gt;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="256" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classh5pp_1_1hid_1_1h5f_1a63ad03aa9ee0db24736621848dd474e1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval>std::enable_if_t&lt;std::is_same_v&lt;T, hid_t&gt;&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type></type>
+        <definition>h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::hid_base</definition>
+        <argsstring>(const T &amp;other)</argsstring>
+        <name>hid_base</name>
+        <param>
+          <type>const T &amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="256" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="18" bodyend="26"/>
+      </memberdef>
+      <memberdef kind="function" id="classh5pp_1_1hid_1_1h5f_1a2524d5bb09c6c3737ddb954f3b079e24" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::hid_base</definition>
+        <argsstring>(const hid_base &amp;other)</argsstring>
+        <name>hid_base</name>
+        <param>
+          <type>const <ref refid="classh5pp_1_1hid_1_1hid__base" kindref="compound">hid_base</ref> &amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="256" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="28" bodyend="38"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>h5pp::hid::hid_base&lt; h5f &gt;</label>
+        <link refid="classh5pp_1_1hid_1_1hid__base"/>
+      </node>
+      <node id="1">
+        <label>h5pp::hid::h5f</label>
+        <link refid="classh5pp_1_1hid_1_1h5f"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>h5pp::hid::hid_base&lt; h5f &gt;</label>
+        <link refid="classh5pp_1_1hid_1_1hid__base"/>
+      </node>
+      <node id="1">
+        <label>h5pp::hid::h5f</label>
+        <link refid="classh5pp_1_1hid_1_1h5f"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="254" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="254" bodyend="266"/>
+    <listofallmembers>
+      <member refid="classh5pp_1_1hid_1_1h5f_1ac062a2a3829f69d2702db39df9a51648" prot="public" virt="virtual"><scope>h5pp::hid::h5f</scope><name>close</name></member>
+      <member refid="classh5pp_1_1hid_1_1h5f_1ac33da5cf1877ff421171703aa0579572" prot="public" virt="virtual"><scope>h5pp::hid::h5f</scope><name>equal</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a0c53cd70fd92e78a6de70b9dff337b2f" prot="public" virt="non-virtual" ambiguityscope="hid_base&lt; h5f &gt;::"><scope>h5pp::hid::h5f</scope><name>equal</name></member>
+      <member refid="classh5pp_1_1hid_1_1h5f_1a17cf65eae2f3b0cdce61164a6e63e18a" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>hid_base</name></member>
+      <member refid="classh5pp_1_1hid_1_1h5f_1ad362fd74c0539b93ed2c58e6a36a10a0" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>hid_base</name></member>
+      <member refid="classh5pp_1_1hid_1_1h5f_1a63ad03aa9ee0db24736621848dd474e1" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>hid_base</name></member>
+      <member refid="classh5pp_1_1hid_1_1h5f_1a2524d5bb09c6c3737ddb954f3b079e24" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>hid_base</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1ad362fd74c0539b93ed2c58e6a36a10a0" prot="public" virt="non-virtual" ambiguityscope="hid_base&lt; h5f &gt;::"><scope>h5pp::hid::h5f</scope><name>hid_base</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a63ad03aa9ee0db24736621848dd474e1" prot="public" virt="non-virtual" ambiguityscope="hid_base&lt; h5f &gt;::"><scope>h5pp::hid::h5f</scope><name>hid_base</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a2524d5bb09c6c3737ddb954f3b079e24" prot="public" virt="non-virtual" ambiguityscope="hid_base&lt; h5f &gt;::"><scope>h5pp::hid::h5f</scope><name>hid_base</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a9d81a5256601c0a6441918ead1189f3b" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator bool</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a79117866c2ae9f0d09e317ca2f52c360" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator hid_t</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1ac3d603e27324cceaa521d73de226b100" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator std::string</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a458fb7cc514c32d071af0d5aefca97b5" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator std::string_view</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1af2265e81d2cdb435401036d90ad0ef25" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator!=</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a34a69bf4d530dae1417209261d9fe023" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator!=</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a11df2635a33e4ca36fa55699d98f6e19" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator&lt;</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a1ab43c3fbaeede5546f1c4a0393d32ae" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator&lt;</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a3a75f2455246cda6b208ab5b32bd371c" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator&lt;=</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1ac9e0b3177d7e9737208359ac3f306bb4" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator&lt;=</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1aed4c753cff28862f3c3b7af6d2f8ccbe" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator=</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a1715740b8358be540ae0cdeeb35086e6" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator==</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a96db516322e7cf7fd8c5637b466cb534" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator==</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1ac84094a76644c5c1a2d4ee7b06878698" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator&gt;</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1ab3abaebe1de8f8bcd5b19e8d543f8200" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator&gt;</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a37c86882c74387fc245b5d0b45000bd3" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator&gt;=</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a78e08e6ae97690beaed73f5891a6822d" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>operator&gt;=</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a14bec8d794574c3f248fb08a9e26c554" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>pretty_print</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a5b040323dce39cc7196a6511de86bda3" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>refcount</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a59ea17e99a2a2b0dab4331e5c62a0985" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>safe_print</name></member>
+      <member refid="classh5pp_1_1hid_1_1h5f_1a5a8430e665521db8d7bbde94ffc2a091" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>tag</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a7d952d0f3710280cb70195fd907e7430" prot="public" virt="pure-virtual" ambiguityscope="hid_base&lt; h5f &gt;::"><scope>h5pp::hid::h5f</scope><name>tag</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1aa153327f9d7e509625c08685fcf27692" prot="protected" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>val</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a10c62b79a8ff9a673be13b97f2a30a55" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>valid</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a1833b03ce5f3e20d952680a8de5ab136" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>valid</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a7964b39e8e2481e0d152d1da9505aa55" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>valid</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a49d7564677e93a9b92fbf6eb06987e52" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>value</name></member>
+      <member refid="classh5pp_1_1hid_1_1h5f_1ab32929b81298049754bb2cc2f34cfdee" prot="public" virt="non-virtual"><scope>h5pp::hid::h5f</scope><name>~h5f</name></member>
+      <member refid="classh5pp_1_1hid_1_1hid__base_1a2cc21c646349d0def51b191feefe7504" prot="public" virt="virtual"><scope>h5pp::hid::h5f</scope><name>~hid_base</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,320 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="h5pp_logger_8h" kind="file" language="C++">
+    <compoundname>h5ppLogger.h</compoundname>
+    <includes refid="h5pp_format_8h" local="yes">h5ppFormat.h</includes>
+    <includes refid="h5pp_optional_8h" local="yes">h5ppOptional.h</includes>
+    <includes refid="h5pp_spdlog_8h" local="yes">h5ppSpdlog.h</includes>
+    <includedby refid="h5pp_info_8h" local="yes">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h</includedby>
+    <includedby refid="h5pp_hdf5_8h" local="yes">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h</includedby>
+    <includedby refid="h5pp_file_8h" local="yes">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFile.h</includedby>
+    <incdepgraph>
+      <node id="21">
+        <label>list</label>
+      </node>
+      <node id="3">
+        <label>h5ppSpdlog.h</label>
+        <link refid="h5pp_spdlog_8h"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>iterator</label>
+      </node>
+      <node id="1">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h</label>
+        <link refid="h5pp_logger_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>h5ppTypeCompound.h</label>
+        <link refid="h5pp_type_compound_8h"/>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>numeric</label>
+      </node>
+      <node id="12">
+        <label>string</label>
+      </node>
+      <node id="4">
+        <label>h5ppTypeSfinae.h</label>
+        <link refid="h5pp_type_sfinae_8h"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="16">
+        <label>string_view</label>
+      </node>
+      <node id="10">
+        <label>h5ppHid.h</label>
+        <link refid="h5pp_hid_8h"/>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>h5ppEigen.h</label>
+        <link refid="h5pp_eigen_8h"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>vector</label>
+      </node>
+      <node id="14">
+        <label>array</label>
+      </node>
+      <node id="15">
+        <label>sstream</label>
+      </node>
+      <node id="11">
+        <label>hdf5.h</label>
+      </node>
+      <node id="2">
+        <label>h5ppFormat.h</label>
+        <link refid="h5pp_format_8h"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="20">
+        <label>iostream</label>
+      </node>
+      <node id="8">
+        <label>h5ppOptional.h</label>
+        <link refid="h5pp_optional_8h"/>
+      </node>
+      <node id="17">
+        <label>type_traits</label>
+      </node>
+      <node id="13">
+        <label>complex</label>
+      </node>
+      <node id="19">
+        <label>algorithm</label>
+      </node>
+      <node id="22">
+        <label>memory</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="1">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h</label>
+        <link refid="h5pp_logger_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/h5pp.h</label>
+        <link refid="h5pp_8h"/>
+      </node>
+      <node id="3">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h</label>
+        <link refid="h5pp_hdf5_8h"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFile.h</label>
+        <link refid="h5pp_file_8h"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h</label>
+        <link refid="h5pp_info_8h"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h</label>
+        <link refid="h5pp_scan_8h"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="classh5pp_1_1logger_1_1_manual_logger" prot="public">h5pp::logger::ManualLogger</innerclass>
+    <innernamespace refid="namespaceh5pp">h5pp</innernamespace>
+    <innernamespace refid="namespaceh5pp_1_1logger">h5pp::logger</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="h5pp_format_8h" kindref="compound">h5ppFormat.h</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="h5pp_optional_8h" kindref="compound">h5ppOptional.h</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="h5pp_spdlog_8h" kindref="compound">h5ppSpdlog.h</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6" refid="namespaceh5pp_1_1logger" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespaceh5pp_1_1logger" kindref="compound">h5pp::logger</ref><sp/>{</highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>H5PP_SPDLOG</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/>std::shared_ptr&lt;spdlog::logger&gt;<sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>;</highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1_1logger_1af5c381c4c6c5da7d66c1d42c7c529a7f" kindref="member">enableTimestamp</ref>()<sp/>{</highlight></codeline>
+<codeline lineno="11"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;trace(</highlight><highlight class="stringliteral">&quot;Enabled<sp/>timestamp&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;set_pattern(</highlight><highlight class="stringliteral">&quot;[%Y-%m-%d<sp/>%H:%M:%S][%n]%^[%=8l]%$<sp/>%v&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="13"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1_1logger_1ac548b4b298ba67be52d93a57a0f839b6" kindref="member">disableTimestamp</ref>()<sp/>{</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;trace(</highlight><highlight class="stringliteral">&quot;Disabled<sp/>timestamp&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;set_pattern(</highlight><highlight class="stringliteral">&quot;[%n]%^[%=8l]%$<sp/>%v&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1_1logger_1a964f0df3728a189192ec0630dc58bf95" kindref="member">getLogLevel</ref>()<sp/>{</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref><sp/>!=<sp/></highlight><highlight class="keyword">nullptr</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">size_t</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(<ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;level());</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>2;</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>levelType&gt;</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1_1logger_1ab30ac73a10a90842755bc4a54e2dc54e" kindref="member">setLogLevel</ref>(levelType<sp/>levelZeroToFive)<sp/>{</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>constexpr(std::is_same_v&lt;levelType,<sp/>spdlog::level::level_enum&gt;)</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;set_level(levelZeroToFive);</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>constexpr(std::is_integral_v&lt;levelType&gt;)<sp/>{</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(levelZeroToFive<sp/>&gt;<sp/>5)<sp/>{<sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>std::runtime_error(</highlight><highlight class="stringliteral">&quot;Expected<sp/>verbosity<sp/>level<sp/>integer<sp/>in<sp/>[0-5].<sp/>Got:<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>std::to_string(levelZeroToFive));<sp/>}</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1_1logger_1ab30ac73a10a90842755bc4a54e2dc54e" kindref="member">setLogLevel</ref>(</highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal">spdlog::level::level_enum</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(levelZeroToFive));</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>constexpr(std::is_same_v&lt;levelType,<sp/>std::optional&lt;spdlog::level::level_enum&gt;&gt;<sp/>or<sp/>std::is_same_v&lt;levelType,<sp/>std::optional&lt;size_t&gt;&gt;)<sp/>{</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(levelZeroToFive)</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1_1logger_1ab30ac73a10a90842755bc4a54e2dc54e" kindref="member">setLogLevel</ref>(levelZeroToFive.value());</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>std::runtime_error(</highlight><highlight class="stringliteral">&quot;Given<sp/>wrong<sp/>type<sp/>for<sp/>spdlog<sp/>verbosity<sp/>level&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>log-&gt;info(&quot;Log<sp/>verbosity<sp/>level:<sp/>{}<sp/><sp/><sp/>|<sp/>trace:0<sp/>|<sp/>debug:1<sp/>|<sp/>info:2<sp/>|<sp/>warn:3<sp/>|<sp/>error:4<sp/>|<sp/>critical:5<sp/>|&quot;,<sp/>static_cast&lt;int&gt;(log-&gt;level()));</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;debug(</highlight><highlight class="stringliteral">&quot;Log<sp/>verbosity<sp/>level:<sp/>{}&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(<ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;level()));</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"></highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" kindref="member">setLogger</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;name,<sp/>std::optional&lt;size_t&gt;<sp/>levelZeroToFive<sp/>=<sp/>std::nullopt,<sp/>std::optional&lt;bool&gt;<sp/>timestamp<sp/>=<sp/>std::nullopt)<sp/>{</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(spdlog::get(name)<sp/>==<sp/></highlight><highlight class="keyword">nullptr</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref><sp/>=<sp/>spdlog::stdout_color_mt(name);</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref><sp/>=<sp/>spdlog::get(name);</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;set_pattern(</highlight><highlight class="stringliteral">&quot;[%n]%^[%=8l]%$<sp/>%v&quot;</highlight><highlight class="normal">);<sp/></highlight><highlight class="comment">//<sp/>Disabled<sp/>timestamp<sp/>is<sp/>the<sp/>default</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1ab30ac73a10a90842755bc4a54e2dc54e" kindref="member">setLogLevel</ref>(levelZeroToFive);</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(timestamp<sp/>and<sp/>timestamp.value())<sp/><ref refid="namespaceh5pp_1_1logger_1af5c381c4c6c5da7d66c1d42c7c529a7f" kindref="member">enableTimestamp</ref>();</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"></highlight></codeline>
+<codeline lineno="55"><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="56"><highlight class="normal"></highlight></codeline>
+<codeline lineno="57" refid="classh5pp_1_1logger_1_1_manual_logger" refkind="compound"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classh5pp_1_1logger_1_1_manual_logger" kindref="compound">ManualLogger</ref><sp/>{</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="60" refid="classh5pp_1_1logger_1_1_manual_logger_1a20c2d474be441aa1d7890170ed88f6c7" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::string<sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a20c2d474be441aa1d7890170ed88f6c7" kindref="member">logName</ref>;</highlight></codeline>
+<codeline lineno="61" refid="classh5pp_1_1logger_1_1_manual_logger_1a81ff4bb9fe4b1b648127900b2aa42108" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a81ff4bb9fe4b1b648127900b2aa42108" kindref="member">logLevel</ref><sp/>=<sp/>2;</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal">...<sp/>Args&gt;</highlight></codeline>
+<codeline lineno="63" refid="classh5pp_1_1logger_1_1_manual_logger_1a784b8d96bd081ef9302b9958950ff555" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a784b8d96bd081ef9302b9958950ff555" kindref="member">trace</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;fmtstring,<sp/>Args...<sp/>args)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<ref refid="classh5pp_1_1logger_1_1_manual_logger_1a81ff4bb9fe4b1b648127900b2aa42108" kindref="member">logLevel</ref><sp/>&lt;=<sp/>0)<sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="namespaceh5pp_1ad2b5b92d3e43f1709db8b36b48e8bf01" kindref="member">h5pp::format</ref>(</highlight><highlight class="stringliteral">&quot;[{}][{}]<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>fmtstring,<sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a20c2d474be441aa1d7890170ed88f6c7" kindref="member">logName</ref>,<sp/></highlight><highlight class="stringliteral">&quot;<sp/>trace<sp/><sp/>&quot;</highlight><highlight class="normal">,<sp/>args...)<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;\n&apos;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal">...<sp/>Args&gt;</highlight></codeline>
+<codeline lineno="67" refid="classh5pp_1_1logger_1_1_manual_logger_1a81255d2e83e3d7ff099cc33bdab0058a" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a81255d2e83e3d7ff099cc33bdab0058a" kindref="member">debug</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;fmtstring,<sp/>Args...<sp/>args)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<ref refid="classh5pp_1_1logger_1_1_manual_logger_1a81ff4bb9fe4b1b648127900b2aa42108" kindref="member">logLevel</ref><sp/>&lt;=<sp/>1)<sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="namespaceh5pp_1ad2b5b92d3e43f1709db8b36b48e8bf01" kindref="member">h5pp::format</ref>(</highlight><highlight class="stringliteral">&quot;[{}][{}]<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>fmtstring,<sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a20c2d474be441aa1d7890170ed88f6c7" kindref="member">logName</ref>,<sp/></highlight><highlight class="stringliteral">&quot;<sp/>debug<sp/><sp/>&quot;</highlight><highlight class="normal">,<sp/>args...)<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;\n&apos;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal">...<sp/>Args&gt;</highlight></codeline>
+<codeline lineno="71" refid="classh5pp_1_1logger_1_1_manual_logger_1aae6ccdfd08c83c1898ef417dbaff4d93" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1aae6ccdfd08c83c1898ef417dbaff4d93" kindref="member">info</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;fmtstring,<sp/>Args...<sp/>args)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<ref refid="classh5pp_1_1logger_1_1_manual_logger_1a81ff4bb9fe4b1b648127900b2aa42108" kindref="member">logLevel</ref><sp/>&lt;=<sp/>2)<sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="namespaceh5pp_1ad2b5b92d3e43f1709db8b36b48e8bf01" kindref="member">h5pp::format</ref>(</highlight><highlight class="stringliteral">&quot;[{}][{}]<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>fmtstring,<sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a20c2d474be441aa1d7890170ed88f6c7" kindref="member">logName</ref>,<sp/></highlight><highlight class="stringliteral">&quot;<sp/>info<sp/><sp/><sp/>&quot;</highlight><highlight class="normal">,<sp/>args...)<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;\n&apos;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal">...<sp/>Args&gt;</highlight></codeline>
+<codeline lineno="75" refid="classh5pp_1_1logger_1_1_manual_logger_1ab9bb3a403d676af7d599bde13c529b93" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1ab9bb3a403d676af7d599bde13c529b93" kindref="member">warn</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;fmtstring,<sp/>Args...<sp/>args)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<ref refid="classh5pp_1_1logger_1_1_manual_logger_1a81ff4bb9fe4b1b648127900b2aa42108" kindref="member">logLevel</ref><sp/>&lt;=<sp/>3)<sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="namespaceh5pp_1ad2b5b92d3e43f1709db8b36b48e8bf01" kindref="member">h5pp::format</ref>(</highlight><highlight class="stringliteral">&quot;[{}][{}]<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>fmtstring,<sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a20c2d474be441aa1d7890170ed88f6c7" kindref="member">logName</ref>,<sp/></highlight><highlight class="stringliteral">&quot;<sp/>warn<sp/><sp/><sp/>&quot;</highlight><highlight class="normal">,<sp/>args...)<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;\n&apos;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal">...<sp/>Args&gt;</highlight></codeline>
+<codeline lineno="79" refid="classh5pp_1_1logger_1_1_manual_logger_1a423d8a216176df93f94c5188f29a1253" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a423d8a216176df93f94c5188f29a1253" kindref="member">error</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;fmtstring,<sp/>Args...<sp/>args)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<ref refid="classh5pp_1_1logger_1_1_manual_logger_1a81ff4bb9fe4b1b648127900b2aa42108" kindref="member">logLevel</ref><sp/>&lt;=<sp/>4)<sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="namespaceh5pp_1ad2b5b92d3e43f1709db8b36b48e8bf01" kindref="member">h5pp::format</ref>(</highlight><highlight class="stringliteral">&quot;[{}][{}]<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>fmtstring,<sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a20c2d474be441aa1d7890170ed88f6c7" kindref="member">logName</ref>,<sp/></highlight><highlight class="stringliteral">&quot;<sp/>error<sp/><sp/>&quot;</highlight><highlight class="normal">,<sp/>args...)<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;\n&apos;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal">...<sp/>Args&gt;</highlight></codeline>
+<codeline lineno="83" refid="classh5pp_1_1logger_1_1_manual_logger_1a797556405c9316a001598e3d5ffbb88e" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a797556405c9316a001598e3d5ffbb88e" kindref="member">critical</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;fmtstring,<sp/>Args...<sp/>args)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="84"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<ref refid="classh5pp_1_1logger_1_1_manual_logger_1a81ff4bb9fe4b1b648127900b2aa42108" kindref="member">logLevel</ref><sp/>&lt;=<sp/>5)<sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="namespaceh5pp_1ad2b5b92d3e43f1709db8b36b48e8bf01" kindref="member">h5pp::format</ref>(</highlight><highlight class="stringliteral">&quot;[{}][{}]<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>fmtstring,<sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a20c2d474be441aa1d7890170ed88f6c7" kindref="member">logName</ref>,<sp/></highlight><highlight class="stringliteral">&quot;critical&quot;</highlight><highlight class="normal">,<sp/>args...)<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;\n&apos;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="86" refid="classh5pp_1_1logger_1_1_manual_logger_1ada37951ff120e778def1e9376e85faba" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>[[nodiscard]]<sp/>std::string<sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1ada37951ff120e778def1e9376e85faba" kindref="member">name</ref>()</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1logger_1_1_manual_logger_1a20c2d474be441aa1d7890170ed88f6c7" kindref="member">logName</ref>;<sp/>}</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="88" refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/>std::shared_ptr&lt;ManualLogger&gt;<sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>;</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"></highlight></codeline>
+<codeline lineno="90" refid="namespaceh5pp_1_1logger_1af5c381c4c6c5da7d66c1d42c7c529a7f" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1af5c381c4c6c5da7d66c1d42c7c529a7f" kindref="member">enableTimestamp</ref>()<sp/>{}</highlight></codeline>
+<codeline lineno="91" refid="namespaceh5pp_1_1logger_1ac548b4b298ba67be52d93a57a0f839b6" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1ac548b4b298ba67be52d93a57a0f839b6" kindref="member">disableTimestamp</ref>()<sp/>{}</highlight></codeline>
+<codeline lineno="92" refid="namespaceh5pp_1_1logger_1a964f0df3728a189192ec0630dc58bf95" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1_1logger_1a964f0df3728a189192ec0630dc58bf95" kindref="member">getLogLevel</ref>()<sp/>{</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref><sp/>!=<sp/></highlight><highlight class="keyword">nullptr</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;logLevel;</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="96"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>2;</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>levelType&gt;</highlight></codeline>
+<codeline lineno="99" refid="namespaceh5pp_1_1logger_1ab30ac73a10a90842755bc4a54e2dc54e" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1_1logger_1ab30ac73a10a90842755bc4a54e2dc54e" kindref="member">setLogLevel</ref>([[maybe_unused]]<sp/>levelType<sp/>levelZeroToFive)<sp/>{</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>constexpr(std::is_integral_v&lt;levelType&gt;)<sp/>{</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(levelZeroToFive<sp/>&gt;<sp/>5)<sp/>{<sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>std::runtime_error(</highlight><highlight class="stringliteral">&quot;Expected<sp/>verbosity<sp/>level<sp/>integer<sp/>in<sp/>[0-5].<sp/>Got:<sp/>&quot;</highlight><highlight class="normal"><sp/>+<sp/>std::to_string(levelZeroToFive));<sp/>}</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>log-&gt;info(&quot;Log<sp/>verbosity<sp/>level:<sp/>{}<sp/><sp/><sp/>|<sp/>trace:0<sp/>|<sp/>debug:1<sp/>|<sp/>info:2<sp/>|<sp/>warn:3<sp/>|<sp/>error:4<sp/>|<sp/>critical:5<sp/>|&quot;,<sp/>levelZeroToFive);</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;debug(</highlight><highlight class="stringliteral">&quot;Log<sp/>verbosity<sp/>level:<sp/>{}&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref><sp/>!=<sp/></highlight><highlight class="keyword">nullptr</highlight><highlight class="normal">)<sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;logLevel<sp/>=<sp/>levelZeroToFive;</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>constexpr(std::is_same_v&lt;levelType,<sp/>std::optional&lt;size_t&gt;&gt;)<sp/>{</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(levelZeroToFive)</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1_1logger_1ab30ac73a10a90842755bc4a54e2dc54e" kindref="member">setLogLevel</ref>(levelZeroToFive.value());</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/>std::runtime_error(</highlight><highlight class="stringliteral">&quot;Given<sp/>wrong<sp/>type<sp/>for<sp/>spdlog<sp/>verbosity<sp/>level&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="113"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="114"><highlight class="normal"></highlight></codeline>
+<codeline lineno="115" refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" kindref="member">setLogger</ref>([[maybe_unused]]<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>&amp;<sp/><sp/><sp/>name_,</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>[[maybe_unused]]<sp/>std::optional&lt;size_t&gt;<sp/>levelZeroToFive<sp/>=<sp/>std::nullopt,</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>[[maybe_unused]]<sp/>std::optional&lt;bool&gt;<sp/><sp/><sp/>timestamp<sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>std::nullopt)<sp/>{</highlight></codeline>
+<codeline lineno="118"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>std::make_shared&lt;ManualLogger&gt;();</highlight></codeline>
+<codeline lineno="119"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" kindref="member">log</ref>-&gt;logName<sp/>=<sp/>name_;</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1_1logger_1ab30ac73a10a90842755bc4a54e2dc54e" kindref="member">setLogLevel</ref>(levelZeroToFive);</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="122"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="123"><highlight class="normal"></highlight></codeline>
+<codeline lineno="124"><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h"/>
+  </compounddef>
+</doxygen>

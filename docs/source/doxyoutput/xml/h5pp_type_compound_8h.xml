@@ -1,0 +1,279 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="h5pp_type_compound_8h" kind="file" language="C++">
+    <compoundname>h5ppTypeCompound.h</compoundname>
+    <includes refid="h5pp_hid_8h" local="yes">h5ppHid.h</includes>
+    <includes local="no">complex</includes>
+    <includes local="no">hdf5.h</includes>
+    <includedby refid="h5pp_type_sfinae_8h" local="yes">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h</includedby>
+    <includedby refid="h5pp_type_compound_create_8h" local="yes">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompoundCreate.h</includedby>
+    <incdepgraph>
+      <node id="1">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h</label>
+        <link refid="h5pp_type_compound_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>string</label>
+      </node>
+      <node id="2">
+        <label>h5ppHid.h</label>
+        <link refid="h5pp_hid_8h"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>hdf5.h</label>
+      </node>
+      <node id="5">
+        <label>complex</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="3">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppSpdlog.h</label>
+        <link refid="h5pp_spdlog_8h"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="11">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h</label>
+        <link refid="h5pp_logger_8h"/>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h</label>
+        <link refid="h5pp_type_compound_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/h5pp.h</label>
+        <link refid="h5pp_8h"/>
+      </node>
+      <node id="5">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h</label>
+        <link refid="h5pp_dimension_type_8h"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h</label>
+        <link refid="h5pp_type_sfinae_8h"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h</label>
+        <link refid="h5pp_hdf5_8h"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h</label>
+        <link refid="h5pp_utils_8h"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h</label>
+        <link refid="h5pp_hyperslab_8h"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h</label>
+        <link refid="h5pp_format_8h"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFile.h</label>
+        <link refid="h5pp_file_8h"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h</label>
+        <link refid="h5pp_info_8h"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompoundCreate.h</label>
+        <link refid="h5pp_type_compound_create_8h"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h</label>
+        <link refid="h5pp_scan_8h"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t" prot="public">h5pp::type::compound::H5T_COMPLEX_STRUCT</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2" prot="public">h5pp::type::compound::H5T_SCALAR2</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3" prot="public">h5pp::type::compound::H5T_SCALAR3</innerclass>
+    <innernamespace refid="namespaceh5pp">h5pp</innernamespace>
+    <innernamespace refid="namespaceh5pp_1_1type">h5pp::type</innernamespace>
+    <innernamespace refid="namespaceh5pp_1_1type_1_1compound">h5pp::type::compound</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="h5pp_hid_8h" kindref="compound">h5ppHid.h</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;complex&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;hdf5.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5" refid="namespaceh5pp_1_1type_1_1compound" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespaceh5pp_1_1type_1_1compound" kindref="compound">h5pp::type::compound</ref><sp/>{</highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight></codeline>
+<codeline lineno="7" refid="namespaceh5pp_1_1type_1_1compound_1aa6d20d609d54cc8799d142ca54acf9d5" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1aa6d20d609d54cc8799d142ca54acf9d5" kindref="member">H5T_COMPLEX_SHORT</ref>;</highlight></codeline>
+<codeline lineno="8" refid="namespaceh5pp_1_1type_1_1compound_1a72d333146d79727000434d8df8090771" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a72d333146d79727000434d8df8090771" kindref="member">H5T_COMPLEX_INT</ref>;</highlight></codeline>
+<codeline lineno="9" refid="namespaceh5pp_1_1type_1_1compound_1a226386f8edeba333cc587a196b28afc4" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a226386f8edeba333cc587a196b28afc4" kindref="member">H5T_COMPLEX_LONG</ref>;</highlight></codeline>
+<codeline lineno="10" refid="namespaceh5pp_1_1type_1_1compound_1a910b7f32f6e2ca31fc90d8348a585b48" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a910b7f32f6e2ca31fc90d8348a585b48" kindref="member">H5T_COMPLEX_LLONG</ref>;</highlight></codeline>
+<codeline lineno="11" refid="namespaceh5pp_1_1type_1_1compound_1acc918db007bccfde363dd0b77fa3b3ea" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1acc918db007bccfde363dd0b77fa3b3ea" kindref="member">H5T_COMPLEX_USHORT</ref>;</highlight></codeline>
+<codeline lineno="12" refid="namespaceh5pp_1_1type_1_1compound_1a3b9789ae80ef3ba9d4bd3fde5daa7580" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a3b9789ae80ef3ba9d4bd3fde5daa7580" kindref="member">H5T_COMPLEX_UINT</ref>;</highlight></codeline>
+<codeline lineno="13" refid="namespaceh5pp_1_1type_1_1compound_1a50673b0f6565904d494f414efa594a90" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a50673b0f6565904d494f414efa594a90" kindref="member">H5T_COMPLEX_ULONG</ref>;</highlight></codeline>
+<codeline lineno="14" refid="namespaceh5pp_1_1type_1_1compound_1aaeef3b17e9cf410cc117e10361dec982" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1aaeef3b17e9cf410cc117e10361dec982" kindref="member">H5T_COMPLEX_ULLONG</ref>;</highlight></codeline>
+<codeline lineno="15" refid="namespaceh5pp_1_1type_1_1compound_1a268dc8b7924bd1178fa52083a4f56ca6" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a268dc8b7924bd1178fa52083a4f56ca6" kindref="member">H5T_COMPLEX_DOUBLE</ref>;</highlight></codeline>
+<codeline lineno="16" refid="namespaceh5pp_1_1type_1_1compound_1a2a152b65b67a662acb0ec9abc19987e7" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a2a152b65b67a662acb0ec9abc19987e7" kindref="member">H5T_COMPLEX_LDOUBLE</ref>;</highlight></codeline>
+<codeline lineno="17" refid="namespaceh5pp_1_1type_1_1compound_1acdf182c37fd898aa2050a69341e581f9" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1acdf182c37fd898aa2050a69341e581f9" kindref="member">H5T_COMPLEX_FLOAT</ref>;</highlight></codeline>
+<codeline lineno="18" refid="namespaceh5pp_1_1type_1_1compound_1a4b2f7636f376661adaff16511bb5c8aa" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a4b2f7636f376661adaff16511bb5c8aa" kindref="member">H5T_SCALAR2_SHORT</ref>;</highlight></codeline>
+<codeline lineno="19" refid="namespaceh5pp_1_1type_1_1compound_1a1ecf4c9b8351f394b4729b1444746054" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a1ecf4c9b8351f394b4729b1444746054" kindref="member">H5T_SCALAR2_INT</ref>;</highlight></codeline>
+<codeline lineno="20" refid="namespaceh5pp_1_1type_1_1compound_1ad6a6f13c0be2677b8b96967803488f5a" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1ad6a6f13c0be2677b8b96967803488f5a" kindref="member">H5T_SCALAR2_LONG</ref>;</highlight></codeline>
+<codeline lineno="21" refid="namespaceh5pp_1_1type_1_1compound_1ad04233950f53c5c654d6fb6a4d90629f" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1ad04233950f53c5c654d6fb6a4d90629f" kindref="member">H5T_SCALAR2_LLONG</ref>;</highlight></codeline>
+<codeline lineno="22" refid="namespaceh5pp_1_1type_1_1compound_1a0138ed96c7133dd3bd56d937af3985b5" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a0138ed96c7133dd3bd56d937af3985b5" kindref="member">H5T_SCALAR2_USHORT</ref>;</highlight></codeline>
+<codeline lineno="23" refid="namespaceh5pp_1_1type_1_1compound_1a9ccebced1010fb62d3a35fc69cd2adc0" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a9ccebced1010fb62d3a35fc69cd2adc0" kindref="member">H5T_SCALAR2_UINT</ref>;</highlight></codeline>
+<codeline lineno="24" refid="namespaceh5pp_1_1type_1_1compound_1a9c766aa225eb8c4d7543aa5f7408c086" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a9c766aa225eb8c4d7543aa5f7408c086" kindref="member">H5T_SCALAR2_ULONG</ref>;</highlight></codeline>
+<codeline lineno="25" refid="namespaceh5pp_1_1type_1_1compound_1a3b6158b5eb9ff628af36cb4559c9c2f5" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a3b6158b5eb9ff628af36cb4559c9c2f5" kindref="member">H5T_SCALAR2_ULLONG</ref>;</highlight></codeline>
+<codeline lineno="26" refid="namespaceh5pp_1_1type_1_1compound_1a1c47191f5d60443d9741bcbef499fddb" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a1c47191f5d60443d9741bcbef499fddb" kindref="member">H5T_SCALAR2_DOUBLE</ref>;</highlight></codeline>
+<codeline lineno="27" refid="namespaceh5pp_1_1type_1_1compound_1af6e1d6fb81c76e3016d534b520534925" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1af6e1d6fb81c76e3016d534b520534925" kindref="member">H5T_SCALAR2_LDOUBLE</ref>;</highlight></codeline>
+<codeline lineno="28" refid="namespaceh5pp_1_1type_1_1compound_1aa9295211544b40b36fbb1f0d4cb236df" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1aa9295211544b40b36fbb1f0d4cb236df" kindref="member">H5T_SCALAR2_FLOAT</ref>;</highlight></codeline>
+<codeline lineno="29" refid="namespaceh5pp_1_1type_1_1compound_1a4eede90bae7e6f505d0b67a88d52d560" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a4eede90bae7e6f505d0b67a88d52d560" kindref="member">H5T_SCALAR3_SHORT</ref>;</highlight></codeline>
+<codeline lineno="30" refid="namespaceh5pp_1_1type_1_1compound_1a34d3d8da125027f7ab408abd16ee4e54" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a34d3d8da125027f7ab408abd16ee4e54" kindref="member">H5T_SCALAR3_INT</ref>;</highlight></codeline>
+<codeline lineno="31" refid="namespaceh5pp_1_1type_1_1compound_1a0561544bc67849285c89c06a660c03ad" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a0561544bc67849285c89c06a660c03ad" kindref="member">H5T_SCALAR3_LONG</ref>;</highlight></codeline>
+<codeline lineno="32" refid="namespaceh5pp_1_1type_1_1compound_1a33208b742da16646b519eeae5711692c" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a33208b742da16646b519eeae5711692c" kindref="member">H5T_SCALAR3_LLONG</ref>;</highlight></codeline>
+<codeline lineno="33" refid="namespaceh5pp_1_1type_1_1compound_1a2eecc3b85070927f9bb8bd05843df0a1" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a2eecc3b85070927f9bb8bd05843df0a1" kindref="member">H5T_SCALAR3_USHORT</ref>;</highlight></codeline>
+<codeline lineno="34" refid="namespaceh5pp_1_1type_1_1compound_1acbb546754f0cf3e93325cd33e7d4c4b8" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1acbb546754f0cf3e93325cd33e7d4c4b8" kindref="member">H5T_SCALAR3_UINT</ref>;</highlight></codeline>
+<codeline lineno="35" refid="namespaceh5pp_1_1type_1_1compound_1a33550956053a2cac47b039049dd9d679" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a33550956053a2cac47b039049dd9d679" kindref="member">H5T_SCALAR3_ULONG</ref>;</highlight></codeline>
+<codeline lineno="36" refid="namespaceh5pp_1_1type_1_1compound_1a33093680e829f1a39c80b95e81a0d1f0" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a33093680e829f1a39c80b95e81a0d1f0" kindref="member">H5T_SCALAR3_ULLONG</ref>;</highlight></codeline>
+<codeline lineno="37" refid="namespaceh5pp_1_1type_1_1compound_1acb2433bdbc762d670458099a35882564" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1acb2433bdbc762d670458099a35882564" kindref="member">H5T_SCALAR3_DOUBLE</ref>;</highlight></codeline>
+<codeline lineno="38" refid="namespaceh5pp_1_1type_1_1compound_1ae654aca670b1ad62bc4f787e55f8cd9c" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1ae654aca670b1ad62bc4f787e55f8cd9c" kindref="member">H5T_SCALAR3_LDOUBLE</ref>;</highlight></codeline>
+<codeline lineno="39" refid="namespaceh5pp_1_1type_1_1compound_1a1e0f70c73399d9342a8e7ff5cbae15bf" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref><sp/><ref refid="namespaceh5pp_1_1type_1_1compound_1a1e0f70c73399d9342a8e7ff5cbae15bf" kindref="member">H5T_SCALAR3_FLOAT</ref>;</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"></highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="42" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t" refkind="compound"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t" kindref="compound">H5T_COMPLEX_STRUCT</ref><sp/>{</highlight></codeline>
+<codeline lineno="43" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1a5ae9d61a532759eb5e3881305ccc589b" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>T<sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1a5ae9d61a532759eb5e3881305ccc589b" kindref="member">real</ref>,<sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1a6dd70d9c0c049d3ae36a09db467a1593" kindref="member">imag</ref>;<sp/></highlight><highlight class="comment">//<sp/>real,imag<sp/>parts</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="44" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1aa32f13e6db77d3a9e58915b79b28573a" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1aa32f13e6db77d3a9e58915b79b28573a" kindref="member">value_type</ref><sp/><sp/><sp/><sp/><sp/>=<sp/>T;</highlight></codeline>
+<codeline lineno="45" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1a66ab47c56bc074ec92509aee0f0efb1f" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1a66ab47c56bc074ec92509aee0f0efb1f" kindref="member">Scalar</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>T;</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1acd741f23bdf7161f904d496fff7dae23" kindref="member">H5T_COMPLEX_STRUCT</ref>()<sp/>=<sp/></highlight><highlight class="keywordflow">default</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="47" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1afddb12c512706a37821dd7073fe9e6ae" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">explicit</highlight><highlight class="normal"><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1afddb12c512706a37821dd7073fe9e6ae" kindref="member">H5T_COMPLEX_STRUCT</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::complex&lt;T&gt;<sp/>&amp;in)<sp/>{</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1a5ae9d61a532759eb5e3881305ccc589b" kindref="member">real</ref><sp/>=<sp/>in.real();</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1a6dd70d9c0c049d3ae36a09db467a1593" kindref="member">imag</ref><sp/>=<sp/>in.imag();</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="51" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1aa0dec684a75c380a55ca021805d5b5f4" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t" kindref="compound">H5T_COMPLEX_STRUCT</ref><sp/>&amp;<ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1aa0dec684a75c380a55ca021805d5b5f4" kindref="member">operator=</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::complex&lt;T&gt;<sp/>&amp;rhs)<sp/>{</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1a5ae9d61a532759eb5e3881305ccc589b" kindref="member">real</ref><sp/>=<sp/>rhs.real();</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___c_o_m_p_l_e_x___s_t_r_u_c_t_1a6dd70d9c0c049d3ae36a09db467a1593" kindref="member">imag</ref><sp/>=<sp/>rhs.imag();</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>*</highlight><highlight class="keyword">this</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"></highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="59" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2" refkind="compound"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2" kindref="compound">H5T_SCALAR2</ref><sp/>{</highlight></codeline>
+<codeline lineno="60" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1ab19f02ff5b88cbe795be90c8fb93ff87" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>T<sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a5bd2771828708824c2c6a0d6035784a0" kindref="member">x</ref>,<sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1ab19f02ff5b88cbe795be90c8fb93ff87" kindref="member">y</ref>;</highlight></codeline>
+<codeline lineno="61" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1ac750511cef29330e54ea568adf7c86b6" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1ac750511cef29330e54ea568adf7c86b6" kindref="member">value_type</ref><sp/>=<sp/>T;</highlight></codeline>
+<codeline lineno="62" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a215ce3aa02558626fb2f8ada6c1d88ea" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a215ce3aa02558626fb2f8ada6c1d88ea" kindref="member">Scalar</ref><sp/><sp/><sp/><sp/><sp/>=<sp/>T;</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a9227a69f12f2c34d743bc382606e6be1" kindref="member">H5T_SCALAR2</ref>()<sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keywordflow">default</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Scalar2Type&gt;</highlight></codeline>
+<codeline lineno="65" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a6a39dfac3ce9b2eaf94729b065936d7a" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">explicit</highlight><highlight class="normal"><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a6a39dfac3ce9b2eaf94729b065936d7a" kindref="member">H5T_SCALAR2</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Scalar2Type<sp/>&amp;in)<sp/>{</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>static_assert(std::is_same_v&lt;T,<sp/>decltype(in.x)&gt;);</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>static_assert(std::is_same_v&lt;T,<sp/>decltype(in.y)&gt;);</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a5bd2771828708824c2c6a0d6035784a0" kindref="member">x</ref><sp/>=<sp/>in.x;</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1ab19f02ff5b88cbe795be90c8fb93ff87" kindref="member">y</ref><sp/>=<sp/>in.y;</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Scalar2Type&gt;</highlight></codeline>
+<codeline lineno="72" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a96d62612752f1d6c5194901f170e11e5" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2" kindref="compound">H5T_SCALAR2</ref><sp/>&amp;<ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a96d62612752f1d6c5194901f170e11e5" kindref="member">operator=</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Scalar2Type<sp/>&amp;rhs)<sp/>{</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>static_assert(std::is_same_v&lt;T,<sp/>decltype(rhs.x)&gt;);</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>static_assert(std::is_same_v&lt;T,<sp/>decltype(rhs.y)&gt;);</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a5bd2771828708824c2c6a0d6035784a0" kindref="member">x</ref><sp/>=<sp/>rhs.x;</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1ab19f02ff5b88cbe795be90c8fb93ff87" kindref="member">y</ref><sp/>=<sp/>rhs.y;</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>*</highlight><highlight class="keyword">this</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"></highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="82" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3" refkind="compound"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3" kindref="compound">H5T_SCALAR3</ref><sp/>{</highlight></codeline>
+<codeline lineno="83" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a18d6d3286da33cdd5ae2c0eaf7110ff7" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>T<sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a1728ed2fee2e41ae85ee55b7c54b470a" kindref="member">x</ref>,<sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1aa8557d5f052579fb9cd32ec5959c1664" kindref="member">y</ref>,<sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a18d6d3286da33cdd5ae2c0eaf7110ff7" kindref="member">z</ref>;</highlight></codeline>
+<codeline lineno="84" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a60426485793705aaa50f3e6dac72b2e1" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a60426485793705aaa50f3e6dac72b2e1" kindref="member">value_type</ref><sp/>=<sp/>T;</highlight></codeline>
+<codeline lineno="85" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a76463d0a013f2395124fb83bb1cc44c5" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">using</highlight><highlight class="normal"><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a76463d0a013f2395124fb83bb1cc44c5" kindref="member">Scalar</ref><sp/><sp/><sp/><sp/><sp/>=<sp/>T;</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1aac6640eb0c51f4cc33e62e2057b61739" kindref="member">H5T_SCALAR3</ref>()<sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keywordflow">default</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Scalar3Type&gt;</highlight></codeline>
+<codeline lineno="88" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a22922d48f1286527c18bf85bb518edbb" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">explicit</highlight><highlight class="normal"><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a22922d48f1286527c18bf85bb518edbb" kindref="member">H5T_SCALAR3</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Scalar3Type<sp/>&amp;in)<sp/>{</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>static_assert(std::is_same_v&lt;T,<sp/>decltype(in.x)&gt;);</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>static_assert(std::is_same_v&lt;T,<sp/>decltype(in.y)&gt;);</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>static_assert(std::is_same_v&lt;T,<sp/>decltype(in.z)&gt;);</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a1728ed2fee2e41ae85ee55b7c54b470a" kindref="member">x</ref><sp/>=<sp/>in.x;</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1aa8557d5f052579fb9cd32ec5959c1664" kindref="member">y</ref><sp/>=<sp/>in.y;</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a18d6d3286da33cdd5ae2c0eaf7110ff7" kindref="member">z</ref><sp/>=<sp/>in.z;</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="96"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Scalar3Type&gt;</highlight></codeline>
+<codeline lineno="97" refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1aa66c2313981a53491b1d1ba19e6d751c" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3" kindref="compound">H5T_SCALAR3</ref><sp/>&amp;<ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1aa66c2313981a53491b1d1ba19e6d751c" kindref="member">operator=</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Scalar3Type<sp/>&amp;rhs)<sp/>{</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>static_assert(std::is_same_v&lt;T,<sp/>decltype(rhs.x)&gt;);</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>static_assert(std::is_same_v&lt;T,<sp/>decltype(rhs.y)&gt;);</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>static_assert(std::is_same_v&lt;T,<sp/>decltype(rhs.z)&gt;);</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a1728ed2fee2e41ae85ee55b7c54b470a" kindref="member">x</ref><sp/>=<sp/>rhs.x;</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1aa8557d5f052579fb9cd32ec5959c1664" kindref="member">y</ref><sp/>=<sp/>rhs.y;</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r3_1a18d6d3286da33cdd5ae2c0eaf7110ff7" kindref="member">z</ref><sp/>=<sp/>rhs.z;</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>*</highlight><highlight class="keyword">this</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"></highlight></codeline>
+<codeline lineno="108"><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h"/>
+  </compounddef>
+</doxygen>

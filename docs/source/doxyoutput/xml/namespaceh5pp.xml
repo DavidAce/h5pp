@@ -1,0 +1,281 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="namespaceh5pp" kind="namespace" language="C++">
+    <compoundname>h5pp</compoundname>
+    <innerclass refid="structh5pp_1_1_attr_info" prot="public">h5pp::AttrInfo</innerclass>
+    <innerclass refid="structh5pp_1_1_data_info" prot="public">h5pp::DataInfo</innerclass>
+    <innerclass refid="structh5pp_1_1_dims_type" prot="public">h5pp::DimsType</innerclass>
+    <innerclass refid="structh5pp_1_1_dset_info" prot="public">h5pp::DsetInfo</innerclass>
+    <innerclass refid="classh5pp_1_1_file" prot="public">h5pp::File</innerclass>
+    <innerclass refid="classh5pp_1_1_hyperslab" prot="public">h5pp::Hyperslab</innerclass>
+    <innerclass refid="structh5pp_1_1_opt_dims_type" prot="public">h5pp::OptDimsType</innerclass>
+    <innerclass refid="structh5pp_1_1_options" prot="public">h5pp::Options</innerclass>
+    <innerclass refid="structh5pp_1_1_property_lists" prot="public">h5pp::PropertyLists</innerclass>
+    <innerclass refid="structh5pp_1_1_table_info" prot="public">h5pp::TableInfo</innerclass>
+    <innerclass refid="structh5pp_1_1_type_info" prot="public">h5pp::TypeInfo</innerclass>
+    <innernamespace refid="namespaceh5pp_1_1constants">h5pp::constants</innernamespace>
+    <innernamespace refid="namespaceh5pp_1_1debug">h5pp::debug</innernamespace>
+    <innernamespace refid="namespaceh5pp_1_1formatting">h5pp::formatting</innernamespace>
+    <innernamespace refid="namespaceh5pp_1_1hdf5">h5pp::hdf5</innernamespace>
+    <innernamespace refid="namespaceh5pp_1_1hid">h5pp::hid</innernamespace>
+    <innernamespace refid="namespaceh5pp_1_1logger">h5pp::logger</innernamespace>
+    <innernamespace refid="namespaceh5pp_1_1scan">h5pp::scan</innernamespace>
+    <innernamespace refid="namespaceh5pp_1_1type">h5pp::type</innernamespace>
+    <innernamespace refid="namespaceh5pp_1_1util">h5pp::util</innernamespace>
+      <sectiondef kind="enum">
+      <memberdef kind="enum" id="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddec" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>FilePermission</name>
+        <enumvalue id="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddeca34db6698cff32ac89724758fdaa5512e" prot="public">
+          <name>READONLY</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddecaa9254c20033e9936e672e6fc5836964a" prot="public">
+          <name>COLLISION_FAIL</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddeca507f09f72160920edb481656c350e76c" prot="public">
+          <name>RENAME</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddeca2f517ac0110983661884131f057c2baf" prot="public">
+          <name>READWRITE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddecabfdf97ae01c73d83a58ec41f78a4291f" prot="public">
+          <name>BACKUP</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddeca560a2dd6f6744646473b3b19e1fe96d7" prot="public">
+          <name>REPLACE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" line="6" column="30" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" bodystart="6" bodyend="35"/>
+      </memberdef>
+      <memberdef kind="enum" id="namespaceh5pp_1ad3fd0e018a551da2977acb520019742b" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>FileDriver</name>
+        <enumvalue id="namespaceh5pp_1ad3fd0e018a551da2977acb520019742ba359b563957211e2f80fbdb68cf496c5b" prot="public">
+          <name>SEC2</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1ad3fd0e018a551da2977acb520019742ba4c5d06b02c97731aaa976179c62dcf76" prot="public">
+          <name>DIRECT</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1ad3fd0e018a551da2977acb520019742ba4b5ffcdaf38ce4d463171f5c977c5ab3" prot="public">
+          <name>LOG</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1ad3fd0e018a551da2977acb520019742bad273a0465c8fbfd111aae706cdf9ec20" prot="public">
+          <name>WINDOWS</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1ad3fd0e018a551da2977acb520019742baea145e9a1e3f38424e28c3267c88fd47" prot="public">
+          <name>STDIO</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1ad3fd0e018a551da2977acb520019742bac5d5df976f196200d1900b2b51827dbb" prot="public">
+          <name>CORE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1ad3fd0e018a551da2977acb520019742ba499a1fe16898531e2422c704a0288797" prot="public">
+          <name>FAMILY</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1ad3fd0e018a551da2977acb520019742baf26be970aac1b06fa62b87562bc73deb" prot="public">
+          <name>MULTI</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1ad3fd0e018a551da2977acb520019742ba913bcc607ae0d97776698d9ed424be6a" prot="public">
+          <name>SPLIT</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1ad3fd0e018a551da2977acb520019742ba7e6c7f4878b6fa562299bd45be030c4d" prot="public">
+          <name>MPIO</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" line="37" column="26" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" bodystart="37" bodyend="56"/>
+      </memberdef>
+      <memberdef kind="enum" id="namespaceh5pp_1a068e3b6faabdd542d403b869560beeb8" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>TableSelection</name>
+        <enumvalue id="namespaceh5pp_1a068e3b6faabdd542d403b869560beeb8a2c2624a5059934a947d6e25fe8332ade" prot="public">
+          <name>FIRST</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1a068e3b6faabdd542d403b869560beeb8af447f5c03508de4d88e340390ba7c78f" prot="public">
+          <name>LAST</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1a068e3b6faabdd542d403b869560beeb8a5fb1f955b45e38e31789286a1790398d" prot="public">
+          <name>ALL</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" line="59" column="30" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" bodystart="59" bodyend="63"/>
+      </memberdef>
+      <memberdef kind="enum" id="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>ResizeMode</name>
+        <enumvalue id="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a6cd43a637f8b733c23575092197f3ebb" prot="public">
+          <name>RESIZE_TO_FIT</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a181a1e17c5afb4561e6b966d995c46f9" prot="public">
+          <name>INCREASE_ONLY</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a0894c203073521ad32840dd9657949ab" prot="public">
+          <name>DO_NOT_RESIZE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" line="65" column="26" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" bodystart="65" bodyend="69"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespaceh5pp_1ad2b5b92d3e43f1709db8b36b48e8bf01" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string h5pp::format</definition>
+        <argsstring>(const std::string &amp;fmtstring)</argsstring>
+        <name>format</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>fmtstring</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="46" column="24" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" bodystart="46" bodyend="46"/>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">format</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>std::string</type>
+        <definition>std::string h5pp::format</definition>
+        <argsstring>(const std::string &amp;fmtstring, [[maybe_unused]] Args... args)</argsstring>
+        <name>format</name>
+        <param>
+          <type>const std::string &amp;</type>
+          <declname>fmtstring</declname>
+        </param>
+        <param>
+          <attributes>[[maybe_unused]</attributes>
+          <type>] Args...</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="49" column="18" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" bodystart="49" bodyend="66"/>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">format</references>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppConstants.h" line="4" column="25"/>
+  </compounddef>
+</doxygen>

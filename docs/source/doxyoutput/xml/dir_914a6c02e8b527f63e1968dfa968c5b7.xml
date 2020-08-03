@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="dir_914a6c02e8b527f63e1968dfa968c5b7" kind="dir">
+    <compoundname>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details</compoundname>
+    <innerfile refid="h5pp_constants_8h">h5ppConstants.h</innerfile>
+    <innerfile refid="h5pp_dimension_type_8h">h5ppDimensionType.h</innerfile>
+    <innerfile refid="h5pp_eigen_8h">h5ppEigen.h</innerfile>
+    <innerfile refid="h5pp_enums_8h">h5ppEnums.h</innerfile>
+    <innerfile refid="h5pp_file_8h">h5ppFile.h</innerfile>
+    <innerfile refid="h5pp_filesystem_8h">h5ppFilesystem.h</innerfile>
+    <innerfile refid="h5pp_format_8h">h5ppFormat.h</innerfile>
+    <innerfile refid="h5pp_hdf5_8h">h5ppHdf5.h</innerfile>
+    <innerfile refid="h5pp_hid_8h">h5ppHid.h</innerfile>
+    <innerfile refid="h5pp_hyperslab_8h">h5ppHyperslab.h</innerfile>
+    <innerfile refid="h5pp_info_8h">h5ppInfo.h</innerfile>
+    <innerfile refid="h5pp_logger_8h">h5ppLogger.h</innerfile>
+    <innerfile refid="h5pp_optional_8h">h5ppOptional.h</innerfile>
+    <innerfile refid="h5pp_property_lists_8h">h5ppPropertyLists.h</innerfile>
+    <innerfile refid="h5pp_scan_8h">h5ppScan.h</innerfile>
+    <innerfile refid="h5pp_spdlog_8h">h5ppSpdlog.h</innerfile>
+    <innerfile refid="h5pp_type_compound_8h">h5ppTypeCompound.h</innerfile>
+    <innerfile refid="h5pp_type_compound_create_8h">h5ppTypeCompoundCreate.h</innerfile>
+    <innerfile refid="h5pp_type_sfinae_8h">h5ppTypeSfinae.h</innerfile>
+    <innerfile refid="h5pp_utils_8h">h5ppUtils.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/"/>
+  </compounddef>
+</doxygen>

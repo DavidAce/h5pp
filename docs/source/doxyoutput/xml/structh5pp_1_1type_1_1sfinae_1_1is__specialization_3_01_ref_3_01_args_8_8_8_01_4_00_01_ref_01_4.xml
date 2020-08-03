@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="structh5pp_1_1type_1_1sfinae_1_1is__specialization_3_01_ref_3_01_args_8_8_8_01_4_00_01_ref_01_4" kind="struct" language="C++" prot="public">
+    <compoundname>h5pp::type::sfinae::is_specialization&lt; Ref&lt; Args... &gt;, Ref &gt;</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">true_type</basecompoundref>
+    <includes refid="h5pp_type_sfinae_8h" local="no">h5ppTypeSfinae.h</includes>
+    <templateparamlist>
+      <param>
+        <type>template&lt; typename... &gt; class</type>
+        <declname>Ref</declname>
+        <defname>Ref</defname>
+      </param>
+      <param>
+        <type>typename...</type>
+        <declname>Args</declname>
+        <defname>Args</defname>
+      </param>
+    </templateparamlist>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>h5pp::type::sfinae::is_specialization&lt; Ref&lt; Args... &gt;, Ref &gt;</label>
+        <link refid="structh5pp_1_1type_1_1sfinae_1_1is__specialization_3_01_ref_3_01_args_8_8_8_01_4_00_01_ref_01_4"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>true_type</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>h5pp::type::sfinae::is_specialization&lt; Ref&lt; Args... &gt;, Ref &gt;</label>
+        <link refid="structh5pp_1_1type_1_1sfinae_1_1is__specialization_3_01_ref_3_01_args_8_8_8_01_4_00_01_ref_01_4"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>true_type</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="150" column="45" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="150" bodyend="150"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

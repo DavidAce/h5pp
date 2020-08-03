@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="h5pp_enums_8h" kind="file" language="C++">
+    <compoundname>h5ppEnums.h</compoundname>
+    <includedby refid="h5pp_file_8h" local="yes">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFile.h</includedby>
+    <includedby refid="h5pp_hdf5_8h" local="yes">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h</includedby>
+    <includedby refid="h5pp_info_8h" local="yes">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h</includedby>
+    <invincdepgraph>
+      <node id="3">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/h5pp.h</label>
+        <link refid="h5pp_8h"/>
+      </node>
+      <node id="1">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h</label>
+        <link refid="h5pp_enums_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h</label>
+        <link refid="h5pp_hdf5_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFile.h</label>
+        <link refid="h5pp_file_8h"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h</label>
+        <link refid="h5pp_info_8h"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppScan.h</label>
+        <link refid="h5pp_scan_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innernamespace refid="namespaceh5pp">h5pp</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespaceh5pp" kindref="compound">h5pp</ref><sp/>{</highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6" refid="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddec" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddec" kindref="member">FilePermission</ref><sp/>{</highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Read<sp/>more<sp/>about<sp/>the<sp/>original<sp/>HDF5<sp/>file<sp/>permissions<sp/>here:</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>https://portal.hdfgroup.org/display/HDF5/H5F_CREATE</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>and</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>https://portal.hdfgroup.org/display/HDF5/H5F_OPEN</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="14"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*</highlight></codeline>
+<codeline lineno="15"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>`h5pp`<sp/>offers<sp/>more<sp/>flags<sp/>for<sp/>file<sp/>access<sp/>permissions<sp/>than<sp/>HDF5.<sp/>The<sp/>new<sp/>flags<sp/>are<sp/>primarily<sp/>intended<sp/>to</highlight></codeline>
+<codeline lineno="16"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>prevent<sp/>accidental<sp/>loss<sp/>of<sp/>data,<sp/>but<sp/>also<sp/>to<sp/>clarify<sp/>intent<sp/>and<sp/>avoid<sp/>mutually<sp/>exclusive<sp/>options.</highlight></codeline>
+<codeline lineno="17"><highlight class="comment"></highlight></codeline>
+<codeline lineno="18"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>The<sp/>flags<sp/>are<sp/>listed<sp/>in<sp/>the<sp/>order<sp/>of<sp/>increasing<sp/>&quot;danger&quot;<sp/>that<sp/>they<sp/>pose<sp/>to<sp/>previously<sp/>existing<sp/>files.</highlight></codeline>
+<codeline lineno="19"><highlight class="comment"></highlight></codeline>
+<codeline lineno="20"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>Flag<sp/>|<sp/>File<sp/>exists<sp/>|<sp/>No<sp/>file<sp/>exists<sp/>|<sp/>Comment<sp/>|</highlight></codeline>
+<codeline lineno="21"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>----<sp/>|<sp/>----<sp/>|<sp/>----<sp/>|<sp/>----<sp/>|</highlight></codeline>
+<codeline lineno="22"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>`READONLY`<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>Open<sp/>with<sp/>read-only<sp/>permission<sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>Throw<sp/>error<sp/><sp/><sp/><sp/><sp/>|<sp/>Never<sp/>writes<sp/>to<sp/>disk,<sp/>fails<sp/>if<sp/>the<sp/>file<sp/>is<sp/>not<sp/>found<sp/>|</highlight></codeline>
+<codeline lineno="23"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>`COLLISION_FAIL`<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>Throw<sp/>error<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>Create<sp/>new<sp/>file<sp/>|<sp/>Never<sp/>deletes<sp/>existing<sp/>files<sp/>and<sp/>fails<sp/>if<sp/>it<sp/>already<sp/>exists<sp/>|</highlight></codeline>
+<codeline lineno="24"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>`RENAME`<sp/>**(default)**<sp/><sp/><sp/><sp/>|<sp/>Create<sp/>renamed<sp/>file<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>Create<sp/>new<sp/>file<sp/>|<sp/>Never<sp/>deletes<sp/>existing<sp/>files.<sp/>Invents<sp/>a<sp/>new<sp/>filename<sp/>to<sp/>avoid<sp/>collision<sp/>by<sp/>appending<sp/>&quot;-#&quot;<sp/>(#=1,2,3...)<sp/>to<sp/>the<sp/>stem<sp/>of<sp/>the<sp/>filename<sp/>|</highlight></codeline>
+<codeline lineno="25"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>`READWRITE`<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>Open<sp/>with<sp/>read-write<sp/>permission<sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>Create<sp/>new<sp/>file<sp/>|<sp/>Never<sp/>deletes<sp/>existing<sp/>files,<sp/>but<sp/>is<sp/>allowed<sp/>to<sp/>open/modify<sp/>|</highlight></codeline>
+<codeline lineno="26"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>`BACKUP`<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>Rename<sp/>existing<sp/>file<sp/>and<sp/>create<sp/>new<sp/><sp/>|<sp/>Create<sp/>new<sp/>file<sp/>|<sp/>Avoids<sp/>collision<sp/>by<sp/>backing<sp/>up<sp/>the<sp/>existing<sp/>file,<sp/>appending<sp/>&quot;.bak_#&quot;<sp/>(#=1,2,3...)<sp/>to<sp/>the<sp/>filename<sp/>|</highlight></codeline>
+<codeline lineno="27"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>`REPLACE`<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>Truncate<sp/>(overwrite)<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|<sp/>Create<sp/>new<sp/>file<sp/>|<sp/>Deletes<sp/>the<sp/>existing<sp/>file<sp/>and<sp/>create<sp/>a<sp/>new<sp/>one<sp/>in<sp/>place<sp/>|</highlight></codeline>
+<codeline lineno="28"><highlight class="comment"></highlight></codeline>
+<codeline lineno="29"><highlight class="comment"></highlight></codeline>
+<codeline lineno="30"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*<sp/>When<sp/>a<sp/>new<sp/>file<sp/>is<sp/>created,<sp/>the<sp/>intermediate<sp/>directories<sp/>are<sp/>always<sp/>created<sp/>automatically.</highlight></codeline>
+<codeline lineno="31"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*<sp/>When<sp/>a<sp/>new<sp/>file<sp/>is<sp/>created,<sp/>`READWRITE`<sp/>permission<sp/>to<sp/>it<sp/>is<sp/>implied.</highlight></codeline>
+<codeline lineno="32"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*</highlight></codeline>
+<codeline lineno="33"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddeca34db6698cff32ac89724758fdaa5512e" kindref="member">READONLY</ref>,<sp/><ref refid="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddecaa9254c20033e9936e672e6fc5836964a" kindref="member">COLLISION_FAIL</ref>,<sp/><ref refid="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddeca507f09f72160920edb481656c350e76c" kindref="member">RENAME</ref>,<sp/><ref refid="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddeca2f517ac0110983661884131f057c2baf" kindref="member">READWRITE</ref>,<sp/><ref refid="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddecabfdf97ae01c73d83a58ec41f78a4291f" kindref="member">BACKUP</ref>,<sp/><ref refid="namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddeca560a2dd6f6744646473b3b19e1fe96d7" kindref="member">REPLACE</ref></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight></codeline>
+<codeline lineno="37" refid="namespaceh5pp_1ad3fd0e018a551da2977acb520019742b" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1ad3fd0e018a551da2977acb520019742b" kindref="member">FileDriver</ref>{</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="39"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>From<sp/>the<sp/>HDF5<sp/>manual:</highlight></codeline>
+<codeline lineno="40"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>------------------</highlight></codeline>
+<codeline lineno="41"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Supported<sp/>file<sp/>drivers<sp/>in<sp/>HDF5</highlight></codeline>
+<codeline lineno="42"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Driver<sp/>Name<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Driver<sp/>Identifier<sp/><sp/><sp/>Description</highlight></codeline>
+<codeline lineno="43"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>POSIX<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>H5FD_SEC2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>driver<sp/>uses<sp/>POSIX<sp/>file-system<sp/>functions<sp/>like<sp/>read<sp/>and<sp/>write<sp/>to<sp/>perform<sp/>I/O<sp/>to<sp/>a<sp/>single,<sp/>permanent<sp/>file<sp/>on<sp/>local<sp/>disk<sp/>with<sp/>no<sp/>system<sp/>buffering.<sp/>This<sp/>driver<sp/>is<sp/>POSIX-compliant<sp/>and<sp/>is<sp/>the<sp/>default<sp/>file<sp/>driver<sp/>for<sp/>all<sp/>systems.</highlight></codeline>
+<codeline lineno="44"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Direct<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>H5FD_DIRECT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>is<sp/>the<sp/>H5FD_SEC2<sp/>driver<sp/>except<sp/>data<sp/>is<sp/>written<sp/>to<sp/>or<sp/>read<sp/>from<sp/>the<sp/>file<sp/>synchronously<sp/>without<sp/>being<sp/>cached<sp/>by<sp/>the<sp/>system.</highlight></codeline>
+<codeline lineno="45"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Log<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>H5FD_LOG<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>is<sp/>the<sp/>H5FD_SEC2<sp/>driver<sp/>with<sp/>logging<sp/>capabilities.<sp/><sp/><sp/><sp/><sp/>H5Pset_fapl_log</highlight></codeline>
+<codeline lineno="46"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Windows<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>H5FD_WINDOWS<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>driver<sp/>was<sp/>modified<sp/>in<sp/>HDF5-1.8.8<sp/>to<sp/>be<sp/>a<sp/>wrapper<sp/>of<sp/>the<sp/>POSIX<sp/>driver,<sp/>H5FD_SEC2.<sp/>This<sp/>change<sp/>should<sp/>not<sp/>affect<sp/>user<sp/>applications.</highlight></codeline>
+<codeline lineno="47"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>STDIO<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>H5FD_STDIO<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>driver<sp/>uses<sp/>functions<sp/>from<sp/>the<sp/>standard<sp/>C<sp/>stdio.h<sp/>to<sp/>perform<sp/>I/O<sp/>to<sp/>a<sp/>single,<sp/>permanent<sp/>file<sp/>on<sp/>local<sp/>disk<sp/>with<sp/>additional<sp/>system<sp/>buffering.</highlight></codeline>
+<codeline lineno="48"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Memory<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>H5FD_CORE<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>With<sp/>this<sp/>driver,<sp/>an<sp/>application<sp/>can<sp/>work<sp/>with<sp/>a<sp/>file<sp/>in<sp/>memory<sp/>for<sp/>faster<sp/>reads<sp/>and<sp/>writes.<sp/>File<sp/>contents<sp/>are<sp/>kept<sp/>in<sp/>memory<sp/>until<sp/>the<sp/>file<sp/>is<sp/>closed.<sp/>At<sp/>closing,<sp/>the<sp/>memory<sp/>version<sp/>of<sp/>the<sp/>file<sp/>can<sp/>be<sp/>written<sp/>back<sp/>to<sp/>disk<sp/>or<sp/>abandoned.</highlight></codeline>
+<codeline lineno="49"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Family<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>H5FD_FAMILY<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>With<sp/>this<sp/>driver,<sp/>the<sp/>HDF5<sp/>file�s<sp/>address<sp/>space<sp/>is<sp/>partitioned<sp/>into<sp/>pieces<sp/>and<sp/>sent<sp/>to<sp/>separate<sp/>storage<sp/>files<sp/>using<sp/>an<sp/>underlying<sp/>driver<sp/>of<sp/>the<sp/>user’s<sp/>choice.<sp/>This<sp/>driver<sp/>is<sp/>for<sp/>systems<sp/>that<sp/>do<sp/>not<sp/>support<sp/>files<sp/>larger<sp/>than<sp/>2<sp/>gigabytes.</highlight></codeline>
+<codeline lineno="50"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Multi<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>H5FD_MULTI<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>With<sp/>this<sp/>driver,<sp/>data<sp/>can<sp/>be<sp/>stored<sp/>in<sp/>multiple<sp/>files<sp/>according<sp/>to<sp/>the<sp/>type<sp/>of<sp/>the<sp/>data.<sp/>I/O<sp/>might<sp/>work<sp/>better<sp/>if<sp/>data<sp/>is<sp/>stored<sp/>in<sp/>separate<sp/>files<sp/>based<sp/>on<sp/>the<sp/>type<sp/>of<sp/>data.<sp/>The<sp/>Split<sp/>driver<sp/>is<sp/>a<sp/>special<sp/>case<sp/>of<sp/>this<sp/>driver.</highlight></codeline>
+<codeline lineno="51"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Split<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>H5FD_SPLIT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>file<sp/>driver<sp/>splits<sp/>a<sp/>file<sp/>into<sp/>two<sp/>parts.<sp/>One<sp/>part<sp/>stores<sp/>metadata,<sp/>and<sp/>the<sp/>other<sp/>part<sp/>stores<sp/>raw<sp/>data.<sp/>This<sp/>splitting<sp/>a<sp/>file<sp/>into<sp/>two<sp/>parts<sp/>is<sp/>a<sp/>limited<sp/>case<sp/>of<sp/>the<sp/>Multi<sp/>driver.</highlight></codeline>
+<codeline lineno="52"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Parallel<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>H5FD_MPIO<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>is<sp/>the<sp/>standard<sp/>HDF5<sp/>file<sp/>driver<sp/>for<sp/>parallel<sp/>file<sp/>systems.<sp/>This<sp/>driver<sp/>uses<sp/>the<sp/>MPI<sp/>standard<sp/>for<sp/>both<sp/>communication<sp/>and<sp/>file<sp/>I/O.</highlight></codeline>
+<codeline lineno="53"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="54"><highlight class="normal"></highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1ad3fd0e018a551da2977acb520019742ba359b563957211e2f80fbdb68cf496c5b" kindref="member">SEC2</ref>,<ref refid="namespaceh5pp_1ad3fd0e018a551da2977acb520019742ba4c5d06b02c97731aaa976179c62dcf76" kindref="member">DIRECT</ref>,<ref refid="namespaceh5pp_1ad3fd0e018a551da2977acb520019742ba4b5ffcdaf38ce4d463171f5c977c5ab3" kindref="member">LOG</ref>,<ref refid="namespaceh5pp_1ad3fd0e018a551da2977acb520019742bad273a0465c8fbfd111aae706cdf9ec20" kindref="member">WINDOWS</ref>,<ref refid="namespaceh5pp_1ad3fd0e018a551da2977acb520019742baea145e9a1e3f38424e28c3267c88fd47" kindref="member">STDIO</ref>,<ref refid="namespaceh5pp_1ad3fd0e018a551da2977acb520019742bac5d5df976f196200d1900b2b51827dbb" kindref="member">CORE</ref>,<ref refid="namespaceh5pp_1ad3fd0e018a551da2977acb520019742ba499a1fe16898531e2422c704a0288797" kindref="member">FAMILY</ref>,<ref refid="namespaceh5pp_1ad3fd0e018a551da2977acb520019742baf26be970aac1b06fa62b87562bc73deb" kindref="member">MULTI</ref>,<ref refid="namespaceh5pp_1ad3fd0e018a551da2977acb520019742ba913bcc607ae0d97776698d9ed424be6a" kindref="member">SPLIT</ref>,<ref refid="namespaceh5pp_1ad3fd0e018a551da2977acb520019742ba7e6c7f4878b6fa562299bd45be030c4d" kindref="member">MPIO</ref></highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"></highlight></codeline>
+<codeline lineno="58"><highlight class="normal"></highlight></codeline>
+<codeline lineno="59" refid="namespaceh5pp_1a068e3b6faabdd542d403b869560beeb8" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1a068e3b6faabdd542d403b869560beeb8" kindref="member">TableSelection</ref><sp/>{</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1a068e3b6faabdd542d403b869560beeb8a2c2624a5059934a947d6e25fe8332ade" kindref="member">FIRST</ref>,<sp/><sp/></highlight><highlight class="comment">//<sp/>First<sp/>element<sp/>in<sp/>a<sp/>table</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1a068e3b6faabdd542d403b869560beeb8af447f5c03508de4d88e340390ba7c78f" kindref="member">LAST</ref>,<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Last<sp/>element<sp/>in<sp/>a<sp/>table</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1a068e3b6faabdd542d403b869560beeb8a5fb1f955b45e38e31789286a1790398d" kindref="member">ALL</ref>,<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>All<sp/>elements<sp/>of<sp/>a<sp/>table</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"></highlight></codeline>
+<codeline lineno="65" refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26" kindref="member">ResizeMode</ref><sp/>{</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a6cd43a637f8b733c23575092197f3ebb" kindref="member">RESIZE_TO_FIT</ref>,<sp/></highlight><highlight class="comment">//<sp/>(Default)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a181a1e17c5afb4561e6b966d995c46f9" kindref="member">INCREASE_ONLY</ref>,</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a0894c203073521ad32840dd9657949ab" kindref="member">DO_NOT_RESIZE</ref>,</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="70"><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h"/>
+  </compounddef>
+</doxygen>

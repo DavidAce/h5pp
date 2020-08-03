@@ -1,0 +1,811 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="namespaceh5pp_1_1type_1_1sfinae" kind="namespace" language="C++">
+    <compoundname>h5pp::type::sfinae</compoundname>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__streamable_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1f274ff774b71720f462ab72ee70d2860" prot="public">h5pp::type::sfinae::is_streamable&lt; T, std::void_t&lt; decltype(std::declval&lt; std::stringstream &amp; &gt;&lt;&lt; std::declval&lt; T &gt;())&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__c__str" prot="public">h5pp::type::sfinae::has_c_str</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__c__str_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1decd276475bf54205d8cf5b1a06dcd602be" prot="public">h5pp::type::sfinae::has_c_str&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().c_str())&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__data" prot="public">h5pp::type::sfinae::has_data</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__data_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1declvdd07b47544269bfa491eee0271390c39" prot="public">h5pp::type::sfinae::has_data&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().data())&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__dimensions" prot="public">h5pp::type::sfinae::has_dimensions</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__dimensions_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_f0e1e1e7366c0607e0c2f6698875ef64" prot="public">h5pp::type::sfinae::has_dimensions&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().dimensions())&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__imag" prot="public">h5pp::type::sfinae::has_imag</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__imag_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1declvdc72ae8402916a8e44c185aa8be87686" prot="public">h5pp::type::sfinae::has_imag&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().imag())&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has___num_indices" prot="public">h5pp::type::sfinae::has_NumIndices</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has___num_indices_3_01_t_00_01std_1_1void__t_3_01decltype_07std_6cb000d4170b4eb891afb480c85efd97" prot="public">h5pp::type::sfinae::has_NumIndices&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().NumIndices)&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__resize" prot="public">h5pp::type::sfinae::has_resize</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__resize0" prot="public">h5pp::type::sfinae::has_resize0</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__resize0_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1de953f50c571c206aabc89e45f2ab3db8d" prot="public">h5pp::type::sfinae::has_resize0&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().resize())&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__resize2" prot="public">h5pp::type::sfinae::has_resize2</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__resize2_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1de0b705ea77930ecd8688f859ec18cb4dc" prot="public">h5pp::type::sfinae::has_resize2&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().resize(0, 0))&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__resize_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1dec78bc036c8c844ac95610f3b7cf191563" prot="public">h5pp::type::sfinae::has_resize&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().resize(0))&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__resize_n" prot="public">h5pp::type::sfinae::has_resizeN</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__resize_n_3_01_t_00_01rank_00_01std_1_1void__t_3_01decltype_b547c168c6da0a8f4d459e1f1ab4b254" prot="public">h5pp::type::sfinae::has_resizeN&lt; T, rank, std::void_t&lt; decltype(std::declval&lt; T &gt;().resize(std::declval&lt; std::array&lt; long, rank &gt;&gt;()))&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has___scalar" prot="public">h5pp::type::sfinae::has_Scalar</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has___scalar_3_01_t_00_01std_1_1void__t_3_01typename_01_t_1_1_scalar_01_4_01_4" prot="public">h5pp::type::sfinae::has_Scalar&lt; T, std::void_t&lt; typename T::Scalar &gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__size" prot="public">h5pp::type::sfinae::has_size</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__size_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1declv0cf648c1d68d361185fd366966a6882e" prot="public">h5pp::type::sfinae::has_size&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().size())&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__text" prot="public">h5pp::type::sfinae::has_text</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__value__type" prot="public">h5pp::type::sfinae::has_value_type</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__value__type_3_01_t_00_01std_1_1void__t_3_01typename_01_t_1_1value__type_01_4_01_4" prot="public">h5pp::type::sfinae::has_value_type&lt; T, std::void_t&lt; typename T::value_type &gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__x" prot="public">h5pp::type::sfinae::has_x</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__x_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1declval_3_01_t_01_4_07_08_8x_08_4_01_4" prot="public">h5pp::type::sfinae::has_x&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().x)&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__y" prot="public">h5pp::type::sfinae::has_y</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__y_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1declval_3_01_t_01_4_07_08_8y_08_4_01_4" prot="public">h5pp::type::sfinae::has_y&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().y)&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__z" prot="public">h5pp::type::sfinae::has_z</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1has__z_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1declval_3_01_t_01_4_07_08_8z_08_4_01_4" prot="public">h5pp::type::sfinae::has_z&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().z)&gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__container__of" prot="public">h5pp::type::sfinae::is_container_of</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__integral__iterable" prot="public">h5pp::type::sfinae::is_integral_iterable</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__integral__iterable__or__num" prot="public">h5pp::type::sfinae::is_integral_iterable_or_num</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__iterable" prot="public">h5pp::type::sfinae::is_iterable</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__iterable_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1de6e3b3dcbf25d5a5a5a59c09d851cfb86" prot="public">h5pp::type::sfinae::is_iterable&lt; T, std::void_t&lt; decltype(std::declval&lt; T &gt;().begin()), decltype(std::declval&lt; T &gt;().end()), typename T::value_type &gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is___scalar2" prot="public">h5pp::type::sfinae::is_Scalar2</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is___scalar3" prot="public">h5pp::type::sfinae::is_Scalar3</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__specialization" prot="public">h5pp::type::sfinae::is_specialization</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__specialization_3_01_ref_3_01_args_8_8_8_01_4_00_01_ref_01_4" prot="public">h5pp::type::sfinae::is_specialization&lt; Ref&lt; Args... &gt;, Ref &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__std__array" prot="public">h5pp::type::sfinae::is_std_array</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__std__array_3_01std_1_1array_3_01_t_00_01_n_01_4_01_4" prot="public">h5pp::type::sfinae::is_std_array&lt; std::array&lt; T, N &gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__std__complex" prot="public">h5pp::type::sfinae::is_std_complex</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__std__complex_3_01std_1_1complex_3_01_t_01_4_01_4" prot="public">h5pp::type::sfinae::is_std_complex&lt; std::complex&lt; T &gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__std__vector" prot="public">h5pp::type::sfinae::is_std_vector</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__std__vector_3_01std_1_1vector_3_01_t_01_4_01_4" prot="public">h5pp::type::sfinae::is_std_vector&lt; std::vector&lt; T &gt; &gt;</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__streamable" prot="public">h5pp::type::sfinae::is_streamable</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1is__text" prot="public">h5pp::type::sfinae::is_text</innerclass>
+    <innerclass refid="structh5pp_1_1type_1_1sfinae_1_1print__type__and__exit__compile__time" prot="public">h5pp::type::sfinae::print_type_and_exit_compile_time</innerclass>
+      <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="namespaceh5pp_1_1type_1_1sfinae_1aef79e32f07687d79da2dc562e3147956" prot="public" static="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::enable_if_t&lt; <ref refid="namespaceh5pp_1_1type_1_1sfinae_1a261ef4473305db2f907e8d6cc68a8e14" kindref="member">is_integral_iterable_v</ref>&lt; T &gt; &gt;</type>
+        <definition>using h5pp::type::sfinae::enable_if_is_integral_iterable = typedef std::enable_if_t&lt;is_integral_iterable_v&lt;T&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>enable_if_is_integral_iterable</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="213" column="5" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="213" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="namespaceh5pp_1_1type_1_1sfinae_1a6c89cafb27bb29455e315a568f02d689" prot="public" static="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::enable_if_t&lt; <ref refid="namespaceh5pp_1_1type_1_1sfinae_1a8d1392f58e8fb2d5fe8bf6db9b662888" kindref="member">is_integral_iterable_or_num_v</ref>&lt; T &gt; &gt;</type>
+        <definition>using h5pp::type::sfinae::enable_if_is_integral_iterable_or_num = typedef std::enable_if_t&lt;is_integral_iterable_or_num_v&lt;T&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>enable_if_is_integral_iterable_or_num</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="216" column="5" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="216" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="namespaceh5pp_1_1type_1_1sfinae_1aca51c26f66e359d4e98c2c79f5c862af" prot="public" static="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::enable_if_t&lt; <ref refid="namespaceh5pp_1_1type_1_1sfinae_1a8d1392f58e8fb2d5fe8bf6db9b662888" kindref="member">is_integral_iterable_or_num_v</ref>&lt; T &gt; or std::is_same_v&lt; T, std::nullopt_t &gt; &gt;</type>
+        <definition>using h5pp::type::sfinae::enable_if_is_integral_iterable_or_nullopt = typedef std::enable_if_t&lt;is_integral_iterable_or_num_v&lt;T&gt; or std::is_same_v&lt;T, std::nullopt_t&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>enable_if_is_integral_iterable_or_nullopt</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="219" column="5" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="219" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="namespaceh5pp_1_1type_1_1sfinae_1aa0540b95af468377117c0bfb8c303b27" prot="public" static="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::enable_if_t&lt; <ref refid="namespaceh5pp_1_1type_1_1sfinae_1afa2776e84df04f30e65c0943682b6287" kindref="member">is_iterable_v</ref>&lt; T &gt; or std::is_same_v&lt; T, std::nullopt_t &gt; &gt;</type>
+        <definition>using h5pp::type::sfinae::enable_if_is_iterable_or_nullopt = typedef std::enable_if_t&lt;is_iterable_v&lt;T&gt; or std::is_same_v&lt;T, std::nullopt_t&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>enable_if_is_iterable_or_nullopt</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="224" column="5" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="224" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b" prot="public" static="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::enable_if_t&lt; std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5f" kindref="compound">hid::h5f</ref> &gt; or std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5g" kindref="compound">hid::h5g</ref> &gt; or std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5o" kindref="compound">hid::h5o</ref> &gt; or std::is_same_v&lt; T, hid_t &gt; &gt;</type>
+        <definition>using h5pp::type::sfinae::enable_if_is_h5_loc = typedef std::enable_if_t&lt;std::is_same_v&lt;T,hid::h5f&gt; or std::is_same_v&lt;T, hid::h5g&gt; or std::is_same_v&lt;T, hid::h5o&gt; or std::is_same_v&lt;T, hid_t&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>enable_if_is_h5_loc</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="229" column="5" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="229" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="namespaceh5pp_1_1type_1_1sfinae_1a4cd388a23730f9e6bdf931ad28f44c1e" prot="public" static="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::enable_if_t&lt; std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5f" kindref="compound">hid::h5f</ref> &gt; or std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5g" kindref="compound">hid::h5g</ref> &gt; or std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5o" kindref="compound">hid::h5o</ref> &gt; or std::is_same_v&lt; T, hid_t &gt; or std::is_same_v&lt; T, hid_t &gt; &gt;</type>
+        <definition>using h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t = typedef std::enable_if_t&lt; std::is_same_v&lt;T,hid::h5f&gt; or std::is_same_v&lt;T, hid::h5g&gt; or std::is_same_v&lt;T, hid::h5o&gt; or std::is_same_v&lt;T, hid_t&gt; or std::is_same_v&lt;T,hid_t&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>enable_if_is_h5_loc_or_hid_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="231" column="5" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="231" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="namespaceh5pp_1_1type_1_1sfinae_1adf401c4a3b3421680902c64dbe555b4e" prot="public" static="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::enable_if_t&lt; std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5f" kindref="compound">hid::h5f</ref> &gt; or std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5d" kindref="compound">hid::h5d</ref> &gt; or std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5g" kindref="compound">hid::h5g</ref> &gt; or std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5o" kindref="compound">hid::h5o</ref> &gt; or std::is_same_v&lt; T, hid_t &gt; &gt;</type>
+        <definition>using h5pp::type::sfinae::enable_if_is_h5_link = typedef std::enable_if_t&lt; std::is_same_v&lt;T,hid::h5f&gt; or std::is_same_v&lt;T, hid::h5d&gt; or std::is_same_v&lt;T, hid::h5g&gt; or std::is_same_v&lt;T, hid::h5o&gt; or std::is_same_v&lt;T, hid_t&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>enable_if_is_h5_link</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="233" column="5" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="233" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="namespaceh5pp_1_1type_1_1sfinae_1a41e682f87c845644c480090084ebf250" prot="public" static="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>std::enable_if_t&lt; std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5f" kindref="compound">hid::h5f</ref> &gt; or std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5d" kindref="compound">hid::h5d</ref> &gt; or std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5g" kindref="compound">hid::h5g</ref> &gt; or std::is_same_v&lt; T, <ref refid="classh5pp_1_1hid_1_1h5o" kindref="compound">hid::h5o</ref> &gt; or std::is_same_v&lt; T, hid_t &gt; or std::is_same_v&lt; T, hid_t &gt; &gt;</type>
+        <definition>using h5pp::type::sfinae::enable_if_is_h5_link_or_hid_t = typedef std::enable_if_t&lt; std::is_same_v&lt;T,hid::h5f&gt; or std::is_same_v&lt;T, hid::h5d&gt; or std::is_same_v&lt;T, hid::h5g&gt; or std::is_same_v&lt;T, hid::h5o&gt; or std::is_same_v&lt;T, hid_t&gt; or std::is_same_v&lt;T,hid_t&gt; &gt;</definition>
+        <argsstring></argsstring>
+        <name>enable_if_is_h5_link_or_hid_t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="235" column="5" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="235" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1aecdc65a8dfbd46210b400bb28a7ea668" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_size_v</definition>
+        <argsstring></argsstring>
+        <name>has_size_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__size" kindref="compound">has_size</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="47" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a767fdadfd89cafaf0f1088fb2c61988e" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_resize0_v</definition>
+        <argsstring></argsstring>
+        <name>has_resize0_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__resize0" kindref="compound">has_resize0</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="54" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="54" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1ab0e955d0f6a90145b70f90e0a72827d7" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_resize_v</definition>
+        <argsstring></argsstring>
+        <name>has_resize_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__resize" kindref="compound">has_resize</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="61" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a1bb926734436f3bc19c2be551995ff0f" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_resize2_v</definition>
+        <argsstring></argsstring>
+        <name>has_resize2_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__resize2" kindref="compound">has_resize2</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="68" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="68" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a4a7b4291fb43706280017eaef50f3309" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>auto</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_resizeN_v</definition>
+        <argsstring></argsstring>
+        <name>has_resizeN_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__resize_n" kindref="compound">has_resizeN</ref>&lt;T, rank&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="75" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="75" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a7307ab0b3c182ca1a24a491dbdc311f9" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_data_v</definition>
+        <argsstring></argsstring>
+        <name>has_data_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__data" kindref="compound">has_data</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="82" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="82" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a04dc55312ea29a08e35e93ed9118b138" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_value_type_v</definition>
+        <argsstring></argsstring>
+        <name>has_value_type_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__value__type" kindref="compound">has_value_type</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="89" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="89" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1aa27f32e9e806c6af54c448f6115bdbe6" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_c_str_v</definition>
+        <argsstring></argsstring>
+        <name>has_c_str_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__c__str" kindref="compound">has_c_str</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="96" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="96" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a29fa705d9c8d919ba6d0e94f6774abd2" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_imag_v</definition>
+        <argsstring></argsstring>
+        <name>has_imag_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__imag" kindref="compound">has_imag</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="103" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="103" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1ae3e45b1e9676a1693f810add2ce9204f" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_Scalar_v</definition>
+        <argsstring></argsstring>
+        <name>has_Scalar_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has___scalar" kindref="compound">has_Scalar</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="110" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="110" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a4e382e38052ea11d15adbe63965c0edf" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_NumIndices_v</definition>
+        <argsstring></argsstring>
+        <name>has_NumIndices_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has___num_indices" kindref="compound">has_NumIndices</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="117" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="117" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1ac58613a70e2cbaddfe8b111a8bc4ce3c" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_dimensions_v</definition>
+        <argsstring></argsstring>
+        <name>has_dimensions_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__dimensions" kindref="compound">has_dimensions</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="124" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="124" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1ae5c7e8c9cd88f1b752285befceb7b23f" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_x_v</definition>
+        <argsstring></argsstring>
+        <name>has_x_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__x" kindref="compound">has_x</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="131" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="131" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a8c6a47e3077db31bbed31f7df8a47b0a" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_y_v</definition>
+        <argsstring></argsstring>
+        <name>has_y_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__y" kindref="compound">has_y</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="138" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="138" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a431fb1fcf3562a544f5fad70fe76ff8f" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_z_v</definition>
+        <argsstring></argsstring>
+        <name>has_z_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__z" kindref="compound">has_z</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="145" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="145" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a29b2ac48384daefcaccb968a72f10054" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_std_vector_v</definition>
+        <argsstring></argsstring>
+        <name>is_std_vector_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is__std__vector" kindref="compound">is_std_vector</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="157" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="157" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a87c89b3f6ab9cad8f0ea7cb166dafb49" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_std_array_v</definition>
+        <argsstring></argsstring>
+        <name>is_std_array_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is__std__array" kindref="compound">is_std_array</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="164" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="164" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a9ce71cf135b1f0d87b6461c077d32a0c" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_streamable_v</definition>
+        <argsstring></argsstring>
+        <name>is_streamable_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is__streamable" kindref="compound">is_streamable</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="171" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="171" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1afa2776e84df04f30e65c0943682b6287" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_iterable_v</definition>
+        <argsstring></argsstring>
+        <name>is_iterable_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is__iterable" kindref="compound">is_iterable</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="178" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="178" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a261ef4473305db2f907e8d6cc68a8e14" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_integral_iterable_v</definition>
+        <argsstring></argsstring>
+        <name>is_integral_iterable_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is__integral__iterable" kindref="compound">is_integral_iterable</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="195" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="195" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a8d1392f58e8fb2d5fe8bf6db9b662888" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_integral_iterable_or_num_v</definition>
+        <argsstring></argsstring>
+        <name>is_integral_iterable_or_num_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is__integral__iterable__or__num" kindref="compound">is_integral_iterable_or_num</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="210" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="210" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a49f926f789066101b5bc371e8c751507" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_text_v</definition>
+        <argsstring></argsstring>
+        <name>is_text_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is__text" kindref="compound">is_text</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="264" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="264" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1af5625bfa032aef50d424c1ab8ed50527" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::has_text_v</definition>
+        <argsstring></argsstring>
+        <name>has_text_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1has__text" kindref="compound">has_text</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="283" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="283" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a9472f1881eeeed771e714f96c32ada74" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename Outer</type>
+          </param>
+          <param>
+            <type>typename Inner</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_container_of_v</definition>
+        <argsstring></argsstring>
+        <name>is_container_of_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is__container__of" kindref="compound">is_container_of</ref>&lt;Outer, Inner&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="306" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="306" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a682bd1e6344a15429f5171ec731f7ea8" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_std_complex_v</definition>
+        <argsstring></argsstring>
+        <name>is_std_complex_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is__std__complex" kindref="compound">is_std_complex</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="313" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="313" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a74f43c882d51fa02ffdfec054ae1d822" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_Scalar2_v</definition>
+        <argsstring></argsstring>
+        <name>is_Scalar2_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is___scalar2" kindref="compound">is_Scalar2</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="333" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="333" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1type_1_1sfinae_1a9add46b0ccf93caaddaa359cc9b4dc0d" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_Scalar3_v</definition>
+        <argsstring></argsstring>
+        <name>is_Scalar3_v</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is___scalar3" kindref="compound">is_Scalar3</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="354" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="354" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespaceh5pp_1_1type_1_1sfinae_1a7fa2b85295ac1c12ebb093b4fa9edd1d" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr auto</type>
+        <definition>constexpr auto h5pp::type::sfinae::type_name</definition>
+        <argsstring>()</argsstring>
+        <name>type_name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="22" column="20" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="22" bodyend="40"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1type_1_1sfinae_1a8192e9591767a6346736ff1503c1b511" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T1</type>
+          </param>
+          <param>
+            <type>typename T2</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_Scalar2_of_type</definition>
+        <argsstring>()</argsstring>
+        <name>is_Scalar2_of_type</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="357" column="20" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="357" bodyend="360"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1type_1_1sfinae_1a23a5df12bfcee63699d7ae88de3a99bd" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_ScalarN</definition>
+        <argsstring>()</argsstring>
+        <name>is_ScalarN</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="363" column="20" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="363" bodyend="365"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1type_1_1sfinae_1a85c8913c5580e4880141bd7424c354f7" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T1</type>
+          </param>
+          <param>
+            <type>typename T2</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_Scalar3_of_type</definition>
+        <argsstring>()</argsstring>
+        <name>is_Scalar3_of_type</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="368" column="20" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="368" bodyend="373"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>A collection of type-detection and type-analysis utilities using SFINAE. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="15" column="28"/>
+  </compounddef>
+</doxygen>

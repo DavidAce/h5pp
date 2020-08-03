@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2" kind="struct" language="C++" prot="public">
+    <compoundname>h5pp::type::compound::H5T_SCALAR2</compoundname>
+    <includes refid="h5pp_type_compound_8h" local="no">h5ppTypeCompound.h</includes>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+    </templateparamlist>
+      <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1ac750511cef29330e54ea568adf7c86b6" prot="public" static="no">
+        <type>T</type>
+        <definition>using h5pp::type::compound::H5T_SCALAR2&lt; T &gt;::value_type =  T</definition>
+        <argsstring></argsstring>
+        <name>value_type</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" line="61" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a215ce3aa02558626fb2f8ada6c1d88ea" prot="public" static="no">
+        <type>T</type>
+        <definition>using h5pp::type::compound::H5T_SCALAR2&lt; T &gt;::Scalar =  T</definition>
+        <argsstring></argsstring>
+        <name>Scalar</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" line="62" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a5bd2771828708824c2c6a0d6035784a0" prot="public" static="no" mutable="no">
+        <type>T</type>
+        <definition>T h5pp::type::compound::H5T_SCALAR2&lt; T &gt;::x</definition>
+        <argsstring></argsstring>
+        <name>x</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" line="60" column="11" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" bodystart="60" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1ab19f02ff5b88cbe795be90c8fb93ff87" prot="public" static="no" mutable="no">
+        <type>T</type>
+        <definition>T h5pp::type::compound::H5T_SCALAR2&lt; T &gt;::y</definition>
+        <argsstring></argsstring>
+        <name>y</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" line="60" column="13" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" bodystart="60" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a9227a69f12f2c34d743bc382606e6be1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>h5pp::type::compound::H5T_SCALAR2&lt; T &gt;::H5T_SCALAR2</definition>
+        <argsstring>()=default</argsstring>
+        <name>H5T_SCALAR2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" line="63" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a6a39dfac3ce9b2eaf94729b065936d7a" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename Scalar2Type</type>
+          </param>
+        </templateparamlist>
+        <type></type>
+        <definition>h5pp::type::compound::H5T_SCALAR2&lt; T &gt;::H5T_SCALAR2</definition>
+        <argsstring>(const Scalar2Type &amp;in)</argsstring>
+        <name>H5T_SCALAR2</name>
+        <param>
+          <type>const Scalar2Type &amp;</type>
+          <declname>in</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" line="65" column="18" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" bodystart="65" bodyend="70"/>
+        <references refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a5bd2771828708824c2c6a0d6035784a0" compoundref="h5pp_type_compound_8h" startline="60">h5pp::type::compound::H5T_SCALAR2&lt; T &gt;::x</references>
+        <references refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1ab19f02ff5b88cbe795be90c8fb93ff87" compoundref="h5pp_type_compound_8h" startline="60">h5pp::type::compound::H5T_SCALAR2&lt; T &gt;::y</references>
+      </memberdef>
+      <memberdef kind="function" id="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a96d62612752f1d6c5194901f170e11e5" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename Scalar2Type</type>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2" kindref="compound">H5T_SCALAR2</ref> &amp;</type>
+        <definition>H5T_SCALAR2&amp; h5pp::type::compound::H5T_SCALAR2&lt; T &gt;::operator=</definition>
+        <argsstring>(const Scalar2Type &amp;rhs)</argsstring>
+        <name>operator=</name>
+        <param>
+          <type>const Scalar2Type &amp;</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" line="72" column="21" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" bodystart="72" bodyend="78"/>
+        <references refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a5bd2771828708824c2c6a0d6035784a0" compoundref="h5pp_type_compound_8h" startline="60">h5pp::type::compound::H5T_SCALAR2&lt; T &gt;::x</references>
+        <references refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1ab19f02ff5b88cbe795be90c8fb93ff87" compoundref="h5pp_type_compound_8h" startline="60">h5pp::type::compound::H5T_SCALAR2&lt; T &gt;::y</references>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="2">
+        <label>T</label>
+      </node>
+      <node id="1">
+        <label>h5pp::type::compound::H5T_SCALAR2&lt; T &gt;</label>
+        <link refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>x</edgelabel>
+          <edgelabel>y</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" line="59" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompound.h" bodystart="59" bodyend="79"/>
+    <listofallmembers>
+      <member refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a9227a69f12f2c34d743bc382606e6be1" prot="public" virt="non-virtual"><scope>h5pp::type::compound::H5T_SCALAR2</scope><name>H5T_SCALAR2</name></member>
+      <member refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a6a39dfac3ce9b2eaf94729b065936d7a" prot="public" virt="non-virtual"><scope>h5pp::type::compound::H5T_SCALAR2</scope><name>H5T_SCALAR2</name></member>
+      <member refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a96d62612752f1d6c5194901f170e11e5" prot="public" virt="non-virtual"><scope>h5pp::type::compound::H5T_SCALAR2</scope><name>operator=</name></member>
+      <member refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a215ce3aa02558626fb2f8ada6c1d88ea" prot="public" virt="non-virtual"><scope>h5pp::type::compound::H5T_SCALAR2</scope><name>Scalar</name></member>
+      <member refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1ac750511cef29330e54ea568adf7c86b6" prot="public" virt="non-virtual"><scope>h5pp::type::compound::H5T_SCALAR2</scope><name>value_type</name></member>
+      <member refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1a5bd2771828708824c2c6a0d6035784a0" prot="public" virt="non-virtual"><scope>h5pp::type::compound::H5T_SCALAR2</scope><name>x</name></member>
+      <member refid="structh5pp_1_1type_1_1compound_1_1_h5_t___s_c_a_l_a_r2_1ab19f02ff5b88cbe795be90c8fb93ff87" prot="public" virt="non-virtual"><scope>h5pp::type::compound::H5T_SCALAR2</scope><name>y</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

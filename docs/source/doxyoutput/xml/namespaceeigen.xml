@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="namespaceeigen" kind="namespace" language="C++">
+    <compoundname>eigen</compoundname>
+    <briefdescription>
+<para><bold>Textra</bold> stands for &quot;Tensor Extra&quot;. Provides extra functionality to Eigen::Tensor. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>This namespace makes shorthand typedef&apos;s to Eigen&apos;s unsupported Tensor module, and provides handy functions to interface between <computeroutput>Eigen::Tensor</computeroutput> and <computeroutput>Eigen::Matrix</computeroutput> objects. The contents of this namespace is co clear it is self-documenting ;) </para>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEigen.h" line="20" column="1"/>
+  </compounddef>
+</doxygen>

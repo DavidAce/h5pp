@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="structh5pp_1_1type_1_1sfinae_1_1is___scalar2" kind="struct" language="C++" prot="public">
+    <compoundname>h5pp::type::sfinae::is_Scalar2</compoundname>
+    <includes refid="h5pp_type_sfinae_8h" local="no">h5ppTypeSfinae.h</includes>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+    </templateparamlist>
+      <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="structh5pp_1_1type_1_1sfinae_1_1is___scalar2_1a4260b700187770e73df972e95552cb18" prot="public" static="yes" constexpr="yes" mutable="no">
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_Scalar2&lt; T &gt;::value</definition>
+        <argsstring></argsstring>
+        <name>value</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is___scalar2_1aa5062e2cf6df2e55c46f6b44acc9f3c5" kindref="member">test</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="330" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="330" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-static-func">
+      <memberdef kind="function" id="structh5pp_1_1type_1_1sfinae_1_1is___scalar2_1aa5062e2cf6df2e55c46f6b44acc9f3c5" prot="private" static="yes" constexpr="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>constexpr bool</type>
+        <definition>static constexpr bool h5pp::type::sfinae::is_Scalar2&lt; T &gt;::test</definition>
+        <argsstring>()</argsstring>
+        <name>test</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="318" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="318" bodyend="327"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="316" column="21" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="316" bodyend="331"/>
+    <listofallmembers>
+      <member refid="structh5pp_1_1type_1_1sfinae_1_1is___scalar2_1aa5062e2cf6df2e55c46f6b44acc9f3c5" prot="private" virt="non-virtual"><scope>h5pp::type::sfinae::is_Scalar2</scope><name>test</name></member>
+      <member refid="structh5pp_1_1type_1_1sfinae_1_1is___scalar2_1a4260b700187770e73df972e95552cb18" prot="public" virt="non-virtual"><scope>h5pp::type::sfinae::is_Scalar2</scope><name>value</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

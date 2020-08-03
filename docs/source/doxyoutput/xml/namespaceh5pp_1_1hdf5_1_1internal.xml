@@ -1,0 +1,167 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="namespaceh5pp_1_1hdf5_1_1internal" kind="namespace" language="C++">
+    <compoundname>h5pp::hdf5::internal</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="namespaceh5pp_1_1hdf5_1_1internal_1a64f15abea7413ac5eedad0aa2b1c53a8" prot="public" static="no" mutable="no">
+        <type>long</type>
+        <definition>long h5pp::hdf5::internal::maxHits</definition>
+        <argsstring></argsstring>
+        <name>maxHits</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1272" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1272" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1hdf5_1_1internal_1a611716506446499c6d33fbd997affb66" prot="public" static="no" mutable="no">
+        <type>long</type>
+        <definition>long h5pp::hdf5::internal::maxDepth</definition>
+        <argsstring></argsstring>
+        <name>maxDepth</name>
+        <initializer>= -1</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1273" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1273" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceh5pp_1_1hdf5_1_1internal_1a53a13585f1287ea9f5b31a0cde7677f8" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string h5pp::hdf5::internal::searchKey</definition>
+        <argsstring></argsstring>
+        <name>searchKey</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1274" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1274" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespaceh5pp_1_1hdf5_1_1internal_1a61d3d50d1676ad84429777053ea0958e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>H5O_type_t</type>
+            <declname>ObjType</declname>
+            <defname>ObjType</defname>
+          </param>
+          <param>
+            <type>typename InfoType</type>
+          </param>
+        </templateparamlist>
+        <type>herr_t</type>
+        <definition>herr_t h5pp::hdf5::internal::matcher</definition>
+        <argsstring>([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const InfoType *info, void *opdata)</argsstring>
+        <name>matcher</name>
+        <param>
+          <attributes>[[maybe_unused]</attributes>
+          <type>] hid_t</type>
+          <declname>id</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>name</declname>
+        </param>
+        <param>
+          <attributes>[[maybe_unused]</attributes>
+          <type>] const InfoType *</type>
+          <declname>info</declname>
+        </param>
+        <param>
+          <type>void *</type>
+          <declname>opdata</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1276" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1276" bodyend="1301"/>
+        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a611716506446499c6d33fbd997affb66" compoundref="h5pp_hdf5_8h" startline="1273">maxDepth</references>
+        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a53a13585f1287ea9f5b31a0cde7677f8" compoundref="h5pp_hdf5_8h" startline="1274">searchKey</references>
+        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a64f15abea7413ac5eedad0aa2b1c53a8" compoundref="h5pp_hdf5_8h" startline="1272">maxHits</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1hdf5_1_1internal_1a409b40f0a175cd62ba82e3dbb3a43470" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>H5O_type_t</type>
+            <declname>ObjType</declname>
+            <defname>ObjType</defname>
+          </param>
+        </templateparamlist>
+        <type>constexpr std::string_view</type>
+        <definition>constexpr std::string_view h5pp::hdf5::internal::getObjTypeName</definition>
+        <argsstring>()</argsstring>
+        <name>getObjTypeName</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1304" column="43" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1304" bodyend="1317"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1hdf5_1_1internal_1aa16966556f6c28e51a0aa25cbf2010e1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>H5O_type_t</type>
+            <declname>ObjType</declname>
+            <defname>ObjType</defname>
+          </param>
+          <param>
+            <type>typename h5x</type>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc</ref>&lt;h5x&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type>herr_t</type>
+        <definition>herr_t h5pp::hdf5::internal::visit_by_name</definition>
+        <argsstring>(const h5x &amp;loc, std::string_view root, std::vector&lt; std::string &gt; &amp;matchList, const hid::h5p &amp;linkAccess=H5P_DEFAULT)</argsstring>
+        <name>visit_by_name</name>
+        <param>
+          <type>const h5x &amp;</type>
+          <declname>loc</declname>
+        </param>
+        <param>
+          <type>std::string_view</type>
+          <declname>root</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>matchList</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classh5pp_1_1hid_1_1h5p" kindref="compound">hid::h5p</ref> &amp;</type>
+          <declname>linkAccess</declname>
+          <defval>H5P_DEFAULT</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1319" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1319" bodyend="1332"/>
+        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a611716506446499c6d33fbd997affb66" compoundref="h5pp_hdf5_8h" startline="1273">maxDepth</references>
+        <references refid="namespaceh5pp_1_1util_1ae6c73a0989d482fb452c89d604c1adee" compoundref="h5pp_utils_8h" startline="12" endline="25">h5pp::util::safe_str</references>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1271" column="22"/>
+  </compounddef>
+</doxygen>

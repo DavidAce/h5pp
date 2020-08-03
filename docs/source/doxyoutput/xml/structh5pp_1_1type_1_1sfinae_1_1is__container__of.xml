@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="structh5pp_1_1type_1_1sfinae_1_1is__container__of" kind="struct" language="C++" prot="public">
+    <compoundname>h5pp::type::sfinae::is_container_of</compoundname>
+    <includes refid="h5pp_type_sfinae_8h" local="no">h5ppTypeSfinae.h</includes>
+    <templateparamlist>
+      <param>
+        <type>typename Outer</type>
+      </param>
+      <param>
+        <type>typename Inner</type>
+      </param>
+    </templateparamlist>
+      <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="structh5pp_1_1type_1_1sfinae_1_1is__container__of_1a149d85e56abb4a34db21ebdf15a8d466" prot="public" static="yes" constexpr="yes" mutable="no">
+        <type>constexpr bool</type>
+        <definition>constexpr bool h5pp::type::sfinae::is_container_of&lt; Outer, Inner &gt;::value</definition>
+        <argsstring></argsstring>
+        <name>value</name>
+        <initializer>= <ref refid="structh5pp_1_1type_1_1sfinae_1_1is__container__of_1a71c028623f4c27bcb0779a6ad11ae12c" kindref="member">test</ref>&lt;Outer, Inner&gt;()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="302" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="302" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-static-func">
+      <memberdef kind="function" id="structh5pp_1_1type_1_1sfinae_1_1is__container__of_1a71c028623f4c27bcb0779a6ad11ae12c" prot="private" static="yes" constexpr="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename O</type>
+          </param>
+          <param>
+            <type>typename I</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>static constexpr bool h5pp::type::sfinae::is_container_of&lt; Outer, Inner &gt;::test</definition>
+        <argsstring>()</argsstring>
+        <name>test</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="289" column="31" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="289" bodyend="299"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="286" column="26" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="286" bodyend="303"/>
+    <listofallmembers>
+      <member refid="structh5pp_1_1type_1_1sfinae_1_1is__container__of_1a71c028623f4c27bcb0779a6ad11ae12c" prot="private" virt="non-virtual"><scope>h5pp::type::sfinae::is_container_of</scope><name>test</name></member>
+      <member refid="structh5pp_1_1type_1_1sfinae_1_1is__container__of_1a149d85e56abb4a34db21ebdf15a8d466" prot="public" virt="non-virtual"><scope>h5pp::type::sfinae::is_container_of</scope><name>value</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="structh5pp_1_1type_1_1sfinae_1_1is__std__array" kind="struct" language="C++" prot="public">
+    <compoundname>h5pp::type::sfinae::is_std_array</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">false_type</basecompoundref>
+    <includes refid="h5pp_type_sfinae_8h" local="no">h5ppTypeSfinae.h</includes>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+    </templateparamlist>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>false_type</label>
+      </node>
+      <node id="1">
+        <label>h5pp::type::sfinae::is_std_array&lt; T &gt;</label>
+        <link refid="structh5pp_1_1type_1_1sfinae_1_1is__std__array"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>false_type</label>
+      </node>
+      <node id="1">
+        <label>h5pp::type::sfinae::is_std_array&lt; T &gt;</label>
+        <link refid="structh5pp_1_1type_1_1sfinae_1_1is__std__array"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="160" column="46" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="160" bodyend="160"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

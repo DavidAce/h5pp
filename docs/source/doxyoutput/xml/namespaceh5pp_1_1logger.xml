@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="namespaceh5pp_1_1logger" kind="namespace" language="C++">
+    <compoundname>h5pp::logger</compoundname>
+    <innerclass refid="classh5pp_1_1logger_1_1_manual_logger" prot="public">h5pp::logger::ManualLogger</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="namespaceh5pp_1_1logger_1a3792043b7c8a174b4a4377143dc032ea" prot="public" static="no" mutable="no">
+        <type>std::shared_ptr&lt; <ref refid="classh5pp_1_1logger_1_1_manual_logger" kindref="compound">ManualLogger</ref> &gt;</type>
+        <definition>std::shared_ptr&lt;ManualLogger&gt; h5pp::logger::log</definition>
+        <argsstring></argsstring>
+        <name>log</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="88" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="88" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespaceh5pp_1_1logger_1af5c381c4c6c5da7d66c1d42c7c529a7f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void h5pp::logger::enableTimestamp</definition>
+        <argsstring>()</argsstring>
+        <name>enableTimestamp</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="90" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="90" bodyend="90"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1logger_1ac548b4b298ba67be52d93a57a0f839b6" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void h5pp::logger::disableTimestamp</definition>
+        <argsstring>()</argsstring>
+        <name>disableTimestamp</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="91" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="91" bodyend="91"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1logger_1a964f0df3728a189192ec0630dc58bf95" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t h5pp::logger::getLogLevel</definition>
+        <argsstring>()</argsstring>
+        <name>getLogLevel</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="92" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="92" bodyend="97"/>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">setLogger</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1logger_1ab30ac73a10a90842755bc4a54e2dc54e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename levelType</type>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void h5pp::logger::setLogLevel</definition>
+        <argsstring>([[maybe_unused]] levelType levelZeroToFive)</argsstring>
+        <name>setLogLevel</name>
+        <param>
+          <attributes>[[maybe_unused]</attributes>
+          <type>] levelType</type>
+          <declname>levelZeroToFive</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="99" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="99" bodyend="113"/>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">setLogger</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>void</type>
+        <definition>void h5pp::logger::setLogger</definition>
+        <argsstring>([[maybe_unused]] const std::string &amp;name_, [[maybe_unused]] std::optional&lt; size_t &gt; levelZeroToFive=std::nullopt, [[maybe_unused]] std::optional&lt; bool &gt; timestamp=std::nullopt)</argsstring>
+        <name>setLogger</name>
+        <param>
+          <attributes>[[maybe_unused]</attributes>
+          <type>] const std::string &amp;</type>
+          <declname>name_</declname>
+        </param>
+        <param>
+          <attributes>[[maybe_unused]</attributes>
+          <type>] std::optional&lt; size_t &gt;</type>
+          <declname>levelZeroToFive</declname>
+          <defval>std::nullopt</defval>
+        </param>
+        <param>
+          <attributes>[[maybe_unused]</attributes>
+          <type>] std::optional&lt; bool &gt;</type>
+          <declname>timestamp</declname>
+          <defval>std::nullopt</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="115" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="115" bodyend="121"/>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">setLogger</references>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="6" column="22"/>
+  </compounddef>
+</doxygen>

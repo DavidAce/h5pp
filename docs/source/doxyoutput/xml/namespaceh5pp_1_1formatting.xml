@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="namespaceh5pp_1_1formatting" kind="namespace" language="C++">
+    <compoundname>h5pp::formatting</compoundname>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespaceh5pp_1_1formatting_1a86b45fb9ffb3215791d2201ade2acccc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+          <param>
+            <type>class...</type>
+            <declname>Ts</declname>
+            <defname>Ts</defname>
+          </param>
+        </templateparamlist>
+        <type>std::list&lt; std::string &gt;</type>
+        <definition>std::list&lt;std::string&gt; h5pp::formatting::convert_to_string_list</definition>
+        <argsstring>(const T &amp;first, const Ts &amp;... rest)</argsstring>
+        <name>convert_to_string_list</name>
+        <param>
+          <type>const T &amp;</type>
+          <declname>first</declname>
+        </param>
+        <param>
+          <type>const Ts &amp;...</type>
+          <declname>rest</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="17" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" bodystart="17" bodyend="43"/>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="14" column="24"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="structh5pp_1_1type_1_1sfinae_1_1has__resize_n_3_01_t_00_01rank_00_01std_1_1void__t_3_01decltype_b547c168c6da0a8f4d459e1f1ab4b254" kind="struct" language="C++" prot="public">
+    <compoundname>h5pp::type::sfinae::has_resizeN&lt; T, rank, std::void_t&lt; decltype(std::declval&lt; T &gt;().resize(std::declval&lt; std::array&lt; long, rank &gt;&gt;()))&gt; &gt;</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">true_type</basecompoundref>
+    <includes refid="h5pp_type_sfinae_8h" local="no">h5ppTypeSfinae.h</includes>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+      <param>
+        <type>auto</type>
+        <declname>rank</declname>
+        <defname>rank</defname>
+      </param>
+    </templateparamlist>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>true_type</label>
+      </node>
+      <node id="1">
+        <label>h5pp::type::sfinae::has_resizeN&lt; T, rank, std::void_t&lt; decltype(std::declval&lt; T &gt;().resize(std::declval&lt; std::array&lt; long, rank &gt;&gt;()))&gt; &gt;</label>
+        <link refid="structh5pp_1_1type_1_1sfinae_1_1has__resize_n_3_01_t_00_01rank_00_01std_1_1void__t_3_01decltype_b547c168c6da0a8f4d459e1f1ab4b254"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>true_type</label>
+      </node>
+      <node id="1">
+        <label>h5pp::type::sfinae::has_resizeN&lt; T, rank, std::void_t&lt; decltype(std::declval&lt; T &gt;().resize(std::declval&lt; std::array&lt; long, rank &gt;&gt;()))&gt; &gt;</label>
+        <link refid="structh5pp_1_1type_1_1sfinae_1_1has__resize_n_3_01_t_00_01rank_00_01std_1_1void__t_3_01decltype_b547c168c6da0a8f4d459e1f1ab4b254"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="73" column="47" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="73" bodyend="73"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

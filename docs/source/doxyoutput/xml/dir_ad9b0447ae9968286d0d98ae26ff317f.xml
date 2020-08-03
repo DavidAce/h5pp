@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="dir_ad9b0447ae9968286d0d98ae26ff317f" kind="dir">
+    <compoundname>/home/david/GitProjects/h5pp/h5pp</compoundname>
+    <innerdir refid="dir_d3788910a3011910be0de86989f8c27c">/home/david/GitProjects/h5pp/h5pp/include</innerdir>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/"/>
+  </compounddef>
+</doxygen>

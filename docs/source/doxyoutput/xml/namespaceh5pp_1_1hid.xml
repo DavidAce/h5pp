@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="namespaceh5pp_1_1hid" kind="namespace" language="C++">
+    <compoundname>h5pp::hid</compoundname>
+    <innerclass refid="classh5pp_1_1hid_1_1h5a" prot="public">h5pp::hid::h5a</innerclass>
+    <innerclass refid="classh5pp_1_1hid_1_1h5d" prot="public">h5pp::hid::h5d</innerclass>
+    <innerclass refid="classh5pp_1_1hid_1_1h5e" prot="public">h5pp::hid::h5e</innerclass>
+    <innerclass refid="classh5pp_1_1hid_1_1h5f" prot="public">h5pp::hid::h5f</innerclass>
+    <innerclass refid="classh5pp_1_1hid_1_1h5g" prot="public">h5pp::hid::h5g</innerclass>
+    <innerclass refid="classh5pp_1_1hid_1_1h5o" prot="public">h5pp::hid::h5o</innerclass>
+    <innerclass refid="classh5pp_1_1hid_1_1h5p" prot="public">h5pp::hid::h5p</innerclass>
+    <innerclass refid="classh5pp_1_1hid_1_1h5s" prot="public">h5pp::hid::h5s</innerclass>
+    <innerclass refid="classh5pp_1_1hid_1_1h5t" prot="public">h5pp::hid::h5t</innerclass>
+    <innerclass refid="classh5pp_1_1hid_1_1hid__base" prot="public">h5pp::hid::hid_base</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="5" column="19"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="structh5pp_1_1_type_info" kind="struct" language="C++" prot="public">
+    <compoundname>h5pp::TypeInfo</compoundname>
+    <includes refid="h5pp_info_8h" local="no">h5ppInfo.h</includes>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structh5pp_1_1_type_info_1a9f09eb96cb161d4c4127e5edc89fcad2" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; std::string &gt;</type>
+        <definition>std::optional&lt;std::string&gt; h5pp::TypeInfo::cppTypeName</definition>
+        <argsstring></argsstring>
+        <name>cppTypeName</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="531" column="32" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="531" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_type_info_1a580f2441c27c4447c7831c97f5643c71" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; size_t &gt;</type>
+        <definition>std::optional&lt;size_t&gt; h5pp::TypeInfo::cppTypeBytes</definition>
+        <argsstring></argsstring>
+        <name>cppTypeBytes</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="532" column="37" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="532" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_type_info_1a1608ddcdb74210fa7f2d46bd6d590708" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; std::type_index &gt;</type>
+        <definition>std::optional&lt;std::type_index&gt; h5pp::TypeInfo::cppTypeIndex</definition>
+        <argsstring></argsstring>
+        <name>cppTypeIndex</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="533" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="533" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_type_info_1a78b3920e9677b9b6a9bc5f19b680ba61" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; std::string &gt;</type>
+        <definition>std::optional&lt;std::string&gt; h5pp::TypeInfo::h5Path</definition>
+        <argsstring></argsstring>
+        <name>h5Path</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="534" column="32" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="534" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_type_info_1a6a74c7f8b43f09d2e3418ecd872ef91f" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; std::string &gt;</type>
+        <definition>std::optional&lt;std::string&gt; h5pp::TypeInfo::h5Name</definition>
+        <argsstring></argsstring>
+        <name>h5Name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="535" column="32" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="535" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_type_info_1ad395cc5b5750e0b28d8de76017dc4bf8" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; hsize_t &gt;</type>
+        <definition>std::optional&lt;hsize_t&gt; h5pp::TypeInfo::h5Size</definition>
+        <argsstring></argsstring>
+        <name>h5Size</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="536" column="36" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="536" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_type_info_1a7f766cb42a646b9fc281bd1b4bde8b1a" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; int &gt;</type>
+        <definition>std::optional&lt;int&gt; h5pp::TypeInfo::h5Rank</definition>
+        <argsstring></argsstring>
+        <name>h5Rank</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="537" column="40" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="537" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_type_info_1adeac8c894700a503c1ff6ff406939b50" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; std::vector&lt; hsize_t &gt; &gt;</type>
+        <definition>std::optional&lt;std::vector&lt;hsize_t&gt; &gt; h5pp::TypeInfo::h5Dims</definition>
+        <argsstring></argsstring>
+        <name>h5Dims</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="538" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="538" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_type_info_1a1843c5d1805c1b3153a8f51da5fa43b1" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classh5pp_1_1hid_1_1h5t" kindref="compound">hid::h5t</ref> &gt;</type>
+        <definition>std::optional&lt;hid::h5t&gt; h5pp::TypeInfo::h5Type</definition>
+        <argsstring></argsstring>
+        <name>h5Type</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="539" column="35" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="539" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structh5pp_1_1_type_info_1a21473381e316e9cd26043ac36cbd6d7a" prot="public" static="no" mutable="no">
+        <type>std::optional&lt; <ref refid="classh5pp_1_1hid_1_1h5o" kindref="compound">hid::h5o</ref> &gt;</type>
+        <definition>std::optional&lt;hid::h5o&gt; h5pp::TypeInfo::h5Link</definition>
+        <argsstring></argsstring>
+        <name>h5Link</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="540" column="35" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="540" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="structh5pp_1_1_type_info_1a84ce685e9723511c9d731ad103705cff" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>std::string</type>
+        <definition>std::string h5pp::TypeInfo::string</definition>
+        <argsstring>()</argsstring>
+        <name>string</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="542" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="542" bodyend="553"/>
+        <references refid="structh5pp_1_1_type_info_1a9f09eb96cb161d4c4127e5edc89fcad2" compoundref="h5pp_info_8h" startline="531">cppTypeName</references>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="structh5pp_1_1_type_info_1a580f2441c27c4447c7831c97f5643c71" compoundref="h5pp_info_8h" startline="532">cppTypeBytes</references>
+        <references refid="structh5pp_1_1_type_info_1a78b3920e9677b9b6a9bc5f19b680ba61" compoundref="h5pp_info_8h" startline="534">h5Path</references>
+        <references refid="structh5pp_1_1_type_info_1a6a74c7f8b43f09d2e3418ecd872ef91f" compoundref="h5pp_info_8h" startline="535">h5Name</references>
+        <references refid="structh5pp_1_1_type_info_1ad395cc5b5750e0b28d8de76017dc4bf8" compoundref="h5pp_info_8h" startline="536">h5Size</references>
+        <references refid="structh5pp_1_1_type_info_1a7f766cb42a646b9fc281bd1b4bde8b1a" compoundref="h5pp_info_8h" startline="537">h5Rank</references>
+        <references refid="structh5pp_1_1_type_info_1adeac8c894700a503c1ff6ff406939b50" compoundref="h5pp_info_8h" startline="538">h5Dims</references>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>Collects type information about existing datasets. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="530" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="530" bodyend="554"/>
+    <listofallmembers>
+      <member refid="structh5pp_1_1_type_info_1a580f2441c27c4447c7831c97f5643c71" prot="public" virt="non-virtual"><scope>h5pp::TypeInfo</scope><name>cppTypeBytes</name></member>
+      <member refid="structh5pp_1_1_type_info_1a1608ddcdb74210fa7f2d46bd6d590708" prot="public" virt="non-virtual"><scope>h5pp::TypeInfo</scope><name>cppTypeIndex</name></member>
+      <member refid="structh5pp_1_1_type_info_1a9f09eb96cb161d4c4127e5edc89fcad2" prot="public" virt="non-virtual"><scope>h5pp::TypeInfo</scope><name>cppTypeName</name></member>
+      <member refid="structh5pp_1_1_type_info_1adeac8c894700a503c1ff6ff406939b50" prot="public" virt="non-virtual"><scope>h5pp::TypeInfo</scope><name>h5Dims</name></member>
+      <member refid="structh5pp_1_1_type_info_1a21473381e316e9cd26043ac36cbd6d7a" prot="public" virt="non-virtual"><scope>h5pp::TypeInfo</scope><name>h5Link</name></member>
+      <member refid="structh5pp_1_1_type_info_1a6a74c7f8b43f09d2e3418ecd872ef91f" prot="public" virt="non-virtual"><scope>h5pp::TypeInfo</scope><name>h5Name</name></member>
+      <member refid="structh5pp_1_1_type_info_1a78b3920e9677b9b6a9bc5f19b680ba61" prot="public" virt="non-virtual"><scope>h5pp::TypeInfo</scope><name>h5Path</name></member>
+      <member refid="structh5pp_1_1_type_info_1a7f766cb42a646b9fc281bd1b4bde8b1a" prot="public" virt="non-virtual"><scope>h5pp::TypeInfo</scope><name>h5Rank</name></member>
+      <member refid="structh5pp_1_1_type_info_1ad395cc5b5750e0b28d8de76017dc4bf8" prot="public" virt="non-virtual"><scope>h5pp::TypeInfo</scope><name>h5Size</name></member>
+      <member refid="structh5pp_1_1_type_info_1a1843c5d1805c1b3153a8f51da5fa43b1" prot="public" virt="non-virtual"><scope>h5pp::TypeInfo</scope><name>h5Type</name></member>
+      <member refid="structh5pp_1_1_type_info_1a84ce685e9723511c9d731ad103705cff" prot="public" virt="non-virtual"><scope>h5pp::TypeInfo</scope><name>string</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

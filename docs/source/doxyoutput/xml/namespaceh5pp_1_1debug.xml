@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.17">
+  <compounddef id="namespaceh5pp_1_1debug" kind="namespace" language="C++">
+    <compoundname>h5pp::debug</compoundname>
+      <sectiondef kind="enum">
+      <memberdef kind="enum" id="namespaceh5pp_1_1debug_1aaa5db3767959e8e59afc70a9339c4636" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>DimSizeComparison</name>
+        <enumvalue id="namespaceh5pp_1_1debug_1aaa5db3767959e8e59afc70a9339c4636a0f1f7349473f66cdde49ebc380ae0f03" prot="public">
+          <name>ENFORCE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1_1debug_1aaa5db3767959e8e59afc70a9339c4636a57676e0bedd941be2b5a7138f24bfd97" prot="public">
+          <name>PERMISSIVE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="15" column="37" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="15" bodyend="15"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespaceh5pp_1_1debug_1aca8207fafc1277be2959eb15e82fb7b5" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>auto</type>
+        <definition>auto h5pp::debug::reportCompatibility</definition>
+        <argsstring>(std::optional&lt; std::vector&lt; hsize_t &gt;&gt; smallDims, std::optional&lt; std::vector&lt; hsize_t &gt;&gt; largeDims, DimSizeComparison dimComp=DimSizeComparison::ENFORCE)</argsstring>
+        <name>reportCompatibility</name>
+        <param>
+          <type>std::optional&lt; std::vector&lt; hsize_t &gt;&gt;</type>
+          <declname>smallDims</declname>
+        </param>
+        <param>
+          <type>std::optional&lt; std::vector&lt; hsize_t &gt;&gt;</type>
+          <declname>largeDims</declname>
+        </param>
+        <param>
+          <type><ref refid="namespaceh5pp_1_1debug_1aaa5db3767959e8e59afc70a9339c4636" kindref="member">DimSizeComparison</ref></type>
+          <declname>dimComp</declname>
+          <defval><ref refid="namespaceh5pp_1_1debug_1aaa5db3767959e8e59afc70a9339c4636a0f1f7349473f66cdde49ebc380ae0f03" kindref="member">DimSizeComparison::ENFORCE</ref></defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="16" column="21" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="16" bodyend="38"/>
+        <references refid="namespaceh5pp_1_1debug_1aaa5db3767959e8e59afc70a9339c4636a0f1f7349473f66cdde49ebc380ae0f03">ENFORCE</references>
+        <references refid="namespaceh5pp_1_1debug_1aaa5db3767959e8e59afc70a9339c4636a57676e0bedd941be2b5a7138f24bfd97">PERMISSIVE</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1debug_1aff3a16d65569dd5d2e7f63a03ff0c210" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>auto</type>
+        <definition>auto h5pp::debug::reportCompatibility</definition>
+        <argsstring>(std::optional&lt; H5D_layout_t &gt; h5Layout, std::optional&lt; std::vector&lt; hsize_t &gt;&gt; dims, std::optional&lt; std::vector&lt; hsize_t &gt;&gt; dimsChunk, std::optional&lt; std::vector&lt; hsize_t &gt;&gt; dimsMax)</argsstring>
+        <name>reportCompatibility</name>
+        <param>
+          <type>std::optional&lt; H5D_layout_t &gt;</type>
+          <declname>h5Layout</declname>
+        </param>
+        <param>
+          <type>std::optional&lt; std::vector&lt; hsize_t &gt;&gt;</type>
+          <declname>dims</declname>
+        </param>
+        <param>
+          <type>std::optional&lt; std::vector&lt; hsize_t &gt;&gt;</type>
+          <declname>dimsChunk</declname>
+        </param>
+        <param>
+          <type>std::optional&lt; std::vector&lt; hsize_t &gt;&gt;</type>
+          <declname>dimsMax</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="40" column="21" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="40" bodyend="70"/>
+        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <references refid="namespaceh5pp_1_1debug_1aca8207fafc1277be2959eb15e82fb7b5" compoundref="h5pp_info_8h" startline="16" endline="38">reportCompatibility</references>
+        <references refid="namespaceh5pp_1_1debug_1aaa5db3767959e8e59afc70a9339c4636a57676e0bedd941be2b5a7138f24bfd97">PERMISSIVE</references>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="14" column="19"/>
+  </compounddef>
+</doxygen>
