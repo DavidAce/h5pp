@@ -27,13 +27,15 @@ namespace h5pp {
 
     class File {
         private:
-        fs::path             filePath; /*!< Full path to the file, eg. /home/cooldude/h5project/output.h5 */
-        h5pp::FilePermission permission   = h5pp::FilePermission::RENAME;
-        size_t               logLevel     = 2;
-        bool                 logTimestamp = false;
-        hid::h5e             error_stack;
-        unsigned int         currentCompressionLevel = 0;
-        void                 init() {
+        fs::path             filePath; /*!< Full path to the file, e.g. /path/to/project/filename.h5 */
+        h5pp::FilePermission permission =
+            h5pp::FilePermission::RENAME;  /*!< Decides action on file collision and read/write permission on existing files. Default RENAME avoids loss of data  */
+        size_t       logLevel     = 2;     /*!< Console log level for new file objects. 0 [trace] has highest verbosity, and 5 [critical] the lowest.  */
+        bool         logTimestamp = false; /*!< Add a time stamp to console log output   */
+        hid::h5e     error_stack;          /*!< Holds a reference to the error stack used by HDF5   */
+        unsigned int currentCompressionLevel = 0;
+
+        void init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
             h5pp::logger::log->debug("Initializing HDF5 file: [{}]", filePath.string());
             /* Set default error print output */
@@ -59,14 +61,19 @@ namespace h5pp {
         // The user is responsible for linking to MPI and learning how to set properties for MPI usage
         PropertyLists plists;
 
-        File() {
-            h5pp::logger::setLogger("h5pp", logLevel, logTimestamp);
-            h5pp::logger::log->debug("Default-constructing h5pp file object");
-        }
+        /*! Default constructor */
+        File() { h5pp::logger::setLogger("h5pp", logLevel, logTimestamp); }
 
+        /*! Copy constructor */
         File(const File &other) {
-            h5pp::logger::log->debug("Copy-constructing this file [{}] from given file: [{}]", filePath.string(), other.getFilePath());
-            *this = other;
+            if(&other != this) {
+                logLevel     = other.logLevel;
+                logTimestamp = other.logTimestamp;
+                permission   = other.permission;
+                filePath     = other.filePath;
+                plists       = other.plists;
+                h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
+            }
         }
 
         explicit File(const std::string &filePath_, h5pp::FilePermission permission_ = h5pp::FilePermission::RENAME, size_t logLevel_ = 2, bool logTimestamp_ = false)
@@ -87,7 +94,6 @@ namespace h5pp {
         }
 
         File &operator=(const File &other) {
-            h5pp::logger::log->debug("Assignment to this file [{}] from given file: [{}]", filePath.string(), other.getFilePath());
             if(&other != this) {
                 logLevel     = other.logLevel;
                 logTimestamp = other.logTimestamp;
@@ -263,7 +269,7 @@ namespace h5pp {
         DsetInfo createDataset(std::optional<hid::h5t>     h5Type,
                                std::string_view            dsetPath,
                                const DimsType &            dsetDims,
-                               std::optional<H5D_layout_t> h5Layout     = std::nullopt,
+                               std::optional<H5D_layout_t> h5Layout      = std::nullopt,
                                const OptDimsType &         dsetDimsChunk = std::nullopt,
                                const OptDimsType &         dsetDimsMax   = std::nullopt,
                                std::optional<unsigned int> compression   = std::nullopt) {
@@ -291,7 +297,7 @@ namespace h5pp {
         DsetInfo createDataset(const DataType &            data,
                                std::string_view            dsetPath,
                                const OptDimsType &         dataDims      = std::nullopt,
-                               std::optional<H5D_layout_t> h5Layout     = std::nullopt,
+                               std::optional<H5D_layout_t> h5Layout      = std::nullopt,
                                const OptDimsType &         dsetDimsChunk = std::nullopt,
                                const OptDimsType &         dsetDimsMax   = std::nullopt,
                                std::optional<unsigned int> compression   = std::nullopt) {
@@ -312,7 +318,7 @@ namespace h5pp {
         void writeDataset(const DataType &data, DsetInfo &dsetInfo, const Options &options = Options()) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
-            auto dataInfo = h5pp::scan::getDataInfo(data,options);
+            auto dataInfo = h5pp::scan::getDataInfo(data, options);
             resizeDataset(dsetInfo, dataInfo.dataDims.value());
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
         }
@@ -337,9 +343,9 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        DsetInfo writeDataset(const DataType &            data,                     /*!< Eigen, stl-like object or pointer to data buffer */
-                              std::string_view            dsetPath,                 /*!< Path to HDF5 dataset relative to the file root */
-                              const OptDimsType &         dataDims  = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
+        DsetInfo writeDataset(const DataType &            data,                    /*!< Eigen, stl-like object or pointer to data buffer */
+                              std::string_view            dsetPath,                /*!< Path to HDF5 dataset relative to the file root */
+                              const OptDimsType &         dataDims = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
                               std::optional<H5D_layout_t> h5Layout = std::nullopt, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
                               const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
                               const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
@@ -360,10 +366,10 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        DsetInfo writeDataset(const DataType &            data,                     /*!< Eigen, stl-like object or pointer to data buffer */
-                              std::string_view            dsetPath,                 /*!< Path to HDF5 dataset relative to the file root */
-                              hid::h5t &                  h5Type,                   /*!< (On create) Type of dataset. Override automatic type detection. */
-                              const OptDimsType &         dataDims  = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
+        DsetInfo writeDataset(const DataType &            data,                    /*!< Eigen, stl-like object or pointer to data buffer */
+                              std::string_view            dsetPath,                /*!< Path to HDF5 dataset relative to the file root */
+                              hid::h5t &                  h5Type,                  /*!< (On create) Type of dataset. Override automatic type detection. */
+                              const OptDimsType &         dataDims = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
                               std::optional<H5D_layout_t> h5Layout = std::nullopt, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
                               const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
                               const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
@@ -383,9 +389,9 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        DsetInfo writeDataset(const DataType &            data,      /*!< Eigen, stl-like object or pointer to data buffer */
-                              std::string_view            dsetPath,  /*!< Path to HDF5 dataset relative to the file root */
-                              H5D_layout_t                h5Layout,  /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
+        DsetInfo writeDataset(const DataType &            data,     /*!< Eigen, stl-like object or pointer to data buffer */
+                              std::string_view            dsetPath, /*!< Path to HDF5 dataset relative to the file root */
+                              H5D_layout_t                h5Layout, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
                               const OptDimsType &         dataDims      = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
                               const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
                               const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
@@ -849,17 +855,17 @@ namespace h5pp {
 
         [[nodiscard]] bool linkExists(std::string_view link) const { return h5pp::hdf5::checkIfLinkExists(openFileHandle(), link, std::nullopt, plists.linkAccess); }
 
-//        [[nodiscard]] std::vector<std::string> getLinks(std::string_view root = "/", long maxDepth = 0) const {
-//            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_UNKNOWN>(openFileHandle(), root, maxDepth, plists.linkAccess);
-//        }
-//
-//        [[nodiscard]] std::vector<std::string> getDatasets(std::string_view root = "/", long maxDepth = 0) const {
-//            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_DATASET>(openFileHandle(), root, maxDepth, plists.linkAccess);
-//        }
-//
-//        [[nodiscard]] std::vector<std::string> getGroups(std::string_view root = "/", long maxDepth = 0) const {
-//            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_GROUP>(openFileHandle(), root, maxDepth, plists.linkAccess);
-//        }
+        //        [[nodiscard]] std::vector<std::string> getLinks(std::string_view root = "/", long maxDepth = 0) const {
+        //            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_UNKNOWN>(openFileHandle(), root, maxDepth, plists.linkAccess);
+        //        }
+        //
+        //        [[nodiscard]] std::vector<std::string> getDatasets(std::string_view root = "/", long maxDepth = 0) const {
+        //            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_DATASET>(openFileHandle(), root, maxDepth, plists.linkAccess);
+        //        }
+        //
+        //        [[nodiscard]] std::vector<std::string> getGroups(std::string_view root = "/", long maxDepth = 0) const {
+        //            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_GROUP>(openFileHandle(), root, maxDepth, plists.linkAccess);
+        //        }
 
         [[nodiscard]] std::vector<std::string> findLinks(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
             return h5pp::hdf5::findLinks<H5O_TYPE_UNKNOWN>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.linkAccess);
