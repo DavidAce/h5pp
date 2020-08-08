@@ -39,7 +39,7 @@ int main() {
     //         chunk becomes 80 KB. Note that the size argument {1000} is optional and
     //         can be replaced by "std::nullopt".
 
-    auto dsetInfo = file.writeDataset(v_write, "myStdVectorDouble",H5D_CHUNKED, {1000},{10000});
+    auto dsetInfo = file.writeDataset(v_write, "myStdVectorDouble", H5D_CHUNKED, {1000}, {10000});
 
     // Print dataset metadata
     printf("Wrote dataset: %s \n", dsetInfo.string().c_str());

@@ -23,8 +23,6 @@ int main() {
     //       file size found at levels around 2 to 5.
     file.setCompressionLevel(3);
 
-
-
     // Initialize a vector of doubles
     std::vector<double> v_write(1000);
 
@@ -33,10 +31,25 @@ int main() {
 
     // Write data.
     //  Note: The compression level can also be given as the last argument in a writeDataset() call.
-    auto dsetInfo = file.writeDataset(v_write, "myStdVectorDouble",H5D_CHUNKED);
+    auto dsetInfo = file.writeDataset(v_write, "myStdVectorDouble", H5D_CHUNKED);
 
     // Print dataset metadata
     printf("Wrote dataset: %s \n", dsetInfo.string().c_str());
+
+    // Write data alternative version 1
+    // The compression level can also be given as the last argument in a writeDataset() call.
+    // Note: An IDE with autocomplete can be very useful to get this right...
+    file.writeDataset(v_write, "myStdVectorDouble_alt1", H5D_CHUNKED, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt, 3);
+
+    // Write data alternative version 2
+    // Slighly les verbose is to use writeDataset_chunked
+    // Note: An IDE with autocomplete can be very useful to get this right...
+    file.writeDataset_chunked(v_write, "myStdVectorDouble_alt2", std::nullopt, std::nullopt, std::nullopt, std::nullopt, 3);
+
+    // Write data alternative version 3
+    // A special member function writeDataset_compressed(...) can be used to express this intent in the most compact form
+    // Note: Compression always implies H5D_CHUNKED layout.
+    file.writeDataset_compressed(v_write, "myStdVectorDouble_alt3", 3);
 
     return 0;
 }

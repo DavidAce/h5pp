@@ -18,8 +18,8 @@ int main() {
     // Search for datasets with "A" in their path.
     // By default, the search starts from the root "/", returns all matches in an std::vector<std::string>
     // and searches through all groups in the file recursively.
-//    printf("Searching for datasets with key [A] in their path \n");
-//    for(auto &res : file.findDatasets("A")) printf(" -- found: %s \n", res.c_str());
+    //    printf("Searching for datasets with key [A] in their path \n");
+    //    for(auto &res : file.findDatasets("A")) printf(" -- found: %s \n", res.c_str());
 
     // Search for datasets with "e" in their path with search depth 0.
     std::string key   = "e";
