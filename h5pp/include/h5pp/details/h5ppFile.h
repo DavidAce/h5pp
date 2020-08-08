@@ -453,6 +453,19 @@ namespace h5pp {
             return writeDataset(data, options);
         }
 
+        template<typename DataType>
+        DsetInfo writeDataset_compressed(const DataType &   data,
+                                      std::string_view            dsetPath,
+                                      std::optional<unsigned int> compression   = 3) {
+            Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty, ´,
+            options.linkPath      = dsetPath;
+            options.h5Layout      = H5D_CHUNKED;
+            options.compression   = getCompressionLevel(compression);
+            return writeDataset(data, options);
+        }
+
+
+
         void writeSymbolicLink(std::string_view src_path, std::string_view tgt_path) {
             hid::h5f file = openFileHandle();
             h5pp::hdf5::writeSymbolicLink(file, src_path, tgt_path, plists);
