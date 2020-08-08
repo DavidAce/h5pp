@@ -130,20 +130,20 @@ To give a concrete example, the syntax works as follows
 ```
 
 ### Storage Layout
-Unless specified, `h5pp` will automatically decide the best storage layout for each dataset. The possible layouts are
-
+HDF5 offers three [storage layouts](https://support.hdfgroup.org/HDF5/Tutor/layout.html#lo-define):
 * `H5D_COMPACT`:  For scalar or small datasets which can fit in the metadata header. Default on datasets smaller than 32 KB.
 * `H5D_CONTIGUOUS`: For medium size datasets.  Default on datasets smaller than 512 KB.
 * `H5D_CHUNKED`: For large datasets. Default on datasets larger than 512 KB. This layout has some additional features:
     * Chunking, portioning of the data to improve IO performance by caching more efficiently. Chunk dimensions are calculated by `h5pp` if not given specifically.
     * Compression, disabled by default, and only available if HDF5 was built with zlib enabled.
-    * Overwrite with different size (note that the file size never decreases, for instance after overwriting with a smaller dataset).
+    * Resize datasets. Note that the file size never decreases, for instance after overwriting with a smaller dataset.
 
-To specify the layout, pass it as a third argument when writing a new dataset, for instance:
+`h5pp` can automatically determine the storage layout for each new dataset. To specify the layout manually, pass it as a third argument when writing a new dataset, for instance:
 
 ```c++
     file.writeDataset(myData, "science/myChunkedData", H5D_CHUNKED);      // Creates a chunked dataset
 ```
+
 
 ### Compression
 Extendable (or chunked) datasets can also be compressed if HDF5 was built with zlib support. Use these
