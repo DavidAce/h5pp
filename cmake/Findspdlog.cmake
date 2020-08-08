@@ -90,15 +90,16 @@ if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
         get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
         spdlog_check_version(SPDLOG_INCLUDE_DIR)
         if(NOT SPDLOG_VERSION_OK OR NOT SPDLOG_VERSION)
-          message(WARNING "Could not determine the spdlog version.\n"
-                  "However, the target spdlog::spdlog has already been defined, so it will be used:\n"
-                  "SPDLOG_INCLUDE_DIR: ${SPDLOG_INCLUDE_DIR}\n"
-                  "SPDLOG_VERSION:     ${SPDLOG_VERSION}\n"
-                  "Something is wrong with your installation of spdlog")
+            message(WARNING "Could not determine the spdlog version.\n"
+                    "However, the target spdlog::spdlog has already been defined, so it will be used:\n"
+                    "SPDLOG_INCLUDE_DIR: ${SPDLOG_INCLUDE_DIR}\n"
+                    "SPDLOG_VERSION:     ${SPDLOG_VERSION}\n"
+                    "Something is wrong with your installation of spdlog")
         endif()
         if(SPDLOG_INCLUDE_DIR MATCHES "conda")
             # Use the header-only mode to avoid weird linking errors
-            set_target_properties(spdlog::spdlog PROPERTIES INTERFACE_COMPILE_DEFINITIONS "SPDLOG_HEADER_ONLY")
+            target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_HEADER_ONLY)
+            target_compile_definitions(spdlog::spdlog INTERFACE FMT_HEADER_ONLY )
         endif()
     endif()
 endif()
