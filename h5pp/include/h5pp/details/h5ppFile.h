@@ -53,6 +53,7 @@ namespace h5pp {
         }
 
         public:
+
         // The following struct contains modifiable property lists.
         // This allows us to use h5pp with MPI, for instance.
         // Unmodified, these default to serial (non-MPI) use.
@@ -87,12 +88,14 @@ namespace h5pp {
             init();
         }
 
+        /*! Destructor */
         ~File() {
             h5pp::logger::log->debug("Closing file [{}]", filePath.string());
             H5garbage_collect();
             H5Eprint(H5E_DEFAULT, stderr);
         }
 
+        /*! Copy assignment */
         File &operator=(const File &other) {
             if(&other != this) {
                 logLevel     = other.logLevel;
@@ -105,6 +108,7 @@ namespace h5pp {
             return *this;
         }
 
+        /* Flush HDF5 file cache */
         void flush() {
             h5pp::logger::log->trace("Flushing caches");
             H5Fflush(openFileHandle(), H5F_scope_t::H5F_SCOPE_GLOBAL);
@@ -112,6 +116,7 @@ namespace h5pp {
             H5Eprint(H5E_DEFAULT, stderr);
         }
 
+        /* Returns an HDF5 file handke with permission specified by File::permission */
         [[nodiscard]] hid::h5f openFileHandle() const {
             h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
             if(permission == h5pp::FilePermission::READONLY) {
