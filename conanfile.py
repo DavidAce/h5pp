@@ -22,13 +22,12 @@ class h5ppConan(ConanFile):
     }
 
     options = {
-        'shared'    :[True,False],
         'tests'     :[True,False],
         'examples'  :[True,False],
         'verbose'   :[True,False],
         }
+
     default_options = (
-        'shared=False',
         'tests=True',
         'examples=False',
         'verbose=False',
