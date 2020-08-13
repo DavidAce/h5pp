@@ -45,7 +45,8 @@ class h5ppConan(ConanFile):
         cmake.definitions["H5PP_DOWNLOAD_METHOD"]      = "conan"
         cmake.configure()
         cmake.build()
-        cmake.test()
+        if self.options.tests:
+            cmake.test()
 
     def package(self):
         cmake = CMake(self)
