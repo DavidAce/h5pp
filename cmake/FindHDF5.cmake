@@ -269,6 +269,7 @@ function(find_package_hdf5_exec_wrapper)
             ${HDF5_DIRECTORY_HINTS}
             ${H5PP_DIRECTORY_HINTS}
             ${EBROOTHDF5})
+    list(REMOVE_DUPLICATES HDF5_PATHS)
     if(NOT HDF5_NO_DEFAULT_PATH)
         if(DEFINED ENV{PATH})
             string(REPLACE ":" ";" ENVPATH $ENV{PATH})
@@ -349,12 +350,6 @@ endif()
 if(NOT HDF5_FIND_VERSION)
     set(HDF5_FIND_VERSION 1.8)
 endif()
-
-#if(NOT HDF5_PREFER_PARALLEL)
-#    set(HDF5_PREFER_PARALLEL OFF)
-#else()
-#    list(APPEND HDF5_COMPONENTS_CONFIG parallel)
-#endif()
 
 if(NOT HDF5_FIND_DEBUG)
     set(HDF5_FIND_DEBUG OFF)

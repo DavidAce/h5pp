@@ -1,22 +1,25 @@
 @PACKAGE_INIT@
 
 
+
 ####################################################################
 ### Append search paths for find_package and find_library calls  ###
 ####################################################################
-if(H5PP_DOWNLOAD_METHOD MATCHES "find|fetch")
-    # Search the same directories as during configure
-    set(H5PP_SEARCH_PATHS @PACKAGE_H5PP_SEARCH_PATHS@)
-    # Make sure we use h5pp find modules
-    list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
-    # Append search paths for find_package and find_library calls
-    if(EXISTS ${PACKAGE_PREFIX_DIR}/h5pp)
-        list(INSERT CMAKE_PREFIX_PATH 0 ${PACKAGE_PREFIX_DIR}/h5pp)
-    endif()
-    list(INSERT CMAKE_PREFIX_PATH 0 ${PACKAGE_PREFIX_DIR})
-    list(APPEND CMAKE_PREFIX_PATH "${H5PP_SEARCH_PATHS}")
-    list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
-    list(REMOVE_DUPLICATES CMAKE_MODULE_PATH)
+
+# Search the same directories as during configure
+set(Eigen3_ROOT @PACKAGE_Eigen3_ROOT@)
+set(spdlog_ROOT @PACKAGE_spdlog_ROOT@)
+set(fmt_ROOT @PACKAGE_fmt_ROOT@)
+set(HDF5_ROOT @PACKAGE_HDF5_ROOT@)
+
+# Make sure we use h5pp find modules
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
+
+# Append search paths for find_package and find_library calls
+list(APPEND CMAKE_PREFIX_PATH ${PACKAGE_PREFIX_DIR})
+if(EXISTS ${PACKAGE_PREFIX_DIR}/h5pp)
+    list(INSERT CMAKE_PREFIX_PATH 0 ${PACKAGE_PREFIX_DIR}/h5pp)
+    list(INSERT h5pp_ROOT 0 ${PACKAGE_PREFIX_DIR}/h5pp)
 endif()
 
 

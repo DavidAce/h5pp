@@ -12,8 +12,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
     find_program (
             CONAN_COMMAND
             conan
-            HINTS ${CONAN_PREFIX} ${CONDA_PREFIX} $ENV{CONAN_PREFIX} $ENV{CONDA_PREFIX}
-            PATHS $ENV{HOME}/anaconda3 $ENV{HOME}/miniconda3 $ENV{HOME}/anaconda $ENV{HOME}/miniconda $ENV{HOME}/.conda
+            HINTS ${H5PP_CONAN_CANDIDATE_PATHS}
             PATH_SUFFIXES bin envs/dmrg/bin
     )
 
