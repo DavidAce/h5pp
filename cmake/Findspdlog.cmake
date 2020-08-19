@@ -69,8 +69,7 @@ endif()
 # First try finding a config somewhere in the system
 if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
     find_package(spdlog ${spdlog_FIND_VERSION}
-            HINTS ${spdlog_ROOT} ${CONAN_SPDLOG_ROOT} ${CMAKE_INSTALL_PREFIX}
-#            PATHS ${H5PP_CONDA_CANDIDATE_PATHS} // Do not search for conda libs here, do that with find_path later
+            HINTS  ${spdlog_ROOT} ${CONAN_SPDLOG_ROOT} ${H5PP_CONDA_CANDIDATE_PATHS} ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES include spdlog include/spdlog spdlog/include/spdlog
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -98,8 +97,7 @@ endif()
 if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h
-            HINTS ${spdlog_ROOT} ${CMAKE_INSTALL_PREFIX}
-            PATHS ${H5PP_CONDA_CANDIDATE_PATHS}
+            HINTS ${spdlog_ROOT} ${H5PP_CONDA_CANDIDATE_PATHS} ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES spdlog/include include spdlog include/spdlog spdlog/include/spdlog
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -148,8 +146,7 @@ if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
                     # Find external fmt configuration
                     include(CMakeFindDependencyMacro)
                     find_dependency(fmt
-                            HINTS ${fmt_ROOT} ${CMAKE_INSTALL_PREFIX}
-                            PATHS ${H5PP_CONDA_CANDIDATE_PATHS}
+                            HINTS ${fmt_ROOT} ${H5PP_CONDA_CANDIDATE_PATHS} ${CMAKE_INSTALL_PREFIX}
                             PATH_SUFFIXES fmt fmt/${CMAKE_INSTALL_LIBDIR} spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
                             ${NO_DEFAULT_PATH}
                             ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -168,8 +165,7 @@ if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
                                 )
                         find_path(FMT_INCLUDE_DIR
                                 fmt/fmt.h
-                                HINTS ${fmt_ROOT} ${FMT_INCLUDE_DIR} ${SPDLOG_INCLUDE_DIR} ${spdlog_ROOT}
-                                PATHS ${H5PP_CONDA_CANDIDATE_PATHS}
+                                HINTS ${fmt_ROOT} ${FMT_INCLUDE_DIR} ${H5PP_CONDA_CANDIDATE_PATHS} ${SPDLOG_INCLUDE_DIR} ${spdlog_ROOT}
                                 PATH_SUFFIXES fmt fmt/include include  spdlog include/spdlog include/fmt spdlog/include/spdlog
                                 ${NO_DEFAULT_PATH}
                                 ${NO_CMAKE_PACKAGE_REGISTRY}
