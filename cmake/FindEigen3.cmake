@@ -77,18 +77,10 @@ if(NOT Eigen3_FOUND)
     endif()
 
 
-    # With this particular order we can manually override where we should look for Eigen first
-    list(APPEND EIGEN3_DIRECTORY_HINTS
-            ${Eigen3_ROOT}
-            ${EIGEN3_INCLUDE_DIR}
-            ${CONAN_EIGEN3_ROOT}
-            $ENV{EBROOTEIGEN}
-            ${CMAKE_INSTALL_PREFIX}
-            )
-
     if(NOT EIGEN3_NO_CONFIG OR EIGEN3_CONFIG_ONLY)
         find_package(Eigen3 ${Eigen3_FIND_VERSION}
-                HINTS ${EIGEN3_DIRECTORY_HINTS}
+                HINTS ${Eigen3_ROOT} ${CONAN_EIGEN3_ROOT} ${CMAKE_INSTALL_PREFIX}
+                PATHS ${H5PP_CONDA_CANDIDATE_PATHS}
                 PATH_SUFFIXES share/eigen3/cmake include Eigen3 eigen3 include/Eigen3 include/eigen3 Eigen3/include/eigen3
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -114,8 +106,8 @@ if(NOT Eigen3_FOUND)
         # This way we can avoid supplying the original file and allow more flexibility for overriding
 
         find_path(EIGEN3_INCLUDE_DIR NAMES signature_of_eigen3_matrix_library
-                HINTS ${EIGEN3_DIRECTORY_HINTS}
-                PATHS ${KDE4_INCLUDE_DIR}
+                HINTS ${Eigen3_ROOT} ${CONAN_EIGEN3_ROOT} ${CMAKE_INSTALL_PREFIX}
+                PATHS ${H5PP_CONDA_CANDIDATE_PATHS} ${KDE4_INCLUDE_DIR}
                 PATH_SUFFIXES include/eigen3 Eigen3 eigen3 include/Eigen3 Eigen3/include/eigen3
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}

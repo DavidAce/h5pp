@@ -69,7 +69,7 @@ endif()
 # First try finding a config somewhere in the system
 if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
     find_package(spdlog ${spdlog_FIND_VERSION}
-            HINTS ${spdlog_ROOT} ${CMAKE_INSTALL_PREFIX}
+            HINTS ${spdlog_ROOT} ${CONAN_SPDLOG_ROOT} ${CMAKE_INSTALL_PREFIX}
             PATHS ${H5PP_CONDA_CANDIDATE_PATHS}
             PATH_SUFFIXES include spdlog include/spdlog spdlog/include/spdlog
             ${NO_DEFAULT_PATH}
