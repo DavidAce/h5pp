@@ -70,7 +70,7 @@ endif()
 if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
     find_package(spdlog ${spdlog_FIND_VERSION}
             HINTS ${spdlog_ROOT} ${CONAN_SPDLOG_ROOT} ${CMAKE_INSTALL_PREFIX}
-            PATHS ${H5PP_CONDA_CANDIDATE_PATHS}
+#            PATHS ${H5PP_CONDA_CANDIDATE_PATHS} // Do not search for conda libs here, do that with find_path later
             PATH_SUFFIXES include spdlog include/spdlog spdlog/include/spdlog
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
