@@ -77,25 +77,6 @@ jobs:
             - libspdlog-dev
 
 
-    - name: "xenial gcc-8 | shared | conda-forge | find-or-fetch"
-      os: linux
-      dist: xenial
-      compiler: gcc
-      env:
-        - CXX=g++-8 CC=gcc-8
-        - H5PP_DOWNLOAD_METHOD=find-or-fetch
-        - CMAKE_FLAGS="-DH5PP_DOWNLOAD_METHOD=find-or-fetch -DH5PP_PREFER_CONDA_LIBS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=ON"
-        - CMAKE_GEN="Unix Makefiles"
-        - CONDA_PACKAGES="hdf5 hdf5-static eigen spdlog"
-      addons:
-        apt:
-          update: true
-          sources:
-            - sourceline: "ppa:ubuntu-toolchain-r/test"
-          packages:
-            - gcc-8
-            - g++-8
-
     - name: "xenial clang | static | find-or-fetch"
       os: linux
       dist: xenial
