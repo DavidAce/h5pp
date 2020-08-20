@@ -3,6 +3,38 @@ cmake_minimum_required(VERSION 3.12)
 # Append search paths for find_package and find_library calls
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+
+# Paths to search for conda libraries
+# These paths should only be searched when H5PP_PREFER_CONDA_LIBS = ON
+if(H5PP_PREFER_CONDA_LIBS)
+    list(APPEND H5PP_CONDA_CANDIDATE_PATHS
+            ${CONDA_PREFIX}
+            $ENV{CONDA_PREFIX}
+            $ENV{HOME}/anaconda3
+            $ENV{HOME}/anaconda
+            $ENV{HOME}/miniconda3
+            $ENV{HOME}/miniconda
+            $ENV{HOME}/.conda
+            )
+    list(APPEND Eigen3_ROOT ${H5PP_CONDA_CANDIDATE_PATHS})
+    list(APPEND spdlog_ROOT ${H5PP_CONDA_CANDIDATE_PATHS})
+    list(APPEND fmt_ROOT ${H5PP_CONDA_CANDIDATE_PATHS})
+    list(APPEND HDF5_ROOT ${H5PP_CONDA_CANDIDATE_PATHS})
+endif()
+
+# Paths to search for conan installation.
+list(APPEND H5PP_CONAN_CANDIDATE_PATHS
+        ${CONAN_PREFIX}
+        $ENV{CONAN_PREFIX}
+        ${CONDA_PREFIX}
+        $ENV{CONDA_PREFIX}
+        $ENV{HOME}/anaconda3
+        $ENV{HOME}/anaconda
+        $ENV{HOME}/miniconda3
+        $ENV{HOME}/miniconda
+        $ENV{HOME}/.conda
+        )
+
 # Append candidate paths to <PackageName>_ROOT variables so that find_package(...) calls can search these paths
 # Note that user-specified paths are searched first.
 list(APPEND Eigen3_ROOT
@@ -36,33 +68,6 @@ list(APPEND HDF5_ROOT
         $ENV{HDF5_ROOT}
         ${CMAKE_INSTALL_PREFIX}/hdf5
         ${CMAKE_INSTALL_PREFIX}
-        )
-
-# Paths to search for conda libraries
-# These paths should only be searched when H5PP_PREFER_CONDA_LIBS = ON
-if(H5PP_PREFER_CONDA_LIBS)
-    list(APPEND H5PP_CONDA_CANDIDATE_PATHS
-            ${CONDA_PREFIX}
-            $ENV{CONDA_PREFIX}
-            $ENV{HOME}/anaconda3
-            $ENV{HOME}/anaconda
-            $ENV{HOME}/miniconda3
-            $ENV{HOME}/miniconda
-            $ENV{HOME}/.conda
-            )
-endif()
-
-# Paths to search for conan installation.
-list(APPEND H5PP_CONAN_CANDIDATE_PATHS
-        ${CONAN_PREFIX}
-        $ENV{CONAN_PREFIX}
-        ${CONDA_PREFIX}
-        $ENV{CONDA_PREFIX}
-        $ENV{HOME}/anaconda3
-        $ENV{HOME}/anaconda
-        $ENV{HOME}/miniconda3
-        $ENV{HOME}/miniconda
-        $ENV{HOME}/.conda
         )
 
 mark_as_advanced(Eigen3_ROOT)
