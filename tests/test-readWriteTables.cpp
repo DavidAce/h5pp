@@ -37,18 +37,18 @@ int main() {
 
     // Write table entries
     std::vector<Particle> particles(10);
-    file.appendTableEntries(particles, "somegroup/particleTable");
+    file.appendTableRecords(particles, "somegroup/particleTable");
 
     // Read single entry
     Particle particle_read;
-    file.readTableEntries(particle_read, "somegroup/particleTable");
+    file.readTableRecords(particle_read, "somegroup/particleTable");
 
     std::cout << "Single entry read \n"
               << " \t x: " << particle_read.x << " \t y: " << particle_read.y << " \t z: " << particle_read.z << " \t t: " << particle_read.t << " \t name: " << particle_read.name
               << " \t rho: " << particle_read.rho[0] << " " << particle_read.rho[1] << " " << particle_read.rho[2] << std::endl;
     // Read multiple entries into resizeable container
     std::vector<Particle> particles_read;
-    file.readTableEntries(particles_read, "somegroup/particleTable", 0, 5);
+    file.readTableRecords(particles_read, "somegroup/particleTable", 0, 5);
     std::cout << "Multiple entries read \n";
     for(auto &elem : particles_read) {
         std::cout << " \t x: " << elem.x << " \t y: " << elem.y << " \t z: " << elem.z << " \t t: " << elem.t << " \t name: " << elem.name << " \t rho: " << particle_read.rho[0] << " " << particle_read.rho[1] << " " << particle_read.rho[2]
@@ -62,7 +62,7 @@ int main() {
 
     if(not file2.linkExists("somegroup/particleTable"))
         file2.createTable(info.tableType.value(),"somegroup/particleTable", "particleTable");
-    file2.addTableEntriesFrom(file.openFileHandle(),"somegroup/particleTable", "somegroup/particleTable",h5pp::TableSelection::LAST);
+    file2.copyTableRecords(file.openFileHandle(), "somegroup/particleTable", "somegroup/particleTable", h5pp::TableSelection::LAST);
 
 
     // Try reading just a column in a table

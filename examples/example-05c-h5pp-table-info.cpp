@@ -55,7 +55,7 @@ int main() {
     std::vector<Stats> cityStats{Stats{"London", 9787426, 1737}, Stats{"Stockholm", 1605030, 382}, Stats{"Santiago", 5220161, 641}};
 
     // Write the table to file, which updates tableInfo
-    tableInfo = file.appendTableEntries(cityStats, "tables/cityStats");
+    tableInfo = file.appendTableRecords(cityStats, "tables/cityStats");
 
     // Compare the new output
     printf("%s", "Table info after appending records\n");

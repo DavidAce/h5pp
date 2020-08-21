@@ -30,15 +30,15 @@ int main() {
 
     // Write table entries
     std::vector<Particle> particles(10,{1,2,3,4});
-    file.appendTableEntries(particles, "somegroup/particleTable");
+    file.appendTableRecords(particles, "somegroup/particleTable");
 
     // Read single entry
 
     // NOTE
-    // The full signature of readTableEntries(...) is
-    // readTableEntries(std::string_view tablePath, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt)
+    // The full signature of readTableRecords(...) is
+    // readTableRecords(std::string_view tablePath, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt)
     //
-    // If none of startEntry or numEntries (arguments 3 and 4) are given to readTableEntries:
+    // If none of startEntry or numEntries (arguments 3 and 4) are given to readTableRecords:
     //          If container is resizeable: startEntry = 0, numEntries = totalRecords
     //          If container is not resizeable: startEntry = last entry, numEntries = 1.
     // If startEntry is given but numEntries is not:
@@ -49,13 +49,13 @@ int main() {
     // A "resizeable" container is one that has member ".resize(...)", e.g. std::vector
     // A non-resizeable container, does not have ".resize(...)", e.g. C-style arrays
 
-    auto particle_read = file.readTableEntries<Particle>("somegroup/particleTable");
+    auto particle_read = file.readTableRecords<Particle>("somegroup/particleTable");
     std::cout << "Single entry read \n";
     printf("x:%g y:%g z:%g t:%g\n",particle_read.x,particle_read.y,particle_read.z,particle_read.t);
 
 
     // Or read multiple entries into a resizeable container. Start from entry 0 and read 10 entries.
-    auto particles_read = file.readTableEntries<std::vector<Particle>>("somegroup/particleTable", 0, 10);
+    auto particles_read = file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", 0, 10);
     std::cout << "Multiple entries read \n";
     for(auto &p : particles_read) printf("x:%g y:%g z:%g t:%g\n",p.x,p.y,p.z,p.t);
 
