@@ -1886,6 +1886,7 @@ namespace h5pp::hdf5 {
                                  info.tablePath.value(),
                                  info.numRecords.value(),
                                  info.recordBytes.value());
+        info.assertWriteReady();
 
         // Make sure the given container and the registered table entry have the same size.
         // If there is a mismatch here it can cause horrible bugs/segfaults
