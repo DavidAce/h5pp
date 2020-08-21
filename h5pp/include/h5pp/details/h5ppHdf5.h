@@ -1927,7 +1927,85 @@ namespace h5pp::hdf5 {
         info.numRecords.value() += numNewRecords;
     }
 
-    inline void addTableEntriesFrom(const h5pp::TableInfo &srcInfo, h5pp::TableInfo &tgtInfo, hsize_t srcStartIdx, hsize_t tgtStartIdx, hsize_t numNewRecords) {
+    template<typename DataType>
+    inline void writeTableEntries(const DataType &data, TableInfo &info, hsize_t startIdx = 0) {
+        size_t numRecordsToWrite = h5pp::util::getSize(data);
+        h5pp::logger::log->debug("Writing {} records to table [{}] | start from {} | current num records {} | record size {} bytes",
+                                 numRecordsToWrite,
+                                 info.tablePath.value(),
+                                 startIdx,
+                                 info.numRecords.value(),
+                                 info.recordBytes.value());
+        info.assertWriteReady();
+
+        // Check that startIdx is smaller than the number of entries on file, otherwise append the data
+        if(startIdx >= info.numRecords.value()) return appendTableEntries(data,info);
+
+        // In the special case where we write more records than what's on file,
+        // we can delete those records that would have been overwritten
+        // and then simply append instead. This avoids having to split the container
+        // and writing some of it and then appending the rest of it.
+        if(startIdx + numRecordsToWrite > info.numRecords.value()){
+            hsize_t numRecordsToDelete = info.numRecords.value() - startIdx;
+            h5pp::logger::log->debug("Deleting {} records from table [{}] | start from {} | current num records {} | record size {} bytes",
+                                     numRecordsToDelete,
+                                     info.tablePath.value(),
+                                     startIdx,
+                                     info.numRecords.value(),
+                                     info.recordBytes.value());
+            H5TBdelete_record(info.getTableLocId(),util::safe_str(info.tablePath.value()).c_str(),startIdx,numRecordsToDelete);
+            info.numRecords = info.numRecords.value() - numRecordsToDelete;
+            return appendTableEntries(data,info);
+        }
+
+
+        // Make sure the given container and the registered table entry have the same size.
+        // If there is a mismatch here it can cause horrible bugs/segfaults
+        if constexpr(h5pp::type::sfinae::has_value_type_v<DataType>) {
+            if(sizeof(typename DataType::value_type) != info.recordBytes.value())
+                throw std::runtime_error(h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table entries on file are {} bytes each ",
+                                                      h5pp::type::sfinae::type_name<DataType>(),
+                                                      sizeof(typename DataType::value_type),
+                                                      info.recordBytes.value()));
+        } else if constexpr(h5pp::type::sfinae::has_data_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>) {
+            if(sizeof(&data.data()) != info.recordBytes.value())
+                throw std::runtime_error(h5pp::format("Size mismatch: Given container of type {} has elements of {} bytes, but the table entries on file are {} bytes each ",
+                                                      h5pp::type::sfinae::type_name<DataType>(),
+                                                      sizeof(&data.data()),
+                                                      info.recordBytes.value()));
+        } else {
+            if(sizeof(DataType) != info.recordBytes.value())
+                throw std::runtime_error(h5pp::format("Size mismatch: Given data type {} is of {} bytes, but the table entries on file are {} bytes each ",
+                                                      h5pp::type::sfinae::type_name<DataType>(),
+                                                      sizeof(DataType),
+                                                      info.recordBytes.value()));
+        }
+
+        // Get the memory address to the data buffer
+        const void *dataPtr = nullptr;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
+            dataPtr = data.data();
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
+            dataPtr = data;
+        else
+            dataPtr = &data;
+
+        H5TBwrite_records(info.getTableLocId(),
+                          util::safe_str(info.tablePath.value()).c_str(),
+                          startIdx,
+                          numRecordsToWrite,
+                          info.recordBytes.value(),
+                          info.fieldOffsets.value().data(),
+                          info.fieldSizes.value().data(),
+                          dataPtr);
+
+        info.numRecords.value() = std::max<size_t>(startIdx + numRecordsToWrite, info.numRecords.value());
+    }
+
+
+
+
+    inline void copyTableEntries(const h5pp::TableInfo &srcInfo, h5pp::TableInfo &tgtInfo, hsize_t srcStartIdx, hsize_t tgtStartIdx, hsize_t numNewRecords) {
         srcInfo.assertReadReady();
         tgtInfo.assertWriteReady();
         // Sanity checks for table types
