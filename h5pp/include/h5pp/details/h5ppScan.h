@@ -451,7 +451,7 @@ namespace h5pp::scan {
 
     template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
     inline TableInfo getTableInfo(const h5x &loc, std::string_view tableName, std::optional<bool> tableExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
-        h5pp::logger::log->debug("Scanning metadata of table [{}]", std::string(tableName));
+        h5pp::logger::log->debug("Scanning metadata of table [{}]", util::safe_str(tableName));
 
         TableInfo info;
         // Copy the name and group name
