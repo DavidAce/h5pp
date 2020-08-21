@@ -22,6 +22,10 @@ int main() {
                   "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     size_t     logLevel = 0;
+
+    h5pp::File file0;
+    std::cout << "file0: " << file0.getFilePath() << std::endl;
+
     h5pp::File fileA("output/copySwapA.h5", h5pp::FilePermission::REPLACE, logLevel);
     h5pp::File fileB("output/copySwapB.h5", h5pp::FilePermission::REPLACE, logLevel);
 
@@ -40,12 +44,6 @@ int main() {
     fileE.writeDataset("E", "groupE/E");
 
     fileD = fileB;
-
-    std::cout << "h5pp::File is move constructible : " << std::boolalpha <<  std::is_move_constructible_v<h5pp::File> << std::endl;
-    std::cout << "h5pp::File is move assignable    : " << std::boolalpha <<  std::is_move_assignable_v<h5pp::File> << std::endl;
-    std::cout << "h5pp::File is copy constructible : " << std::boolalpha <<  std::is_copy_constructible_v<h5pp::File> << std::endl;
-    std::cout << "h5pp::File is copy assignable    : " << std::boolalpha <<  std::is_copy_assignable_v<h5pp::File> << std::endl;
-
 
     return 0;
 }
