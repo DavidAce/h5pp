@@ -451,6 +451,8 @@ namespace h5pp::scan {
 
     template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
     inline TableInfo getTableInfo(const h5x &loc, std::string_view tableName, std::optional<bool> tableExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
+        h5pp::logger::log->debug("Scanning metadata of table [{}]", std::string(tableName));
+
         TableInfo info;
         // Copy the name and group name
         info.tablePath      = util::safe_str(tableName);
@@ -466,7 +468,7 @@ namespace h5pp::scan {
             if(type == H5I_type_t::H5I_GROUP or type == H5I_type_t::H5I_FILE)
                 info.tableObjLoc = loc;
             else
-                throw std::runtime_error("Given object type for location is not a group or a file");
+                throw std::runtime_error("Given location type is not a group or a file");
         }
 
         info.tableExists = h5pp::hdf5::checkIfLinkExists(loc, tableName, tableExists, plists.linkAccess);
