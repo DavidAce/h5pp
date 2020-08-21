@@ -665,11 +665,11 @@ namespace h5pp {
             return info;
         }
 
-        void addTableEntriesFrom(const h5pp::TableInfo &           srcInfo,
-                                 h5pp::TableInfo &                 tgtInfo,
-                                 TableSelection                    tableSelection,
-                                 const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
-                                 const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+        void copyTableEntries(const h5pp::TableInfo &           srcInfo,
+                              h5pp::TableInfo &                 tgtInfo,
+                              TableSelection                    tableSelection,
+                              const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                              const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             if(not srcInfo.tableExists) throw std::runtime_error("Source table info has not been initialized");
             if(not srcInfo.tableExists.value()) throw std::runtime_error("Source table does not exist");
@@ -690,16 +690,16 @@ namespace h5pp {
                     if(srcInfo.numRecords.value() > 0) srcStartEntry = srcInfo.numRecords.value() - 1;
                     break;
             }
-            h5pp::hdf5::addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
+            h5pp::hdf5::copyTableEntries(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
         }
 
-        TableInfo addTableEntriesFrom(const h5pp::TableInfo &           srcInfo,
-                                      std::string_view                  tgtTableName,
-                                      TableSelection                    tableSelection,
-                                      const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
-                                      const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+        TableInfo copyTableEntries(const h5pp::TableInfo &           srcInfo,
+                                   std::string_view                  tgtTableName,
+                                   TableSelection                    tableSelection,
+                                   const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                                   const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             auto tgtInfo = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
-            addTableEntriesFrom(srcInfo, tgtInfo, tableSelection, desiredChunkSize, desiredCompressionLevel);
+            copyTableEntries(srcInfo, tgtInfo, tableSelection, desiredChunkSize, desiredCompressionLevel);
             return tgtInfo;
         }
 
@@ -711,48 +711,48 @@ namespace h5pp {
                                       const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
                                       const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             auto srcInfo = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt, plists);
-            return addTableEntriesFrom(srcInfo, tgtTableName, tableSelection, desiredChunkSize, desiredCompressionLevel);
+            return copyTableEntries(srcInfo, tgtTableName, tableSelection, desiredChunkSize, desiredCompressionLevel);
         }
 
-        void addTableEntriesFrom(const h5pp::TableInfo &           srcInfo,
-                                 h5pp::TableInfo &                 tgtInfo,
-                                 hsize_t                           srcStartEntry,
-                                 hsize_t                           tgtStartEntry,
-                                 hsize_t                           numEntries,
-                                 const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
-                                 const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+        void copyTableEntries(const h5pp::TableInfo &           srcInfo,
+                              h5pp::TableInfo &                 tgtInfo,
+                              hsize_t                           srcStartEntry,
+                              hsize_t                           tgtStartEntry,
+                              hsize_t                           numEntries,
+                              const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                              const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             if(not srcInfo.tableExists) throw std::runtime_error("Source table info has not been initialized");
             if(not srcInfo.tableExists.value()) throw std::runtime_error("Source table does not exist");
             if(not tgtInfo.tableExists.value())
                 tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
-            h5pp::hdf5::addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
+            h5pp::hdf5::copyTableEntries(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries);
         }
 
         template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
-        TableInfo addTableEntriesFrom(const h5pp::TableInfo &           srcInfo,
-                                      std::string_view                  tgtTableName,
-                                      hsize_t                           srcStartEntry,
-                                      hsize_t                           tgtStartEntry,
-                                      hsize_t                           numEntries,
-                                      const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
-                                      const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+        TableInfo copyTableEntries(const h5pp::TableInfo &           srcInfo,
+                                   std::string_view                  tgtTableName,
+                                   hsize_t                           srcStartEntry,
+                                   hsize_t                           tgtStartEntry,
+                                   hsize_t                           numEntries,
+                                   const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                                   const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             auto tgtInfo = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
-            addTableEntriesFrom(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries, desiredChunkSize, desiredCompressionLevel);
+            copyTableEntries(srcInfo, tgtInfo, srcStartEntry, tgtStartEntry, numEntries, desiredChunkSize, desiredCompressionLevel);
             return tgtInfo;
         }
 
         template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
-        TableInfo addTableEntriesFrom(const h5x_src &                   srcLocation,
-                                      std::string_view                  srcTableName,
-                                      std::string_view                  tgtTableName,
-                                      hsize_t                           srcStartIdx,
-                                      hsize_t                           tgtStartIdx,
-                                      hsize_t                           numRecords,
-                                      const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
-                                      const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+        TableInfo copyTableEntries(const h5x_src &                   srcLocation,
+                                   std::string_view                  srcTableName,
+                                   std::string_view                  tgtTableName,
+                                   hsize_t                           srcStartIdx,
+                                   hsize_t                           tgtStartIdx,
+                                   hsize_t                           numRecords,
+                                   const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                                   const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             auto srcInfo = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt, plists);
-            return addTableEntriesFrom(srcInfo, tgtTableName, srcStartIdx, tgtStartIdx, numRecords, desiredChunkSize, desiredCompressionLevel);
+            return copyTableEntries(srcInfo, tgtTableName, srcStartIdx, tgtStartIdx, numRecords, desiredChunkSize, desiredCompressionLevel);
         }
 
         template<typename DataType>
