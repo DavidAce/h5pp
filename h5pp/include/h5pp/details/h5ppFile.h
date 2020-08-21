@@ -48,12 +48,10 @@ namespace h5pp {
             // The following function can modify the resulting filePath depending on permission.
             filePath = h5pp::hdf5::createFile(filePath, permission, plists);
             h5pp::type::compound::initTypes();
-            h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
             h5pp::logger::log->debug("Successfully initialized file [{}]", filePath.string());
         }
 
         public:
-
         // The following struct contains modifiable property lists.
         // This allows us to use h5pp with MPI, for instance.
         // Unmodified, these default to serial (non-MPI) use.
@@ -63,19 +61,7 @@ namespace h5pp {
         PropertyLists plists;
 
         /*! Default constructor */
-        File() { h5pp::logger::setLogger("h5pp", logLevel, logTimestamp); }
-
-        /*! Copy constructor */
-        File(const File &other) {
-            if(&other != this) {
-                logLevel     = other.logLevel;
-                logTimestamp = other.logTimestamp;
-                permission   = other.permission;
-                filePath     = other.filePath;
-                plists       = other.plists;
-                h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
-            }
-        }
+        File() = default;
 
         explicit File(const std::string &filePath_, h5pp::FilePermission permission_ = h5pp::FilePermission::RENAME, size_t logLevel_ = 2, bool logTimestamp_ = false)
             : filePath(filePath_), permission(permission_), logLevel(logLevel_), logTimestamp(logTimestamp_) {
@@ -88,30 +74,10 @@ namespace h5pp {
             init();
         }
 
-        /*! Destructor */
-        ~File() {
-            h5pp::logger::log->debug("Closing file [{}]", filePath.string());
-            H5garbage_collect();
-            H5Eprint(H5E_DEFAULT, stderr);
-        }
-
-        /*! Copy assignment */
-        File &operator=(const File &other) {
-            if(&other != this) {
-                logLevel     = other.logLevel;
-                logTimestamp = other.logTimestamp;
-                permission   = other.permission;
-                filePath     = other.filePath;
-                plists       = other.plists;
-                h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
-            }
-            return *this;
-        }
-
         /* Flush HDF5 file cache */
         void flush() {
-            h5pp::logger::log->trace("Flushing caches");
             H5Fflush(openFileHandle(), H5F_scope_t::H5F_SCOPE_GLOBAL);
+            h5pp::logger::log->trace("Flushing caches");
             H5garbage_collect();
             H5Eprint(H5E_DEFAULT, stderr);
         }
@@ -143,6 +109,7 @@ namespace h5pp {
          * Functions for file properties
          *
          */
+
         [[nodiscard]] h5pp::FilePermission getFilePermission() const { return permission; }
         [[nodiscard]] std::string          getFileName() const { return filePath.filename().string(); }
         [[nodiscard]] std::string          getFilePath() const { return filePath.string(); }
@@ -215,6 +182,7 @@ namespace h5pp {
          * Functions for logging
          *
          */
+
         [[nodiscard]] size_t getLogLevel() const { return logLevel; }
         void                 setLogLevel(size_t logLevelZeroToFive) {
             logLevel = logLevelZeroToFive;
@@ -459,17 +427,13 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        DsetInfo writeDataset_compressed(const DataType &   data,
-                                      std::string_view            dsetPath,
-                                      std::optional<unsigned int> compression   = 3) {
+        DsetInfo writeDataset_compressed(const DataType &data, std::string_view dsetPath, std::optional<unsigned int> compression = 3) {
             Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty, ´,
-            options.linkPath      = dsetPath;
-            options.h5Layout      = H5D_CHUNKED;
-            options.compression   = getCompressionLevel(compression);
+            options.linkPath    = dsetPath;
+            options.h5Layout    = H5D_CHUNKED;
+            options.compression = getCompressionLevel(compression);
             return writeDataset(data, options);
         }
-
-
 
         void writeSymbolicLink(std::string_view src_path, std::string_view tgt_path) {
             hid::h5f file = openFileHandle();
