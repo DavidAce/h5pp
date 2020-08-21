@@ -506,6 +506,8 @@ namespace h5pp {
         }
         void assertReadReady() const {
             std::string error_msg;
+            if(not numFields)           error_msg.append("\t numFields\n");
+            if(not numRecords)          error_msg.append("\t numRecords\n");
             if(not recordBytes)         error_msg.append("\t recordBytes\n");
             if(not fieldSizes)          error_msg.append("\t fieldSizes\n");
             if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
