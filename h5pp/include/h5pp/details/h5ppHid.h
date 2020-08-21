@@ -11,6 +11,7 @@ namespace h5pp::hid {
         hid_t val = 0;
 
         public:
+        virtual ~hid_base() = default;
         hid_base() = default;
         hid_base(std::initializer_list<int>) = delete;
         // Use enable_if to avoid implicit conversion from hid_h5x and still have a non-explicit hid_t constructor
@@ -135,7 +136,6 @@ namespace h5pp::hid {
         explicit             operator std::string() const { return tag() + ":" + std::to_string(val); }
         explicit             operator std::string_view() const { return tag() + ":" + std::string_view(val); }
         friend std::ostream &operator<<(std::ostream &os, const hid_h5x &t) { return os << t.tag() << ":" << t.val; }
-        virtual ~hid_base() = default;
     };
 
     // All our safe hid_t wrapper classes
