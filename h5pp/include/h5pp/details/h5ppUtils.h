@@ -458,50 +458,26 @@ namespace h5pp::util {
 
     template<typename DataType>
     inline void setStringSize(const DataType &data, hsize_t &size, size_t &bytes, std::vector<hsize_t> &dims) {
-        // The datatype may either be text or a container of text.
-        // Examples of pure text are std::string or char[]
-        // Example of a container of text is std::vector<std::string>
-        // When
-        //      1) it is pure text and dimensions are {}
-        //          * Space is H5S_SCALAR because dimensions are {}
-        //          * Rank is 0 because dimensions are {}
-        //          * Size is 1 because size = prod 1*dim(i) * dim(j)...
-        //          * We set size H5T_VARIABLE
-        //      2) it is pure text and dimensions were specified other than {}
-        //          * Space is H5S_SIMPLE
-        //          * Rank is 1 or more because dimensions were given as {i,j,k...}
-        //          * Size is n, because size = prod 1*dim(i) * dim(j)...
-        //          * Here n is number of chars to get from the string buffer
-        //          * We set the string size to n because each element is a char.
-        //          * We set the dimension to {1}
-        //      3) it is a container of text
-        //          * Space is H5S_SIMPLE
-        //          * The rank is 1 or more
-        //          * The space size is the number of strings in the container
-        //          * We set size H5T_VARIABLE
-        //          * The dimensions remain the size of the container
+        // Case 1: data is actual text, such as char* or std::string
+        // Case 1A: No dimensions were given, so the dataset is scalar (no extents)
+        // Case 1B: Dimensions were given. Force into scalar but only take as many bytes
+        //          as implied from given dimensions
+        // Case 2: data is a container of strings such as std::vector<std::string>
         if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
             if(dims.empty()) {
-                h5pp::logger::log->debug("Passed case 1");
+                // Case 1A
                 bytes = h5pp::util::getBytesTotal(data);
-                //                throw std::runtime_error("Testing case 1");
-                //                bytes = h5pp::util::
-                // Properties should already be correctly detected
-                // Case 1
-                //                retval = H5Tset_size(type, H5T_VARIABLE);
             } else {
-                // Case 2
+                // Case 1B
                 hsize_t desiredSize = h5pp::util::getSizeFromDimensions(dims);
-                //                retval              = H5Tset_size(type, desiredSize);
                 dims  = {};
                 size  = 1;
                 bytes = desiredSize * h5pp::util::getBytesPerElem<DataType>();
             }
         } else if(h5pp::type::sfinae::has_text_v<DataType>) {
-            h5pp::logger::log->debug("Passed case 3");
+            // Case 2
             bytes = h5pp::util::getBytesTotal(data);
-            // Case 3
-            //            retval = H5Tset_size(type, H5T_VARIABLE);
+
         }
     }
 
