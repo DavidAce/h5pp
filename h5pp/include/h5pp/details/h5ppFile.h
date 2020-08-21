@@ -772,8 +772,8 @@ namespace h5pp {
         template<typename DataType>
         void readTableEntries(DataType &data, std::string_view tableName, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt) const {
             auto info = h5pp::scan::getTableInfo(openFileHandle(), tableName, std::nullopt, plists);
-            if(info.tableExists and not info.tableExists.value() )
-                throw std::runtime_error(h5pp::format("Could not read entries from table [{}]: it does not exist", std::string(tableName)));
+            if(info.tableExists and not info.tableExists.value())
+                throw std::runtime_error(h5pp::format("Could not read entries from table [{}]: it does not exist", util::safe_str(tableName)));
             h5pp::hdf5::readTableEntries(data, info, startEntry, numEntries);
         }
 
