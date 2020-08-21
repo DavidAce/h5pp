@@ -1881,7 +1881,7 @@ namespace h5pp::hdf5 {
     template<typename DataType>
     inline void appendTableEntries(const DataType &data, TableInfo &info) {
         size_t numNewRecords = h5pp::util::getSize(data);
-        h5pp::logger::log->debug("Appending {} new records to table [{}] | table num records {} | record size {} bytes",
+        h5pp::logger::log->debug("Appending {} records to table [{}] | current num records {} | record size {} bytes",
                                  numNewRecords,
                                  info.tablePath.value(),
                                  info.numRecords.value(),
