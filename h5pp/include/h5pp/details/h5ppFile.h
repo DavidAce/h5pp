@@ -648,6 +648,15 @@ namespace h5pp {
         }
 
         template<typename DataType>
+        TableInfo writeTableEntries(const DataType &data, std::string_view tableName, hsize_t startIdx = 0) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            auto info = h5pp::scan::getTableInfo(openFileHandle(), tableName, std::nullopt, plists);
+            if(not info.tableExists.value()) throw std::runtime_error(h5pp::format("Cannot append to table [{}]: it does not exist", tableName));
+            h5pp::hdf5::writeTableEntries(data, info, startIdx);
+            return info;
+        }
+
+        template<typename DataType>
         TableInfo appendTableEntries(const DataType &data, std::string_view tableName) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             auto info = h5pp::scan::getTableInfo(openFileHandle(), tableName, std::nullopt, plists);
