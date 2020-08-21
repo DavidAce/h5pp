@@ -1909,24 +1909,21 @@ namespace h5pp::hdf5 {
                                                       sizeof(DataType),
                                                       info.recordBytes.value()));
         }
-
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>) {
-            H5TBappend_records(info.getTableLocId(),
-                               util::safe_str(info.tablePath.value()).c_str(),
-                               numNewRecords,
-                               info.recordBytes.value(),
-                               info.fieldOffsets.value().data(),
-                               info.fieldSizes.value().data(),
-                               data.data());
-        } else {
-            H5TBappend_records(info.getTableLocId(),
-                               util::safe_str(info.tablePath.value()).c_str(),
-                               numNewRecords,
-                               info.recordBytes.value(),
-                               info.fieldOffsets.value().data(),
-                               info.fieldSizes.value().data(),
-                               &data);
-        }
+        // Get the memory address to the data buffer
+        const void *dataPtr = nullptr;
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
+            dataPtr = data.data();
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
+            dataPtr = data;
+        else
+            dataPtr = &data;
+        H5TBappend_records(info.getTableLocId(),
+                           util::safe_str(info.tablePath.value()).c_str(),
+                           numNewRecords,
+                           info.recordBytes.value(),
+                           info.fieldOffsets.value().data(),
+                           info.fieldSizes.value().data(),
+                           dataPtr);
         info.numRecords.value() += numNewRecords;
     }
 
