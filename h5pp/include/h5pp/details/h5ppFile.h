@@ -755,6 +755,20 @@ namespace h5pp {
             return copyTableEntries(srcInfo, tgtTableName, srcStartIdx, tgtStartIdx, numRecords, desiredChunkSize, desiredCompressionLevel);
         }
 
+        TableInfo copyTableEntries(std::string_view                  srcTableName,
+                                   std::string_view                  tgtTableName,
+                                   hsize_t                           srcStartIdx,
+                                   hsize_t                           tgtStartIdx,
+                                   hsize_t                           numRecords,
+                                   const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                                   const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+            auto srcInfo = h5pp::scan::getTableInfo(openFileHandle(), srcTableName, std::nullopt, plists);
+            auto tgtInfo = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
+            copyTableEntries(srcInfo, tgtInfo, srcStartIdx, tgtStartIdx, numRecords, desiredChunkSize, desiredCompressionLevel);
+            return tgtInfo;
+        }
+
+
         template<typename DataType>
         void readTableEntries(DataType &data, std::string_view tableName, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt) const {
             auto info = h5pp::scan::getTableInfo(openFileHandle(), tableName, std::nullopt, plists);
