@@ -14,7 +14,33 @@ std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
     return out;
 }
 
-
+void assert_nullfree(const std::string &s) {
+    std::string s_esc;
+    bool found_null = false;
+    for(size_t i = 0; i < s.size(); i++) {
+        char ch = s[i];
+        switch(ch) {
+            case '\0': s_esc.append("\\0"); found_null = true; break;
+            case '\'': s_esc.append("\\'"); break;
+            case '\"': s_esc.append("\\\""); break;
+            case '\?': s_esc.append("\\?"); break;
+            case '\\': s_esc.append("\\\\"); break;
+            case '\a': s_esc.append("\\a"); break;
+            case '\b': s_esc.append("\\b"); break;
+            case '\f': s_esc.append("\\f"); break;
+            case '\n': s_esc.append("\\n"); break;
+            case '\r': s_esc.append("\\r"); break;
+            case '\t': s_esc.append("\\t"); break;
+            case '\v': s_esc.append("\\v"); break;
+            default: s_esc += ch;
+        }
+    }
+    if(found_null){
+        printf("printf before esc: %s | size %lu\n",s.c_str(), s.size());
+        printf("printf after  esc: %s | size %lu\n",s_esc.c_str(), s_esc.size());
+        throw std::runtime_error("Found null character");
+    }
+}
 
 // Store some dummy data to an hdf5 file
 TEST_CASE("Multiline string compared", "[text]") {
@@ -30,16 +56,42 @@ int main() {
     h5pp::File  file(outputFilename, H5F_ACC_TRUNC | H5F_ACC_RDWR, logLevel);
 
 
+    /* New test
+     * file.getAttributeNames was returning strings where the null terminator character was included
+     * in the size of the string. For instance the std::string "xDMRG/state_1" should have size 13
+     * because std::string::size does not include the hidden null terminator and rightly so.
+     * However getAttributeNames returns an std::vector with strings where the size is 1 larger,
+     * which causes the strings to include the null terminator on concatenations later.
+     *
+     * This test is designed to make sure that this problem is fixed.
+     */
+
+
+    file.writeDataset("nulltest","nullDset");
+    file.writeAttribute("this is a nulltest attribute", "nullAttr1", "nullDset");
+    file.writeAttribute("this is a nulltest attribute", "nullAttr2", "nullDset");
+
+    auto attrNames = file.getAttributeNames("nullDset");
+    for (const auto & str: attrNames) assert_nullfree(str);
+
+
+
+
     std::string stringDummy_fixedSize_t = "String with fixed size";
+
     file.writeDataset(stringDummy_fixedSize_t, "stringDummy_fixedSize",23);
     auto stringDummy_fixedSize_t_read = file.readDataset<std::string>("stringDummy_fixedSize");
+    assert_nullfree(stringDummy_fixedSize_t_read);
     if(stringDummy_fixedSize_t_read != stringDummy_fixedSize_t) throw std::runtime_error(h5pp::format("String with fixed size 23 failed: [{}] != [{}]",  stringDummy_fixedSize_t,stringDummy_fixedSize_t_read));
-//    exit(0);
 
     std::string stringAttribute_t = "This is a dummy string attribute";
     file.writeAttribute(stringAttribute_t, "stringAttribute_fixed", "stringDummy_fixedSize",stringAttribute_t.size()+1);
     auto stringAttributeRead_fixed_t = file.readAttribute<std::string>("stringAttribute_fixed", "stringDummy_fixedSize");
+    assert_nullfree(stringAttributeRead_fixed_t);
     stringAttributeRead_fixed_t = file.readAttribute<std::string>("stringAttribute_fixed", "stringDummy_fixedSize",33);
+    assert_nullfree(stringAttributeRead_fixed_t);
+
+
     std::cout << "stringAttributeRead_fixed_t: " << stringAttributeRead_fixed_t << std::endl;
     if(stringAttribute_t != stringAttributeRead_fixed_t) throw std::runtime_error(h5pp::format("stringAttributeRead_fixed failed: [{}] != [{}]", stringAttribute_t, stringAttributeRead_fixed_t));
 
@@ -47,12 +99,14 @@ int main() {
     file.writeAttribute(stringVectorAttribute_t, "stringVectorAttribute_t", "stringDummy_fixedSize");
 
     auto stringVectorAttributeRead_string = file.readAttribute<std::string>("stringVectorAttribute_t", "stringDummy_fixedSize");
+    assert_nullfree(stringVectorAttributeRead_string);
     std::cout << "stringVectorAttributeRead_string: \n" << stringVectorAttributeRead_string << std::endl;
 
     auto stringVectorAttributeRead_vector = file.readAttribute<std::vector<std::string>>("stringVectorAttribute_t", "stringDummy_fixedSize");
-    for (const auto & str:  stringVectorAttributeRead_vector)
+    for (const auto & str:  stringVectorAttributeRead_vector) {
+        assert_nullfree(str);
         std::cout << "str: " << str << std::endl;
-
+    }
 
     h5pp::hid::h5t custom_string = H5Tcopy(H5T_C_S1);
     H5Tset_size(custom_string,5);
@@ -62,6 +116,7 @@ int main() {
     file.writeDataset(vlenvec,"vecStringFixed",custom_string);
     auto vlenvecRead = file.readDataset<std::vector<std::string>>("vecStringFixed");
     if(vlenvecRead != vlenvec5) throw std::runtime_error(h5pp::format("vlenvec failed: {} != {}", vlenvec5, vlenvecRead));
+    for(const auto & str: vlenvecRead) assert_nullfree(str);
 
 
     char charDummyTemp[100] = "Dummy char array";
