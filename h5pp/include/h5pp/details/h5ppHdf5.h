@@ -31,13 +31,15 @@ namespace h5pp::hdf5 {
 
     template<typename h5x, typename = std::enable_if_t<std::is_base_of_v<hid::hid_base<h5x>, h5x>>>
     [[nodiscard]] std::string getName(const h5x &object) {
+        // Read about the buffer size inconsistency here
+        // http://hdf-forum.184993.n3.nabble.com/H5Iget-name-inconsistency-td193143.html
         std::string buf;
-        ssize_t     namesize = H5Iget_name(object, nullptr, 0);
-        if(namesize > 0) {
-            buf.resize(static_cast<size_t>(namesize) + 1);
-            H5Iget_name(object, buf.data(), namesize + 1);
+        ssize_t     bufSize = H5Iget_name(object, nullptr, 0); // Size in bytes of the object name (NOT including \0)
+        if(bufSize > 0) {
+            buf.resize(static_cast<size_t>(bufSize) + 1); // We allocate space for the null terminator
+            H5Iget_name(object, buf.data(), bufSize);
         }
-        return buf;
+        return buf.c_str(); // Use .c_str() to get a "standard" std::string, i.e. one where .size() does not include \0
     }
 
     [[nodiscard]] inline int getRank(const hid::h5s &space) { return H5Sget_simple_extent_ndims(space); }
@@ -573,23 +575,30 @@ namespace h5pp::hdf5 {
         }
     }
 
+
+
+    [[nodiscard]] inline std::string getAttributeName(const hid::h5a &attribute){
+        std::string buf;
+        ssize_t  bufSize = H5Aget_name(attribute, 0ul, nullptr); // Returns number of chars including \0
+        h5pp::logger::log->info("bufSize: {}", bufSize);
+        if(bufSize >= 0) {
+            buf.resize(bufSize);
+            H5Aget_name(attribute, bufSize, buf.data()); // buf is guaranteed to have \0 at the end
+        }else {
+            H5Eprint(H5E_DEFAULT, stderr);
+            h5pp::logger::log->debug("Failed to get attribute names");
+        }
+        return buf.c_str();
+    }
+
     template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_link<h5x>>
     [[nodiscard]] inline std::vector<std::string> getAttributeNames(const h5x &link) {
         auto                     numAttrs = H5Aget_num_attrs(link);
         std::vector<std::string> attrNames;
+        std::string buf;
         for(auto i = 0; i < numAttrs; i++) {
             hid::h5a attrId  = H5Aopen_idx(link, static_cast<unsigned int>(i));
-            ssize_t  bufSize = 0;
-            bufSize          = H5Aget_name(attrId, static_cast<size_t>(bufSize), nullptr);
-            if(bufSize >= 0) {
-                std::string buf;
-                buf.resize(static_cast<size_t>(bufSize) + 1);
-                H5Aget_name(attrId, static_cast<size_t>(bufSize) + 1, buf.data());
-                attrNames.emplace_back(buf);
-            } else {
-                H5Eprint(H5E_DEFAULT, stderr);
-                h5pp::logger::log->debug("Failed to get attribute names");
-            }
+            attrNames.emplace_back(getAttributeName(attrId));
         }
         return attrNames;
     }
@@ -655,15 +664,8 @@ namespace h5pp::hdf5 {
         if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_LDOUBLE)) return getCppType<h5pp::type::compound::H5T_SCALAR3<long double>>();
         if(H5Tequal_recurse(type, h5pp::type::compound::H5T_SCALAR3_FLOAT)) return getCppType<h5pp::type::compound::H5T_SCALAR3<float>>();
         if(H5Tcommitted(type) > 0) {
-            auto bufSize = H5Iget_name(type, nullptr, 0);
-            h5pp::logger::log->debug("buf_size {}", bufSize);
-            std::string name;
-            if(bufSize > 0) {
-                name.resize(static_cast<std::string::size_type>(bufSize) + 1);
-                H5Iget_name(type, name.data(), static_cast<size_t>(bufSize) + 1);
-                H5Eprint(H5E_DEFAULT, stderr);
-            }
-            h5pp::logger::log->debug("No C++ type match for HDF5 type [{}]", name);
+            H5Eprint(H5E_DEFAULT, stderr);
+            h5pp::logger::log->debug("No C++ type match for HDF5 type [{}]", getName(type));
         } else {
             h5pp::logger::log->debug("No C++ type match for non-committed HDF5 type");
         }
@@ -684,10 +686,7 @@ namespace h5pp::hdf5 {
     }
 
     inline TypeInfo getTypeInfo(const hid::h5d &dataset) {
-        auto        bufSize = H5Iget_name(dataset, nullptr, 0);
-        std::string dsetPath;
-        dsetPath.resize(static_cast<std::string::size_type>(bufSize) + 1);
-        H5Iget_name(dataset, dsetPath.data(), static_cast<size_t>(bufSize) + 1);
+        auto dsetPath = h5pp::hdf5::getName(dataset);
         h5pp::logger::log->trace("Collecting type info about dataset [{}]", dsetPath);
         return getTypeInfo(dsetPath, std::nullopt, H5Dget_space(dataset), H5Dget_type(dataset));
     }
@@ -699,15 +698,8 @@ namespace h5pp::hdf5 {
     }
 
     inline TypeInfo getTypeInfo(const hid::h5a &attribute) {
-        auto        bufSize = H5Aget_name(attribute, 0, nullptr);
-        std::string attrName;
-        attrName.resize(static_cast<std::string::size_type>(bufSize) + 1);
-        H5Aget_name(attribute, static_cast<size_t>(bufSize) + 1, attrName.data());
-        bufSize = H5Iget_name(attribute, nullptr, 0);
-        std::string linkPath;
-        linkPath.resize(static_cast<std::string::size_type>(bufSize) + 1);
-        H5Iget_name(attribute, linkPath.data(), static_cast<size_t>(bufSize) + 1);
-
+        auto attrName = getAttributeName(attribute);
+        auto linkPath = getName(attribute); //Returns the name of the link which has the attribute
         h5pp::logger::log->trace("Collecting type info about attribute [{}] in link [{}]", attrName, linkPath);
         return getTypeInfo(linkPath, attrName, H5Aget_space(attribute), H5Aget_type(attribute));
     }
