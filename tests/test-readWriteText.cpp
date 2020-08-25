@@ -72,7 +72,10 @@ int main() {
     file.writeAttribute("this is a nulltest attribute", "nullAttr2", "nullDset");
 
     auto attrNames = file.getAttributeNames("nullDset");
-    for (const auto & str: attrNames) assert_nullfree(str);
+    for (const auto & str: attrNames) {
+        assert_nullfree(str);
+        if(str.size() != 9) throw std::runtime_error("Attribute name has the wrong size");
+    }
 
 
 

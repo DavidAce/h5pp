@@ -579,10 +579,10 @@ namespace h5pp::hdf5 {
 
     [[nodiscard]] inline std::string getAttributeName(const hid::h5a &attribute){
         std::string buf;
-        ssize_t  bufSize = H5Aget_name(attribute, 0ul, nullptr); // Returns number of chars including \0
+        ssize_t  bufSize = H5Aget_name(attribute, 0ul, nullptr); // Returns number of chars excluding \0
         if(bufSize >= 0) {
             buf.resize(bufSize);
-            H5Aget_name(attribute, bufSize, buf.data()); // buf is guaranteed to have \0 at the end
+            H5Aget_name(attribute, static_cast<size_t>(bufSize)+1, buf.data()); // buf is guaranteed to have \0 at the end
         }else {
             H5Eprint(H5E_DEFAULT, stderr);
             h5pp::logger::log->debug("Failed to get attribute names");
