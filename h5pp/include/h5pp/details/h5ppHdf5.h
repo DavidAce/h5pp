@@ -580,7 +580,6 @@ namespace h5pp::hdf5 {
     [[nodiscard]] inline std::string getAttributeName(const hid::h5a &attribute){
         std::string buf;
         ssize_t  bufSize = H5Aget_name(attribute, 0ul, nullptr); // Returns number of chars including \0
-        h5pp::logger::log->info("bufSize: {}", bufSize);
         if(bufSize >= 0) {
             buf.resize(bufSize);
             H5Aget_name(attribute, bufSize, buf.data()); // buf is guaranteed to have \0 at the end
