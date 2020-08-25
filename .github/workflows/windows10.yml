@@ -69,7 +69,7 @@ jobs:
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                         \
           -DH5PP_ENABLE_EIGEN3:BOOL=ON                             \
           -DH5PP_ENABLE_SPDLOG:BOOL=ON                             \
-          -DH5PP_ENABLE_ASAN:BOOL=ON                               \
+          -DH5PP_ENABLE_ASAN:BOOL=OFF                              \
           -DH5PP_ENABLE_TESTS:BOOL=ON                              \
           -DH5PP_DOWNLOAD_METHOD:STRING=${{ matrix.source }}       \
           -DH5PP_PREFER_CONDA_LIBS:BOOL=${{ matrix.conda }}        \
