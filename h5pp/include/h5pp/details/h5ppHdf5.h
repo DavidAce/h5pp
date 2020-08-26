@@ -2188,7 +2188,7 @@ namespace h5pp::hdf5 {
         //          If data resizeable -> read from startIdx to the end
         //          If data not resizeable -> read a single record starting from startIdx
         // If numReadRecords given but startIdx is not -> read the last numReadRecords records
-
+        info.assertReadReady();
         hsize_t totalRecords = info.numRecords.value();
         if(not startIdx and not numReadRecords) {
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
