@@ -60,9 +60,9 @@ int main() {
     auto info = file.getTableInfo("somegroup/particleTable");
     h5pp::File file2("output/readWriteTablesCopy.h5", h5pp::FilePermission::REPLACE, 0);
 
-    if(not file2.linkExists("somegroup/particleTable"))
-        file2.createTable(info.tableType.value(),"somegroup/particleTable", "particleTable");
-    file2.copyTableRecords(file.openFileHandle(), "somegroup/particleTable", "somegroup/particleTable", h5pp::TableSelection::LAST);
+//    if(not file2.linkExists("somegroup/particleTable"))
+//        file2.createTable(info.tableType.value(),"somegroup/particleTable", "particleTable");
+    file2.appendTableRecords(file.openFileHandle(), "somegroup/particleTable",h5pp::TableSelection::LAST, "somegroup/particleTable");
 
 
     // Try reading just a column in a table

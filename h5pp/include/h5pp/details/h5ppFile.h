@@ -665,106 +665,131 @@ namespace h5pp {
             return info;
         }
 
-        void copyTableRecords(const h5pp::TableInfo &           srcInfo,
-                              h5pp::TableInfo &                 tgtInfo,
-                              TableSelection                    tableSelection,
-                              const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
-                              const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+        void appendTableRecords(const h5pp::TableInfo &srcInfo, hsize_t srcStartIdx, hsize_t numRecordsToAppend, h5pp::TableInfo &tgtInfo) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
-            if(not srcInfo.tableExists) throw std::runtime_error("Source table info has not been initialized");
-            if(not srcInfo.tableExists.value()) throw std::runtime_error("Source table does not exist");
+            if(not tgtInfo.numRecords) throw std::runtime_error(fmt::format("Cannot append records to table: Target TableInfo has undefined field [numRecords]"));
+            hsize_t tgtStartIdx = tgtInfo.numRecords.value();
+            numRecordsToAppend  = std::min(srcInfo.numRecords.value() - srcStartIdx, numRecordsToAppend);
+            h5pp::hdf5::copyTableRecords(srcInfo, srcStartIdx, numRecordsToAppend, tgtInfo, tgtStartIdx);
+        }
+
+        void appendTableRecords(const h5pp::TableInfo &srcInfo, TableSelection srcTableSelection, h5pp::TableInfo &tgtInfo) {
+            if(not tgtInfo.numRecords) throw std::runtime_error("Cannot append records to table: Target TableInfo has undefined field [numRecords]");
+            copyTableRecords(srcInfo, srcTableSelection, tgtInfo, tgtInfo.numRecords.value());
+        }
+
+        TableInfo appendTableRecords(const h5pp::TableInfo &           srcInfo,
+                                     TableSelection                    srcTableSelection,
+                                     std::string_view                  tgtTableName,
+                                     const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                                     const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+            auto tgtInfo = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
                 tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
-            hsize_t srcStartRecord = 0;
-            hsize_t tgtStartRecord = 0;
-            hsize_t numRecords    = 0;
-            switch(tableSelection) {
-                case h5pp::TableSelection::ALL: numRecords = srcInfo.numRecords.value(); break;
-                case h5pp::TableSelection::FIRST:
-                    numRecords = 1;
-                    if(tgtInfo.numRecords.value() > 0) tgtStartRecord = tgtInfo.numRecords.value() - 1;
-                    break;
+            appendTableRecords(srcInfo, srcTableSelection, tgtInfo);
+            return tgtInfo;
+        }
+
+        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
+        TableInfo appendTableRecords(const h5x_src &                   srcLocation,
+                                     std::string_view                  srcTableName,
+                                     TableSelection                    srcTableSelection,
+                                     std::string_view                  tgtTableName,
+                                     const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                                     const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+            auto srcInfo = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt, plists);
+            return appendTableRecords(srcInfo, srcTableSelection, tgtTableName, desiredChunkSize, desiredCompressionLevel);
+        }
+
+        void copyTableRecords(const h5pp::TableInfo &srcInfo, hsize_t srcStartIdx, hsize_t numRecordsToCopy, h5pp::TableInfo &tgtInfo, hsize_t tgtStartIdx) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            if(not srcInfo.numRecords) throw std::runtime_error("Source TableInfo has undefined field [numRecords]");
+            numRecordsToCopy = std::min(srcInfo.numRecords.value() - srcStartIdx, numRecordsToCopy);
+            h5pp::hdf5::copyTableRecords(srcInfo, srcStartIdx, numRecordsToCopy, tgtInfo, tgtStartIdx);
+        }
+
+        void copyTableRecords(const h5pp::TableInfo &srcInfo, TableSelection srcTableSelection, h5pp::TableInfo &tgtInfo, hsize_t tgtStartIdx) {
+            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            if(not srcInfo.numRecords) throw std::runtime_error("Cannot append records from table: Source TableInfo has undefined field [numRecords]");
+            if(not tgtInfo.numRecords) throw std::runtime_error("Cannot append records to table: Target TableInfo has undefined field [numRecords]");
+            if(srcInfo.numRecords.value() == 0) throw std::runtime_error("Cannot append records from table: Source table is empty");
+            hsize_t srcStartIdx        = 0;
+            hsize_t numRecordsToAppend = 0;
+            switch(srcTableSelection) {
+                case h5pp::TableSelection::ALL: numRecordsToAppend = srcInfo.numRecords.value(); break;
+                case h5pp::TableSelection::FIRST: numRecordsToAppend = 1; break;
                 case h5pp::TableSelection::LAST:
-                    numRecords = 1;
-                    if(tgtInfo.numRecords.value() > 0) tgtStartRecord = tgtInfo.numRecords.value() - 1;
-                    if(srcInfo.numRecords.value() > 0) srcStartRecord = srcInfo.numRecords.value() - 1;
+                    numRecordsToAppend = 1;
+                    srcStartIdx        = srcInfo.numRecords.value() - 1;
                     break;
             }
-            h5pp::hdf5::copyTableRecords(srcInfo, tgtInfo, srcStartRecord, tgtStartRecord, numRecords);
+            h5pp::hdf5::copyTableRecords(srcInfo, srcStartIdx, numRecordsToAppend, tgtInfo, tgtStartIdx);
         }
 
         TableInfo copyTableRecords(const h5pp::TableInfo &           srcInfo,
-                                   std::string_view                  tgtTableName,
                                    TableSelection                    tableSelection,
+                                   std::string_view                  tgtTableName,
+                                   hsize_t                           tgtStartIdx,
                                    const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
                                    const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             auto tgtInfo = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
-            copyTableRecords(srcInfo, tgtInfo, tableSelection, desiredChunkSize, desiredCompressionLevel);
-            return tgtInfo;
-        }
-
-        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
-        TableInfo copyTableRecords(const h5x_src &                   srcLocation,
-                                   std::string_view                  srcTableName,
-                                   std::string_view                  tgtTableName,
-                                   TableSelection                    tableSelection,
-                                   const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
-                                   const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
-            auto srcInfo = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt, plists);
-            return copyTableRecords(srcInfo, tgtTableName, tableSelection, desiredChunkSize, desiredCompressionLevel);
-        }
-
-        void copyTableRecords(const h5pp::TableInfo &           srcInfo,
-                              h5pp::TableInfo &                 tgtInfo,
-                              hsize_t                           srcStartRecord,
-                              hsize_t                           tgtStartRecord,
-                              hsize_t                           numRecords,
-                              const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
-                              const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
-            if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
-            if(not srcInfo.tableExists) throw std::runtime_error("Source table info has not been initialized");
-            if(not srcInfo.tableExists.value()) throw std::runtime_error("Source table does not exist");
-            if(not tgtInfo.tableExists.value())
+            if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
                 tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
-            h5pp::hdf5::copyTableRecords(srcInfo, tgtInfo, srcStartRecord, tgtStartRecord, numRecords);
+            copyTableRecords(srcInfo, tableSelection, tgtInfo, tgtStartIdx);
+            return tgtInfo;
         }
 
-        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
         TableInfo copyTableRecords(const h5pp::TableInfo &           srcInfo,
-                                   std::string_view                  tgtTableName,
                                    hsize_t                           srcStartIdx,
+                                   hsize_t                           numRecordsToCopy,
+                                   std::string_view                  tgtTableName,
                                    hsize_t                           tgtStartIdx,
-                                   hsize_t                           numRecords,
                                    const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
                                    const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             auto tgtInfo = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
-            copyTableRecords(srcInfo, tgtInfo, srcStartIdx, tgtStartIdx, numRecords, desiredChunkSize, desiredCompressionLevel);
+            if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
+                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
+            copyTableRecords(srcInfo, srcStartIdx, numRecordsToCopy, tgtInfo, tgtStartIdx);
             return tgtInfo;
         }
 
         template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
         TableInfo copyTableRecords(const h5x_src &                   srcLocation,
                                    std::string_view                  srcTableName,
+                                   TableSelection                    srcTableSelection,
                                    std::string_view                  tgtTableName,
-                                   hsize_t                           srcStartIdx,
                                    hsize_t                           tgtStartIdx,
-                                   hsize_t                           numRecords,
                                    const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
                                    const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             auto srcInfo = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt, plists);
-            return copyTableRecords(srcInfo, tgtTableName, srcStartIdx, tgtStartIdx, numRecords, desiredChunkSize, desiredCompressionLevel);
+            return copyTableRecords(srcInfo, srcTableSelection, tgtTableName,tgtStartIdx, desiredChunkSize, desiredCompressionLevel);
+        }
+
+        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
+        TableInfo copyTableRecords(const h5x_src &                   srcLocation,
+                                   std::string_view                  srcTableName,
+                                   hsize_t                           srcStartIdx,
+                                   hsize_t                           numRecordsToCopy,
+                                   std::string_view                  tgtTableName,
+                                   hsize_t                           tgtStartIdx,
+                                   const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                                   const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+            auto srcInfo = h5pp::scan::getTableInfo(srcLocation, srcTableName, std::nullopt, plists);
+            return copyTableRecords(srcInfo, srcStartIdx, numRecordsToCopy, tgtTableName, tgtStartIdx, desiredChunkSize, desiredCompressionLevel);
         }
 
         TableInfo copyTableRecords(std::string_view                  srcTableName,
-                                   std::string_view                  tgtTableName,
                                    hsize_t                           srcStartIdx,
-                                   hsize_t                           tgtStartIdx,
                                    hsize_t                           numRecords,
+                                   std::string_view                  tgtTableName,
+                                   hsize_t                           tgtStartIdx,
                                    const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
                                    const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
             auto srcInfo = h5pp::scan::getTableInfo(openFileHandle(), srcTableName, std::nullopt, plists);
             auto tgtInfo = h5pp::scan::getTableInfo(openFileHandle(), tgtTableName, std::nullopt, plists);
-            copyTableRecords(srcInfo, tgtInfo, srcStartIdx, tgtStartIdx, numRecords, desiredChunkSize, desiredCompressionLevel);
+            if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
+                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
+            copyTableRecords(srcInfo, srcStartIdx, numRecords, tgtInfo, tgtStartIdx);
             return tgtInfo;
         }
 
@@ -806,20 +831,20 @@ namespace h5pp {
         template<typename DataType>
         void readTableField(DataType &data, std::string_view tablePath, std::string_view fieldNames, TableSelection tableSelection) const {
             auto    info       = h5pp::scan::getTableInfo(openFileHandle(), tablePath, std::nullopt, plists);
-            hsize_t startIdx     = 0;
-            hsize_t numRecords   = 0;
+            hsize_t startIdx   = 0;
+            hsize_t numRecords = 0;
             switch(tableSelection) {
                 case h5pp::TableSelection::ALL:
-                    startIdx     = 0;
-                    numRecords   = info.numRecords.value();
+                    startIdx   = 0;
+                    numRecords = info.numRecords.value();
                     break;
                 case h5pp::TableSelection::FIRST:
-                    startIdx     = 0;
-                    numRecords   = 1;
+                    startIdx   = 0;
+                    numRecords = 1;
                     break;
                 case h5pp::TableSelection::LAST:
-                    startIdx     = info.numRecords.value() - 1;
-                    numRecords   = 1;
+                    startIdx   = info.numRecords.value() - 1;
+                    numRecords = 1;
                     break;
             }
             h5pp::hdf5::readTableField(data, info, fieldNames, startIdx, numRecords);
