@@ -667,7 +667,7 @@ namespace h5pp {
 
         void appendTableRecords(const h5pp::TableInfo &srcInfo, hsize_t srcStartIdx, hsize_t numRecordsToAppend, h5pp::TableInfo &tgtInfo) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
-            if(not tgtInfo.numRecords) throw std::runtime_error(fmt::format("Cannot append records to table: Target TableInfo has undefined field [numRecords]"));
+            if(not tgtInfo.numRecords) throw std::runtime_error(h5pp::format("Cannot append records to table: Target TableInfo has undefined field [numRecords]"));
             hsize_t tgtStartIdx = tgtInfo.numRecords.value();
             numRecordsToAppend  = std::min(srcInfo.numRecords.value() - srcStartIdx, numRecordsToAppend);
             h5pp::hdf5::copyTableRecords(srcInfo, srcStartIdx, numRecordsToAppend, tgtInfo, tgtStartIdx);
