@@ -575,15 +575,13 @@ namespace h5pp::hdf5 {
         }
     }
 
-
-
-    [[nodiscard]] inline std::string getAttributeName(const hid::h5a &attribute){
+    [[nodiscard]] inline std::string getAttributeName(const hid::h5a &attribute) {
         std::string buf;
-        ssize_t  bufSize = H5Aget_name(attribute, 0ul, nullptr); // Returns number of chars excluding \0
+        ssize_t     bufSize = H5Aget_name(attribute, 0ul, nullptr); // Returns number of chars excluding \0
         if(bufSize >= 0) {
             buf.resize(bufSize);
-            H5Aget_name(attribute, static_cast<size_t>(bufSize)+1, buf.data()); // buf is guaranteed to have \0 at the end
-        }else {
+            H5Aget_name(attribute, static_cast<size_t>(bufSize) + 1, buf.data()); // buf is guaranteed to have \0 at the end
+        } else {
             H5Eprint(H5E_DEFAULT, stderr);
             h5pp::logger::log->debug("Failed to get attribute names");
         }
@@ -594,9 +592,9 @@ namespace h5pp::hdf5 {
     [[nodiscard]] inline std::vector<std::string> getAttributeNames(const h5x &link) {
         auto                     numAttrs = H5Aget_num_attrs(link);
         std::vector<std::string> attrNames;
-        std::string buf;
+        std::string              buf;
         for(auto i = 0; i < numAttrs; i++) {
-            hid::h5a attrId  = H5Aopen_idx(link, static_cast<unsigned int>(i));
+            hid::h5a attrId = H5Aopen_idx(link, static_cast<unsigned int>(i));
             attrNames.emplace_back(getAttributeName(attrId));
         }
         return attrNames;
@@ -698,7 +696,7 @@ namespace h5pp::hdf5 {
 
     inline TypeInfo getTypeInfo(const hid::h5a &attribute) {
         auto attrName = getAttributeName(attribute);
-        auto linkPath = getName(attribute); //Returns the name of the link which has the attribute
+        auto linkPath = getName(attribute); // Returns the name of the link which has the attribute
         h5pp::logger::log->trace("Collecting type info about attribute [{}] in link [{}]", attrName, linkPath);
         return getTypeInfo(linkPath, attrName, H5Aget_space(attribute), H5Aget_type(attribute));
     }
@@ -1286,7 +1284,7 @@ namespace h5pp::hdf5 {
                 else if constexpr(std::is_same_v<InfoType, H5L_info_t>) {
                     H5O_info_t oInfo;
                     hid::h5o   obj_id = H5Oopen(id, name, H5P_DEFAULT);
-/* clang-format off */
+                    /* clang-format off */
                     #if defined(H5Ovisit_vers)
                         #if H5Ovisit_vers == 1
                             H5Oget_info(obj_id, &oInfo);
@@ -1992,7 +1990,7 @@ namespace h5pp::hdf5 {
         info.numRecords.value() = std::max<size_t>(startIdx + numRecordsToWrite, info.numRecords.value());
     }
 
-    inline void copyTableRecords(const h5pp::TableInfo &srcInfo, h5pp::TableInfo &tgtInfo, hsize_t srcStartIdx, hsize_t tgtStartIdx, hsize_t numRecordsToCopy) {
+    inline void copyTableRecords(const h5pp::TableInfo &srcInfo, hsize_t srcStartIdx,  hsize_t numRecordsToCopy, h5pp::TableInfo &tgtInfo, hsize_t tgtStartIdx) {
         srcInfo.assertReadReady();
         tgtInfo.assertWriteReady();
         // Sanity checks for table types
@@ -2016,30 +2014,33 @@ namespace h5pp::hdf5 {
                              numRecordsToCopy));
 
         if(srcInfo.tableFile.value() == tgtInfo.tableFile.value()) {
-            h5pp::logger::log->debug("Copying records to table [{}] from table [{}] | src start index {} | tgt start index {} | copied records {} | record size {} bytes",
-                                     srcInfo.tablePath.value(),
-                                     tgtInfo.tablePath.value(),
-                                     srcStartIdx,
-                                     tgtStartIdx,
-                                     numRecordsToCopy,
-                                     tgtInfo.recordBytes.value());
-            H5TBadd_records_from(srcInfo.getTableLocId(),
-                                 util::safe_str(srcInfo.tablePath.value()).c_str(),
-                                 srcStartIdx,
-                                 numRecordsToCopy,
-                                 util::safe_str(tgtInfo.tablePath.value()).c_str(),
-                                 tgtStartIdx);
-
-        } else {
-            // If the locations are on different files we need to make a temporary
             h5pp::logger::log->debug(
-                "Copying records to table [{}] from table [{}] on different file | src start index {} | tgt start index {} | copied records {} | record size {} bytes",
+                "Copying records to table [{}] from table [{}] on the same file | src start index {} | tgt start index {} | copied records {} | record size {} bytes",
                 srcInfo.tablePath.value(),
                 tgtInfo.tablePath.value(),
                 srcStartIdx,
                 tgtStartIdx,
                 numRecordsToCopy,
                 tgtInfo.recordBytes.value());
+                H5TBadd_records_from(srcInfo.getTableLocId(),
+                                     util::safe_str(srcInfo.tablePath.value()).c_str(),
+                                     srcStartIdx,
+                                     numRecordsToCopy,
+                                     util::safe_str(tgtInfo.tablePath.value()).c_str(),
+                                     tgtStartIdx);
+
+        } else {
+            // If the locations are on different files we need to make a temporary
+            h5pp::logger::log->info("Copying records to table [{}] from table [{}] on different file | src records {} | src start {} | tgt records {} | tgt start {} | copy "
+                                    "records {} | record size {} bytes",
+                                    srcInfo.tablePath.value(),
+                                    tgtInfo.tablePath.value(),
+                                    srcInfo.numRecords.value(),
+                                    srcStartIdx,
+                                    tgtInfo.numRecords.value(),
+                                    tgtStartIdx,
+                                    numRecordsToCopy,
+                                    tgtInfo.recordBytes.value());
             std::vector<std::byte> data(numRecordsToCopy * tgtInfo.recordBytes.value());
             H5TBread_records(srcInfo.getTableLocId(),
                              util::safe_str(srcInfo.tablePath.value()).c_str(),
@@ -2057,15 +2058,10 @@ namespace h5pp::hdf5 {
                                    tgtInfo.fieldOffsets.value().data(),
                                    tgtInfo.fieldSizes.value().data(),
                                    data.data());
+                tgtInfo.numRecords.value() += numRecordsToCopy;
             } else if(tgtStartIdx + numRecordsToCopy > tgtInfo.numRecords.value()) {
                 // Delete from tgtStartIdx until the end and then append
                 hsize_t numRecordsToDelete = tgtInfo.numRecords.value() - tgtStartIdx;
-                h5pp::logger::log->debug("Deleting {} records from table [{}] | start from {} | current num records {} | record size {} bytes",
-                                         numRecordsToDelete,
-                                         tgtInfo.tablePath.value(),
-                                         tgtStartIdx,
-                                         tgtInfo.numRecords.value(),
-                                         tgtInfo.recordBytes.value());
                 H5TBdelete_record(tgtInfo.getTableLocId(), util::safe_str(tgtInfo.tablePath.value()).c_str(), tgtStartIdx, numRecordsToDelete);
                 tgtInfo.numRecords = tgtInfo.numRecords.value() - numRecordsToDelete;
                 H5TBappend_records(tgtInfo.getTableLocId(),
@@ -2075,6 +2071,7 @@ namespace h5pp::hdf5 {
                                    tgtInfo.fieldOffsets.value().data(),
                                    tgtInfo.fieldSizes.value().data(),
                                    data.data());
+                tgtInfo.numRecords.value() += numRecordsToCopy;
             } else {
                 H5TBwrite_records(tgtInfo.getTableLocId(),
                                   util::safe_str(tgtInfo.tablePath.value()).c_str(),
@@ -2086,7 +2083,6 @@ namespace h5pp::hdf5 {
                                   data.data());
             }
         }
-        tgtInfo.numRecords.value() += numRecordsToCopy;
     }
 
     template<typename DataType>
@@ -2120,7 +2116,8 @@ namespace h5pp::hdf5 {
 
         } else if(numReadRecords and not startIdx) {
             if(numReadRecords.value() > totalRecords)
-                throw std::logic_error(h5pp::format("Cannot read {} records from table [{}] which only has {} records", numReadRecords.value(), info.tablePath.value(), totalRecords));
+                throw std::logic_error(
+                    h5pp::format("Cannot read {} records from table [{}] which only has {} records", numReadRecords.value(), info.tablePath.value(), totalRecords));
             startIdx = totalRecords - numReadRecords.value();
         }
 
@@ -2128,8 +2125,11 @@ namespace h5pp::hdf5 {
         if(numReadRecords.value() > totalRecords)
             throw std::logic_error(h5pp::format("Cannot read {} records from table [{}] which only has {} records", numReadRecords.value(), info.tablePath.value(), totalRecords));
         if(startIdx.value() + numReadRecords.value() > totalRecords)
-            throw std::logic_error(h5pp::format(
-                "Cannot read {} records starting from index {} from table [{}] which only has {} records", numReadRecords.value(), startIdx.value(), info.tablePath.value(), totalRecords));
+            throw std::logic_error(h5pp::format("Cannot read {} records starting from index {} from table [{}] which only has {} records",
+                                                numReadRecords.value(),
+                                                startIdx.value(),
+                                                info.tablePath.value(),
+                                                totalRecords));
 
         h5pp::logger::log->debug("Reading table [{}] | read from record {} | records to read {} | total records {} | record size {} bytes",
                                  info.tablePath.value(),
@@ -2210,7 +2210,8 @@ namespace h5pp::hdf5 {
 
         } else if(numReadRecords and not startIdx) {
             if(numReadRecords and numReadRecords.value() > totalRecords)
-                throw std::logic_error(h5pp::format("Cannot read {} records from table [{}] which only has {} records", numReadRecords.value(), info.tablePath.value(), totalRecords));
+                throw std::logic_error(
+                    h5pp::format("Cannot read {} records from table [{}] which only has {} records", numReadRecords.value(), info.tablePath.value(), totalRecords));
             startIdx = totalRecords - numReadRecords.value();
         }
 
@@ -2218,8 +2219,11 @@ namespace h5pp::hdf5 {
         if(numReadRecords.value() > totalRecords)
             throw std::logic_error(h5pp::format("Cannot read {} records from table [{}] which only has {} records", numReadRecords.value(), info.tablePath.value(), totalRecords));
         if(startIdx.value() + numReadRecords.value() > totalRecords)
-            throw std::logic_error(h5pp::format(
-                "Cannot read {} records starting from index {} from table [{}] which only has {} records", numReadRecords.value(), startIdx.value(), info.tablePath.value(), totalRecords));
+            throw std::logic_error(h5pp::format("Cannot read {} records starting from index {} from table [{}] which only has {} records",
+                                                numReadRecords.value(),
+                                                startIdx.value(),
+                                                info.tablePath.value(),
+                                                totalRecords));
 
         // Compute the field index
         std::optional<size_t> optFieldIdx;
