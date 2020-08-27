@@ -1936,12 +1936,6 @@ namespace h5pp::hdf5 {
         // and writing some of it and then appending the rest of it.
         if(startIdx + numRecordsToWrite > info.numRecords.value()) {
             hsize_t numRecordsToDelete = info.numRecords.value() - startIdx;
-            h5pp::logger::log->debug("Deleting {} records from table [{}] | start from {} | current num records {} | record size {} bytes",
-                                     numRecordsToDelete,
-                                     info.tablePath.value(),
-                                     startIdx,
-                                     info.numRecords.value(),
-                                     info.recordBytes.value());
             H5TBdelete_record(info.getTableLocId(), util::safe_str(info.tablePath.value()).c_str(), startIdx, numRecordsToDelete);
             info.numRecords = info.numRecords.value() - numRecordsToDelete;
             return appendTableRecords(data, info);
@@ -2031,7 +2025,7 @@ namespace h5pp::hdf5 {
 
         } else {
             // If the locations are on different files we need to make a temporary
-            h5pp::logger::log->info("Copying records to table [{}] from table [{}] on different file | src records {} | src start {} | tgt records {} | tgt start {} | copy "
+            h5pp::logger::log->debug("Copying records to table [{}] from table [{}] on different file | src records {} | src start {} | tgt records {} | tgt start {} | copy "
                                     "records {} | record size {} bytes",
                                     srcInfo.tablePath.value(),
                                     tgtInfo.tablePath.value(),
