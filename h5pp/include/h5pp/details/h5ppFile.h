@@ -266,7 +266,7 @@ namespace h5pp {
             return dsetInfo;
         }
 
-        template<typename DataType>
+        template<typename DataType, typename = h5pp::type::sfinae::enable_if_not_h5_type<DataType>>
         DsetInfo createDataset(const DataType &            data,
                                std::string_view            dsetPath,
                                const OptDimsType &         dataDims      = std::nullopt,

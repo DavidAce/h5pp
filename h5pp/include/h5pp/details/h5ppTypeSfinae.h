@@ -233,6 +233,10 @@ namespace h5pp::type::sfinae {
     using enable_if_is_h5_link = std::enable_if_t< std::is_same_v<T,hid::h5f> or std::is_same_v<T, hid::h5d> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o> or std::is_same_v<T, hid_t>>;
     template<typename T>
     using enable_if_is_h5_link_or_hid_t = std::enable_if_t< std::is_same_v<T,hid::h5f> or std::is_same_v<T, hid::h5d> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o> or std::is_same_v<T, hid_t> or std::is_same_v<T,hid_t>>;
+    template<typename T>
+    using enable_if_is_h5_type = std::enable_if_t<std::is_same_v<T,hid::h5t> or std::is_same_v<T, hid_t>>;
+    template<typename T>
+    using enable_if_not_h5_type = std::enable_if_t<not std::is_same_v<T,hid::h5t> and not std::is_same_v<T, hid_t>>;
 
 
 
