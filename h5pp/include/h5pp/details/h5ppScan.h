@@ -61,7 +61,8 @@ namespace h5pp::scan {
         }
 
         // Get c++ properties
-        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+        if (not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Scanned metadata {}", info.string());
         auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
