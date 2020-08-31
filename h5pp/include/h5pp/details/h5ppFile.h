@@ -460,14 +460,14 @@ namespace h5pp {
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(DsetInfo &dsetInfo, const Options &options = Options()) const {
+        DataType readDataset(const DsetInfo &dsetInfo, const Options &options = Options()) const {
             DataType data;
             readDataset(data, dsetInfo, options);
             return data;
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(DsetInfo &dsetInfo, const DimsType &dataDims) const {
+        DataType readDataset(const DsetInfo &dsetInfo, const DimsType &dataDims) const {
             DataType data;
             Options  options;
             options.dataDims = dataDims;
