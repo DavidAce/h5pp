@@ -1197,10 +1197,16 @@ namespace h5pp::hdf5 {
 
     template<typename DataType>
     inline void resizeData(DataType &data, const DsetInfo &info) {
+        if(not info.h5Space) throw std::runtime_error(h5pp::format("Could not resize given data container: DsetInfo field [h5Space] is not defined"));
+        if(not info.h5Type) throw std::runtime_error(h5pp::format("Could not resize given data container: DsetInfo field [h5Type] is not defined"));
+        if(not info.dsetByte) throw std::runtime_error(h5pp::format("Could not resize given data container: DsetInfo field [dsetByte] is not defined"));
         resizeData(data, info.h5Space.value(), info.h5Type.value(), info.dsetByte.value());
     }
     template<typename DataType>
     inline void resizeData(DataType &data, const AttrInfo &info) {
+        if(not info.h5Space) throw std::runtime_error(h5pp::format("Could not resize given data container: AttrInfo field [h5Space] is not defined"));
+        if(not info.h5Type) throw std::runtime_error(h5pp::format("Could not resize given data container: AttrInfo field [h5Type] is not defined"));
+        if(not info.attrByte) throw std::runtime_error(h5pp::format("Could not resize given data container: AttrInfo field [attrByte] is not defined"));
         resizeData(data, info.h5Space.value(), info.h5Type.value(), info.attrByte.value());
     }
 
