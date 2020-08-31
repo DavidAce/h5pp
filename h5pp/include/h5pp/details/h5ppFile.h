@@ -586,9 +586,7 @@ namespace h5pp {
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        void readAttribute(DataType &data, const Options &options) const {
-            options.assertWellDefined();
-            auto attrInfo = h5pp::scan::readAttrInfo(openFileHandle(), options, plists);
+        void readAttribute(DataType &data, const h5pp::AttrInfo &attrInfo,const Options &options = Options()) const {
             if(attrInfo.linkExists and not attrInfo.linkExists.value())
                 throw std::runtime_error(h5pp::format("Could not read attribute [{}] in link [{}]: "
                                                       "Link does not exist",
@@ -604,6 +602,14 @@ namespace h5pp {
             h5pp::hdf5::resizeData(data, attrInfo);
             auto dataInfo = h5pp::scan::getDataInfo(data, options);
             h5pp::hdf5::readAttribute(data, dataInfo, attrInfo);
+        }
+
+
+        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        void readAttribute(DataType &data, const Options &options) const {
+            options.assertWellDefined();
+            auto attrInfo = h5pp::scan::readAttrInfo(openFileHandle(), options, plists);
+            readAttribute(data,attrInfo,options);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
