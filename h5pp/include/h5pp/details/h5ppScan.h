@@ -166,7 +166,8 @@ namespace h5pp::scan {
         h5pp::hdf5::setSpaceExtent(info);
 
         // Get c++ properties
-        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+        if (not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Created metadata {}", info.string());
         auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
@@ -264,7 +265,8 @@ namespace h5pp::scan {
         h5pp::hdf5::setSpaceExtent(info);
 
         // Get c++ properties
-        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+        if (not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Created metadata {}", info.string());
         auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
@@ -302,7 +304,8 @@ namespace h5pp::scan {
         if(not info.dataSize) info.dataSize = h5pp::util::getSizeFromDimensions(info.dataDims.value());
         if(not info.dataRank) info.dataRank = h5pp::util::getRankFromDimensions(info.dataDims.value());
         if(not info.dataByte) info.dataByte = info.dataSize.value() * h5pp::util::getBytesPerElem<DataType>();
-        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType<DataType>();
+        if (not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType<DataType>();
         h5pp::util::setStringSize<DataType>(
             data, info.dataSize.value(), info.dataByte.value(), info.dataDims.value()); // String size will be H5T_VARIABLE unless explicitly specified
         if(not info.h5Space) info.h5Space = h5pp::util::getMemSpace(info.dataSize.value(), info.dataDims.value());
@@ -351,7 +354,8 @@ namespace h5pp::scan {
         if(not info.h5PlistAttrAccess) info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
 #endif
         // Get c++ properties
-        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+        if (not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Scanned metadata {}", info.string());
     }
@@ -399,7 +403,8 @@ namespace h5pp::scan {
         info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
 #endif
         // Get c++ properties
-        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+        if (not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Created  metadata  {}", info.string());
         return info;
@@ -444,7 +449,8 @@ namespace h5pp::scan {
         info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
 #endif
         // Get c++ properties
-        std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+        if (not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Created  metadata  {}", info.string());
         return info;
