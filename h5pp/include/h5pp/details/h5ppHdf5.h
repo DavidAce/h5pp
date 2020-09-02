@@ -1291,17 +1291,12 @@ namespace h5pp::hdf5 {
                     H5O_info_t oInfo;
                     hid::h5o   obj_id = H5Oopen(id, name, H5P_DEFAULT);
                     /* clang-format off */
-                    #if defined(H5Ovisit_vers)
-                        #if H5Ovisit_vers == 1
-                            H5Oget_info(obj_id, &oInfo);
-                        #elif H5Ovisit_vers == 2
-                            H5Oget_info2(obj_id, &oInfo, H5O_INFO_ALL);
-                        #elif H5Ovisit_vers == 3
-                            H5Oget_info3(obj_id, &oInfo, H5O_INFO_ALL);
-                        #endif
+                    #if defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
+                        H5Oget_info(obj_id, &oInfo, H5O_INFO_ALL);
                     #else
                         H5Oget_info(obj_id, &oInfo);
                     #endif
+
                     /* clang-format on */
                     if(oInfo.type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
                         if(searchKey.empty() or nameView.find(searchKey) != std::string::npos) matchList->push_back(name);
@@ -1337,12 +1332,8 @@ namespace h5pp::hdf5 {
             if(internal::maxDepth == 0)
                 // Faster when we don't need to iterate recursively
                 return H5Literate_by_name(loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, internal::matcher<ObjType>, &matchList, linkAccess);
-#if defined(H5Ovisit_by_name3) || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 3)
-            return H5Ovisit_by_name3(loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, H5O_INFO_ALL, linkAccess);
-#elif defined(H5Ovisit_by_name2) || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 2)
-            return H5Ovisit_by_name2(loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, H5O_INFO_ALL, linkAccess);
-#elif defined(H5Ovisit_by_name1) || (defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers == 1)
-            return H5Ovisit_by_name1(loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, linkAccess);
+#if defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers >= 2
+            return H5Ovisit_by_name(loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, H5O_INFO_ALL, linkAccess);
 #else
             return H5Ovisit_by_name(loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, linkAccess);
 #endif
