@@ -1,4 +1,5 @@
 #pragma once
+#include <stdexcept>
 #include <hdf5.h>
 #include <string>
 
