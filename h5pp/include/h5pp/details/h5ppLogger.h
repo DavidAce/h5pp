@@ -4,7 +4,7 @@
 #include "h5ppSpdlog.h"
 
 namespace h5pp::logger {
-#ifdef H5PP_SPDLOG
+#ifdef SPDLOG_H
     inline std::shared_ptr<spdlog::logger> log;
 
     inline void enableTimestamp() {
