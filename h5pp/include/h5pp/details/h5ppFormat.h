@@ -29,7 +29,7 @@
 #endif
 
 
-namespace h5pp {
+
 
 #if defined(FMT_FORMAT_H_)
 
@@ -37,6 +37,10 @@ namespace h5pp {
     template<typename... Args>
     [[nodiscard]] std::string format(Args... args) {
         return fmt::format(std::forward<Args>(args)...);
+    }
+    template<typename... Args>
+    void print(Args... args) {
+        fmt::print(std::forward<Args>(args)...);
     }
 
 #else
@@ -71,7 +75,7 @@ namespace h5pp {
                 //  Laborious casting here to avoid MSVC warnings and errors in std::min()
                 auto max_rewind = static_cast<long>(first.size());
                 auto min_rewind = static_cast<long>(1);
-                long rewind = -1*std::min(max_rewind,min_rewind);
+                long rewind     = -1 * std::min(max_rewind, min_rewind);
                 sstr.seekp(rewind, std::ios_base::end);
                 sstr << "}";
                 result.emplace_back(sstr.str());
@@ -90,13 +94,13 @@ namespace h5pp {
         auto brackets_left  = std::count(fmtstring.begin(), fmtstring.end(), '{');
         auto brackets_right = std::count(fmtstring.begin(), fmtstring.end(), '}');
         if(brackets_left != brackets_right) return std::string("FORMATTING ERROR: GOT STRING: " + fmtstring);
-        auto        arglist = formatting::convert_to_string_list(args...);
-        std::string result  = fmtstring;
+        auto                   arglist  = formatting::convert_to_string_list(args...);
+        std::string            result   = fmtstring;
         std::string::size_type curr_pos = 0;
         while(true) {
             if(arglist.empty()) break;
-            std::string::size_type start_pos = result.find('{',curr_pos);
-            std::string::size_type end_pos   = result.find('}',curr_pos);
+            std::string::size_type start_pos = result.find('{', curr_pos);
+            std::string::size_type end_pos   = result.find('}', curr_pos);
             if(start_pos == std::string::npos or end_pos == std::string::npos or start_pos - end_pos == 0) break;
             result.replace(start_pos, end_pos - start_pos + 1, arglist.front());
             curr_pos = start_pos + arglist.front().size();
@@ -104,5 +108,11 @@ namespace h5pp {
         }
         return result;
     }
+
+    template<typename... Args>
+    void print(Args... args) {
+        std::printf("%s", h5pp::format(std::forward<Args>(args)...).c_str());
+    }
+
 #endif
 }
