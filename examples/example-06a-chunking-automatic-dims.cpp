@@ -31,11 +31,12 @@ int main() {
     //         so setting chunking dimensions automatically may be OK but not
     //         necessarily optimal for performance (the next example shows how to
     //         set chunking dimensions manually)
+    //
 
     auto dsetInfo = file.writeDataset(v_write, "myStdVectorDouble",H5D_CHUNKED);
 
     // Print dataset metadata
-    printf("Wrote dataset: %s \n", dsetInfo.string().c_str());
+    h5pp::print("Wrote dataset: {}\n", dsetInfo.string());
 
     return 0;
 }
