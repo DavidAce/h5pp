@@ -1819,7 +1819,7 @@ namespace h5pp::hdf5 {
         hid_t file = H5Fcreate(filePath.string().c_str(), H5F_ACC_TRUNC, plists.fileCreate, plists.fileAccess);
         if(file < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Failed to create file [{}]", filePath.string()));
+            throw std::runtime_error(h5pp::format("Failed to create file [{}]\n\t\t Check that you have the right permissions and that the file is not locked by another program", filePath.string()));
         }
         H5Fclose(file);
         return fs::canonical(filePath);
