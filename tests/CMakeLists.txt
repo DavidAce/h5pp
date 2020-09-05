@@ -12,7 +12,9 @@ foreach (test ${TESTS})
         set_target_properties(${test_nwe} PROPERTIES LINK_FLAGS "/ignore:4099")
     endif()
     add_dependencies(all-tests ${test_nwe})
+    list(APPEND test_tgt_list ${test_nwe})
 endforeach ()
+
 add_custom_command(
         TARGET all-tests
         POST_BUILD
@@ -20,3 +22,18 @@ add_custom_command(
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         DEPENDS h5pp deps flags
         COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure)
+
+
+
+
+# Speed up compilation with precompiled headers
+if(COMMAND target_precompile_headers)
+    foreach (tgt ${test_tgt_list})
+    if(TARGET ${first_tgt})
+            target_precompile_headers(${tgt} REUSE_FROM ${first_tgt})
+        else()
+            target_precompile_headers(${tgt} PRIVATE <h5pp/h5pp.h>)
+            set(first_tgt ${tgt})
+    endif()
+    endforeach()
+endif()

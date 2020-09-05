@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project(examples CXX)
 file(GLOB EXAMPLES "*.cpp")
 add_custom_target(build-all-examples)
+
 foreach (ex ${EXAMPLES})
     get_filename_component(example_src ${ex} NAME)
     get_filename_component(example_nwe ${ex} NAME_WE)
@@ -11,4 +12,19 @@ foreach (ex ${EXAMPLES})
            set_target_properties(${example_nwe} PROPERTIES LINK_FLAGS "/ignore:4099")
     endif()
     add_dependencies(build-all-examples ${example_nwe})
+    list(APPEND example_tgt_list ${example_nwe})
 endforeach ()
+
+
+# Speed up compilation with precompiled headers
+if(COMMAND target_precompile_headers)
+    foreach (tgt ${example_tgt_list})
+        if(TARGET ${first_tgt})
+            target_precompile_headers(${tgt} REUSE_FROM ${first_tgt})
+        else()
+            target_precompile_headers(${tgt} PRIVATE <h5pp/h5pp.h>)
+            set(first_tgt ${tgt})
+        endif()
+    endforeach()
+endif()
+
