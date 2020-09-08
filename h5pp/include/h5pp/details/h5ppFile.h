@@ -654,6 +654,7 @@ namespace h5pp {
             options.compression   = desiredCompressionLevel;
             auto tableInfo        = h5pp::scan::getTableInfo(openFileHandle(), options, tableTitle, plists);
             h5pp::hdf5::createTable(tableInfo, plists);
+            h5pp::scan::fillTableInfo(tableInfo, tableInfo.getTableLocId(), options, plists);
             return tableInfo;
         }
 
@@ -675,7 +676,8 @@ namespace h5pp {
             options.linkPath = h5pp::util::safe_str(tablePath);
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not info.tableExists.value()) throw std::runtime_error(h5pp::format("Cannot append to table [{}]: it does not exist", tablePath));
-            h5pp::hdf5::appendTableRecords(data, info);
+            //            h5pp::hdf5::appendTableRecords(data, info);
+            h5pp::hdf5::appendTableRecords2(data, info);
             return info;
         }
 
@@ -704,6 +706,7 @@ namespace h5pp {
             auto tgtInfo          = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
                 tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
+
             appendTableRecords(srcInfo, srcTableSelection, tgtInfo);
             return tgtInfo;
         }
@@ -759,6 +762,7 @@ namespace h5pp {
             auto tgtInfo          = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
                 tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
+
             copyTableRecords(srcInfo, tableSelection, tgtInfo, tgtStartIdx);
             return tgtInfo;
         }
@@ -777,6 +781,7 @@ namespace h5pp {
             auto tgtInfo          = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
                 tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
+
             copyTableRecords(srcInfo, srcStartIdx, numRecordsToCopy, tgtInfo, tgtStartIdx);
             return tgtInfo;
         }
@@ -837,7 +842,7 @@ namespace h5pp {
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(info.tableExists and not info.tableExists.value())
                 throw std::runtime_error(h5pp::format("Could not read records from table [{}]: it does not exist", util::safe_str(tablePath)));
-            h5pp::hdf5::readTableRecords(data, info, startIdx, numRecords);
+            h5pp::hdf5::readTableRecords2(data, info, startIdx, numRecords);
         }
 
         template<typename DataType>
