@@ -471,7 +471,9 @@ namespace h5pp::hdf5 {
             if constexpr(std::is_same_v<h5x, hid::h5o>) link = H5Oopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
             if(link < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error(h5pp::format("Failed to open existing link [{}]", linkPath));
+                if constexpr(std::is_same_v<h5x, hid::h5d>) throw std::runtime_error(h5pp::format("Failed to open dataset [{}]", linkPath));
+                if constexpr(std::is_same_v<h5x, hid::h5g>) throw std::runtime_error(h5pp::format("Failed to open group [{}]", linkPath));
+                if constexpr(std::is_same_v<h5x, hid::h5o>) throw std::runtime_error(h5pp::format("Failed to open object [{}]", linkPath));
             } else {
                 return link;
             }
