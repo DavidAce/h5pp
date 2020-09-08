@@ -900,8 +900,7 @@ namespace h5pp::hdf5 {
         if(is_regular < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to check if Hyperslab selection is regular (non-rectangular)"));
-        }
-        else if(is_regular == 0) {
+        } else if(is_regular == 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Hyperslab selection is irregular (non-rectangular).\n"
                                                   "This is not yet supported by h5pp"));
@@ -911,8 +910,7 @@ namespace h5pp::hdf5 {
         if(valid < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to check if Hyperslab selection is valid"));
-        }
-        else if(valid == 0) {
+        } else if(valid == 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             Hyperslab slab(space);
             throw std::runtime_error(h5pp::format("Hyperslab selection is invalid {}", slab.string()));
