@@ -85,6 +85,7 @@ namespace h5pp {
             else
                 throw std::runtime_error(h5pp::format("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>()));
         }
+        [[nodiscard]] bool                        has_value() const { return dims.has_value(); }
                                                   operator bool() const { return dims.has_value(); }
         [[nodiscard]] const std::vector<hsize_t> &value() const { return dims.value(); }
         [[nodiscard]] std::vector<hsize_t> &      value() { return dims.value(); }
