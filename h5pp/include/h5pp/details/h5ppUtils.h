@@ -31,6 +31,18 @@ namespace h5pp::util {
         return tmp;
     }
 
+    template<typename PtrType, typename DataType>
+    inline PtrType getVoidPointer(const DataType & data){
+        // Get the memory address to a data buffer
+        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
+            return static_cast<PtrType>(data.data());
+        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
+            return static_cast<PtrType>(data);
+        else
+            return static_cast<PtrType>(&data);
+    }
+
+
     template<typename DataType>
     [[nodiscard]] hid::h5t getH5Type() {
         //        if(h5type.has_value()) return h5type.value(); // Intercept

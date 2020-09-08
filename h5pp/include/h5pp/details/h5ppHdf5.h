@@ -1304,7 +1304,7 @@ namespace h5pp::hdf5 {
                 else if constexpr(std::is_same_v<InfoType, H5L_info_t>) {
                     H5O_info_t oInfo;
                     hid::h5o   obj_id = H5Oopen(id, name, H5P_DEFAULT);
-/* clang-format off */
+                    /* clang-format off */
                     #if defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
                         H5Oget_info(obj_id, &oInfo, H5O_INFO_ALL);
                     #else
@@ -1475,13 +1475,10 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
         herr_t      retval  = 0;
-        const void *dataPtr = nullptr;
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            dataPtr = data.data();
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-            dataPtr = data;
-        else
-            dataPtr = &data;
+
+        // Get the memory address to the data buffer
+        auto dataPtr = h5pp::util::getVoidPointer<const void*>(data);
+
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
             auto vec = getCharPtrVector(data);
             // When H5T_VARIABLE, this function expects [const char **], which is what we get from vec.data()
@@ -1542,13 +1539,8 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
         herr_t retval = 0;
 
-        [[maybe_unused]] void *dataPtr = nullptr;
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            dataPtr = data.data();
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-            dataPtr = data;
-        else
-            dataPtr = &data;
+        // Get the memory address to the data buffer
+        [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<void*>(data);
 
         // Read the data
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
@@ -1638,13 +1630,9 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
         herr_t                       retval  = 0;
-        [[maybe_unused]] const void *dataPtr = nullptr;
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            dataPtr = data.data();
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-            dataPtr = data;
-        else
-            dataPtr = &data;
+
+        // Get the memory address to the data buffer
+        [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<const void*>(data);
 
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
             auto vec = getCharPtrVector(data);
@@ -1681,13 +1669,9 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
         herr_t                 retval  = 0;
-        [[maybe_unused]] void *dataPtr = nullptr;
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            dataPtr = data.data();
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-            dataPtr = data;
-        else
-            dataPtr = &data;
+        // Get the memory address to the data buffer
+        [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<void*>(data);
+
         // Read the data
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
             // When H5T_VARIABLE,
@@ -2050,14 +2034,6 @@ namespace h5pp::hdf5 {
             h5pp::util::resizeData(data, {numReadRecords.value()});
         }
 
-        void *dataPtr = nullptr;
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            dataPtr = data.data();
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-            dataPtr = data;
-        else
-            dataPtr = &data;
-
         /* Step 1: Get the dataset and memory spaces */
         hid::h5s dsetSpace = H5Dget_space(info.tableDset.value());                                /* get a copy of the new file data space for writing */
         hid::h5s dataSpace = util::getMemSpace(numReadRecords.value(), {numReadRecords.value()}); /* create a simple memory data space */
@@ -2069,6 +2045,8 @@ namespace h5pp::hdf5 {
         selectHyperslab(dsetSpace, slab, H5S_SELECT_SET);
 
         /* Step 3: read the records */
+        // Get the memory address to the data buffer
+        auto dataPtr = h5pp::util::getVoidPointer<void*>(data);
         herr_t retval = H5Dread(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
@@ -2161,15 +2139,6 @@ namespace h5pp::hdf5 {
             }
         }
 
-        // Get the memory address to the data buffer
-        const void *dataPtr = nullptr;
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            dataPtr = data.data();
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-            dataPtr = data;
-        else
-            dataPtr = &data;
-
         /* Step 1: extend the dataset */
         extendDataset(info.tableDset.value(), {numNewRecords.value() + info.numRecords.value()});
 
@@ -2184,6 +2153,8 @@ namespace h5pp::hdf5 {
         selectHyperslab(dsetSpace, slab, H5S_SELECT_SET);
 
         /* Step 4: write the records */
+        // Get the memory address to the data buffer
+        auto dataPtr = h5pp::util::getVoidPointer<const void*>(data);
         herr_t retval = H5Dwrite(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
@@ -2236,15 +2207,6 @@ namespace h5pp::hdf5 {
             }
         }
 
-        // Get the memory address to the data buffer
-        const void *dataPtr = nullptr;
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            dataPtr = data.data();
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-            dataPtr = data;
-        else
-            dataPtr = &data;
-
         /* Step 1: extend the dataset if necessary */
         if(startIdx + numRecordsToWrite.value() > info.numRecords.value()) extendDataset(info.tableDset.value(), {startIdx + numRecordsToWrite.value()});
 
@@ -2259,6 +2221,8 @@ namespace h5pp::hdf5 {
         selectHyperslab(dsetSpace, slab, H5S_SELECT_SET);
 
         /* Step 4: write the records */
+        // Get the memory address to the data buffer
+        auto dataPtr = h5pp::util::getVoidPointer<const void*>(data);
         herr_t retval = H5Dwrite(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
@@ -2412,13 +2376,9 @@ namespace h5pp::hdf5 {
                                  numReadRecords.value(),
                                  info.numRecords.value(),
                                  info.recordBytes.value());
-        void *dataPtr = nullptr;
-        if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            dataPtr = data.data();
-        else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-            dataPtr = data;
-        else
-            dataPtr = &data;
+
+        // Get the memory address to the data buffer
+        auto dataPtr = h5pp::util::getVoidPointer<void*>(data);
         H5TBread_fields_name(info.getTableLocId(),
                              util::safe_str(info.tablePath.value()).c_str(),
                              util::safe_str(fieldName).c_str(),
