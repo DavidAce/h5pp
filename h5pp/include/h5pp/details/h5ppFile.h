@@ -586,7 +586,7 @@ namespace h5pp {
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        void readAttribute(DataType &data, const h5pp::AttrInfo &attrInfo,const Options &options = Options()) const {
+        void readAttribute(DataType &data, const h5pp::AttrInfo &attrInfo, const Options &options = Options()) const {
             if(attrInfo.linkExists and not attrInfo.linkExists.value())
                 throw std::runtime_error(h5pp::format("Could not read attribute [{}] in link [{}]: "
                                                       "Link does not exist",
@@ -604,12 +604,11 @@ namespace h5pp {
             h5pp::hdf5::readAttribute(data, dataInfo, attrInfo);
         }
 
-
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
         void readAttribute(DataType &data, const Options &options) const {
             options.assertWellDefined();
             auto attrInfo = h5pp::scan::readAttrInfo(openFileHandle(), options, plists);
-            readAttribute(data,attrInfo,options);
+            readAttribute(data, attrInfo, options);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
@@ -643,7 +642,7 @@ namespace h5pp {
         TableInfo createTable(const hid::h5t &                  h5RecordType,
                               std::string_view                  tableName,
                               std::string_view                  tableTitle,
-                              const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
+                              const OptDimsType &               desiredChunkSize        = std::nullopt,
                               const std::optional<unsigned int> desiredCompressionLevel = std::nullopt
 
         ) {
@@ -891,18 +890,6 @@ namespace h5pp {
         }
 
         [[nodiscard]] bool linkExists(std::string_view link) const { return h5pp::hdf5::checkIfLinkExists(openFileHandle(), link, std::nullopt, plists.linkAccess); }
-
-        //        [[nodiscard]] std::vector<std::string> getLinks(std::string_view root = "/", long maxDepth = 0) const {
-        //            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_UNKNOWN>(openFileHandle(), root, maxDepth, plists.linkAccess);
-        //        }
-        //
-        //        [[nodiscard]] std::vector<std::string> getDatasets(std::string_view root = "/", long maxDepth = 0) const {
-        //            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_DATASET>(openFileHandle(), root, maxDepth, plists.linkAccess);
-        //        }
-        //
-        //        [[nodiscard]] std::vector<std::string> getGroups(std::string_view root = "/", long maxDepth = 0) const {
-        //            return h5pp::hdf5::getContentsOfLink<H5O_type_t::H5O_TYPE_GROUP>(openFileHandle(), root, maxDepth, plists.linkAccess);
-        //        }
 
         [[nodiscard]] std::vector<std::string> findLinks(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
             return h5pp::hdf5::findLinks<H5O_TYPE_UNKNOWN>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.linkAccess);

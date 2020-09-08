@@ -26,7 +26,9 @@ namespace h5pp {
         DimsType(const std::nullopt_t &) { throw std::runtime_error("nullopt is not a valid dimension for this argument"); }
         DimsType(std::initializer_list<hsize_t> &&list) { std::copy(list.begin(), list.end(), std::back_inserter(dims)); }
         template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-        DimsType(std::initializer_list<T> &&list) { std::copy(list.begin(), list.end(), std::back_inserter(dims)); }
+        DimsType(std::initializer_list<T> &&list) {
+            std::copy(list.begin(), list.end(), std::back_inserter(dims));
+        }
         DimsType(std::optional<std::vector<hsize_t>> otherDims) {
             if(not otherDims) throw std::runtime_error("Cannot initialize DimsType with nullopt");
             dims = otherDims.value();
@@ -68,7 +70,9 @@ namespace h5pp {
         OptDimsType(const std::nullopt_t &nullopt) { dims = nullopt; }
         OptDimsType(std::initializer_list<hsize_t> &&list) { std::copy(list.begin(), list.end(), std::back_inserter(dims.value())); }
         template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-        OptDimsType(std::initializer_list<T> &&list) { std::copy(list.begin(), list.end(), std::back_inserter(dims.value())); }
+        OptDimsType(std::initializer_list<T> &&list) {
+            std::copy(list.begin(), list.end(), std::back_inserter(dims.value()));
+        }
         OptDimsType(std::optional<std::vector<hsize_t>> otherDims) : dims(std::move(otherDims)) {}
         template<typename UnknownType>
         OptDimsType(const UnknownType &dims_) {
