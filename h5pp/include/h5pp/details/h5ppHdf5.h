@@ -1963,7 +1963,7 @@ namespace h5pp::hdf5 {
         herr_t retval = H5Dread(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(fmt::format("Failed to read data from table [{}]", info.tablePath.value()));
+            throw std::runtime_error(h5pp::format("Failed to read data from table [{}]", info.tablePath.value()));
         }
     }
 
@@ -2025,7 +2025,7 @@ namespace h5pp::hdf5 {
         herr_t retval = H5Dwrite(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(fmt::format("Failed to append data to table [{}]", info.tablePath.value()));
+            throw std::runtime_error(h5pp::format("Failed to append data to table [{}]", info.tablePath.value()));
         }
         /* Step 5: increment the number of records in the table */
         info.numRecords.value() += numNewRecords.value();
@@ -2098,7 +2098,7 @@ namespace h5pp::hdf5 {
         herr_t retval = H5Dwrite(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(fmt::format("Failed to append data to table [{}]", info.tablePath.value()));
+            throw std::runtime_error(h5pp::format("Failed to append data to table [{}]", info.tablePath.value()));
         }
         info.numRecords.value() = std::max<size_t>(startIdx + numRecordsToWrite.value(), info.numRecords.value());
     }
