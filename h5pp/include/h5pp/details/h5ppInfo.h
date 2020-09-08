@@ -196,8 +196,8 @@ namespace h5pp {
      */
     struct DsetInfo {
         std::optional<hid::h5f>         h5File            = std::nullopt;
-        std::optional<hid::h5f>         h5Group           = std::nullopt;
-        std::optional<hid::h5f>         h5ObjLoc          = std::nullopt;
+        std::optional<hid::h5g>         h5Group           = std::nullopt;
+        std::optional<hid::h5o>         h5ObjLoc          = std::nullopt;
         std::optional<hid::h5d>         h5Dset            = std::nullopt;
         std::optional<hid::h5t>         h5Type            = std::nullopt;
         std::optional<H5D_layout_t>     h5Layout          = std::nullopt;
