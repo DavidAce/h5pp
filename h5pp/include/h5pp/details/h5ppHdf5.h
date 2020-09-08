@@ -1858,11 +1858,14 @@ namespace h5pp::hdf5 {
                        nullptr,
                        compression,
                        nullptr);
-
+        if(retval < 0){
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Could not create table [{}]", info.tablePath.value()));
+        }
         h5pp::logger::log->trace("Successfully created table [{}]", info.tablePath.value());
         info.tableExists = true;
-        if constexpr(std::is_same_v<h5x, hid::h5f>) info.tableFile = loc;
-        if constexpr(std::is_same_v<h5x, hid::h5g>) info.tableGroup = loc;
+//        if constexpr(std::is_same_v<h5x, hid::h5f>) info.tableFile = loc;
+//        if constexpr(std::is_same_v<h5x, hid::h5g>) info.tableGroup = loc;
     }
 
     template<typename DataType>
