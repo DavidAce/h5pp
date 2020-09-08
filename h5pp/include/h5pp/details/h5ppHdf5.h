@@ -1292,7 +1292,7 @@ namespace h5pp::hdf5 {
                 else if constexpr(std::is_same_v<InfoType, H5L_info_t>) {
                     H5O_info_t oInfo;
                     hid::h5o   obj_id = H5Oopen(id, name, H5P_DEFAULT);
-                    /* clang-format off */
+/* clang-format off */
                     #if defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
                         H5Oget_info(obj_id, &oInfo, H5O_INFO_ALL);
                     #else
@@ -1821,7 +1821,8 @@ namespace h5pp::hdf5 {
         hid_t file = H5Fcreate(filePath.string().c_str(), H5F_ACC_TRUNC, plists.fileCreate, plists.fileAccess);
         if(file < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Failed to create file [{}]\n\t\t Check that you have the right permissions and that the file is not locked by another program", filePath.string()));
+            throw std::runtime_error(
+                h5pp::format("Failed to create file [{}]\n\t\t Check that you have the right permissions and that the file is not locked by another program", filePath.string()));
         }
         H5Fclose(file);
         return fs::canonical(filePath);
@@ -1844,28 +1845,28 @@ namespace h5pp::hdf5 {
         // Copy member name data to a vector of const char * for compatibility
         std::vector<const char *> fieldNames;
         for(auto &name : info.fieldNames.value()) fieldNames.push_back(name.c_str());
-        int compression = info.compressionLevel.value() == 0 ? 0 : 1; // Only true/false (1/0). Is set to level 6 in HDF5 sources
-        herr_t retval = H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
-                       info.getTableLocId(),
-                       util::safe_str(info.tablePath.value()).c_str(),
-                       info.numFields.value(),
-                       info.numRecords.value(),
-                       info.recordBytes.value(),
-                       fieldNames.data(),
-                       info.fieldOffsets.value().data(),
-                       fieldTypesHidT.data(),
-                       info.chunkSize.value(),
-                       nullptr,
-                       compression,
-                       nullptr);
-        if(retval < 0){
+        int    compression = info.compressionLevel.value() == 0 ? 0 : 1; // Only true/false (1/0). Is set to level 6 in HDF5 sources
+        herr_t retval      = H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
+                                       info.getTableLocId(),
+                                       util::safe_str(info.tablePath.value()).c_str(),
+                                       info.numFields.value(),
+                                       info.numRecords.value(),
+                                       info.recordBytes.value(),
+                                       fieldNames.data(),
+                                       info.fieldOffsets.value().data(),
+                                       fieldTypesHidT.data(),
+                                       info.chunkSize.value(),
+                                       nullptr,
+                                       compression,
+                                       nullptr);
+        if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Could not create table [{}]", info.tablePath.value()));
         }
         h5pp::logger::log->trace("Successfully created table [{}]", info.tablePath.value());
         info.tableExists = true;
-//        if constexpr(std::is_same_v<h5x, hid::h5f>) info.tableFile = loc;
-//        if constexpr(std::is_same_v<h5x, hid::h5g>) info.tableGroup = loc;
+        //        if constexpr(std::is_same_v<h5x, hid::h5f>) info.tableFile = loc;
+        //        if constexpr(std::is_same_v<h5x, hid::h5g>) info.tableGroup = loc;
     }
 
     template<typename DataType>
@@ -1985,7 +1986,7 @@ namespace h5pp::hdf5 {
         info.numRecords.value() = std::max<size_t>(startIdx + numRecordsToWrite, info.numRecords.value());
     }
 
-    inline void copyTableRecords(const h5pp::TableInfo &srcInfo, hsize_t srcStartIdx,  hsize_t numRecordsToCopy, h5pp::TableInfo &tgtInfo, hsize_t tgtStartIdx) {
+    inline void copyTableRecords(const h5pp::TableInfo &srcInfo, hsize_t srcStartIdx, hsize_t numRecordsToCopy, h5pp::TableInfo &tgtInfo, hsize_t tgtStartIdx) {
         srcInfo.assertReadReady();
         tgtInfo.assertWriteReady();
         // Sanity checks for table types
@@ -2017,25 +2018,25 @@ namespace h5pp::hdf5 {
                 tgtStartIdx,
                 numRecordsToCopy,
                 tgtInfo.recordBytes.value());
-                H5TBadd_records_from(srcInfo.getTableLocId(),
-                                     util::safe_str(srcInfo.tablePath.value()).c_str(),
-                                     srcStartIdx,
-                                     numRecordsToCopy,
-                                     util::safe_str(tgtInfo.tablePath.value()).c_str(),
-                                     tgtStartIdx);
+            H5TBadd_records_from(srcInfo.getTableLocId(),
+                                 util::safe_str(srcInfo.tablePath.value()).c_str(),
+                                 srcStartIdx,
+                                 numRecordsToCopy,
+                                 util::safe_str(tgtInfo.tablePath.value()).c_str(),
+                                 tgtStartIdx);
 
         } else {
             // If the locations are on different files we need to make a temporary
             h5pp::logger::log->debug("Copying records to table [{}] from table [{}] on different file | src records {} | src start {} | tgt records {} | tgt start {} | copy "
-                                    "records {} | record size {} bytes",
-                                    srcInfo.tablePath.value(),
-                                    tgtInfo.tablePath.value(),
-                                    srcInfo.numRecords.value(),
-                                    srcStartIdx,
-                                    tgtInfo.numRecords.value(),
-                                    tgtStartIdx,
-                                    numRecordsToCopy,
-                                    tgtInfo.recordBytes.value());
+                                     "records {} | record size {} bytes",
+                                     srcInfo.tablePath.value(),
+                                     tgtInfo.tablePath.value(),
+                                     srcInfo.numRecords.value(),
+                                     srcStartIdx,
+                                     tgtInfo.numRecords.value(),
+                                     tgtStartIdx,
+                                     numRecordsToCopy,
+                                     tgtInfo.recordBytes.value());
             std::vector<std::byte> data(numRecordsToCopy * tgtInfo.recordBytes.value());
             H5TBread_records(srcInfo.getTableLocId(),
                              util::safe_str(srcInfo.tablePath.value()).c_str(),
