@@ -1825,13 +1825,12 @@ namespace h5pp::hdf5 {
         return fs::canonical(filePath);
     }
 
-    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
-    inline void createTable(const h5x &loc, TableInfo &info, const PropertyLists &plists = PropertyLists()) {
+    inline void createTable(TableInfo &info, const PropertyLists &plists = PropertyLists()) {
         info.assertCreateReady();
         h5pp::logger::log->debug("Creating table [{}] | num fields {} | record size {} bytes", info.tablePath.value(), info.numFields.value(), info.recordBytes.value());
-        createGroup(loc, info.tableGroupName.value(), std::nullopt, plists);
+        createGroup(info.getTableLocId(), info.tableGroupName.value(), std::nullopt, plists);
 
-        if(checkIfLinkExists(loc, info.tablePath.value(), info.tableExists, plists.linkAccess)) {
+        if(checkIfLinkExists(info.getTableLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess)) {
             h5pp::logger::log->debug("Table [{}] already exists", info.tablePath.value());
             return;
         }
@@ -1844,8 +1843,8 @@ namespace h5pp::hdf5 {
         std::vector<const char *> fieldNames;
         for(auto &name : info.fieldNames.value()) fieldNames.push_back(name.c_str());
         int compression = info.compressionLevel.value() == 0 ? 0 : 1; // Only true/false (1/0). Is set to level 6 in HDF5 sources
-        H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
-                       loc,
+        herr_t retval = H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
+                       info.getTableLocId(),
                        util::safe_str(info.tablePath.value()).c_str(),
                        info.numFields.value(),
                        info.numRecords.value(),

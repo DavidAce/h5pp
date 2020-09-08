@@ -449,7 +449,7 @@ namespace h5pp::scan {
         info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
 #endif
         // Get c++ properties
-        if (not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
+        if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
             std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Created  metadata  {}", info.string());
@@ -457,16 +457,9 @@ namespace h5pp::scan {
     }
 
     template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
-    inline TableInfo getTableInfo(const h5x &loc, std::string_view tableName, std::optional<bool> tableExists = std::nullopt, const PropertyLists &plists = PropertyLists()) {
-        h5pp::logger::log->debug("Scanning metadata of table [{}]", util::safe_str(tableName));
-
-        TableInfo info;
-        // Copy the name and group name
-        info.tablePath      = util::safe_str(tableName);
-        info.tableGroupName = "";
-        size_t pos          = info.tablePath.value().find_last_of('/');
-        if(pos != std::string::npos) info.tableGroupName.value().assign(info.tablePath.value().begin(), info.tablePath.value().begin() + static_cast<long>(pos));
-
+    inline void fillTableInfo(TableInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+        if(not options.linkPath) throw std::runtime_error("Could not fill table info: No table path was given in options");
+        h5pp::logger::log->debug("Scanning metadata of table [{}]", options.linkPath.value());
         // Copy the location
         if constexpr(std::is_same_v<h5x, hid::h5f>) info.tableFile = loc;
         if constexpr(std::is_same_v<h5x, hid::h5g>) info.tableGroup = loc;
@@ -475,81 +468,107 @@ namespace h5pp::scan {
             if(type == H5I_type_t::H5I_GROUP or type == H5I_type_t::H5I_FILE)
                 info.tableObjLoc = loc;
             else
-                throw std::runtime_error("Given location type is not a group or a file");
+                throw std::runtime_error("Given object type for table location is not a group or a file");
+        }
+        if(not info.tablePath) info.tablePath = h5pp::util::safe_str(options.linkPath.value());
+        if(not info.tableExists) info.tableExists = h5pp::hdf5::checkIfLinkExists(info.getTableLocId(), info.tablePath.value(), std::nullopt, plists.linkAccess);
+
+        // Infer the group name
+        if(not info.tableGroupName) {
+            info.tableGroupName = "";
+            size_t pos          = info.tablePath.value().find_last_of('/');
+            if(pos != std::string::npos) info.tableGroupName.value().assign(info.tablePath.value().begin(), info.tablePath.value().begin() + static_cast<long>(pos));
+        }
+        // This is as far as we get if the table does not exist
+        if(not info.tableExists.value()) return;
+
+        if(not info.tableDset) info.tableDset = hdf5::openLink<hid::h5d>(info.getTableLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess);
+        if(not info.tableType) info.tableType = H5Dget_type(info.tableDset.value());
+        if(not info.numFields or not info.numRecords) {
+            hsize_t n_fields, n_records;
+            H5TBget_table_info(loc, info.tablePath->c_str(), &n_fields, &n_records);
+            info.numFields  = n_fields;
+            info.numRecords = n_records;
+        }
+        if(not info.tableTitle) {
+            char table_title[255];
+            H5TBAget_title(info.tableDset.value(), table_title);
+            info.tableTitle = table_title;
         }
 
-        info.tableExists = h5pp::hdf5::checkIfLinkExists(loc, tableName, tableExists, plists.linkAccess);
-        if(not info.tableExists.value()) return info;
-
-        info.tableDset = hdf5::openLink<hid::h5d>(loc, tableName, info.tableExists, plists.linkAccess);
-        info.tableType = H5Dget_type(info.tableDset.value());
-        // Alloate temporaries
-        hsize_t n_fields, n_records;
-        H5TBget_table_info(loc, util::safe_str(tableName).c_str(), &n_fields, &n_records);
-        std::vector<size_t> field_sizes(n_fields);
-        std::vector<size_t> field_offsets(n_fields);
-        size_t              record_bytes;
-        char                table_title[255];
-        char **             field_names = new char *[n_fields];
-        for(size_t i = 0; i < n_fields; i++) field_names[i] = new char[255];
-        H5TBget_field_info(loc, util::safe_str(tableName).c_str(), field_names, field_sizes.data(), field_offsets.data(), &record_bytes);
-        H5TBAget_title(info.tableDset.value(), table_title);
-        // Copy results
-        std::vector<std::string> field_names_vec(n_fields);
-        std::vector<hid::h5t>    field_types(n_fields);
-        for(size_t i = 0; i < n_fields; i++) field_names_vec[i] = field_names[i];
-        for(size_t i = 0; i < n_fields; i++) field_types[i] = H5Tget_member_type(info.tableType.value(), static_cast<unsigned>(i));
-
-        info.tableTitle   = table_title;
-        info.numFields    = n_fields;
-        info.numRecords   = n_records;
-        info.recordBytes  = record_bytes;
-        info.fieldSizes   = field_sizes;
-        info.fieldOffsets = field_offsets;
-        info.fieldTypes   = field_types;
-        info.fieldNames   = field_names_vec;
-        hid::h5p plist    = H5Dget_create_plist(info.tableDset->value());
-        auto     chunkVec = h5pp::hdf5::getChunkDimensions(plist);
-        if(chunkVec and not chunkVec->empty()) info.chunkSize = chunkVec.value()[0];
-
-        /* release array of char arrays */
-        for(size_t i = 0; i < n_fields; i++) delete[] field_names[i];
-        delete[] field_names;
-
-        // Get c++ properties
-        info.cppTypeIndex = std::vector<std::type_index>();
-        info.cppTypeName  = std::vector<std::string>();
-        info.cppTypeSize  = std::vector<size_t>();
-        for(size_t i = 0; i < n_fields; i++) {
-            auto cppInfo = h5pp::hdf5::getCppType(info.fieldTypes.value()[i]);
-            info.cppTypeIndex->emplace_back(std::get<0>(cppInfo));
-            info.cppTypeName->emplace_back(std::get<1>(cppInfo));
-            info.cppTypeSize->emplace_back(std::get<2>(cppInfo));
+        if(not info.fieldTypes) {
+            hsize_t               n_fields = info.numFields.value();
+            std::vector<hid::h5t> field_types(n_fields);
+            for(size_t i = 0; i < n_fields; i++) field_types[i] = H5Tget_member_type(info.tableType.value(), static_cast<unsigned>(i));
+            info.fieldTypes = field_types;
         }
 
+        if(not info.fieldSizes or not info.fieldOffsets or not info.recordBytes or not info.fieldNames) {
+            hsize_t                  n_fields = info.numFields.value();
+            std::vector<size_t>      field_sizes(n_fields);
+            std::vector<size_t>      field_offsets(n_fields);
+            std::vector<std::string> field_names_vec(n_fields);
+            size_t                   record_bytes;
+            char **                  field_names = new char *[n_fields];
+            for(size_t i = 0; i < n_fields; i++) field_names[i] = new char[255];
+
+            // Read the data
+            H5TBget_field_info(loc, info.tablePath->c_str(), field_names, field_sizes.data(), field_offsets.data(), &record_bytes);
+            for(size_t i = 0; i < n_fields; i++) field_names_vec[i] = field_names[i];
+
+            // release array of char arrays
+            for(size_t i = 0; i < n_fields; i++) delete[] field_names[i];
+            delete[] field_names;
+
+            // Copy the data
+            info.recordBytes  = record_bytes;
+            info.fieldSizes   = field_sizes;
+            info.fieldOffsets = field_offsets;
+            info.fieldNames   = field_names_vec;
+        }
+
+        if(not info.chunkSize) {
+            hid::h5p plist    = H5Dget_create_plist(info.tableDset.value());
+            auto     chunkVec = h5pp::hdf5::getChunkDimensions(plist);
+            if(chunkVec and not chunkVec->empty()) info.chunkSize = chunkVec.value()[0];
+        }
+
+        if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize) {
+            // Get c++ type information
+            info.cppTypeIndex = std::vector<std::type_index>();
+            info.cppTypeName  = std::vector<std::string>();
+            info.cppTypeSize  = std::vector<size_t>();
+            for(size_t i = 0; i < info.numFields.value(); i++) {
+                auto cppInfo = h5pp::hdf5::getCppType(info.fieldTypes.value()[i]);
+                info.cppTypeIndex->emplace_back(std::get<0>(cppInfo));
+                info.cppTypeName->emplace_back(std::get<1>(cppInfo));
+                info.cppTypeSize->emplace_back(std::get<2>(cppInfo));
+            }
+        }
+    }
+
+    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    inline TableInfo readTableInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+        TableInfo info;
+        fillTableInfo(info, loc, options, plists);
         return info;
     }
 
-    inline h5pp::TableInfo newTableInfo(const hid::h5t &                  tableType,
-                                        std::string_view                  tablePath,
-                                        std::string_view                  tableTitle,
-                                        const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
-                                        const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
-        TableInfo info;
-        info.tableType      = tableType;
-        info.tableTitle     = tableTitle;
-        info.tablePath      = tablePath;
-        info.tableGroupName = "";
-        size_t pos          = info.tablePath.value().find_last_of('/');
-        if(pos != std::string::npos)
-            info.tableGroupName.value().assign(info.tablePath.value().begin(), info.tablePath.value().begin() + static_cast<std::string::difference_type>(pos));
-
-        info.numFields        = H5Tget_nmembers(tableType);
+    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    inline h5pp::TableInfo getTableInfo(const h5x &loc, const Options &options, std::string_view tableTitle, const PropertyLists &plists = PropertyLists()) {
+        auto info = readTableInfo(loc, options, plists);
+        if(info.tableExists.value()) return info;
+        h5pp::logger::log->debug("Creating metadata for new table [{}]", options.linkPath.value());
+        info.tableTitle       = tableTitle;
+        info.tableType        = options.h5Type;
+        info.numFields        = H5Tget_nmembers(info.tableType.value());
         info.numRecords       = 0;
         info.recordBytes      = H5Tget_size(info.tableType.value());
-        info.chunkSize        = desiredChunkSize.has_value() ? desiredChunkSize.value()
-                                                             : h5pp::util::getChunkDimensions(info.recordBytes.value(), {1}, std::nullopt, H5D_layout_t::H5D_CHUNKED).value()[0];
-        info.compressionLevel = h5pp::hdf5::getValidCompressionLevel(desiredCompressionLevel);
+        info.compressionLevel = options.compression;
+        if(options.dsetDimsChunk and not options.dsetDimsChunk->empty()) info.chunkSize = options.dsetDimsChunk.value()[0];
+
+        if(not info.chunkSize) info.chunkSize = h5pp::util::getChunkDimensions(info.recordBytes.value(), {1}, std::nullopt, H5D_layout_t::H5D_CHUNKED).value()[0];
+        if(not info.compressionLevel) info.compressionLevel = h5pp::hdf5::getValidCompressionLevel(info.compressionLevel);
 
         info.fieldTypes   = std::vector<h5pp::hid::h5t>();
         info.fieldOffsets = std::vector<size_t>();
@@ -575,7 +594,6 @@ namespace h5pp::scan {
             info.cppTypeName->emplace_back(std::get<1>(cppInfo));
             info.cppTypeSize->emplace_back(std::get<2>(cppInfo));
         }
-
         return info;
     }
 }
