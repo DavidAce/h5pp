@@ -677,7 +677,7 @@ namespace h5pp {
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not info.tableExists.value()) throw std::runtime_error(h5pp::format("Cannot append to table [{}]: it does not exist", tablePath));
             //            h5pp::hdf5::appendTableRecords(data, info);
-            h5pp::hdf5::appendTableRecords2(data, info);
+            h5pp::hdf5::appendTableRecords(data, info);
             return info;
         }
 
@@ -842,7 +842,7 @@ namespace h5pp {
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(info.tableExists and not info.tableExists.value())
                 throw std::runtime_error(h5pp::format("Could not read records from table [{}]: it does not exist", util::safe_str(tablePath)));
-            h5pp::hdf5::readTableRecords2(data, info, startIdx, numRecords);
+            h5pp::hdf5::readTableRecords(data, info, startIdx, numRecords);
         }
 
         template<typename DataType>
