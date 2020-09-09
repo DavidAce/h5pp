@@ -259,13 +259,13 @@ namespace h5pp::util {
          *  Similarly, a dataset must be chunked if current_dims does not equal maximum_dims.
          */
         if(h5_layout and h5_layout.value() != H5D_CHUNKED) return std::nullopt;
-        std::vector<hsize_t> maxDims = dims;
-        if(h5_layout == H5D_CHUNKED) std::fill_n(maxDims.begin(), dims.size(), H5S_UNLIMITED);
-        return maxDims;
+        std::vector<hsize_t> dimsMax = dims;
+        if(h5_layout == H5D_CHUNKED) std::fill_n(dimsMax.begin(), dims.size(), H5S_UNLIMITED);
+        return dimsMax;
     }
 
     [[nodiscard]] inline hid::h5s
-        getDsetSpace(const hsize_t size, const std::vector<hsize_t> &dims, const H5D_layout_t &h5_layout, std::optional<std::vector<hsize_t>> desiredDimsMax = std::nullopt) {
+        getDsetSpace(const hsize_t size, const std::vector<hsize_t> &dims, const H5D_layout_t &h5Layout, std::optional<std::vector<hsize_t>> dimsMax = std::nullopt) {
         if(dims.empty() and size > 0)
             return H5Screate(H5S_SCALAR);
         else if(dims.empty() and size == 0)
@@ -273,31 +273,42 @@ namespace h5pp::util {
         else {
             auto num_elements = h5pp::util::getSizeFromDimensions(dims);
             if(size != num_elements) throw std::runtime_error(h5pp::format("Number of elements mismatch: size {} | dimensions {}", size, dims));
-            if(desiredDimsMax and desiredDimsMax->size() != dims.size())
-                throw std::runtime_error(h5pp::format("Number of dimensions (rank) mismatch: dims {} | max dims {}\n"
-                                                      "\t Hint: Try giving the data dimensions explicitly, with rank matching the maximum dimensions",
-                                                      dims,
-                                                      desiredDimsMax.value()));
 
-            // Only and chunked and datasets can be extended. The extension can happen upp to the max dimension specified.
+            // Only and chunked and datasets can be extended. The extension can happen up to the max dimension specified.
             // If the max dimension is H5S_UNLIMITED, then the dataset can grow to any dimension.
-            // Conversely, if the dataset is not H5D_CHUNKED, the dims == max dims must hold always
+            // Conversely, if the dataset is not H5D_CHUNKED, then dims == max dims must hold always
 
-            std::vector<hsize_t> maxDims = dims;
-            if(desiredDimsMax) {
-                maxDims = desiredDimsMax.value();
-                for(size_t idx = 0; idx < maxDims.size(); idx++) {
-                    if(maxDims[idx] == H5S_UNLIMITED and h5_layout != H5D_CHUNKED)
-                        throw std::runtime_error(h5pp::format("Max dimensions {} has an H5S_UNLIMITED dimension at index {}. This requires H5D_CHUNKED layout", maxDims, idx));
+            if(dimsMax) {
+                // Here dimsMax was given by the user and we have to do some sanity checks
+                // Check that the ranks match
+                if(dimsMax and dimsMax->size() != dims.size())
+                    throw std::runtime_error(h5pp::format("Number of dimensions (rank) mismatch: dims {} | max dims {}\n"
+                                                          "\t Hint: Dimension lists must have the same number of elements",
+                                                          dims,
+                                                          dimsMax.value()));
+                // Check that H5S_UNLIMITED is only given to H5D_CHUNKED datasets
+                for(size_t idx = 0; idx < dimsMax->size(); idx++)
+                    if(dimsMax.value()[idx] == H5S_UNLIMITED and h5Layout != H5D_CHUNKED)
+                        throw std::runtime_error(h5pp::format("Max dimensions {} has an H5S_UNLIMITED dimension at index {}. This requires H5D_CHUNKED layout", dimsMax.value(), idx));
+
+                if(dimsMax.value() != dims){
+                    // Only H5D_CHUNKED layout can have since dimsMax != dims.
+                    // Therefore give an informative error if not H5D_CHUNKED
+                    if(h5Layout == H5D_COMPACT)
+                        throw std::runtime_error(h5pp::format("Dimension mismatch: dims {} != max dims {}. Equality is required for H5D_COMPACT layout", dims, dimsMax.value()));
+                    if(h5Layout == H5D_CONTIGUOUS)
+                        throw std::runtime_error(h5pp::format("Dimension mismatch: dims {} != max dims {}. Equality is required for H5D_CONTIGUOUS layout", dims, dimsMax.value()));
                 }
-                if(h5_layout == H5D_COMPACT and dims != maxDims)
-                    throw std::runtime_error(h5pp::format("Dimension mismatch: dims {} != max dims {}. Equality is required for H5D_COMPACT layout", dims, maxDims));
-                if(h5_layout == H5D_CONTIGUOUS and dims != maxDims)
-                    throw std::runtime_error(h5pp::format("Dimension mismatch: dims {} != max dims {}. Equality is required for H5D_CONTIGUOUS layout", dims, maxDims));
-            } else if(h5_layout == H5D_CHUNKED) // Here the max dimensions were not given, but H5D_CHUNKED was asked for
-                std::fill_n(maxDims.begin(), dims.size(), H5S_UNLIMITED);
 
-            return H5Screate_simple(static_cast<int>(dims.size()), dims.data(), maxDims.data());
+            } else if(h5Layout == H5D_CHUNKED) {
+                // Here dimsMax was not given, but H5D_CHUNKED was asked for
+                dimsMax = dims;
+                std::fill_n(dimsMax->begin(), dims.size(), H5S_UNLIMITED);
+            }
+            else
+                dimsMax = dims;
+
+            return H5Screate_simple(static_cast<int>(dims.size()), dims.data(), dimsMax->data());
         }
     }
 

@@ -197,9 +197,9 @@ namespace h5pp {
 
         void setCompressionLevel(unsigned int compressionLevelZeroToNine) { currentCompressionLevel = h5pp::hdf5::getValidCompressionLevel(compressionLevelZeroToNine); }
         [[nodiscard]] unsigned int getCompressionLevel() const { return currentCompressionLevel; }
-        [[nodiscard]] unsigned int getCompressionLevel(std::optional<unsigned int> desiredCompressionLevel) const {
-            if(desiredCompressionLevel)
-                return h5pp::hdf5::getValidCompressionLevel(desiredCompressionLevel.value());
+        [[nodiscard]] unsigned int getCompressionLevel(std::optional<unsigned int> compressionLevel) const {
+            if(compressionLevel)
+                return h5pp::hdf5::getValidCompressionLevel(compressionLevel.value());
             else
                 return currentCompressionLevel;
         }
@@ -639,19 +639,19 @@ namespace h5pp {
          *
          */
 
-        TableInfo createTable(const hid::h5t &                  h5RecordType,
+        TableInfo createTable(const hid::h5t &                  h5Type,
                               std::string_view                  tablePath,
                               std::string_view                  tableTitle,
-                              const OptDimsType &               desiredChunkSize        = std::nullopt,
-                              const std::optional<unsigned int> desiredCompressionLevel = std::nullopt
+                              const OptDimsType &               chunkDims        = std::nullopt,
+                              const std::optional<unsigned int> compressionLevel = std::nullopt
 
         ) {
             if(permission == h5pp::FilePermission::READONLY) throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             Options options;
             options.linkPath      = h5pp::util::safe_str(tablePath);
-            options.h5Type        = h5RecordType;
-            options.dsetDimsChunk = desiredChunkSize;
-            options.compression   = desiredCompressionLevel;
+            options.h5Type        = h5Type;
+            options.dsetDimsChunk = chunkDims;
+            options.compression   = compressionLevel;
             auto tableInfo        = h5pp::scan::getTableInfo(openFileHandle(), options, tableTitle, plists);
             h5pp::hdf5::createTable(tableInfo, plists);
             h5pp::scan::fillTableInfo(tableInfo, tableInfo.getTableLocId(), options, plists);
@@ -697,15 +697,15 @@ namespace h5pp {
         TableInfo appendTableRecords(const h5pp::TableInfo &           srcInfo,
                                      TableSelection                    srcTableSelection,
                                      std::string_view                  tgtTablePath,
-                                     const OptDimsType &               desiredChunkSize        = std::nullopt,
-                                     const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+                                     const OptDimsType &               chunkDims        = std::nullopt,
+                                     const std::optional<unsigned int> compressionLevel = std::nullopt) {
             Options options;
             options.linkPath      = h5pp::util::safe_str(tgtTablePath);
-            options.dsetDimsChunk = desiredChunkSize;
-            options.compression   = desiredCompressionLevel;
+            options.dsetDimsChunk = chunkDims;
+            options.compression   = compressionLevel;
             auto tgtInfo          = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
-                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
+                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compressionLevel);
 
             appendTableRecords(srcInfo, srcTableSelection, tgtInfo);
             return tgtInfo;
@@ -716,12 +716,12 @@ namespace h5pp {
                                      std::string_view                  srcTablePath,
                                      TableSelection                    srcTableSelection,
                                      std::string_view                  tgtTablePath,
-                                     const OptDimsType &               desiredChunkSize        = std::nullopt,
-                                     const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+                                     const OptDimsType &               chunkDims        = std::nullopt,
+                                     const std::optional<unsigned int> compressionLevel = std::nullopt) {
             Options options;
             options.linkPath = h5pp::util::safe_str(srcTablePath);
             auto srcInfo     = h5pp::scan::readTableInfo(srcLocation, options, plists);
-            return appendTableRecords(srcInfo, srcTableSelection, tgtTablePath, desiredChunkSize, desiredCompressionLevel);
+            return appendTableRecords(srcInfo, srcTableSelection, tgtTablePath, chunkDims, compressionLevel);
         }
 
         void copyTableRecords(const h5pp::TableInfo &srcInfo, hsize_t srcStartIdx, hsize_t numRecordsToCopy, h5pp::TableInfo &tgtInfo, hsize_t tgtStartIdx) {
@@ -753,15 +753,15 @@ namespace h5pp {
                                    TableSelection                    tableSelection,
                                    std::string_view                  tgtTablePath,
                                    hsize_t                           tgtStartIdx,
-                                   const OptDimsType &               desiredChunkSize        = std::nullopt,
-                                   const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+                                   const OptDimsType &               chunkDims        = std::nullopt,
+                                   const std::optional<unsigned int> compressionLevel = std::nullopt) {
             Options options;
             options.linkPath      = h5pp::util::safe_str(tgtTablePath);
-            options.dsetDimsChunk = desiredChunkSize;
-            options.compression   = desiredCompressionLevel;
+            options.dsetDimsChunk = chunkDims;
+            options.compression   = compressionLevel;
             auto tgtInfo          = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
-                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
+                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compressionLevel);
 
             copyTableRecords(srcInfo, tableSelection, tgtInfo, tgtStartIdx);
             return tgtInfo;
@@ -772,15 +772,15 @@ namespace h5pp {
                                    hsize_t                           numRecordsToCopy,
                                    std::string_view                  tgtTablePath,
                                    hsize_t                           tgtStartIdx,
-                                   const OptDimsType &               desiredChunkSize        = std::nullopt,
-                                   const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+                                   const OptDimsType &               chunkDims        = std::nullopt,
+                                   const std::optional<unsigned int> compressionLevel = std::nullopt) {
             Options options;
             options.linkPath      = h5pp::util::safe_str(tgtTablePath);
-            options.dsetDimsChunk = desiredChunkSize;
-            options.compression   = desiredCompressionLevel;
+            options.dsetDimsChunk = chunkDims;
+            options.compression   = compressionLevel;
             auto tgtInfo          = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
-                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
+                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compressionLevel);
 
             copyTableRecords(srcInfo, srcStartIdx, numRecordsToCopy, tgtInfo, tgtStartIdx);
             return tgtInfo;
@@ -792,12 +792,12 @@ namespace h5pp {
                                    TableSelection                    srcTableSelection,
                                    std::string_view                  tgtTablePath,
                                    hsize_t                           tgtStartIdx,
-                                   const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
-                                   const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+                                   const std::optional<hsize_t>      chunkDims        = std::nullopt,
+                                   const std::optional<unsigned int> compressionLevel = std::nullopt) {
             Options options;
             options.linkPath = h5pp::util::safe_str(srcTablePath);
             auto srcInfo     = h5pp::scan::readTableInfo(srcLocation, options, plists);
-            return copyTableRecords(srcInfo, srcTableSelection, tgtTablePath, tgtStartIdx, desiredChunkSize, desiredCompressionLevel);
+            return copyTableRecords(srcInfo, srcTableSelection, tgtTablePath, tgtStartIdx, chunkDims, compressionLevel);
         }
 
         template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
@@ -807,12 +807,12 @@ namespace h5pp {
                                    hsize_t                           numRecordsToCopy,
                                    std::string_view                  tgtTablePath,
                                    hsize_t                           tgtStartIdx,
-                                   const std::optional<hsize_t>      desiredChunkSize        = std::nullopt,
-                                   const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+                                   const std::optional<hsize_t>      chunkDims        = std::nullopt,
+                                   const std::optional<unsigned int> compressionLevel = std::nullopt) {
             Options options;
             options.linkPath = h5pp::util::safe_str(srcTablePath);
             auto srcInfo     = h5pp::scan::readTableInfo(srcLocation, options, plists);
-            return copyTableRecords(srcInfo, srcStartIdx, numRecordsToCopy, tgtTablePath, tgtStartIdx, desiredChunkSize, desiredCompressionLevel);
+            return copyTableRecords(srcInfo, srcStartIdx, numRecordsToCopy, tgtTablePath, tgtStartIdx, chunkDims, compressionLevel);
         }
 
         TableInfo copyTableRecords(std::string_view                  srcTablePath,
@@ -820,17 +820,17 @@ namespace h5pp {
                                    hsize_t                           numRecords,
                                    std::string_view                  tgtTablePath,
                                    hsize_t                           tgtStartIdx,
-                                   const OptDimsType &               desiredChunkSize        = std::nullopt,
-                                   const std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+                                   const OptDimsType &               chunkDims        = std::nullopt,
+                                   const std::optional<unsigned int> compressionLevel = std::nullopt) {
             Options tgt_options, src_options;
             src_options.linkPath      = h5pp::util::safe_str(srcTablePath);
             tgt_options.linkPath      = h5pp::util::safe_str(tgtTablePath);
-            tgt_options.dsetDimsChunk = desiredChunkSize;
-            tgt_options.compression   = desiredCompressionLevel;
+            tgt_options.dsetDimsChunk = chunkDims;
+            tgt_options.compression   = compressionLevel;
             auto srcInfo              = h5pp::scan::readTableInfo(openFileHandle(), src_options, plists);
             auto tgtInfo              = h5pp::scan::readTableInfo(openFileHandle(), tgt_options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
-                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), desiredChunkSize, desiredCompressionLevel);
+                tgtInfo = createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compressionLevel);
             copyTableRecords(srcInfo, srcStartIdx, numRecords, tgtInfo, tgtStartIdx);
             return tgtInfo;
         }

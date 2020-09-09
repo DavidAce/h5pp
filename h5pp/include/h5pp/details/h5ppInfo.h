@@ -141,7 +141,7 @@ namespace h5pp {
             if(not dataByte) error_msg.append(" | dataByte");
             if(not dataDims) error_msg.append(" | dataDims");
             if(not dataRank) error_msg.append(" | dataRank");
-            if(not h5Space) error_msg.append(" | h5Space");
+            if(not h5Space)  error_msg.append(" | h5Space");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot write from memory. The following fields are undefined:\n{}", error_msg));
             if(not h5Space->valid() ) error_msg.append(" | h5Space");
@@ -161,7 +161,7 @@ namespace h5pp {
             if(not dataByte) error_msg.append(" | dataByte");
             if(not dataRank) error_msg.append(" | dataRank");
             if(not dataDims) error_msg.append(" | dataDims");
-            if(not h5Space) error_msg.append(" | h5Space");
+            if(not h5Space)  error_msg.append(" | h5Space");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot read into memory. The following fields are undefined:\n{}", error_msg));
             if(not h5Space->valid() ) error_msg.append(" | h5Space");
@@ -329,14 +329,14 @@ namespace h5pp {
             }
             if(dsetChunk)   msg.append(h5pp::format(" | chunk dims {}", dsetChunk.value()));
             if(dsetDimsMax){
-                std::vector<long> maxDimsLong;
+                std::vector<long> dsetDimsMaxPretty;
                 for(auto &dim : dsetDimsMax.value()) {
                     if(dim == H5S_UNLIMITED)
-                        maxDimsLong.emplace_back(-1);
+                        dsetDimsMaxPretty.emplace_back(-1);
                     else
-                        maxDimsLong.emplace_back(static_cast<long>(dim));
+                        dsetDimsMaxPretty.emplace_back(static_cast<long>(dim));
                 }
-                msg.append(h5pp::format(" | max dims {}", maxDimsLong));
+                msg.append(h5pp::format(" | max dims {}", dsetDimsMaxPretty));
             }
             if (h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
                 Hyperslab slab(h5Space.value());
@@ -400,9 +400,9 @@ namespace h5pp {
                 throw std::runtime_error(h5pp::format("Cannot create attribute. The following fields are undefined:\n{}", error_msg));
             if(not linkExists.value())
                 throw std::runtime_error(h5pp::format("Cannot create attribute [{}] for link [{}]. The link does not exist",attrName.value(),linkPath.value()));
-            if(not h5Link->valid()             ) error_msg.append("\t h5Link\n");
-            if(not h5Type->valid()             ) error_msg.append("\t h5Type\n");
-            if(not h5Space->valid()            ) error_msg.append("\t h5Space\n");
+            if(not h5Link->valid()   ) error_msg.append("\t h5Link\n");
+            if(not h5Type->valid()   ) error_msg.append("\t h5Type\n");
+            if(not h5Space->valid()  ) error_msg.append("\t h5Space\n");
             if(not h5PlistAttrCreate->valid()) error_msg.append("\t h5PlistAttrCreate\n");
             if(not h5PlistAttrAccess->valid()) error_msg.append("\t h5PlistAttrAccess\n");
             if(not error_msg.empty())
@@ -417,8 +417,8 @@ namespace h5pp {
             if(not h5Type             ) error_msg.append("\t h5Type\n");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot create attribute. The following fields are undefined:\n{}", error_msg));
-            if(not h5Attr->valid()             ) error_msg.append("\t h5Attr\n");
-            if(not h5Type->valid()             ) error_msg.append("\t h5Type\n");
+            if(not h5Attr->valid()    ) error_msg.append("\t h5Attr\n");
+            if(not h5Type->valid()    ) error_msg.append("\t h5Type\n");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot create attribute [{}] for link [{}]. The following fields are not valid: {}",attrName.value(),linkPath.value(),error_msg));
             /* clang-format on */

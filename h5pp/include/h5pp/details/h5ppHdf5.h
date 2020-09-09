@@ -124,9 +124,9 @@ namespace h5pp::hdf5 {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error("Failed to get dimensions");
         }
-        std::vector<hsize_t> maxdims(static_cast<size_t>(rank));
-        H5Sget_simple_extent_dims(space, nullptr, maxdims.data());
-        return maxdims;
+        std::vector<hsize_t> dimsMax(static_cast<size_t>(rank));
+        H5Sget_simple_extent_dims(space, nullptr, dimsMax.data());
+        return dimsMax;
     }
 
     [[nodiscard]] inline std::optional<std::vector<hsize_t>> getMaxDimensions(const hid::h5d &dataset) {
@@ -559,11 +559,11 @@ namespace h5pp::hdf5 {
         }
     }
 
-    [[nodiscard]] inline unsigned int getValidCompressionLevel(std::optional<unsigned int> desiredCompressionLevel = std::nullopt) {
+    [[nodiscard]] inline unsigned int getValidCompressionLevel(std::optional<unsigned int> compressionLevel = std::nullopt) {
         if(checkIfCompressionIsAvailable()) {
-            if(desiredCompressionLevel) {
-                if(desiredCompressionLevel.value() < 10) {
-                    return desiredCompressionLevel.value();
+            if(compressionLevel) {
+                if(compressionLevel.value() < 10) {
+                    return compressionLevel.value();
                 } else {
                     h5pp::logger::log->debug("Given compression level {} is too high. Expected value 0 (min) to 9 (max). Returning 9");
                     return 9;
@@ -928,24 +928,31 @@ namespace h5pp::hdf5 {
             for(const auto &slab : hyperSlabs) selectHyperslab(space, slab);
     }
 
-    inline void setSpaceExtent(const hid::h5s &h5Space, const std::vector<hsize_t> &dims, std::optional<std::vector<hsize_t>> maxDims = std::nullopt) {
+    inline void setSpaceExtent(const hid::h5s &h5Space, const std::vector<hsize_t> &dims, std::optional<std::vector<hsize_t>> dimsMax = std::nullopt) {
         if(H5Sget_simple_extent_type(h5Space) == H5S_SCALAR) return;
         if(dims.empty()) return;
         herr_t err;
-        if(maxDims) {
-            if(dims.size() != maxDims->size()) throw std::runtime_error(h5pp::format("Rank mismatch in dimensions {} and max dimensions {}", dims, maxDims.value()));
-            std::vector<long> maxDimsLong;
-            for(auto &dim : maxDims.value()) {
+        if(dimsMax) {
+            // Here dimsMax was given by the user and we have to do some sanity checks
+            // Check that the ranks match
+            if(dims.size() != dimsMax->size())
+                throw std::runtime_error(h5pp::format("Number of dimensions (rank) mismatch: dims {} | max dims {}\n"
+                                                      "\t Hint: Dimension lists must have the same number of elements",
+                                                      dims,
+                                                      dimsMax.value()));
+
+            std::vector<long> dimsMaxPretty;
+            for(auto &dim : dimsMax.value()) {
                 if(dim == H5S_UNLIMITED)
-                    maxDimsLong.emplace_back(-1);
+                    dimsMaxPretty.emplace_back(-1);
                 else
-                    maxDimsLong.emplace_back(static_cast<long>(dim));
+                    dimsMaxPretty.emplace_back(static_cast<long>(dim));
             }
-            h5pp::logger::log->trace("Setting dataspace extents: dims {} | max dims {}", dims, maxDimsLong);
-            err = H5Sset_extent_simple(h5Space, static_cast<int>(dims.size()), dims.data(), maxDims->data());
+            h5pp::logger::log->trace("Setting dataspace extents: dims {} | max dims {}", dims, dimsMaxPretty);
+            err = H5Sset_extent_simple(h5Space, static_cast<int>(dims.size()), dims.data(), dimsMax->data());
             if(err < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error(h5pp::format("Failed to set extents on space: dims {} | max dims {}", dims, maxDims.value()));
+                throw std::runtime_error(h5pp::format("Failed to set extents on space: dims {} | max dims {}", dims, dimsMax.value()));
             }
         } else {
             h5pp::logger::log->trace("Setting dataspace extents: dims {}", dims);
@@ -1249,21 +1256,15 @@ namespace h5pp::hdf5 {
             H5S_sel_type dataSelType = H5Sget_select_type(dataSpace);
             H5S_sel_type dsetSelType = H5Sget_select_type(dsetSpace);
             if(dataSelType == H5S_sel_type::H5S_SEL_HYPERSLABS or dsetSelType == H5S_sel_type::H5S_SEL_HYPERSLABS) {
-                auto dataSize = getSizeSelected(dataSpace);
-                auto dsetSize = getSizeSelected(dsetSpace);
-                if(dataSize != dsetSize) {
+                if(getSizeSelected(dataSpace) != getSizeSelected(dsetSpace)) {
                     auto msg1 = getSpaceString(dataSpace);
                     auto msg2 = getSpaceString(dsetSpace);
                     throw std::runtime_error(h5pp::format("Spaces are not equal size \n\t data space \t {} \n\t dset space \t {}", msg1, msg2));
                 }
             } else {
-                // One of the maxDims may be H5S_UNLIMITED, in which case, we just check the dimensions
-                auto dataDims = getDimensions(dataSpace);
-                auto dsetDims = getDimensions(dsetSpace);
+                // Compare the dimensions
                 if(getDimensions(dataSpace) == getDimensions(dsetSpace)) return;
-                auto dataSize = getSize(dataSpace);
-                auto dsetSize = getSize(dsetSpace);
-                if(dataSize != dsetSize) {
+                if(getSize(dataSpace) != getSize(dsetSpace)) {
                     auto msg1 = getSpaceString(dataSpace);
                     auto msg2 = getSpaceString(dsetSpace);
                     throw std::runtime_error(h5pp::format("Spaces are not equal size \n\t data space \t {} \n\t dset space \t {}", msg1, msg2));
@@ -1302,7 +1303,7 @@ namespace h5pp::hdf5 {
                 else if constexpr(std::is_same_v<InfoType, H5L_info_t>) {
                     H5O_info_t oInfo;
                     hid::h5o   obj_id = H5Oopen(id, name, H5P_DEFAULT);
-                    /* clang-format off */
+/* clang-format off */
                     #if defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
                         H5Oget_info(obj_id, &oInfo, H5O_INFO_ALL);
                     #else
@@ -1472,10 +1473,10 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
-        herr_t      retval  = 0;
+        herr_t retval = 0;
 
         // Get the memory address to the data buffer
-        auto dataPtr = h5pp::util::getVoidPointer<const void*>(data);
+        auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
 
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
             auto vec = getCharPtrVector(data);
@@ -1538,7 +1539,7 @@ namespace h5pp::hdf5 {
         herr_t retval = 0;
 
         // Get the memory address to the data buffer
-        [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<void*>(data);
+        [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<void *>(data);
 
         // Read the data
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
@@ -1627,10 +1628,10 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
-        herr_t                       retval  = 0;
+        herr_t retval = 0;
 
         // Get the memory address to the data buffer
-        [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<const void*>(data);
+        [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
 
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
             auto vec = getCharPtrVector(data);
@@ -1666,9 +1667,9 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertReadBufferIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
-        herr_t                 retval  = 0;
+        herr_t retval = 0;
         // Get the memory address to the data buffer
-        [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<void*>(data);
+        [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<void *>(data);
 
         // Read the data
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
@@ -1959,8 +1960,8 @@ namespace h5pp::hdf5 {
 
         /* Step 3: read the records */
         // Get the memory address to the data buffer
-        auto dataPtr = h5pp::util::getVoidPointer<void*>(data);
-        herr_t retval = H5Dread(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
+        auto   dataPtr = h5pp::util::getVoidPointer<void *>(data);
+        herr_t retval  = H5Dread(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to read data from table [{}]", info.tablePath.value()));
@@ -2021,8 +2022,8 @@ namespace h5pp::hdf5 {
 
         /* Step 4: write the records */
         // Get the memory address to the data buffer
-        auto dataPtr = h5pp::util::getVoidPointer<const void*>(data);
-        herr_t retval = H5Dwrite(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
+        auto   dataPtr = h5pp::util::getVoidPointer<const void *>(data);
+        herr_t retval  = H5Dwrite(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to append data to table [{}]", info.tablePath.value()));
@@ -2094,8 +2095,8 @@ namespace h5pp::hdf5 {
 
         /* Step 4: write the records */
         // Get the memory address to the data buffer
-        auto dataPtr = h5pp::util::getVoidPointer<const void*>(data);
-        herr_t retval = H5Dwrite(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
+        auto   dataPtr = h5pp::util::getVoidPointer<const void *>(data);
+        herr_t retval  = H5Dwrite(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to append data to table [{}]", info.tablePath.value()));
@@ -2250,7 +2251,7 @@ namespace h5pp::hdf5 {
                                  info.recordBytes.value());
 
         // Get the memory address to the data buffer
-        auto dataPtr = h5pp::util::getVoidPointer<void*>(data);
+        auto dataPtr = h5pp::util::getVoidPointer<void *>(data);
         H5TBread_fields_name(info.getTableLocId(),
                              util::safe_str(info.tablePath.value()).c_str(),
                              util::safe_str(fieldName).c_str(),

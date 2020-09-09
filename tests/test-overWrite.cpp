@@ -24,7 +24,6 @@ int main() {
     options.linkPath  = "overWriteGroup_contiguous/vectorComplexDouble";
     file.writeDataset(vectorComplexDouble,options);
 
-    exit(0);
 
     file.writeDataset(vectorComplexDouble, "overWriteGroup_chunked/vectorComplexDouble",std::nullopt, H5D_CHUNKED);
     file.writeDataset(vectorComplexDouble, "overWriteGroup_chunked/vectorComplexDouble");
