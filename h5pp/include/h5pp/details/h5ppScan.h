@@ -28,13 +28,13 @@ namespace h5pp::scan {
             else
                 throw std::runtime_error("Given object type for location is not a group or a file");
         }
+        if(not info.dsetSlab) info.dsetSlab = options.dsetSlab;
         if(not info.dsetPath) info.dsetPath = h5pp::util::safe_str(options.linkPath.value());
         if(not info.dsetExists) info.dsetExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.dsetPath.value(), std::nullopt, plists.linkAccess);
-        if(not info.dsetSlab) info.dsetSlab = options.dsetSlab;
         // If the dataset does not exist, there isn't much else to do so we return;
-        if(info.dsetExists and not info.dsetExists.value()) return;
+        if(not info.dsetExists.value()) return;
         // From here on the dataset exists
-        if(not info.h5Dset) info.h5Dset = h5pp::hdf5::openLink<hid::h5d>(loc, options.linkPath.value(), info.dsetExists, plists.linkAccess);
+        if(not info.h5Dset) info.h5Dset = h5pp::hdf5::openLink<hid::h5d>(loc, info.dsetPath.value(), info.dsetExists, plists.linkAccess);
         if(not info.h5Type) info.h5Type = H5Dget_type(info.h5Dset.value());
         if(not info.h5Space) info.h5Space = H5Dget_space(info.h5Dset.value());
 
