@@ -6,6 +6,8 @@
 [![Download](https://img.shields.io/badge/Install%20with-conan-green)](https://bintray.com/davidace/conan-public/h5pp%3Adavidace/_latestVersion)
 [![Download](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)
 
+---
+
 # h5pp
 `h5pp` is a high-level C++17 wrapper for the [HDF5](https://www.hdfgroup.org/) C library.
 
@@ -14,7 +16,11 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
 
 [Latest release](https://github.com/DavidAce/h5pp/releases) 
 
-Go to [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart) to see install examples.
+Go to [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart) to see install examples
+
+Go to [examples](https://github.com/DavidAce/h5pp/tree/master/examples) to learn how to use `h5pp`
+
+---
 
 ## Table of Contents
 *  [Introduction](#introduction)
@@ -25,16 +31,22 @@ Go to [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart) to s
     *  [File permissions](#file-permissions)
     *  [Storage layout](#storage-layout)
     *  [Compression](#compression)
-    *  [Load data into Python](#load-data-into-python)
+    *  [Tips](#tips)
+        *  [View data](#view-data)
+        *  [Load data into Python](#load-data-into-python)
 *  [Installation](#installation)
     *  [Requirements](#requirements)
+    *  [Obtaining h5pp](#obtaining-h5pp)
     *  [Install methods](#install-methods)
         *  [Option 1: Copy the headers](#option-1-copy-the-headers)
-        *  [Option 2: Install with CMake](#option-2-install-with-cmake)
-        *  [Option 3: Install with Conan](#option-3-install-with-conan)
-    *  [Opt-in automatic dependency installation with CMake](#opt-in-automatic-dependency-installation-with-cmake)
-*  [Linking](#linking)
-*  [Uninstall](#uninstall)
+        *  [Option 2: Install with Conan](#option-2-install-with-conan)
+        *  [Option 3: Install with CMake](#option-3-install-with-cmake)
+            *  [Opt-in automatic dependency installation with CMake](#opt-in-automatic-dependency-installation-with-cmake)
+            *  [CMake options](#cmake-options)
+    *  [Link to your project](#link-to-your-project)
+        *  [Link using CMake targets (easy)](#link-using-cmake-targets-easy)
+        *  [Link manually (not as easy)](#link-manually-not-as-easy)
+    *  [Uninstall](#uninstall)
 
 
 ## Introduction
@@ -59,20 +71,19 @@ things could be even simpler.
 ## Features
 *  Header-only C++17 template library
 *  High-level front-end to the C API of HDF5
-*  Support for common data types:
-    *  `short`,`int`,`long`, `long long` (+ unsigned versions), `float`, `double`, `long double`
-        *  any of the above in C-style arrays
-        *  any of the above in **`std::complex<>`** form
-        *  any of the above in POD-structs with x,y or x,y,z data members. In `h5pp` these go by the name `Scalar2` and `Scalar3`.
-            These work well together with types such as `double2` or `float3` found in CUDA.
-    *  `std::string` and `char` arrays.
-    *  Any container such as std::vector with `.data()` member for accessing a contiguous buffer (without conversion to/from row major).
-    *  `Eigen` types such as `Matrix`, `Array` and `Tensor`, with automatic conversion to/from row-major storage.
-    *  Support for user-defined compound HDF5 types
-    *  Support for creating HDF5 tables from user-defined compound HDF5 types.  
-*  Modern CMake installation providing targets for simple linking to your projects.
-*  Installation with package managers: conan, conda (and apt using .deb installation file)
-*  (Opt-in) Automatically find or download dependencies using either the [Conan package manager](https://conan.io/) or "CMake-only" methods.
+*  Support for common C++ types such as:
+    *  numeric types `short`,`int`,`long`, `long long` (+ unsigned versions), `float`, `double`, `long double`
+    *  **`std::complex<>`** with any of the types above
+    *  CUDA-style POD-structs with `x,y` or `x,y,z` members as atomic type, such as `float3` or `double2`. These work with any of the types above. In `h5pp` these go by the name `Scalar2<>` and `Scalar3<>`.
+    *  Contiguous containers with a `.data()` member, such as `std::vector<>` **(¤)**
+    *  `std::string`, `char` arrays, and `std::vector<std::string>`
+    *  C-style arrays or pointer-to-buffers **(¤¤)**
+*  Support for [**Eigen**](http://eigen.tuxfamily.org) types such as `Eigen::Matrix<>`, `Eigen::Array<>` and `Eigen::Tensor<>`, with automatic conversion to/from row-major storage  **(¤)**
+*  Support for user-defined compound HDF5 types (see [example](https://github.com/DavidAce/h5pp/blob/master/examples/example-04a-custom-struct-easy.cpp))
+*  Support for HDF5 tables (with user-defined compound HDF5 types for entries)
+*  Modern installation of `h5pp` and its dependencies. Choose:
+    *  Installation with package managers: [conan](https://conan.io/), [conda](https://www.anaconda.com) or apt (.deb installation file)
+    *  CMake installation providing targets for linking to your projects. (Opt-in) Automatically find or download dependencies with "CMake-only" methods.
 *  Multi-platform: Linux, Windows, OSX. (Developed under Linux)
 
 
@@ -134,7 +145,7 @@ HDF5 offers three [storage layouts](https://support.hdfgroup.org/HDF5/Tutor/layo
 * `H5D_COMPACT`:  For scalar or small datasets which can fit in the metadata header. Default on datasets smaller than 32 KB.
 * `H5D_CONTIGUOUS`: For medium size datasets.  Default on datasets smaller than 512 KB.
 * `H5D_CHUNKED`: For large datasets. Default on datasets larger than 512 KB. This layout has some additional features:
-    * Chunking, portioning of the data to improve IO performance by caching more efficiently. Chunk dimensions are calculated by `h5pp` if not given specifically.
+    * Chunking, portioning of the data to improve IO performance by caching more efficiently. Chunk dimensions are calculated by `h5pp` if not given by the user.
     * Compression, disabled by default, and only available if HDF5 was built with zlib enabled.
     * Resize datasets. Note that the file size never decreases, for instance after overwriting with a smaller dataset.
 
@@ -150,9 +161,9 @@ Extendable (or chunked) datasets can also be compressed if HDF5 was built with z
 functions to set or check the compression level:
 
 ```c++
-    file.setCompressionLevel(9);            // 0 to 9: 0 to disable compression, 9 for maximum compression.
+    file.setCompressionLevel(3);            // 0 to 9: 0 to disable compression, 9 for maximum compression. Recommended 2 to 5
     file.getCompressionLevel();             // Gets the current compression level
-    h5pp::checkIfCompressionIsAvailable();         // True if your installation of HDF5 has zlib support 
+    h5pp::checkIfCompressionIsAvailable();  // True if your installation of HDF5 has zlib support 
 ```
 
 or pass a temporary compression level as the fifth argument when writing a dataset:
@@ -187,21 +198,28 @@ Set the level when constructing a h5pp::File or by calling the function `.setLog
 a hand-crafted logger is used in its place to give identical output but without any performance
 considerations (implemented with STL lists, strings and streams).
 
+### Tips
+#### View data
+There are multiple viewers for `HDF5` files. Try [HDF Compass](https://support.hdfgroup.org/projects/compass) or [HDFView](https://www.hdfgroup.org/downloads/hdfview). 
+Both are available in Ubuntu's package repository.
 
-### Load data into Python
-HDF5 data is easy to load into Python. Loading integer and floating point data is straightforward. compound data is almost as simple.
-HDF5 does not support complex types specifically, but `h5pp`enables this through compound HDF5 types. Here is a python example which uses `h5py`
-to load 1D arrays from an HDF5 file generated with `h5pp`:
+
+#### Load data into Python
+HDF5 data is easy to load into Python using [h5py](https://docs.h5py.org/en/stable). Loading integer and floating point data is straightforward. 
+Complex data is almost as simple, so let's use that as an example.
+
+HDF5 does not support complex types natively, but `h5pp`enables this by using a custom compound HDF5 type with `real` and `imag` fields.
+Here is a python example which uses [h5py](https://docs.h5py.org/en/stable) to load 1D arrays from an HDF5 file generated with `h5pp`:
 
 ```python
     import h5py
     import numpy as np
     file  = h5py.File('myFile.h5', 'r')
     
-    # Originally written as std::vector<double> in h5pp
+    # previously written as std::vector<double> in h5pp
     myDoubleArray = np.asarray(file['double-array-dataset'])                                     
     
-    # Originally written as std::vector<std::complex<double>> in h5pp
+    # previously written as std::vector<std::complex<double>> in h5pp
     myComplexArray = np.asarray(file['complex-double-array-dataset']).view(dtype=np.complex128) 
 ```
 Notice the cast to `dtype=np.complex128` which interprets each element of the array as two `doubles`, i.e. the real and imaginary parts are `2 * 64 = 128` bits.  
@@ -218,16 +236,25 @@ Notice the cast to `dtype=np.complex128` which interprets each element of the ar
 #### Optional dependencies:
 * [**Eigen**](http://eigen.tuxfamily.org): Write Eigen matrices and tensors directly. Tested with version >= 3.3.4
 * [**spdlog**](https://github.com/gabime/spdlog): Enables logging for debug purposes. Tested with version >= 1.3.1
-* [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_DOWNLOAD_METHOD=<fetch|conan>.`
+    * [**fmt**](https://github.com/fmtlib/fmt): Formatting library used in `spdlog`.
+* [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_DOWNLOAD_METHOD=` `fetch` or `conan`
 
-### Install methods
+
+**NOTE:** Logging works the same with or without [Spdlog](https://github.com/gabime/spdlog) enabled. When Spdlog is *not* found, 
+a hand-crafted logger is used in its place to give identical output but without any performance
+considerations (implemented with STL lists, strings and streams).
+
+### Obtaining `h5pp`
 There are currently 4 ways to obtain `h5pp`:
 * `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
 * From conda: `conda install -c davidace h5pp`
 * From [conan bintray repo](https://bintray.com/davidace/conan-public/h5pp%3Adavidace)
-* (Debian only) Download the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
+* (Ubuntu/Debian only) Download the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
 
-For full working examples see the directory `quickstart`. Find a summary below.
+
+### Install methods
+
+For full working examples see the directory [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart). Find a summary below.
 
 #### Option 1: Copy the headers
 Copy the files under `h5pp/source/include` and add `#include<h5pp/h5pp.h>`.
@@ -235,7 +262,19 @@ Make sure to compile with `-std=c++17 -lstdc++fs` and link the dependencies `hdf
 is a non-trivial step, see [linking](#linking) below.
 
 
-#### Option 2: Install with CMake
+#### Option 2: Install with Conan (Recommended)
+Make sure to install and configure Conan first. E.g. add the line `compiler.cppstd=17` under `[settings]` in your conan profile `~/.conan/profile/default`.
+Then, either use
+*  the [cmake-conan](https://github.com/conan-io/cmake-conan) integration by passing
+ `-DH5PP_DOWNLOAD_METHOD=conan` as an argument to CMake (see below) 
+* **or** use Conan directly, for instance by running the following command:
+    ```
+    $ conan install h5pp/1.8.1@davidace/stable --profile default
+    ```
+
+Option 2 is the simplest method and will also make sure to install dependencies HDF5, Eigen3 and spdlog.
+
+#### Option 3: Install with CMake
 Build the library just as any CMake project. For instance, from the project's root in command-line:
 
 ```bash
@@ -252,17 +291,7 @@ These config files allow you to use`find_package(h5pp)` in your own projects, wh
 with everything you need to link `h5pp` correctly (including dependencies, if you so choose). 
 If not set, `CMAKE_INSTALL_PREFIX` defaults to `${CMAKE_BINARY_DIR}/install`, where `${CMAKE_BINARY_DIR}` is the directory you are building from.
 
-#### Option 3: Install with Conan
-Make sure to install and configure Conan first. Then, either use the [cmake-conan](https://github.com/conan-io/cmake-conan) integration by passing
- `-DH5PP_DOWNLOAD_METHOD=conan` as an argument to CMake (see below) **or** use Conan directly, for instance by running the following command:
-
-```
-$ conan install h5pp/1.8.1@davidace/stable --profile default
-```
-This is by far the simplest method and will also make sure to install dependencies HDF5, Eigen3 and spdlog.
-
-
-#### Opt-in automatic dependency installation with CMake
+##### Opt-in automatic dependency installation with CMake
 The CMake flag `H5PP_DOWNLOAD_METHOD` controls the automated behavior for finding or installing dependencies. It can take one of three valid strings:
 
 | Option | Description |
@@ -283,9 +312,7 @@ There are several variables you can pass to CMake to guide `find_package` calls,
   * Export Conan install (or bin) directory in the environment variable `CONAN_PREFIX`, i.e. from command line: `export CONAN_PREFIX=<path-to-conan>` 
   * Give the variable `CONAN_PREFIX` directly to CMake, i.e. from command line: `cmake -DCONAN_PREFIX:PATH=<path-to-conan> ...`
 
-
-
-#### CMake build options
+##### CMake options
 
 The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 
@@ -317,7 +344,7 @@ The following variables can be set to help guide CMake's `find_package` to your 
 | `CONAN_PREFIX`        | conan install directory |
 
 
-## Linking
+## Link to your project
 
 ### Link using CMake targets (easy)
 `h5pp` is easily imported into your project using CMake's `find_package`. Just point it to the `h5pp` install directory.
