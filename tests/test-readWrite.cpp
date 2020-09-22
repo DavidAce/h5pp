@@ -97,7 +97,7 @@ void test_h5pp(h5pp::File & file, const WriteType & writeData, std::string_view 
 #endif
             for(size_t i = 0; i < static_cast<size_t>(writeData.size()); i++) compareScalar(writeData[i],readData[i]);
     }
-//#if defined(H5PP_EIGEN3)
+#if defined(H5PP_EIGEN3)
     else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<WriteType> and h5pp::type::sfinae::is_eigen_tensor_v<ReadType>){
         Eigen::Map<const Eigen::Matrix<typename WriteType::Scalar, Eigen::Dynamic,1>> tensorMap(writeData.data(), writeData.size());
         Eigen::Map<const Eigen::Matrix<typename ReadType::Scalar, Eigen::Dynamic,1>> tensorMapRead(readData.data(), readData.size());
@@ -122,7 +122,7 @@ void test_h5pp(h5pp::File & file, const WriteType & writeData, std::string_view 
             throw std::runtime_error("tensor written != tensor read");
         }
     }
-//#endif
+#endif
     else{
         if(writeData != readData){
             if constexpr (h5pp::type::sfinae::is_streamable_v<WriteType> and h5pp::type::sfinae::is_streamable_v<ReadType>)
