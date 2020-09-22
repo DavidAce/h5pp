@@ -75,17 +75,16 @@ things could be even simpler.
     *  numeric types `short`,`int`,`long`, `long long` (+ unsigned versions), `float`, `double`, `long double`
     *  **`std::complex<>`** with any of the types above
     *  CUDA-style POD-structs with `x,y` or `x,y,z` members as atomic type, such as `float3` or `double2`. These work with any of the types above. In `h5pp` these go by the name `Scalar2<>` and `Scalar3<>`.
-    *  Contiguous containers with a `.data()` member, such as `std::vector<>` **(¤)**
+    *  Contiguous containers with a `.data()` member, such as `std::vector<>`
     *  `std::string`, `char` arrays, and `std::vector<std::string>`
-    *  C-style arrays or pointer-to-buffers **(¤¤)**
-*  Support for [**Eigen**](http://eigen.tuxfamily.org) types such as `Eigen::Matrix<>`, `Eigen::Array<>` and `Eigen::Tensor<>`, with automatic conversion to/from row-major storage  **(¤)**
+    *  C-style arrays or pointer-to-buffers
+*  Support for [**Eigen**](http://eigen.tuxfamily.org) types such as `Eigen::Matrix<>`, `Eigen::Array<>` and `Eigen::Tensor<>`, with automatic conversion to/from row-major storage
 *  Support for user-defined compound HDF5 types (see [example](https://github.com/DavidAce/h5pp/blob/master/examples/example-04a-custom-struct-easy.cpp))
 *  Support for HDF5 tables (with user-defined compound HDF5 types for entries)
 *  Modern installation of `h5pp` and its dependencies. Choose:
     *  Installation with package managers: [conan](https://conan.io/), [conda](https://www.anaconda.com) or apt (.deb installation file)
     *  CMake installation providing targets for linking to your projects. (Opt-in) Automatically find or download dependencies with "CMake-only" methods.
 *  Multi-platform: Linux, Windows, OSX. (Developed under Linux)
-
 
 
 ## Usage
