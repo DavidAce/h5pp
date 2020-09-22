@@ -27,11 +27,11 @@ class h5ppConan(ConanFile):
         'verbose'   :[True,False],
         }
 
-    default_options = (
-        'tests=True',
-        'examples=False',
-        'verbose=False',
-    )
+    default_options = {
+        'tests'    : True,
+        'examples' : False,
+        'verbose'  : False,
+    }
 
     def configure(self):
         tools.check_min_cppstd(self, "17")
