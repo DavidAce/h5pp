@@ -268,7 +268,7 @@ Then, either use
  `-DH5PP_DOWNLOAD_METHOD=conan` as an argument to CMake (see below) 
 * **or** use Conan directly, for instance by running the following command:
     ```
-    $ conan install h5pp/1.8.2@davidace/stable --profile default
+    $ conan install h5pp/1.8.3@davidace/stable --profile default
     ```
 
 Option 2 is the simplest method and will also make sure to install dependencies HDF5, Eigen3 and spdlog.
