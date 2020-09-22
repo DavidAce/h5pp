@@ -13,7 +13,151 @@ std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
     return out;
 }
 
+
+
+
+template<typename T>
+struct has_scalar2 {
+    private:
+    static constexpr bool test() {
+        if constexpr(h5pp::type::sfinae::has_value_type_v<T>)
+            return h5pp::type::sfinae::is_Scalar2_v<typename T::value_type>;
+        else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>)
+            return h5pp::type::sfinae::is_Scalar2_v<typename T::Scalar>;
+        else return false;
+    }
+    public:
+    static constexpr bool value = test();
+};
+template<typename T>
+inline constexpr bool has_scalar2_v = has_scalar2<T>::value;
+
+
+template<typename T>
+struct has_scalar3 {
+    private:
+    static constexpr bool test() {
+        if constexpr(h5pp::type::sfinae::has_value_type_v<T>)
+            return h5pp::type::sfinae::is_Scalar3_v<typename T::value_type>;
+        else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>)
+            return h5pp::type::sfinae::is_Scalar3_v<typename T::Scalar>;
+        else return false;
+    }
+    public:
+    static constexpr bool value = test();
+};
+template<typename T>
+inline constexpr bool has_scalar3_v = has_scalar3<T>::value;
+
+template<typename T>
+struct has_scalarN {
+    private:
+    static constexpr bool test() {
+        return has_scalar2_v<T> or has_scalar3_v<T>;
+    }
+    public:
+    static constexpr bool value = test();
+};
+template<typename T>
+inline constexpr bool has_scalarN_v = has_scalarN<T>::value;
+
+
+template<typename T>
+void compareScalar(const T & lhs, const T & rhs){
+    if constexpr(h5pp::type::sfinae::is_Scalar2_v<T>){
+        if(lhs.x != rhs.x) throw std::runtime_error("lhs.x != rhs.x");
+        if(lhs.y != rhs.y) throw std::runtime_error("lhs.y != rhs.y");
+    }else if constexpr(h5pp::type::sfinae::is_Scalar3_v<T>){
+        if(lhs.x != rhs.x) throw std::runtime_error("lhs.x != rhs.x");
+        if(lhs.y != rhs.y) throw std::runtime_error("lhs.y != rhs.y");
+        if(lhs.z != rhs.z) throw std::runtime_error("lhs.z != rhs.z");
+    }
+}
+
+
 // Store some dummy data to an hdf5 file
+
+template<typename WriteType, typename ReadType = WriteType>
+void test_h5pp(h5pp::File & file, const WriteType & writeData, std::string_view dsetpath, std::string tag = ""){
+    if(tag.empty()) tag = dsetpath;
+    h5pp::logger::log->info("Writing {}",tag);
+    file.writeDataset(writeData,dsetpath);
+    h5pp::logger::log->debug("Reading {}",tag);
+    auto readData = file.readDataset<ReadType>(dsetpath);
+    if constexpr(h5pp::type::sfinae::is_ScalarN<ReadType>()) {
+        compareScalar(writeData,readData);
+    }
+    else if constexpr (has_scalarN_v<ReadType>){
+        if(writeData.size()!= readData.size()) throw std::runtime_error("Size mismatch in ScalarN container");
+        if constexpr(h5pp::type::sfinae::is_eigen_matrix_v<ReadType>)
+            for(size_t j = 0; j < static_cast<size_t>(writeData.cols()); j++)
+                for(size_t i = 0; i < static_cast<size_t>(writeData.rows()); i++) compareScalar(writeData(i,j),readData(i,j));
+        else
+            for(size_t i = 0; i < static_cast<size_t>(writeData.size()); i++) compareScalar(writeData[i],readData[i]);
+    }
+//#if defined(H5PP_EIGEN3)
+    else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<WriteType> and h5pp::type::sfinae::is_eigen_tensor_v<ReadType>){
+        Eigen::Map<const Eigen::Matrix<typename WriteType::Scalar, Eigen::Dynamic,1>> tensorMap(writeData.data(), writeData.size());
+        Eigen::Map<const Eigen::Matrix<typename ReadType::Scalar, Eigen::Dynamic,1>> tensorMapRead(readData.data(), readData.size());
+        if(tensorMap != tensorMapRead){
+            if constexpr (WriteType::NumIndices == 4){
+                for(int i = 0; i < writeData.dimension(0); i++)
+                    for(int j = 0; j < writeData.dimension(1); j++)
+                        for(int k = 0; k < writeData.dimension(2); k++) {
+                            for(int l = 0; l < writeData.dimension(3); l++)
+                                h5pp::print("[{} {} {} {}]: {} == {}",i,j,k,l,writeData(i, j, k, l),readData(i, j, k, l));
+                            h5pp::print("\n");
+                        }
+            }
+            if constexpr (WriteType::NumIndices == 3){
+                for(int i = 0; i < writeData.dimension(0); i++)
+                    for(int j = 0; j < writeData.dimension(1); j++)
+                        for(int k = 0; k < writeData.dimension(2); k++) {
+                                h5pp::print("[{} {} {}]: {} == {}",i,j,k,writeData(i, j, k),readData(i, j, k));
+                            h5pp::print("\n");
+                        }
+            }
+            throw std::runtime_error("tensor written != tensor read");
+        }
+    }
+//#endif
+    else{
+        if(writeData != readData){
+            if constexpr (h5pp::type::sfinae::is_streamable_v<WriteType> and h5pp::type::sfinae::is_streamable_v<ReadType>)
+                std::cerr << "Wrote: \n" << writeData << "\n" << "Read: \n" << readData << std::endl;
+            throw std::runtime_error("Data mismatch: Write != Read");
+
+        }
+    }
+
+    h5pp::logger::log->debug("Success");
+}
+
+template<auto size, typename WriteType, typename ReadType = WriteType,typename DimsType = int>
+void test_h5pp(h5pp::File & file, const WriteType * writeData, const DimsType & dims, std::string_view dsetpath, std::string tag = ""){
+    if(tag.empty()) tag = dsetpath;
+    h5pp::logger::log->info("Writing {}",tag);
+    file.writeDataset(writeData,dsetpath,dims);
+    h5pp::logger::log->debug("Reading {}",tag);
+    auto * readData = new ReadType[size];
+    file.readDataset(readData,dsetpath,dims);
+    for(size_t i = 0; i < size; i++){
+        if(writeData[i] != readData[i]){
+            for(size_t j = 0; j < size; j++){
+                if constexpr (h5pp::type::sfinae::is_streamable_v<WriteType> and h5pp::type::sfinae::is_streamable_v<ReadType>)
+                    std::cerr << "Wrote [" << j << "]: " << writeData[j] << " | Read [" << j << "]: " << readData[j] << std::endl;
+            }
+            throw std::runtime_error("Data mismatch: Write != Read");
+        }
+    }
+
+    delete [] readData;
+    h5pp::logger::log->debug("Success");
+}
+
+
+
+
 
 int main() {
     using cplx = std::complex<double>;
@@ -22,228 +166,87 @@ int main() {
                   "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     std::string outputFilename = "output/readWrite.h5";
-    size_t      logLevel       = 0;
+    size_t      logLevel       = 2;
     h5pp::File  file(outputFilename, H5F_ACC_TRUNC | H5F_ACC_RDWR, logLevel);
 
-
-    std::vector<int> emptyVector;
-    file.writeDataset(emptyVector, "emptyVector");
-    file.readDataset(emptyVector, "emptyVector");
-
     // Generate dummy data
+    std::vector<int> emptyVector;
     std::string stringDummy = "Dummy string with spaces";
-    std::cout << "Writing stringDummy :" << stringDummy << std::endl;
-    // Write data data
-    file.writeDataset(stringDummy, "stringDummy");
-    std::cout << "Reading stringDummy" << std::endl;
-    // Read the data back
-    std::string stringDummyRead;
-    file.readDataset(stringDummyRead, "stringDummy");
-    std::cout << "stringDummyRead: " << stringDummyRead << std::endl;
-    // Compare result
-    if(stringDummy != stringDummyRead) {
-        std::cout << "stringDummy    : " << stringDummy << std::endl;
-        std::cout << "stringDummyRead: " << stringDummyRead << std::endl;
-        throw std::runtime_error("stringDummy != stringDummyRead"); }
-
     std::complex<float> cplxFloat(1, 1);
-    file.writeDataset(cplxFloat, "cplxFloat");
-    auto cplxFloatRead = file.readDataset<std::complex<float>>("cplxFloat");
-    if(cplxFloat != cplxFloatRead) throw std::runtime_error("cplxFloat != cplxFloatRead");
-
     std::vector<double> vectorDouble = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
                                         1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
-    std::cout << "Writing vectorDouble      : \n" << vectorDouble << std::endl;
-    file.writeDataset(vectorDouble, "vectorDouble");
-    std::cout << "Reading vectorDouble: \n";
-    auto vectorDoubleRead = file.readDataset<std::vector<double>>("vectorDouble");
-    std::cout << vectorDoubleRead << std::endl;
-    if(vectorDouble != vectorDoubleRead) { throw std::runtime_error("vectorDouble != vectorDoubleRead"); }
-
     std::vector<cplx> vectorComplex = {{-0.191154, 0.326211}, {0.964728, -0.712335}, {-0.0351791, -0.10264}, {0.177544, 0.99999}};
-    std::cout << "Writing vectorComplex     : \n" << vectorComplex << std::endl;
-    file.writeDataset(vectorComplex, "vectorComplex");
-    std::vector<cplx> vectorComplexRead;
-    std::cout << "Reading vectorComplex: \n";
-    file.readDataset(vectorComplexRead, "vectorComplex");
-    std::cout << vectorComplexRead << std::endl;
-    if(vectorComplex != vectorComplexRead) { throw std::runtime_error("vectorComplex != vectorComplexRead"); }
-
     auto *cStyleDoubleArray = new double[10];
-    for(int i = 0; i < 10; i++) cStyleDoubleArray[i] = (double) i;
-    file.writeDataset(cStyleDoubleArray,"cStyleDoubleArray",10);
-    auto *cStyleDoubleArrayRead = new double[10];
-    file.readDataset(cStyleDoubleArrayRead,"cStyleDoubleArray", 10);
-    delete[] cStyleDoubleArray;
-    delete[] cStyleDoubleArrayRead;
-    // Test new field2 type
+    for(size_t i = 0; i < 10; i++) cStyleDoubleArray[i] = static_cast<double>(i);
+
     struct Field2 {
         double x;
         double y;
     };
-
-    Field2 field2{0.53, 0.45};
-    file.writeDataset(field2, "field2");
-    auto field2Read = file.readDataset<Field2>("field2");
-    if(field2.x != field2Read.x) throw std::runtime_error("field2.x != field2Read.x");
-    if(field2.y != field2Read.y) throw std::runtime_error("field2.y != field2Read.y");
-
-    std::vector<Field2> field2array(10);
-    for(size_t i = 0; i < field2array.size(); i++) {
-        field2array[i].x = 2.3 * i;
-        field2array[i].y = 20.5 * i;
-    }
-    file.writeDataset(field2array, "field2array");
-    auto field2ReadArray = file.readDataset<std::vector<Field2>>("field2array");
-    for(size_t i = 0; i < field2array.size(); i++) {
-        if(field2array[i].x != field2ReadArray[i].x) throw std::runtime_error("field2array != field2ReadArray at elem: " + std::to_string(i));
-        if(field2array[i].y != field2ReadArray[i].y) throw std::runtime_error("field2array != field2ReadArray at elem: " + std::to_string(i));
-    }
-
-    // Test new field3 type
     struct Field3 {
         double x;
         double y;
         double z;
     };
+    Field2 field2{0.53, 0.45};
     Field3 field3{0.54, 0.56, 0.58};
-    file.writeDataset(field3, "field3");
-    auto field3Read = file.readDataset<Field3>("field3");
-    if(field3.x != field3Read.x) throw std::runtime_error("field3.x != field3Read.x");
-    if(field3.y != field3Read.y) throw std::runtime_error("field3.y != field3Read.y");
-    if(field3.z != field3Read.z) throw std::runtime_error("field3.z != field3Read.z");
-
-    std::vector<Field3> field3array(10);
-    for(size_t i = 0; i < field3array.size(); i++) {
-        field3array[i].x = 2.3 * i;
-        field3array[i].y = 20.5 * i;
-        field3array[i].z = 200.9 * i;
+    std::vector<Field2> field2vector(10);
+    for(size_t i = 0; i < field2vector.size(); i++) {
+        field2vector[i].x = 2.3 * i;
+        field2vector[i].y = 20.5 * i;
     }
-    file.writeDataset(field3array, "field3array");
-    auto field3ReadArray = file.readDataset<std::vector<Field3>>("field3array");
-    for(size_t i = 0; i < field3array.size(); i++) {
-        if(field3array[i].x != field3ReadArray[i].x) throw std::runtime_error("field3array.x != field3ReadArray.x at elem: " + std::to_string(i));
-        if(field3array[i].y != field3ReadArray[i].y) throw std::runtime_error("field3array.y != field3ReadArray.y at elem: " + std::to_string(i));
-        if(field3array[i].z != field3ReadArray[i].z) throw std::runtime_error("field3array.z != field3ReadArray.z at elem: " + std::to_string(i));
+    std::vector<Field3> field3vector(10);
+    for(size_t i = 0; i < field3vector.size(); i++) {
+        field3vector[i].x = 2.3 * i;
+        field3vector[i].y = 20.5 * i;
+        field3vector[i].z = 200.9 * i;
     }
-
 #ifdef H5PP_EIGEN3
-    Eigen::MatrixXd matrixDouble(3, 2);
-    matrixDouble.setRandom();
-    std::cout << "Writing matrixDouble     : \n" << matrixDouble << std::endl;
-    file.writeDataset(matrixDouble, "matrixDouble");
-    Eigen::MatrixXd matrixDoubleRead;
-    std::cout << "Reading matrixDouble: \n";
-    file.readDataset(matrixDoubleRead, "matrixDouble");
-    std::cout << matrixDoubleRead << std::endl;
-    if(matrixDouble != matrixDoubleRead) { throw std::runtime_error("matrixDouble != matrixDoubleRead"); }
-
-    Eigen::Matrix<size_t, 2, 2, Eigen::RowMajor> matrixSizeTRowMajor;
-    matrixSizeTRowMajor.setRandom();
-    std::cout << "Writing matrixSizeTRowMajor: \n" << matrixSizeTRowMajor << std::endl;
-    file.writeDataset(matrixSizeTRowMajor, "matrixSizeTRowMajor");
-    std::cout << "Reading matrixSizeTRowMajor: \n";
-    Eigen::Matrix<size_t, 2, 2, Eigen::RowMajor> matrixSizeTRowMajorRead;
-    file.readDataset(matrixSizeTRowMajorRead, "matrixSizeTRowMajor");
-    std::cout << matrixSizeTRowMajorRead << std::endl;
-    if(matrixSizeTRowMajor != matrixSizeTRowMajorRead) { throw std::runtime_error("matrixSizeTRowMajor != matrixSizeTRowMajorRead"); }
-
+    Eigen::MatrixXd matrixDouble = Eigen::MatrixXd::Random(3,2);
+    Eigen::Matrix<size_t, 3, 2, Eigen::RowMajor> matrixSizeTRowMajor = Eigen::Matrix<size_t, 3, 2, Eigen::RowMajor>::Random(3,2);
     Eigen::Tensor<cplx, 4> tensorComplex(2, 3, 2, 3);
     tensorComplex.setRandom();
-    std::cout << "Writing tensorComplex     : \n" << tensorComplex << std::endl;
-    file.writeDataset(tensorComplex, "tensorComplex");
-    std::cout << "Reading tensorComplex: \n";
-    Eigen::Tensor<cplx, 4> tensorComplexRead;
-    file.readDataset(tensorComplexRead, "tensorComplex");
-    std::cout << "Finished reading tensorComplex" << std::endl;
-    // Tensor comparison isn't as straightforward if we want to properly test storage orders
-    Eigen::Map<Eigen::VectorXcd> tensorMap(tensorComplex.data(), tensorComplex.size());
-    Eigen::Map<Eigen::VectorXcd> tensorMapRead(tensorComplexRead.data(), tensorComplexRead.size());
-
-    for(int i = 0; i < tensorComplex.dimension(0); i++) {
-        for(int j = 0; j < tensorComplex.dimension(1); j++) {
-            for(int k = 0; k < tensorComplex.dimension(2); k++) {
-                for(int l = 0; l < tensorComplex.dimension(3); l++) {
-                    std::cout << "[ " << i << "  " << j << " " << k << " " << l << " ]: " << tensorComplex(i, j, k, l) << "   " << tensorComplexRead(i, j, k, l) << std::endl;
-                }
-                std::cout << std::endl;
-            }
-        }
-    }
-    if(tensorMap != tensorMapRead) { throw std::runtime_error("tensorComplex != tensorComplexRead"); }
-
     Eigen::Tensor<double, 3> tensorDoubleRowMajor(2, 3, 4);
     tensorDoubleRowMajor.setRandom();
 
-    std::cout << "Writing tensorDoubleRowMajor: \n" << tensorDoubleRowMajor << std::endl;
-    file.writeDataset(tensorDoubleRowMajor, "tensorDoubleRowMajor");
-    Eigen::Tensor<double, 3> tensorDoubleRowMajorRead;
-    std::cout << "Reading tensorDoubleRowMajor: \n";
-    file.readDataset(tensorDoubleRowMajorRead, "tensorDoubleRowMajor");
-    // Tensor comparison isn't as straightforward if we want to properly test storage orders
-    Eigen::Map<Eigen::VectorXd> tensorMap2(tensorDoubleRowMajor.data(), tensorDoubleRowMajor.size());
-    Eigen::Map<Eigen::VectorXd> tensorMapRead2(tensorDoubleRowMajorRead.data(), tensorDoubleRowMajorRead.size());
-
-    for(int i = 0; i < tensorDoubleRowMajor.dimension(0); i++) {
-        for(int j = 0; j < tensorDoubleRowMajor.dimension(1); j++) {
-            for(int k = 0; k < tensorDoubleRowMajor.dimension(2); k++) {
-                std::cout << "[ " << i << "  " << j << " " << k << " ]: " << tensorDoubleRowMajor(i, j, k) << "   " << tensorDoubleRowMajorRead(i, j, k) << std::endl;
-            }
-            std::cout << std::endl;
-        }
-    }
-    if(tensorMap2 != tensorMapRead2) { throw std::runtime_error("tensorDoubleRowMajor != tensorDoubleRowMajorRead"); }
-
     Eigen::Matrix<Field2, Eigen::Dynamic, Eigen::Dynamic> field2Matrix(10, 10);
-    for(int row = 0; row < field2Matrix.rows(); row++) {
-        for(int col = 0; col < field2Matrix.cols(); col++) { field2Matrix(row, col) = {(double) row, (double) col}; }
-    }
-    file.writeDataset(field2Matrix, "field2Matrix");
-    auto field2MatrixRead = file.readDataset<Eigen::Matrix<Field2, Eigen::Dynamic, Eigen::Dynamic>>("field2Matrix");
-    for(long i = 0; i < field2Matrix.cols(); i++) {
-        for(long j = 0; j < field2Matrix.rows(); j++) {
-            if(field2Matrix(i, j).x != field2MatrixRead(i, j).x) throw std::runtime_error("field2array != field2ReadArray at elem: " + std::to_string(i) + " " + std::to_string(j));
-            if(field2Matrix(i, j).y != field2MatrixRead(i, j).y) throw std::runtime_error("field2array != field2ReadArray at elem: " + std::to_string(i) + " " + std::to_string(j));
-        }
-    }
+    for(int row = 0; row < field2Matrix.rows(); row++)
+        for(int col = 0; col < field2Matrix.cols(); col++) field2Matrix(row, col) = {static_cast<double>(row), static_cast<double>(col)};
 
-    Eigen::Matrix<Field3, Eigen::Dynamic, Eigen::Dynamic> field3Matrix(10, 10);
-    for(int row = 0; row < field3Matrix.rows(); row++) {
-        for(int col = 0; col < field3Matrix.cols(); col++) { field3Matrix(row, col) = {(double) row, (double) col, (double) (col + row)}; }
-    }
-    file.writeDataset(field3Matrix, "field3Matrix");
-    auto field3MatrixRead = file.readDataset<Eigen::Matrix<Field3, Eigen::Dynamic, Eigen::Dynamic>>("field3Matrix");
-    for(long i = 0; i < field3Matrix.cols(); i++) {
-        for(long j = 0; j < field3Matrix.rows(); j++) {
-            if(field3Matrix(i, j).x != field3MatrixRead(i, j).x)
-                throw std::runtime_error("field3Matrix.x != field3MatrixRead.x at elem: " + std::to_string(i) + " " + std::to_string(j));
-            if(field3Matrix(i, j).y != field3MatrixRead(i, j).y)
-                throw std::runtime_error("field3Matrix.y != field3MatrixRead.y at elem: " + std::to_string(i) + " " + std::to_string(j));
-            if(field3Matrix(i, j).z != field3MatrixRead(i, j).z)
-                throw std::runtime_error("field3Matrix.z != field3MatrixRead.z at elem: " + std::to_string(i) + " " + std::to_string(j));
-        }
-    }
-
-    // Test write/read from map types
     Eigen::Map<Eigen::VectorXd>                vectorMapDouble(vectorDouble.data(), (long) vectorDouble.size());
     Eigen::Map<Eigen::MatrixXd>                matrixMapDouble(matrixDouble.data(), matrixDouble.rows(), matrixDouble.cols());
     Eigen::TensorMap<Eigen::Tensor<double, 2>> tensorMapDouble(matrixDouble.data(), matrixDouble.rows(), matrixDouble.cols());
-    file.writeDataset(vectorMapDouble, "vectorMapDouble");
-    file.writeDataset(matrixMapDouble, "matrixMapDouble");
-    file.writeDataset(tensorMapDouble, "tensorMapDouble");
-    file.readDataset(vectorMapDouble, "vectorMapDouble");
-    file.readDataset(matrixMapDouble, "matrixMapDouble");
-    file.readDataset(tensorMapDouble, "tensorMapDouble");
-
-    // Test writing an Nx1 matrix and reading as vector
     Eigen::MatrixXd vectorMatrix = Eigen::MatrixXd::Random(10,1);
-    file.writeDataset(vectorMatrix, "vectorMatrix");
-    auto vectorMatrixReadAsVector = file.readDataset<Eigen::VectorXd>("vectorMatrix");
+#endif
 
+
+    // Test reading and writing dummy data
+    test_h5pp(file,emptyVector,"emptyVector");
+    test_h5pp(file,stringDummy,"stringDummy");
+    test_h5pp(file,cplxFloat,"cplxFloat");
+    test_h5pp(file,vectorDouble,"vectorDouble");
+    test_h5pp(file,vectorComplex,"vectorComplex");
+    test_h5pp<10,double>(file,cStyleDoubleArray,10,"cStyleDoubleArray");
+    delete[] cStyleDoubleArray;
+    test_h5pp(file,field2,"field2");
+    test_h5pp(file,field3,"field3");
+    test_h5pp(file,field2vector,"field2vector");
+    test_h5pp(file,field3vector,"field3vector");
+
+#ifdef H5PP_EIGEN3
+    test_h5pp(file,matrixDouble,"matrixDouble");
+    test_h5pp(file,matrixSizeTRowMajor,"matrixSizeTRowMajor");
+    test_h5pp(file,tensorComplex,"tensorComplex");
+    test_h5pp(file,tensorDoubleRowMajor,"tensorDoubleRowMajor");
+    test_h5pp(file,field2Matrix,"field2Matrix");
+    test_h5pp<Eigen::Map<Eigen::VectorXd>               ,Eigen::VectorXd>(file,vectorMapDouble,"vectorMapDouble");
+    test_h5pp<Eigen::Map<Eigen::MatrixXd>               ,Eigen::MatrixXd>(file,matrixMapDouble,"matrixMapDouble");
+    test_h5pp<Eigen::TensorMap<Eigen::Tensor<double, 2>>,Eigen::Tensor<double, 2> >(file,tensorMapDouble,"tensorMapDouble");
+    test_h5pp<Eigen::MatrixXd, Eigen::VectorXd>(file,vectorMatrix,"vectorMatrix");
 #endif
 
     auto foundLinksInRoot = file.findDatasets();
-    for(auto &link : foundLinksInRoot) { std::cout << "Found Link: " << link << std::endl; }
+    for(auto &link : foundLinksInRoot) h5pp::logger::log->info("Found Link: {}", link);
 
     return 0;
 }
