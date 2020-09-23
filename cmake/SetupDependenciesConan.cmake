@@ -16,9 +16,6 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
         ##################################################################
         ### Install dependencies from conanfile.txt                    ###
         ### This uses conan to get spdlog/eigen3/h5pp/ceres            ###
-        ###    eigen/3.3.7@                                            ###
-        ###    spdlog/1.7.0                                            ###
-        ###    hdf5/1.12.0                                             ###
         ##################################################################
 
         find_program (
