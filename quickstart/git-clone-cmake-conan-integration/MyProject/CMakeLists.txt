@@ -20,9 +20,8 @@ conan_cmake_run(
         CONANFILE conanfile.txt
         BUILD_TYPE ${CMAKE_BUILD_TYPE}
         BASIC_SETUP CMAKE_TARGETS
-	PROFILE_AUTO ALL
+	    PROFILE_AUTO ALL
         BUILD missing)
-
 
 message(STATUS "Found Conan targets: ${CONAN_TARGETS}")
 target_link_libraries(MyProjectExecutable PRIVATE ${CONAN_TARGETS})
