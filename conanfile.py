@@ -4,7 +4,7 @@ from conans.errors import ConanInvalidConfiguration
 
 class h5ppConan(ConanFile):
     name = "h5pp"
-    version = "1.8.3"
+    version = "1.8.4"
     description = "A C++17 wrapper for HDF5 with focus on simplicity"
     homepage = "https://github.com/DavidAce/h5pp"
     author = "DavidAce <aceituno@kth.se>"
