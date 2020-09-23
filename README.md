@@ -3,7 +3,7 @@
 [![Ubuntu 20.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2020.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Windows 10](https://github.com/DavidAce/h5pp/workflows/Windows%2010/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Anaconda-Server Badge](https://anaconda.org/davidace/h5pp/badges/installer/conda.svg)](https://conda.anaconda.org/davidace)
-[![Download](https://img.shields.io/badge/Install%20with-conan-green)](https://bintray.com/davidace/conan-public/h5pp%3Adavidace/_latestVersion)
+[![Download](https://img.shields.io/badge/Install%20with-conan-green)](https://bintray.com/conan/conan-center/h5pp%3A_/_latestVersion)
 [![Download](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)
 
 ---
@@ -247,7 +247,7 @@ considerations (implemented with STL lists, strings and streams).
 There are currently 4 ways to obtain `h5pp`:
 * `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
 * From conda: `conda install -c davidace h5pp`
-* From [conan bintray repo](https://bintray.com/davidace/conan-public/h5pp%3Adavidace)
+* From [conan-center](https://conan.io/center/h5pp/1.8.3)
 * (Ubuntu/Debian only) Download the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
 
 
@@ -263,15 +263,17 @@ is a non-trivial step, see [linking](#linking) below.
 
 #### Option 2: Install with Conan (Recommended)
 Make sure to install and configure Conan first. E.g. add the line `compiler.cppstd=17` under `[settings]` in your conan profile `~/.conan/profile/default`.
-Then, either use
-*  the [cmake-conan](https://github.com/conan-io/cmake-conan) integration by passing
- `-DH5PP_DOWNLOAD_METHOD=conan` as an argument to CMake (see below) 
-* **or** use Conan directly, for instance by running the following command:
-    ```
-    $ conan install h5pp/1.8.3@davidace/stable --profile default
-    ```
+Then run the following command:
 
-Option 2 is the simplest method and will also make sure to install dependencies HDF5, Eigen3 and spdlog.
+```
+$ conan install h5pp/1.8.3@ --build=missing
+```
+
+The flag `--build=missing` lets conan install dependencies such as HDF5, Eigen3 and spdlog.
+
+After this step, use `h5pp` like any other conan package. 
+For more information refer to the [conan docs](https://docs.conan.io/en/latest/getting_started.html) or have a look at [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart).
+
 
 #### Option 3: Install with CMake
 Build the library just as any CMake project. For instance, from the project's root in command-line:
@@ -282,7 +284,6 @@ Build the library just as any CMake project. For instance, from the project's ro
     cmake -DCMAKE_INSTALL_PREFIX=<install-dir> ../
     make
     make install
-
 ```
 
 Headers will be installed under `<install-dir>/include` and config files under `<install-dir>/share/h5pp/cmake`.
@@ -291,16 +292,15 @@ with everything you need to link `h5pp` correctly (including dependencies, if yo
 If not set, `CMAKE_INSTALL_PREFIX` defaults to `${CMAKE_BINARY_DIR}/install`, where `${CMAKE_BINARY_DIR}` is the directory you are building from.
 
 ##### Opt-in automatic dependency installation with CMake
-The CMake flag `H5PP_DOWNLOAD_METHOD` controls the automated behavior for finding or installing dependencies. It can take one of three valid strings:
+The CMake flag `H5PP_DOWNLOAD_METHOD` controls the automated behavior for finding or installing dependencies. It can take one of these strings:
 
 | Option | Description |
 | ---- | ---- |
 | `none`  **(default)**             | No handling of dependencies and linking is left to the user |
 | `find`                            | Use CMake's `find_package`  to find dependencies pre-installed on your system  |
 | `fetch` **(!)**                   | Use CMake-only features to download and install dependencies automatically. Disregards pre-installed dependencies on your system |
-| `native`                          | Deprecated. Use `fetch` |
 | `find-or-fetch`                   | Start with `find` and then go to `fetch` if not found |
-| `conan`   **(!!)**                 | Use the [Conan package manager](https://conan.io/) to download and install dependencies automatically. Disregards pre-installed dependencies on your system  |
+| `conan`   **(!!)**                 | Use the [Conan package manager](https://conan.io/) to download and install dependencies automatically. Disregards libraries elsewhere on your system  |
 
 There are several variables you can pass to CMake to guide `find_package` calls, see [CMake build options](#cmake-build-options) below. 
 
@@ -357,15 +357,16 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
     add_executable(myExecutable main.cpp)
     find_package(h5pp PATHS <path-to-h5pp-install-dir> REQUIRED) # If h5pp is installed through conda the path may be $ENV{CONDA_PREFIX}
     target_link_libraries(myExecutable PRIVATE h5pp::h5pp)
-
 ```
+
+
 #### Targets explained
 
 *  `h5pp::h5pp` is the main target including "everything" and should normally be the only target that you need -- headers,flags and (if enabled) the found/downloaded dependencies.
 *  `h5pp::headers` links the `h5pp` headers only.
 *  `h5pp::deps` collects library targets to link all the dependencies that were found/downloaded when `h5pp` was built. These can of course be used independently.
     * If `H5PP_DOWNLOAD_METHOD==find|find-or-fetch|fetch` the targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::hdf5`, 
-    * If `H5PP_DOWNLOAD_METHOD==conan` the targets are `CONAN_PKG::Eigen3`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. 
+    * If `H5PP_DOWNLOAD_METHOD==conan` the targets are `CONAN_PKG::eigen`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. 
     * If `H5PP_DOWNLOAD_METHOD==none` then `h5pp::deps` is empty.
 *  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`. 
     On `MSVC` it sets `/permissive-` to enable logical `and`/`or` in C++. 
