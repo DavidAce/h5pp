@@ -18,6 +18,7 @@ endif()
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 conan_cmake_run(
         CONANFILE conanfile.txt
+        SETTINGS compiler.cppstd=17
         BUILD_TYPE ${CMAKE_BUILD_TYPE}
         BASIC_SETUP CMAKE_TARGETS
 	    PROFILE_AUTO ALL
