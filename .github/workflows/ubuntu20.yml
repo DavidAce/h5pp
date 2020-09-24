@@ -65,7 +65,7 @@ jobs:
       - name: Setup clang
         if: matrix.compiler == 'clang'
         run: |
-          sudo apt-get install clang-10 clang++-10 gfortran -y
+          sudo apt-get install clang-10 clang++-10 libclang-10-dev libclang1-10 libclang-common-10-dev gfortran -y
           echo "::set-env name=FC::gfortran"
           echo "::set-env name=CC::clang-10"
           echo "::set-env name=CXX::clang++-10"
