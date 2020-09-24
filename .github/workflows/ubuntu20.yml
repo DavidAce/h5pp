@@ -54,9 +54,10 @@ jobs:
             build/Debug/install
           key: ${{ env.cache-name }}
 
-      - name: Setup gcc # compilers are already installed on the CI #  sudo apt-get install gcc-10 g++-10 gfortran -y
+      - name: Setup gcc # compilers are already installed on the CI
         if: matrix.compiler == 'gcc'
         run: |
+          sudo apt-get install gcc-10 g++-10 gfortran -y
           echo "::set-env name=FC::gfortran"
           echo "::set-env name=CC::gcc-10"
           echo "::set-env name=CXX::g++-10"
