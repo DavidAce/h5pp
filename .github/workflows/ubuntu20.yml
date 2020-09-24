@@ -54,18 +54,16 @@ jobs:
             build/Debug/install
           key: ${{ env.cache-name }}
 
-      - name: Setup gcc
+      - name: Setup gcc # compilers are already installed on the CI #  sudo apt-get install gcc-10 g++-10 gfortran -y
         if: matrix.compiler == 'gcc'
         run: |
-          sudo apt-get install gcc-10 g++-10 gfortran -y
           echo "::set-env name=FC::gfortran"
           echo "::set-env name=CC::gcc-10"
           echo "::set-env name=CXX::g++-10"
 
       - name: Setup clang
-        if: matrix.compiler == 'clang'
+        if: matrix.compiler == 'clang' # compilers are already installed on the CI # sudo apt-get install libclang-10-dev gfortran -y
         run: |
-          sudo apt-get install clang-10 clang++-10 gfortran -y
           echo "::set-env name=FC::gfortran"
           echo "::set-env name=CC::clang-10"
           echo "::set-env name=CXX::clang++-10"
