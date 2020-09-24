@@ -55,7 +55,6 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
                 CONAN_COMMAND ${CONAN_COMMAND}
                 SETTINGS compiler.cppstd=17
                 SETTINGS "${conan_libcxx}"
-                SETTINGS compiler.cppstd=17
                 PROFILE_AUTO ALL
                 BUILD_TYPE ${CMAKE_BUILD_TYPE}
                 BASIC_SETUP CMAKE_TARGETS
