@@ -199,7 +199,7 @@ considerations (implemented with STL lists, strings and streams).
 
 ### Tips
 #### View data
-There are multiple viewers for `HDF5` files. Try [HDF Compass](https://support.hdfgroup.org/projects/compass) or [HDFView](https://www.hdfgroup.org/downloads/hdfview). 
+Try [HDF Compass](https://support.hdfgroup.org/projects/compass) or [HDFView](https://www.hdfgroup.org/downloads/hdfview). 
 Both are available in Ubuntu's package repository.
 
 
