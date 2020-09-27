@@ -198,6 +198,9 @@ a hand-crafted logger is used in its place to give identical output but without 
 considerations (implemented with STL lists, strings and streams).
 
 ### Tips
+#### **NEW:** [h5du](https://github.com/DavidAce/h5du)
+List the size of objects inside an HDF5 file with [h5du](https://github.com/DavidAce/h5du).
+
 #### View data
 Try [HDF Compass](https://support.hdfgroup.org/projects/compass) or [HDFView](https://www.hdfgroup.org/downloads/hdfview). 
 Both are available in Ubuntu's package repository.
