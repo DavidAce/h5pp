@@ -100,8 +100,8 @@ most of the work can be achieved using just two member functions `.writeDataset(
         // Initialize a file
         h5pp::File file("myDir/someFile.h5");
     
-        // Initialize a vector with 10 doubles
-        std::vector<double> v (10, 3.14);
+        // Initialize a vector doubles
+        std::vector<double> v = {1.0, 2.0, 3.0};
         
         // Write the vector to file.
         // Inside the file, the data will be stored in a dataset named "myStdVector"
