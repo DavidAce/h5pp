@@ -2257,7 +2257,7 @@ namespace h5pp::hdf5 {
                              util::safe_str(fieldName).c_str(),
                              startIdx.value(),
                              numReadRecords.value(),
-                             fieldSize,
+                             info.recordBytes.value(),
                              info.fieldOffsets.value().data(),
                              info.fieldSizes.value().data(),
                              dataPtr);
