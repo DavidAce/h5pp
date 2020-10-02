@@ -46,18 +46,24 @@ namespace h5pp {
                 if(h5Layout.value() == H5D_CHUNKED) {}
                 if(h5Layout.value() == H5D_COMPACT) {
                     if(dimsChunk)
-                        error_msg.append(h5pp::format("Chunk dims {} | Layout is H5D_COMPACT | chunk dimensions are only meant for H5D_CHUNKED layouts\n", dimsChunk.value()));
-                    if(dimsMax and dims and dimsMax.value() != dims.value())
                         error_msg.append(h5pp::format(
-                            "dims {} | max dims {} | layout is H5D_COMPACT | dims and max dims must be equal unless the layout is H5D_CHUNKED\n", dims.value(), dimsMax.value()));
+                            "Chunk dims {} | Layout is H5D_COMPACT | chunk dimensions are only meant for H5D_CHUNKED layouts\n",
+                            dimsChunk.value()));
+                    if(dimsMax and dims and dimsMax.value() != dims.value())
+                        error_msg.append(h5pp::format("dims {} | max dims {} | layout is H5D_COMPACT | dims and max dims must be equal "
+                                                      "unless the layout is H5D_CHUNKED\n",
+                                                      dims.value(),
+                                                      dimsMax.value()));
                 }
                 if(h5Layout.value() == H5D_CONTIGUOUS) {
                     if(dimsChunk)
-                        error_msg.append(
-                            h5pp::format("Chunk dims {} | Layout is H5D_CONTIGUOUS | chunk dimensions are only meant for datasets with H5D_CHUNKED layout \n", dimsChunk.value()));
+                        error_msg.append(h5pp::format("Chunk dims {} | Layout is H5D_CONTIGUOUS | chunk dimensions are only meant for "
+                                                      "datasets with H5D_CHUNKED layout \n",
+                                                      dimsChunk.value()));
                     if(dimsMax)
-                        error_msg.append(
-                            h5pp::format("Max dims {} | Layout is H5D_CONTIGUOUS | max dimensions are only meant for datasets with H5D_CHUNKED layout \n", dimsMax.value()));
+                        error_msg.append(h5pp::format("Max dims {} | Layout is H5D_CONTIGUOUS | max dimensions are only meant for datasets "
+                                                      "with H5D_CHUNKED layout \n",
+                                                      dimsMax.value()));
                 }
             }
             std::string res1 = reportCompatibility(dims, dimsMax);
@@ -65,13 +71,15 @@ namespace h5pp {
             std::string res3 = reportCompatibility(dimsChunk, dimsMax);
             if(not res1.empty()) error_msg.append(h5pp::format("\t{}: dims {} | max dims {}\n", res1, dims.value(), dimsMax.value()));
             if(not res2.empty()) error_msg.append(h5pp::format("\t{}: dims {} | chunk dims {}\n", res2, dims.value(), dimsChunk.value()));
-            if(not res3.empty()) error_msg.append(h5pp::format("\t{}: chunk dims {} | max dims {}\n", res3, dimsChunk.value(), dimsMax.value()));
+            if(not res3.empty())
+                error_msg.append(h5pp::format("\t{}: chunk dims {} | max dims {}\n", res3, dimsChunk.value(), dimsMax.value()));
             return error_msg;
         }
 
     }
 
     struct Options {
+        /* clang-format off */
         std::optional<std::string>      linkPath      = std::nullopt; /*!< Path to HDF5 dataset relative to the file root */
         std::optional<std::string>      attrName      = std::nullopt; /*!< Name of attribute on group or dataset */
         OptDimsType                     dataDims      = std::nullopt; /*!< Data dimensions hint. Required for pointer data */
@@ -84,7 +92,8 @@ namespace h5pp {
         std::optional<H5D_layout_t>     h5Layout      = std::nullopt; /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
         std::optional<unsigned int>     compression   = std::nullopt; /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
         std::optional<h5pp::ResizeMode> resizeMode    = std::nullopt; /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
-        [[nodiscard]] std::string       string() const {
+        /* clang-format on */
+        [[nodiscard]] std::string string() const {
             std::string msg;
             /* clang-format off */
             if(dataDims) msg.append(h5pp::format(" | data dims {}", dataDims.value()));
@@ -151,7 +160,8 @@ namespace h5pp {
             /* clang-format on */
             hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), static_cast<hsize_t>(1), std::multiplies<>());
             if(size_check != dataSize.value())
-                throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | dataDims {} = size [{}]", dataSize.value(), dataDims.value(), size_check));
+                throw std::runtime_error(h5pp::format(
+                    "Data size mismatch: dataSize [{}] | dataDims {} = size [{}]", dataSize.value(), dataDims.value(), size_check));
         }
 
         void assertReadReady() const {
@@ -170,7 +180,8 @@ namespace h5pp {
 
             /* clang-format on */
             hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), static_cast<hsize_t>(1), std::multiplies<>());
-            if(size_check != dataSize.value()) throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | size check [{}]", dataSize.value(), size_check));
+            if(size_check != dataSize.value())
+                throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | size check [{}]", dataSize.value(), size_check));
         }
         [[nodiscard]] std::string string() const {
             //            std::string msg;
@@ -394,19 +405,20 @@ namespace h5pp {
             if(not h5Link             ) error_msg.append("\t h5Link\n");
             if(not h5Type             ) error_msg.append("\t h5Type\n");
             if(not h5Space            ) error_msg.append("\t h5Space\n");
-            if(not h5PlistAttrCreate) error_msg.append("\t h5PlistAttrCreate\n");
-            if(not h5PlistAttrAccess) error_msg.append("\t h5PlistAttrAccess\n");
+            if(not h5PlistAttrCreate  ) error_msg.append("\t h5PlistAttrCreate\n");
+            if(not h5PlistAttrAccess  ) error_msg.append("\t h5PlistAttrAccess\n");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot create attribute. The following fields are undefined:\n{}", error_msg));
             if(not linkExists.value())
                 throw std::runtime_error(h5pp::format("Cannot create attribute [{}] for link [{}]. The link does not exist",attrName.value(),linkPath.value()));
-            if(not h5Link->valid()   ) error_msg.append("\t h5Link\n");
-            if(not h5Type->valid()   ) error_msg.append("\t h5Type\n");
-            if(not h5Space->valid()  ) error_msg.append("\t h5Space\n");
+            if(not h5Link->valid()           ) error_msg.append("\t h5Link\n");
+            if(not h5Type->valid()           ) error_msg.append("\t h5Type\n");
+            if(not h5Space->valid()          ) error_msg.append("\t h5Space\n");
             if(not h5PlistAttrCreate->valid()) error_msg.append("\t h5PlistAttrCreate\n");
             if(not h5PlistAttrAccess->valid()) error_msg.append("\t h5PlistAttrAccess\n");
             if(not error_msg.empty())
-                throw std::runtime_error(h5pp::format("Cannot create attribute [{}] for link [{}]. The following fields are not valid: {}",attrName.value(),linkPath.value(),error_msg));
+                throw std::runtime_error(h5pp::format("Cannot create attribute [{}] for link [{}]. The following fields are not valid: {}",
+                                            attrName.value(),linkPath.value(),error_msg));
             /* clang-format on */
         }
 
@@ -420,7 +432,9 @@ namespace h5pp {
             if(not h5Attr->valid()    ) error_msg.append("\t h5Attr\n");
             if(not h5Type->valid()    ) error_msg.append("\t h5Type\n");
             if(not error_msg.empty())
-                throw std::runtime_error(h5pp::format("Cannot create attribute [{}] for link [{}]. The following fields are not valid: {}",attrName.value(),linkPath.value(),error_msg));
+                throw std::runtime_error(h5pp::format(
+                        "Cannot create attribute [{}] for link [{}]. The following fields are not valid: {}",
+                        attrName.value(),linkPath.value(),error_msg));
             /* clang-format on */
         }
 
