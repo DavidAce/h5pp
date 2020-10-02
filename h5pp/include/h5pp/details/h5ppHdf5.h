@@ -2150,7 +2150,7 @@ namespace h5pp::hdf5 {
     template<typename DataType>
     inline void readTableField(DataType &            data,
                                const TableInfo &     info,
-                               std::string_view      fieldName,
+                               const std::vector<size_t> &srcFieldIndices, // Field indices for the table on file
                                std::optional<size_t> startIdx       = std::nullopt,
                                std::optional<size_t> numReadRecords = std::nullopt) {
         // If none of startIdx or numReadRecords are given:
@@ -2173,7 +2173,8 @@ namespace h5pp::hdf5 {
             }
         } else if(startIdx and not numReadRecords) {
             if(startIdx.value() > totalRecords - 1)
-                throw std::runtime_error(h5pp::format("Invalid start record {} for table [{}] | total records [{}]", startIdx.value(), info.tablePath.value(), totalRecords));
+                throw std::runtime_error(h5pp::format(
+                    "Invalid start record {} for table [{}] | total records [{}]", startIdx.value(), info.tablePath.value(), totalRecords));
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 numReadRecords = totalRecords - startIdx.value();
             } else {
@@ -2182,14 +2183,19 @@ namespace h5pp::hdf5 {
 
         } else if(numReadRecords and not startIdx) {
             if(numReadRecords and numReadRecords.value() > totalRecords)
-                throw std::logic_error(
-                    h5pp::format("Cannot read {} records from table [{}] which only has {} records", numReadRecords.value(), info.tablePath.value(), totalRecords));
+                throw std::logic_error(h5pp::format("Cannot read {} records from table [{}] which only has {} records",
+                                                    numReadRecords.value(),
+                                                    info.tablePath.value(),
+                                                    totalRecords));
             startIdx = totalRecords - numReadRecords.value();
         }
 
         // Sanity check
         if(numReadRecords.value() > totalRecords)
-            throw std::logic_error(h5pp::format("Cannot read {} records from table [{}] which only has {} records", numReadRecords.value(), info.tablePath.value(), totalRecords));
+            throw std::logic_error(h5pp::format("Cannot read {} records from table [{}] which only has {} records",
+                                                numReadRecords.value(),
+                                                info.tablePath.value(),
+                                                totalRecords));
         if(startIdx.value() + numReadRecords.value() > totalRecords)
             throw std::logic_error(h5pp::format("Cannot read {} records starting from index {} from table [{}] which only has {} records",
                                                 numReadRecords.value(),
@@ -2197,27 +2203,21 @@ namespace h5pp::hdf5 {
                                                 info.tablePath.value(),
                                                 totalRecords));
 
-        // Compute the field index
-        std::optional<size_t> optFieldIdx;
-        for(size_t idx = 0; idx < info.fieldNames->size(); idx++) {
-            if(fieldName == info.fieldNames.value()[idx]) {
-                optFieldIdx = idx;
-                break;
-            }
+        // Build the field sizes and offsets of the given read buffer based on the corresponding quantities on file
+        std::vector<size_t>      srcFieldOffsets;
+        std::vector<size_t>      tgtFieldOffsets;
+        std::vector<size_t>      tgtFieldSizes;
+        std::vector<std::string> tgtFieldNames;
+        size_t                   tgtFieldSizeSum = 0;
+        for(const auto & idx : srcFieldIndices){
+            srcFieldOffsets.emplace_back(info.fieldOffsets.value()[idx]);
+            tgtFieldOffsets.emplace_back(tgtFieldSizeSum);
+            tgtFieldSizes.emplace_back(info.fieldSizes.value()[idx]);
+            tgtFieldNames.emplace_back(info.fieldNames.value()[idx]);
+            tgtFieldSizeSum += tgtFieldSizes.back();
         }
-        if(not optFieldIdx)
-            throw std::runtime_error(h5pp::format("Could not read field [{}] from table [{}]: "
-                                                  "Could not find field name [{}] | "
-                                                  "Available field names are {}",
-                                                  fieldName,
-                                                  info.tablePath.value(),
-                                                  fieldName,
-                                                  info.fieldNames.value()));
-        size_t fieldIdx    = optFieldIdx.value();
-        size_t fieldSize   = info.fieldSizes.value()[fieldIdx];
-        size_t fieldOffset = info.fieldOffsets.value()[fieldIdx];
 
-        // Make sure the given data type size matches the registered table record size.
+        // Make sure the data type of the given read buffer matches the size computed above.
         // If there is a mismatch here it can cause horrible bugs/segfaults
         size_t dataSize = 0;
         if constexpr(h5pp::type::sfinae::has_value_type_v<DataType>)
@@ -2227,50 +2227,112 @@ namespace h5pp::hdf5 {
         else
             dataSize = sizeof(DataType);
 
-        if(dataSize != fieldSize)
-            throw std::runtime_error(h5pp::format("Could not read field [{}] from table [{}]: "
-                                                  "Size mismatch: "
-                                                  "Given data container size is {} bytes per element | "
-                                                  "Field size is {} bytes per element",
-                                                  fieldName,
-                                                  info.tablePath.value(),
-                                                  dataSize,
-                                                  fieldSize));
+        if(dataSize != tgtFieldSizeSum){
+            std::string error_msg = h5pp::format("Could not read fields {} from table [{}]\n", tgtFieldNames,
+                                                 info.tablePath.value());
+            for(auto & idx: srcFieldIndices)
+                error_msg += h5pp::format("{:<10} Field index {:<6} {:<24} = {} bytes\n"," ", idx,info.fieldNames.value()[idx], info.fieldSizes.value()[idx]);
+
+            std::string dataTypeName;
+            if constexpr(h5pp::type::sfinae::has_value_type_v<DataType>)
+                dataTypeName = h5pp::type::sfinae::type_name<typename DataType::value_type>();
+            else if constexpr(h5pp::type::sfinae::has_data_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>)
+                dataTypeName = h5pp::type::sfinae::type_name<decltype(&data.data())>();
+            else
+                dataTypeName = h5pp::type::sfinae::type_name<DataType>();
+            error_msg += h5pp::format("{:<8} + {:-^60}\n"," ","");
+            error_msg += h5pp::format("{:<10} Fields total = {} bytes per record\n"," ", tgtFieldSizeSum);
+            error_msg += h5pp::format("{:<10} Given buffer = {} bytes per record <{}>\n"," ", dataSize,dataTypeName);
+            error_msg += h5pp::format("{:<10} Size mismatch\n"," ");
+            error_msg += h5pp::format("{:<10} Hint: The buffer type <{}> may have been padded by the compiler\n"," ",dataTypeName);
+            error_msg += h5pp::format("{:<10}       Consider declaring <{}> with __attribute__((packed, aligned(1)))\n"," ",dataTypeName);
+            throw std::runtime_error(error_msg);
+        }
 
         h5pp::util::resizeData(data, {numReadRecords.value()});
-        h5pp::logger::log->debug("Reading table [{}] | field [{}] | field index {} | field offset {} | field size {} bytes | read from record {} | read num records {} | available "
+        h5pp::logger::log->debug("Reading table [{}] | field names {} | read from "
+                                 "record {} | read num records {} | available "
                                  "records {} | record size {} bytes",
                                  info.tablePath.value(),
-                                 fieldName,
-                                 fieldIdx,
-                                 fieldOffset,
-                                 fieldSize,
+                                 tgtFieldNames,
                                  startIdx.value(),
                                  numReadRecords.value(),
                                  info.numRecords.value(),
                                  info.recordBytes.value());
+        h5pp::logger::log->trace("Reading field indices {} sizes {} | offsets {} | offsets on dataset {}", srcFieldIndices,tgtFieldSizes, tgtFieldOffsets, srcFieldOffsets);
 
         // Get the memory address to the data buffer
         auto dataPtr = h5pp::util::getVoidPointer<void *>(data);
-        herr_t retval = H5TBread_fields_name(info.getTableLocId(),
-                                             util::safe_str(info.tablePath.value()).c_str(),
-                                             util::safe_str(fieldName).c_str(),
-                                             startIdx.value(),
-                                             numReadRecords.value(),
-                                             info.recordBytes.value(),
-                                             info.fieldOffsets.value().data(),
-                                             info.fieldSizes.value().data(),
-                                             dataPtr);
 
+        /* Step 1: Get the dataset and memory spaces */
+        hid::h5s dsetSpace = H5Dget_space(info.tableDset.value());           /* get a copy of the new file data space for writing */
+        hid::h5s dataSpace = util::getMemSpace(numReadRecords.value(), {numReadRecords.value()}); /* create a simple memory data space */
+
+        /* Step 2: draw a hyperslab in the dataset */
+        h5pp::Hyperslab slab;
+        slab.offset = {startIdx.value()};
+        slab.extent = {numReadRecords.value()};
+        selectHyperslab(dsetSpace, slab, H5S_SELECT_SET);
+
+        /* Step 3: Create a special tgtTypeId for reading a subset of the record with the following properties:
+         *      - tgtTypeId has the size of the given buffer type, i.e. dataSize.
+         *      - only the fields to read are defined in it
+         *      - the defined fields are converted to native types
+         *      Then H5Dread will take care of only reading the relevant components of the record
+         */
+
+        hid::h5t tgtTypeId = H5Tcreate(H5T_COMPOUND,dataSize);
+        for(size_t tgtIdx = 0; tgtIdx < srcFieldIndices.size(); tgtIdx++){
+            size_t srcIdx = srcFieldIndices[tgtIdx];
+            hid::h5t temp_member_id = H5Tget_native_type(info.fieldTypes.value()[srcIdx],H5T_DIR_DEFAULT);
+            size_t temp_member_size = H5Tget_size(temp_member_id);
+            if(tgtFieldSizes[tgtIdx] != temp_member_size)
+                H5Tset_size(temp_member_id,tgtFieldSizes[tgtIdx]);
+            H5Tinsert(tgtTypeId, tgtFieldNames[tgtIdx].c_str(),tgtFieldOffsets[tgtIdx],temp_member_id);
+        }
+
+        /* Read data */
+        herr_t retval = H5Dread(info.tableDset.value(), tgtTypeId, dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Could not read table field [{}] on table [{}]", fieldName , info.tablePath.value()));
+            throw std::runtime_error(h5pp::format("Could not read table fields {} on table [{}]", tgtFieldNames, info.tablePath.value()));
         }
     }
 
-    template<typename h5x_src, typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
-    inline void
-        copyLink(const h5x_src &srcLocId, const std::string &srcLinkPath, const h5x_tgt &tgtLocId, const std::string &tgtLinkPath, const PropertyLists &plists = PropertyLists()) {
+
+    template<typename DataType>
+    inline void readTableField(DataType &            data,
+                               const TableInfo &     info,
+                               const std::vector<std::string> & fieldNames,
+                               std::optional<size_t> startIdx       = std::nullopt,
+                               std::optional<size_t> numReadRecords = std::nullopt) {
+        // Compute the field indices
+        std::vector<size_t> fieldIndices;
+        for(const auto &fieldName : fieldNames) {
+            auto it = std::find(info.fieldNames->begin(), info.fieldNames->end(), fieldName);
+            if(it == info.fieldNames->end())
+                throw std::runtime_error(h5pp::format("Could not find field [{}] in table [{}]: "
+                                                      "Available field names are {}",
+                                                      fieldName,
+                                                      info.tablePath.value(),
+                                                      info.fieldNames.value()));
+            else
+                fieldIndices.emplace_back(static_cast<size_t>(std::distance(info.fieldNames->begin(), it)));
+        }
+        readTableField(data,info,fieldIndices,startIdx,numReadRecords);
+    }
+
+
+
+    template<typename h5x_src,
+             typename h5x_tgt,
+             typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>,
+             typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
+    inline void copyLink(const h5x_src &      srcLocId,
+                         const std::string &  srcLinkPath,
+                         const h5x_tgt &      tgtLocId,
+                         const std::string &  tgtLinkPath,
+                         const PropertyLists &plists = PropertyLists()) {
         h5pp::logger::log->trace("Copying link [{}] --> [{}]", srcLinkPath, tgtLinkPath);
         // Copy the link srcLinkPath to tgtLinkPath. Note that H5Ocopy does this recursively, so we don't need
         // to iterate links recursively here.
