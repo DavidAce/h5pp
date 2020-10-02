@@ -514,7 +514,9 @@ namespace h5pp {
             if(not numFields)           error_msg.append("\t numFields\n");
             if(not numRecords)          error_msg.append("\t numRecords\n");
             if(not recordBytes)         error_msg.append("\t recordBytes\n");
+            if(not fieldNames)          error_msg.append("\t fieldNames\n");
             if(not fieldSizes)          error_msg.append("\t fieldSizes\n");
+            if(not fieldTypes)          error_msg.append("\t fieldTypes\n");
             if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
             if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot read from table: The following fields are not set:\n{}", error_msg));
 //            if(getTableLocId() < 0) throw std::runtime_error(h5pp::format("Cannot read from table [{}]: The location ID is not set", tablePath.value()));
