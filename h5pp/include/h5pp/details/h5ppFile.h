@@ -938,28 +938,28 @@ namespace h5pp {
         }
 
         template<typename DataType, typename FieldNamesOrIndices>
-        void readTableField(DataType &                 data,
-                            const TableInfo &          info,
-                            const FieldNamesOrIndices &fieldNamesOrIndices,
-                            std::optional<size_t>      startIdx   = std::nullopt,
-                            std::optional<size_t>      numRecords = std::nullopt) const {
-            if constexpr(std::is_assignable_v<FieldNamesOrIndices, std::string>)
+        void readTableField(DataType &            data,
+                            const TableInfo &     info,
+                            FieldNamesOrIndices &&fieldNamesOrIndices,
+                            std::optional<size_t> startIdx   = std::nullopt,
+                            std::optional<size_t> numRecords = std::nullopt) const {
+            if constexpr(std::is_constructible_v<std::string, FieldNamesOrIndices>)
                 h5pp::hdf5::readTableField(data, info, {std::string(fieldNamesOrIndices)}, startIdx, numRecords);
-            else if constexpr(std::is_assignable_v<FieldNamesOrIndices, size_t>)
+            else if constexpr(std::is_integral_v<FieldNamesOrIndices>)
                 h5pp::hdf5::readTableField(data, info, {static_cast<size_t>(fieldNamesOrIndices)}, startIdx, numRecords);
-            else if constexpr(std::is_assignable_v<FieldNamesOrIndices, std::vector<std::string>> or
-                              std::is_assignable_v<FieldNamesOrIndices, std::vector<size_t>>)
+            else if constexpr(std::is_constructible_v<std::vector<std::string>, FieldNamesOrIndices> or
+                              std::is_constructible_v<std::vector<std::size_t>, FieldNamesOrIndices>)
                 h5pp::hdf5::readTableField(data, info, fieldNamesOrIndices, startIdx, numRecords);
             else
                 h5pp::type::sfinae::print_type_and_exit_compile_time<FieldNamesOrIndices>();
         }
 
         template<typename DataType, typename FieldNamesOrIndices>
-        void readTableField(DataType &                 data,
-                            std::string_view           tablePath,
-                            const FieldNamesOrIndices &fieldNamesOrIndices,
-                            std::optional<size_t>      startIdx   = std::nullopt,
-                            std::optional<size_t>      numRecords = std::nullopt) const {
+        void readTableField(DataType &            data,
+                            std::string_view      tablePath,
+                            FieldNamesOrIndices &&fieldNamesOrIndices,
+                            std::optional<size_t> startIdx   = std::nullopt,
+                            std::optional<size_t> numRecords = std::nullopt) const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath);
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
@@ -968,7 +968,7 @@ namespace h5pp {
 
         template<typename DataType, typename FieldNamesOrIndices = std::vector<std::string>>
         DataType readTableField(std::string_view      tablePath,
-                                FieldNamesOrIndices   fieldNamesOrIndices,
+                                FieldNamesOrIndices &&fieldNamesOrIndices,
                                 std::optional<size_t> startIdx   = std::nullopt,
                                 std::optional<size_t> numRecords = std::nullopt) const {
             DataType data;
@@ -977,10 +977,10 @@ namespace h5pp {
         }
 
         template<typename DataType, typename FieldNamesOrIndices>
-        void readTableField(DataType &                 data,
-                            std::string_view           tablePath,
-                            const FieldNamesOrIndices &fieldNamesOrIndices,
-                            TableSelection             tableSelection) const {
+        void readTableField(DataType &            data,
+                            std::string_view      tablePath,
+                            FieldNamesOrIndices &&fieldNamesOrIndices,
+                            TableSelection        tableSelection) const {
             Options options;
             options.linkPath   = h5pp::util::safe_str(tablePath);
             auto    info       = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
@@ -1004,9 +1004,8 @@ namespace h5pp {
         }
 
         template<typename DataType, typename FieldNamesOrIndices>
-        DataType readTableField(std::string_view           tablePath,
-                                const FieldNamesOrIndices &fieldNamesOrIndices,
-                                TableSelection             tableSelection) const {
+        DataType
+            readTableField(std::string_view tablePath, FieldNamesOrIndices &&fieldNamesOrIndices, TableSelection tableSelection) const {
             DataType data;
             readTableField(data, tablePath, fieldNamesOrIndices, tableSelection);
             return data;
