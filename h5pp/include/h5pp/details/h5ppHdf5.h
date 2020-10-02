@@ -2252,15 +2252,20 @@ namespace h5pp::hdf5 {
 
         // Get the memory address to the data buffer
         auto dataPtr = h5pp::util::getVoidPointer<void *>(data);
-        H5TBread_fields_name(info.getTableLocId(),
-                             util::safe_str(info.tablePath.value()).c_str(),
-                             util::safe_str(fieldName).c_str(),
-                             startIdx.value(),
-                             numReadRecords.value(),
-                             info.recordBytes.value(),
-                             info.fieldOffsets.value().data(),
-                             info.fieldSizes.value().data(),
-                             dataPtr);
+        herr_t retval = H5TBread_fields_name(info.getTableLocId(),
+                                             util::safe_str(info.tablePath.value()).c_str(),
+                                             util::safe_str(fieldName).c_str(),
+                                             startIdx.value(),
+                                             numReadRecords.value(),
+                                             info.recordBytes.value(),
+                                             info.fieldOffsets.value().data(),
+                                             info.fieldSizes.value().data(),
+                                             dataPtr);
+
+        if(retval < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Could not read table field [{}] on table [{}]", fieldName , info.tablePath.value()));
+        }
     }
 
     template<typename h5x_src, typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
