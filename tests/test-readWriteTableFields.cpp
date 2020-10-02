@@ -1,3 +1,11 @@
+#if defined(__GNUC__) || defined(__clang__)
+    #define PACK( __Declaration__ ) __Declaration__ __attribute__((packed, aligned(1)))
+#elif defined(_MSC_VER)
+    #define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop))
+#else
+    #define PACK( __Declaration__ ) __Declaration__
+#endif
+
 
 #include <h5pp/h5pp.h>
 #include <iostream>
@@ -58,10 +66,10 @@ int main() {
 
     // Try reading two columns
     // Pay attention to the attribute which gets rid of padding on the struct
-    struct __attribute__((packed, aligned(1))) RhoName {
+    PACK(struct RhoName {
         double rho[3];
         char   name[10];
-    };
+    });
     h5pp::print("Size of RhoName = {}\n", sizeof(RhoName));
     // Read a single
     auto rhoname_field = file.readTableField<RhoName>("somegroup/particleTable", {"rho", "name"});
