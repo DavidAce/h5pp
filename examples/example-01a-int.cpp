@@ -4,16 +4,16 @@ int main() {
     // Initialize a file
     h5pp::File file("exampledir/example-01a-int.h5", h5pp::FilePermission::REPLACE);
 
-    int writeInt = 42;
-    file.writeDataset(42,"integerData");     // Write data to file in dataset named "integerData"
+    int writeInt = 42;                          // Initialize an int
+    file.writeDataset(writeInt, "integerData"); // Write data to file in dataset named "integerData"
 
-    int readInt;
-    file.readDataset(readInt,"integerData"); // Read data
+    int readInt;                              // Allocate for a new int
+    file.readDataset(readInt, "integerData"); // Read data
 
-    // Alternatively, you can read by assignment
-    int readInt_alt = file.readDataset<int>("integerData");
+    // Or, read by assignment
+    auto readInt_alt = file.readDataset<int>("integerData");
 
-    printf("Wrote dataset: %d\n", writeInt);
-    printf("Read  dataset: %d | alt: %d \n", readInt,readInt_alt);
+    h5pp::print("Wrote dataset: {}\n", writeInt);
+    h5pp::print("Read  dataset: {} | alt: {}\n", readInt, readInt_alt);
     return 0;
 }

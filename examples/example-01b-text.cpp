@@ -10,17 +10,23 @@ int main() {
     // Initialize a file
     h5pp::File file("exampledir/example-01b-text.h5", h5pp::FilePermission::REPLACE);
 
+    // Initialize some text
     std::string writeText = "Hello world";
-    file.writeDataset(writeText, "stringData"); // Write data to file in dataset named "stringData"
 
+    // Write data to file in dataset named "stringData"
+    file.writeDataset(writeText, "stringData");
+
+    // Create an empty string
     std::string readText;
-    file.readDataset(readText, "stringData"); // Read data. The string readText is resized appropriately by h5pp
 
-    // Alternatively, you can read by assignment
+    // Read data. The string readText is resized appropriately by h5pp
+    file.readDataset(readText, "stringData");
+
+    // Or, read by assignment
     auto readText_alt = file.readDataset<std::string>("stringData");
 
-    printf("Wrote dataset: %s\n", writeText.c_str());
-    printf("Read  dataset: %s | alt: %s \n", readText.c_str(), readText_alt.c_str());
+    h5pp::print("Wrote dataset: {}\n", writeText);
+    h5pp::print("Read  dataset: {} | alt: {}\n", readText, readText_alt);
 
     return 0;
 }

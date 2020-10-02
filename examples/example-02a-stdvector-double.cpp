@@ -2,30 +2,25 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-02a-stdvector-double.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File          file("exampledir/example-02a-stdvector-double.h5", h5pp::FilePermission::REPLACE);
 
     // Initialize a vector of doubles.
-    std::vector<double> v_write(10, 3.14);
+    std::vector<double> v_write = {1.0, 2.0, 3.0, 4.0};
+
     // Write data
     file.writeDataset(v_write, "myStdVectorDouble");
 
-    // Print
-    printf("Wrote dataset: \n");
-    for(auto &d : v_write) printf("%f\n", d);
+    // Initialize an empty vector for reading.
+    std::vector<double> v_read;
 
     // Read data. The vector is resized automatically by h5pp.
-    std::vector<double> v_read;
     file.readDataset(v_read, "myStdVectorDouble");
 
-    // Print
-    printf("Read dataset: \n");
-    for(auto &d : v_read) printf("%f\n", d);
-
-    // Alternatively, read by assignment
+    // Or, read by assignment
     auto v_read_alt = file.readDataset<std::vector<double>>("myStdVectorDouble");
 
-    printf("Read dataset alternate: \n");
-    for(auto &d : v_read_alt) printf("%f\n", d);
-
+    h5pp::print("Wrote dataset: {}\n", v_write);
+    h5pp::print("Read dataset: {}\n", v_read);
+    h5pp::print("Read dataset alternate: {}\n", v_read_alt);
     return 0;
 }

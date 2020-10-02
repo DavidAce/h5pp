@@ -19,27 +19,30 @@ int main() {
     // Initialize a file
     h5pp::File file("exampledir/example-01c-struct-simple.h5", h5pp::FilePermission::REPLACE);
 
+    // Initialize some dummy data
     Int2    coord2dWrite = {1, 2};
     Double3 coord3dWrite = {10, 20, 30};
 
-    file.writeDataset(coord2dWrite, "CoordinateInTwoDimensions");   // Write data to file in dataset named "CoordinateInTwoDimensions"
-    file.writeDataset(coord3dWrite, "CoordinateInThreeDimensions"); // Write data to file in dataset named "CoordinateInThreeDimensions"
+    // Write data
+    file.writeDataset(coord2dWrite, "CoordinateInTwoDimensions");
+    file.writeDataset(coord3dWrite, "CoordinateInThreeDimensions");
 
     // Allocate space for reading data
     Int2    coord2dRead;
     Double3 coord3dRead;
 
-    file.readDataset(coord2dRead, "CoordinateInTwoDimensions");   // Read data.
-    file.readDataset(coord3dRead, "CoordinateInThreeDimensions"); // Read data.
+    // Read data
+    file.readDataset(coord2dRead, "CoordinateInTwoDimensions");
+    file.readDataset(coord3dRead, "CoordinateInThreeDimensions");
 
-    // Alternatively, you can read by assignment
-    auto coord2dRead_alt = file.readDataset<Int2>("CoordinateInTwoDimensions");      // Read data.
-    auto coord3dRead_alt = file.readDataset<Double3>("CoordinateInThreeDimensions"); // Read data.
+    // Or, read by assignment
+    auto coord2dRead_alt = file.readDataset<Int2>("CoordinateInTwoDimensions");
+    auto coord3dRead_alt = file.readDataset<Double3>("CoordinateInThreeDimensions");
 
-    printf("Wrote dataset in 2D: x: %d y: %d \n", coord2dWrite.x, coord2dWrite.y);
-    printf("Read  dataset in 2D: x: %d y: %d | alt x: %d y: %d \n", coord2dRead.x, coord2dRead.y, coord2dRead_alt.x, coord2dRead_alt.y);
-    printf("Wrote dataset in 3D: x: %f y: %f z: %f \n", coord3dWrite.x, coord3dWrite.y, coord3dWrite.z);
-    printf("Read  dataset in 3D: x: %f y: %f z: %f | alt x: %f y: %f z: %f \n", coord3dRead.x, coord3dRead.y, coord3dRead.z, coord3dRead_alt.x, coord3dRead_alt.y, coord3dRead_alt.z);
+    h5pp::print("Wrote dataset in 2D: x: {} y: {} \n", coord2dWrite.x, coord2dWrite.y);
+    h5pp::print("Read  dataset in 2D: x: {} y: {} | alt x: {} y: {} \n", coord2dRead.x, coord2dRead.y, coord2dRead_alt.x, coord2dRead_alt.y);
+    h5pp::print("Wrote dataset in 3D: x: {} y: {} z: {} \n", coord3dWrite.x, coord3dWrite.y, coord3dWrite.z);
+    h5pp::print("Read  dataset in 3D: x: {} y: {} z: {} | alt x: {} y: {} z: {} \n", coord3dRead.x, coord3dRead.y, coord3dRead.z, coord3dRead_alt.x, coord3dRead_alt.y, coord3dRead_alt.z);
 
     return 0;
 }
