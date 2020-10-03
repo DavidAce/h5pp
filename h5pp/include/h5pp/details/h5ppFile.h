@@ -8,6 +8,7 @@
 #include "h5ppFilesystem.h"
 #include "h5ppHdf5.h"
 #include "h5ppHid.h"
+#include "h5ppInitListType.h"
 #include "h5ppLogger.h"
 #include "h5ppOptional.h"
 #include "h5ppPropertyLists.h"
@@ -940,50 +941,54 @@ namespace h5pp {
         template<typename DataType, typename FieldNamesOrIndices>
         void readTableField(DataType &            data,
                             const TableInfo &     info,
-                            FieldNamesOrIndices &&fieldNamesOrIndices,
+                            NamesOrIndices &&     fieldNamesOrIndices,
                             std::optional<size_t> startIdx   = std::nullopt,
                             std::optional<size_t> numRecords = std::nullopt) const {
-            if constexpr(std::is_constructible_v<std::string, FieldNamesOrIndices>)
-                h5pp::hdf5::readTableField(data, info, {std::string(fieldNamesOrIndices)}, startIdx, numRecords);
-            else if constexpr(std::is_integral_v<FieldNamesOrIndices>)
-                h5pp::hdf5::readTableField(data, info, {static_cast<size_t>(fieldNamesOrIndices)}, startIdx, numRecords);
-            else if constexpr(std::is_constructible_v<std::vector<std::string>, FieldNamesOrIndices> or
-                              std::is_constructible_v<std::vector<std::size_t>, FieldNamesOrIndices>)
-                h5pp::hdf5::readTableField(data, info, fieldNamesOrIndices, startIdx, numRecords);
-            else
-                h5pp::type::sfinae::print_type_and_exit_compile_time<FieldNamesOrIndices>();
+            std::visit(
+                [&](auto &&arg) {
+                    using V = std::decay_t<decltype(arg)>;
+                    if constexpr(std::is_same_v<V, Names>)
+                        h5pp::hdf5::readTableField(data, info, static_cast<std::vector<std::string>>(arg), startIdx, numRecords);
+                    else if constexpr(std::is_same_v<V, Indices>)
+                        h5pp::hdf5::readTableField(data, info, static_cast<std::vector<std::size_t>>(arg), startIdx, numRecords);
+                },
+                fieldNamesOrIndices.get_variant());
         }
 
-        template<typename DataType, typename FieldNamesOrIndices>
+        template<typename DataType>
         void readTableField(DataType &            data,
                             std::string_view      tablePath,
-                            FieldNamesOrIndices &&fieldNamesOrIndices,
+                            NamesOrIndices &&     fieldNamesOrIndices,
                             std::optional<size_t> startIdx   = std::nullopt,
                             std::optional<size_t> numRecords = std::nullopt) const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath);
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
-            readTableField(data, info, fieldNamesOrIndices, startIdx, numRecords);
+            readTableField(data, info, std::forward<NamesOrIndices>(fieldNamesOrIndices), startIdx, numRecords);
         }
 
-        template<typename DataType, typename FieldNamesOrIndices = std::vector<std::string>>
+        template<typename DataType>
         DataType readTableField(std::string_view      tablePath,
-                                FieldNamesOrIndices &&fieldNamesOrIndices,
+                                NamesOrIndices &&     fieldNamesOrIndices,
                                 std::optional<size_t> startIdx   = std::nullopt,
                                 std::optional<size_t> numRecords = std::nullopt) const {
             DataType data;
-            readTableField(data, tablePath, fieldNamesOrIndices, startIdx, numRecords);
+            readTableField(data, tablePath, std::forward<NamesOrIndices>(fieldNamesOrIndices), startIdx, numRecords);
             return data;
         }
 
-        template<typename DataType, typename FieldNamesOrIndices>
-        void readTableField(DataType &            data,
-                            std::string_view      tablePath,
-                            FieldNamesOrIndices &&fieldNamesOrIndices,
-                            TableSelection        tableSelection) const {
+        template<typename DataType>
+        void readTableField(DataType &       data,
+                            std::string_view tablePath,
+                            NamesOrIndices &&fieldNamesOrIndices,
+                            TableSelection   tableSelection) const {
             Options options;
-            options.linkPath   = h5pp::util::safe_str(tablePath);
-            auto    info       = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
+            options.linkPath = h5pp::util::safe_str(tablePath);
+            auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
+            if(info.tableExists and not info.tableExists.value())
+                throw std::runtime_error(
+                    h5pp::format("Could not read records from table [{}]: it does not exist", util::safe_str(tablePath)));
+
             hsize_t startIdx   = 0;
             hsize_t numRecords = 0;
             switch(tableSelection) {
@@ -1000,14 +1005,13 @@ namespace h5pp {
                     numRecords = 1;
                     break;
             }
-            readTableField(data, info, fieldNamesOrIndices, startIdx, numRecords);
+            readTableField(data, info, std::forward<NamesOrIndices>(fieldNamesOrIndices), startIdx, numRecords);
         }
 
-        template<typename DataType, typename FieldNamesOrIndices>
-        DataType
-            readTableField(std::string_view tablePath, FieldNamesOrIndices &&fieldNamesOrIndices, TableSelection tableSelection) const {
+        template<typename DataType>
+        DataType readTableField(std::string_view tablePath, NamesOrIndices &&fieldNamesOrIndices, TableSelection tableSelection) const {
             DataType data;
-            readTableField(data, tablePath, fieldNamesOrIndices, tableSelection);
+            readTableField(data, tablePath, std::forward<NamesOrIndices>(fieldNamesOrIndices), tableSelection);
             return data;
         }
 
