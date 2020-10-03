@@ -179,8 +179,7 @@ namespace h5pp::type::sfinae {
     template<typename T, typename = std::void_t<>>
     struct is_iterable : public std::false_type {};
     template<typename T>
-    struct is_iterable<T, std::void_t<decltype(std::declval<T>().begin()), decltype(std::declval<T>().end()), typename T::value_type>>
-        : public std::true_type {};
+    struct is_iterable<T, std::void_t<decltype(std::begin(std::declval<T>())),decltype(std::end(std::declval<T>()))>> : public std::true_type {};
     template<typename T>
     inline constexpr bool is_iterable_v = is_iterable<T>::value;
 
