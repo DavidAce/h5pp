@@ -928,6 +928,34 @@ namespace h5pp {
                     h5pp::format("Could not read records from table [{}]: it does not exist", util::safe_str(tablePath)));
             h5pp::hdf5::readTableRecords(data, info, startIdx, numRecords);
         }
+        template<typename DataType>
+        void readTableRecords(DataType &data, std::string_view tablePath, h5pp::TableSelection tableSelection) const {
+            Options options;
+            options.linkPath = h5pp::util::safe_str(tablePath);
+            auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
+            if(info.tableExists and not info.tableExists.value())
+                throw std::runtime_error(
+                    h5pp::format("Could not read records from table [{}]: it does not exist", util::safe_str(tablePath)));
+
+            hsize_t startIdx   = 0;
+            hsize_t numRecords = 0;
+
+            switch(tableSelection) {
+                case h5pp::TableSelection::ALL:
+                    startIdx   = 0;
+                    numRecords = info.numRecords.value();
+                    break;
+                case h5pp::TableSelection::FIRST:
+                    startIdx   = 0;
+                    numRecords = 1;
+                    break;
+                case h5pp::TableSelection::LAST:
+                    startIdx   = info.numRecords.value() - 1;
+                    numRecords = 1;
+                    break;
+            }
+            h5pp::hdf5::readTableRecords(data, info, startIdx, numRecords);
+        }
 
         template<typename DataType>
         DataType readTableRecords(std::string_view      tablePath,
@@ -938,7 +966,14 @@ namespace h5pp {
             return data;
         }
 
-        template<typename DataType, typename FieldNamesOrIndices>
+        template<typename DataType>
+        DataType readTableRecords(std::string_view tablePath, h5pp::TableSelection tableSelection) const {
+            DataType data;
+            readTableRecords(data, tablePath, tableSelection);
+            return data;
+        }
+
+        template<typename DataType>
         void readTableField(DataType &            data,
                             const TableInfo &     info,
                             NamesOrIndices &&     fieldNamesOrIndices,
