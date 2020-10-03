@@ -39,6 +39,11 @@ namespace h5pp::type::sfinae {
         return name;
     }
 
+    // helper constant for static asserts
+    template<class> inline constexpr bool always_false_v = false;
+    template<class> inline constexpr bool unrecognized_type_v = false;
+    template<class> inline constexpr bool invalid_type_v = false;
+
     template<typename T, typename = std::void_t<>>
     struct has_size : public std::false_type {};
     template<typename T>
