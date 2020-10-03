@@ -6,7 +6,7 @@
 
 // Here we try all the function signatures
 std::string outputFilename = "output/functionCalls.h5";
-size_t      logLevel       = 0;
+size_t      logLevel       = 2;
 h5pp::File  file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
 
 std::vector<std::optional<H5D_layout_t>> layouts      = {std::nullopt, H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED};
