@@ -978,15 +978,24 @@ namespace h5pp {
                             NamesOrIndices &&     fieldNamesOrIndices,
                             std::optional<size_t> startIdx   = std::nullopt,
                             std::optional<size_t> numRecords = std::nullopt) const {
-            std::visit(
-                [&](auto &&arg) {
-                    using V = std::decay_t<decltype(arg)>;
-                    if constexpr(std::is_same_v<V, Names>)
-                        h5pp::hdf5::readTableField(data, info, static_cast<std::vector<std::string>>(arg), startIdx, numRecords);
-                    else if constexpr(std::is_same_v<V, Indices>)
-                        h5pp::hdf5::readTableField(data, info, static_cast<std::vector<std::size_t>>(arg), startIdx, numRecords);
-                },
-                fieldNamesOrIndices.get_variant());
+            auto variant_index = fieldNamesOrIndices.index();
+            if(variant_index == 0)
+                return h5pp::hdf5::readTableField(data, info, fieldNamesOrIndices.get_value<0>(), startIdx, numRecords);
+            else if(variant_index == 1)
+                return h5pp::hdf5::readTableField(data, info, fieldNamesOrIndices.get_value<1>(), startIdx, numRecords);
+            //
+            //            std::visit(
+            //                [&](auto &&arg) {
+            //                    using V = std::decay_t<decltype(arg)>;
+            //                    if constexpr(std::is_same_v<V, Names>)
+            //                        h5pp::hdf5::readTableField(data, info, static_cast<std::vector<std::string>>(arg), startIdx,
+            //                        numRecords);
+            //                    else if constexpr(std::is_same_v<V, Indices>)
+            //                        h5pp::hdf5::readTableField(data, info, static_cast<std::vector<std::size_t>>(arg), startIdx,
+            //                        numRecords);
+            //                },
+            //                fieldNamesOrIndices.get_variant());
+            //        }
         }
 
         template<typename DataType>
