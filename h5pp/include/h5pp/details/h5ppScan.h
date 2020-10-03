@@ -481,17 +481,16 @@ namespace h5pp::scan {
         }
         // This is as far as we get if the table does not exist
         if(not info.tableExists.value()) return;
-
         if(not info.tableDset) info.tableDset = hdf5::openLink<hid::h5d>(info.getTableLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess);
         if(not info.tableType) info.tableType = H5Dget_type(info.tableDset.value());
-        if(not info.numFields or not info.numRecords) {
+        if(not info.numRecords) {
             // We could use H5TBget_table_info here but internally that would create a temporary
-            // dataset id and type id, both of which we could use directly instead
+            // dataset id and type id, but we already have them so we can use these directly instead
             auto dims = h5pp::hdf5::getDimensions(info.tableDset.value());
             if(dims.size() != 1) throw std::logic_error("Tables can only have rank 1");
             info.numRecords = dims[0];
-            info.numFields  = static_cast<size_t>(H5Tget_nmembers(info.tableType.value()));
         }
+        if(not info.numFields) info.numFields = static_cast<size_t>(H5Tget_nmembers(info.tableType.value()));
         if(not info.tableTitle) {
             char table_title[255];
             H5TBAget_title(info.tableDset.value(), table_title);
