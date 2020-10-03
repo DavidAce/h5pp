@@ -1,4 +1,4 @@
-#define CATCH_CONFIG_MAIN
+#define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
 #include <complex>
 #include <h5pp/h5pp.h>
@@ -43,6 +43,18 @@ TEST_CASE("Test createDataset inferred call signatures", "[infer]") {
         }
     }
 }
+
+int main(int argc, char *argv[]) {
+    Catch::Session session; // There must be exactly one instance
+    int            returnCode = session.applyCommandLine(argc, argv);
+    if(returnCode != 0) // Indicates a command line error
+        return returnCode;
+
+    //    session.configData().showSuccessfulTests = true;
+    //    session.configData().reporterName = "compact";
+    return session.run();
+}
+
 
 // TEST_CASE("Test createDataset manual call signatures", "[manual]") {
 //    std::string         dsetGroup = "manualCreateGroup/";
