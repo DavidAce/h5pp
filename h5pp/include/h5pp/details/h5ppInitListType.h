@@ -14,9 +14,9 @@ namespace h5pp {
 //        Indices(Indices &&indices)             = delete;
 //        Indices(Indices &&indices)             = default;
 //        Indices & operator=(Indices &&indices) = default;
-//        explicit Indices(const char *str)      = delete;
-//        explicit Indices(std::string_view str) = delete;
-//        explicit Indices(std::string &&str)    = delete;
+        explicit Indices(const char *str)      = delete;
+        explicit Indices(std::string_view str) = delete;
+        explicit Indices(std::string &&str)    = delete;
         template<typename U, typename = std::enable_if_t<h5pp::type::sfinae::is_integral_iterable_or_num_v<U>>>
         Indices(const U &num) {
             if constexpr(h5pp::type::sfinae::is_integral_iterable_v<U>) {
@@ -77,22 +77,23 @@ namespace h5pp {
         template<typename T>
         NamesOrIndices(T &&data_) {
             if constexpr(std::is_constructible_v<Names, T>)
-                names = data_;
+                names = Names(data_);
             else if constexpr(std::is_constructible_v<Indices, T>)
-                indices = data_;
+                indices = Indices(data_);
             else
                 static_assert(h5pp::type::sfinae::invalid_type_v<T>, "Unrecognized type for indices or names");
         }
 
         template<typename T>
         NamesOrIndices(std::initializer_list<T> &&data_) {
-            if constexpr(std::is_constructible_v<Names, T>)
-                names = data_;
-            else if constexpr(std::is_constructible_v<Indices, T>)
-                indices = data_;
+            if constexpr(std::is_constructible_v<Names, std::initializer_list<T>>)
+                names = Names(data_);
+            else if constexpr(std::is_constructible_v<Indices, std::initializer_list<T>>)
+                indices = Indices(data_);
             else
-                static_assert(h5pp::type::sfinae::invalid_type_v<T>, "Unrecognized type for indices or names");
+                static_assert(h5pp::type::sfinae::invalid_type_v<std::initializer_list<T>>, "Unrecognized type for indices or names");
         }
+
         auto  index(){
             if (not names.empty()) return 0;
             if (not indices.empty()) return 1;
