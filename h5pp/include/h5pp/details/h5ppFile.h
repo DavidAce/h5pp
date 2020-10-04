@@ -983,19 +983,8 @@ namespace h5pp {
                 return h5pp::hdf5::readTableField(data, info, fieldNamesOrIndices.get_value<0>(), startIdx, numRecords);
             else if(variant_index == 1)
                 return h5pp::hdf5::readTableField(data, info, fieldNamesOrIndices.get_value<1>(), startIdx, numRecords);
-            //
-            //            std::visit(
-            //                [&](auto &&arg) {
-            //                    using V = std::decay_t<decltype(arg)>;
-            //                    if constexpr(std::is_same_v<V, Names>)
-            //                        h5pp::hdf5::readTableField(data, info, static_cast<std::vector<std::string>>(arg), startIdx,
-            //                        numRecords);
-            //                    else if constexpr(std::is_same_v<V, Indices>)
-            //                        h5pp::hdf5::readTableField(data, info, static_cast<std::vector<std::size_t>>(arg), startIdx,
-            //                        numRecords);
-            //                },
-            //                fieldNamesOrIndices.get_variant());
-            //        }
+            else
+                throw std::runtime_error("No field names or indices have been specified");
         }
 
         template<typename DataType>
