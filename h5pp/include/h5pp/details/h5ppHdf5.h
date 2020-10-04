@@ -2575,6 +2575,46 @@ namespace h5pp::hdf5 {
         }
     }
 
+    template<typename h5x_src,
+        typename h5x_tgt,
+        typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>,
+        typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
+    inline void moveLink(const h5x_src &      srcLocId,
+                         const std::string &  srcLinkPath,
+                         const h5x_tgt &      tgtLocId,
+                         const std::string &  tgtLinkPath,
+                         const PropertyLists &plists = PropertyLists()) {
+        h5pp::logger::log->trace("Moving link [{}] --> [{}]", srcLinkPath, tgtLinkPath);
+        // Move the link srcLinkPath to tgtLinkPath. Note that H5Lmove only works inside a single file.
+        // For different files we should copyLink followed by H5Ldelete
+
+        h5pp::hid::h5f srcFileId = H5Iget_file_id(srcLocId);
+        h5pp::hid::h5f tgtFileId = H5Iget_file_id(tgtLocId);
+
+        if(srcFileId == tgtLocId){
+            // Same file
+            auto retval = H5Lmove(srcLocId, srcLinkPath.c_str(), tgtLocId, tgtLinkPath.c_str(), plists.linkCreate,plists.linkAccess);
+            if(retval < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error(h5pp::format("Could not copy link [{}] --> [{}]", srcLinkPath, tgtLinkPath));
+            }
+        }else{
+            // Different files
+            auto retval = H5Ocopy(srcLocId, srcLinkPath.c_str(), tgtLocId, tgtLinkPath.c_str(), H5P_DEFAULT, plists.linkCreate);
+            if(retval < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error(h5pp::format("Could not copy link [{}] --> [{}]", srcLinkPath, tgtLinkPath));
+            }
+            retval = H5Ldelete(srcLocId,srcLinkPath.c_str(),plists.linkAccess);
+            if(retval < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error(h5pp::format("Could not delete link after move [{}]", srcLinkPath));
+            }
+        }
+
+    }
+
+
     inline void copyLink(const std::string &  srcFilePath,
                          const std::string &  srcLinkPath,
                          const std::string &  tgtFilePath,
@@ -2664,6 +2704,47 @@ namespace h5pp::hdf5 {
             throw std::runtime_error(h5pp::format("Could not copy file [{}] --> [{}]: ", src, tgt, ex.what()));
         }
     }
+
+    inline void moveLink(const std::string &  srcFilePath,
+                         const std::string &  srcLinkPath,
+                         const std::string &  tgtFilePath,
+                         const std::string &  tgtLinkPath,
+                         FilePermission       targetFileCreatePermission = FilePermission::READWRITE,
+                         const PropertyLists &plists                     = PropertyLists()) {
+        h5pp::logger::log->trace("Moving link: source link [{}] | source file [{}]  -->  target link [{}] | target file [{}]",
+                                 srcLinkPath,
+                                 srcFilePath,
+                                 tgtLinkPath,
+                                 tgtFilePath);
+
+        try {
+            auto srcPath = fs::absolute(srcFilePath);
+            if(not fs::exists(srcPath))
+                throw std::runtime_error(h5pp::format("Could not move link [{}] from file [{}]: source file does not exist [{}]",
+                                                      srcLinkPath,
+                                                      srcFilePath,
+                                                      srcPath.string()));
+            auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, targetFileCreatePermission, plists);
+
+            hid_t hidSrc = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
+            hid_t hidTgt = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
+            if(hidSrc < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error(h5pp::format("Failed to open source file [{}] in read-only mode", srcPath.string()));
+            }
+            if(hidTgt < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error(h5pp::format("Failed to open target file [{}] in read-write mode", tgtPath.string()));
+            }
+            hid::h5f srcFile = hidSrc;
+            hid::h5f tgtFile = hidTgt;
+            moveLink(srcFile, srcLinkPath, tgtFile, tgtLinkPath);
+        } catch(const std::exception &ex) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Could not move link [{}] from file [{}]: {}", srcLinkPath, srcFilePath, ex.what()));
+        }
+    }
+
 
     inline fs::path moveFile(const std::string &  src,
                              const std::string &  tgt,

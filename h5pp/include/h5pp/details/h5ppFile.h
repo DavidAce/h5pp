@@ -176,13 +176,38 @@ namespace h5pp {
 
         template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
         void
-            copyLinkToLocation(const std::string &localLinkPath, const h5x_tgt &targetLocationId, const std::string &targetLinkPath) const {
+        copyLinkToLocation(const std::string &localLinkPath, const h5x_tgt &targetLocationId, const std::string &targetLinkPath) const {
             return h5pp::hdf5::copyLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath, plists);
         }
 
         template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
         void copyLinkFromLocation(const std::string &localLinkPath, const h5x_src &sourceLocationId, const std::string &sourceLinkPath) {
             return h5pp::hdf5::copyLink(
+                sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
+        }
+
+        void moveLinkToFile(const std::string &   localLinkPath,
+                            const std::string &   targetFilePath,
+                            const std::string &   targetLinkPath,
+                            const FilePermission &targetFileCreatePermission = FilePermission::READWRITE) const {
+            return h5pp::hdf5::moveLink(getFilePath(), localLinkPath, targetFilePath, targetLinkPath, targetFileCreatePermission, plists);
+        }
+
+        void moveLinkFromFile(const std::string &localLinkPath, const std::string &sourceFilePath, const std::string &sourceLinkPath) {
+            return h5pp::hdf5::moveLink(
+                sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
+        }
+
+        template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
+        void
+        moveLinkToLocation(const std::string &localLinkPath, const h5x_tgt &targetLocationId, const std::string &targetLinkPath) const {
+            return h5pp::hdf5::moveLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath, plists);
+        }
+
+
+        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
+        void moveLinkFromLocation(const std::string &localLinkPath, const h5x_src &sourceLocationId, const std::string &sourceLinkPath) {
+            return h5pp::hdf5::moveLink(
                 sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
         }
 
@@ -927,6 +952,7 @@ namespace h5pp {
                     h5pp::format("Could not read records from table [{}]: it does not exist", util::safe_str(tablePath)));
             h5pp::hdf5::readTableRecords(data, info, startIdx, numRecords);
         }
+
         template<typename DataType>
         void readTableRecords(DataType &data, std::string_view tablePath, h5pp::TableSelection tableSelection) const {
             Options options;
