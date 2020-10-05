@@ -183,7 +183,7 @@ namespace h5pp {
         template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
         void copyLinkFromLocation(const std::string &localLinkPath, const h5x_src &sourceLocationId, const std::string &sourceLinkPath) {
             return h5pp::hdf5::copyLink(
-                sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
+                sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, plists);
         }
 
         void moveLinkToFile(const std::string &   localLinkPath,
@@ -208,7 +208,7 @@ namespace h5pp {
         template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
         void moveLinkFromLocation(const std::string &localLinkPath, const h5x_src &sourceLocationId, const std::string &sourceLinkPath) {
             return h5pp::hdf5::moveLink(
-                sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
+                sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, plists);
         }
 
         /*
