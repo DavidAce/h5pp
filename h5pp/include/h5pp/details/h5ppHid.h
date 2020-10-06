@@ -257,7 +257,7 @@ namespace h5pp::hid {
         using hid_base::hid_base;
         ~h5f() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5f"; }
-        [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
+        [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs or H5Iget_file_id(val) == H5Iget_file_id(rhs); }
         void                      close() final {
             if(H5Iget_ref(val) > 1)
                 H5Idec_ref(val);

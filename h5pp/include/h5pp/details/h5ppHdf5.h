@@ -2591,7 +2591,7 @@ namespace h5pp::hdf5 {
         h5pp::hid::h5f srcFileId = H5Iget_file_id(srcLocId);
         h5pp::hid::h5f tgtFileId = H5Iget_file_id(tgtLocId);
 
-        if(srcFileId == tgtLocId){
+        if(srcFileId == tgtFileId){
             // Same file
             auto retval = H5Lmove(srcLocId, srcLinkPath.c_str(), tgtLocId, tgtLinkPath.c_str(), plists.linkCreate,plists.linkAccess);
             if(retval < 0) {
