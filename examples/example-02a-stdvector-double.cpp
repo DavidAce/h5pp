@@ -9,18 +9,17 @@ int main() {
 
     // Write data
     file.writeDataset(v_write, "myStdVectorDouble");
+    h5pp::print("Wrote dataset: {}\n", v_write);
 
     // Initialize an empty vector for reading.
     std::vector<double> v_read;
 
     // Read data. The vector is resized automatically by h5pp.
     file.readDataset(v_read, "myStdVectorDouble");
+    h5pp::print("Read dataset: {}\n", v_read);
 
     // Or, read by assignment
     auto v_read_alt = file.readDataset<std::vector<double>>("myStdVectorDouble");
-
-    h5pp::print("Wrote dataset: {}\n", v_write);
-    h5pp::print("Read dataset: {}\n", v_read);
     h5pp::print("Read dataset alternate: {}\n", v_read_alt);
     return 0;
 }

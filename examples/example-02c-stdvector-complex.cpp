@@ -8,24 +8,16 @@ int main() {
     std::vector<std::complex<double>> v_write(10, {3.14, -2.71});
     // Write data
     file.writeDataset(v_write, "myStdVectorComplex");
-
-    // Print
-    printf("Wrote dataset: \n");
-    for(auto &c : v_write) printf("%f %fi \n", c.real(), c.imag());
+    h5pp::print("Wrote dataset: {}\n",v_write);
 
     // Read data. The vector is resized automatically by h5pp.
     std::vector<std::complex<double>> v_read;
     file.readDataset(v_read, "myStdVectorComplex");
-
-    // Print
-    printf("Read dataset: \n");
-    for(auto &c : v_read) printf("%f %fi \n", c.real(), c.imag());
+    h5pp::print("Read dataset: {}\n",v_read);
 
     // Alternatively, read by assignment
     auto v_read_alt = file.readDataset<std::vector<std::complex<double>>>("myStdVectorComplex");
-
-    printf("Read dataset alternate: \n");
-    for(auto &c : v_read_alt) printf("%f %fi \n", c.real(), c.imag());
+    h5pp::print("Read dataset alternate: {}\n", v_read_alt);
 
     return 0;
 }

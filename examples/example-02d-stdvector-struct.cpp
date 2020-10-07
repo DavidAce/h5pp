@@ -8,48 +8,45 @@
  */
 
 struct Int2 {
-    int x, y;
+    int         x, y;
+    [[nodiscard]] std::string string() const { return h5pp::format("x: {} y: {}", x, y); }
 };
 
 struct Double3 {
-    double x, y, z;
+    double      x, y, z;
+    [[nodiscard]] std::string string() const { return h5pp::format("x: {} y: {} z: {}", x, y, z); }
 };
+
+template<typename ScalarN>
+void writeThenRead(h5pp::File &file, const std::vector<ScalarN> &dset, std::string_view dsetName) {
+    // Write data
+    file.writeDataset(dset, dsetName); // Write data to file in dataset named "CoordinatesInTwoDimensions"
+    h5pp::print("Wrote dataset [{}]:\n", dsetName);
+    for(auto &c : dset) h5pp::print("{}\n", c.string());
+
+    // Declare a container for reading back the dataset from file. No need to pre-allocate space in the vectors.
+    // h5pp will automatically resize the vector
+    std::vector<ScalarN> dsetRead;
+    file.readDataset(dsetRead, dsetName); // Read data.
+    h5pp::print("Read  dataset [{}]:\n", dsetName);
+    for(auto &c : dsetRead) h5pp::print("{}\n", c.string());
+
+    // Alternatively, you can read 2D data by assignment
+    auto dsetRead_alt = file.readDataset<std::vector<ScalarN>>(dsetName); // Read data.
+    h5pp::print("Read  dataset [{}] by assignment:\n", dsetName);
+    for(auto &c : dsetRead_alt) h5pp::print("{}\n", c.string());
+}
 
 int main() {
     // Initialize a file
     h5pp::File file("exampledir/example-02d-stdvector-struct.h5", h5pp::FilePermission::REPLACE);
 
-    std::vector<Int2>    coord2dWrite(10, {1, 2});
-    std::vector<Double3> coord3dWrite(10, {10, 20, 30});
+    // Initialize vectors with struct-type dummy data
+    std::vector<Int2>    coord2d = {{1,2},{3,4},{5,6}};
+    std::vector<Double3> coord3d = {{10.0,20.0,30.0},{40.0,50.0,60.0},{70.0,80.0,90.0}};
 
-    file.writeDataset(coord2dWrite, "CoordinatesInTwoDimensions");   // Write data to file in dataset named "CoordinatesInTwoDimensions"
-    file.writeDataset(coord3dWrite, "CoordinatesInThreeDimensions"); // Write data to file in dataset named "CoordinatesInThreeDimensions"
-
-    // Declare a container for reading back data. No need to pre-allocate space in the vectors.
-    std::vector<Int2>    coord2dRead;
-    std::vector<Double3> coord3dRead;
-
-    file.readDataset(coord2dRead, "CoordinatesInTwoDimensions");   // Read data. h5pp will automatically resize the vector
-    file.readDataset(coord3dRead, "CoordinatesInThreeDimensions"); // Read data. h5pp will automatically resize the vector
-
-    // Alternatively, you can read by assignment
-    auto coord2dRead_alt = file.readDataset<std::vector<Int2>>("CoordinatesInTwoDimensions");      // Read data.
-    auto coord3dRead_alt = file.readDataset<std::vector<Double3>>("CoordinatesInThreeDimensions"); // Read data.
-
-    for(size_t idx = 0; idx < 10; idx++) {
-        printf("index %zu\n", idx);
-        printf("Wrote dataset in 2D: x: %d y: %d \n", coord2dWrite[idx].x, coord2dWrite[idx].y);
-        printf("Read  dataset in 2D: x: %d y: %d | alt x: %d y: %d \n", coord2dRead[idx].x, coord2dRead[idx].y, coord2dRead_alt[idx].x, coord2dRead_alt[idx].y);
-        printf("Wrote dataset in 3D: x: %f y: %f z: %f \n", coord3dWrite[idx].x, coord3dWrite[idx].y, coord3dWrite[idx].z);
-        printf("Read  dataset in 3D: x: %f y: %f z: %f | alt x: %f y: %f z: %f \n",
-               coord3dRead[idx].x,
-               coord3dRead[idx].y,
-               coord3dRead[idx].z,
-               coord3dRead_alt[idx].x,
-               coord3dRead_alt[idx].y,
-               coord3dRead_alt[idx].z);
-        printf("\n");
-    }
-
+    // Read and write as in the previous examples
+    writeThenRead(file, coord2d, "CoordinatesInTwoDimensions");
+    writeThenRead(file, coord3d, "CoordinatesInThreeDimensions");
     return 0;
 }
