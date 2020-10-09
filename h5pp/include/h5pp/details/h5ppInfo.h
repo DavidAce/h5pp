@@ -230,13 +230,14 @@ namespace h5pp {
         std::optional<size_t>           cppTypeSize       = std::nullopt;
         std::optional<std::type_index>  cppTypeIndex      = std::nullopt;
 
-        [[nodiscard]] hid_t getLocId() const {
+        [[nodiscard]] hid::h5f getLocId() const {
             if(h5File) return h5File.value();
-            if(h5Group) return h5Group.value();
-            if(h5ObjLoc) return h5ObjLoc.value();
+            if(h5Group) return H5Iget_file_id(h5Group.value());
+            if(h5ObjLoc) return H5Iget_file_id(h5ObjLoc.value());
             h5pp::logger::log->debug("Dataset location id is not defined");
-            return -1;
+            return static_cast<hid_t>(0);
         }
+
         void assertCreateReady() const {
             std::string error_msg;
             /* clang-format off */
@@ -494,12 +495,12 @@ namespace h5pp {
         std::optional<std::vector<size_t>>          cppTypeSize      = std::nullopt;
         std::optional<std::vector<std::type_index>> cppTypeIndex     = std::nullopt;
 
-        [[nodiscard]] hid_t getTableLocId() const {
+        [[nodiscard]] hid::h5f getTableLocId() const {
             if(tableFile) return tableFile.value();
-            if(tableGroup) return tableGroup.value();
-            if(tableObjLoc) return tableObjLoc.value();
+            if(tableGroup) return H5Iget_file_id(tableGroup.value());
+            if(tableObjLoc) return H5Iget_file_id(tableObjLoc.value());
             h5pp::logger::log->debug("Table location is not defined");
-            return -1;
+            return static_cast<hid_t>(0);
         }
         /* clang-format off */
         void assertCreateReady() const {

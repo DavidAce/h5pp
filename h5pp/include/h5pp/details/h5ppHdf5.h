@@ -508,7 +508,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_link_or_hid_t<h5x>>
+    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_link<h5x>>
     [[nodiscard]] inline bool checkIfAttributeExists(const h5x &         link,
                                                      std::string_view    linkPath,
                                                      std::string_view    attrName,
@@ -521,7 +521,7 @@ namespace h5pp::hdf5 {
         return exists;
     }
 
-    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5x>>
+    template<typename h5x, typename = std::enable_if_t<std::is_same_v<h5x,hid::h5f>>>
     [[nodiscard]] inline bool checkIfAttributeExists(const h5x &         loc,
                                                      std::string_view    linkPath,
                                                      std::string_view    attrName,
