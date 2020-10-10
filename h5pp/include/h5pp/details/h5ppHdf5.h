@@ -118,6 +118,21 @@ namespace h5pp::hdf5 {
         return getChunkDimensions(dcpl);
     }
 
+    [[nodiscard]] inline int getCompressionLevel(const hid::h5p &dsetCreatePropertyList) {
+        auto nfilter = H5Pget_nfilters(dsetCreatePropertyList);
+        H5Z_filter_t filter = H5Z_FILTER_NONE;
+        std::array<unsigned int,1> cdval = {0};
+        std::array<unsigned long,1> cdelm = {0};
+        for(int idx=0; idx < nfilter;idx++) {
+            constexpr size_t size = 10;
+            filter = H5Pget_filter(dsetCreatePropertyList, idx, nullptr, cdelm.data(), cdval.data(), 0, nullptr, nullptr);
+            if(filter != H5Z_FILTER_DEFLATE) continue;
+            H5Pget_filter_by_id(dsetCreatePropertyList, filter, nullptr, cdelm.data(), cdval.data(),  0, nullptr, nullptr);
+         }
+         return cdval[0];
+    }
+
+
     [[nodiscard]] inline std::optional<std::vector<hsize_t>> getMaxDimensions(const hid::h5s &space, H5D_layout_t layout) {
         if(layout != H5D_CHUNKED) return std::nullopt;
         if(H5Sget_simple_extent_type(space) != H5S_SIMPLE) return std::nullopt;

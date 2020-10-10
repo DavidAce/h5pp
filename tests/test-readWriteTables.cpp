@@ -29,6 +29,7 @@ h5pp::hid::h5t MY_HDF5_PARTICLE_TYPE;
 
 TEST_CASE("Test reading columns from table", "[Table fields]") {
     SECTION("Initialize file") {
+        file.setCompressionLevel(6);
         // Create a type for the char array from the template H5T_C_S1
         // The template describes a string with a single char.
         // Set the size with H5Tset_size.
@@ -52,7 +53,7 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
     }
 
     SECTION("Create table") {
-        auto tableInfo = file.createTable(MY_HDF5_PARTICLE_TYPE, "somegroup/particleTable", "particleTable");
+        auto tableInfo = file.createTable(MY_HDF5_PARTICLE_TYPE, "somegroup/particleTable", "particleTable",std::nullopt,6);
         CHECK(tableInfo.tableTitle.value() == "particleTable");
         CHECK(tableInfo.numRecords.value() == 0);
         CHECK(tableInfo.recordBytes.value() == sizeof(Particle));

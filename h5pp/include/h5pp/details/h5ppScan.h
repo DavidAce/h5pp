@@ -59,7 +59,10 @@ namespace h5pp::scan {
             else
                 info.resizeMode = h5pp::ResizeMode::RESIZE_TO_FIT;
         }
-
+        if(not info.compression){
+            hid::h5p plist    = H5Dget_create_plist(info.h5Dset.value());
+            info.compression = h5pp::hdf5::getCompressionLevel(plist);
+        }
         // Get c++ properties
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
             std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
@@ -534,6 +537,11 @@ namespace h5pp::scan {
             if(chunkVec and not chunkVec->empty()) info.chunkSize = chunkVec.value()[0];
         }
 
+        if(not info.compressionLevel){
+            hid::h5p plist    = H5Dget_create_plist(info.tableDset.value());
+            info.compressionLevel = h5pp::hdf5::getCompressionLevel(plist);
+        }
+
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize) {
             // Get c++ type information
             info.cppTypeIndex = std::vector<std::type_index>();
@@ -569,7 +577,7 @@ namespace h5pp::scan {
         if(options.dsetDimsChunk and not options.dsetDimsChunk->empty()) info.chunkSize = options.dsetDimsChunk.value()[0];
 
         if(not info.chunkSize) info.chunkSize = h5pp::util::getChunkDimensions(info.recordBytes.value(), {1}, std::nullopt, H5D_layout_t::H5D_CHUNKED).value()[0];
-        if(not info.compressionLevel) info.compressionLevel = h5pp::hdf5::getValidCompressionLevel(info.compressionLevel);
+        if(not info.compressionLevel) info.compressionLevel = h5pp::hdf5::getValidCompressionLevel();
 
         info.fieldTypes   = std::vector<h5pp::hid::h5t>();
         info.fieldOffsets = std::vector<size_t>();
