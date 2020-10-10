@@ -1000,11 +1000,12 @@ namespace h5pp::hdf5 {
         htri_t valid = H5Sselect_valid(space);
         if(valid < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Failed to check if Hyperslab selection is valid"));
+            Hyperslab slab(space);
+            throw std::runtime_error(h5pp::format("Hyperslab selection is invalid: {}", slab.string()));
         } else if(valid == 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             Hyperslab slab(space);
-            throw std::runtime_error(h5pp::format("Hyperslab selection is invalid {}", slab.string()));
+            throw std::runtime_error(h5pp::format("Hyperslab selection is not contained in the given extent {}", slab.string()));
         }
     }
 
@@ -2201,6 +2202,7 @@ namespace h5pp::hdf5 {
             if(not numNewRecords)
                 throw std::runtime_error("Optional argument [numNewRecords] is required when appending std::vector<std::byte> to table");
         if(not numNewRecords) numNewRecords = h5pp::util::getSize(data);
+        if(numNewRecords.value() == 0) h5pp::logger::log->warn("Given 0 records to write to table [{}]. This is likely an error.", info.tablePath.value());
         h5pp::logger::log->debug("Appending {} records to table [{}] | current num records {} | record size {} bytes",
                                  numNewRecords.value(),
                                  info.tablePath.value(),
@@ -2276,7 +2278,7 @@ namespace h5pp::hdf5 {
                     "Optional argument [numRecordsToWrite] is required when writing std::vector<std::byte> into table");
         }
         if(not numRecordsToWrite) numRecordsToWrite = h5pp::util::getSize(data);
-
+        if(numRecordsToWrite.value() == 0) h5pp::logger::log->warn("Given 0 records to write to table [{}]. This is likely an error.", info.tablePath.value());
         info.assertWriteReady();
 
         // Check that startIdx is smaller than the number of records on file, otherwise append the data
