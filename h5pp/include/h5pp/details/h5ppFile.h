@@ -64,7 +64,7 @@ namespace h5pp {
         /*! Default constructor */
         File() = default;
 
-        explicit File(const std::string &  filePath_,
+        explicit File(std::string_view filePath_,
                       h5pp::FilePermission permission_   = h5pp::FilePermission::RENAME,
                       size_t               logLevel_     = 2,
                       bool                 logTimestamp_ = false)
@@ -72,7 +72,7 @@ namespace h5pp {
             init();
         }
 
-        explicit File(const std::string &filePath_, unsigned int H5F_ACC_FLAGS, size_t logLevel_ = 2, bool logTimestamp_ = false)
+        explicit File(std::string_view filePath_, unsigned int H5F_ACC_FLAGS, size_t logLevel_ = 2, bool logTimestamp_ = false)
             : filePath(filePath_), logLevel(logLevel_), logTimestamp(logTimestamp_) {
             permission = h5pp::hdf5::convertFileAccessFlags(H5F_ACC_FLAGS);
             init();
@@ -144,13 +144,12 @@ namespace h5pp {
          *
          */
 
-        [[maybe_unused]] fs::path copyFileTo(const std::string &   targetFilePath,
+        [[maybe_unused]] fs::path copyFileTo(std::string_view      targetFilePath,
                                              const FilePermission &perm = FilePermission::COLLISION_FAIL) const {
             return h5pp::hdf5::copyFile(getFilePath(), targetFilePath, perm, plists);
         }
 
-        [[maybe_unused]] fs::path moveFileTo(const std::string &   targetFilePath,
-                                             const FilePermission &perm = FilePermission::COLLISION_FAIL) {
+        [[maybe_unused]] fs::path moveFileTo(std::string_view targetFilePath, const FilePermission &perm = FilePermission::COLLISION_FAIL) {
             auto newPath = h5pp::hdf5::moveFile(getFilePath(), targetFilePath, perm, plists);
             if(fs::exists(newPath)) { filePath = newPath; }
             return newPath;
@@ -162,53 +161,48 @@ namespace h5pp {
          *
          */
 
-        void copyLinkToFile(const std::string &   localLinkPath,
-                            const std::string &   targetFilePath,
-                            const std::string &   targetLinkPath,
+        void copyLinkToFile(std::string_view      localLinkPath,
+                            std::string_view      targetFilePath,
+                            std::string_view      targetLinkPath,
                             const FilePermission &targetFileCreatePermission = FilePermission::READWRITE) const {
             return h5pp::hdf5::copyLink(getFilePath(), localLinkPath, targetFilePath, targetLinkPath, targetFileCreatePermission, plists);
         }
 
-        void copyLinkFromFile(const std::string &localLinkPath, const std::string &sourceFilePath, const std::string &sourceLinkPath) {
+        void copyLinkFromFile(std::string_view localLinkPath, std::string_view sourceFilePath, std::string_view sourceLinkPath) {
             return h5pp::hdf5::copyLink(
                 sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
         }
 
-        template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
-        void
-        copyLinkToLocation(const std::string &localLinkPath, const h5x_tgt &targetLocationId, const std::string &targetLinkPath) const {
+        template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_tgt>>
+        void copyLinkToLocation(std::string_view localLinkPath, const h5x_tgt &targetLocationId, std::string_view targetLinkPath) const {
             return h5pp::hdf5::copyLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath, plists);
         }
 
-        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
-        void copyLinkFromLocation(const std::string &localLinkPath, const h5x_src &sourceLocationId, const std::string &sourceLinkPath) {
-            return h5pp::hdf5::copyLink(
-                sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, plists);
+        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_src>>
+        void copyLinkFromLocation(std::string_view localLinkPath, const h5x_src &sourceLocationId, std::string_view sourceLinkPath) {
+            return h5pp::hdf5::copyLink(sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, plists);
         }
 
-        void moveLinkToFile(const std::string &   localLinkPath,
-                            const std::string &   targetFilePath,
-                            const std::string &   targetLinkPath,
+        void moveLinkToFile(std::string_view      localLinkPath,
+                            std::string_view      targetFilePath,
+                            std::string_view      targetLinkPath,
                             const FilePermission &targetFileCreatePermission = FilePermission::READWRITE) const {
             return h5pp::hdf5::moveLink(getFilePath(), localLinkPath, targetFilePath, targetLinkPath, targetFileCreatePermission, plists);
         }
 
-        void moveLinkFromFile(const std::string &localLinkPath, const std::string &sourceFilePath, const std::string &sourceLinkPath) {
+        void moveLinkFromFile(std::string_view localLinkPath, std::string_view sourceFilePath, std::string_view sourceLinkPath) {
             return h5pp::hdf5::moveLink(
                 sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
         }
 
-        template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_tgt>>
-        void
-        moveLinkToLocation(const std::string &localLinkPath, const h5x_tgt &targetLocationId, const std::string &targetLinkPath) const {
+        template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_tgt>>
+        void moveLinkToLocation(std::string_view localLinkPath, const h5x_tgt &targetLocationId, std::string_view targetLinkPath) const {
             return h5pp::hdf5::moveLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath, plists);
         }
 
-
-        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
-        void moveLinkFromLocation(const std::string &localLinkPath, const h5x_src &sourceLocationId, const std::string &sourceLinkPath) {
-            return h5pp::hdf5::moveLink(
-                sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, plists);
+        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_src>>
+        void moveLinkFromLocation(std::string_view localLinkPath, const h5x_src &sourceLocationId, std::string_view sourceLinkPath) {
+            return h5pp::hdf5::moveLink(sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, plists);
         }
 
         /*
@@ -250,11 +244,8 @@ namespace h5pp {
             h5pp::hdf5::resizeDataset(info, newDimensions, mode_override);
         }
 
-        template<typename DsetDimsType = std::initializer_list<hsize_t>,
-                 typename              = h5pp::type::sfinae::enable_if_is_integral_iterable_or_num<DsetDimsType>>
-        DsetInfo resizeDataset(std::string_view                dsetPath,
-                               const DsetDimsType &            newDimensions,
-                               std::optional<h5pp::ResizeMode> mode = std::nullopt) {
+        DsetInfo
+            resizeDataset(std::string_view dsetPath, const DimsType &newDimensions, std::optional<h5pp::ResizeMode> mode = std::nullopt) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to resize dataset on read-only file [{}]", filePath.string()));
             Options options;
@@ -263,7 +254,7 @@ namespace h5pp {
             auto info          = h5pp::scan::getDsetInfo(openFileHandle(), dsetPath, options, plists);
             if(not info.dsetExists.value())
                 throw std::runtime_error(h5pp::format("Failed to resize dataset [{}]: dataset does not exist", dsetPath));
-            h5pp::hdf5::resizeDataset(info, h5pp::util::getDimVector(newDimensions), mode);
+            h5pp::hdf5::resizeDataset(info, newDimensions, mode);
             return info;
         }
 
@@ -801,7 +792,7 @@ namespace h5pp {
             return tgtInfo;
         }
 
-        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
+        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_src>>
         TableInfo appendTableRecords(const h5x_src &                   srcLocation,
                                      std::string_view                  srcTablePath,
                                      TableSelection                    srcTableSelection,
@@ -874,7 +865,7 @@ namespace h5pp {
                                    hsize_t                           numRecordsToCopy,
                                    std::string_view                  tgtTablePath,
                                    hsize_t                           tgtStartIdx,
-                                   const OptDimsType &               chunkDims  = std::nullopt,
+                                   const OptDimsType &               chunkDims   = std::nullopt,
                                    const std::optional<unsigned int> compression = std::nullopt) {
             Options options;
             options.linkPath      = h5pp::util::safe_str(tgtTablePath);
@@ -882,20 +873,20 @@ namespace h5pp {
             options.compression   = getCompressionLevel(compression);
             auto tgtInfo          = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
-                tgtInfo = createTable(
-                    srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compression);
+                tgtInfo =
+                    createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compression);
 
             copyTableRecords(srcInfo, srcStartIdx, numRecordsToCopy, tgtInfo, tgtStartIdx);
             return tgtInfo;
         }
 
-        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
+        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_src>>
         TableInfo copyTableRecords(const h5x_src &                   srcLocation,
                                    std::string_view                  srcTablePath,
                                    TableSelection                    srcTableSelection,
                                    std::string_view                  tgtTablePath,
                                    hsize_t                           tgtStartIdx,
-                                   const std::optional<hsize_t>      chunkDims        = std::nullopt,
+                                   const std::optional<hsize_t>      chunkDims   = std::nullopt,
                                    const std::optional<unsigned int> compression = std::nullopt) {
             Options options;
             options.linkPath = h5pp::util::safe_str(srcTablePath);
@@ -903,7 +894,7 @@ namespace h5pp {
             return copyTableRecords(srcInfo, srcTableSelection, tgtTablePath, tgtStartIdx, chunkDims, compression);
         }
 
-        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x_src>>
+        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_src>>
         TableInfo copyTableRecords(const h5x_src &                   srcLocation,
                                    std::string_view                  srcTablePath,
                                    hsize_t                           srcStartIdx,
@@ -1125,13 +1116,6 @@ namespace h5pp {
             return h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
         }
 
-        [[nodiscard]] AttrInfo getAttributeInfo(std::string_view linkPath, std::string_view attrName) const {
-            Options options;
-            options.linkPath = h5pp::util::safe_str(linkPath);
-            options.attrName = h5pp::util::safe_str(attrName);
-            return h5pp::scan::readAttrInfo(openFileHandle(), options, plists);
-        }
-
         [[nodiscard]] TableInfo getTableInfo(std::string_view tablePath) const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath);
@@ -1142,12 +1126,45 @@ namespace h5pp {
             return h5pp::hdf5::getTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.linkAccess);
         }
 
+        [[nodiscard]] AttrInfo getAttributeInfo(std::string_view linkPath, std::string_view attrName) const {
+            Options options;
+            options.linkPath = h5pp::util::safe_str(linkPath);
+            options.attrName = h5pp::util::safe_str(attrName);
+            return h5pp::scan::readAttrInfo(openFileHandle(), options, plists);
+        }
+
         [[nodiscard]] TypeInfo getTypeInfoAttribute(std::string_view linkPath, std::string_view attrName) const {
             return h5pp::hdf5::getTypeInfo(openFileHandle(), linkPath, attrName, std::nullopt, std::nullopt, plists.linkAccess);
         }
 
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes(std::string_view linkPath) const {
             return h5pp::hdf5::getTypeInfo_allAttributes(openFileHandle(), linkPath, std::nullopt, plists.linkAccess);
+        }
+
+        template<typename InfoType>
+        [[nodiscard]] InfoType getInfo(std::string_view linkPath) const {
+            if constexpr(std::is_same_v<InfoType, DsetInfo>)
+                return getDatasetInfo(linkPath);
+            else if constexpr(std::is_same_v<InfoType, TableInfo>)
+                return getTableInfo(linkPath);
+            else if constexpr(std::is_same_v<InfoType, TypeInfo>)
+                return getTypeInfoDataset(linkPath);
+            else
+                static_assert(h5pp::type::sfinae::invalid_type_v<InfoType>,
+                              "Template function [h5pp::File::getInfo<InfoType>(std::string_view linkPath)] "
+                              "requires InfoType: [h5pp::DsetInfo], [h5pp::TableInfo] or [h5pp::TypeInfo]");
+        }
+
+        template<typename InfoType>
+        [[nodiscard]] InfoType getInfo(std::string_view linkPath, std::string_view attrName) const {
+            if constexpr(std::is_same_v<InfoType, AttrInfo>)
+                return getAttributeInfo(linkPath, attrName);
+            else if constexpr(std::is_same_v<InfoType, TypeInfo>)
+                return getTypeInfoAttribute(linkPath, attrName);
+            else
+                static_assert(h5pp::type::sfinae::invalid_type_v<InfoType>,
+                              "Template function [h5pp::File::getInfo<InfoType>(std::string_view linkPath, std::string_view attrName)] "
+                              "requires InfoType: [h5pp::AttrInfo] or [h5pp::TypeInfo]");
         }
 
         [[nodiscard]] bool fileIsValid() const { return h5pp::hdf5::fileIsValid(filePath); }

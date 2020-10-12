@@ -97,27 +97,27 @@ namespace h5pp::hid {
         // hid_t operators
         [[nodiscard]] virtual bool equal(const hid_t &rhs) const = 0;
 
-        template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
         bool operator==(const T &rhs) const {
             return equal(rhs);
         }
-        template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
         bool operator!=(const T &rhs) const {
             return not equal(rhs);
         }
-        template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
         bool operator<=(const T &rhs) const {
             return val <= rhs;
         }
-        template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
         bool operator>=(const T &rhs) const {
             return val >= rhs;
         }
-        template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
         bool operator<(const T &rhs) const {
             return val < rhs;
         }
-        template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
         bool operator>(const T &rhs) const {
             return val > rhs;
         }

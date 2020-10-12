@@ -216,8 +216,15 @@ namespace h5pp::type::sfinae {
         public:
         static constexpr bool value = test<T>();
     };
+
     template<typename T>
     inline constexpr bool is_integral_iterable_or_num_v = is_integral_iterable_or_num<T>::value;
+
+    template<typename T>
+    inline constexpr bool is_iterable_or_num_v = is_iterable_v<T> or std::is_arithmetic_v<T>;
+
+    template<typename T>
+    inline constexpr bool is_integral_iterable_num_or_nullopt_v = is_integral_iterable_or_num_v<T> or std::is_same_v<T, std::nullopt_t>;
 
     template<typename T>
     using enable_if_is_integral_iterable = std::enable_if_t<is_integral_iterable_v<T>>;
@@ -226,25 +233,42 @@ namespace h5pp::type::sfinae {
     using enable_if_is_integral_iterable_or_num = std::enable_if_t<is_integral_iterable_or_num_v<T>>;
 
     template<typename T>
-    using enable_if_is_integral_iterable_or_nullopt =
-        std::enable_if_t<is_integral_iterable_or_num_v<T> or std::is_same_v<T, std::nullopt_t>>;
+    using enable_if_is_integral_iterable_num_or_nullopt =
+        std::enable_if_t<is_integral_iterable_num_or_nullopt_v<T>>;
 
     template<typename T>
     using enable_if_is_iterable_or_nullopt = std::enable_if_t<is_iterable_v<T> or std::is_same_v<T, std::nullopt_t>>;
 
     template<typename T>
-    using enable_if_is_h5_loc = std::enable_if_t<std::is_same_v<T, hid::h5f> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o>>;
+    inline constexpr bool is_h5_loc_v = std::is_same_v<T, hid::h5f> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o>;
+
     template<typename T>
-    using enable_if_is_h5_loc_or_hid_t = std::enable_if_t<std::is_same_v<T, hid::h5f> or std::is_same_v<T, hid::h5g> or
-                                                          std::is_same_v<T, hid::h5o> or std::is_same_v<T, hid_t>>;
+    inline constexpr bool is_h5_loc_or_hid_v = is_h5_loc_v<T> or std::is_same_v<T,hid_t>;
+
     template<typename T>
-    using enable_if_is_h5_link =
-        std::enable_if_t<std::is_same_v<T, hid::h5d> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o>>;
+    inline constexpr bool is_h5_link_v = std::is_same_v<T, hid::h5d> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o>;
+
     template<typename T>
-    using enable_if_is_h5_link_or_hid_t = std::enable_if_t<std::is_same_v<T, hid::h5d> or std::is_same_v<T, hid::h5g> or
-                                                           std::is_same_v<T, hid::h5o> or std::is_same_v<T, hid_t>>;
+    inline constexpr bool is_h5_link_or_hid_v = is_h5_link_v<T> or std::is_same_v<T, hid_t>;
+
+    template<typename T>
+    inline constexpr bool is_h5_type_v = std::is_same_v<T, hid::h5t> or std::is_same_v<T, hid_t>;
+
+    template<typename T>
+    using enable_if_is_h5_loc_t = std::enable_if_t<is_h5_loc_v<T>>;
+
+    template<typename T>
+    using enable_if_is_h5_loc_or_hid_t = std::enable_if_t<is_h5_loc_or_hid_v<T>>;
+
+    template<typename T>
+    using enable_if_is_h5_link = std::enable_if_t<is_h5_link_v<T>>;
+
+    template<typename T>
+    using enable_if_is_h5_link_or_hid_t = std::enable_if_t<is_h5_link_or_hid_v<T>>;
+
     template<typename T>
     using enable_if_is_h5_type = std::enable_if_t<std::is_same_v<T, hid::h5t> or std::is_same_v<T, hid_t>>;
+
     template<typename T>
     using enable_if_not_h5_type = std::enable_if_t<not std::is_same_v<T, hid::h5t> and not std::is_same_v<T, hid_t>>;
 

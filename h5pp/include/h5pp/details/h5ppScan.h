@@ -14,8 +14,12 @@ namespace h5pp::scan {
      * @param dsetPath the full path to a dataset in an HDF5 file
      * @param plists (optional) access property for the file. Used to determine link access property when searching for the dataset.
      */
-    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    template<typename h5x>
     inline void fillDsetInfo(h5pp::DsetInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+        static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
+                      "Template function [h5pp::scan::fillDsetInfo(..., const h5x & loc, ...)] requires type h5x to be: "
+                      "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
+
         if(not options.linkPath) throw std::runtime_error("Could not fill dataset info: No dataset path was given in options");
         h5pp::logger::log->debug("Scanning metadata of dataset [{}]", options.linkPath.value());
         // Copy the location
@@ -78,7 +82,7 @@ namespace h5pp::scan {
      * @param dsetPath The path to the dataset relative to loc
      * @param plists (optional) access property for the file. Used to determine link access property when searching for the dataset.
      */
-    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    template<typename h5x>
     inline h5pp::DsetInfo readDsetInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         if(not options.linkPath) throw std::runtime_error("Could not read dataset info: No dataset path was given in options");
         h5pp::DsetInfo info;
@@ -92,7 +96,7 @@ namespace h5pp::scan {
      * @param dsetPath The path to the dataset relative to loc
      * @param plists (optional) access property for the file. Used to determine link access property when searching for the dataset.
      */
-    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    template<typename h5x>
     inline h5pp::DsetInfo getDsetInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         auto info = readDsetInfo(loc, options, plists);
         if(info.dsetExists.value()) return info;
@@ -185,7 +189,7 @@ namespace h5pp::scan {
      * @param dsetPath The path to the dataset relative to loc
      * @param plists (optional) access property for the file. Used to determine link access property when searching for the dataset.
      */
-    template<typename DataType, typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    template<typename DataType, typename h5x>
     inline h5pp::DsetInfo getDsetInfo(const h5x &loc, const DataType &data, const Options &options = Options(), const PropertyLists &plists = PropertyLists()) {
         auto info = readDsetInfo(loc, options, plists);
         if(info.dsetExists.value()) return info;
@@ -323,8 +327,11 @@ namespace h5pp::scan {
         return dataInfo;
     }
 
-    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    template<typename h5x>
     inline void fillAttrInfo(AttrInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+        static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
+                      "Template function [h5pp::scan::fillAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
+                      "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         /* clang-format off */
         if(not options.linkPath) throw std::runtime_error("Could not fill attribute info: No link path was given in options");
         if(not options.attrName) throw std::runtime_error("Could not fill attribute info: No attribute name was given in options");
@@ -338,7 +345,7 @@ namespace h5pp::scan {
         // From here on the link exists
         if(not info.h5Link)     info.h5Link       = h5pp::hdf5::openLink<hid::h5o>(loc, info.linkPath.value(), info.linkExists, plists.linkAccess);
         if(not info.attrExists)
-            info.attrExists = h5pp::hdf5::checkIfAttributeExists(info.h5Link.value(), info.linkPath.value(), info.attrName.value(), std::nullopt, plists.linkAccess);
+            info.attrExists = h5pp::hdf5::checkIfAttributeExists(info.h5Link.value(), info.attrName.value(), std::nullopt, plists.linkAccess);
         if(info.attrExists and not info.attrExists.value()) return;
         // From here on the attribute exists
         if(not info.h5Attr)    info.h5Attr        = H5Aopen_name(info.h5Link.value(), h5pp::util::safe_str(info.attrName.value()).c_str());
@@ -363,14 +370,14 @@ namespace h5pp::scan {
         h5pp::logger::log->trace("Scanned metadata {}", info.string());
     }
 
-    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    template<typename h5x>
     inline h5pp::AttrInfo readAttrInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         h5pp::AttrInfo info;
         fillAttrInfo(info, loc, options, plists);
         return info;
     }
 
-    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    template<typename h5x>
     inline h5pp::AttrInfo getAttrInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         auto info = readAttrInfo(loc, options, plists);
         if(info.attrExists.value()) return info;
@@ -413,7 +420,7 @@ namespace h5pp::scan {
         return info;
     }
 
-    template<typename DataType, typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    template<typename DataType, typename h5x>
     inline h5pp::AttrInfo getAttrInfo(const h5x &loc, const DataType &data, const Options &options, const PropertyLists &plists = PropertyLists()) {
         auto info = readAttrInfo(loc, options, plists);
         if(not info.linkExists) throw std::runtime_error(h5pp::format("Could not get attribute info for link [{}]: Link does not exist.", options.linkPath.value()));
@@ -459,8 +466,11 @@ namespace h5pp::scan {
         return info;
     }
 
-    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    template<typename h5x>
     inline void fillTableInfo(TableInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+        static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
+                      "Template function [h5pp::scan::fillTableInfo(..., const h5x & loc, ...)] requires type h5x to be: "
+                      "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         if(not options.linkPath) throw std::runtime_error("Could not fill table info: No table path was given in options");
         h5pp::logger::log->debug("Scanning metadata of table [{}]", options.linkPath.value());
         // Copy the location
@@ -556,14 +566,14 @@ namespace h5pp::scan {
         }
     }
 
-    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    template<typename h5x>
     inline TableInfo readTableInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         TableInfo info;
         fillTableInfo(info, loc, options, plists);
         return info;
     }
 
-    template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc<h5x>>
+    template<typename h5x>
     inline h5pp::TableInfo getTableInfo(const h5x &loc, const Options &options, std::string_view tableTitle, const PropertyLists &plists = PropertyLists()) {
         auto info = readTableInfo(loc, options, plists);
         if(info.tableExists.value()) return info;

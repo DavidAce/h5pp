@@ -134,42 +134,52 @@ namespace h5pp::util {
     }
 
     template<typename DataType,
-             typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>,
-             typename = std::enable_if_t<h5pp::type::sfinae::is_text_v<DataType>>>
+             typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] size_t getCharArraySize(const DataType &data, [[maybe_unused]] bool countChars = true) {
+        static_assert(h5pp::type::sfinae::is_text_v<DataType>,
+                      "Template function [h5pp::util::getCharArraySize(const DataType & data)] requires type DataType to be "
+                      "a text-like type such as [std::string], [std::string_view], [char *] or have a .c_str() member function");
         // With this function we are interested in the number of chars currently in a given buffer,
         // including the null terminator.
-        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return data.size() + 1; // string and string_view
-        if constexpr(std::is_array_v<DataType>) return getArraySize(data, countChars); // Included null terminator already
-        if constexpr(h5pp::type::sfinae::has_c_str_v<DataType>) return strlen(data.c_str()) + 1;
-        if constexpr(std::is_pointer_v<DataType>) return strlen(data) + 1;
+        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return data.size() + 1; // string and string_view have size without nullterm
+        if constexpr(std::is_array_v<DataType>) return getArraySize(data, countChars); // getarraysize includes nullterm already
+        if constexpr(h5pp::type::sfinae::has_c_str_v<DataType>) return strlen(data.c_str()) + 1; //strlen does not include nullterm
+        if constexpr(std::is_pointer_v<DataType>) return strlen(data) + 1; //strlen does not include nullterm
         return 1; // Probably a char?
     }
 
-    template<typename IntegralOrIterableType = std::initializer_list<hsize_t>,
-             typename                        = h5pp::type::sfinae::enable_if_is_integral_iterable_or_num<IntegralOrIterableType>>
-    [[nodiscard]] std::vector<hsize_t> getDimVector(const IntegralOrIterableType &iterable) {
-        if constexpr(std::is_same_v<IntegralOrIterableType, std::vector<hsize_t>>)
-            return iterable;
+    template<typename DimType = std::initializer_list<hsize_t>>
+    [[nodiscard]] std::vector<hsize_t> getDimVector(const DimType &dims) {
+        static_assert(h5pp::type::sfinae::is_integral_iterable_or_num_v<DimType>,
+                      "Template function [h5pp::util::getDimVector(const DimType & dims)] requires type DimType to be "
+                      "an integral type e.g. [int,long,size_t...] or "
+                      "an iterable container of integral types e.g. [std::vector<int>, std::initializer_list<size_t>] ...");
+        if constexpr(std::is_same_v<DimType, std::vector<hsize_t>>)
+            return dims;
         else {
-            if constexpr(h5pp::type::sfinae::is_iterable_v<IntegralOrIterableType>) {
+            if constexpr(h5pp::type::sfinae::is_iterable_v<DimType>) {
                 std::vector<hsize_t> dimVec;
-                std::copy(iterable.begin(), iterable.end(), std::back_inserter(dimVec));
+                std::copy(std::begin(dims), std::end(dims), std::back_inserter(dimVec));
                 return dimVec;
-            } else if constexpr(std::is_integral_v<IntegralOrIterableType>) {
-                return std::vector<hsize_t>{static_cast<hsize_t>(iterable)};
+            } else if constexpr(std::is_integral_v<DimType>) {
+                return std::vector<hsize_t>{static_cast<hsize_t>(dims)};
             } else
-                throw std::logic_error("Wrong dimension type detected. Sfinae has done something wrong");
+                static_assert(h5pp::type::sfinae::invalid_type_v<DimType>,
+                    "Template function [h5pp::util::getDimVector(const DimType & dims)] failed to statically detect "
+                              "an invalid type for DimsType. Please submit a bug report.");
         }
     }
 
-    template<typename IntegralOrIterableOrOptType = std::initializer_list<hsize_t>,
-             typename = h5pp::type::sfinae::enable_if_is_integral_iterable_or_nullopt<IntegralOrIterableOrOptType>>
-    [[nodiscard]] std::optional<std::vector<hsize_t>> getOptionalDimVector(const IntegralOrIterableOrOptType &iterable) {
-        if constexpr(std::is_same_v<IntegralOrIterableOrOptType, std::nullopt_t>)
-            return iterable;
+    template<typename DimType = std::initializer_list<hsize_t>>
+    [[nodiscard]] std::optional<std::vector<hsize_t>> getOptionalDimVector(const DimType &dims) {
+        static_assert(h5pp::type::sfinae::is_integral_iterable_num_or_nullopt_v<DimType>,
+                      "Template function [h5pp::util::getOptionalDimVector(const DimType & dims)] requires type DimType to be "
+                      "an std::nullopt, an integral type e.g. [int,long,size_t...] or "
+                      "an iterable container of integral types e.g. [std::vector<int>, std::initializer_list<size_t>] ...");
+        if constexpr(std::is_same_v<DimType, std::nullopt_t>)
+            return dims;
         else
-            return getDimVector(iterable);
+            return getDimVector(dims);
     }
 
     [[nodiscard]] inline hsize_t getSizeFromDimensions(const std::vector<hsize_t> &dims) {

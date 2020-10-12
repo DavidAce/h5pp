@@ -55,8 +55,8 @@ namespace h5pp {
             }
 
         }
-        [[nodiscard]] operator const std::vector<hsize_t> &() const { return dims; } // Class can be used as an actual hid_t
-        [[nodiscard]] operator std::vector<hsize_t> &() { return dims; }             // Class can be used as an actual hid_t
+        [[nodiscard]] operator const std::vector<hsize_t> &() const { return dims; }
+        [[nodiscard]] operator std::vector<hsize_t> &() { return dims; }
     };
 
     struct OptDimsType {
@@ -98,8 +98,8 @@ namespace h5pp {
                                                   operator bool() const { return dims.has_value(); }
         [[nodiscard]] const std::vector<hsize_t> &value() const { return dims.value(); }
         [[nodiscard]] std::vector<hsize_t> &      value() { return dims.value(); }
-        [[nodiscard]]                             operator const std::optional<std::vector<hsize_t>> &() const { return dims; } // Class can be used as an actual hid_t
-        [[nodiscard]]                             operator std::optional<std::vector<hsize_t>> &() { return dims; }             // Class can be used as an actual hid_t
+        [[nodiscard]]                             operator const std::optional<std::vector<hsize_t>> &() const { return dims; }
+        [[nodiscard]]                             operator std::optional<std::vector<hsize_t>> &() { return dims; }
         auto                                      operator->() { return dims.operator->(); }
         auto                                      operator->() const { return dims.operator->(); }
     };
