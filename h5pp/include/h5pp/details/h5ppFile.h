@@ -64,16 +64,16 @@ namespace h5pp {
         /*! Default constructor */
         File() = default;
 
-        explicit File(std::string_view filePath_,
+        explicit File(h5pp::fs::path       filePath_,
                       h5pp::FilePermission permission_   = h5pp::FilePermission::RENAME,
                       size_t               logLevel_     = 2,
                       bool                 logTimestamp_ = false)
-            : filePath(filePath_), permission(permission_), logLevel(logLevel_), logTimestamp(logTimestamp_) {
+            : filePath(std::move(filePath_)), permission(permission_), logLevel(logLevel_), logTimestamp(logTimestamp_) {
             init();
         }
 
-        explicit File(std::string_view filePath_, unsigned int H5F_ACC_FLAGS, size_t logLevel_ = 2, bool logTimestamp_ = false)
-            : filePath(filePath_), logLevel(logLevel_), logTimestamp(logTimestamp_) {
+        explicit File(h5pp::fs::path filePath_, unsigned int H5F_ACC_FLAGS, size_t logLevel_ = 2, bool logTimestamp_ = false)
+            : filePath(std::move(filePath_)), logLevel(logLevel_), logTimestamp(logTimestamp_) {
             permission = h5pp::hdf5::convertFileAccessFlags(H5F_ACC_FLAGS);
             init();
         }
