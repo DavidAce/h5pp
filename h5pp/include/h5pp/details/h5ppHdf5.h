@@ -2142,8 +2142,6 @@ namespace h5pp::hdf5 {
         // If numReadRecords given but startIdx is not -> read the last numReadRecords records
 
         info.assertReadReady();
-        hsize_t totalRecords = info.numRecords.value();
-
         if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
             if(not numReadRecords)
                 throw std::runtime_error("Optional argument [numReadRecords] is required when reading std::vector<std::byte> from table");
@@ -2152,41 +2150,41 @@ namespace h5pp::hdf5 {
         if(not startIdx and not numReadRecords) {
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 startIdx       = 0;
-                numReadRecords = totalRecords;
+                numReadRecords = info.numRecords.value();
             } else {
-                startIdx       = totalRecords - 1;
+                startIdx       = info.numRecords.value() - 1;
                 numReadRecords = 1;
             }
         } else if(startIdx and not numReadRecords) {
-            if(startIdx.value() > totalRecords - 1)
+            if(startIdx.value() > info.numRecords.value() - 1)
                 throw std::runtime_error(h5pp::format(
-                    "Invalid start index {} for table [{}] | total records {}", startIdx.value(), info.tablePath.value(), totalRecords));
+                    "Invalid start index {} for table [{}] | total records {}", startIdx.value(), info.tablePath.value(), info.numRecords.value()));
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
-                numReadRecords = totalRecords - startIdx.value();
+                numReadRecords = info.numRecords.value() - startIdx.value();
             } else {
                 numReadRecords = 1;
             }
         } else if(numReadRecords and not startIdx) {
-            if(numReadRecords.value() > totalRecords)
+            if(numReadRecords.value() > info.numRecords.value())
                 throw std::logic_error(h5pp::format("Cannot read {} records from table [{}] which only has {} records",
                                                     numReadRecords.value(),
                                                     info.tablePath.value(),
-                                                    totalRecords));
-            startIdx = totalRecords - numReadRecords.value();
+                                                    info.numRecords.value()));
+            startIdx = info.numRecords.value() - numReadRecords.value();
         }
 
         // Sanity check
-        if(numReadRecords.value() > totalRecords)
+        if(numReadRecords.value() > info.numRecords.value())
             throw std::logic_error(h5pp::format("Cannot read {} records from table [{}] which only has {} records",
                                                 numReadRecords.value(),
                                                 info.tablePath.value(),
-                                                totalRecords));
-        if(startIdx.value() + numReadRecords.value() > totalRecords)
+                                                info.numRecords.value()));
+        if(startIdx.value() + numReadRecords.value() > info.numRecords.value())
             throw std::logic_error(h5pp::format("Cannot read {} records starting from index {} from table [{}] which only has {} records",
                                                 numReadRecords.value(),
                                                 startIdx.value(),
                                                 info.tablePath.value(),
-                                                totalRecords));
+                                                info.numRecords.value()));
 
         h5pp::logger::log->debug("Reading table [{}] | read from record {} | records to read {} | total records {} | record size {} bytes",
                                  info.tablePath.value(),
@@ -2194,6 +2192,7 @@ namespace h5pp::hdf5 {
                                  numReadRecords.value(),
                                  info.numRecords.value(),
                                  info.recordBytes.value());
+
         if constexpr(not std::is_same_v<DataType, std::vector<std::byte>>) {
             // Make sure the given container and the registered table record type have the same size.
             // If there is a mismatch here it can cause horrible bugs/segfaults
@@ -2215,6 +2214,10 @@ namespace h5pp::hdf5 {
                                                       info.recordBytes.value()));
             h5pp::util::resizeData(data, {numReadRecords.value()});
         }
+
+        // Last sanity check. If there are no records to read, just return;
+        if(numReadRecords.value() == 0) return;
+        if(info.numRecords.value() == 0) return;
 
         /* Step 1: Get the dataset and memory spaces */
         hid::h5s dsetSpace = H5Dget_space(info.tableDset.value()); /* get a copy of the new file data space for writing */
