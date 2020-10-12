@@ -2,6 +2,7 @@
 #include "h5ppFormat.h"
 #include "h5ppOptional.h"
 #include "h5ppSpdlog.h"
+#include "h5ppTypeSfinae.h"
 
 namespace h5pp::logger {
 #ifdef SPDLOG_H
@@ -37,10 +38,7 @@ namespace h5pp::logger {
                 return;
         } else {
             static_assert(h5pp::type::sfinae::invalid_type_v<levelType>, "Log level type must be an integral type or spdlog::level::level_enum");
-            throw std::runtime_error("Given wrong type for spdlog verbosity level");
         }
-        //        log->info("Log verbosity level: {}   | trace:0 | debug:1 | info:2 | warn:3 | error:4 | critical:5 |", static_cast<int>(log->level()));
-        //        log->debug("Log verbosity level: {}", static_cast<int>(log->level()));
     }
 
     inline void setLogger(const std::string &name, std::optional<size_t> levelZeroToFive = std::nullopt, std::optional<bool> timestamp = std::nullopt) {
