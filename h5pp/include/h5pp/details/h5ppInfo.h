@@ -1,11 +1,13 @@
 #pragma once
+#include "h5ppDimensionType.h"
 #include "h5ppEnums.h"
 #include "h5ppHid.h"
+#include "h5ppHyperslab.h"
 #include "h5ppLogger.h"
 #include "h5ppOptional.h"
-#include "h5ppDimensionType.h"
 #include <hdf5.h>
 #include <hdf5_hl.h>
+#include <numeric>
 #include <string>
 #include <typeindex>
 #include <variant>
