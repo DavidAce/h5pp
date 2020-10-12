@@ -2660,7 +2660,8 @@ namespace h5pp::hdf5 {
                          std::string_view     srcLinkPath,
                          const h5x_tgt &      tgtLocId,
                          std::string_view     tgtLinkPath,
-                         const PropertyLists &plists = PropertyLists()) {
+                         LocationMode         locationMode = LocationMode::DETECT,
+                         const PropertyLists &plists       = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x_src>,
                       "Template function [h5pp::hdf5::moveLink(const h5x_src & srcLocId, ...)] requires type h5x_src to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -2670,12 +2671,10 @@ namespace h5pp::hdf5 {
 
         h5pp::logger::log->trace("Moving link [{}] --> [{}]", srcLinkPath, tgtLinkPath);
         // Move the link srcLinkPath to tgtLinkPath. Note that H5Lmove only works inside a single file.
-        // For different files we should copyLink followed by H5Ldelete
+        // For different files we should do H5Ocopy followed by H5Ldelete
+        bool sameFile = h5pp::util::onSameFile(srcLocId, tgtLocId, locationMode);
 
-        h5pp::hid::h5f srcFileId = H5Iget_file_id(srcLocId);
-        h5pp::hid::h5f tgtFileId = H5Iget_file_id(tgtLocId);
-
-        if(srcFileId == tgtFileId) {
+        if(sameFile) {
             // Same file
             auto retval = H5Lmove(srcLocId,
                                   util::safe_str(srcLinkPath).c_str(),

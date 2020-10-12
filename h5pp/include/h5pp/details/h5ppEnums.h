@@ -67,4 +67,17 @@ namespace h5pp {
         INCREASE_ONLY,
         DO_NOT_RESIZE,
     };
+
+    enum class LocationMode{
+        /*
+         * Some operations, such as h5pp::hdf5::copyLink support copying objects between files.
+         * However, detecting whether two given location id's are on the same file can become
+         * a bottleneck when batch processing a large amount of files.
+         *
+         */
+
+        SAME_FILE,  /*!< Interpret source and target location id's as being on the same file */
+        OTHER_FILE, /*!< Interpret source and target location id's as being on different files */
+        DETECT,     /*!< Use H5Iget_file_id() to check. This is the default, but avoid when known. */
+    };
 }

@@ -196,13 +196,19 @@ namespace h5pp {
         }
 
         template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_tgt>>
-        void moveLinkToLocation(std::string_view localLinkPath, const h5x_tgt &targetLocationId, std::string_view targetLinkPath) const {
-            return h5pp::hdf5::moveLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath, plists);
+        void moveLinkToLocation(std::string_view localLinkPath,
+                                const h5x_tgt &  targetLocationId,
+                                std::string_view targetLinkPath,
+                                LocationMode     locMode = LocationMode::DETECT) const {
+            return h5pp::hdf5::moveLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath, locMode, plists);
         }
 
         template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_src>>
-        void moveLinkFromLocation(std::string_view localLinkPath, const h5x_src &sourceLocationId, std::string_view sourceLinkPath) {
-            return h5pp::hdf5::moveLink(sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, plists);
+        void moveLinkFromLocation(std::string_view localLinkPath,
+                                  const h5x_src &  sourceLocationId,
+                                  std::string_view sourceLinkPath,
+                                  LocationMode     locMode = LocationMode::DETECT) {
+            return h5pp::hdf5::moveLink(sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, locMode, plists);
         }
 
         /*

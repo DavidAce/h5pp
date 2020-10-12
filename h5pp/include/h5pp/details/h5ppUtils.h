@@ -601,4 +601,39 @@ namespace h5pp::util {
         }
     }
 
+    template<typename h5xa,typename h5xb,
+    // enable_if so the compiler doesn't think it can use overload with fs::path those arguments
+    typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5xa>,
+    typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5xb>>
+    inline bool onSameFile(const h5xa & loca, const h5xb & locb, LocationMode locMode = LocationMode::DETECT){
+        switch(locMode){
+            case LocationMode::SAME_FILE: return true;
+            case LocationMode::OTHER_FILE: return false;
+            case LocationMode::DETECT:{
+                hid::h5f filea;
+                hid::h5f fileb;
+                if constexpr(std::is_same_v<h5xa, hid::h5f>) filea = loca;
+                else filea = H5Iget_file_id(loca);
+                if constexpr(std::is_same_v<h5xb, hid::h5f>) fileb = locb;
+                else fileb = H5Iget_file_id(locb);
+                return filea == fileb;
+            }
+        }
+    }
+
+    inline bool onSameFile(const h5pp::fs::path & patha, const h5pp::fs::path & pathb, LocationMode locMode = LocationMode::DETECT){
+        switch(locMode){
+            case LocationMode::SAME_FILE: return true;
+            case LocationMode::OTHER_FILE: return false;
+            case LocationMode::DETECT:{
+                return h5pp::fs::equivalent(patha,pathb);
+            }
+        }
+    }
+
+    inline LocationMode getLocationMode(const h5pp::fs::path & patha, const h5pp::fs::path & pathb){
+        if(h5pp::fs::equivalent(patha,pathb)) return LocationMode::SAME_FILE;
+        else return LocationMode::OTHER_FILE;
+    }
+
 }
