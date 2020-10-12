@@ -39,36 +39,40 @@ PACK(struct RhoName {
 });
 
 TEST_CASE("Test reading columns from table", "[Table fields]") {
-    h5pp::File file("output/readWriteTableFields.h5", h5pp::FilePermission::REPLACE, 2);
-    // Create a type for the char array from the template H5T_C_S1
-    // The template describes a string with a single char.
-    // Set the size with H5Tset_size.
-    h5pp::hid::h5t MY_HDF5_NAME_TYPE = H5Tcopy(H5T_C_S1);
-    H5Tset_size(MY_HDF5_NAME_TYPE, 10);
-    // Optionally set the null terminator '\0' and possibly padding.
-    H5Tset_strpad(MY_HDF5_NAME_TYPE, H5T_STR_NULLTERM);
+    SECTION("Initialize a file"){
+        h5pp::File file("output/readWriteTableFields.h5", h5pp::FilePermission::REPLACE, 2);
+        // Create a type for the char array from the template H5T_C_S1
+        // The template describes a string with a single char.
+        // Set the size with H5Tset_size.
+        h5pp::hid::h5t MY_HDF5_NAME_TYPE = H5Tcopy(H5T_C_S1);
+        H5Tset_size(MY_HDF5_NAME_TYPE, 10);
+        // Optionally set the null terminator '\0' and possibly padding.
+        H5Tset_strpad(MY_HDF5_NAME_TYPE, H5T_STR_NULLTERM);
 
-    // Specify the array "rho" as rank-1 array of length 3
-    std::vector<hsize_t> dims             = {3};
-    h5pp::hid::h5t       MY_HDF5_RHO_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE, (unsigned int) dims.size(), dims.data());
+        // Specify the array "rho" as rank-1 array of length 3
+        std::vector<hsize_t> dims             = {3};
+        h5pp::hid::h5t       MY_HDF5_RHO_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE, (unsigned int) dims.size(), dims.data());
 
-    // Register the compound type
-    h5pp::hid::h5t MY_HDF5_PARTICLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Particle));
-    H5Tinsert(MY_HDF5_PARTICLE_TYPE, "x", HOFFSET(Particle, x), H5T_NATIVE_DOUBLE);
-    H5Tinsert(MY_HDF5_PARTICLE_TYPE, "y", HOFFSET(Particle, y), H5T_NATIVE_DOUBLE);
-    H5Tinsert(MY_HDF5_PARTICLE_TYPE, "z", HOFFSET(Particle, z), H5T_NATIVE_DOUBLE);
-    H5Tinsert(MY_HDF5_PARTICLE_TYPE, "t", HOFFSET(Particle, t), H5T_NATIVE_DOUBLE);
-    H5Tinsert(MY_HDF5_PARTICLE_TYPE, "rho", HOFFSET(Particle, rho), MY_HDF5_RHO_TYPE);
-    H5Tinsert(MY_HDF5_PARTICLE_TYPE, "name", HOFFSET(Particle, name), MY_HDF5_NAME_TYPE);
+        // Register the compound type
+        h5pp::hid::h5t MY_HDF5_PARTICLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Particle));
+        H5Tinsert(MY_HDF5_PARTICLE_TYPE, "x", HOFFSET(Particle, x), H5T_NATIVE_DOUBLE);
+        H5Tinsert(MY_HDF5_PARTICLE_TYPE, "y", HOFFSET(Particle, y), H5T_NATIVE_DOUBLE);
+        H5Tinsert(MY_HDF5_PARTICLE_TYPE, "z", HOFFSET(Particle, z), H5T_NATIVE_DOUBLE);
+        H5Tinsert(MY_HDF5_PARTICLE_TYPE, "t", HOFFSET(Particle, t), H5T_NATIVE_DOUBLE);
+        H5Tinsert(MY_HDF5_PARTICLE_TYPE, "rho", HOFFSET(Particle, rho), MY_HDF5_RHO_TYPE);
+        H5Tinsert(MY_HDF5_PARTICLE_TYPE, "name", HOFFSET(Particle, name), MY_HDF5_NAME_TYPE);
 
-    file.createTable(MY_HDF5_PARTICLE_TYPE, "somegroup/particleTable", "particleTable");
+        file.createTable(MY_HDF5_PARTICLE_TYPE, "somegroup/particleTable", "particleTable");
 
-    // Write table entries
-    std::vector<Particle> particles(10);
-    file.appendTableRecords(particles, "somegroup/particleTable");
+        // Write table entries
+        std::vector<Particle> particles(10);
+        file.appendTableRecords(particles, "somegroup/particleTable");
+    }
+
 
 
     SECTION("Single field by name and index") {
+        h5pp::File file("output/readWriteTableFields.h5", h5pp::FilePermission::READWRITE, 2);
         std::vector<Axis> axis_fields;
         axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", "y"));
         axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", std::string("y")));
@@ -85,11 +89,11 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
         axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", std::vector<size_t>{1}));
         axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", std::vector<long>{1}));
         axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", std::array<size_t,1>{1}));
-        for(auto & a : axis_fields)
-            CHECK(a.axis == 1.0);
+        for(auto & a : axis_fields) { CHECK(a.axis == 1.0); }
     }
 
     SECTION("Single struct field by name") {
+        h5pp::File file("output/readWriteTableFields.h5", h5pp::FilePermission::READWRITE, 2);
         auto rho_field = file.readTableField<Rho>("somegroup/particleTable", "rho");
         CHECK(rho_field.rho[0] == 20);
         CHECK(rho_field.rho[1] == 3.13);
@@ -98,6 +102,7 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
 
 
     SECTION("Multiple fields by name and index") {
+        h5pp::File file("output/readWriteTableFields.h5", h5pp::FilePermission::READWRITE, 2);
         std::vector<Coords> coords_fields;
         coords_fields.emplace_back(file.readTableField<Coords>("somegroup/particleTable", {"x", "y", "z", "t"}));
         coords_fields.emplace_back(file.readTableField<Coords>("somegroup/particleTable", std::vector<std::string>{"x", "y", "z", "t"}));
@@ -116,6 +121,7 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
     }
 
     SECTION("Multiple fields of different type by name and index") {
+        h5pp::File file("output/readWriteTableFields.h5", h5pp::FilePermission::READWRITE, 2);
         std::vector<RhoName> rhoName_fields;
         rhoName_fields.emplace_back(file.readTableField<RhoName>("somegroup/particleTable", {"rho", "name"}));
         rhoName_fields.emplace_back(file.readTableField<RhoName>("somegroup/particleTable", std::vector<std::string>{"rho", "name"}));
