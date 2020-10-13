@@ -1464,7 +1464,7 @@ namespace h5pp::hdf5 {
                 else if constexpr(std::is_same_v<InfoType, H5L_info_t>) {
                     H5O_info_t oInfo;
                     hid::h5o   obj_id = H5Oopen(id, name, H5P_DEFAULT);
-                    /* clang-format off */
+/* clang-format off */
                     #if defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
                         H5Oget_info(obj_id, &oInfo, H5O_INFO_ALL);
                     #else
@@ -2157,8 +2157,10 @@ namespace h5pp::hdf5 {
             }
         } else if(startIdx and not numReadRecords) {
             if(startIdx.value() > info.numRecords.value() - 1)
-                throw std::runtime_error(h5pp::format(
-                    "Invalid start index {} for table [{}] | total records {}", startIdx.value(), info.tablePath.value(), info.numRecords.value()));
+                throw std::runtime_error(h5pp::format("Invalid start index {} for table [{}] | total records {}",
+                                                      startIdx.value(),
+                                                      info.tablePath.value(),
+                                                      info.numRecords.value()));
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 numReadRecords = info.numRecords.value() - startIdx.value();
             } else {
@@ -2427,6 +2429,7 @@ namespace h5pp::hdf5 {
                                                   numRecordsToCopy));
 
         std::string fileLogInfo;
+        // TODO: this check is not very thorough, but checks with H5Iget_file_id are too expensive...
         if(srcInfo.tableFile.value() != tgtInfo.tableFile.value()) fileLogInfo = "on different files";
         h5pp::logger::log->debug("Copying records from table [{}] to table [{}] {} | src start at record {} ({} total) | tgt start at "
                                  "record {} ({} total) | copy {} records | record size {} bytes",
@@ -2653,7 +2656,7 @@ namespace h5pp::hdf5 {
 
     template<typename h5x_src,
              typename h5x_tgt,
-             // enable_if so the compiler doesn't think it can use overload with std::string those arguments
+             // enable_if so the compiler doesn't think it can use overload with fs::path those arguments
              typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5x_src>,
              typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5x_tgt>>
     inline void moveLink(const h5x_src &      srcLocId,
@@ -2706,24 +2709,24 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline void copyLink(std::string_view     srcFilePath,
-                         std::string_view     srcLinkPath,
-                         std::string_view     tgtFilePath,
-                         std::string_view     tgtLinkPath,
-                         FilePermission       targetFileCreatePermission = FilePermission::READWRITE,
-                         const PropertyLists &plists                     = PropertyLists()) {
+    inline void copyLink(const h5pp::fs::path &srcFilePath,
+                         std::string_view      srcLinkPath,
+                         const h5pp::fs::path &tgtFilePath,
+                         std::string_view      tgtLinkPath,
+                         FilePermission        targetFileCreatePermission = FilePermission::READWRITE,
+                         const PropertyLists & plists                     = PropertyLists()) {
         h5pp::logger::log->trace("Copying link: source link [{}] | source file [{}]  -->  target link [{}] | target file [{}]",
                                  srcLinkPath,
-                                 srcFilePath,
+                                 srcFilePath.string(),
                                  tgtLinkPath,
-                                 tgtFilePath);
+                                 tgtFilePath.string());
 
         try {
             auto srcPath = fs::absolute(srcFilePath);
             if(not fs::exists(srcPath))
                 throw std::runtime_error(h5pp::format("Could not copy link [{}] from file [{}]: source file does not exist [{}]",
                                                       srcLinkPath,
-                                                      srcFilePath,
+                                                      srcFilePath.string(),
                                                       srcPath.string()));
             auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, targetFileCreatePermission, plists);
 
@@ -2742,21 +2745,24 @@ namespace h5pp::hdf5 {
             copyLink(srcFile, srcLinkPath, tgtFile, tgtLinkPath);
         } catch(const std::exception &ex) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Could not copy link [{}] from file [{}]: {}", srcLinkPath, srcFilePath, ex.what()));
+            throw std::runtime_error(
+                h5pp::format("Could not copy link [{}] from file [{}]: {}", srcLinkPath, srcFilePath.string(), ex.what()));
         }
     }
 
-    inline fs::path copyFile(std::string_view     src,
-                             std::string_view     tgt,
-                             FilePermission       permission = FilePermission::COLLISION_FAIL,
-                             const PropertyLists &plists     = PropertyLists()) {
-        h5pp::logger::log->trace("Copying file [{}] --> [{}]", src, tgt);
-        auto tgtPath = h5pp::hdf5::createFile(tgt, permission, plists);
-        auto srcPath = fs::absolute(src);
+    inline fs::path copyFile(const h5pp::fs::path &srcFilePath,
+                             const h5pp::fs::path &tgtFilePath,
+                             FilePermission        permission = FilePermission::COLLISION_FAIL,
+                             const PropertyLists & plists     = PropertyLists()) {
+        h5pp::logger::log->trace("Copying file [{}] --> [{}]", srcFilePath.string(), tgtFilePath.string());
+        auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, permission, plists);
+        auto srcPath = fs::absolute(srcFilePath);
         try {
             if(not fs::exists(srcPath))
-                throw std::runtime_error(
-                    h5pp::format("Could not copy file [{}] --> [{}]: source file does not exist [{}]", src, tgt, srcPath.string()));
+                throw std::runtime_error(h5pp::format(
+                    "Could not copy file [{}] --> [{}]: source file does not exist [{}]",
+                                                      srcFilePath.string(),
+                                                      tgtFilePath.string(), srcPath.string()));
             if(tgtPath == srcPath)
                 h5pp::logger::log->debug("Skipped copying file: source and target files have the same path [{}]", srcPath.string());
 
@@ -2792,29 +2798,30 @@ namespace h5pp::hdf5 {
             return tgtPath;
         } catch(const std::exception &ex) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Could not copy file [{}] --> [{}]: ", src, tgt, ex.what()));
+            throw std::runtime_error(h5pp::format("Could not copy file [{}] --> [{}]: ", srcFilePath.string(), tgtFilePath.string(), ex.what()));
         }
     }
 
-    inline void moveLink(std::string_view     srcFilePath,
-                         std::string_view     srcLinkPath,
-                         std::string_view     tgtFilePath,
-                         std::string_view     tgtLinkPath,
-                         FilePermission       targetFileCreatePermission = FilePermission::READWRITE,
-                         const PropertyLists &plists                     = PropertyLists()) {
+    inline void moveLink(const h5pp::fs::path &srcFilePath,
+                         std::string_view      srcLinkPath,
+                         const h5pp::fs::path &tgtFilePath,
+                         std::string_view      tgtLinkPath,
+                         FilePermission        targetFileCreatePermission = FilePermission::READWRITE,
+                         const PropertyLists & plists                     = PropertyLists()) {
         h5pp::logger::log->trace("Moving link: source link [{}] | source file [{}]  -->  target link [{}] | target file [{}]",
                                  srcLinkPath,
-                                 srcFilePath,
+                                 srcFilePath.string(),
                                  tgtLinkPath,
-                                 tgtFilePath);
+                                 tgtFilePath.string());
 
         try {
             auto srcPath = fs::absolute(srcFilePath);
             if(not fs::exists(srcPath))
-                throw std::runtime_error(h5pp::format("Could not move link [{}] from file [{}]: source file does not exist [{}]",
-                                                      srcLinkPath,
-                                                      srcFilePath,
-                                                      srcPath.string()));
+                throw std::runtime_error(
+                    h5pp::format("Could not move link [{}] from file [{}]:\n\t source file with absolute path [{}] does not exist",
+                                 srcLinkPath,
+                                 srcFilePath.string(),
+                                 srcPath.string()));
             auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, targetFileCreatePermission, plists);
 
             hid_t hidSrc = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
@@ -2829,18 +2836,21 @@ namespace h5pp::hdf5 {
             }
             hid::h5f srcFile = hidSrc;
             hid::h5f tgtFile = hidTgt;
-            moveLink(srcFile, srcLinkPath, tgtFile, tgtLinkPath);
+
+            auto locMode = h5pp::util::getLocationMode(srcFilePath, tgtFilePath);
+            moveLink(srcFile, srcLinkPath, tgtFile, tgtLinkPath, locMode);
         } catch(const std::exception &ex) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Could not move link [{}] from file [{}]: {}", srcLinkPath, srcFilePath, ex.what()));
+            throw std::runtime_error(
+                h5pp::format("Could not move link [{}] from file [{}]: {}", srcLinkPath, srcFilePath.string(), ex.what()));
         }
     }
 
-    inline fs::path moveFile(std::string_view     src,
-                             std::string_view     tgt,
-                             FilePermission       permission = FilePermission::COLLISION_FAIL,
-                             const PropertyLists &plists     = PropertyLists()) {
-        h5pp::logger::log->trace("Moving file by copy+remove: [{}] --> [{}]", src, tgt);
+    inline fs::path moveFile(const h5pp::fs::path &src,
+                             const h5pp::fs::path &tgt,
+                             FilePermission        permission = FilePermission::COLLISION_FAIL,
+                             const PropertyLists & plists     = PropertyLists()) {
+        h5pp::logger::log->trace("Moving file by copy+remove: [{}] --> [{}]", src.string(), tgt.string());
         auto tgtPath = copyFile(src, tgt, permission, plists); // Returns the path to the newly created file
         auto srcPath = fs::absolute(src);
         if(fs::exists(tgtPath)) {
@@ -2853,7 +2863,7 @@ namespace h5pp::hdf5 {
             }
             return tgtPath;
         } else
-            throw std::runtime_error(h5pp::format("Could not copy file [{}] to target [{}]", srcPath.string(), tgt));
+            throw std::runtime_error(h5pp::format("Could not copy file [{}] to target [{}]", srcPath.string(), tgt.string()));
 
         return tgtPath;
     }

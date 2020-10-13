@@ -144,12 +144,12 @@ namespace h5pp {
          *
          */
 
-        [[maybe_unused]] fs::path copyFileTo(std::string_view      targetFilePath,
+        [[maybe_unused]] fs::path copyFileTo(const h5pp::fs::path & targetFilePath,
                                              const FilePermission &perm = FilePermission::COLLISION_FAIL) const {
             return h5pp::hdf5::copyFile(getFilePath(), targetFilePath, perm, plists);
         }
 
-        [[maybe_unused]] fs::path moveFileTo(std::string_view targetFilePath, const FilePermission &perm = FilePermission::COLLISION_FAIL) {
+        [[maybe_unused]] fs::path moveFileTo(const h5pp::fs::path &targetFilePath, const FilePermission &perm = FilePermission::COLLISION_FAIL) {
             auto newPath = h5pp::hdf5::moveFile(getFilePath(), targetFilePath, perm, plists);
             if(fs::exists(newPath)) { filePath = newPath; }
             return newPath;
@@ -162,13 +162,13 @@ namespace h5pp {
          */
 
         void copyLinkToFile(std::string_view      localLinkPath,
-                            std::string_view      targetFilePath,
+                            const h5pp::fs::path &targetFilePath,
                             std::string_view      targetLinkPath,
                             const FilePermission &targetFileCreatePermission = FilePermission::READWRITE) const {
             return h5pp::hdf5::copyLink(getFilePath(), localLinkPath, targetFilePath, targetLinkPath, targetFileCreatePermission, plists);
         }
 
-        void copyLinkFromFile(std::string_view localLinkPath, std::string_view sourceFilePath, std::string_view sourceLinkPath) {
+        void copyLinkFromFile(std::string_view localLinkPath, const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath) {
             return h5pp::hdf5::copyLink(
                 sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
         }
@@ -184,13 +184,13 @@ namespace h5pp {
         }
 
         void moveLinkToFile(std::string_view      localLinkPath,
-                            std::string_view      targetFilePath,
+                            const h5pp::fs::path &targetFilePath,
                             std::string_view      targetLinkPath,
                             const FilePermission &targetFileCreatePermission = FilePermission::READWRITE) const {
             return h5pp::hdf5::moveLink(getFilePath(), localLinkPath, targetFilePath, targetLinkPath, targetFileCreatePermission, plists);
         }
 
-        void moveLinkFromFile(std::string_view localLinkPath, std::string_view sourceFilePath, std::string_view sourceLinkPath) {
+        void moveLinkFromFile(std::string_view localLinkPath, const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath) {
             return h5pp::hdf5::moveLink(
                 sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
         }
