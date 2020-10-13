@@ -25,12 +25,16 @@ class h5ppConan(ConanFile):
         'tests'     :[True,False],
         'examples'  :[True,False],
         'verbose'   :[True,False],
+        'pch'       :[True,False],
+        'ccache'   :[True,False],
         }
 
     default_options = {
         'tests'    : True,
         'examples' : False,
         'verbose'  : False,
+        'pch'      : False,
+        'ccache'   : True,
     }
 
     _cmake = None
@@ -61,6 +65,8 @@ class h5ppConan(ConanFile):
             self._cmake.definitions["H5PP_BUILD_EXAMPLES"]       = self.options.examples
             self._cmake.definitions["H5PP_PRINT_INFO"]           = self.options.verbose
             self._cmake.definitions["H5PP_DOWNLOAD_METHOD"]      = "conan"
+            self._cmake.definitions["H5PP_ENABLE_PCH"]           = self.options.pch
+            self._cmake.definitions["H5PP_ENABLE_CCACHE"]        = self.options.ccache
             self._cmake.configure()
         return self._cmake
 
