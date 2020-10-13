@@ -133,7 +133,7 @@ namespace h5pp::hdf5 {
         auto                         nfilter = H5Pget_nfilters(dsetCreatePropertyList);
         H5Z_filter_t                 filter  = H5Z_FILTER_NONE;
         std::array<unsigned int, 1>  cdval   = {0};
-        std::array<unsigned long, 1> cdelm   = {0};
+        std::array<size_t, 1> cdelm   = {0};
         for(int idx = 0; idx < nfilter; idx++) {
             constexpr size_t size = 10;
             filter                = H5Pget_filter(dsetCreatePropertyList, idx, nullptr, cdelm.data(), cdval.data(), 0, nullptr, nullptr);
