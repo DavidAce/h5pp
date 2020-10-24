@@ -1,10 +1,13 @@
 #include <h5pp/h5pp.h>
-#include <iostream>
 
-// In this example we use h5pp to write and read an std::string
-// By default, h5pp stores std::string data as a variable-length array, i.e. H5T_VARIABLE.
-// For fixed-size datasets use const char * or specify the size of the std::string buffer.
-// By default, UTF-8 encoding is used.
+/*
+ * In this example we use h5pp to write and read an std::string
+ * By default, h5pp stores std::string data as a variable-length array, i.e. H5T_VARIABLE.
+ * For fixed-size datasets use const char * or specify the size of the std::string buffer.
+ * By default, UTF-8 encoding is used.
+ *
+ */
+
 
 int main() {
     // Initialize a file

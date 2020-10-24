@@ -10,11 +10,11 @@ int main() {
     file.writeDataset("A", "groupA/A");
 
     // Print the current location
-    printf("File is currently in path: %s\n", file.getFilePath().c_str());
+    h5pp::print("File is currently in path: {}\n", file.getFilePath());
 
     // Move the file to another path
     file.moveFileTo("exampledir/subdir/example-step7-move-file.h5", h5pp::FilePermission::REPLACE);
 
     // Print the new current location (should change to the new path!)
-    printf("File is now in a new path: %s\n", file.getFilePath().c_str());
+    h5pp::print("File is now in a new path: {}\n", file.getFilePath());
 }

@@ -1,6 +1,5 @@
 
 #include <h5pp/h5pp.h>
-#include <iostream>
 
 // In this example we want to treat a whole struct as a single writeable unit.
 // To achieve this, the memory layout of the struct has to be registered with HDF5 in advance.
@@ -13,7 +12,9 @@ struct Particle {
     // Se example 6 for the case of static-size array members
 };
 
-void print_particle(const Particle &p) { std::cout << " \t x: " << p.x << " \t y: " << p.y << " \t z: " << p.z << " \t t: " << p.t << " \t id: " << p.id << std::endl; }
+void print_particle(const Particle &p) {
+    h5pp::print("x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f} id:{}\n",p.x,p.y,p.z,p.t, p.id);
+}
 
 int main() {
     h5pp::File file("exampledir/example-04a-custom-struct-easy.h5", h5pp::FilePermission::REPLACE,0);
@@ -50,10 +51,12 @@ int main() {
 
     // Read a single particle read some specific entries
     auto particle_read = file.readDataset<Particle>("particle");
+    h5pp::print("Single entry read \n");
     print_particle(particle_read);
 
     // ...or read all 10 particles into a new vector
     auto particles_read = file.readDataset<std::vector<Particle>>("particles");
+    h5pp::print("Multiple entry read \n");
     for(auto &p : particles_read) print_particle(p);
 
     return 0;

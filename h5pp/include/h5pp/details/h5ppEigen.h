@@ -1,6 +1,6 @@
 #pragma once
 
-#if __has_include(<Eigen/Core>)
+#if __has_include(<Eigen/Core>) && __has_include(<unsupported/Eigen/CXX11/Tensor>)
     #define H5PP_EIGEN3
     #include <Eigen/Core>
     #include <unsupported/Eigen/CXX11/Tensor>

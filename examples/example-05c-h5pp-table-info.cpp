@@ -40,16 +40,19 @@ int main() {
     auto tableInfo = file.createTable(H5_STATS_TYPE, "tables/cityStats", "City Stats");
 
     // We now have a tableInfo object with meta information about our table
-    printf("%s", "Table info before appending records\n");
-    if(tableInfo.tablePath) printf("Table path     : %s \n", tableInfo.tablePath->c_str());
-    if(tableInfo.tableTitle) printf("Table title   : %s \n", tableInfo.tableTitle->c_str());
-    if(tableInfo.numRecords) printf("Table records : %lu \n", tableInfo.numRecords.value());
+    h5pp::print("Table info before appending records\n");
+    if(tableInfo.tablePath) h5pp::print("Table path    : {}\n", tableInfo.tablePath.value());
+    if(tableInfo.tableTitle) h5pp::print("Table title   : {}\n", tableInfo.tableTitle.value());
+    if(tableInfo.numRecords) h5pp::print("Table records : {}\n", tableInfo.numRecords.value());
     if(tableInfo.numFields and tableInfo.fieldNames and tableInfo.fieldSizes and tableInfo.cppTypeName)
         for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++)
-            printf("-- Field name [%s] | Size [%lu] bytes | Type [%s] \n", tableInfo.fieldNames.value()[idx].c_str(), tableInfo.fieldSizes.value()[idx], tableInfo.cppTypeName.value()[idx].c_str());
+            h5pp::print("-- Field name [{}] | Size [{}] bytes | Type [{}]\n",
+                        tableInfo.fieldNames.value()[idx],
+                        tableInfo.fieldSizes.value()[idx],
+                        tableInfo.cppTypeName.value()[idx]);
 
     // Or get a preformated string with .string()
-    printf("%s\n", tableInfo.string().c_str());
+    h5pp::print("TableInfo::string(): {}\n", tableInfo.string());
 
     // Initialize a table in a vector
     std::vector<Stats> cityStats{Stats{"London", 9787426, 1737}, Stats{"Stockholm", 1605030, 382}, Stats{"Santiago", 5220161, 641}};
@@ -58,15 +61,16 @@ int main() {
     tableInfo = file.appendTableRecords(cityStats, "tables/cityStats");
 
     // Compare the new output
-    printf("%s", "Table info after appending records\n");
-    if(tableInfo.tablePath) printf("Table path     : %s \n", tableInfo.tablePath->c_str());
-    if(tableInfo.tableTitle) printf("Table title   : %s \n", tableInfo.tableTitle->c_str());
-    if(tableInfo.numRecords) printf("Table records : %lu \n", tableInfo.numRecords.value());
+    h5pp::print("Table info after appending records\n");
+    if(tableInfo.tablePath) h5pp::print("Table path    : {}\n", tableInfo.tablePath.value());
+    if(tableInfo.tableTitle) h5pp::print("Table title   : {}\n", tableInfo.tableTitle.value());
+    if(tableInfo.numRecords) h5pp::print("Table records : {}\n", tableInfo.numRecords.value());
     if(tableInfo.numFields and tableInfo.fieldNames and tableInfo.fieldSizes and tableInfo.cppTypeName)
         for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++)
-            printf("-- Field name [%s] | Size [%lu] bytes | Type [%s] \n", tableInfo.fieldNames.value()[idx].c_str(), tableInfo.fieldSizes.value()[idx], tableInfo.cppTypeName.value()[idx].c_str());
-
-    printf("%s\n", tableInfo.string().c_str());
-
+            h5pp::print("-- Field name [{}] | Size [{}] bytes | Type [{}]\n",
+                        tableInfo.fieldNames.value()[idx],
+                        tableInfo.fieldSizes.value()[idx],
+                        tableInfo.cppTypeName.value()[idx]);
+    h5pp::print("TableInfo::string(): {}\n", tableInfo.string());
     return 0;
 }

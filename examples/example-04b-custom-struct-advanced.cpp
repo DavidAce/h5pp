@@ -1,6 +1,5 @@
 
 #include <h5pp/h5pp.h>
-#include <iostream>
 
 // This example writes and reads a custom struct to file.
 // To achieve this, the memory layout of the struct has to be registered with HDF5 in advance.
@@ -12,6 +11,10 @@ struct SpaceTimePoint {
     char                                    type[32]    = "spacetime";
     void                                    dummy_function(int) {} // Functions are OK
 };
+
+void print_point(const SpaceTimePoint &p) {
+    h5pp::print("x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f} type: %s\n",  p.coordinates[0], p.coordinates[1], p.coordinates[2], p.coordinates[3], p.type);
+}
 
 int main() {
     int logLevel = 2; // Default log level is 2: "info"
@@ -62,13 +65,13 @@ int main() {
 
     // Read a single points read some specific entries
     auto point_read = file.readDataset<SpaceTimePoint>("point");
-    std::cout << "Single entry read \n";
-    printf("x:%f y: %f z: %f t: %f type: %s\n",  point_read.coordinates[0], point_read.coordinates[1], point_read.coordinates[2], point_read.coordinates[3], point_read.type);
+    h5pp::print("Single entry read \n");
+    print_point(point_read);
 
 
     // ...or read all 10 points into a new vector
     auto points_read = file.readDataset<std::vector<SpaceTimePoint>>("points");
-    std::cout << "Multiple entries read \n";
-    for(auto &p : points_read)  printf("x:%f y: %f z: %f t: %f type: %s\n",  p.coordinates[0], p.coordinates[1], p.coordinates[2], p.coordinates[3], p.type);
+    h5pp::print("Multiple entry read\n");
+    for(auto &p : points_read)  print_point(p);
     return 0;
 }
