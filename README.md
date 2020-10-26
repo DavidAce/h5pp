@@ -3,7 +3,7 @@
 [![Ubuntu 20.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2020.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Windows 10](https://github.com/DavidAce/h5pp/workflows/Windows%2010/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Anaconda-Server Badge](https://anaconda.org/davidace/h5pp/badges/installer/conda.svg)](https://conda.anaconda.org/davidace)
-[![Download](https://img.shields.io/badge/Install%20with-conan-green)](https://bintray.com/conan/conan-center/h5pp%3A_/_latestVersion)
+[![Download](https://img.shields.io/badge/Install%20with-conan-green)](https://conan.io/center/h5pp)
 [![Download](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)
 
 ---
