@@ -6,7 +6,7 @@
 
 namespace h5pp::scan {
 
-    /*! \fn fillDsetInfo
+    /*! \fn readDsetInfo
      * Fills missing information about a dataset in an info-struct
      *
      * @param info A struct with information about a dataset
@@ -15,9 +15,9 @@ namespace h5pp::scan {
      * @param plists (optional) access property for the file. Used to determine link access property when searching for the dataset.
      */
     template<typename h5x>
-    inline void fillDsetInfo(h5pp::DsetInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+    inline void readDsetInfo(h5pp::DsetInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
-                      "Template function [h5pp::scan::fillDsetInfo(..., const h5x & loc, ...)] requires type h5x to be: "
+                      "Template function [h5pp::scan::readDsetInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
         if(not options.linkPath and not info.dsetPath) throw std::runtime_error("Could not fill dataset info: No dataset path was given");
@@ -85,7 +85,7 @@ namespace h5pp::scan {
     inline h5pp::DsetInfo readDsetInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         if(not options.linkPath) throw std::runtime_error("Could not read dataset info: No dataset path was given in options");
         h5pp::DsetInfo info;
-        fillDsetInfo(info, loc, options, plists);
+        readDsetInfo(info, loc, options, plists);
         return info;
     }
 

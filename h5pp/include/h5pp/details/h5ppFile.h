@@ -353,9 +353,9 @@ namespace h5pp {
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             // The infos passed should be parsed and ready to write with
             if(dsetInfo.hasLocId())
-                h5pp::scan::fillDsetInfo(dsetInfo, dsetInfo.getLocId(), options, plists);
+                h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), options, plists);
             else
-                h5pp::scan::fillDsetInfo(dsetInfo, openFileHandle(), options, plists);
+                h5pp::scan::readDsetInfo(dsetInfo, openFileHandle(), options, plists);
 
             h5pp::scan::fillDataInfo(dataInfo, data, options);
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
