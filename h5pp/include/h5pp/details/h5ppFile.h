@@ -764,7 +764,7 @@ namespace h5pp {
             options.h5Type        = h5Type;
             options.dsetDimsChunk = chunkDims;
             options.compression   = compressionLevel;
-            auto tableInfo        = h5pp::scan::getTableInfo(openFileHandle(), options, tableTitle, plists);
+            auto tableInfo        = h5pp::scan::makeTableInfo(openFileHandle(), options, tableTitle, plists);
             h5pp::hdf5::createTable(tableInfo, plists);
             h5pp::scan::readTableInfo(tableInfo, tableInfo.getLocId(), options, plists);
             return tableInfo;

@@ -654,7 +654,7 @@ namespace h5pp::scan {
 
     template<typename h5x>
     inline h5pp::TableInfo
-        getTableInfo(const h5x &loc, const Options &options, std::string_view tableTitle, const PropertyLists &plists = PropertyLists()) {
+        makeTableInfo(const h5x &loc, const Options &options, std::string_view tableTitle, const PropertyLists &plists = PropertyLists()) {
         auto info = readTableInfo(loc, options, plists);
         if(info.tableExists.value()) return info;
         h5pp::logger::log->debug("Creating metadata for new table [{}]", options.linkPath.value());
