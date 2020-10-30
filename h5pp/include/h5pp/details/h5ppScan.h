@@ -495,9 +495,9 @@ namespace h5pp::scan {
 
     /*! \brief Creates and returns a populated AttrInfo object based entirely on given options */
     template<typename h5x>
-    inline h5pp::AttrInfo inferAttrInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+    inline h5pp::AttrInfo makeAttrInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
-                      "Template function [h5pp::scan::inferAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
+                      "Template function [h5pp::scan::makeAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         auto info = readAttrInfo(loc, options, plists);
         if(info.attrExists.value()) return info;
