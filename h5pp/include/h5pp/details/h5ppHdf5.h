@@ -2083,9 +2083,9 @@ namespace h5pp::hdf5 {
                                  info.tablePath.value(),
                                  info.numFields.value(),
                                  info.recordBytes.value());
-        createGroup(info.getTableLocId(), info.tableGroupName.value(), std::nullopt, plists);
+        createGroup(info.getLocId(), info.tableGroupName.value(), std::nullopt, plists);
 
-        if(checkIfLinkExists(info.getTableLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess)) {
+        if(checkIfLinkExists(info.getLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess)) {
             h5pp::logger::log->debug("Table [{}] already exists", info.tablePath.value());
             return;
         }
@@ -2099,7 +2099,7 @@ namespace h5pp::hdf5 {
         for(auto &name : info.fieldNames.value()) fieldNames.push_back(name.c_str());
         int    compression = info.compressionLevel.value() == 0 ? 0 : 1; // Only true/false (1/0). Is set to level 6 in HDF5 sources
         herr_t retval      = H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
-                                       info.getTableLocId(),
+                                       info.getLocId(),
                                        util::safe_str(info.tablePath.value()).c_str(),
                                        info.numFields.value(),
                                        info.numRecords.value(),
@@ -2117,9 +2117,6 @@ namespace h5pp::hdf5 {
         }
         h5pp::logger::log->trace("Successfully created table [{}]", info.tablePath.value());
         info.tableExists = true;
-
-        //        if constexpr(std::is_same_v<h5x, hid::h5f>) info.tableFile = loc;
-        //        if constexpr(std::is_same_v<h5x, hid::h5g>) info.tableGroup = loc;
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
@@ -2222,7 +2219,7 @@ namespace h5pp::hdf5 {
         if(info.numRecords.value() == 0) return;
 
         /* Step 1: Get the dataset and memory spaces */
-        hid::h5s dsetSpace = H5Dget_space(info.tableDset.value()); /* get a copy of the new file data space for writing */
+        hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
         hid::h5s dataSpace = util::getMemSpace(numReadRecords.value(), {numReadRecords.value()}); /* create a simple memory data space */
 
         /* Step 2: draw a hyperslab in the dataset */
@@ -2234,7 +2231,7 @@ namespace h5pp::hdf5 {
         /* Step 3: read the records */
         // Get the memory address to the data buffer
         auto   dataPtr = h5pp::util::getVoidPointer<void *>(data);
-        herr_t retval  = H5Dread(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
+        herr_t retval  = H5Dread(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to read data from table [{}]", info.tablePath.value()));
@@ -2288,10 +2285,10 @@ namespace h5pp::hdf5 {
         }
 
         /* Step 1: extend the dataset */
-        extendDataset(info.tableDset.value(), {numNewRecords.value() + info.numRecords.value()});
+        extendDataset(info.h5Dset.value(), {numNewRecords.value() + info.numRecords.value()});
 
         /* Step 2: Get the dataset and memory spaces */
-        hid::h5s dsetSpace = H5Dget_space(info.tableDset.value()); /* get a copy of the new file data space for writing */
+        hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
         hid::h5s dataSpace = util::getMemSpace(numNewRecords.value(), {numNewRecords.value()}); /* create a simple memory data space */
 
         /* Step 3: draw a hyperslab in the dataset */
@@ -2303,7 +2300,7 @@ namespace h5pp::hdf5 {
         /* Step 4: write the records */
         // Get the memory address to the data buffer
         auto   dataPtr = h5pp::util::getVoidPointer<const void *>(data);
-        herr_t retval  = H5Dwrite(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
+        herr_t retval  = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to append data to table [{}]", info.tablePath.value()));
@@ -2373,10 +2370,10 @@ namespace h5pp::hdf5 {
 
         /* Step 1: extend the dataset if necessary */
         if(startIdx + numRecordsToWrite.value() > info.numRecords.value())
-            extendDataset(info.tableDset.value(), {startIdx + numRecordsToWrite.value()});
+            extendDataset(info.h5Dset.value(), {startIdx + numRecordsToWrite.value()});
 
         /* Step 2: Get the dataset and memory spaces */
-        hid::h5s dsetSpace = H5Dget_space(info.tableDset.value()); /* get a copy of the new file data space for writing */
+        hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
         hid::h5s dataSpace =
             util::getMemSpace(numRecordsToWrite.value(), {numRecordsToWrite.value()}); /* create a simple memory data space */
 
@@ -2389,7 +2386,7 @@ namespace h5pp::hdf5 {
         /* Step 4: write the records */
         // Get the memory address to the data buffer
         auto   dataPtr = h5pp::util::getVoidPointer<const void *>(data);
-        herr_t retval  = H5Dwrite(info.tableDset.value(), info.tableType.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
+        herr_t retval  = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to append data to table [{}]", info.tablePath.value()));
@@ -2405,7 +2402,7 @@ namespace h5pp::hdf5 {
         srcInfo.assertReadReady();
         tgtInfo.assertWriteReady();
         // Sanity checks for table types
-        if(srcInfo.tableType.value() != tgtInfo.tableType.value())
+        if(srcInfo.h5Type.value() != tgtInfo.h5Type.value())
             throw std::runtime_error(h5pp::format("Failed to add table records: table type mismatch"));
         if(srcInfo.recordBytes.value() != tgtInfo.recordBytes.value())
             throw std::runtime_error(h5pp::format("Failed to copy table records: table record byte size mismatch src {} != tgt {}",
@@ -2430,7 +2427,7 @@ namespace h5pp::hdf5 {
 
         std::string fileLogInfo;
         // TODO: this check is not very thorough, but checks with H5Iget_file_id are too expensive...
-        if(srcInfo.tableFile.value() != tgtInfo.tableFile.value()) fileLogInfo = "on different files";
+        if(srcInfo.h5File.value() != tgtInfo.h5File.value()) fileLogInfo = "on different files";
         h5pp::logger::log->debug("Copying records from table [{}] to table [{}] {} | src start at record {} ({} total) | tgt start at "
                                  "record {} ({} total) | copy {} records | record size {} bytes",
                                  srcInfo.tablePath.value(),
@@ -2571,7 +2568,7 @@ namespace h5pp::hdf5 {
         auto dataPtr = h5pp::util::getVoidPointer<void *>(data);
 
         /* Step 1: Get the dataset and memory spaces */
-        hid::h5s dsetSpace = H5Dget_space(info.tableDset.value()); /* get a copy of the new file data space for writing */
+        hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
         hid::h5s dataSpace = util::getMemSpace(numReadRecords.value(), {numReadRecords.value()}); /* create a simple memory data space */
 
         /* Step 2: draw a hyperslab in the dataset */
@@ -2597,7 +2594,7 @@ namespace h5pp::hdf5 {
         }
 
         /* Read data */
-        herr_t retval = H5Dread(info.tableDset.value(), tgtTypeId, dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
+        herr_t retval = H5Dread(info.h5Dset.value(), tgtTypeId, dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Could not read table fields {} on table [{}]", tgtFieldNames, info.tablePath.value()));
