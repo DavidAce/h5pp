@@ -641,8 +641,8 @@ namespace h5pp {
         AttrInfo createAttribute(const DataType &data, const Options &options) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to create attribute on read-only file [{}]", filePath.string()));
-            auto attrInfo = h5pp::scan::getAttrInfo(openFileHandle(), data, options, plists);
-            createAttribute(attrInfo);
+            auto attrInfo = h5pp::scan::inferAttrInfo(openFileHandle(), data, options, plists);
+            h5pp::hdf5::createAttribute(attrInfo);
             return attrInfo;
         }
 
