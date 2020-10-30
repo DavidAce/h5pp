@@ -144,12 +144,13 @@ namespace h5pp {
          *
          */
 
-        [[maybe_unused]] fs::path copyFileTo(const h5pp::fs::path & targetFilePath,
+        [[maybe_unused]] fs::path copyFileTo(const h5pp::fs::path &targetFilePath,
                                              const FilePermission &perm = FilePermission::COLLISION_FAIL) const {
             return h5pp::hdf5::copyFile(getFilePath(), targetFilePath, perm, plists);
         }
 
-        [[maybe_unused]] fs::path moveFileTo(const h5pp::fs::path &targetFilePath, const FilePermission &perm = FilePermission::COLLISION_FAIL) {
+        [[maybe_unused]] fs::path moveFileTo(const h5pp::fs::path &targetFilePath,
+                                             const FilePermission &perm = FilePermission::COLLISION_FAIL) {
             auto newPath = h5pp::hdf5::moveFile(getFilePath(), targetFilePath, perm, plists);
             if(fs::exists(newPath)) { filePath = newPath; }
             return newPath;
@@ -822,8 +823,8 @@ namespace h5pp {
             options.compression   = compressionLevel;
             auto tgtInfo          = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
-                tgtInfo = createTable(
-                    srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compressionLevel);
+                tgtInfo =
+                    createTable(srcInfo.h5Type.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compressionLevel);
 
             appendTableRecords(srcInfo, srcTableSelection, tgtInfo);
             return tgtInfo;
@@ -961,8 +962,8 @@ namespace h5pp {
             auto srcInfo              = h5pp::scan::readTableInfo(openFileHandle(), src_options, plists);
             auto tgtInfo              = h5pp::scan::readTableInfo(openFileHandle(), tgt_options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
-                tgtInfo = createTable(
-                    srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compressionLevel);
+                tgtInfo =
+                    createTable(srcInfo.h5Type.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compressionLevel);
             copyTableRecords(srcInfo, srcStartIdx, numRecords, tgtInfo, tgtStartIdx);
             return tgtInfo;
         }
