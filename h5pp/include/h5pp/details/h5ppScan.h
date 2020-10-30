@@ -293,7 +293,6 @@ namespace h5pp::scan {
         return info;
     }
 
-
     /*! \brief Populates a DataInfo object by scanning the given data type.*/
     template<typename DataType>
     inline void scanDataInfo(DataInfo &info, const DataType &data, const Options &options = Options()) {
@@ -501,8 +500,7 @@ namespace h5pp::scan {
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         auto info = readAttrInfo(loc, options, plists);
         if(info.attrExists.value()) return info;
-        h5pp::logger::log->debug("Creating new attribute info for [{}] at link [{}]", options.attrName.value(),
-        options.linkPath.value());
+        h5pp::logger::log->debug("Creating new attribute info for [{}] at link [{}]", options.attrName.value(), options.linkPath.value());
 
         // First copy the parameters given in options
         if(not info.attrDims) info.attrDims = options.dataDims;
