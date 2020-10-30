@@ -31,8 +31,7 @@ namespace h5pp::scan {
             if constexpr(std::is_same_v<h5x, hid::h5f>) info.h5File = loc;
             else info.h5File = H5Iget_file_id(loc);
         }
-        if(not info.dsetSlab) info.dsetSlab = options.dsetSlab;
-        if(not info.dsetPath) info.dsetPath = h5pp::util::safe_str(options.linkPath.value());
+
         if(not info.dsetExists) info.dsetExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.dsetPath.value(), std::nullopt, plists.linkAccess);
 
         // If the dataset does not exist, there isn't much else to do so we return;
