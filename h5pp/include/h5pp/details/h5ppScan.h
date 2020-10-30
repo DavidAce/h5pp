@@ -293,7 +293,7 @@ namespace h5pp::scan {
      */
 
     template<typename DataType>
-    inline void fillDataInfo(const DataType &data, DataInfo &info, const Options &options = Options()) {
+    inline void fillDataInfo(DataInfo &info, const DataType &data, const Options &options = Options()) {
         h5pp::logger::log->debug("Scanning metadata of datatype [{}]", h5pp::type::sfinae::type_name<DataType>());
         // The point of passing options is to reinterpret the shape of the data and not to resize!
         // The data container should already be resized before entering this function.
@@ -328,7 +328,7 @@ namespace h5pp::scan {
     inline h5pp::DataInfo getDataInfo(const DataType &data, const Options &options = Options()) {
         h5pp::DataInfo dataInfo;
         // As long as the two selections have the same number of elements, the data can be transferred
-        fillDataInfo(data, dataInfo, options);
+        fillDataInfo(dataInfo, data, options);
         return dataInfo;
     }
 
