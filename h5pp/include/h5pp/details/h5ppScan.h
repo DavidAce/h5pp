@@ -101,7 +101,6 @@ namespace h5pp::scan {
                       "Template function [h5pp::scan::inferDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
-
         auto info = readDsetInfo(loc, options, plists);
         if(info.dsetExists.value()) return info;
         h5pp::logger::log->debug("Creating metadata for new dataset [{}]", options.linkPath.value());
@@ -186,7 +185,6 @@ namespace h5pp::scan {
         return info;
     }
 
-
     /*! \brief Populates an AttrInfo object.
      *  If the attribute exists properties are read from file.
      *  Otherwise properties are inferred from the given data
@@ -197,9 +195,9 @@ namespace h5pp::scan {
      */
     template<typename DataType, typename h5x>
     inline h5pp::DsetInfo inferDsetInfo(const h5x &          loc,
-                                      const DataType &     data,
-                                      const Options &      options = Options(),
-                                      const PropertyLists &plists  = PropertyLists()) {
+                                        const DataType &     data,
+                                        const Options &      options = Options(),
+                                        const PropertyLists &plists  = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
                       "Template function [h5pp::scan::inferDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
@@ -295,10 +293,6 @@ namespace h5pp::scan {
         if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Created dataset metadata is not well defined: \n{}", error_msg));
         return info;
     }
-
-
-
-
 
     template<typename DataType>
     inline void fillDataInfo(DataInfo &info, const DataType &data, const Options &options = Options()) {
