@@ -766,7 +766,7 @@ namespace h5pp {
             options.compression   = compressionLevel;
             auto tableInfo        = h5pp::scan::getTableInfo(openFileHandle(), options, tableTitle, plists);
             h5pp::hdf5::createTable(tableInfo, plists);
-            h5pp::scan::fillTableInfo(tableInfo, tableInfo.getLocId(), options, plists);
+            h5pp::scan::readTableInfo(tableInfo, tableInfo.getLocId(), options, plists);
             return tableInfo;
         }
 

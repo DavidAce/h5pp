@@ -541,10 +541,11 @@ namespace h5pp::scan {
         return info;
     }
 
+    /*! \brief Populates a TableInfo object with properties read from file */
     template<typename h5x>
-    inline void fillTableInfo(TableInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+    inline void readTableInfo(TableInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
-                      "Template function [h5pp::scan::fillTableInfo(..., const h5x & loc, ...)] requires type h5x to be: "
+                      "Template function [h5pp::scan::readTableInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         if(not options.linkPath and not info.tablePath)
             throw std::runtime_error("Could not fill table info: No table path was given in options");
@@ -647,7 +648,7 @@ namespace h5pp::scan {
     template<typename h5x>
     inline TableInfo readTableInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         TableInfo info;
-        fillTableInfo(info, loc, options, plists);
+        readTableInfo(info, loc, options, plists);
         return info;
     }
 
