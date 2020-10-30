@@ -281,7 +281,7 @@ namespace h5pp {
                     h5pp::format("Error creating dataset [{}]: Dimensions or size not specified", options.linkPath.value()));
             if(not options.h5Type)
                 throw std::runtime_error(h5pp::format("Error creating dataset [{}]: HDF5 type not specified", options.linkPath.value()));
-            auto dsetInfo = h5pp::scan::inferDsetInfo(openFileHandle(), options, plists);
+            auto dsetInfo = h5pp::scan::makeDsetInfo(openFileHandle(), options, plists);
             h5pp::File::createDataset(dsetInfo);
             return dsetInfo;
         }
@@ -310,7 +310,7 @@ namespace h5pp {
         DsetInfo createDataset(const DataType &data, const Options &options) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
-            auto dsetInfo = h5pp::scan::inferDsetInfo(openFileHandle(), data, options, plists);
+            auto dsetInfo = h5pp::scan::makeDsetInfo(openFileHandle(), data, options, plists);
             h5pp::File::createDataset(dsetInfo);
             return dsetInfo;
         }
@@ -369,7 +369,7 @@ namespace h5pp {
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             options.assertWellDefined();
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
-            auto dsetInfo = h5pp::scan::inferDsetInfo(
+            auto dsetInfo = h5pp::scan::makeDsetInfo(
                 openFileHandle(), data, options, plists); // Creates if it doesn't exist, otherwise it just fills the meta data
             writeDataset(data, dataInfo, dsetInfo);
             return dsetInfo;

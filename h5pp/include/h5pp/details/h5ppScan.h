@@ -89,15 +89,15 @@ namespace h5pp::scan {
         return info;
     }
 
-    /*! \brief Populates a DsetInfo object based on passed options only
+    /*! \brief Populates a DsetInfo object based entirely on passed options
      * @param loc A valid HDF5 location (group or file)
      * @param options A struct containing optional metadata
      * @param plists (optional) access property for the file. Used to determine link access property when searching for the dataset.
      */
     template<typename h5x>
-    inline h5pp::DsetInfo inferDsetInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+    inline h5pp::DsetInfo makeDsetInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
-                      "Template function [h5pp::scan::inferDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
+                      "Template function [h5pp::scan::makeDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
         auto info = readDsetInfo(loc, options, plists);
@@ -198,10 +198,10 @@ namespace h5pp::scan {
                                         const Options &      options = Options(),
                                         const PropertyLists &plists  = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
-                      "Template function [h5pp::scan::inferDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
+                      "Template function [h5pp::scan::makeDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         static_assert(not h5pp::type::sfinae::is_h5_loc_v<DataType>,
-                      "Template function [h5pp::scan::inferDsetInfo(...,const DataType & data, ...)] requires type DataType to be: "
+                      "Template function [h5pp::scan::makeDsetInfo(...,const DataType & data, ...)] requires type DataType to be: "
                       "none of [h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         auto info = readDsetInfo(loc, options, plists);
         if(info.dsetExists.value()) return info;
