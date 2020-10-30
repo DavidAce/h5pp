@@ -369,8 +369,7 @@ namespace h5pp {
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             options.assertWellDefined();
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
-            auto dsetInfo = h5pp::scan::makeDsetInfo(
-                openFileHandle(), data, options, plists); // Creates if it doesn't exist, otherwise it just fills the meta data
+            auto dsetInfo = h5pp::scan::inferDsetInfo(openFileHandle(), data, options, plists);
             writeDataset(data, dataInfo, dsetInfo);
             return dsetInfo;
         }
