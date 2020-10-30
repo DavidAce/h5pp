@@ -348,7 +348,7 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        void writeDataset(const DataType &data, const DataInfo &dataInfo, DsetInfo &dsetInfo) {
+        void writeDataset(const DataType &data, DataInfo &dataInfo, DsetInfo &dsetInfo, const Options &options = Options()) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             // The infos passed should be parsed and ready to write with
