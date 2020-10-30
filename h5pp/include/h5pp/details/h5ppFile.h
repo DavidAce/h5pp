@@ -310,7 +310,7 @@ namespace h5pp {
         DsetInfo createDataset(const DataType &data, const Options &options) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
-            auto dsetInfo = h5pp::scan::makeDsetInfo(openFileHandle(), data, options, plists);
+            auto dsetInfo = h5pp::scan::inferDsetInfo(openFileHandle(), data, options, plists);
             h5pp::File::createDataset(dsetInfo);
             return dsetInfo;
         }
