@@ -281,7 +281,7 @@ namespace h5pp {
                     h5pp::format("Error creating dataset [{}]: Dimensions or size not specified", options.linkPath.value()));
             if(not options.h5Type)
                 throw std::runtime_error(h5pp::format("Error creating dataset [{}]: HDF5 type not specified", options.linkPath.value()));
-            auto dsetInfo = h5pp::scan::getDsetInfo(openFileHandle(), options, plists);
+            auto dsetInfo = h5pp::scan::inferDsetInfo(openFileHandle(), options, plists);
             h5pp::File::createDataset(dsetInfo);
             return dsetInfo;
         }
