@@ -89,10 +89,9 @@ namespace h5pp::scan {
         return info;
     }
 
-    /*! \fn inferDsetInfo
-     * Infers information for a new dataset based on passed options only
+    /*! \brief Populates a DsetInfo object based on passed options only
      * @param loc A valid HDF5 location (group or file)
-     * @param dsetPath The path to the dataset relative to loc
+     * @param options A struct containing optional metadata
      * @param plists (optional) access property for the file. Used to determine link access property when searching for the dataset.
      */
     template<typename h5x>
@@ -185,12 +184,12 @@ namespace h5pp::scan {
         return info;
     }
 
-    /*! \brief Populates an AttrInfo object.
+    /*! \brief Populates a DsetInfo object.
      *  If the attribute exists properties are read from file.
      *  Otherwise properties are inferred from the given data
      * @param loc A valid HDF5 location (group or file)
      * @param data The data from which to infer properties
-     * @param dsetPath The path to the dataset relative to loc
+     * @param options A struct containing optional metadata
      * @param plists (optional) access property for the file. Used to determine link access property when searching for the dataset.
      */
     template<typename DataType, typename h5x>
@@ -294,8 +293,9 @@ namespace h5pp::scan {
         return info;
     }
 
+
     template<typename DataType>
-    inline void fillDataInfo(DataInfo &info, const DataType &data, const Options &options = Options()) {
+    inline void scanDataInfo(DataInfo &info, const DataType &data, const Options &options = Options()) {
         h5pp::logger::log->debug("Scanning metadata of datatype [{}]", h5pp::type::sfinae::type_name<DataType>());
         // The point of passing options is to reinterpret the shape of the data and not to resize!
         // The data container should already be resized before entering this function.
@@ -327,10 +327,10 @@ namespace h5pp::scan {
     }
 
     template<typename DataType>
-    inline h5pp::DataInfo getDataInfo(const DataType &data, const Options &options = Options()) {
+    inline h5pp::DataInfo scanDataInfo(const DataType &data, const Options &options = Options()) {
         h5pp::DataInfo dataInfo;
         // As long as the two selections have the same number of elements, the data can be transferred
-        fillDataInfo(dataInfo, data, options);
+        scanDataInfo(dataInfo, data, options);
         return dataInfo;
     }
 

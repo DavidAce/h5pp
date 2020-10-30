@@ -342,7 +342,7 @@ namespace h5pp {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
-            auto dataInfo = h5pp::scan::getDataInfo(data, options);
+            auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             resizeDataset(dsetInfo, dataInfo.dataDims.value());
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
         }
@@ -357,7 +357,7 @@ namespace h5pp {
             else
                 h5pp::scan::readDsetInfo(dsetInfo, openFileHandle(), options, plists);
 
-            h5pp::scan::fillDataInfo(dataInfo, data, options);
+            h5pp::scan::scanDataInfo(dataInfo, data, options);
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
             resizeDataset(dsetInfo, dataInfo.dataDims.value());
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
@@ -368,7 +368,7 @@ namespace h5pp {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             options.assertWellDefined();
-            auto dataInfo = h5pp::scan::getDataInfo(data, options);
+            auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             auto dsetInfo = h5pp::scan::inferDsetInfo(
                 openFileHandle(), data, options, plists); // Creates if it doesn't exist, otherwise it just fills the meta data
             writeDataset(data, dataInfo, dsetInfo);
@@ -531,7 +531,7 @@ namespace h5pp {
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
         void readDataset(DataType &data, const DsetInfo &dsetInfo, const Options &options = Options()) const {
             h5pp::hdf5::resizeData(data, dsetInfo);
-            auto dataInfo = h5pp::scan::getDataInfo(data, options);
+            auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             readDataset(data, dataInfo, dsetInfo);
         }
 
@@ -559,7 +559,7 @@ namespace h5pp {
                 throw std::runtime_error(h5pp::format("Cannot read dataset [{}]: It does not exist", options.linkPath.value()));
 
             h5pp::hdf5::resizeData(data, dsetInfo);
-            auto dataInfo = h5pp::scan::getDataInfo(data, options);
+            auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
         }
 
@@ -592,7 +592,7 @@ namespace h5pp {
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             Options options;
             options.dataDims = dataDims;
-            auto dataInfo    = h5pp::scan::getDataInfo(data, options);
+            auto dataInfo    = h5pp::scan::scanDataInfo(data, options);
             appendToDataset(data, dataInfo, dsetInfo, axis);
         }
 
@@ -601,7 +601,7 @@ namespace h5pp {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             options.assertWellDefined();
-            auto dataInfo = h5pp::scan::getDataInfo(data, options);
+            auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             auto dsetInfo = h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
             appendToDataset(data, dataInfo, dsetInfo, axis);
             return dsetInfo;
@@ -664,7 +664,7 @@ namespace h5pp {
                 h5pp::scan::inferAttrInfo(attrInfo, attrInfo.getLocId(), data, options, plists);
             else
                 h5pp::scan::inferAttrInfo(attrInfo, openFileHandle(), data, options, plists);
-            h5pp::scan::fillDataInfo(dataInfo, data, options);
+            h5pp::scan::scanDataInfo(dataInfo, data, options);
             h5pp::hdf5::writeAttribute(data, dataInfo, attrInfo);
         }
 
@@ -673,7 +673,7 @@ namespace h5pp {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             options.assertWellDefined();
-            auto dataInfo = h5pp::scan::getDataInfo(data, options);
+            auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             auto attrInfo = createAttribute(data, options);
             h5pp::hdf5::writeAttribute(data, dataInfo, attrInfo);
         }
@@ -707,7 +707,7 @@ namespace h5pp {
                                                       attrInfo.linkPath.value()));
 
             h5pp::hdf5::resizeData(data, attrInfo);
-            auto dataInfo = h5pp::scan::getDataInfo(data, options);
+            auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             h5pp::hdf5::readAttribute(data, dataInfo, attrInfo);
         }
 
