@@ -23,14 +23,9 @@ namespace h5pp::scan {
         if(not options.linkPath) throw std::runtime_error("Could not fill dataset info: No dataset path was given in options");
         h5pp::logger::log->debug("Scanning metadata of dataset [{}]", options.linkPath.value());
         // Copy the location
-        if constexpr(std::is_same_v<h5x, hid::h5f>) info.h5File = loc;
-        if constexpr(std::is_same_v<h5x, hid::h5g>) info.h5Group = loc;
-        if constexpr(std::is_same_v<h5x, hid::h5o>) {
-            H5I_type_t type = H5Iget_type(loc);
-            if(type == H5I_type_t::H5I_GROUP or type == H5I_type_t::H5I_FILE)
-                info.h5ObjLoc = loc;
-            else
-                throw std::runtime_error("Given object type for location is not a group or a file");
+        if(not info.h5File){
+            if constexpr(std::is_same_v<h5x, hid::h5f>) info.h5File = loc;
+            else info.h5File = H5Iget_file_id(loc);
         }
         if(not info.dsetSlab) info.dsetSlab = options.dsetSlab;
         if(not info.dsetPath) info.dsetPath = h5pp::util::safe_str(options.linkPath.value());
@@ -339,8 +334,25 @@ namespace h5pp::scan {
         if(not info.attrName)    info.attrName      = h5pp::util::safe_str(options.attrName.value());
         if(not info.attrSlab)    info.attrSlab      = options.attrSlab;
         h5pp::logger::log->debug("Scanning metadata of attribute [{}] in link [{}]", info.attrName.value(), info.linkPath.value());
-        if(not info.linkExists)  info.linkExists = h5pp::hdf5::checkIfLinkExists(loc, info.linkPath.value(), std::nullopt, plists.linkAccess);
-        // If the dataset does not exist, there isn't much else to do so we return;
+
+        // Copy the location
+        if(not info.h5File){
+            if constexpr(std::is_same_v<h5x, hid::h5f>) info.h5File = loc;
+            else info.h5File = H5Iget_file_id(loc);
+        }
+
+        /* It's important to note the convention used here:
+         *      * linkPath is relative to loc.
+         *      * loc can be a file or group, but NOT a dataset.
+         *      * h5Link is the object on which the attribute is attached.
+         *      * h5Link is an h5o object which means that it can be a file, group or dataset.
+         *      * loc != h5Link.
+         *
+         */
+
+        if(not info.linkExists)  info.linkExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.linkPath.value(), std::nullopt, plists.linkAccess);
+
+        // If the link does not exist, there isn't much else to do so we return;
         if(info.linkExists and not info.linkExists.value()) return;
         // From here on the link exists
         if(not info.h5Link)     info.h5Link       = h5pp::hdf5::openLink<hid::h5o>(loc, info.linkPath.value(), info.linkExists, plists.linkAccess);
@@ -474,14 +486,11 @@ namespace h5pp::scan {
         if(not options.linkPath) throw std::runtime_error("Could not fill table info: No table path was given in options");
         h5pp::logger::log->debug("Scanning metadata of table [{}]", options.linkPath.value());
         // Copy the location
-        if constexpr(std::is_same_v<h5x, hid::h5f>) info.tableFile = loc;
-        if constexpr(std::is_same_v<h5x, hid::h5g>) info.tableGroup = loc;
-        if constexpr(std::is_same_v<h5x, hid::h5o>) {
-            H5I_type_t type = H5Iget_type(loc);
-            if(type == H5I_type_t::H5I_GROUP or type == H5I_type_t::H5I_FILE)
-                info.tableObjLoc = loc;
+        if(not info.h5File) {
+            if constexpr(std::is_same_v<h5x, hid::h5f>)
+                info.h5File = loc;
             else
-                throw std::runtime_error("Given object type for table location is not a group or a file");
+                info.h5File = H5Iget_file_id(loc);
         }
         if(not info.tablePath) info.tablePath = h5pp::util::safe_str(options.linkPath.value());
         if(not info.tableExists) info.tableExists = h5pp::hdf5::checkIfLinkExists(info.getTableLocId(), info.tablePath.value(), std::nullopt, plists.linkAccess);

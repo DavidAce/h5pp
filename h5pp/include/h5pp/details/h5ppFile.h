@@ -351,6 +351,12 @@ namespace h5pp {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             // The infos passed should be parsed and ready to write with
+            if(dsetInfo.hasLocId())
+                h5pp::scan::fillDsetInfo(dsetInfo, dsetInfo.getLocId(), options, plists);
+            else
+                h5pp::scan::fillDsetInfo(dsetInfo, openFileHandle(), options, plists);
+
+            h5pp::scan::fillDataInfo(dataInfo, data, options);
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
             resizeDataset(dsetInfo, dataInfo.dataDims.value());
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
@@ -619,6 +625,19 @@ namespace h5pp {
         void createAttribute(AttrInfo &attrInfo) { h5pp::hdf5::createAttribute(attrInfo); }
 
         template<typename DataType>
+        AttrInfo createAttribute(const DataType &data, AttrInfo &attrInfo, const Options &options = Options()) {
+            if(permission == h5pp::FilePermission::READONLY)
+                throw std::runtime_error(h5pp::format("Attempted to create attribute on read-only file [{}]", filePath.string()));
+            if(attrInfo.hasLocId())
+                h5pp::scan::inferAttrInfo(attrInfo, attrInfo.getLocId(), data, options, plists);
+            else
+                h5pp::scan::inferAttrInfo(attrInfo, openFileHandle(), data, options, plists);
+
+            h5pp::hdf5::createAttribute(attrInfo);
+            return attrInfo;
+        }
+
+        template<typename DataType>
         AttrInfo createAttribute(const DataType &data, const Options &options) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to create attribute on read-only file [{}]", filePath.string()));
@@ -634,6 +653,18 @@ namespace h5pp {
             options.attrName = attrName;
             options.dataDims = dataDims;
             createAttribute(data, options);
+        }
+
+        template<typename DataType>
+        void writeAttribute(const DataType &data, DataInfo &dataInfo, AttrInfo &attrInfo, const Options &options = Options()) {
+            if(permission == h5pp::FilePermission::READONLY)
+                throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            if(attrInfo.hasLocId())
+                h5pp::scan::inferAttrInfo(attrInfo, attrInfo.getLocId(), data, options, plists);
+            else
+                h5pp::scan::inferAttrInfo(attrInfo, openFileHandle(), data, options, plists);
+            h5pp::scan::fillDataInfo(dataInfo, data, options);
+            h5pp::hdf5::writeAttribute(data, dataInfo, attrInfo);
         }
 
         template<typename DataType>
