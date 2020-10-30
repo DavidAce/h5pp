@@ -891,8 +891,8 @@ namespace h5pp {
             options.compression   = compressionLevel;
             auto tgtInfo          = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
-                tgtInfo = createTable(
-                    srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compressionLevel);
+                tgtInfo =
+                    createTable(srcInfo.h5Type.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compressionLevel);
 
             copyTableRecords(srcInfo, tableSelection, tgtInfo, tgtStartIdx);
             return tgtInfo;
@@ -912,7 +912,7 @@ namespace h5pp {
             auto tgtInfo          = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
                 tgtInfo =
-                    createTable(srcInfo.tableType.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compression);
+                    createTable(srcInfo.h5Type.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compression);
 
             copyTableRecords(srcInfo, srcStartIdx, numRecordsToCopy, tgtInfo, tgtStartIdx);
             return tgtInfo;

@@ -524,26 +524,27 @@ namespace h5pp::scan {
         }
         // This is as far as we get if the table does not exist
         if(not info.tableExists.value()) return;
-        if(not info.tableDset) info.tableDset = hdf5::openLink<hid::h5d>(info.getTableLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess);
-        if(not info.tableType) info.tableType = H5Dget_type(info.tableDset.value());
+        if(not info.h5Dset)
+            info.h5Dset = hdf5::openLink<hid::h5d>(info.getLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess);
+        if(not info.h5Type) info.h5Type = H5Dget_type(info.h5Dset.value());
         if(not info.numRecords) {
             // We could use H5TBget_table_info here but internally that would create a temporary
             // dataset id and type id, but we already have them so we can use these directly instead
-            auto dims = h5pp::hdf5::getDimensions(info.tableDset.value());
+            auto dims = h5pp::hdf5::getDimensions(info.h5Dset.value());
             if(dims.size() != 1) throw std::logic_error("Tables can only have rank 1");
             info.numRecords = dims[0];
         }
-        if(not info.numFields) info.numFields = static_cast<size_t>(H5Tget_nmembers(info.tableType.value()));
+        if(not info.numFields) info.numFields = static_cast<size_t>(H5Tget_nmembers(info.h5Type.value()));
         if(not info.tableTitle) {
             char table_title[255];
-            H5TBAget_title(info.tableDset.value(), table_title);
+            H5TBAget_title(info.h5Dset.value(), table_title);
             info.tableTitle = table_title;
         }
 
         if(not info.fieldTypes) {
             hsize_t               n_fields = info.numFields.value();
             std::vector<hid::h5t> field_types(n_fields);
-            for(size_t i = 0; i < n_fields; i++) field_types[i] = H5Tget_member_type(info.tableType.value(), static_cast<unsigned>(i));
+            for(size_t i = 0; i < n_fields; i++) field_types[i] = H5Tget_member_type(info.h5Type.value(), static_cast<unsigned>(i));
             info.fieldTypes = field_types;
         }
 
@@ -572,7 +573,7 @@ namespace h5pp::scan {
         }
 
         if(not info.chunkSize) {
-            hid::h5p plist    = H5Dget_create_plist(info.tableDset.value());
+            hid::h5p plist    = H5Dget_create_plist(info.h5Dset.value());
             auto     chunkVec = h5pp::hdf5::getChunkDimensions(plist);
             if(chunkVec and not chunkVec->empty()) info.chunkSize = chunkVec.value()[0];
         }
@@ -610,10 +611,10 @@ namespace h5pp::scan {
         if(info.tableExists.value()) return info;
         h5pp::logger::log->debug("Creating metadata for new table [{}]", options.linkPath.value());
         info.tableTitle       = tableTitle;
-        info.tableType        = options.h5Type;
-        info.numFields        = H5Tget_nmembers(info.tableType.value());
+        info.h5Type           = options.h5Type;
+        info.numFields        = H5Tget_nmembers(info.h5Type.value());
         info.numRecords       = 0;
-        info.recordBytes      = H5Tget_size(info.tableType.value());
+        info.recordBytes      = H5Tget_size(info.h5Type.value());
         info.compressionLevel = options.compression;
         if(options.dsetDimsChunk and not options.dsetDimsChunk->empty()) info.chunkSize = options.dsetDimsChunk.value()[0];
 
@@ -628,10 +629,10 @@ namespace h5pp::scan {
         info.fieldNames   = std::vector<std::string>();
 
         for(unsigned int idx = 0; idx < static_cast<unsigned int>(info.numFields.value()); idx++) {
-            info.fieldTypes.value().emplace_back(H5Tget_member_type(info.tableType.value(), idx));
-            info.fieldOffsets.value().emplace_back(H5Tget_member_offset(info.tableType.value(), idx));
+            info.fieldTypes.value().emplace_back(H5Tget_member_type(info.h5Type.value(), idx));
+            info.fieldOffsets.value().emplace_back(H5Tget_member_offset(info.h5Type.value(), idx));
             info.fieldSizes.value().emplace_back(H5Tget_size(info.fieldTypes.value().back()));
-            const char *name = H5Tget_member_name(info.tableType.value(), idx);
+            const char *name = H5Tget_member_name(info.h5Type.value(), idx);
             info.fieldNames.value().emplace_back(name);
             H5free_memory((void *) name);
         }
