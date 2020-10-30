@@ -493,52 +493,53 @@ namespace h5pp::scan {
         return info;
     }
 
-    /*! \brief Creates and returns a populated AttrInfo object.
-     * If the attribute exists properties are read from file.
-     * Otherwise properties are inferred from given data. */
-    //    template<typename h5x>
-    //    inline h5pp::AttrInfo getAttrInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
-    //        auto info = readAttrInfo(loc, options, plists);
-    //        if(info.attrExists.value()) return info;
-    //        h5pp::logger::log->debug("Creating new attribute info for [{}] at link [{}]", options.attrName.value(),
-    //        options.linkPath.value());
-    //
-    //        // First copy the parameters given in options
-    //        if(not info.attrDims) info.attrDims = options.dataDims;
-    //        if(not info.attrSlab) info.attrSlab = options.attrSlab;
-    //        if(not info.h5Type) info.h5Type = options.h5Type;
-    //
-    //        // Some sanity checks
-    //        if(not info.attrDims)
-    //            throw std::runtime_error(h5pp::format("Error creating info for attribute [{}] in link [{}]: "
-    //                                                  "Dimensions for new attribute must be specified when no data is given",
-    //                                                  info.attrName.value(),
-    //                                                  info.linkPath.value()));
-    //        if(not info.h5Type)
-    //            throw std::runtime_error(h5pp::format("Error creating info for attribute [{}] in link [{}]: "
-    //                                                  "The HDF5 type for a new dataset must be specified when no data is given",
-    //                                                  info.attrName.value(),
-    //                                                  info.linkPath.value()));
-    //
-    //        // Next we infer the missing properties
-    //        if(not info.attrSize) info.attrSize = h5pp::util::getSizeFromDimensions(info.attrDims.value());
-    //        if(not info.attrRank) info.attrRank = h5pp::util::getRankFromDimensions(info.attrDims.value());
-    //        if(not info.attrByte) info.attrByte = info.attrSize.value() * h5pp::hdf5::getBytesPerElem(info.h5Type.value());
-    //        if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.attrSize.value(), info.attrDims.value(), H5D_COMPACT);
-    //
-    //        info.h5PlistAttrCreate = H5Pcreate(H5P_ATTRIBUTE_CREATE);
-    //#if H5_VERSION_GE(1, 10, 0)
-    //        info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
-    //#else
-    //        info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
-    //#endif
-    //        // Get c++ properties
-    //        if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
-    //            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
-    //
-    //        h5pp::logger::log->trace("Created  metadata  {}", info.string());
-    //        return info;
-    //    }
+    /*! \brief Creates and returns a populated AttrInfo object based entirely on given options */
+    template<typename h5x>
+    inline h5pp::AttrInfo inferAttrInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+        static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
+                      "Template function [h5pp::scan::inferAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
+                      "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
+        auto info = readAttrInfo(loc, options, plists);
+        if(info.attrExists.value()) return info;
+        h5pp::logger::log->debug("Creating new attribute info for [{}] at link [{}]", options.attrName.value(),
+        options.linkPath.value());
+
+        // First copy the parameters given in options
+        if(not info.attrDims) info.attrDims = options.dataDims;
+        if(not info.attrSlab) info.attrSlab = options.attrSlab;
+        if(not info.h5Type) info.h5Type = options.h5Type;
+
+        // Some sanity checks
+        if(not info.attrDims)
+            throw std::runtime_error(h5pp::format("Error creating info for attribute [{}] in link [{}]: "
+                                                  "Dimensions for new attribute must be specified when no data is given",
+                                                  info.attrName.value(),
+                                                  info.linkPath.value()));
+        if(not info.h5Type)
+            throw std::runtime_error(h5pp::format("Error creating info for attribute [{}] in link [{}]: "
+                                                  "The HDF5 type for a new dataset must be specified when no data is given",
+                                                  info.attrName.value(),
+                                                  info.linkPath.value()));
+
+        // Next we infer the missing properties
+        if(not info.attrSize) info.attrSize = h5pp::util::getSizeFromDimensions(info.attrDims.value());
+        if(not info.attrRank) info.attrRank = h5pp::util::getRankFromDimensions(info.attrDims.value());
+        if(not info.attrByte) info.attrByte = info.attrSize.value() * h5pp::hdf5::getBytesPerElem(info.h5Type.value());
+        if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.attrSize.value(), info.attrDims.value(), H5D_COMPACT);
+
+        info.h5PlistAttrCreate = H5Pcreate(H5P_ATTRIBUTE_CREATE);
+#if H5_VERSION_GE(1, 10, 0)
+        info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
+#else
+        info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_CREATE); // Missing access property in HDF5 1.8.x
+#endif
+        // Get c++ properties
+        if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+
+        h5pp::logger::log->trace("Created  metadata  {}", info.string());
+        return info;
+    }
 
     template<typename h5x>
     inline void fillTableInfo(TableInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
