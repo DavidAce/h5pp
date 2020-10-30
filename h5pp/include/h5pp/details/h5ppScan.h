@@ -294,6 +294,7 @@ namespace h5pp::scan {
     }
 
 
+    /*! \brief Populates a DataInfo object by scanning the given data type.*/
     template<typename DataType>
     inline void scanDataInfo(DataInfo &info, const DataType &data, const Options &options = Options()) {
         h5pp::logger::log->debug("Scanning metadata of datatype [{}]", h5pp::type::sfinae::type_name<DataType>());
@@ -326,6 +327,7 @@ namespace h5pp::scan {
         h5pp::logger::log->trace("Scanned metadata {}", info.string());
     }
 
+    /*! \brief Creates and returns a populated a DataInfo object by scanning the given data type.*/
     template<typename DataType>
     inline h5pp::DataInfo scanDataInfo(const DataType &data, const Options &options = Options()) {
         h5pp::DataInfo dataInfo;
