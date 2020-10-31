@@ -505,7 +505,7 @@ namespace h5pp::hdf5 {
             if constexpr(std::is_same_v<h5x, hid::h5d>) h5pp::logger::log->trace("Opening dataset [{}]", linkPath);
             if constexpr(std::is_same_v<h5x, hid::h5g>) h5pp::logger::log->trace("Opening group [{}]", linkPath);
             if constexpr(std::is_same_v<h5x, hid::h5o>) h5pp::logger::log->trace("Opening object [{}]", linkPath);
-            h5x link;
+            hid_t link;
             if constexpr(std::is_same_v<h5x, hid::h5d>) link = H5Dopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
             if constexpr(std::is_same_v<h5x, hid::h5g>) link = H5Gopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
             if constexpr(std::is_same_v<h5x, hid::h5o>) link = H5Oopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
@@ -825,21 +825,25 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    inline void createGroup(const h5x &          loc,
-                            std::string_view     groupRelativeName,
+    inline hid::h5g createGroup(const h5x &          loc,
+                            std::string_view     groupName,
                             std::optional<bool>  linkExists = std::nullopt,
                             const PropertyLists &plists     = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
                       "Template function [h5pp::hdf5::createGroup(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         // Check if group exists already
-        if(not linkExists) linkExists = checkIfLinkExists(loc, groupRelativeName, plists.linkAccess);
+        if(not linkExists) linkExists = checkIfLinkExists(loc, groupName, plists.linkAccess);
         if(not linkExists.value()) {
-            h5pp::logger::log->trace("Creating group link [{}]", groupRelativeName);
-            hid::h5g group =
-                    H5Gcreate(loc, util::safe_str(groupRelativeName).c_str(), plists.linkCreate, plists.groupCreate, plists.groupAccess);
+            h5pp::logger::log->trace("Creating group link [{}]", groupName);
+            hid_t gid = H5Gcreate(loc, util::safe_str(groupName).c_str(), plists.linkCreate, plists.groupCreate, plists.groupAccess);
+            if(gid < 0){
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error(h5pp::format("Failed to create group link [{}]", groupName));
+            }
+            return gid;
         } else
-            h5pp::logger::log->trace("Group exists already: [{}]", groupRelativeName);
+            h5pp::logger::log->trace("Group exists already: [{}]", groupName);
 
     }
 
@@ -850,7 +854,7 @@ namespace h5pp::hdf5 {
                                   std::optional<bool> linkExists = std::nullopt,
                                   const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
-                      "Template function [h5pp::hdf5::createGroup(const h5x & loc, ...)] requires type h5x to be: "
+                      "Template function [h5pp::hdf5::writeSymbolicLink(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         if(not linkExists) linkExists = checkIfLinkExists(loc, srcPath, plists.linkAccess);
         if(not linkExists.value()) {
