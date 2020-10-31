@@ -9,7 +9,7 @@
  */
 namespace h5pp::util {
 
-    inline std::string safe_str(std::string_view str) {
+    [[nodiscard]] inline std::string safe_str(std::string_view str) {
         // This function removes null-terminating characters inside of strings. For instance
         //      "This is \0 a string with\0 embedded null characters"
         // This happens sometimes for instance when concatenating strings that are "non-standard", i.e.
@@ -32,7 +32,7 @@ namespace h5pp::util {
     }
 
     template<typename PtrType, typename DataType>
-    inline PtrType getVoidPointer(DataType &data) {
+    [[nodiscard]] inline PtrType getVoidPointer(DataType &data) {
         // Get the memory address to a data buffer
 
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
@@ -605,7 +605,7 @@ namespace h5pp::util {
     // enable_if so the compiler doesn't think it can use overload with fs::path those arguments
     typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5xa>,
     typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5xb>>
-    inline bool onSameFile(const h5xa & loca, const h5xb & locb, LocationMode locMode = LocationMode::DETECT){
+    [[nodiscard]] inline bool onSameFile(const h5xa & loca, const h5xb & locb, LocationMode locMode = LocationMode::DETECT){
         switch(locMode){
             case LocationMode::SAME_FILE: return true;
             case LocationMode::OTHER_FILE: return false;
@@ -621,7 +621,7 @@ namespace h5pp::util {
         }
     }
 
-    inline bool onSameFile(const h5pp::fs::path & patha, const h5pp::fs::path & pathb, LocationMode locMode = LocationMode::DETECT){
+    [[nodiscard]] inline bool onSameFile(const h5pp::fs::path & patha, const h5pp::fs::path & pathb, LocationMode locMode = LocationMode::DETECT){
         switch(locMode){
             case LocationMode::SAME_FILE: return true;
             case LocationMode::OTHER_FILE: return false;
@@ -631,7 +631,7 @@ namespace h5pp::util {
         }
     }
 
-    inline LocationMode getLocationMode(const h5pp::fs::path & patha, const h5pp::fs::path & pathb){
+    [[nodiscard]] inline LocationMode getLocationMode(const h5pp::fs::path & patha, const h5pp::fs::path & pathb){
         if(h5pp::fs::equivalent(patha,pathb)) return LocationMode::SAME_FILE;
         else return LocationMode::OTHER_FILE;
     }
