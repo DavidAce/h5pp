@@ -86,7 +86,7 @@ namespace h5pp {
             H5Eprint(H5E_DEFAULT, stderr);
         }
 
-        /* Returns an HDF5 file handke with permission specified by File::permission */
+        /* Returns an HDF5 file handle with permission specified by File::permission */
         [[nodiscard]] hid::h5f openFileHandle() const {
             h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
             if(permission == h5pp::FilePermission::READONLY) {

@@ -343,7 +343,6 @@ namespace h5pp::scan {
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
         /* clang-format off */
-        options.assertWellDefined();
         if(not options.linkPath and not info.linkPath) throw std::runtime_error("Could not fill attribute info: No link path was given");
         if(not options.attrName and not info.attrName) throw std::runtime_error("Could not fill attribute info: No attribute name was given");
         if(not info.linkPath)    info.linkPath      = h5pp::util::safe_str(options.linkPath.value());
@@ -425,9 +424,7 @@ namespace h5pp::scan {
                       "Template function [h5pp::scan::readAttrInfo(...,..., const DataType & data, ...)] requires type DataType to be: "
                       "none of [h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
-        options.assertWellDefined();
         readAttrInfo(info, loc, options, plists);
-
         if(not info.linkExists or not info.linkExists.value()) {
             h5pp::logger::log->debug("Attribute metadata is being created for a non existing link: [{}]", options.linkPath.value());
             //            throw std::runtime_error(
