@@ -2078,7 +2078,7 @@ namespace h5pp::hdf5 {
             h5pp::logger::log->debug("Table [{}] already exists", info.tablePath.value());
             return;
         }
-        createGroup(info.getLocId(), info.tableGroupName.value(),info.tableExists, plists);
+        createGroup(info.getLocId(), info.tableGroupName.value(), std::nullopt, plists); // The existence of the group has to be checked, unfortunately
 
         // Copy member type data to a vector of hid_t for compatibility.
         // Note that there is no need to close thes hid_t since info will close them.
