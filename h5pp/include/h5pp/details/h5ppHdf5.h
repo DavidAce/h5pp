@@ -735,8 +735,8 @@ namespace h5pp::hdf5 {
                                 const hid::h5s &           h5Space,
                                 const hid::h5t &           h5Type) {
         TypeInfo typeInfo;
-        typeInfo.h5Name = std::move(objectName);
-        typeInfo.h5Path = std::move(objectPath);
+        typeInfo.h5Name = objectName;
+        typeInfo.h5Path = objectPath;
         typeInfo.h5Type = h5Type;
         typeInfo.h5Rank = h5pp::hdf5::getRank(h5Space);
         typeInfo.h5Size = h5pp::hdf5::getSize(h5Space);
