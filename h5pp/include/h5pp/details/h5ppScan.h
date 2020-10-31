@@ -491,14 +491,14 @@ namespace h5pp::scan {
         return info;
     }
 
-    /*! \brief Creates and returns a populated AttrInfo object based entirely on given options */
+    /*! \brief Populates an AttrInfo object based entirely on given options */
     template<typename h5x>
-    inline h5pp::AttrInfo makeAttrInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+    inline void makeAttrInfo(AttrInfo & info,const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
                       "Template function [h5pp::scan::makeAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
-        auto info = readAttrInfo(loc, options, plists);
-        if(info.attrExists.value()) return info;
+        info = readAttrInfo(loc, options, plists);
+        if(info.attrExists.value()) return;
         h5pp::logger::log->debug("Creating new attribute info for [{}] at link [{}]", options.attrName.value(), options.linkPath.value());
 
         // First copy the parameters given in options
@@ -536,8 +536,44 @@ namespace h5pp::scan {
             std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Created  metadata  {}", info.string());
+    }
+
+    /*! \brief Creates and returns a populated AttrInfo object based entirely on given options */
+    template<typename h5x>
+    inline h5pp::AttrInfo makeAttrInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+        h5pp::AttrInfo info;
+        inferAttrInfo(info, loc, options, plists);
         return info;
     }
+
+
+
+    template<typename h5x>
+    inline void inferAttrInfo(AttrInfo & info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+        static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
+                      "Template function [h5pp::scan::inferAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
+                      "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
+        if(not options.linkPath and not info.linkPath)
+            throw std::runtime_error("Could not infer attribute info: No link path was given");
+        if(not options.attrName and not info.attrName)
+            throw std::runtime_error("Could not infer attribute info: No attribute name was given");
+        if(not info.linkPath) info.linkPath = h5pp::util::safe_str(options.linkPath.value());
+        if(not info.attrName) info.attrName = h5pp::util::safe_str(options.attrName.value());
+
+        if(not info.linkExists)
+            info.linkExists = h5pp::hdf5::checkIfLinkExists(loc, info.linkPath.value(), plists.linkAccess);
+        if(not info.attrExists)
+            info.attrExists =
+                h5pp::hdf5::checkIfAttrExists(loc, info.linkPath.value(), info.attrName.value(), info.linkExists, plists.linkAccess);
+
+        if(info.attrExists.value())
+            return readAttrInfo(info,loc,options,plists); // Table exists so we can read properties from file
+        else
+            return makeAttrInfo(info,loc,options,plists);
+    }
+
+
+
 
     /*! \brief Populates a TableInfo object with properties read from file */
     template<typename h5x>
