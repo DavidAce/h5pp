@@ -91,8 +91,8 @@ void test_h5pp(h5pp::File & file, const WriteType & writeData, std::string_view 
         if(writeData.size()!= readData.size()) throw std::runtime_error("Size mismatch in ScalarN container");
 #if defined(H5PP_EIGEN3)
         if constexpr(h5pp::type::sfinae::is_eigen_matrix_v<ReadType>)
-            for(size_t j = 0; j < static_cast<size_t>(writeData.cols()); j++)
-                for(size_t i = 0; i < static_cast<size_t>(writeData.rows()); i++) compareScalar(writeData(i,j),readData(i,j));
+            for(Eigen::Index j = 0; j < writeData.cols(); j++)
+                for(Eigen::Index i = 0; i < writeData.rows(); i++) compareScalar(writeData(i,j),readData(i,j));
         else
 #endif
             for(size_t i = 0; i < static_cast<size_t>(writeData.size()); i++) compareScalar(writeData[i],readData[i]);
