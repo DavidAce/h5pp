@@ -31,6 +31,7 @@ namespace h5pp {
         fs::path             filePath;                                  /*!< Full path to the file, e.g. /path/to/project/filename.h5 */
         h5pp::FilePermission permission = h5pp::FilePermission::RENAME; /*!< Decides action on file collision and read/write permission on
                                                                            existing files. Default RENAME avoids loss of data  */
+        std::optional<h5pp::hid::h5f> fileHandle = std::nullopt;
         size_t logLevel = 2; /*!< Console log level for new file objects. 0 [trace] has highest verbosity, and 5 [critical] the lowest.  */
         bool   logTimestamp = false; /*!< Add a time stamp to console log output   */
         hid::h5e     error_stack;    /*!< Holds a reference to the error stack used by HDF5   */
@@ -78,6 +79,7 @@ namespace h5pp {
             init();
         }
 
+
         /* Flush HDF5 file cache */
         void flush() {
             H5Fflush(openFileHandle(), H5F_scope_t::H5F_SCOPE_GLOBAL);
@@ -89,6 +91,7 @@ namespace h5pp {
         /* Returns an HDF5 file handle with permission specified by File::permission */
         [[nodiscard]] hid::h5f openFileHandle() const {
             h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
+            if(fileHandle) return fileHandle.value();
             if(permission == h5pp::FilePermission::READONLY) {
                 h5pp::logger::log->trace("Opening file in READONLY mode");
                 hid_t fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
@@ -113,6 +116,10 @@ namespace h5pp {
          * Functions for file properties
          *
          */
+
+        void setKeepFileOpened(){fileHandle = openFileHandle();}
+        void setKeepFileClosed(){fileHandle = std::nullopt;}
+
 
         [[nodiscard]] h5pp::FilePermission getFilePermission() const { return permission; }
         [[nodiscard]] std::string          getFileName() const { return filePath.filename().string(); }
@@ -1136,8 +1143,8 @@ namespace h5pp {
             return h5pp::hdf5::getChunkDimensions(dataset);
         }
 
-        [[nodiscard]] bool linkExists(std::string_view link) const {
-            return h5pp::hdf5::checkIfLinkExists(openFileHandle(), link, std::nullopt, plists.linkAccess);
+        [[nodiscard]] bool linkExists(std::string_view linkPath) const {
+            return h5pp::hdf5::checkIfLinkExists(openFileHandle(), linkPath, std::nullopt, plists.linkAccess);
         }
 
         [[nodiscard]] std::vector<std::string>
