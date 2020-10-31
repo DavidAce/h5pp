@@ -562,9 +562,14 @@ namespace h5pp::scan {
 
         if(not info.linkExists)
             info.linkExists = h5pp::hdf5::checkIfLinkExists(loc, info.linkPath.value(), plists.linkAccess);
-        if(not info.attrExists)
-            info.attrExists =
-                h5pp::hdf5::checkIfAttrExists(loc, info.linkPath.value(), info.attrName.value(), info.linkExists, plists.linkAccess);
+        if(info.linkExists.value())
+            if(not info.h5Link) info.h5Link = h5pp::hdf5::openLink<hid::h5o>(loc,info.linkPath.value(),info.linkExists,plists.linkAccess);
+        if(not info.attrExists){
+            if(info.h5Link)
+                info.attrExists = h5pp::hdf5::checkIfAttrExists(info.h5Link.value(), info.attrName.value(), plists.linkAccess);
+            else
+                info.attrExists = h5pp::hdf5::checkIfAttrExists(loc, info.linkPath.value(), info.attrName.value(), info.linkExists, plists.linkAccess);
+        }
 
         if(info.attrExists.value())
             return readAttrInfo(info,loc,options,plists); // Table exists so we can read properties from file

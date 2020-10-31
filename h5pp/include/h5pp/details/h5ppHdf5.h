@@ -546,6 +546,9 @@ namespace h5pp::hdf5 {
                       "Template function [h5pp::hdf5::checkIfAttrExists<h5x>(const h5x & loc, ..., ...)] requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
+        // If the link does not exist the attribute doesn't exist either
+        if(not linkExists.value()) return false;
+        // Otherwise we open the link and check
         auto link = openLink<hid::h5o>(loc, linkPath, linkExists, linkAccess);
         h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}] ...", attrName, linkPath);
         bool exists = H5Aexists_by_name(link, std::string(".").c_str(), util::safe_str(attrName).c_str(), linkAccess) > 0;
@@ -778,6 +781,9 @@ namespace h5pp::hdf5 {
                                 const hid::h5p &    linkAccess = H5P_DEFAULT) {
 
         if(not linkExists) linkExists = checkIfLinkExists(loc,linkPath,linkAccess);
+        if(not linkExists.value())
+            throw std::runtime_error(h5pp::format("Attribute [{}] does not exist because its link does not exist: [{}]", attrName, linkPath));
+
         auto link = openLink<hid::h5o>(loc, linkPath, linkExists, linkAccess);
         if(not attrExists) attrExists = checkIfAttrExists(link, attrName, linkAccess);
         if(attrExists.value()) {
