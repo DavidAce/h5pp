@@ -629,7 +629,15 @@ namespace h5pp {
          *
          */
 
-        void createAttribute(AttrInfo &attrInfo) { h5pp::hdf5::createAttribute(attrInfo); }
+        void createAttribute(AttrInfo &attrInfo, const Options &options = Options()) {
+            if(permission == h5pp::FilePermission::READONLY)
+                throw std::runtime_error(h5pp::format("Attempted to create attribute on read-only file [{}]", filePath.string()));
+            if(attrInfo.hasLocId())
+                h5pp::scan::inferAttrInfo(attrInfo, attrInfo.getLocId(), options, plists);
+            else
+                h5pp::scan::inferAttrInfo(attrInfo, openFileHandle(), options, plists);
+
+            h5pp::hdf5::createAttribute(attrInfo); }
 
         template<typename DataType>
         AttrInfo createAttribute(const DataType &data, AttrInfo &attrInfo, const Options &options = Options()) {
@@ -757,10 +765,14 @@ namespace h5pp {
          *
          */
 
-        void createTable(TableInfo & tableInfo) {
+        void createTable(TableInfo & info, const Options &options = Options()) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
-            h5pp::hdf5::createTable(tableInfo, plists);
+            if(info.hasLocId())
+                h5pp::scan::inferTableInfo(info, info.getLocId(), options, plists);
+            else
+                h5pp::scan::inferTableInfo(info, openFileHandle(), options, plists);
+            h5pp::hdf5::createTable(info, plists);
         }
 
 
