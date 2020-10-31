@@ -647,12 +647,12 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        void createAttribute(const DataType &data, const DimsType &dataDims, std::string_view attrName, std::string_view linkPath) {
+        AttrInfo createAttribute(const DataType &data, const DimsType &dataDims, std::string_view attrName, std::string_view linkPath) {
             Options options;
             options.linkPath = linkPath;
             options.attrName = attrName;
             options.dataDims = dataDims;
-            createAttribute(data, options);
+            return createAttribute(data, options);
         }
 
         template<typename DataType>
@@ -668,17 +668,18 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        void writeAttribute(const DataType &data, const Options &options) {
+        AttrInfo writeAttribute(const DataType &data, const Options &options) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             options.assertWellDefined();
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             auto attrInfo = createAttribute(data, options);
             h5pp::hdf5::writeAttribute(data, dataInfo, attrInfo);
+            return attrInfo;
         }
 
         template<typename DataType>
-        void writeAttribute(const DataType &        data,
+        AttrInfo writeAttribute(const DataType &        data,
                             std::string_view        attrName,
                             std::string_view        linkPath,
                             const OptDimsType &     dataDims = std::nullopt,
@@ -688,7 +689,7 @@ namespace h5pp {
             options.attrName = attrName;
             options.dataDims = dataDims;
             options.h5Type   = std::move(h5Type);
-            writeAttribute(data, options);
+            return writeAttribute(data, options);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
