@@ -696,11 +696,13 @@ namespace h5pp::scan {
     makeTableInfo(h5pp::TableInfo & info, const h5x &loc, const Options &options, std::string_view tableTitle, const PropertyLists &plists = PropertyLists()) {
         readTableInfo(info,loc, options, plists);
         if(info.tableExists.value()) return;
-        h5pp::logger::log->debug("Creating metadata for new table [{}]", options.linkPath.value());
+        if(not options.linkPath and not info.tablePath)
+            throw std::runtime_error("Could not make table info: No table path was given");
+        if(not info.tablePath) info.tablePath = h5pp::util::safe_str(options.linkPath.value());
+
+        h5pp::logger::log->debug("Creating metadata for new table [{}]", info.tablePath.value());
         if(not options.h5Type and not info.h5Type)
             throw std::runtime_error("Could not make table info: No hdf5 compound type was given");
-
-        if(not info.tablePath) info.tablePath = h5pp::util::safe_str(options.linkPath.value());
 
         /* clang-format off */
         if(not info.tableTitle       ) info.tableTitle       = tableTitle;

@@ -834,14 +834,13 @@ namespace h5pp::hdf5 {
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         // Check if group exists already
         if(not linkExists) linkExists = checkIfLinkExists(loc, groupRelativeName, plists.linkAccess);
-        if(linkExists.value()) {
-            h5pp::logger::log->trace("Group exists already: [{}]", groupRelativeName);
-            return;
-        } else {
+        if(not linkExists.value()) {
             h5pp::logger::log->trace("Creating group link [{}]", groupRelativeName);
             hid::h5g group =
-                H5Gcreate(loc, util::safe_str(groupRelativeName).c_str(), plists.linkCreate, plists.groupCreate, plists.groupAccess);
-        }
+                    H5Gcreate(loc, util::safe_str(groupRelativeName).c_str(), plists.linkCreate, plists.groupCreate, plists.groupAccess);
+        } else
+            h5pp::logger::log->trace("Group exists already: [{}]", groupRelativeName);
+
     }
 
     template<typename h5x>
@@ -2069,13 +2068,13 @@ namespace h5pp::hdf5 {
                                  info.tablePath.value(),
                                  info.numFields.value(),
                                  info.recordBytes.value());
-        createGroup(info.getLocId(), info.tableGroupName.value(), std::nullopt, plists);
 
         if(not info.tableExists) info.tableExists = checkIfLinkExists(info.getLocId(), info.tablePath.value(), plists.linkAccess);
         if(info.tableExists.value()) {
             h5pp::logger::log->debug("Table [{}] already exists", info.tablePath.value());
             return;
         }
+        createGroup(info.getLocId(), info.tableGroupName.value(),info.tableExists, plists);
 
         // Copy member type data to a vector of hid_t for compatibility.
         // Note that there is no need to close thes hid_t since info will close them.
