@@ -470,12 +470,10 @@ namespace h5pp::hdf5 {
     template<typename h5x>
     [[nodiscard]] inline bool checkIfLinkExists(const h5x &         loc,
                                                 std::string_view    linkPath,
-                                                std::optional<bool> linkExists = std::nullopt,
                                                 const hid::h5p &    linkAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
                       "Template function [h5pp::hdf5::checkIfLinkExists<h5x>(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        if(linkExists) return linkExists.value();
         for(const auto &subPath : pathCumulativeSplit(linkPath, "/")) {
             int exists = H5Lexists(loc, util::safe_str(subPath).c_str(), linkAccess);
             if(exists == 0) {
@@ -491,28 +489,6 @@ namespace h5pp::hdf5 {
         return true;
     }
 
-    template<typename h5x>
-    [[nodiscard]] inline bool checkIfDatasetExists(const h5x &         loc,
-                                                   std::string_view    dsetName,
-                                                   std::optional<bool> dsetExists = std::nullopt,
-                                                   const hid::h5p &    dsetAccess = H5P_DEFAULT) {
-        static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
-                      "Template function [h5pp::hdf5::checkIfDatasetExists<h5x>(const h5x & loc, ...)] requires type h5x to be: "
-                      "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        if(dsetExists) return dsetExists.value();
-        dsetExists = checkIfLinkExists(loc, dsetName, dsetExists, dsetAccess);
-        if(not dsetExists.value()) return false;
-        hid::h5o   object     = H5Oopen(loc, util::safe_str(dsetName).c_str(), dsetAccess);
-        H5I_type_t objectType = H5Iget_type(object);
-        if(objectType != H5I_DATASET) {
-            h5pp::logger::log->trace("Checking if link is a dataset [{}] ... false", dsetName);
-            return false;
-        } else {
-            h5pp::logger::log->trace("Checking if link is a dataset [{}] ... true", dsetName);
-            return true;
-        }
-    }
-
     template<typename h5x, typename h5x_loc>
     [[nodiscard]] h5x openLink(const h5x_loc &     loc,
                                std::string_view    linkPath,
@@ -524,7 +500,8 @@ namespace h5pp::hdf5 {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x_loc>,
                       "Template function [h5pp::hdf5::openLink<h5x>(const h5x_loc & loc, ...)] requires type h5x_loc to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        if(checkIfLinkExists(loc, linkPath, linkExists)) {
+        if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
+        if(linkExists.value()) {
             if constexpr(std::is_same_v<h5x, hid::h5d>) h5pp::logger::log->trace("Opening dataset [{}]", linkPath);
             if constexpr(std::is_same_v<h5x, hid::h5g>) h5pp::logger::log->trace("Opening group [{}]", linkPath);
             if constexpr(std::is_same_v<h5x, hid::h5o>) h5pp::logger::log->trace("Opening object [{}]", linkPath);
@@ -548,7 +525,6 @@ namespace h5pp::hdf5 {
     template<typename h5x>
     [[nodiscard]] inline bool checkIfAttributeExists(const h5x &         link,
                                                      std::string_view    attrName,
-                                                     std::optional<bool> attrExists = std::nullopt,
                                                      const hid::h5p &    linkAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_h5_link_or_hid_v<h5x>,
                       "Template function [h5pp::hdf5::checkIfAttributeExists<h5x>(const h5x & link, ...) requires type h5x to be: "
@@ -565,12 +541,11 @@ namespace h5pp::hdf5 {
                                                      std::string_view    linkPath,
                                                      std::string_view    attrName,
                                                      std::optional<bool> linkExists = std::nullopt,
-                                                     std::optional<bool> attrExists = std::nullopt,
                                                      const hid::h5p &    linkAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
                       "Template function [h5pp::hdf5::checkIfAttributeExists<h5x>(const h5x & loc, ..., ...)] requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        if(linkExists and attrExists and linkExists.value() and attrExists.value()) return true;
+        if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
         auto link = openLink<hid::h5o>(loc, linkPath, linkExists, linkAccess);
         h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}] ...", attrName, linkPath);
         bool exists = H5Aexists_by_name(link, std::string(".").c_str(), util::safe_str(attrName).c_str(), linkAccess) > 0;
@@ -801,8 +776,11 @@ namespace h5pp::hdf5 {
                                 std::optional<bool> linkExists = std::nullopt,
                                 std::optional<bool> attrExists = std::nullopt,
                                 const hid::h5p &    linkAccess = H5P_DEFAULT) {
+
+        if(not linkExists) linkExists = checkIfLinkExists(loc,linkPath,linkAccess);
         auto link = openLink<hid::h5o>(loc, linkPath, linkExists, linkAccess);
-        if(checkIfAttributeExists(link, attrName, attrExists, linkAccess)) {
+        if(not attrExists) attrExists = checkIfAttrExists(link, attrName, linkAccess);
+        if(attrExists.value()) {
             hid::h5a attribute = H5Aopen_name(link, util::safe_str(attrName).c_str());
             return getTypeInfo(attribute);
         } else {
@@ -849,9 +827,9 @@ namespace h5pp::hdf5 {
                       "Template function [h5pp::hdf5::createGroup(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         // Check if group exists already
-        linkExists = checkIfLinkExists(loc, groupRelativeName, linkExists, plists.linkAccess);
+        if(not linkExists) linkExists = checkIfLinkExists(loc, groupRelativeName, plists.linkAccess);
         if(linkExists.value()) {
-            h5pp::logger::log->trace("Group already exists [{}]", groupRelativeName);
+            h5pp::logger::log->trace("Group exists already: [{}]", groupRelativeName);
             return;
         } else {
             h5pp::logger::log->trace("Creating group link [{}]", groupRelativeName);
@@ -864,11 +842,13 @@ namespace h5pp::hdf5 {
     inline void writeSymbolicLink(const h5x &          loc,
                                   std::string_view     srcPath,
                                   std::string_view     tgtPath,
+                                  std::optional<bool> linkExists = std::nullopt,
                                   const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
                       "Template function [h5pp::hdf5::createGroup(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        if(checkIfLinkExists(loc, srcPath, std::nullopt, plists.linkAccess)) {
+        if(not linkExists) linkExists = checkIfLinkExists(loc, srcPath, plists.linkAccess);
+        if(not linkExists.value()) {
             h5pp::logger::log->trace("Creating symbolic link [{}] --> [{}]", srcPath, tgtPath);
             herr_t retval =
                 H5Lcreate_soft(util::safe_str(srcPath).c_str(), loc, util::safe_str(tgtPath).c_str(), plists.linkCreate, plists.linkAccess);
@@ -877,7 +857,7 @@ namespace h5pp::hdf5 {
                 throw std::runtime_error(h5pp::format("Failed to write symbolic link [{}]  ", srcPath));
             }
         } else {
-            throw std::runtime_error(h5pp::format("Trying to write soft link to non-existing path [{}]", srcPath));
+            throw std::runtime_error(h5pp::format("Tried to write soft link to non-existing path [{}]", srcPath));
         }
     }
 
@@ -2085,7 +2065,8 @@ namespace h5pp::hdf5 {
                                  info.recordBytes.value());
         createGroup(info.getLocId(), info.tableGroupName.value(), std::nullopt, plists);
 
-        if(checkIfLinkExists(info.getLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess)) {
+        if(not info.tableExists) info.tableExists = checkIfLinkExists(info.getLocId(), info.tablePath.value(), plists.linkAccess);
+        if(info.tableExists.value()) {
             h5pp::logger::log->debug("Table [{}] already exists", info.tablePath.value());
             return;
         }

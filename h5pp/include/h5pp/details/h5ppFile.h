@@ -518,8 +518,7 @@ namespace h5pp {
         }
 
         void writeSymbolicLink(std::string_view src_path, std::string_view tgt_path) {
-            hid::h5f file = openFileHandle();
-            h5pp::hdf5::writeSymbolicLink(file, src_path, tgt_path, plists);
+            h5pp::hdf5::writeSymbolicLink(openFileHandle(), src_path, tgt_path, std::nullopt, plists);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
@@ -1156,7 +1155,7 @@ namespace h5pp {
         }
 
         [[nodiscard]] bool linkExists(std::string_view linkPath) const {
-            return h5pp::hdf5::checkIfLinkExists(openFileHandle(), linkPath, std::nullopt, plists.linkAccess);
+            return h5pp::hdf5::checkIfLinkExists(openFileHandle(), linkPath, plists.linkAccess);
         }
 
         [[nodiscard]] std::vector<std::string>

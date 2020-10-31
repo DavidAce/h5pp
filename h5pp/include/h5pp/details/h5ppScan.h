@@ -32,7 +32,7 @@ namespace h5pp::scan {
             else info.h5File = H5Iget_file_id(loc);
         }
 
-        if(not info.dsetExists) info.dsetExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.dsetPath.value(), std::nullopt, plists.linkAccess);
+        if(not info.dsetExists) info.dsetExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.dsetPath.value(), plists.linkAccess);
 
         // If the dataset does not exist, there isn't much else to do so we return;
         if(not info.dsetExists.value()) return;
@@ -365,7 +365,7 @@ namespace h5pp::scan {
          *
          */
 
-        if(not info.linkExists)  info.linkExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.linkPath.value(), std::nullopt, plists.linkAccess);
+        if(not info.linkExists)  info.linkExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.linkPath.value(), plists.linkAccess);
 
         // If the link does not exist, there isn't much else to do so we return;
         if(info.linkExists and not info.linkExists.value()) return;
@@ -373,7 +373,7 @@ namespace h5pp::scan {
         // From here on the link exists
         if(not info.h5Link)     info.h5Link       = h5pp::hdf5::openLink<hid::h5o>(loc, info.linkPath.value(), info.linkExists, plists.linkAccess);
         if(not info.attrExists)
-            info.attrExists = h5pp::hdf5::checkIfAttributeExists(info.h5Link.value(), info.attrName.value(), std::nullopt, plists.linkAccess);
+            info.attrExists = h5pp::hdf5::checkIfAttrExists(info.h5Link.value(), info.attrName.value(), plists.linkAccess);
         if(info.attrExists and not info.attrExists.value()) return;
 
         // From here on the attribute exists
@@ -556,7 +556,7 @@ namespace h5pp::scan {
         }
 
         if(not info.tableExists)
-            info.tableExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.tablePath.value(), std::nullopt, plists.linkAccess);
+            info.tableExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.tablePath.value(), plists.linkAccess);
 
         // Infer the group name
         if(not info.tableGroupName) {
@@ -727,7 +727,7 @@ namespace h5pp::scan {
         if(not info.tablePath) info.tablePath = h5pp::util::safe_str(options.linkPath.value());
 
         if(not info.tableExists)
-            info.tableExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.tablePath.value(), std::nullopt, plists.linkAccess);
+            info.tableExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.tablePath.value(), plists.linkAccess);
 
         if(info.tableExists.value())
             return readTableInfo(info,loc,options,plists); // Table exists so we can read properties from file
