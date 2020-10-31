@@ -523,13 +523,13 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    [[nodiscard]] inline bool checkIfAttributeExists(const h5x &         link,
+    [[nodiscard]] inline bool checkIfAttrExists(const h5x &         link,
                                                      std::string_view    attrName,
                                                      const hid::h5p &    linkAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_h5_link_or_hid_v<h5x>,
-                      "Template function [h5pp::hdf5::checkIfAttributeExists<h5x>(const h5x & link, ...) requires type h5x to be: "
+                      "Template function [h5pp::hdf5::checkIfAttrExists<h5x>(const h5x & link, ...) requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        if(attrExists and attrExists.value()) return true;
+//        if(attrExists and attrExists.value()) return true;
         h5pp::logger::log->trace("Checking if attribute [{}] exitst in link ...", attrName);
         bool exists = H5Aexists_by_name(link, std::string(".").c_str(), util::safe_str(attrName).c_str(), linkAccess) > 0;
         h5pp::logger::log->trace("Checking if attribute [{}] exitst in link ... {}", attrName, exists);
@@ -537,13 +537,13 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    [[nodiscard]] inline bool checkIfAttributeExists(const h5x &         loc,
+    [[nodiscard]] inline bool checkIfAttrExists(const h5x &         loc,
                                                      std::string_view    linkPath,
                                                      std::string_view    attrName,
                                                      std::optional<bool> linkExists = std::nullopt,
                                                      const hid::h5p &    linkAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
-                      "Template function [h5pp::hdf5::checkIfAttributeExists<h5x>(const h5x & loc, ..., ...)] requires type h5x to be: "
+                      "Template function [h5pp::hdf5::checkIfAttrExists<h5x>(const h5x & loc, ..., ...)] requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
         auto link = openLink<hid::h5o>(loc, linkPath, linkExists, linkAccess);
