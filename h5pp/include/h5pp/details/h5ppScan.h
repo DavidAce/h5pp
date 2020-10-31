@@ -7,7 +7,7 @@
 namespace h5pp::scan {
 
     /*! \fn readDsetInfo
-     * Fills missing information about a dataset in an info-struct
+     * Populates a DsetInfo object by reading properties from a dataset on file
      *
      * @param info A struct with information about a dataset
      * @param file a h5f file identifier
@@ -20,7 +20,7 @@ namespace h5pp::scan {
                       "Template function [h5pp::scan::readDsetInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
-        if(not options.linkPath and not info.dsetPath) throw std::runtime_error("Could not fill dataset info: No dataset path was given");
+        if(not options.linkPath and not info.dsetPath) throw std::runtime_error("Could not read dataset info: No dataset path was given");
         if(not info.dsetSlab) info.dsetSlab = options.dsetSlab;
         if(not info.dsetPath) info.dsetPath = h5pp::util::safe_str(options.linkPath.value());
         h5pp::logger::log->debug("Scanning metadata of dataset [{}]", info.dsetPath.value());
@@ -345,8 +345,8 @@ namespace h5pp::scan {
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
         /* clang-format off */
-        if(not options.linkPath and not info.linkPath) throw std::runtime_error("Could not fill attribute info: No link path was given");
-        if(not options.attrName and not info.attrName) throw std::runtime_error("Could not fill attribute info: No attribute name was given");
+        if(not options.linkPath and not info.linkPath) throw std::runtime_error("Could not read attribute info: No link path was given");
+        if(not options.attrName and not info.attrName) throw std::runtime_error("Could not read attribute info: No attribute name was given");
         if(not info.linkPath)    info.linkPath      = h5pp::util::safe_str(options.linkPath.value());
         if(not info.attrName)    info.attrName      = h5pp::util::safe_str(options.attrName.value());
         if(not info.attrSlab)    info.attrSlab      = options.attrSlab;
@@ -587,7 +587,7 @@ namespace h5pp::scan {
                       "Template function [h5pp::scan::readTableInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         if(not options.linkPath and not info.tablePath)
-            throw std::runtime_error("Could not fill table info: No table path was given");
+            throw std::runtime_error("Could not read table info: No table path was given");
         if(not info.tablePath) info.tablePath = h5pp::util::safe_str(options.linkPath.value());
         h5pp::logger::log->debug("Scanning metadata of table [{}]", info.tablePath.value());
 
@@ -697,6 +697,11 @@ namespace h5pp::scan {
         readTableInfo(info,loc, options, plists);
         if(info.tableExists.value()) return;
         h5pp::logger::log->debug("Creating metadata for new table [{}]", options.linkPath.value());
+        if(not options.h5Type and not info.h5Type)
+            throw std::runtime_error("Could not make table info: No hdf5 compound type path was given");
+
+        if(not info.tablePath) info.tablePath = h5pp::util::safe_str(options.linkPath.value());
+
         /* clang-format off */
         if(not info.tableTitle       ) info.tableTitle       = tableTitle;
         if(not info.h5Type           ) info.h5Type           = options.h5Type;
