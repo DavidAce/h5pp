@@ -31,7 +31,7 @@ namespace h5pp {
         fs::path             filePath;                                  /*!< Full path to the file, e.g. /path/to/project/filename.h5 */
         h5pp::FilePermission permission = h5pp::FilePermission::RENAME; /*!< Decides action on file collision and read/write permission on
                                                                            existing files. Default RENAME avoids loss of data  */
-        std::optional<h5pp::hid::h5f> fileHandle = std::nullopt;
+        mutable std::optional<h5pp::hid::h5f> fileHandle = std::nullopt;
         size_t logLevel = 2; /*!< Console log level for new file objects. 0 [trace] has highest verbosity, and 5 [critical] the lowest.  */
         bool   logTimestamp = false; /*!< Add a time stamp to console log output   */
         hid::h5e     error_stack;    /*!< Holds a reference to the error stack used by HDF5   */
@@ -117,8 +117,8 @@ namespace h5pp {
          *
          */
 
-        void setKeepFileOpened(){fileHandle = openFileHandle();}
-        void setKeepFileClosed(){fileHandle = std::nullopt;}
+        void setKeepFileOpened() const {fileHandle = openFileHandle();}
+        void setKeepFileClosed() const {fileHandle = std::nullopt;}
 
 
         [[nodiscard]] h5pp::FilePermission getFilePermission() const { return permission; }
