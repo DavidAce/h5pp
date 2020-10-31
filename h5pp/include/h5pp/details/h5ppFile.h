@@ -750,6 +750,13 @@ namespace h5pp {
          *
          */
 
+        void createTable(TableInfo & tableInfo) {
+            if(permission == h5pp::FilePermission::READONLY)
+                throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            h5pp::hdf5::createTable(tableInfo, plists);
+        }
+
+
         TableInfo createTable(const hid::h5t &                  h5Type,
                               std::string_view                  tablePath,
                               std::string_view                  tableTitle,
@@ -764,10 +771,10 @@ namespace h5pp {
             options.h5Type        = h5Type;
             options.dsetDimsChunk = chunkDims;
             options.compression   = compressionLevel;
-            auto tableInfo        = h5pp::scan::makeTableInfo(openFileHandle(), options, tableTitle, plists);
-            h5pp::hdf5::createTable(tableInfo, plists);
-            h5pp::scan::readTableInfo(tableInfo, tableInfo.getLocId(), options, plists);
-            return tableInfo;
+            auto info             = h5pp::scan::makeTableInfo(openFileHandle(), options, tableTitle, plists);
+            h5pp::hdf5::createTable(info, plists);
+            h5pp::scan::readTableInfo(info, info.getLocId(), options, plists);
+            return info;
         }
 
         template<typename DataType>
