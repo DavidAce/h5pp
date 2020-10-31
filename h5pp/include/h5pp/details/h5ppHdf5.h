@@ -825,7 +825,7 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    inline hid::h5g createGroup(const h5x &          loc,
+    inline void createGroup(const h5x &          loc,
                             std::string_view     groupName,
                             std::optional<bool>  linkExists = std::nullopt,
                             const PropertyLists &plists     = PropertyLists()) {
@@ -841,7 +841,7 @@ namespace h5pp::hdf5 {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error(h5pp::format("Failed to create group link [{}]", groupName));
             }
-            return gid;
+            H5Gclose(gid);
         } else
             h5pp::logger::log->trace("Group exists already: [{}]", groupName);
 
