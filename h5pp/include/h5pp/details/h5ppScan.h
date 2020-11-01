@@ -70,7 +70,7 @@ namespace h5pp::scan {
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
             std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
-        h5pp::logger::log->trace("Scanned metadata {}", info.string());
+        h5pp::logger::log->trace("Scanned metadata {}", info.string(h5pp::logger::logIf(0)));
         auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
         if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Scanned dataset metadata is not well defined: \n{}", error_msg));
     }
@@ -177,7 +177,7 @@ namespace h5pp::scan {
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
             std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
-        h5pp::logger::log->trace("Created metadata {}", info.string());
+        h5pp::logger::log->trace("Created metadata {}", info.string(h5pp::logger::logIf(0)));
         auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
         if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Created dataset metadata is not well defined: \n{}", error_msg));
         return info;
@@ -289,7 +289,7 @@ namespace h5pp::scan {
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
             std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
-        h5pp::logger::log->trace("Created metadata {}", info.string());
+        h5pp::logger::log->trace("Created metadata {}", info.string(h5pp::logger::logIf(0)));
         auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
         if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Created dataset metadata is not well defined: \n{}", error_msg));
         return info;
@@ -325,7 +325,7 @@ namespace h5pp::scan {
                                             info.dataByte.value(),
                                             info.dataDims.value()); // String size will be H5T_VARIABLE unless explicitly specified
         if(not info.h5Space) info.h5Space = h5pp::util::getMemSpace(info.dataSize.value(), info.dataDims.value());
-        h5pp::logger::log->trace("Scanned metadata {}", info.string());
+        h5pp::logger::log->trace("Scanned metadata {}", info.string(h5pp::logger::logIf(0)));
     }
 
     /*! \brief Creates and returns a populated a DataInfo object by scanning the given data type.*/
@@ -399,7 +399,7 @@ namespace h5pp::scan {
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
             std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
-        h5pp::logger::log->trace("Scanned metadata {}", info.string());
+        h5pp::logger::log->trace("Scanned metadata {}", info.string(h5pp::logger::logIf(0)));
     }
 
     /*! \brief Creates and returns a populated AttrInfo object with properties read from file */
@@ -477,7 +477,7 @@ namespace h5pp::scan {
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
             std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
-        h5pp::logger::log->trace("Created  metadata  {}", info.string());
+        h5pp::logger::log->trace("Created  metadata  {}", info.string(h5pp::logger::logIf(0)));
     }
 
     /*! \brief Creates and returns a populated AttrInfo object.
@@ -535,7 +535,7 @@ namespace h5pp::scan {
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
             std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
 
-        h5pp::logger::log->trace("Created  metadata  {}", info.string());
+        h5pp::logger::log->trace("Created  metadata  {}", info.string(h5pp::logger::logIf(0)));
     }
 
     /*! \brief Creates and returns a populated AttrInfo object based entirely on given options */

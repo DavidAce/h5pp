@@ -1212,8 +1212,7 @@ namespace h5pp::hdf5 {
             newDsetDims[axis] = oldAxisSize + newAxisSize;
 
             // Set the new dimensions
-            std::string oldInfoStr;
-            if(h5pp::logger::getLogLevel() <= 1) oldInfoStr = info.string();
+            std::string oldInfoStr = info.string(h5pp::logger::logIf(1));
             herr_t err = H5Dset_extent(info.h5Dset.value(), newDsetDims.data());
             if(err < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
@@ -1233,7 +1232,7 @@ namespace h5pp::hdf5 {
             slab.offset               = std::vector<hsize_t>(static_cast<size_t>(info.dsetRank.value()), 0);
             slab.offset.value()[axis] = oldAxisSize;
             h5pp::hdf5::selectHyperslab(info.h5Space.value(), slab);
-            h5pp::logger::log->debug("Extended dataset \n \t old: {} \n \t new: {}", oldInfoStr, info.string());
+            h5pp::logger::log->debug("Extended dataset \n \t old: {} \n \t new: {}", oldInfoStr, info.string(h5pp::logger::logIf(1)));
         }
     }
 
@@ -1279,8 +1278,7 @@ namespace h5pp::hdf5 {
                 if(newDimensions[idx] > info.dsetDims.value()[idx]) allDimsAreSmaller = false;
             if(allDimsAreSmaller) return;
         }
-        std::string oldInfoStr;
-        if(h5pp::logger::getLogLevel() <= 1) oldInfoStr = info.string();
+        std::string oldInfoStr = info.string(h5pp::logger::logIf(1));
         // Chunked datasets can shrink and grow in any direction
         // Non-chunked datasets can't be resized at all
 
@@ -1307,7 +1305,7 @@ namespace h5pp::hdf5 {
         info.h5Space  = H5Dget_space(info.h5Dset->value()); // Needs to be refreshed after H5Dset_extent
         info.dsetByte = h5pp::hdf5::getBytesTotal(info.h5Dset.value(), info.h5Space, info.h5Type);
         info.dsetSize = h5pp::hdf5::getSize(info.h5Space.value());
-        h5pp::logger::log->debug("Resized dataset \n \t old: {} \n \t new: {}", oldInfoStr, info.string());
+        h5pp::logger::log->debug("Resized dataset \n \t old: {} \n \t new: {}", oldInfoStr, info.string(h5pp::logger::logIf(1)));
     }
 
     inline void resizeDataset(DsetInfo &dsetInfo, const DataInfo &dataInfo) {
@@ -1377,8 +1375,9 @@ namespace h5pp::hdf5 {
         resizeData(data, info.h5Space.value(), info.h5Type.value(), info.attrByte.value());
     }
 
-    inline std::string getSpaceString(const hid::h5s &space) {
+    inline std::string getSpaceString(const hid::h5s &space, bool enable = true) {
         std::string msg;
+        if(not enable) return msg;
         msg.append(h5pp::format(" | size {}", H5Sget_simple_extent_npoints(space)));
         int                  rank = H5Sget_simple_extent_ndims(space);
         std::vector<hsize_t> dims(static_cast<size_t>(rank), 0);
@@ -1420,8 +1419,8 @@ namespace h5pp::hdf5 {
                         h5pp::format("Spaces are not equal size \n\t data space \t {} \n\t dset space \t {}", msg1, msg2));
                 } else if(getDimensions(dataSpace) != getDimensions(dsetSpace)) {
                     h5pp::logger::log->debug("Spaces have different shape:");
-                    h5pp::logger::log->debug(" data space {}", getSpaceString(dataSpace));
-                    h5pp::logger::log->debug(" dset space {}", getSpaceString(dsetSpace));
+                    h5pp::logger::log->debug(" data space {}", getSpaceString(dataSpace,h5pp::logger::logIf(1)));
+                    h5pp::logger::log->debug(" dset space {}", getSpaceString(dsetSpace,h5pp::logger::logIf(1)));
                 }
             }
 
@@ -1573,7 +1572,7 @@ namespace h5pp::hdf5 {
             h5pp::logger::log->trace("No need to create dataset [{}]: exists already", dsetInfo.dsetPath.value());
             return;
         }
-        h5pp::logger::log->debug("Creating dataset {}", dsetInfo.string());
+        h5pp::logger::log->debug("Creating dataset {}", dsetInfo.string(h5pp::logger::logIf(1)));
         hid_t dsetId = H5Dcreate(dsetInfo.getLocId(),
                                  util::safe_str(dsetInfo.dsetPath.value()).c_str(),
                                  dsetInfo.h5Type.value(),
@@ -1597,7 +1596,7 @@ namespace h5pp::hdf5 {
                 "No need to create attribute [{}] in link [{}]: exists already", attrInfo.attrName.value(), attrInfo.linkPath.value());
             return;
         }
-        h5pp::logger::log->trace("Creating attribute {}", attrInfo.string());
+        h5pp::logger::log->trace("Creating attribute {}", attrInfo.string(h5pp::logger::logIf(0)));
         hid_t attrId = H5Acreate(attrInfo.h5Link.value(),
                                  util::safe_str(attrInfo.attrName.value()).c_str(),
                                  attrInfo.h5Type.value(),
@@ -1653,8 +1652,8 @@ namespace h5pp::hdf5 {
         dataInfo.assertWriteReady();
         if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
         if(dsetInfo.dsetSlab) selectHyperslab(dsetInfo.h5Space.value(), dsetInfo.dsetSlab.value());
-        h5pp::logger::log->debug("Writing from memory  {}", dataInfo.string());
-        h5pp::logger::log->debug("Writing into dataset {}", dsetInfo.string());
+        h5pp::logger::log->debug("Writing from memory  {}", dataInfo.string(h5pp::logger::logIf(1)));
+        h5pp::logger::log->debug("Writing into dataset {}", dsetInfo.string(h5pp::logger::logIf(1)));
         h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
@@ -1741,8 +1740,8 @@ namespace h5pp::hdf5 {
         dataInfo.assertReadReady();
         if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
         if(dsetInfo.dsetSlab) selectHyperslab(dsetInfo.h5Space.value(), dsetInfo.dsetSlab.value());
-        h5pp::logger::log->debug("Reading into memory  {}", dataInfo.string());
-        h5pp::logger::log->debug("Reading from dataset {}", dsetInfo.string());
+        h5pp::logger::log->debug("Reading into memory  {}", dataInfo.string(h5pp::logger::logIf(1)));
+        h5pp::logger::log->debug("Reading from dataset {}", dsetInfo.string(h5pp::logger::logIf(1)));
         h5pp::hdf5::assertReadBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
@@ -1851,8 +1850,8 @@ namespace h5pp::hdf5 {
         attrInfo.assertWriteReady();
         if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
         if(attrInfo.attrSlab) selectHyperslab(attrInfo.h5Space.value(), attrInfo.attrSlab.value());
-        h5pp::logger::log->debug("Writing from memory    {}", dataInfo.string());
-        h5pp::logger::log->debug("Writing into attribute {}", attrInfo.string());
+        h5pp::logger::log->debug("Writing from memory    {}", dataInfo.string(h5pp::logger::logIf(1)));
+        h5pp::logger::log->debug("Writing into attribute {}", attrInfo.string(h5pp::logger::logIf(1)));
         h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
@@ -1891,8 +1890,8 @@ namespace h5pp::hdf5 {
 #endif
         dataInfo.assertReadReady();
         attrInfo.assertReadReady();
-        h5pp::logger::log->debug("Reading into memory {}", dataInfo.string());
-        h5pp::logger::log->debug("Reading from file   {}", attrInfo.string());
+        h5pp::logger::log->debug("Reading into memory {}", dataInfo.string(h5pp::logger::logIf(1)));
+        h5pp::logger::log->debug("Reading from file   {}", attrInfo.string(h5pp::logger::logIf(1)));
         h5pp::hdf5::assertReadBufferIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());

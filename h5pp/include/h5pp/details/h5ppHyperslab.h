@@ -57,8 +57,9 @@ namespace h5pp {
         }
         [[nodiscard]] bool empty() const { return not offset and not extent and not stride and not blocks; }
 
-        [[nodiscard]] std::string string() const {
+        [[nodiscard]] std::string string(bool enable = true) const {
             std::string msg;
+            if(not enable) return msg;
             if(offset) msg.append(h5pp::format(" | offset {}", offset.value()));
             if(extent) msg.append(h5pp::format(" | extent {}", extent.value()));
             if(stride) msg.append(h5pp::format(" | stride {}", stride.value()));

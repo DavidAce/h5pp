@@ -25,6 +25,17 @@ namespace h5pp::logger {
     }
 
     template<typename levelType>
+    inline bool logIf(levelType levelZeroToFive){
+        if constexpr(std::is_integral_v<levelType>)
+            return getLogLevel() <= static_cast<size_t>(levelZeroToFive);
+        else if constexpr(std::is_same_v<levelType, spdlog::level::level_enum>)
+            return static_cast<spdlog::level::level_enum>(getLogLevel()) <= levelZeroToFive;
+        else
+            static_assert(h5pp::type::sfinae::invalid_type_v<levelType>, "Log level type must be an integral type or spdlog::level::level_enum");
+    }
+
+
+    template<typename levelType>
     inline void setLogLevel(levelType levelZeroToFive) {
         if constexpr(std::is_same_v<levelType, spdlog::level::level_enum>)
             log->set_level(levelZeroToFive);
@@ -94,6 +105,15 @@ namespace h5pp::logger {
         else
             return 2;
     }
+
+    template<typename levelType>
+    inline bool logIf(levelType levelZeroToFive){
+        if constexpr(std::is_integral_v<levelType>)
+            return getLogLevel() <= static_cast<size_t>(levelZeroToFive);
+        else
+            static_assert(h5pp::type::sfinae::invalid_type_v<levelType>, "Log level type must be an integral type");
+    }
+
     template<typename levelType>
     inline void setLogLevel([[maybe_unused]] levelType levelZeroToFive) {
         if constexpr(std::is_integral_v<levelType>) {

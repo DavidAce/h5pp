@@ -96,8 +96,9 @@ namespace h5pp {
         std::optional<unsigned int>     compression   = std::nullopt; /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
         std::optional<h5pp::ResizeMode> resizeMode    = std::nullopt; /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
         /* clang-format on */
-        [[nodiscard]] std::string string() const {
+        [[nodiscard]] std::string string(bool enable = true) const {
             std::string msg;
+            if(not enable) return msg;
             /* clang-format off */
             if(dataDims) msg.append(h5pp::format(" | data dims {}", dataDims.value()));
             if(dsetDimsMax) msg.append(h5pp::format(" | max dims {}", dsetDimsMax.value()));
@@ -186,9 +187,9 @@ namespace h5pp {
             if(size_check != dataSize.value())
                 throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | size check [{}]", dataSize.value(), size_check));
         }
-        [[nodiscard]] std::string string() const {
-            //            std::string msg;
+        [[nodiscard]] std::string string(bool enable = true) const {
             std::string msg;
+            if(not enable) return msg;
             /* clang-format off */
             if(dataSize) msg.append(h5pp::format(" | size {}", dataSize.value()));
             if(dataByte) msg.append(h5pp::format(" | bytes {}", dataByte.value()));
@@ -324,9 +325,10 @@ namespace h5pp {
 
             /* clang-format on */
         }
-        [[nodiscard]] std::string string() const {
-            //            std::string msg;
+        [[nodiscard]] std::string string(bool enable = true) const {
             std::string msg;
+            if(not enable) return msg;
+
             /* clang-format off */
             if(dsetSize)    msg.append(h5pp::format(" | size {}", dsetSize.value()));
             if(dsetByte)    msg.append(h5pp::format(" | bytes {}", dsetByte.value()));
@@ -468,8 +470,9 @@ namespace h5pp {
             /* clang-format on */
         }
 
-        [[nodiscard]] std::string string() const {
+        [[nodiscard]] std::string string(bool enable = true) const {
             std::string msg;
+            if(not enable) return msg;
             /* clang-format off */
             if(attrSize) msg.append(h5pp::format(" | size {}", attrSize.value()));
             if(attrByte) msg.append(h5pp::format(" | bytes {}", attrByte.value()));
@@ -567,8 +570,9 @@ namespace h5pp {
 //            if(not hasLocId()) throw std::runtime_error(h5pp::format("Cannot write to table [{}]: The location ID is not set", tablePath.value()));
         }
 
-        [[nodiscard]] std::string string() const {
+        [[nodiscard]] std::string string(bool enable = true) const {
             std::string msg;
+            if(not enable) return msg;
             if(tableTitle) msg.append(h5pp::format("Table title [{}]", tableTitle.value()));
             if(numFields)  msg.append(h5pp::format(" | num fields [{}]", numFields.value()));
             if(numRecords) msg.append(h5pp::format(" | num records [{}]", numRecords.value()));
@@ -594,8 +598,9 @@ namespace h5pp {
         std::optional<hid::h5t>             h5Type;
         std::optional<hid::h5o>             h5Link;
 
-        [[nodiscard]] std::string string() {
+        [[nodiscard]] std::string string(bool enable = true) const {
             std::string msg;
+            if(not enable) return msg;
             if(cppTypeName) msg.append(h5pp::format("C++: type [{}]", cppTypeName.value()));
             if(cppTypeBytes) msg.append(h5pp::format(" bytes [{}]", cppTypeBytes.value()));
             if(not msg.empty()) msg.append(" | HDF5:");
