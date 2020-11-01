@@ -130,10 +130,10 @@ namespace h5pp::hdf5 {
     }
 
     [[nodiscard]] inline int getCompressionLevel(const hid::h5p &dsetCreatePropertyList) {
-        auto                         nfilter = H5Pget_nfilters(dsetCreatePropertyList);
-        H5Z_filter_t                 filter  = H5Z_FILTER_NONE;
-        std::array<unsigned int, 1>  cdval   = {0};
-        std::array<size_t, 1> cdelm   = {0};
+        auto                        nfilter = H5Pget_nfilters(dsetCreatePropertyList);
+        H5Z_filter_t                filter  = H5Z_FILTER_NONE;
+        std::array<unsigned int, 1> cdval   = {0};
+        std::array<size_t, 1>       cdelm   = {0};
         for(int idx = 0; idx < nfilter; idx++) {
             constexpr size_t size = 10;
             filter                = H5Pget_filter(dsetCreatePropertyList, idx, nullptr, cdelm.data(), cdval.data(), 0, nullptr, nullptr);
@@ -468,9 +468,7 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    [[nodiscard]] inline bool checkIfLinkExists(const h5x &         loc,
-                                                std::string_view    linkPath,
-                                                const hid::h5p &    linkAccess = H5P_DEFAULT) {
+    [[nodiscard]] inline bool checkIfLinkExists(const h5x &loc, std::string_view linkPath, const hid::h5p &linkAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
                       "Template function [h5pp::hdf5::checkIfLinkExists<h5x>(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -523,13 +521,11 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    [[nodiscard]] inline bool checkIfAttrExists(const h5x &         link,
-                                                     std::string_view    attrName,
-                                                     const hid::h5p &    linkAccess = H5P_DEFAULT) {
+    [[nodiscard]] inline bool checkIfAttrExists(const h5x &link, std::string_view attrName, const hid::h5p &linkAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_h5_link_or_hid_v<h5x>,
                       "Template function [h5pp::hdf5::checkIfAttrExists<h5x>(const h5x & link, ...) requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-//        if(attrExists and attrExists.value()) return true;
+        //        if(attrExists and attrExists.value()) return true;
         h5pp::logger::log->trace("Checking if attribute [{}] exitst in link ...", attrName);
         bool exists = H5Aexists_by_name(link, std::string(".").c_str(), util::safe_str(attrName).c_str(), linkAccess) > 0;
         h5pp::logger::log->trace("Checking if attribute [{}] exitst in link ... {}", attrName, exists);
@@ -538,10 +534,10 @@ namespace h5pp::hdf5 {
 
     template<typename h5x>
     [[nodiscard]] inline bool checkIfAttrExists(const h5x &         loc,
-                                                     std::string_view    linkPath,
-                                                     std::string_view    attrName,
-                                                     std::optional<bool> linkExists = std::nullopt,
-                                                     const hid::h5p &    linkAccess = H5P_DEFAULT) {
+                                                std::string_view    linkPath,
+                                                std::string_view    attrName,
+                                                std::optional<bool> linkExists = std::nullopt,
+                                                const hid::h5p &    linkAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
                       "Template function [h5pp::hdf5::checkIfAttrExists<h5x>(const h5x & loc, ..., ...)] requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -733,10 +729,10 @@ namespace h5pp::hdf5 {
         return getCppType<std::nullopt_t>();
     }
 
-    [[nodiscard]]inline TypeInfo getTypeInfo(std::optional<std::string> objectPath,
-                                std::optional<std::string> objectName,
-                                const hid::h5s &           h5Space,
-                                const hid::h5t &           h5Type) {
+    [[nodiscard]] inline TypeInfo getTypeInfo(std::optional<std::string> objectPath,
+                                              std::optional<std::string> objectName,
+                                              const hid::h5s &           h5Space,
+                                              const hid::h5t &           h5Type) {
         TypeInfo typeInfo;
         typeInfo.h5Name = objectName;
         typeInfo.h5Path = objectPath;
@@ -749,7 +745,7 @@ namespace h5pp::hdf5 {
         return typeInfo;
     }
 
-    [[nodiscard]]inline TypeInfo getTypeInfo(const hid::h5d &dataset) {
+    [[nodiscard]] inline TypeInfo getTypeInfo(const hid::h5d &dataset) {
         auto dsetPath = h5pp::hdf5::getName(dataset);
         h5pp::logger::log->trace("Collecting type info about dataset [{}]", dsetPath);
         return getTypeInfo(dsetPath, std::nullopt, H5Dget_space(dataset), H5Dget_type(dataset));
@@ -757,15 +753,15 @@ namespace h5pp::hdf5 {
 
     template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5x>>
     // enable_if so the compiler doesn't think it can use overload with std::string on first argument
-    [[nodiscard]]inline TypeInfo getTypeInfo(const h5x &         loc,
-                                std::string_view    dsetName,
-                                std::optional<bool> dsetExists = std::nullopt,
-                                const hid::h5p &    dsetAccess = H5P_DEFAULT) {
+    [[nodiscard]] inline TypeInfo getTypeInfo(const h5x &         loc,
+                                              std::string_view    dsetName,
+                                              std::optional<bool> dsetExists = std::nullopt,
+                                              const hid::h5p &    dsetAccess = H5P_DEFAULT) {
         auto dataset = openLink<hid::h5d>(loc, dsetName, dsetExists, dsetAccess);
         return getTypeInfo(dataset);
     }
 
-    [[nodiscard]]inline TypeInfo getTypeInfo(const hid::h5a &attribute) {
+    [[nodiscard]] inline TypeInfo getTypeInfo(const hid::h5a &attribute) {
         auto attrName = getAttributeName(attribute);
         auto linkPath = getName(attribute); // Returns the name of the link which has the attribute
         h5pp::logger::log->trace("Collecting type info about attribute [{}] in link [{}]", attrName, linkPath);
@@ -774,15 +770,15 @@ namespace h5pp::hdf5 {
 
     template<typename h5x>
     [[nodiscard]] inline TypeInfo getTypeInfo(const h5x &         loc,
-                                std::string_view    linkPath,
-                                std::string_view    attrName,
-                                std::optional<bool> linkExists = std::nullopt,
-                                std::optional<bool> attrExists = std::nullopt,
-                                const hid::h5p &    linkAccess = H5P_DEFAULT) {
-
-        if(not linkExists) linkExists = checkIfLinkExists(loc,linkPath,linkAccess);
+                                              std::string_view    linkPath,
+                                              std::string_view    attrName,
+                                              std::optional<bool> linkExists = std::nullopt,
+                                              std::optional<bool> attrExists = std::nullopt,
+                                              const hid::h5p &    linkAccess = H5P_DEFAULT) {
+        if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
         if(not linkExists.value())
-            throw std::runtime_error(h5pp::format("Attribute [{}] does not exist because its link does not exist: [{}]", attrName, linkPath));
+            throw std::runtime_error(
+                h5pp::format("Attribute [{}] does not exist because its link does not exist: [{}]", attrName, linkPath));
 
         auto link = openLink<hid::h5o>(loc, linkPath, linkExists, linkAccess);
         if(not attrExists) attrExists = checkIfAttrExists(link, attrName, linkAccess);
@@ -814,9 +810,9 @@ namespace h5pp::hdf5 {
 
     template<typename h5x>
     [[nodiscard]] inline std::vector<TypeInfo> getTypeInfo_allAttributes(const h5x &         loc,
-                                                           std::string_view    linkPath,
-                                                           std::optional<bool> linkExists = std::nullopt,
-                                                           const hid::h5p &    linkAccess = H5P_DEFAULT) {
+                                                                         std::string_view    linkPath,
+                                                                         std::optional<bool> linkExists = std::nullopt,
+                                                                         const hid::h5p &    linkAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
                       "Template function [h5pp::hdf5::getTypeInfo_allAttributes(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -837,22 +833,21 @@ namespace h5pp::hdf5 {
         if(not linkExists.value()) {
             h5pp::logger::log->trace("Creating group link [{}]", groupName);
             hid_t gid = H5Gcreate(loc, util::safe_str(groupName).c_str(), plists.linkCreate, plists.groupCreate, plists.groupAccess);
-            if(gid < 0){
+            if(gid < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error(h5pp::format("Failed to create group link [{}]", groupName));
             }
             H5Gclose(gid);
         } else
             h5pp::logger::log->trace("Group exists already: [{}]", groupName);
-
     }
 
     template<typename h5x>
     inline void writeSymbolicLink(const h5x &          loc,
                                   std::string_view     srcPath,
                                   std::string_view     tgtPath,
-                                  std::optional<bool> linkExists = std::nullopt,
-                                  const PropertyLists &plists = PropertyLists()) {
+                                  std::optional<bool>  linkExists = std::nullopt,
+                                  const PropertyLists &plists     = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
                       "Template function [h5pp::hdf5::writeSymbolicLink(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -1213,7 +1208,7 @@ namespace h5pp::hdf5 {
 
             // Set the new dimensions
             std::string oldInfoStr = info.string(h5pp::logger::logIf(1));
-            herr_t err = H5Dset_extent(info.h5Dset.value(), newDsetDims.data());
+            herr_t      err        = H5Dset_extent(info.h5Dset.value(), newDsetDims.data());
             if(err < 0) {
                 H5Eprint(H5E_DEFAULT, stderr);
                 throw std::runtime_error(h5pp::format("Failed to set extent {} on dataset [{}]", newDsetDims, info.dsetPath.value()));
@@ -1419,8 +1414,8 @@ namespace h5pp::hdf5 {
                         h5pp::format("Spaces are not equal size \n\t data space \t {} \n\t dset space \t {}", msg1, msg2));
                 } else if(getDimensions(dataSpace) != getDimensions(dsetSpace)) {
                     h5pp::logger::log->debug("Spaces have different shape:");
-                    h5pp::logger::log->debug(" data space {}", getSpaceString(dataSpace,h5pp::logger::logIf(1)));
-                    h5pp::logger::log->debug(" dset space {}", getSpaceString(dsetSpace,h5pp::logger::logIf(1)));
+                    h5pp::logger::log->debug(" data space {}", getSpaceString(dataSpace, h5pp::logger::logIf(1)));
+                    h5pp::logger::log->debug(" dset space {}", getSpaceString(dsetSpace, h5pp::logger::logIf(1)));
                 }
             }
 
@@ -1450,15 +1445,15 @@ namespace h5pp::hdf5 {
                 }
 
                 else if constexpr(std::is_same_v<InfoType, H5L_info_t>) {
+                    /* clang-format off */
+                    // It is expensive to use H5Oopen to peek H5O_info_t::type.
+                    // It is faster to populate H5O_info_t using
                     H5O_info_t oInfo;
-                    hid::h5o   obj_id = H5Oopen(id, name, H5P_DEFAULT);
-/* clang-format off */
                     #if defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
-                        H5Oget_info(obj_id, &oInfo, H5O_INFO_ALL);
+                        H5Oget_info_by_name(id, name, &oInfo, H5O_INFO_BASIC, H5P_DEFAULT);
                     #else
-                        H5Oget_info(obj_id, &oInfo);
+                        H5Oget_info_by_name(id,name, &oInfo,H5P_DEFAULT);
                     #endif
-
                     /* clang-format on */
                     if(oInfo.type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
                         if(searchKey.empty() or nameView.find(searchKey) != std::string::npos) matchList->push_back(name);
@@ -1489,6 +1484,53 @@ namespace h5pp::hdf5 {
             else
                 return "map"; // Only in HDF5 v 1.12
         }
+
+        template<H5O_type_t ObjType, typename h5x>
+        herr_t H5L_custom_iterate_by_name(const h5x &               loc,
+                                          std::string_view          root,
+                                          std::vector<std::string> &matchList,
+                                          const hid::h5p &          linkAccess = H5P_DEFAULT) {
+            H5Eset_auto(H5E_DEFAULT, nullptr, nullptr); // Silence the error we get from using index directly
+            constexpr size_t maxsize           = 512;
+            char             linkname[maxsize] = {};
+            H5O_info_t       oInfo;
+            /* clang-format off */
+            for(hsize_t idx = 0; idx < 100000000; idx++) {
+                ssize_t namesize = H5Lget_name_by_idx(loc, util::safe_str(root).c_str(), H5_index_t::H5_INDEX_NAME,
+                                                      H5_iter_order_t::H5_ITER_NATIVE, idx,linkname,maxsize,linkAccess);
+                if(namesize <= 0) {
+                    H5Eclear(H5E_DEFAULT);
+                    break;
+                }
+                std::string_view nameView(linkname, static_cast<size_t>(namesize));
+                if(ObjType == H5O_TYPE_UNKNOWN) {
+                    // Accept based on name
+                    if(searchKey.empty() or nameView.find(searchKey) != std::string::npos) matchList.emplace_back(linkname);
+                    if(maxHits > 0 and static_cast<long>(matchList.size()) >= maxHits) return 0;
+                } else {
+                    // Name is not enough to establish a match. Check type.
+                    #if defined(H5Oget_info_by_idx_vers) && H5Oget_info_by_idx_vers >= 2
+                    herr_t res = H5Oget_info_by_idx(loc, util::safe_str(root).c_str(),
+                                                    H5_index_t::H5_INDEX_NAME, H5_iter_order_t::H5_ITER_NATIVE,
+                                                    idx, &oInfo, H5O_INFO_BASIC,linkAccess );
+                    #else
+                    herr_t res = H5Oget_info_by_idx(loc, util::safe_str(root).c_str(),
+                                                    H5_index_t::H5_INDEX_NAME, H5_iter_order_t::H5_ITER_NATIVE,
+                                                    idx, &oInfo, linkAccess );
+                    #endif
+                    if(res < 0) {
+                        H5Eclear(H5E_DEFAULT);
+                        break;
+                    }
+                    if(oInfo.type == ObjType and (searchKey.empty() or nameView.find(searchKey) != std::string::npos))
+                        matchList.emplace_back(linkname);
+                    if(maxHits > 0 and static_cast<long>(matchList.size()) >= maxHits) return 0;
+                }
+            }
+            /* clang-format on */
+            return 0;
+        }
+
         template<H5O_type_t ObjType, typename h5x>
         inline herr_t visit_by_name(const h5x &               loc,
                                     std::string_view          root,
@@ -1499,14 +1541,15 @@ namespace h5pp::hdf5 {
                           "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
             if(internal::maxDepth == 0)
                 // Faster when we don't need to iterate recursively
-                return H5Literate_by_name(loc,
-                                          util::safe_str(root).c_str(),
-                                          H5_INDEX_NAME,
-                                          H5_ITER_NATIVE,
-                                          nullptr,
-                                          internal::matcher<ObjType>,
-                                          &matchList,
-                                          linkAccess);
+                return H5L_custom_iterate_by_name<ObjType>(loc, root, matchList, linkAccess);
+//                return H5Literate_by_name(loc,
+//                                          util::safe_str(root).c_str(),
+//                                          H5_index_t::H5_INDEX_NAME,
+//                                          H5_iter_order_t::H5_ITER_NATIVE,
+//                                          nullptr,
+//                                          internal::matcher<ObjType>,
+//                                          &matchList,
+//                                          linkAccess);
 #if defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers >= 2
             return H5Ovisit_by_name(loc,
                                     util::safe_str(root).c_str(),
@@ -1514,7 +1557,7 @@ namespace h5pp::hdf5 {
                                     H5_ITER_NATIVE,
                                     internal::matcher<ObjType>,
                                     &matchList,
-                                    H5O_INFO_ALL,
+                                    H5O_INFO_BASIC,
                                     linkAccess);
 #else
             return H5Ovisit_by_name(
@@ -1526,11 +1569,11 @@ namespace h5pp::hdf5 {
 
     template<H5O_type_t ObjType, typename h5x>
     [[nodiscard]] inline std::vector<std::string> findLinks(const h5x &      loc,
-                                              std::string_view searchKey  = "",
-                                              std::string_view searchRoot = "/",
-                                              long             maxHits    = -1,
-                                              long             maxDepth   = -1,
-                                              const hid::h5p & linkAccess = H5P_DEFAULT) {
+                                                            std::string_view searchKey  = "",
+                                                            std::string_view searchRoot = "/",
+                                                            long             maxHits    = -1,
+                                                            long             maxDepth   = -1,
+                                                            const hid::h5p & linkAccess = H5P_DEFAULT) {
         h5pp::logger::log->trace("Search key: {} | target type: {} | search root: {} | max search hits {}",
                                  searchKey,
                                  internal::getObjTypeName<ObjType>(),
@@ -1969,7 +2012,9 @@ namespace h5pp::hdf5 {
         }
     }
 
-    [[nodiscard]] inline bool fileIsValid(const fs::path &filePath) { return fs::exists(filePath) and H5Fis_hdf5(filePath.string().c_str()) > 0; }
+    [[nodiscard]] inline bool fileIsValid(const fs::path &filePath) {
+        return fs::exists(filePath) and H5Fis_hdf5(filePath.string().c_str()) > 0;
+    }
 
     [[nodiscard]] inline fs::path getAvailableFileName(const fs::path &filePath) {
         int      i           = 1;
@@ -2077,7 +2122,10 @@ namespace h5pp::hdf5 {
             h5pp::logger::log->debug("Table [{}] already exists", info.tablePath.value());
             return;
         }
-        createGroup(info.getLocId(), info.tableGroupName.value(), std::nullopt, plists); // The existence of the group has to be checked, unfortunately
+        createGroup(info.getLocId(),
+                    info.tableGroupName.value(),
+                    std::nullopt,
+                    plists); // The existence of the group has to be checked, unfortunately
 
         // Copy member type data to a vector of hid_t for compatibility.
         // Note that there is no need to close thes hid_t since info will close them.
@@ -2745,10 +2793,10 @@ namespace h5pp::hdf5 {
         auto srcPath = fs::absolute(srcFilePath);
         try {
             if(not fs::exists(srcPath))
-                throw std::runtime_error(h5pp::format(
-                    "Could not copy file [{}] --> [{}]: source file does not exist [{}]",
+                throw std::runtime_error(h5pp::format("Could not copy file [{}] --> [{}]: source file does not exist [{}]",
                                                       srcFilePath.string(),
-                                                      tgtFilePath.string(), srcPath.string()));
+                                                      tgtFilePath.string(),
+                                                      srcPath.string()));
             if(tgtPath == srcPath)
                 h5pp::logger::log->debug("Skipped copying file: source and target files have the same path [{}]", srcPath.string());
 
@@ -2784,7 +2832,8 @@ namespace h5pp::hdf5 {
             return tgtPath;
         } catch(const std::exception &ex) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Could not copy file [{}] --> [{}]: ", srcFilePath.string(), tgtFilePath.string(), ex.what()));
+            throw std::runtime_error(
+                h5pp::format("Could not copy file [{}] --> [{}]: ", srcFilePath.string(), tgtFilePath.string(), ex.what()));
         }
     }
 
