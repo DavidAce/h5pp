@@ -197,10 +197,10 @@ namespace h5pp::scan {
                                         const Options &      options = Options(),
                                         const PropertyLists &plists  = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
-                      "Template function [h5pp::scan::makeDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
+                      "Template function [h5pp::scan::inferDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         static_assert(not h5pp::type::sfinae::is_h5_loc_v<DataType>,
-                      "Template function [h5pp::scan::makeDsetInfo(...,const DataType & data, ...)] requires type DataType to be: "
+                      "Template function [h5pp::scan::inferDsetInfo(...,const DataType & data, ...)] requires type DataType to be: "
                       "none of [h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         auto info = readDsetInfo(loc, options, plists);
         if(info.dsetExists.value()) return info;
@@ -771,7 +771,7 @@ namespace h5pp::scan {
     template<typename h5x>
     inline void inferTableInfo(TableInfo & info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
-                      "Template function [h5pp::scan::readTableInfo(..., const h5x & loc, ...)] requires type h5x to be: "
+                      "Template function [h5pp::scan::inferTableInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         if(not options.linkPath and not info.tablePath)
             throw std::runtime_error("Could not infer table info: No table path was given");
