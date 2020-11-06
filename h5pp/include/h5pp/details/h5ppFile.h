@@ -126,22 +126,47 @@ namespace h5pp {
         [[nodiscard]] std::string          getFilePath() const { return filePath.string(); }
         void                               setFilePermission(h5pp::FilePermission permission_) { permission = permission_; }
 
+        void setCloseDegree(H5F_close_degree_t degree){
+            if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            H5Pset_fclose_degree(plists.fileAccess, degree);
+            if(fileHandle) { // Refresh if the filehandle being kept is open
+                fileHandle = std::nullopt;
+                fileHandle = openFileHandle();
+            }
+        }
+
         void setDriver_sec2() {
-            plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_sec2(plists.fileAccess);
+            if(fileHandle) { // Refresh if the filehandle being kept is open
+                fileHandle = std::nullopt;
+                fileHandle = openFileHandle();
+            }
         }
         void setDriver_stdio() {
-            plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_stdio(plists.fileAccess);
+            if(fileHandle) { // Refresh if the filehandle being kept is open
+                fileHandle = std::nullopt;
+                fileHandle = openFileHandle();
+            }
         }
         void setDriver_core(bool writeOnClose = true, size_t bytesPerMalloc = 10240000) {
-            plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_core(plists.fileAccess, bytesPerMalloc, static_cast<hbool_t>(writeOnClose));
+            if(fileHandle) { // Refresh if the filehandle being kept is open
+                fileHandle = std::nullopt;
+                fileHandle = openFileHandle();
+            }
         }
 #ifdef H5_HAVE_PARALLEL
         void setDriver_mpio(MPI_Comm comm, MPI_Info info) {
             plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_mpio(plists.fileAccess, comm, info);
+            if(fileHandle) { // Refresh if the filehandle being kept is open
+                fileHandle = std::nullopt;
+                fileHandle = openFileHandle();
+            }
         }
 #endif
 

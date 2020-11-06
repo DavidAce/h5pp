@@ -23,6 +23,10 @@ namespace h5pp {
             // ... should have been the default all along?
             linkCreate = H5Pcreate(H5P_LINK_CREATE);
             H5Pset_create_intermediate_group(linkCreate, 1);
+
+            // h5pp uses H5F_CLOSE_STRONG by default (id's associated to a file are closed when the file is closed)
+            fileAccess = H5Pcreate(H5P_FILE_ACCESS);
+            H5Pset_fclose_degree(fileAccess, H5F_CLOSE_STRONG);
         }
     };
 }
