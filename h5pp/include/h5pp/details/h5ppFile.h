@@ -94,20 +94,20 @@ namespace h5pp {
             if(fileHandle) return fileHandle.value();
             if(permission == h5pp::FilePermission::READONLY) {
                 h5pp::logger::log->trace("Opening file in READONLY mode");
-                hid_t fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
-                if(fileHandle < 0) {
+                hid_t fid = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
+                if(fid < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
                     throw std::runtime_error(h5pp::format("Failed to open file in read-only mode [{}]", filePath.string()));
                 } else
-                    return fileHandle;
+                    return fid;
             } else {
                 h5pp::logger::log->trace("Opening file in READWRITE mode");
-                hid_t fileHandle = H5Fopen(filePath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
-                if(fileHandle < 0) {
+                hid_t fid = H5Fopen(filePath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
+                if(fid < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
                     throw std::runtime_error(h5pp::format("Failed to open file in read-write mode [{}]", filePath.string()));
                 } else
-                    return fileHandle;
+                    return fid;
             }
         }
 
