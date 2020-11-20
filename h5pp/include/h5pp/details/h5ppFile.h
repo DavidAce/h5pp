@@ -373,6 +373,11 @@ namespace h5pp {
         void writeDataset(const DataType &data, DsetInfo &dsetInfo, const Options &options = Options()) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
+            // Fill missing metadata in given dset
+            if(dsetInfo.hasLocId())
+                h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), options, plists);
+            else
+                h5pp::scan::readDsetInfo(dsetInfo, openFileHandle(), options, plists);
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             resizeDataset(dsetInfo, dataInfo.dataDims.value());
@@ -383,12 +388,11 @@ namespace h5pp {
         void writeDataset(const DataType &data, DataInfo &dataInfo, DsetInfo &dsetInfo, const Options &options = Options()) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
-            // The infos passed should be parsed and ready to write with
+            // Fill missing metadata in given dset and data
             if(dsetInfo.hasLocId())
                 h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), options, plists);
             else
                 h5pp::scan::readDsetInfo(dsetInfo, openFileHandle(), options, plists);
-
             h5pp::scan::scanDataInfo(dataInfo, data, options);
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
             resizeDataset(dsetInfo, dataInfo.dataDims.value());

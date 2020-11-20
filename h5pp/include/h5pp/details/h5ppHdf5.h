@@ -1027,11 +1027,13 @@ namespace h5pp::hdf5 {
         if(valid < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             Hyperslab slab(space);
-            throw std::runtime_error(h5pp::format("Hyperslab selection is invalid: {}", slab.string()));
+            throw std::runtime_error(
+                h5pp::format("Hyperslab selection is invalid. {} | space dims {}", getDimensions(space), slab.string()));
         } else if(valid == 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             Hyperslab slab(space);
-            throw std::runtime_error(h5pp::format("Hyperslab selection is not contained in the given extent {}", slab.string()));
+            throw std::runtime_error(h5pp::format(
+                "Hyperslab selection is not contained in the given space. {} | space dims {}", getDimensions(space), slab.string()));
         }
     }
 
@@ -1240,6 +1242,8 @@ namespace h5pp::hdf5 {
     inline void
         resizeDataset(DsetInfo &info, const std::vector<hsize_t> &newDimensions, std::optional<h5pp::ResizeMode> mode = std::nullopt) {
         if(not mode) mode = info.resizeMode;
+        if(not mode and info.dsetSlab)
+            mode = h5pp::ResizeMode::INCREASE_ONLY; // A hyperslab selection on the dataset has been made. Let's not shrink!
         if(not mode) mode = h5pp::ResizeMode::RESIZE_TO_FIT;
         if(mode == h5pp::ResizeMode::DO_NOT_RESIZE) return;
         if(info.h5Layout and info.h5Layout.value() != H5D_CHUNKED) switch(info.h5Layout.value()) {

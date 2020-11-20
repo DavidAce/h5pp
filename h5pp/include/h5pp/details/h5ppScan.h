@@ -58,6 +58,7 @@ namespace h5pp::scan {
         if(not info.resizeMode) info.resizeMode = options.resizeMode;
         if(not info.resizeMode) {
             if(info.h5Layout != H5D_CHUNKED) info.resizeMode = h5pp::ResizeMode::DO_NOT_RESIZE;
+            else if(info.dsetSlab) info.resizeMode = h5pp::ResizeMode::INCREASE_ONLY; // A hyperslab selection on the dataset has been made. Let's not shrink!
             else info.resizeMode = h5pp::ResizeMode::RESIZE_TO_FIT;
         }
         if(not info.compression) {
