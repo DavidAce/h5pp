@@ -1241,11 +1241,24 @@ namespace h5pp::hdf5 {
 
     inline void
         resizeDataset(DsetInfo &info, const std::vector<hsize_t> &newDimensions, std::optional<h5pp::ResizeMode> mode = std::nullopt) {
+        if(info.resizeMode == h5pp::ResizeMode::DO_NOT_RESIZE) return;
         if(not mode) mode = info.resizeMode;
         if(not mode and info.dsetSlab)
             mode = h5pp::ResizeMode::INCREASE_ONLY; // A hyperslab selection on the dataset has been made. Let's not shrink!
         if(not mode) mode = h5pp::ResizeMode::RESIZE_TO_FIT;
         if(mode == h5pp::ResizeMode::DO_NOT_RESIZE) return;
+        if(mode == h5pp::ResizeMode::RESIZE_TO_FIT and info.dsetSlab){
+            bool outofbounds = false;
+            for(size_t idx = 0; idx < newDimensions.size(); idx++){
+                if(info.dsetSlab->extent and newDimensions[idx] < info.dsetSlab->extent->at(idx)){ outofbounds = true; break;}
+                if(info.dsetSlab->offset and newDimensions[idx] <= info.dsetSlab->offset->at(idx)){ outofbounds = true; break;}
+            }
+            if(outofbounds)
+                h5pp::logger::log->warn("A hyperslab selection was made on the dataset [{}{}]. "
+                                    "However, resize mode [RESIZE_TO_FIT] will resize this dataset to dimensions {}. "
+                                    "This is likely an error.", info.dsetPath.value(),info.dsetSlab->string(),newDimensions);
+        }
+
         if(info.h5Layout and info.h5Layout.value() != H5D_CHUNKED) switch(info.h5Layout.value()) {
                 case H5D_COMPACT: throw std::runtime_error("Datasets with H5D_COMPACT layout cannot be resized");
                 case H5D_CONTIGUOUS: throw std::runtime_error("Datasets with H5D_CONTIGUOUS layout cannot be resized");
