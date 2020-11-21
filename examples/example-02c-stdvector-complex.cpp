@@ -1,5 +1,5 @@
 #include <h5pp/h5pp.h>
-#include <fmt/ostream.h>
+
 void print_complex(const std::string & msg, const std::vector<std::complex<double>> & v){
     h5pp::print(msg);
     for(auto && c: v) h5pp::print("{}, ",c);
