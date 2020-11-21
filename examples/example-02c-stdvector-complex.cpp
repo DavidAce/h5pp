@@ -1,4 +1,10 @@
 #include <h5pp/h5pp.h>
+#include <fmt/ostream.h>
+void print_complex(const std::string & msg, const std::vector<std::complex<double>> & v){
+    h5pp::print(msg);
+    for(auto && c: v) h5pp::print("{}, ",c);
+    h5pp::print("\n");
+}
 
 int main() {
     // Initialize a file
@@ -8,16 +14,17 @@ int main() {
     std::vector<std::complex<double>> v_write(10, {3.14, -2.71});
     // Write data
     file.writeDataset(v_write, "myStdVectorComplex");
-    h5pp::print("Wrote dataset: {}\n",v_write);
+    print_complex("Wrote dataset: ", v_write);
+
 
     // Read data. The vector is resized automatically by h5pp.
     std::vector<std::complex<double>> v_read;
     file.readDataset(v_read, "myStdVectorComplex");
-    h5pp::print("Read dataset: {}\n",v_read);
+    print_complex("Read dataset:  ", v_read);
 
     // Alternatively, read by assignment
     auto v_read_alt = file.readDataset<std::vector<std::complex<double>>>("myStdVectorComplex");
-    h5pp::print("Read dataset alternate: {}\n", v_read_alt);
+    print_complex("Read dataset alternate:  ", v_read_alt);
 
     return 0;
 }
