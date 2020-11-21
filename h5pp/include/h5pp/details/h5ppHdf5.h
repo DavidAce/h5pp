@@ -953,7 +953,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline void selectHyperslab(const hid::h5s &space, const Hyperslab &hyperSlab, H5S_seloper_t selectOp = H5S_SELECT_OR) {
+    inline void selectHyperslab(const hid::h5s &space, const Hyperslab &hyperSlab, std::optional<H5S_seloper_t> select_op_override = std::nullopt) {
         if(hyperSlab.empty()) return;
         int rank = H5Sget_simple_extent_ndims(space);
         if(rank < 0) throw std::runtime_error("Failed to read space rank");
@@ -995,18 +995,20 @@ namespace h5pp::hdf5 {
                              hyperSlab.blocks.value(),
                              dims));
 
-        if(H5Sget_select_type(space) != H5S_SEL_HYPERSLABS) selectOp = H5S_SELECT_SET; // First operation must be H5S_SELECT_SET.
+        if(not select_op_override) select_op_override = hyperSlab.select_oper;
+        if(H5Sget_select_type(space) != H5S_SEL_HYPERSLABS and select_op_override != H5S_SELECT_SET)
+            select_op_override = H5S_SELECT_SET; // First hyperslab selection must be H5S_SELECT_SET
 
         herr_t retval = 0;
         /* clang-format off */
         if(hyperSlab.offset and hyperSlab.extent and hyperSlab.stride and hyperSlab.blocks)
-            retval = H5Sselect_hyperslab(space, selectOp, hyperSlab.offset.value().data(), hyperSlab.stride.value().data(), hyperSlab.extent.value().data(), hyperSlab.blocks.value().data());
+            retval = H5Sselect_hyperslab(space, select_op_override.value(), hyperSlab.offset.value().data(), hyperSlab.stride.value().data(), hyperSlab.extent.value().data(), hyperSlab.blocks.value().data());
         else if (hyperSlab.offset and hyperSlab.extent and hyperSlab.stride)
-            retval = H5Sselect_hyperslab(space, selectOp, hyperSlab.offset.value().data(), hyperSlab.stride.value().data(), hyperSlab.extent.value().data(), nullptr);
+            retval = H5Sselect_hyperslab(space, select_op_override.value(), hyperSlab.offset.value().data(), hyperSlab.stride.value().data(), hyperSlab.extent.value().data(), nullptr);
         else if (hyperSlab.offset and hyperSlab.extent and hyperSlab.blocks)
-            retval = H5Sselect_hyperslab(space, selectOp, hyperSlab.offset.value().data(), nullptr, hyperSlab.extent.value().data(), hyperSlab.blocks.value().data());
+            retval = H5Sselect_hyperslab(space, select_op_override.value(), hyperSlab.offset.value().data(), nullptr, hyperSlab.extent.value().data(), hyperSlab.blocks.value().data());
         else if (hyperSlab.offset and hyperSlab.extent)
-            retval = H5Sselect_hyperslab(space, selectOp, hyperSlab.offset.value().data(), nullptr, hyperSlab.extent.value().data(), nullptr);
+            retval = H5Sselect_hyperslab(space, select_op_override.value(), hyperSlab.offset.value().data(), nullptr, hyperSlab.extent.value().data(), nullptr);
         /* clang-format on */
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
@@ -1047,7 +1049,7 @@ namespace h5pp::hdf5 {
                 for(size_t num = 0; num < hyperSlabs.size(); num++) selectHyperslab(space, hyperSlabs[num], hyperSlabSelectOps->at(num));
 
         } else
-            for(const auto &slab : hyperSlabs) selectHyperslab(space, slab);
+            for(const auto &slab : hyperSlabs) selectHyperslab(space, slab, H5S_seloper_t::H5S_SELECT_OR);
     }
 
     inline void setSpaceExtent(const hid::h5s &                    h5Space,
@@ -1415,11 +1417,14 @@ namespace h5pp::hdf5 {
             H5S_sel_type dataSelType = H5Sget_select_type(dataSpace);
             H5S_sel_type dsetSelType = H5Sget_select_type(dsetSpace);
             if(dataSelType == H5S_sel_type::H5S_SEL_HYPERSLABS or dsetSelType == H5S_sel_type::H5S_SEL_HYPERSLABS) {
+                auto dataSelectedSize = getSizeSelected(dataSpace);
+                auto dsetSelectedSize = getSizeSelected(dsetSpace);
                 if(getSizeSelected(dataSpace) != getSizeSelected(dsetSpace)) {
                     auto msg1 = getSpaceString(dataSpace);
                     auto msg2 = getSpaceString(dsetSpace);
                     throw std::runtime_error(
-                        h5pp::format("Spaces are not equal size \n\t data space \t {} \n\t dset space \t {}", msg1, msg2));
+                        h5pp::format("Hyperslab selections are not equal size. Selected elements: Data {} | Dataset {}"
+                                     "\n\t data space \t {} \n\t dset space \t {}",dataSelectedSize,dsetSelectedSize, msg1, msg2));
                 }
             } else {
                 // Compare the dimensions

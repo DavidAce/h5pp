@@ -12,12 +12,14 @@ namespace h5pp {
         public:
         // Hyperslab properties. Read here https://support.hdfgroup.org/HDF5/doc/RM/RM_H5S.html#Dataspace-SelectHyperslab
 
-        OptDimsType                 offset      = std::nullopt; /*!< The start position of a hyperslab */
-        OptDimsType                 extent      = std::nullopt; /*!< The extent (or "count") of a hyperslab */
-        OptDimsType                 stride      = std::nullopt; /*!< The stride of a hyperslab. Empty means contiguous */
-        OptDimsType                 blocks      = std::nullopt; /*!< The blocks size of each element in  the hyperslab. Empty means 1x1 */
-        std::optional<H5S_sel_type> select_type = std::nullopt;
-        Hyperslab()                             = default;
+        OptDimsType                 offset      = std::nullopt;   /*!< The start position of a hyperslab */
+        OptDimsType                 extent      = std::nullopt;   /*!< The extent (or "count") of a hyperslab */
+        OptDimsType                 stride      = std::nullopt;   /*!< The stride of a hyperslab. Empty means contiguous */
+        OptDimsType                 blocks      = std::nullopt;   /*!< The blocks size of each element in  the hyperslab. Empty means 1x1 */
+        std::optional<H5S_sel_type> select_type = std::nullopt;   /*!< Use to select hyperslab (i.e. subset), all or none */
+        H5S_seloper_t               select_oper = H5S_SELECT_SET; /*!< Default clears previous selection.  */
+
+        Hyperslab() = default;
         Hyperslab(const DimsType &offset, const DimsType &extent, OptDimsType stride = std::nullopt, OptDimsType blocks = std::nullopt)
             : offset(offset), extent(extent), stride(std::move(stride)), blocks(std::move(blocks)) {}
 
@@ -50,7 +52,9 @@ namespace h5pp {
                 offset = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
                 extent = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
                 H5Sget_simple_extent_dims(space, extent->data(), nullptr);
-            } else if(select_type.value() == H5S_SEL_ERROR)
+            } else if(select_type.value() == H5S_SEL_NONE)
+                return;
+            else if(select_type.value() == H5S_SEL_ERROR)
                 throw std::runtime_error("Invalid hyperslab selection");
             else
                 throw std::runtime_error("Unsupported selection type. Choose space selection type NONE, ALL or HYPERSLABS");
