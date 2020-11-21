@@ -58,16 +58,16 @@ jobs:
         if: matrix.compiler == 'gcc'
         run: |
           sudo apt-get install gcc-10 g++-10 gfortran -y
-          echo "::set-env name=FC::gfortran"
-          echo "::set-env name=CC::gcc-10"
-          echo "::set-env name=CXX::g++-10"
+          echo "FC=gfortran"  >> $GITHUB_ENV
+          echo "CC=gcc-10"    >> $GITHUB_ENV
+          echo "CXX=g++-10"   >> $GITHUB_ENV
 
       - name: Setup clang
         if: matrix.compiler == 'clang' # compilers are already installed on the CI # sudo apt-get install libclang-10-dev gfortran -y
         run: |
-          echo "::set-env name=FC::gfortran"
-          echo "::set-env name=CC::clang-10"
-          echo "::set-env name=CXX::clang++-10"
+          echo "FC=gfortran"    >> $GITHUB_ENV
+          echo "CC=clang-10"    >> $GITHUB_ENV
+          echo "CXX=clang++-10" >> $GITHUB_ENV
 
       - name: Setup apt packages
         if: contains(matrix.source,'find')
