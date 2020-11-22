@@ -180,10 +180,10 @@ namespace h5pp::hdf5 {
             return 0;
         }
         // Sum up the number of bytes
-        size_t max_len = h5pp::constants::maxSizeContiguous;
+        size_t maxLen = h5pp::constants::maxSizeCompact;
         for(auto elem : vdata) {
             if(elem == nullptr) continue;
-            *vlen += static_cast<hsize_t>(strnlen(elem, max_len)) + 1; // Add null-terminator
+            *vlen += static_cast<hsize_t>(std::min(std::string_view(elem).size(), maxLen) + 1); // Add null-terminator
         }
         H5Dvlen_reclaim(type, space, H5P_DEFAULT, vdata.data());
         return 1;
@@ -206,7 +206,7 @@ namespace h5pp::hdf5 {
         size_t maxLen = h5pp::constants::maxSizeCompact;
         for(auto elem : vdata) {
             if(elem == nullptr) continue;
-            *vlen += static_cast<hsize_t>(strnlen(elem, maxLen)) + 1; // Add null-terminator
+            *vlen += static_cast<hsize_t>(std::min(std::string_view(elem).size(), maxLen) + 1); // Add null-terminator
         }
         H5Dvlen_reclaim(type, space, H5P_DEFAULT, vdata.data());
         return 1;
@@ -1747,7 +1747,7 @@ namespace h5pp::hdf5 {
                                       *vec.data());
                 } else {
                     if constexpr(h5pp::type::sfinae::has_text_v<DataType> and h5pp::type::sfinae::is_iterable_v<DataType>) {
-                        // We have a fixed-size string array now. We have to copy the strings to a contiguous array
+                        // We have a fixed-size string array now. We have to copy the strings to a contiguous array.
                         // vdata already contains the pointer to each string, and bytes should be the size of the whole array
                         // including null terminators. so
                         std::string strContiguous;
@@ -1755,7 +1755,9 @@ namespace h5pp::hdf5 {
                         strContiguous.resize(bytesPerStr * vec.size());
                         for(size_t i = 0; i < vec.size(); i++) {
                             auto start_src = strContiguous.data() + static_cast<long>(i * bytesPerStr);
-                            strncpy(start_src, vec[i], strnlen(vec[i], bytesPerStr - 1)); // Do not copy the null term
+                            // Construct a view of the null-terminated character string, not including the null character.
+                            auto view = std::string_view(vec[i]); // view.size() will not include null term here!
+                            std::copy_n(std::begin(view), std::min(view.size(),bytesPerStr - 1),start_src); // Do not copy null character
                         }
                         retval = H5Dwrite(dsetInfo.h5Dset.value(),
                                           dsetInfo.h5Type.value(),
@@ -1877,9 +1879,11 @@ namespace h5pp::hdf5 {
                         throw std::runtime_error(h5pp::format(
                             "Given container of strings has the wrong size: dset size {} | container size {}", size, data.size()));
                     for(size_t i = 0; i < static_cast<size_t>(size); i++) {
-                        strncpy(data[i].data(), fdata.data() + i * bytesPerString, bytesPerString);
+                        // Each data[i] has type std::string, so we can use the std::string constructor to copy data
+                        data[i] = std::string(fdata.data()+i*bytesPerString,bytesPerString);
+                        // Prune away all null terminators except the last one
                         data[i].erase(std::find(data[i].begin(), data[i].end(), '\0'),
-                                      data[i].end()); // Prune all but the last null terminator
+                                      data[i].end());
                     }
                 } else {
                     throw std::runtime_error(

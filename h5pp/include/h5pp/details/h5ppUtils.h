@@ -117,10 +117,12 @@ namespace h5pp::util {
             // A C-style char array is a null-terminated array, that has size = characters + 1
             // Here we want to return the number of characters that can fit in the array,
             // and we are not interested in the number of characters currently there.
+            // To reverse this behavior, use "countChars == true".
+            // To avoid strnlen, use std::string_view constructor to count chars up to (but not including) '\0'.
             if(countChars)
-                return strnlen(arr, size) + 1; // Include null terminator
+                return std::min(std::string_view(arr).size(), size) + 1; // Add null-terminator
             else
-                return std::max(strnlen(arr, size), size - 1) + 1; // Include null terminator
+                return std::max(std::string_view(arr).size(), size-1) + 1; // Include null terminator
         } else
             return size;
     }
@@ -618,6 +620,7 @@ namespace h5pp::util {
                 else fileb = H5Iget_file_id(locb);
                 return filea == fileb;
             }
+            default: throw std::runtime_error("Unhandled switch case for locMode");
         }
     }
 
