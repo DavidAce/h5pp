@@ -16,7 +16,7 @@ int main() {
 
     // Initialize a dummy vector with size 12, i.e. a 1-dimensional layout "{12}"
     std::vector<double> vec(12);
-    for (size_t i = 0; i < vec.size() ; i++) vec[i] = i;
+    for (size_t i = 0; i < vec.size() ; i++) vec[i] = static_cast<double>(i);
 
     // Let's write the data in a few different shapes
     file.writeDataset(vec, "dim12", {12}); // Writes 0,1,2,3....11
