@@ -112,7 +112,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
             list(APPEND H5PP_HDF5_OPTIONS  "-DHDF5_ENABLE_PARALLEL:BOOL=${H5PP_ENABLE_MPI}")
             build_dependency(hdf5 "${CMAKE_INSTALL_PREFIX}" "${H5PP_HDF5_OPTIONS}")
             # This one uses our own module though, but will call the config-mode internally first.
-            find_package(HDF5 1.8 COMPONENTS C HL REQUIRED)
+            find_package(HDF5 1.12 COMPONENTS C HL REQUIRED)
             if(TARGET hdf5::hdf5)
                 message(STATUS "hdf5 installed successfully")
             endif()

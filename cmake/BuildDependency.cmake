@@ -83,5 +83,5 @@ function(build_dependency dep_name install_dir extra_flags)
         message(STATUS "Copying install manifest: ${INSTALL_MANIFEST}")
         configure_file(${INSTALL_MANIFEST} ${CMAKE_CURRENT_BINARY_DIR}/install_manifest_${dep_name}.txt)
     endif()
-
+    message(STATUS "Finished building h5pp dependency: ${dep_name}")
 endfunction()
