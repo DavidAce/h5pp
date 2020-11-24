@@ -10,6 +10,7 @@ namespace h5pp {
     struct DataInfo;
     struct TableInfo;
     struct OptDimsType;
+    class  Hyperslab;
 
     struct DimsType {
         std::vector<hsize_t> dims;
@@ -20,10 +21,11 @@ namespace h5pp {
         explicit DimsType(std::string)      = delete;
         explicit DimsType(std::string_view) = delete;
         explicit DimsType(const char *)     = delete;
-        explicit DimsType(h5pp::Options)    = delete;
-        explicit DimsType(h5pp::DsetInfo)   = delete;
-        explicit DimsType(h5pp::DataInfo)   = delete;
-        explicit DimsType(h5pp::TableInfo)  = delete;
+        DimsType(h5pp::Options)    = delete;
+        DimsType(h5pp::DsetInfo)   = delete;
+        DimsType(h5pp::DataInfo)   = delete;
+        DimsType(h5pp::TableInfo)  = delete;
+        DimsType(h5pp::Hyperslab)  = delete;
         DimsType(const std::nullopt_t &) { throw std::runtime_error("nullopt is not a valid dimension for this argument"); }
         DimsType(std::initializer_list<hsize_t> &&list) { dims = std::vector<hsize_t>(std::begin(list), std::end(list)); }
         template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
@@ -66,10 +68,11 @@ namespace h5pp {
         explicit OptDimsType(std::string)        = delete;
         explicit OptDimsType(std::string_view)   = delete;
         explicit OptDimsType(const char *)       = delete;
-        explicit OptDimsType(h5pp::Options)      = delete;
-        explicit OptDimsType(h5pp::DsetInfo)     = delete;
-        explicit OptDimsType(h5pp::DataInfo)     = delete;
-        explicit OptDimsType(h5pp::TableInfo)    = delete;
+        OptDimsType(h5pp::Options)    = delete;
+        OptDimsType(h5pp::DsetInfo)   = delete;
+        OptDimsType(h5pp::DataInfo)   = delete;
+        OptDimsType(h5pp::TableInfo)  = delete;
+        OptDimsType(h5pp::Hyperslab)  = delete;
 
         OptDimsType(const std::nullopt_t &nullopt) { dims = nullopt; }
         OptDimsType(std::initializer_list<hsize_t> &&list) { dims = std::vector<hsize_t>(std::begin(list), std::end(list)); }
