@@ -36,7 +36,7 @@ int main() {
     std::vector<double> data2x2 = {1, 2, 3, 4};
 
     // Now we need to select a 2x2 hyperslab in data5x5. There are two ways of doing this:
-    // 1) Define a hyperslab and give it to .writeDataset(...). (simplest)
+    // 1) Define a hyperslab and give it to .writeHyperlab(...). (simplest)
     // 2) Define a hyperslab in an instance of "h5pp::DsetInfo" corresponding to data5x5, and pass to .writeDataset(...) (see example 08e)
     // 3) Define a hyperslab in an instance of "h5pp::Options" and pass that to .writeDataset(...). (see example 08d)
 
