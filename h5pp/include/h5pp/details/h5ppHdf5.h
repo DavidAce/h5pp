@@ -953,7 +953,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline void selectHyperslab(const hid::h5s &space, const Hyperslab &hyperSlab, std::optional<H5S_seloper_t> select_op_override = std::nullopt) {
+    inline void selectHyperslab(hid::h5s &space, const Hyperslab &hyperSlab, std::optional<H5S_seloper_t> select_op_override = std::nullopt) {
         if(hyperSlab.empty()) return;
         int rank = H5Sget_simple_extent_ndims(space);
         if(rank < 0) throw std::runtime_error("Failed to read space rank");
@@ -1805,8 +1805,6 @@ namespace h5pp::hdf5 {
 
         dsetInfo.assertReadReady();
         dataInfo.assertReadReady();
-        if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
-        if(dsetInfo.dsetSlab) selectHyperslab(dsetInfo.h5Space.value(), dsetInfo.dsetSlab.value());
         h5pp::logger::log->debug("Reading into memory  {}", dataInfo.string(h5pp::logger::logIf(1)));
         h5pp::logger::log->debug("Reading from dataset {}", dsetInfo.string(h5pp::logger::logIf(1)));
         h5pp::hdf5::assertReadBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
@@ -1917,8 +1915,6 @@ namespace h5pp::hdf5 {
 #endif
         dataInfo.assertWriteReady();
         attrInfo.assertWriteReady();
-        if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
-        if(attrInfo.attrSlab) selectHyperslab(attrInfo.h5Space.value(), attrInfo.attrSlab.value());
         h5pp::logger::log->debug("Writing from memory    {}", dataInfo.string(h5pp::logger::logIf(1)));
         h5pp::logger::log->debug("Writing into attribute {}", attrInfo.string(h5pp::logger::logIf(1)));
         h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());

@@ -380,7 +380,8 @@ namespace h5pp {
                 h5pp::scan::readDsetInfo(dsetInfo, openFileHandle(), options, plists);
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
-            resizeDataset(dsetInfo, dataInfo.dataDims.value());
+            // Resize dataset to fit the given data (or a selection therein)
+            h5pp::hdf5::resizeDataset(dsetInfo, dataInfo);
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
         }
 
@@ -388,14 +389,16 @@ namespace h5pp {
         void writeDataset(const DataType &data, DataInfo &dataInfo, DsetInfo &dsetInfo, const Options &options = Options()) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
-            // Fill missing metadata in given dset and data
+            // Fill missing metadata in dsetInfo
             if(dsetInfo.hasLocId())
                 h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), options, plists);
             else
                 h5pp::scan::readDsetInfo(dsetInfo, openFileHandle(), options, plists);
+            // Fill missing metadata in dataInfo
             h5pp::scan::scanDataInfo(dataInfo, data, options);
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
-            resizeDataset(dsetInfo, dataInfo.dataDims.value());
+            // Resize dataset to fit the given data (or a selection therein)
+            h5pp::hdf5::resizeDataset(dsetInfo,dataInfo);
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
         }
 
@@ -410,6 +413,7 @@ namespace h5pp {
             return dsetInfo;
         }
 
+        /* clang-format off */
         template<typename DataType>
         DsetInfo writeDataset(
             const DataType &            data,                          /*!< Eigen, stl-like object or pointer to data buffer */
@@ -544,17 +548,39 @@ namespace h5pp {
             return writeDataset(data, options);
         }
 
+
+        template<typename DataType>
+        DsetInfo writeHyperslab(
+                const DataType &   data,     /*!< Eigen, stl-like object or pointer to data buffer */
+                std::string_view   dsetPath, /*!< Path to HDF5 dataset relative to the file root */
+                const Hyperslab &  hyperslab)/*!< Write data to a hyperslab selection */
+        {
+            Options options;
+            options.linkPath = dsetPath;
+            options.dsetSlab = hyperslab;
+            options.resizePolicy = ResizePolicy::DO_NOT_RESIZE;
+            auto dsetInfo = h5pp::scan::readDsetInfo(openFileHandle(),options,plists);
+            if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value())
+                throw std::runtime_error(h5pp::format("Could not write hyperslab: dataset [{}] does not exist",dsetPath));
+            auto dataInfo = h5pp::scan::scanDataInfo(data, options);
+            // Resize dataset to fit the given data (or a selection therein)
+            h5pp::hdf5::resizeDataset(dsetInfo, dataInfo);
+            h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
+            return dsetInfo;
+        }
+
         void writeSymbolicLink(std::string_view src_path, std::string_view tgt_path) {
             h5pp::hdf5::writeSymbolicLink(openFileHandle(), src_path, tgt_path, std::nullopt, plists);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        void readDataset(DataType &data, const DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
+        void readDataset(DataType &data, DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
+            h5pp::hdf5::resizeData(data, dataInfo, dsetInfo);
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(const DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
+        DataType readDataset(DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
             DataType data;
             readDataset(data, dataInfo, dsetInfo);
             return data;
@@ -562,7 +588,6 @@ namespace h5pp {
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
         void readDataset(DataType &data, const DsetInfo &dsetInfo, const Options &options = Options()) const {
-            h5pp::hdf5::resizeData(data, dsetInfo);
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             readDataset(data, dataInfo, dsetInfo);
         }
@@ -586,13 +611,22 @@ namespace h5pp {
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
         void readDataset(DataType &data, const Options &options) const {
             options.assertWellDefined();
+            // Generate the metadata for the dataset on file
             auto dsetInfo = h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
             if(dsetInfo.dsetExists and not dsetInfo.dsetExists.value())
                 throw std::runtime_error(h5pp::format("Cannot read dataset [{}]: It does not exist", options.linkPath.value()));
-
-            h5pp::hdf5::resizeData(data, dsetInfo);
+            // Generate the metadata for given data
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
+            // Resize the given data container so that it fits the selection in the dataset
+            h5pp::hdf5::resizeData(data,dataInfo, dsetInfo);
+            // Read
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
+        }
+        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        DataType readDataset(std::string_view datasetPath, const Options &options) const {
+            DataType data;
+            readDataset(data, options);
+            return data;
         }
 
         template<typename DataType>
@@ -648,6 +682,25 @@ namespace h5pp {
             options.dataDims = dataDims;
             return appendToDataset(data, axis, options);
         }
+
+
+        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        void readHyperslab(DataType &data,std::string_view dsetPath, const Hyperslab &hyperslab) const {
+            Options options;
+            options.linkPath = dsetPath;
+            options.dsetSlab = hyperslab;
+            readDataset(data,options);
+        }
+
+        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        DataType readHyperslab(std::string_view dsetPath, const Hyperslab &hyperslab) const {
+            DataType data;
+            readHyperslab(data,dsetPath, hyperslab);
+            return data;
+        }
+
+
+
 
         /*
          *
@@ -746,9 +799,8 @@ namespace h5pp {
                                                       "Attribute does not exist",
                                                       attrInfo.attrName.value(),
                                                       attrInfo.linkPath.value()));
-
-            h5pp::hdf5::resizeData(data, attrInfo);
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
+            h5pp::hdf5::resizeData(data, dataInfo, attrInfo);
             h5pp::hdf5::readAttribute(data, dataInfo, attrInfo);
         }
 

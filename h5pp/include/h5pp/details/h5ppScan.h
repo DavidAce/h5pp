@@ -168,6 +168,8 @@ namespace h5pp::scan {
                 info.resizePolicy = h5pp::ResizePolicy::RESIZE_TO_FIT;
         }
         if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.dsetSize.value(), info.dsetDims.value(), info.h5Layout.value(), info.dsetDimsMax);
+        // Apply hyperslab selection if there is any
+        if(info.dsetSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.dsetSlab.value());
         if(not info.h5PlistDsetCreate) info.h5PlistDsetCreate = H5Pcreate(H5P_DATASET_CREATE);
         if(not info.h5PlistDsetAccess) info.h5PlistDsetAccess = H5Pcreate(H5P_DATASET_ACCESS);
         /* clang-format on */
@@ -280,6 +282,9 @@ namespace h5pp::scan {
 
         h5pp::hdf5::setStringSize<DataType>(data, info.h5Type.value(), info.dsetSize.value(), info.dsetByte.value(), info.dsetDims.value());       // String size will be H5T_VARIABLE unless explicitly specified
         if(not info.h5Space)           info.h5Space           = h5pp::util::getDsetSpace(info.dsetSize.value(), info.dsetDims.value(), info.h5Layout.value(), info.dsetDimsMax);
+        // Apply hyperslab selection if there is any
+        if(info.dsetSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.dsetSlab.value());
+
         if(not info.h5PlistDsetCreate) info.h5PlistDsetCreate = H5Pcreate(H5P_DATASET_CREATE);
         if(not info.h5PlistDsetAccess) info.h5PlistDsetAccess = H5Pcreate(H5P_DATASET_ACCESS);
         h5pp::hdf5::setProperty_layout(info);    // Must go before setting chunk dims
@@ -328,6 +333,8 @@ namespace h5pp::scan {
                                             info.dataByte.value(),
                                             info.dataDims.value()); // String size will be H5T_VARIABLE unless explicitly specified
         if(not info.h5Space) info.h5Space = h5pp::util::getMemSpace(info.dataSize.value(), info.dataDims.value());
+        // Apply hyperslab selection if there is any
+        if(info.dataSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.dataSlab.value());
         h5pp::logger::log->trace("Scanned metadata {}", info.string(h5pp::logger::logIf(0)));
     }
 
@@ -392,6 +399,8 @@ namespace h5pp::scan {
         if(not info.attrDims)   info.attrDims       = h5pp::hdf5::getDimensions(info.h5Space.value());
         if(not info.attrRank)   info.attrRank       = h5pp::hdf5::getRank(info.h5Space.value());
         if(not info.h5PlistAttrCreate) info.h5PlistAttrCreate = H5Aget_create_plist(info.h5Attr.value());
+        // Apply hyperslab selection if there is any
+        if(info.attrSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.attrSlab.value());
             /* clang-format on */
 #if H5_VERSION_GE(1, 10, 0)
         if(not info.h5PlistAttrAccess) info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
@@ -468,6 +477,8 @@ namespace h5pp::scan {
                                             info.attrByte.value(),
                                             info.attrDims.value()); // String size will be H5T_VARIABLE unless explicitly specified
         if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.attrSize.value(), info.attrDims.value(), H5D_COMPACT);
+        // Apply hyperslab selection if there is any
+        if(info.attrSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.attrSlab.value());
         /* clang-format on */
 
         if(not info.h5PlistAttrCreate) info.h5PlistAttrCreate = H5Pcreate(H5P_ATTRIBUTE_CREATE);
@@ -527,7 +538,8 @@ namespace h5pp::scan {
         if(not info.attrRank) info.attrRank = h5pp::util::getRankFromDimensions(info.attrDims.value());
         if(not info.attrByte) info.attrByte = info.attrSize.value() * h5pp::hdf5::getBytesPerElem(info.h5Type.value());
         if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.attrSize.value(), info.attrDims.value(), H5D_COMPACT);
-
+        // Apply hyperslab selection if there is any
+        if(info.attrSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.attrSlab.value());
         if(not info.h5PlistAttrCreate) info.h5PlistAttrCreate = H5Pcreate(H5P_ATTRIBUTE_CREATE);
 #if H5_VERSION_GE(1, 10, 0)
         if(not info.h5PlistAttrAccess) info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
