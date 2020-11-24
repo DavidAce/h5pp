@@ -55,16 +55,18 @@ namespace h5pp::scan {
         if(not info.dsetChunk)         info.dsetChunk         = h5pp::hdf5::getChunkDimensions(info.h5PlistDsetCreate.value());
         if(not info.dsetDimsMax)       info.dsetDimsMax       = h5pp::hdf5::getMaxDimensions(info.h5Space.value(), info.h5Layout.value());
 
-        if(not info.resizeMode) info.resizeMode = options.resizeMode;
-        if(not info.resizeMode) {
-            if(info.h5Layout != H5D_CHUNKED) info.resizeMode = h5pp::ResizeMode::DO_NOT_RESIZE;
-            else if(info.dsetSlab) info.resizeMode = h5pp::ResizeMode::INCREASE_ONLY; // A hyperslab selection on the dataset has been made. Let's not shrink!
-            else info.resizeMode = h5pp::ResizeMode::RESIZE_TO_FIT;
+        if(not info.resizePolicy) info.resizePolicy = options.resizePolicy;
+        if(not info.resizePolicy) {
+            if(info.h5Layout != H5D_CHUNKED) info.resizePolicy = h5pp::ResizePolicy::DO_NOT_RESIZE;
+            else if(info.dsetSlab) info.resizePolicy = h5pp::ResizePolicy::INCREASE_ONLY; // A hyperslab selection on the dataset has been made. Let's not shrink!
+            else info.resizePolicy = h5pp::ResizePolicy::RESIZE_TO_FIT;
         }
         if(not info.compression) {
             hid::h5p plist   = H5Dget_create_plist(info.h5Dset.value());
             info.compression = h5pp::hdf5::getCompressionLevel(plist);
         }
+        // Apply hyperslab selection if there is any
+        if(info.dsetSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.dsetSlab.value());
         /* clang-format on */
 
         // Get c++ properties
@@ -112,7 +114,7 @@ namespace h5pp::scan {
         info.h5Type      = options.h5Type;
         info.h5Layout    = options.h5Layout;
         info.compression = options.compression;
-        info.resizeMode  = options.resizeMode;
+        info.resizePolicy = options.resizePolicy;
 
         // Some sanity checks
         if(not info.dsetDims)
@@ -159,11 +161,11 @@ namespace h5pp::scan {
         if(not info.dsetDimsMax) info.dsetDimsMax   = h5pp::util::decideDimensionsMax(info.dsetDims.value(), info.h5Layout.value());
         if(not info.dsetChunk)   info.dsetChunk     = h5pp::util::getChunkDimensions(h5pp::hdf5::getBytesPerElem(info.h5Type.value()), info.dsetDims.value(),info.dsetDimsMax,info.h5Layout);
         if(not info.compression) info.compression   = h5pp::hdf5::getValidCompressionLevel(info.compression);
-        if(not info.resizeMode) {
+        if(not info.resizePolicy) {
             if(info.h5Layout != H5D_CHUNKED)
-                info.resizeMode = h5pp::ResizeMode::DO_NOT_RESIZE;
+                info.resizePolicy = h5pp::ResizePolicy::DO_NOT_RESIZE;
             else
-                info.resizeMode = h5pp::ResizeMode::RESIZE_TO_FIT;
+                info.resizePolicy = h5pp::ResizePolicy::RESIZE_TO_FIT;
         }
         if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.dsetSize.value(), info.dsetDims.value(), info.h5Layout.value(), info.dsetDimsMax);
         if(not info.h5PlistDsetCreate) info.h5PlistDsetCreate = H5Pcreate(H5P_DATASET_CREATE);
@@ -215,7 +217,7 @@ namespace h5pp::scan {
         if(not info.dsetSlab    ) info.dsetSlab     = options.dsetSlab;
         if(not info.h5Type      ) info.h5Type       = options.h5Type;
         if(not info.h5Layout    ) info.h5Layout     = options.h5Layout;
-        if(not info.resizeMode  ) info.resizeMode   = options.resizeMode;
+        if(not info.resizePolicy  ) info.resizePolicy   = options.resizePolicy;
         if(not info.compression ) info.compression  = options.compression;
         /* clang-format on */
 
@@ -269,11 +271,11 @@ namespace h5pp::scan {
         if(not info.dsetDimsMax) info.dsetDimsMax   = h5pp::util::decideDimensionsMax(info.dsetDims.value(), info.h5Layout);
         if(not info.dsetChunk)   info.dsetChunk     = h5pp::util::getChunkDimensions(h5pp::util::getBytesPerElem<DataType>(), info.dsetDims.value(),info.dsetDimsMax, info.h5Layout);
         if(not info.compression) info.compression   = h5pp::hdf5::getValidCompressionLevel(info.compression);
-        if(not info.resizeMode) {
+        if(not info.resizePolicy) {
             if(info.h5Layout != H5D_CHUNKED)
-                info.resizeMode = h5pp::ResizeMode::DO_NOT_RESIZE;
+                info.resizePolicy = h5pp::ResizePolicy::DO_NOT_RESIZE;
             else
-                info.resizeMode = h5pp::ResizeMode::RESIZE_TO_FIT;
+                info.resizePolicy = h5pp::ResizePolicy::RESIZE_TO_FIT;
         }
 
         h5pp::hdf5::setStringSize<DataType>(data, info.h5Type.value(), info.dsetSize.value(), info.dsetByte.value(), info.dsetDims.value());       // String size will be H5T_VARIABLE unless explicitly specified

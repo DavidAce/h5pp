@@ -898,7 +898,7 @@ namespace h5pp::hdf5 {
             dsetInfo.dsetChunk   = std::nullopt;
             dsetInfo.dsetDimsMax = std::nullopt;
             dsetInfo.h5Layout    = H5D_CONTIGUOUS; // In case it's a big text
-            dsetInfo.resizeMode  = h5pp::ResizeMode::DO_NOT_RESIZE;
+            dsetInfo.resizePolicy = h5pp::ResizePolicy::DO_NOT_RESIZE;
             setProperty_layout(dsetInfo);
             return;
         }

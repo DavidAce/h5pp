@@ -54,7 +54,7 @@ int main() {
     // Now decrease size and overwrite again
     vectorComplexDouble = std::vector<std::complex<double>>(1500, {10.0, 5.0});
     somestring          = "short string";
-    file.resizeDataset("overWriteGroup_chunked/vectorComplexDouble",1500,h5pp::ResizeMode::RESIZE_TO_FIT);
+    file.resizeDataset("overWriteGroup_chunked/vectorComplexDouble",1500,h5pp::ResizePolicy::RESIZE_TO_FIT);
     file.writeDataset(vectorComplexDouble, "overWriteGroup_chunked/vectorComplexDouble");
     file.writeDataset(somestring, "overWriteGroup_chunked/somestring");
 

@@ -62,7 +62,7 @@ namespace h5pp {
         ALL,    // All elements of a table
     };
 
-    enum class ResizeMode {
+    enum class ResizePolicy {
         RESIZE_TO_FIT, // (Default)
         INCREASE_ONLY,
         DO_NOT_RESIZE,
