@@ -210,27 +210,27 @@ namespace h5pp {
      * Struct with optional fields describing data on file, i.e. a dataset
      */
     struct DsetInfo {
-        std::optional<hid::h5f>         h5File            = std::nullopt;
-        std::optional<hid::h5d>         h5Dset            = std::nullopt;
-        std::optional<hid::h5t>         h5Type            = std::nullopt;
-        std::optional<H5D_layout_t>     h5Layout          = std::nullopt;
-        std::optional<hid::h5s>         h5Space           = std::nullopt;
-        std::optional<hid::h5p>         h5PlistDsetCreate = std::nullopt;
-        std::optional<hid::h5p>         h5PlistDsetAccess = std::nullopt;
-        std::optional<std::string>      dsetPath          = std::nullopt;
-        std::optional<bool>             dsetExists        = std::nullopt;
-        std::optional<hsize_t>          dsetSize          = std::nullopt;
-        std::optional<size_t>           dsetByte          = std::nullopt;
-        std::optional<int>              dsetRank          = std::nullopt;
-        OptDimsType                     dsetDims          = std::nullopt;
-        OptDimsType                     dsetDimsMax       = std::nullopt;
-        OptDimsType                     dsetChunk         = std::nullopt;
-        std::optional<Hyperslab>        dsetSlab          = std::nullopt;
-        std::optional<h5pp::ResizeMode> resizeMode        = std::nullopt;
-        std::optional<unsigned int>     compression       = std::nullopt;
-        std::optional<std::string>      cppTypeName       = std::nullopt;
-        std::optional<size_t>           cppTypeSize       = std::nullopt;
-        std::optional<std::type_index>  cppTypeIndex      = std::nullopt;
+        std::optional<hid::h5f>           h5File            = std::nullopt;
+        std::optional<hid::h5d>           h5Dset            = std::nullopt;
+        std::optional<hid::h5t>           h5Type            = std::nullopt;
+        std::optional<H5D_layout_t>       h5Layout          = std::nullopt;
+        std::optional<hid::h5s>           h5Space           = std::nullopt;
+        std::optional<hid::h5p>           h5PlistDsetCreate = std::nullopt;
+        std::optional<hid::h5p>           h5PlistDsetAccess = std::nullopt;
+        std::optional<std::string>        dsetPath          = std::nullopt;
+        std::optional<bool>               dsetExists        = std::nullopt;
+        std::optional<hsize_t>            dsetSize          = std::nullopt;
+        std::optional<size_t>             dsetByte          = std::nullopt;
+        std::optional<int>                dsetRank          = std::nullopt;
+        OptDimsType                       dsetDims          = std::nullopt;
+        OptDimsType                       dsetDimsMax       = std::nullopt;
+        OptDimsType                       dsetChunk         = std::nullopt;
+        std::optional<Hyperslab>          dsetSlab          = std::nullopt;
+        std::optional<h5pp::ResizePolicy> resizePolicy      = std::nullopt;
+        std::optional<unsigned int>       compression       = std::nullopt;
+        std::optional<std::string>        cppTypeName       = std::nullopt;
+        std::optional<size_t>             cppTypeSize       = std::nullopt;
+        std::optional<std::type_index>    cppTypeIndex      = std::nullopt;
 
         [[nodiscard]] hid::h5f getLocId() const {
             if(h5File) return h5File.value();
@@ -238,10 +238,8 @@ namespace h5pp {
             h5pp::logger::log->debug("Dataset location id is not defined");
             return static_cast<hid_t>(0);
         }
-        [[nodiscard]] bool hasLocId() const {
-            return h5File.has_value() or h5Dset.has_value();
-        }
-        void assertCreateReady() const {
+        [[nodiscard]] bool hasLocId() const { return h5File.has_value() or h5Dset.has_value(); }
+        void               assertCreateReady() const {
             std::string error_msg;
             /* clang-format off */
             if(not dsetPath           ) error_msg.append("\t dsetPath\n");
@@ -268,7 +266,7 @@ namespace h5pp {
             /* clang-format off */
             if(dsetExists and dsetPath and not dsetExists.value()) error_msg.append(h5pp::format("\t Dataset does not exist [{}]", dsetPath.value()));
             else if(dsetExists and not dsetExists.value()) error_msg.append("\t Dataset does not exist");
-            if(resizeMode and resizeMode == h5pp::ResizeMode::DO_NOT_RESIZE) error_msg.append("\t Resize mode is set to DO_NOT_RESIZE");
+            if(resizePolicy and resizePolicy == h5pp::ResizePolicy::DO_NOT_RESIZE) error_msg.append("\t Resize mode is set to DO_NOT_RESIZE");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot resize dataset.\n{}", error_msg));
             if(not dsetPath           ) error_msg.append("\t dsetPath\n");
@@ -358,12 +356,12 @@ namespace h5pp {
                 Hyperslab slab(h5Space.value());
                 msg.append(h5pp::format(" | [ Hyperslab {} ]", slab.string()));
             }
-            if(resizeMode){
+            if(resizePolicy){
                 msg.append(" | resize mode ");
-                switch(resizeMode.value()){
-                    case ResizeMode::RESIZE_TO_FIT: msg.append(h5pp::format("RESIZE_TO_FIT")); break;
-                    case ResizeMode::INCREASE_ONLY: msg.append(h5pp::format("INCREASE_ONLY")); break;
-                    case ResizeMode::DO_NOT_RESIZE: msg.append(h5pp::format("DO_NOT_RESIZE")); break;
+                switch(resizePolicy.value()){
+                    case ResizePolicy::RESIZE_TO_FIT: msg.append(h5pp::format("RESIZE_TO_FIT")); break;
+                    case ResizePolicy::INCREASE_ONLY: msg.append(h5pp::format("INCREASE_ONLY")); break;
+                    case ResizePolicy::DO_NOT_RESIZE: msg.append(h5pp::format("DO_NOT_RESIZE")); break;
                     default: break;
                 }
             }
@@ -408,9 +406,7 @@ namespace h5pp {
             h5pp::logger::log->debug("Attribute location id is not defined");
             return static_cast<hid_t>(0);
         }
-        [[nodiscard]] bool hasLocId() const {
-            return h5File.has_value() or h5Link.has_value() or h5Attr.has_value();
-        }
+        [[nodiscard]] bool hasLocId() const { return h5File.has_value() or h5Link.has_value() or h5Attr.has_value(); }
 
         void assertCreateReady() const {
             std::string error_msg;
@@ -517,9 +513,7 @@ namespace h5pp {
             return static_cast<hid_t>(0);
         }
 
-        [[nodiscard]] bool hasLocId() const {
-            return h5File.has_value() or h5Dset.has_value();
-        }
+        [[nodiscard]] bool hasLocId() const { return h5File.has_value() or h5Dset.has_value(); }
 
         /* clang-format off */
         void assertCreateReady() const {
