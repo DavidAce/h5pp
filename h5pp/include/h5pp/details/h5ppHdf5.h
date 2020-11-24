@@ -1242,14 +1242,14 @@ namespace h5pp::hdf5 {
     }
 
     inline void
-        resizeDataset(DsetInfo &info, const std::vector<hsize_t> &newDimensions, std::optional<h5pp::ResizeMode> mode = std::nullopt) {
-        if(info.resizeMode == h5pp::ResizeMode::DO_NOT_RESIZE) return;
-        if(not mode) mode = info.resizeMode;
-        if(not mode and info.dsetSlab)
-            mode = h5pp::ResizeMode::INCREASE_ONLY; // A hyperslab selection on the dataset has been made. Let's not shrink!
-        if(not mode) mode = h5pp::ResizeMode::RESIZE_TO_FIT;
-        if(mode == h5pp::ResizeMode::DO_NOT_RESIZE) return;
-        if(mode == h5pp::ResizeMode::RESIZE_TO_FIT and info.dsetSlab){
+        resizeDataset(DsetInfo &info, const std::vector<hsize_t> &newDimensions, std::optional<h5pp::ResizePolicy> policy = std::nullopt) {
+        if(info.resizePolicy == h5pp::ResizePolicy::DO_NOT_RESIZE) return;
+        if(not policy) policy = info.resizePolicy;
+        if(not policy and info.dsetSlab)
+            policy = h5pp::ResizePolicy::INCREASE_ONLY; // A hyperslab selection on the dataset has been made. Let's not shrink!
+        if(not policy) policy = h5pp::ResizePolicy::RESIZE_TO_FIT;
+        if(policy == h5pp::ResizePolicy::DO_NOT_RESIZE) return;
+        if(policy == h5pp::ResizePolicy::RESIZE_TO_FIT and info.dsetSlab){
             bool outofbounds = false;
             for(size_t idx = 0; idx < newDimensions.size(); idx++){
                 if(info.dsetSlab->extent and newDimensions[idx] < info.dsetSlab->extent->at(idx)){ outofbounds = true; break;}
@@ -1257,7 +1257,7 @@ namespace h5pp::hdf5 {
             }
             if(outofbounds)
                 h5pp::logger::log->warn("A hyperslab selection was made on the dataset [{}{}]. "
-                                    "However, resize mode [RESIZE_TO_FIT] will resize this dataset to dimensions {}. "
+                                    "However, resize policy [RESIZE_TO_FIT] will resize this dataset to dimensions {}. "
                                     "This is likely an error.", info.dsetPath.value(),info.dsetSlab->string(),newDimensions);
         }
 
@@ -1286,7 +1286,7 @@ namespace h5pp::hdf5 {
                              info.dsetPath.value(),
                              info.dsetDims.value(),
                              newDimensions));
-        if(mode == h5pp::ResizeMode::INCREASE_ONLY) {
+        if(policy == h5pp::ResizePolicy::INCREASE_ONLY) {
             bool allDimsAreSmaller = true;
             for(size_t idx = 0; idx < newDimensions.size(); idx++)
                 if(newDimensions[idx] > info.dsetDims.value()[idx]) allDimsAreSmaller = false;
@@ -1323,9 +1323,14 @@ namespace h5pp::hdf5 {
     }
 
     inline void resizeDataset(DsetInfo &dsetInfo, const DataInfo &dataInfo) {
-        // We use this function to RESIZE the dataset to FIT given data
+        // We use this function when writing to a dataset on file.
+        // Then we RESIZE the dataset to FIT given data.
+        // If there is a hyperslab selection on given data, we only need to take that into account.
+        // The new dataset dimensions should be dataInfo.dataDims, unless dataInfo.dataSlab.extent exists, which has priority.
+        // Note that the final dataset size is then determined by dsetInfo.resizePolicy
         dataInfo.assertWriteReady();
-        resizeDataset(dsetInfo, dataInfo.dataDims.value());
+        if(dataInfo.dataSlab and dataInfo.dataSlab->extent) resizeDataset(dsetInfo, dataInfo.dataSlab->extent.value());
+        else resizeDataset(dsetInfo, dataInfo.dataDims.value());
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
@@ -1358,9 +1363,17 @@ namespace h5pp::hdf5 {
         } else if(H5Sget_simple_extent_type(space) == H5S_SCALAR)
             h5pp::util::resizeData(data, {static_cast<hsize_t>(1)});
         else {
-            int rank = H5Sget_simple_extent_ndims(space); // This will define the bounding box of the selected elements in the file space
-            std::vector<hsize_t> extent(static_cast<size_t>(rank), 0);
-            H5Sget_simple_extent_dims(space, extent.data(), nullptr);
+            int rank = H5Sget_simple_extent_ndims(space);
+            std::vector<hsize_t> extent(static_cast<size_t>(rank), 0); // This will have the bounding box containing the current selection
+            H5S_sel_type select_type = H5Sget_select_type(space);
+            if(select_type == H5S_sel_type::H5S_SEL_HYPERSLABS){
+                std::vector<hsize_t> start(static_cast<size_t>(rank), 0);
+                std::vector<hsize_t> end(static_cast<size_t>(rank), 0);
+                H5Sget_select_bounds(space,start.data(),end.data());
+                for(size_t idx = 0; idx < extent.size(); idx++) extent[idx] = std::max<hsize_t>(0,1 + end[idx] - start[idx]);
+            }else{
+                H5Sget_simple_extent_dims(space, extent.data(), nullptr);
+            }
             h5pp::util::resizeData(data, extent);
             if(bytes != h5pp::util::getBytesTotal(data))
                 h5pp::logger::log->debug(
@@ -1369,24 +1382,52 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-    inline void resizeData(DataType &data, const DsetInfo &info) {
+    inline void resizeData(DataType &data, DataInfo & dataInfo, const DsetInfo &info) {
+        if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) return; // h5pp never uses malloc
         if(not info.h5Space)
             throw std::runtime_error(h5pp::format("Could not resize given data container: DsetInfo field [h5Space] is not defined"));
         if(not info.h5Type)
             throw std::runtime_error(h5pp::format("Could not resize given data container: DsetInfo field [h5Type] is not defined"));
         if(not info.dsetByte)
             throw std::runtime_error(h5pp::format("Could not resize given data container: DsetInfo field [dsetByte] is not defined"));
-        resizeData(data, info.h5Space.value(), info.h5Type.value(), info.dsetByte.value());
+        auto oldDims = h5pp::util::getDimensions(data); // Store the old dimensions
+        resizeData(data, info.h5Space.value(), info.h5Type.value(), info.dsetByte.value()); // Resize the container
+        auto newDims = h5pp::util::getDimensions(data);
+        if(oldDims != newDims){
+            // Update the metadata
+            dataInfo.dataDims = h5pp::util::getDimensions(data); // Will fail if no dataDims passed on a pointer
+            dataInfo.dataSize = h5pp::util::getSizeFromDimensions(dataInfo.dataDims.value());
+            dataInfo.dataRank = h5pp::util::getRankFromDimensions(dataInfo.dataDims.value());
+            dataInfo.dataByte = dataInfo.dataSize.value() * h5pp::util::getBytesPerElem<DataType>();
+            dataInfo.h5Space = h5pp::util::getMemSpace(dataInfo.dataSize.value(), dataInfo.dataDims.value());
+            // Apply hyperslab selection if there is any
+            if(dataInfo.dataSlab) h5pp::hdf5::selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
+        }
     }
+
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-    inline void resizeData(DataType &data, const AttrInfo &info) {
-        if(not info.h5Space)
+    inline void resizeData(DataType &data, DataInfo & dataInfo, const AttrInfo &attrInfo) {
+        if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) return; // h5pp never uses malloc
+        if(not attrInfo.h5Space)
             throw std::runtime_error(h5pp::format("Could not resize given data container: AttrInfo field [h5Space] is not defined"));
-        if(not info.h5Type)
+        if(not attrInfo.h5Type)
             throw std::runtime_error(h5pp::format("Could not resize given data container: AttrInfo field [h5Type] is not defined"));
-        if(not info.attrByte)
+        if(not attrInfo.attrByte)
             throw std::runtime_error(h5pp::format("Could not resize given data container: AttrInfo field [attrByte] is not defined"));
-        resizeData(data, info.h5Space.value(), info.h5Type.value(), info.attrByte.value());
+
+        auto oldDims = h5pp::util::getDimensions(data); // Store the old dimensions
+        resizeData(data, attrInfo.h5Space.value(), attrInfo.h5Type.value(), attrInfo.attrByte.value()); // Resize the container
+        auto newDims = h5pp::util::getDimensions(data);
+        if(oldDims != newDims){
+            // Update the metadata
+            dataInfo.dataDims = h5pp::util::getDimensions(data); // Will fail if no dataDims passed on a pointer
+            dataInfo.dataSize = h5pp::util::getSizeFromDimensions(dataInfo.dataDims.value());
+            dataInfo.dataRank = h5pp::util::getRankFromDimensions(dataInfo.dataDims.value());
+            dataInfo.dataByte = dataInfo.dataSize.value() * h5pp::util::getBytesPerElem<DataType>();
+            dataInfo.h5Space = h5pp::util::getMemSpace(dataInfo.dataSize.value(), dataInfo.dataDims.value());
+            // Apply hyperslab selection if there is any
+            if(dataInfo.dataSlab) h5pp::hdf5::selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
+        }
     }
 
     inline std::string getSpaceString(const hid::h5s &space, bool enable = true) {
@@ -1715,8 +1756,6 @@ namespace h5pp::hdf5 {
 #endif
         dsetInfo.assertWriteReady();
         dataInfo.assertWriteReady();
-        if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
-        if(dsetInfo.dsetSlab) selectHyperslab(dsetInfo.h5Space.value(), dsetInfo.dsetSlab.value());
         h5pp::logger::log->debug("Writing from memory  {}", dataInfo.string(h5pp::logger::logIf(1)));
         h5pp::logger::log->debug("Writing into dataset {}", dsetInfo.string(h5pp::logger::logIf(1)));
         h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
