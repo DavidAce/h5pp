@@ -12,11 +12,11 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-09a-data-dimensions.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-08a-data-dimensions.h5", h5pp::FilePermission::REPLACE);
 
-    // Initialize a dummy vector with size 12, i.e. a 1-dimensional layout "{12}"
+    // Initialize a vector with size 12, i.e. a 1-dimensional layout "{12}"
     std::vector<double> vec(12);
-    for (size_t i = 0; i < vec.size() ; i++) vec[i] = static_cast<double>(i);
+    for (size_t i = 0; i < vec.size() ; i++) vec[i] = static_cast<double>(i); // Populate the vector with 0,1,2,3...11
 
     // Let's write the data in a few different shapes
     file.writeDataset(vec, "dim12", {12}); // Writes 0,1,2,3....11
@@ -35,7 +35,7 @@ int main() {
     file.writeDataset(vec, "dim3x2x2", {3,2,2});
 
 
-    // One can ready any shape into an std::vector
+    // One can read any shape into an std::vector
     auto std_vec = file.readDataset<std::vector<double>>("dim12");
     auto std_mat = file.readDataset<std::vector<double>>("dim3x4");
     auto std_ten = file.readDataset<std::vector<double>>("dim3x2x2");
