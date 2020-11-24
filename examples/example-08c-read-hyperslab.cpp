@@ -23,7 +23,7 @@ int main() {
     // 20 21 22 23 24
     file.writeDataset(data5x5, "data5x5", {5, 5});
 
-    // In this example we would like read a small portion of data5x5, a 2x4 matrix with top corner at position (3,1)
+    // In this example we would like to read a small portion of data5x5, a 2x4 matrix with top corner at position (3,1)
     // 16 17 18 19
     // 21 22 23 24
 
