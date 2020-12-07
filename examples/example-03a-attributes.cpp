@@ -24,7 +24,8 @@ int main() {
     auto doubleAttribute = file.readAttribute<double>("myInt_doubleAttribute", "intGroup/myInt");
 
     // Print the data
-    printf("StringAttribute read: %s\n", stringAttribute.c_str());
-    printf("doubleAttribute read: %f\n", doubleAttribute);
+    h5pp::print("StringAttribute read: {}\n", stringAttribute);
+    h5pp::print("doubleAttribute read: {}\n", doubleAttribute);
+
     return 0;
 }

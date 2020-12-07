@@ -2,12 +2,11 @@
 #include <h5pp/h5pp.h>
 
 /*
- * In this example we want to treat a whole struct as a single writeable unit again,
- * but as opposed to example 5, this time write it as entries in an HDF5 table.
- * Tables are suitable for time-series data, for instance.
+ * In this example we treat a struct as a single entry to an HDF5 table.
+ * Tables can be suitable for time-series data or coordinate sets, for instance.
  * To achieve this, the memory layout of the struct has to be registered with HDF5 in advance.
- * First define typical struct.
- * Note that it cannot have dynamic-size members.
+ * Note that the struct it cannot have dynamic-size members such as std::vector or std::string.
+ * It is safest to stick to std::trivial and std::standard_layout (aka std::pod) structs.
  *
  */
 struct Particle {
@@ -17,7 +16,7 @@ struct Particle {
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-03b-tables.h5", h5pp::FilePermission::REPLACE,0);
+    h5pp::File file("exampledir/example-04c-tables.h5", h5pp::FilePermission::REPLACE,0);
 
     // Register the compound type
     h5pp::hid::h5t H5_PARTICLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Particle));
@@ -39,15 +38,27 @@ int main() {
      * NOTE
      * The full signature of readTableRecords(...) is
      * readTableRecords(std::string_view tablePath, std::optional<size_t> startEntry = std::nullopt, std::optional<size_t> numEntries = std::nullopt)
+     * When startEntry and/or numEntries (arguments 3 and 4) are missing, h5pp can decide them for you. The behavior is explained in this pseudocode:
      *
-     * If none of startEntry or numEntries (arguments 3 and 4) are given to readTableRecords:
-     *          If container is resizeable: startEntry = 0, numEntries = totalRecords
-     *          If container is not resizeable: startEntry = last entry, numEntries = 1.
-     * If startEntry is given but numEntries is not:
-     *          If container is resizeable -> read from startEntries to the end
-     *          If container is not resizeable -> read from startEntries a single entry
-     * If numEntries given but startEntries is not -> read the last numEntries records
+     * If the read buffer is resizeable:
+     *      If startEntry and numEntries == std::nullopt
+     *          startEntry = 0
+     *          numEntries = totalRecords
+     *      If startEntry == std::nullopt and numEntries <= totalRecords:
+     *          startEntry = totalRecords - numEntries
+     *      If startEntry = (between 0 to totalRecords-1)  and numEntries == std::nullopt:
+     *          numEntries = totalRecords - startEntry
      *
+     * If the read buffer is not resizeable:
+     *      If startEntry and numEntries == std::nullopt
+     *          startEntry = totalRecords-1
+     *          numEntries = 1
+     *      If startEntry == std::nullopt and numEntries <= totalRecords:
+     *          startEntry = totalRecords - numEntries
+     *      If startEntry = (between 0 to totalRecords-1)  and numEntries == std::nullopt:
+     *          numEntries = 1
+
+     * Note:
      * A "resizeable" container is one that has member ".resize(...)", e.g. std::vector
      * A non-resizeable container, does not have ".resize(...)", e.g. C-style arrays
      *
@@ -60,7 +71,7 @@ int main() {
     // Or read multiple entries into a resizeable container. Start from entry 0 and read 10 entries.
     auto particles_read = file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", 0, 10);
     h5pp::print("Multiple entry read:\n");
-    for(auto &p : particles_read) h5pp::print("x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f}\n",p.x,p.y,p.z,p.t);
+    for(auto &&p : particles_read) h5pp::print("x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f}\n",p.x,p.y,p.z,p.t);
 
     return 0;
 }
