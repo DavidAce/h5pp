@@ -94,6 +94,10 @@ function(define_hdf5_target lang libnames target_list)
             # We already processed this target
             return()
         endif()
+        if(NOT ${lib} STREQUAL "hdf5" AND TARGET hdf5::hdf5)
+            # All libraries depend on the main c-library called hdf5::hdf5
+            target_link_libraries(hdf5::${lib} INTERFACE hdf5::hdf5)
+        endif()
     else()
         # Start modeling the dependency structure of the imported libraries
         if(HDF5_C_LIBRARY_${lib})
@@ -447,8 +451,6 @@ endif()
 
 
 if(HDF5_FOUND)
-    include(cmake/PrintTargetProperties.cmake)
-    print_target_properties(hdf5::all)
     if(NOT TARGET hdf5::all)
         add_library(hdf5::all IMPORTED INTERFACE)
     endif()
