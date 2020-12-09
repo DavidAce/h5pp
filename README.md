@@ -250,7 +250,7 @@ considerations (implemented with STL lists, strings and streams).
 There are currently 4 ways to obtain `h5pp`:
 * `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
 * From conda: `conda install -c davidace h5pp`
-* From [conan-center](https://conan.io/center/h5pp/1.8.3)
+* From [conan-center](https://conan.io/center/h5pp/1.8.5)
 * (Ubuntu/Debian only) Download the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
 
 
@@ -269,7 +269,7 @@ Make sure to install and configure Conan first. E.g. add the line `compiler.cpps
 Then run the following command:
 
 ```
-$ conan install h5pp/1.8.3@ --build=missing
+$ conan install h5pp/1.8.5@ --build=missing
 ```
 
 The flag `--build=missing` lets conan install dependencies such as HDF5, Eigen3 and spdlog.
