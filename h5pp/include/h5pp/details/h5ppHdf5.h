@@ -1193,12 +1193,12 @@ namespace h5pp::hdf5 {
             for(size_t idx = 0; idx < appDimensions.size(); idx++)
                 if(idx != axis and appDimensions[idx] > info.dsetDims.value()[idx])
                     throw std::runtime_error(
-                        h5pp::format("Could not append to dataset [{}] along axis {}: Dimension {} size mismatch: data {} > dset{}",
+                        h5pp::format("Could not append to dataset [{}] along axis {}: Dimension {} size mismatch: data {} | dset {}",
                                      info.dsetPath.value(),
                                      axis,
                                      idx,
-                                     appDimensions[idx],
-                                     info.dsetDims.value()[idx]));
+                                     appDimensions,
+                                     info.dsetDims.value()));
 
             // Compute the new dset dimension. Note that dataRank <= dsetRank,
             // For instance when we add a column to a matrix, the column may be an nx1 vector.
