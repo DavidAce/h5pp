@@ -75,62 +75,83 @@ endfunction()
 
 
 function(define_hdf5_target lang libnames target_list)
+    # Variable libnames can be a list of library names.
+    # Usually, it's a list such as "hdf5;pthread;dl;m"
+    # Here we extract the first element and call it lib, and collect the rest as "othernames"
     list(GET libnames 0 lib)
-    if(TARGET hdf5::${lib}_${HDF5_TARGET_SUFFIX})
-        return()
-    endif()
-
     list(LENGTH libnames numlibs)
     if(numlibs GREATER 1)
         list(SUBLIST libnames 1 -1 othernames)
     endif()
-    if(HDF5_C_LIBRARY_${lib})
-        add_library(hdf5::${lib}_${HDF5_TARGET_SUFFIX} ${HDF5_LINK_TYPE} IMPORTED)
-        set_target_properties(hdf5::${lib}_${HDF5_TARGET_SUFFIX} PROPERTIES IMPORTED_LOCATION  ${HDF5_C_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES  "hdf5::hdf5_${HDF5_TARGET_SUFFIX}")
-    elseif(HDF5_CXX_LIBRARY_${lib})
-        add_library(hdf5::${lib}_${HDF5_TARGET_SUFFIX} ${HDF5_LINK_TYPE} IMPORTED)
-        set_target_properties(hdf5::${lib}_${HDF5_TARGET_SUFFIX} PROPERTIES IMPORTED_LOCATION  ${HDF5_CXX_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES "hdf5::hdf5_cpp_${HDF5_TARGET_SUFFIX};hdf5::hdf5_${HDF5_TARGET_SUFFIX}")
-    elseif(HDF5_Fortran_LIBRARY_${lib})
-        add_library(hdf5::${lib}_${HDF5_TARGET_SUFFIX} ${HDF5_LINK_TYPE} IMPORTED)
-        set_target_properties(hdf5::${lib}_${HDF5_TARGET_SUFFIX} PROPERTIES IMPORTED_LOCATION  ${HDF5_Fortran_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES "hdf5::hdf5_fortran_${HDF5_TARGET_SUFFIX};hdf5::hdf5_${HDF5_TARGET_SUFFIX}")
-    elseif(HDF5_${lib}_LIBRARY) # -- For older versions of CMake
-        add_library(hdf5::${lib}_${HDF5_TARGET_SUFFIX} ${HDF5_LINK_TYPE} IMPORTED)
-        set_target_properties(hdf5::${lib}_${HDF5_TARGET_SUFFIX} PROPERTIES IMPORTED_LOCATION  ${HDF5_${lib}_LIBRARY})
-        # Just append the usual suspects
-        list(APPEND othernames z dl rt m)
-        list(REMOVE_DUPLICATES othernames)
+
+
+    if(TARGET hdf5::${lib})
+        # From CMake version > 3.19 we get proper targets defined in hdf5::${lib}. There is no need to manually
+        # model the HDF5 the interdependencies of the imported libraries in these targets, since that is done for us.
+        # Therefore we just append the HDF5 target to the target list.
+        # The external link libraries in "othernames" can be linked as interface libraries
+        foreach(other ${othernames})
+            target_link_libraries(hdf5::${lib} INTERFACE ${other})
+        endforeach()
+        # Append to target_list
+        set(${target_list} "${${target_list}};hdf5::${lib}" PARENT_SCOPE)
     else()
-        #To print all variables, use the code below:
-#        get_cmake_property(_variableNames VARIABLES)
-#        foreach (_variableName ${_variableNames})
-#            if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
-#                message(STATUS "${_variableName}=${${_variableName}}")
-#            endif()
-#        endforeach()
-        message(STATUS "Could not match lib ${lib} and language ${lang} to a defined variable \n"
-                "-- Considered in order: \n"
-                "--     HDF5_${lang}_LIBRARY_${lib} \n"
-                "--     HDF5_C_LIBRARY_${lib} \n"
-                "--     HDF5_CXX_LIBRARY_${lib} \n"
-                "--     HDF5_Fortran_LIBRARY_${lib} \n"
-                "--     HDF5_${lib}_LIBRARY \n " )
-        return()
-    endif()
-
-    foreach(other ${othernames})
-        if("${other}" MATCHES "hdf5")
-            target_link_libraries(hdf5::${lib}_${HDF5_TARGET_SUFFIX} INTERFACE hdf5::${other}_${HDF5_TARGET_SUFFIX})
-        else()
-            target_link_libraries(hdf5::${lib}_${HDF5_TARGET_SUFFIX} INTERFACE ${other})
+        if(TARGET hdf5::${lib}_${HDF5_TARGET_SUFFIX})
+            if(NOT hdf5::${lib}_${HDF5_TARGET_SUFFIX} IN_LIST ${target_list})
+                # We expect this library to be in target_list already... but just in case
+                set(${target_list} "${${target_list}};hdf5::${lib}_${HDF5_TARGET_SUFFIX}" PARENT_SCOPE)
+            endif()
+            return()
         endif()
-    endforeach()
+        # Start modeling the dependency structure of the imported libraries
+        if(HDF5_C_LIBRARY_${lib})
+            add_library(hdf5::${lib}_${HDF5_TARGET_SUFFIX} ${HDF5_LINK_TYPE} IMPORTED)
+            set_target_properties(hdf5::${lib}_${HDF5_TARGET_SUFFIX} PROPERTIES IMPORTED_LOCATION  ${HDF5_C_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES  "hdf5::hdf5_${HDF5_TARGET_SUFFIX}")
+        elseif(HDF5_CXX_LIBRARY_${lib})
+            add_library(hdf5::${lib}_${HDF5_TARGET_SUFFIX} ${HDF5_LINK_TYPE} IMPORTED)
+            set_target_properties(hdf5::${lib}_${HDF5_TARGET_SUFFIX} PROPERTIES IMPORTED_LOCATION  ${HDF5_CXX_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES "hdf5::hdf5_cpp_${HDF5_TARGET_SUFFIX};hdf5::hdf5_${HDF5_TARGET_SUFFIX}")
+        elseif(HDF5_Fortran_LIBRARY_${lib})
+            add_library(hdf5::${lib}_${HDF5_TARGET_SUFFIX} ${HDF5_LINK_TYPE} IMPORTED)
+            set_target_properties(hdf5::${lib}_${HDF5_TARGET_SUFFIX} PROPERTIES IMPORTED_LOCATION  ${HDF5_Fortran_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES "hdf5::hdf5_fortran_${HDF5_TARGET_SUFFIX};hdf5::hdf5_${HDF5_TARGET_SUFFIX}")
+        elseif(HDF5_${lib}_LIBRARY) # -- For older versions of CMake
+            add_library(hdf5::${lib}_${HDF5_TARGET_SUFFIX} ${HDF5_LINK_TYPE} IMPORTED)
+            set_target_properties(hdf5::${lib}_${HDF5_TARGET_SUFFIX} PROPERTIES IMPORTED_LOCATION  ${HDF5_${lib}_LIBRARY})
+            # Just append the usual suspects
+            list(APPEND othernames z dl rt m)
+            list(REMOVE_DUPLICATES othernames)
+        else()
+            #To print all variables, use the code below:
+            #        get_cmake_property(_variableNames VARIABLES)
+            #        foreach (_variableName ${_variableNames})
+            #            if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
+            #                message(STATUS "${_variableName}=${${_variableName}}")
+            #            endif()
+            #        endforeach()
+            message(STATUS "Could not match lib ${lib} and language ${lang} to a defined variable \n"
+                    "-- Considered in order: \n"
+                    "--     HDF5_${lang}_LIBRARY_${lib} \n"
+                    "--     HDF5_C_LIBRARY_${lib} \n"
+                    "--     HDF5_CXX_LIBRARY_${lib} \n"
+                    "--     HDF5_Fortran_LIBRARY_${lib} \n"
+                    "--     HDF5_${lib}_LIBRARY \n " )
+            return()
+        endif()
+        # Append the remaining libs in "othernames" as interface libraries
+        foreach(other ${othernames})
+            if("${other}" MATCHES "hdf5")
+                target_link_libraries(hdf5::${lib}_${HDF5_TARGET_SUFFIX} INTERFACE hdf5::${other}_${HDF5_TARGET_SUFFIX})
+            else()
+                target_link_libraries(hdf5::${lib}_${HDF5_TARGET_SUFFIX} INTERFACE ${other})
+            endif()
+        endforeach()
 
-    # Take care of includes
-    set(${lib}_include ${HDF5_${lang}_INCLUDE_DIRS} ${HDF5_${lang}_INCLUDE_DIR} ${HDF5_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
-    list(REMOVE_DUPLICATES ${lib}_include)
-    target_include_directories(hdf5::${lib}_${HDF5_TARGET_SUFFIX} SYSTEM INTERFACE ${${lib}_include})
-
-    set(${target_list} "${${target_list}};hdf5::${lib}_${HDF5_TARGET_SUFFIX}" PARENT_SCOPE)
+        # Take care of includes
+        set(${lib}_include ${HDF5_${lang}_INCLUDE_DIRS} ${HDF5_${lang}_INCLUDE_DIR} ${HDF5_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
+        list(REMOVE_DUPLICATES ${lib}_include)
+        target_include_directories(hdf5::${lib}_${HDF5_TARGET_SUFFIX} SYSTEM INTERFACE ${${lib}_include})
+        # Append to target list
+        set(${target_list} "${${target_list}};hdf5::${lib}_${HDF5_TARGET_SUFFIX}" PARENT_SCOPE)
+    endif()
 endfunction()
 
 
@@ -163,8 +184,8 @@ function(find_package_hdf5_isolator hdf5_root)
     unset(HDF5_FOUND )
     unset(HDF5_FOUND CACHE)
     unset(HDF5_FOUND PARENT_SCOPE)
-    set(HDF5_FOUND False)
-    set(HDF5_FIND_REQUIRED False)
+    set(HDF5_FOUND OFF)
+    set(HDF5_FIND_REQUIRED OFF)
 
     if(HDF5_FIND_VERBOSE)
         message(STATUS "Searching for hdf5 execs in ${hdf5_root}" )
@@ -172,6 +193,11 @@ function(find_package_hdf5_isolator hdf5_root)
     include(GNUInstallDirs)
 
     set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE ON)
+    if(BUILD_SHARED_LIBS)
+        set(HDF5_EXEC_TESTFLAG "-shlib")
+    else()
+        set(HDF5_EXEC_TESTFLAG "-noshlib")
+    endif()
     if("C" IN_LIST HDF5_FIND_COMPONENTS)
         enable_language(C)
         find_file(HDF5_C_COMPILER_EXECUTABLE        NAMES h5cc h5pcc  PATHS ${hdf5_root} ${hdf5_root}/hdf5 PATH_SUFFIXES bin hdf5/bin ${CMAKE_INSTALL_LIBEXECDIR} ${CMAKE_INSTALL_BINDIR} NO_DEFAULT_PATH)
@@ -193,8 +219,14 @@ function(find_package_hdf5_isolator hdf5_root)
             message(STATUS "Looking for components              : ${HDF5_FIND_COMPONENTS}")
         endif()
 
+        if(HDF5_FIND_DEBUG OR HDF5_FIND_VERBOSE)
+            message(STATUS "Starting find_package in NO_CONFIG mode")
+        endif()
         set(CMAKE_MODULE_PATH "") # Modify this variable locally to make sure we use CMake's inbuilt FindHDF5.cmake module
         find_package(HDF5 ${HDF5_FIND_VERSION} COMPONENTS ${HDF5_FIND_COMPONENTS} QUIET)
+        if(HDF5_FIND_DEBUG OR HDF5_FIND_VERBOSE)
+            message(STATUS "Starting find_package in NO_CONFIG mode... Found: ${HDF5_FOUND}")
+        endif()
     endif()
     if(HDF5_FOUND)
         # Add C_HL and CXX_HL to the language bindings
@@ -205,6 +237,7 @@ function(find_package_hdf5_isolator hdf5_root)
                 list(APPEND HDF5_LANG ${LANG}_HL ${lang}_HL)
             endif()
         endforeach()
+        list(REMOVE_DUPLICATES HDF5_LANG)
         set(ACCEPT_PACKAGE TRUE)
         set(HDF5_LIBNAMES)
         set(HDF5_LINK_LIBNAMES)
@@ -232,7 +265,7 @@ function(find_package_hdf5_isolator hdf5_root)
             endforeach()
         endforeach()
 
-        # Check that each link library has correct static/shared extension
+        # Check that each link library (not hdf5 library!) has correct static/shared extension
         foreach(lang ${HDF5_LANG})
             foreach(lib ${HDF5_LINK_LIBNAMES})
                 get_filename_component(lib_extension "${HDF5_${lang}_LIBRARY_${lib}}" EXT)
@@ -336,6 +369,9 @@ endfunction()
 function(find_package_hdf5_config_wrapper)
     set(HDF5_FIND_REQUIRED False)
     set(HDF5_FIND_VERSION "") # The user has probably installed the latest version
+    if(HDF5_FIND_DEBUG OR HDF5_FIND_VERBOSE)
+        message(STATUS "Finding package HDF5 in CONFIG mode...")
+    endif()
     find_package(HDF5
             COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
             HINTS ${CMAKE_INSTALL_PREFIX}
@@ -415,27 +451,29 @@ endif()
 
 
 if(HDF5_FOUND)
-    add_library(hdf5::hdf5 IMPORTED INTERFACE)
-    target_link_libraries(hdf5::hdf5 INTERFACE ${HDF5_TARGETS})
-    if(MSVC AND BUILD_SHARED_LIBS)
-        target_compile_definitions(hdf5::hdf5 INTERFACE H5_BUILT_AS_DYNAMIC_LIB)
-    endif()
-
-    if(APPLE AND "sz" IN_LIST HDF5_LINK_LIBNAMES)
-        find_library(SZIP_LIBRARY NAMES sz szip szip-static libsz libszip libszip-static HINTS /usr/local/opt) # No built in findSZIP.cmake
-        if(SZIP_LIBRARY)
-            message(STATUS "Found SZIP: ${SZIP_LIBRARY}")
-            get_filename_component(SZIP_PARENT_DIR ${SZIP_LIBRARY} DIRECTORY)
-            target_link_libraries(hdf5::hdf5 INTERFACE -L${SZIP_PARENT_DIR})
+    if(${CMAKE_VERSION} VERSION_GREATER "3.19.0")
+        message(DEBUG "Detected CMake version > 3.19.0: CMake native FindHDF5.cmake now defines a target [hdf5::hdf5]")
+        target_link_libraries(hdf5::hdf5 INTERFACE ${HDF5_TARGETS})
+    else()
+        add_library(hdf5::hdf5 IMPORTED INTERFACE)
+        target_link_libraries(hdf5::hdf5 INTERFACE ${HDF5_TARGETS})
+        if(MSVC AND BUILD_SHARED_LIBS)
+            target_compile_definitions(hdf5::hdf5 INTERFACE H5_BUILT_AS_DYNAMIC_LIB)
         endif()
-    endif()
-
-
-    if("sz" IN_LIST HDF5_LINK_LIBNAMES)
-        CHECK_LIBRARY_EXISTS(aec aec_decode_init "/usr/lib/x86_64-linux-gnu" HAVE_AEC_LIB)
-        find_library(AEC_LIBRARY NAMES aec)
-        if(HAVE_AEC_LIB OR AEC_LIBRARY)
-            target_link_libraries(hdf5::hdf5 INTERFACE aec)
+        if(APPLE AND "sz" IN_LIST HDF5_LINK_LIBNAMES)
+            find_library(SZIP_LIBRARY NAMES sz szip szip-static libsz libszip libszip-static HINTS /usr/local/opt) # No built in findSZIP.cmake
+            if(SZIP_LIBRARY)
+                message(STATUS "Found SZIP: ${SZIP_LIBRARY}")
+                get_filename_component(SZIP_PARENT_DIR ${SZIP_LIBRARY} DIRECTORY)
+                target_link_libraries(hdf5::hdf5 INTERFACE -L${SZIP_PARENT_DIR})
+            endif()
+        endif()
+        if("sz" IN_LIST HDF5_LINK_LIBNAMES)
+            CHECK_LIBRARY_EXISTS(aec aec_decode_init "/usr/lib/x86_64-linux-gnu" HAVE_AEC_LIB)
+            find_library(AEC_LIBRARY NAMES aec)
+            if(HAVE_AEC_LIB OR AEC_LIBRARY)
+                target_link_libraries(hdf5::hdf5 INTERFACE aec)
+            endif()
         endif()
     endif()
 
