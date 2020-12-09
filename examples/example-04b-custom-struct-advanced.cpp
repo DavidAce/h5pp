@@ -17,7 +17,7 @@ void print_point(const SpaceTimePoint &p) {
 }
 
 int main() {
-    int logLevel = 2; // Default log level is 2: "info"
+    size_t logLevel = 2; // Default log level is 2: "info"
     h5pp::File file("exampledir/example-04b-custom-struct-advanced.h5", h5pp::FilePermission::REPLACE, logLevel);
 
     // We can create a multi-dimensional array using H5Tarray_create. It takes the
