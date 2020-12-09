@@ -44,12 +44,12 @@ if(TARGET spdlog::spdlog)
     list(APPEND H5PP_FOUND_TARGETS spdlog::spdlog)
 endif()
 
-if (NOT TARGET hdf5::hdf5 AND hdf5::hdf5 IN_LIST H5PP_ENABLED_TARGETS)
+if (NOT TARGET hdf5::all AND hdf5::all IN_LIST H5PP_ENABLED_TARGETS)
     find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
 endif()
 
-if(TARGET hdf5::hdf5)
-    list(APPEND H5PP_FOUND_TARGETS  hdf5::hdf5)
+if(TARGET hdf5::all)
+    list(APPEND H5PP_FOUND_TARGETS  hdf5::all)
 endif()
 
 if(NOT H5PP_FIND_QUIETLY)
