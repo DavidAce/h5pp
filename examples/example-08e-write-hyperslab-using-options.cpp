@@ -35,7 +35,7 @@ int main() {
     // 0  0  0  0  0
     // 0  0  0  0  0
 
-    // Initialize the small vector with size 4 filled with 1,2,3,4 that we will interpret as the 2x2 matrix
+    // Initialize the small vector with size 4 filled with 1,2,3,4 which will become our 2x2 matrix
     std::vector<double> data2x2 = {1, 2, 3, 4};
 
     // Now we need to select a 2x2 hyperslab in data5x5. There are three ways of doing this:
