@@ -1,9 +1,10 @@
 #include <h5pp/h5pp.h>
 #include <iostream>
 
-// This example shows how to use to write data into a portion of a dataset, a so-called "hyperslab", using h5pp::Options
-// Reusing the h5pp::Options allows finest control: For instance, it allows reading/writing between hyperslab selections
-// on both memory and dataset spaces.
+// This example shows how to write data into a portion of a dataset, a so-called "hyperslab".
+// This time we will populate the h5pp::Options object to pass custom metadata information to .writeDataset(...)
+// The main motivation for using h5pp::Options is that it allows fine-grained control with more explicit syntax.
+// In addition, it allows reading/writing between hyperslab selections on both memory and dataset spaces.
 
 /********************************************************************
    Note that the HDF5 C-API uses row-major layout!

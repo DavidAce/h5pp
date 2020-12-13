@@ -1,8 +1,9 @@
 #include <h5pp/h5pp.h>
 #include <iostream>
 
-// This example shows how to use to write data into a portion of a dataset, a so-called "hyperslab", by using h5pp::DsetInfo
-// Reusing the h5pp::DsetInfo object in repeated operations avoids costly metadata analysis and allows finer control.
+// This example shows how to write data into a portion of a dataset, a so-called "hyperslab".
+// This time we will use a metadata object of type "h5pp::DsetInfo" which is normally returned from .writeDataset(...).
+// The main motivation is that reusing the h5pp::DsetInfo object in repeated operations (e.g. for loops) avoids costly metadata analysis.
 
 /********************************************************************
    Note that the HDF5 C-API uses row-major layout!
