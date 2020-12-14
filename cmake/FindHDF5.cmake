@@ -368,11 +368,11 @@ endfunction()
 
 function(find_package_hdf5_config_wrapper)
     set(HDF5_FIND_REQUIRED False)
-    set(HDF5_FIND_VERSION "") # The user has probably installed the latest version
+#    set(HDF5_FIND_VERSION "") # The user has probably installed the latest version
     if(HDF5_FIND_DEBUG OR HDF5_FIND_VERBOSE)
         message(STATUS "Finding package HDF5 in CONFIG mode...")
     endif()
-    find_package(HDF5
+    find_package(HDF5 ${HDF5_FIND_VERSION}
             COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
             HINTS ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build hdf5/share/cmake
