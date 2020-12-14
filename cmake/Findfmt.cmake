@@ -74,7 +74,7 @@ endif()
 if(NOT FMT_NO_CONFIG OR FMT_CONFIG_ONLY)
     find_package(fmt ${fmt_FIND_VERSION}
             HINTS  ${fmt_ROOT} ${CONAN_FMT_ROOT} ${CMAKE_INSTALL_PREFIX}
-            PATH_SUFFIXES include fmt include/fmt fmt/include/fmt spdlog
+            PATH_SUFFIXES include fmt include/fmt fmt/include/fmt
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
             ${NO_CMAKE_SYSTEM_PATH}
@@ -87,11 +87,11 @@ if(NOT FMT_NO_CONFIG OR FMT_CONFIG_ONLY)
         get_target_property(FMT_INCLUDE_DIR fmt::fmt INTERFACE_INCLUDE_DIRECTORIES)
         fmt_check_version(FMT_INCLUDE_DIR)
         if(NOT FMT_VERSION_OK OR NOT FMT_VERSION)
-            message(WARNING "Could not determine the fmt version.\n"
+            message(WARNING "Could not determine the version of fmt.\n"
                     "However, the target fmt::fmt has already been defined, so it will be used:\n"
                     "FMT_INCLUDE_DIR: ${FMT_INCLUDE_DIR}\n"
                     "FMT_VERSION:     ${FMT_VERSION}\n"
-                    "Something is wrong with your installation of spdlog")
+                    "Something is wrong with your installation of fmt")
         endif()
 
         if(FMT_INCLUDE_DIR MATCHES "conda")
@@ -104,8 +104,8 @@ endif()
 if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
     find_path(FMT_INCLUDE_DIR
             fmt/fmt.h
-            HINTS ${fmt_ROOT} ${FMT_INCLUDE_DIR} ${H5PP_CONDA_CANDIDATE_PATHS} ${SPDLOG_INCLUDE_DIR} ${spdlog_ROOT}
-            PATH_SUFFIXES fmt fmt/include include  spdlog include/spdlog include/fmt spdlog/include/spdlog
+            HINTS ${fmt_ROOT} ${FMT_INCLUDE_DIR} ${H5PP_CONDA_CANDIDATE_PATHS}
+            PATH_SUFFIXES fmt fmt/include include include/fmt
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
             ${NO_CMAKE_SYSTEM_PATH}
