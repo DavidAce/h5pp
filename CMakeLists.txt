@@ -1,6 +1,6 @@
  
 cmake_minimum_required(VERSION 3.12)
-project(h5pp VERSION 1.8.5
+project(h5pp VERSION 1.8.6
         DESCRIPTION "A C++17 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         LANGUAGES CXX
@@ -223,6 +223,7 @@ else()
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindEigen3.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findspdlog.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findfmt.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindHDF5.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake
             DESTINATION share/h5pp/cmake
