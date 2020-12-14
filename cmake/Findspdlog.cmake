@@ -62,9 +62,17 @@ endfunction()
 if(SPDLOG_NO_DEFAULT_PATH)
     set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
 endif()
+if(NOT BUILD_SHARED_LIBS)
+    # Spdlog from ubuntu apt injects shared library into static buolds.
+    # Can't take any chances here.
+    set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH)
+    set(NO_SYSTEM_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH)
+endif()
+
 if(SPDLOG_NO_CMAKE_PACKAGE_REGISTRY)
     set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
 endif()
+
 
 # First try finding a config somewhere in the system
 if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
@@ -73,10 +81,13 @@ if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
             PATH_SUFFIXES include spdlog include/spdlog spdlog/include/spdlog
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
+            ${NO_CMAKE_SYSTEM_PATH}
+            ${NO_SYSTEM_ENVIRONMENT_PATH}
             CONFIG QUIET
             )
-
     if(TARGET spdlog::spdlog)
+        include(cmake/PrintTargetProperties.cmake)
+        print_target_properties(spdlog::spdlog)
         get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
         spdlog_check_version(SPDLOG_INCLUDE_DIR)
         if(NOT SPDLOG_VERSION_OK OR NOT SPDLOG_VERSION)
@@ -89,18 +100,19 @@ if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
         if(SPDLOG_INCLUDE_DIR MATCHES "conda")
             # Use the header-only mode to avoid weird linking errors
             target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_HEADER_ONLY)
-            target_compile_definitions(spdlog::spdlog INTERFACE FMT_HEADER_ONLY )
         endif()
     endif()
 endif()
 
-if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
+if(NOT TARGET spdlog::spdlog AND NOT SPDLOG_CONFIG_ONLY)
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h
             HINTS ${spdlog_ROOT} ${H5PP_CONDA_CANDIDATE_PATHS} ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES spdlog/include include spdlog include/spdlog spdlog/include/spdlog
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
+            ${NO_CMAKE_SYSTEM_PATH}
+            ${NO_SYSTEM_ENVIRONMENT_PATH}
             QUIET
             )
     if(SPDLOG_INCLUDE_DIR)
@@ -109,6 +121,16 @@ if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
             set(spdlog_FOUND TRUE)
             add_library(spdlog::spdlog INTERFACE IMPORTED)
             target_include_directories(spdlog::spdlog SYSTEM INTERFACE ${SPDLOG_INCLUDE_DIR})
+            find_package(fmt QUIET)
+            if(TARGET fmt::fmt)
+                target_link_libraries(spdlog::spdlog INTERFACE fmt::fmt)
+                if(NOT FMT_INCLUDE_DIR)
+                    get_target_property(FMT_INCLUDE_DIR fmt::fmt INTERFACE_INCLUDE_DIRECTORIES)
+                endif()
+                if(NOT FMT_INCLUDE_DIR MATCHES "bundled")
+                    target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_FMT_EXTERNAL)
+                endif()
+            endif()
             if(SPDLOG_INCLUDE_DIR MATCHES "conda")
                 # Choose header-only because conda libraries sometimes give linking errors, such as:
                 # /usr/bin/ld:
@@ -117,7 +139,6 @@ if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
                 #       at 0x4 in section `.text._ZN6spdlog7details2os9thread_idEv' failed
                 # /home/user/miniconda/lib/libspdlog.a: error adding symbols: Bad value
                 target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_HEADER_ONLY)
-                target_compile_definitions(spdlog::spdlog INTERFACE FMT_HEADER_ONLY )
             else()
                 # There may or may not be a compiled library to go with the headers
                 find_library(SPDLOG_LIBRARY
@@ -126,58 +147,14 @@ if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog AND NOT SPDLOG_CONFIG_ONLY)
                         PATH_SUFFIXES spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
                         ${NO_DEFAULT_PATH}
                         ${NO_CMAKE_PACKAGE_REGISTRY}
+                        ${NO_CMAKE_SYSTEM_PATH}
+                        ${NO_SYSTEM_ENVIRONMENT_PATH}
                         )
                 if(SPDLOG_LIBRARY AND NOT SPDLOG_LIBRARY MATCHES "conda")
                     target_link_libraries(spdlog::spdlog INTERFACE ${SPDLOG_LIBRARY} )
                     target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_COMPILED_LIB )
                 else()
                     target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_HEADER_ONLY)
-                endif()
-
-                # Check if fmt has been bundled with spdlog
-                find_path(SPDLOG_FMT_BUNDLED
-                        spdlog/fmt/fmt.h
-                        HINTS ${SPDLOG_INCLUDE_DIR} ${spdlog_ROOT}
-                        PATH_SUFFIXES spdlog/include include spdlog include/spdlog spdlog/include/spdlog
-                        ${NO_DEFAULT_PATH}
-                        ${NO_CMAKE_PACKAGE_REGISTRY}
-                        )
-                if(NOT SPDLOG_FMT_BUNDLED)
-                    # Find external fmt configuration
-                    include(CMakeFindDependencyMacro)
-                    find_dependency(fmt
-                            HINTS ${fmt_ROOT} ${H5PP_CONDA_CANDIDATE_PATHS} ${CMAKE_INSTALL_PREFIX}
-                            PATH_SUFFIXES fmt fmt/${CMAKE_INSTALL_LIBDIR} spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
-                            ${NO_DEFAULT_PATH}
-                            ${NO_CMAKE_PACKAGE_REGISTRY}
-                            CONFIG)
-                    if(TARGET fmt::fmt)
-                        target_link_libraries(spdlog::spdlog INTERFACE fmt::fmt)
-                        target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_FMT_EXTERNAL)
-                    else()
-                        find_library(FMT_LIBRARY
-                                NAMES fmt
-                                HINTS ${fmt_ROOT} ${CMAKE_INSTALL_PREFIX}
-                                PATHS ${H5PP_CONDA_CANDIDATE_PATHS}
-                                PATH_SUFFIXES fmt fmt/${CMAKE_INSTALL_LIBDIR} spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
-                                ${NO_DEFAULT_PATH}
-                                ${NO_CMAKE_PACKAGE_REGISTRY}
-                                )
-                        find_path(FMT_INCLUDE_DIR
-                                fmt/fmt.h
-                                HINTS ${fmt_ROOT} ${FMT_INCLUDE_DIR} ${H5PP_CONDA_CANDIDATE_PATHS} ${SPDLOG_INCLUDE_DIR} ${spdlog_ROOT}
-                                PATH_SUFFIXES fmt fmt/include include  spdlog include/spdlog include/fmt spdlog/include/spdlog
-                                ${NO_DEFAULT_PATH}
-                                ${NO_CMAKE_PACKAGE_REGISTRY}
-                                )
-                        if(FMT_INCLUDE_DIR AND NOT FMT_LIBRARY)
-                            target_include_directories(spdlog::spdlog SYSTEM INTERFACE ${FMT_INCLUDE_DIR})
-                            target_compile_definitions(spdlog::spdlog INTERFACE FMT_HEADER_ONLY)
-                        elseif(FMT_INCLUDE_DIR AND FMT_LIBRARY AND NOT FMT_LIBRARY MATCHES "conda")
-                            target_link_libraries(spdlog::spdlog INTERFACE ${FMT_LIBRARY})
-                            target_include_directories(spdlog::spdlog SYSTEM INTERFACE ${FMT_INCLUDE_DIR})
-                        endif()
-                    endif()
                 endif()
             endif()
         endif()
