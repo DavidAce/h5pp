@@ -86,8 +86,6 @@ if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
             CONFIG QUIET
             )
     if(TARGET spdlog::spdlog)
-        include(cmake/PrintTargetProperties.cmake)
-        print_target_properties(spdlog::spdlog)
         get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
         spdlog_check_version(SPDLOG_INCLUDE_DIR)
         if(NOT SPDLOG_VERSION_OK OR NOT SPDLOG_VERSION)

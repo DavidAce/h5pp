@@ -82,8 +82,6 @@ if(NOT FMT_NO_CONFIG OR FMT_CONFIG_ONLY)
             CONFIG QUIET
             )
     if(TARGET fmt::fmt)
-        include(cmake/PrintTargetProperties.cmake)
-        print_target_properties(fmt::fmt)
         get_target_property(FMT_INCLUDE_DIR fmt::fmt INTERFACE_INCLUDE_DIRECTORIES)
         fmt_check_version(FMT_INCLUDE_DIR)
         if(NOT FMT_VERSION_OK OR NOT FMT_VERSION)
