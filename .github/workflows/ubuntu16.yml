@@ -47,12 +47,12 @@ jobs:
           update-conda: false
           conda-channels: conda-forge
 
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.conan/data
-            build/Debug/install
-          key: ${{ env.cache-name }}
+#      - uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.conan/data
+#            build/Debug/install
+#          key: ${{ env.cache-name }}
 
       - name: Setup gcc
         if: matrix.compiler == 'gcc'
