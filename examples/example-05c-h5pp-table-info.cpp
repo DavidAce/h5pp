@@ -1,16 +1,25 @@
 #include <h5pp/h5pp.h>
 
-// When interacting with tables h5pp scans the table object in file
-// and populates a struct "TableInfo", which is returned to the user.
-// The scanning process introduces some overhead, which is why reusing the
-// info struct can be desirable to speed up repeated operations.
+/*
+ * This example shows how to use a TableInfo object.
+ *
+ * When creating a table or transferring a table record to/from file, h5pp scans its type, shape, link path
+ * and many other properties. The results from a scan populates a struct of type "TableInfo".
+ *
+ * The TableInfo of a dataset can be obtained with h5pp::File::getTableInfo(<table path>),
+ * but is also returned from a h5pp::File::createTable(...) operation, or a
+ * h5pp::File::appendTableRecords operations
+ *
+ * The scanning process introduces some overhead, which is why reusing the
+ * struct can be desirable, in particular to speed up repeated operations.
+ *
+ *
+ */
 
-// This example shows how to extract metadata about tables.
-// Tables are support chunking and compression by default.
 
-// To achieve this, the memory layout of the struct has to be registered with HDF5 in advance.
 // First define typical struct.
-// Note that it cannot have dynamic-size members.
+// Note that it cannot have dynamically sized members (such as std::vector or std::string)
+
 struct Stats {
     char   city[32];
     int    population;
