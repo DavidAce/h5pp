@@ -29,7 +29,19 @@ Includes
 --------
 
 
-- ``h5ppSpdlog.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppSpdlog.h`)
+- ``algorithm``
+
+- ``h5ppTypeSfinae.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppTypeSfinae.h`)
+
+- ``iostream``
+
+- ``list``
+
+- ``memory``
+
+- ``sstream``
+
+- ``string``
 
 
 
@@ -42,6 +54,8 @@ Included By
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppHyperslab.h`
 
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppLogger.h`
+
+- :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppSpdlog.h`
 
 
 
@@ -59,9 +73,11 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_namespaceh5pp_1ad2b5b92d3e43f1709db8b36b48e8bf01`
-
 - :ref:`exhale_function_namespaceh5pp_1a1916ac19846807673af32b055bb98af4`
 
+- :ref:`exhale_function_namespaceh5pp_1ad2b5b92d3e43f1709db8b36b48e8bf01`
+
 - :ref:`exhale_function_namespaceh5pp_1_1formatting_1a86b45fb9ffb3215791d2201ade2acccc`
+
+- :ref:`exhale_function_namespaceh5pp_1ac868e8b1c14646766625645c067d195c`
 

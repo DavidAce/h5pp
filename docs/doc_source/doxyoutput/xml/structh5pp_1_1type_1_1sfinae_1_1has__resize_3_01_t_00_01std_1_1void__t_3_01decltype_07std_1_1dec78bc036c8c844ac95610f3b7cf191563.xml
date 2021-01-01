@@ -35,7 +35,7 @@
         <label>true_type</label>
       </node>
     </collaborationgraph>
-    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="59" column="46" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="59" bodyend="59"/>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="67" column="46" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="67" bodyend="67"/>
     <listofallmembers>
     </listofallmembers>
   </compounddef>

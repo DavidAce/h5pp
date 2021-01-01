@@ -39,7 +39,7 @@
         </childnode>
       </node>
     </collaborationgraph>
-    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="57" column="44" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="57" bodyend="57"/>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="65" column="44" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="65" bodyend="65"/>
     <listofallmembers>
     </listofallmembers>
   </compounddef>

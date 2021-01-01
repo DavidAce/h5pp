@@ -35,6 +35,8 @@ Includes
 
 - ``h5ppSpdlog.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppSpdlog.h`)
 
+- ``h5ppTypeSfinae.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppTypeSfinae.h`)
+
 
 
 Included By
@@ -75,6 +77,8 @@ Functions
 - :ref:`exhale_function_namespaceh5pp_1_1logger_1af5c381c4c6c5da7d66c1d42c7c529a7f`
 
 - :ref:`exhale_function_namespaceh5pp_1_1logger_1a964f0df3728a189192ec0630dc58bf95`
+
+- :ref:`exhale_function_namespaceh5pp_1_1logger_1a41856ce07cc22724ac358fab12ef879e`
 
 - :ref:`exhale_function_namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4`
 

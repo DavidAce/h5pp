@@ -4,6 +4,11 @@ if (NOT DOXYGEN)
     return ()
 endif ()
 
+find_program(SPHINXBUILD sphinx-build)
+if (NOT SPHINXBUILD)
+    message(STATUS "Target 'docs' disabled (requires sphinx-build)")
+    return ()
+endif ()
 
 add_custom_target(docs
         COMMAND ${CMAKE_MAKE_PROGRAM} html

@@ -15,7 +15,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1276" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1276" bodyend="-1"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1491" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1491" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="namespaceh5pp_1_1hdf5_1_1internal_1a611716506446499c6d33fbd997affb66" prot="public" static="no" mutable="no">
         <type>long</type>
@@ -29,7 +29,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1277" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1277" bodyend="-1"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1492" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1492" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="namespaceh5pp_1_1hdf5_1_1internal_1a53a13585f1287ea9f5b31a0cde7677f8" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -42,7 +42,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1278" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1278" bodyend="-1"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1493" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1493" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="func">
@@ -85,11 +85,11 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1280" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1280" bodyend="1323"/>
-        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a611716506446499c6d33fbd997affb66" compoundref="h5pp_hdf5_8h" startline="1277">maxDepth</references>
-        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a53a13585f1287ea9f5b31a0cde7677f8" compoundref="h5pp_hdf5_8h" startline="1278">searchKey</references>
-        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a64f15abea7413ac5eedad0aa2b1c53a8" compoundref="h5pp_hdf5_8h" startline="1276">maxHits</references>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1495" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1495" bodyend="1533"/>
+        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a611716506446499c6d33fbd997affb66" compoundref="h5pp_hdf5_8h" startline="1492">maxDepth</references>
+        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a53a13585f1287ea9f5b31a0cde7677f8" compoundref="h5pp_hdf5_8h" startline="1493">searchKey</references>
+        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a64f15abea7413ac5eedad0aa2b1c53a8" compoundref="h5pp_hdf5_8h" startline="1491">maxHits</references>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1hdf5_1_1internal_1a409b40f0a175cd62ba82e3dbb3a43470" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -109,9 +109,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1326" column="43" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1326" bodyend="1339"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1536" column="44" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1536" bodyend="1549"/>
       </memberdef>
-      <memberdef kind="function" id="namespaceh5pp_1_1hdf5_1_1internal_1aa16966556f6c28e51a0aa25cbf2010e1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+      <memberdef kind="function" id="namespaceh5pp_1_1hdf5_1_1internal_1a0e085934ad9a3719057458689fd87d08" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
           <param>
             <type>H5O_type_t</type>
@@ -121,9 +121,48 @@
           <param>
             <type>typename h5x</type>
           </param>
+        </templateparamlist>
+        <type>herr_t</type>
+        <definition>herr_t h5pp::hdf5::internal::H5L_custom_iterate_by_name</definition>
+        <argsstring>(const h5x &amp;loc, std::string_view root, std::vector&lt; std::string &gt; &amp;matchList, const hid::h5p &amp;linkAccess=H5P_DEFAULT)</argsstring>
+        <name>H5L_custom_iterate_by_name</name>
+        <param>
+          <type>const h5x &amp;</type>
+          <declname>loc</declname>
+        </param>
+        <param>
+          <type>std::string_view</type>
+          <declname>root</declname>
+        </param>
+        <param>
+          <type>std::vector&lt; std::string &gt; &amp;</type>
+          <declname>matchList</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classh5pp_1_1hid_1_1h5p" kindref="compound">hid::h5p</ref> &amp;</type>
+          <declname>linkAccess</declname>
+          <defval>H5P_DEFAULT</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1552" column="16" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1552" bodyend="1595"/>
+        <references refid="namespaceh5pp_1_1util_1ae6c73a0989d482fb452c89d604c1adee" compoundref="h5pp_utils_8h" startline="12" endline="32">h5pp::util::safe_str</references>
+        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a53a13585f1287ea9f5b31a0cde7677f8" compoundref="h5pp_hdf5_8h" startline="1493">searchKey</references>
+        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a64f15abea7413ac5eedad0aa2b1c53a8" compoundref="h5pp_hdf5_8h" startline="1491">maxHits</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1hdf5_1_1internal_1a5aa557ed34a7c93f2e0dd07f4cceec7f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
           <param>
-            <type>typename</type>
-            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc</ref>&lt;h5x&gt;</defval>
+            <type>H5O_type_t</type>
+            <declname>ObjType</declname>
+            <defname>ObjType</defname>
+          </param>
+          <param>
+            <type>typename h5x</type>
           </param>
         </templateparamlist>
         <type>herr_t</type>
@@ -153,15 +192,16 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1341" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1341" bodyend="1354"/>
-        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a611716506446499c6d33fbd997affb66" compoundref="h5pp_hdf5_8h" startline="1277">maxDepth</references>
-        <references refid="namespaceh5pp_1_1util_1ae6c73a0989d482fb452c89d604c1adee" compoundref="h5pp_utils_8h" startline="12" endline="25">h5pp::util::safe_str</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1598" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" bodystart="1598" bodyend="1629"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
+        <references refid="namespaceh5pp_1_1hdf5_1_1internal_1a611716506446499c6d33fbd997affb66" compoundref="h5pp_hdf5_8h" startline="1492">maxDepth</references>
+        <references refid="namespaceh5pp_1_1util_1ae6c73a0989d482fb452c89d604c1adee" compoundref="h5pp_utils_8h" startline="12" endline="32">h5pp::util::safe_str</references>
       </memberdef>
       </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1275" column="22"/>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHdf5.h" line="1490" column="22"/>
   </compounddef>
 </doxygen>

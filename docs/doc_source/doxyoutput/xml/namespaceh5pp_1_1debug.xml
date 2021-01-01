@@ -26,7 +26,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="15" column="37" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="15" bodyend="15"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="18" column="37" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="18" bodyend="18"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="func">
@@ -54,7 +54,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="16" column="21" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="16" bodyend="38"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="19" column="21" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="19" bodyend="41"/>
         <references refid="namespaceh5pp_1_1debug_1aaa5db3767959e8e59afc70a9339c4636a0f1f7349473f66cdde49ebc380ae0f03">ENFORCE</references>
         <references refid="namespaceh5pp_1_1debug_1aaa5db3767959e8e59afc70a9339c4636a57676e0bedd941be2b5a7138f24bfd97">PERMISSIVE</references>
       </memberdef>
@@ -85,9 +85,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="40" column="21" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="40" bodyend="70"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
-        <references refid="namespaceh5pp_1_1debug_1aca8207fafc1277be2959eb15e82fb7b5" compoundref="h5pp_info_8h" startline="16" endline="38">reportCompatibility</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="43" column="21" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" bodystart="43" bodyend="80"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
+        <references refid="namespaceh5pp_1_1debug_1aca8207fafc1277be2959eb15e82fb7b5" compoundref="h5pp_info_8h" startline="19" endline="41">reportCompatibility</references>
         <references refid="namespaceh5pp_1_1debug_1aaa5db3767959e8e59afc70a9339c4636a57676e0bedd941be2b5a7138f24bfd97">PERMISSIVE</references>
       </memberdef>
       </sectiondef>
@@ -95,6 +95,6 @@
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="14" column="19"/>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppInfo.h" line="17" column="19"/>
   </compounddef>
 </doxygen>

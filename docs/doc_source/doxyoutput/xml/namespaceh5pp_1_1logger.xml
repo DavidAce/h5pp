@@ -15,7 +15,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="88" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="88" bodyend="-1"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="98" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="98" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="func">
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="90" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="90" bodyend="90"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="100" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="100" bodyend="100"/>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1logger_1ac548b4b298ba67be52d93a57a0f839b6" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -43,7 +43,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="91" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="91" bodyend="91"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="101" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="101" bodyend="101"/>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1logger_1a964f0df3728a189192ec0630dc58bf95" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>size_t</type>
@@ -56,8 +56,31 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="92" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="92" bodyend="97"/>
-        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">setLogger</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="102" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="102" bodyend="107"/>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="135" endline="141">setLogger</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1logger_1a41856ce07cc22724ac358fab12ef879e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename levelType</type>
+          </param>
+        </templateparamlist>
+        <type>bool</type>
+        <definition>bool h5pp::logger::logIf</definition>
+        <argsstring>(levelType levelZeroToFive)</argsstring>
+        <name>logIf</name>
+        <param>
+          <type>levelType</type>
+          <declname>levelZeroToFive</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="110" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="110" bodyend="115"/>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="135" endline="141">setLogger</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1logger_1ab30ac73a10a90842755bc4a54e2dc54e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -80,8 +103,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="99" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="99" bodyend="113"/>
-        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">setLogger</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="118" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="118" bodyend="133"/>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="135" endline="141">setLogger</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>void</type>
@@ -111,14 +134,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="115" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="115" bodyend="121"/>
-        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="115" endline="121">setLogger</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="135" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" bodystart="135" bodyend="141"/>
+        <references refid="namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4" compoundref="h5pp_logger_8h" startline="135" endline="141">setLogger</references>
       </memberdef>
       </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="6" column="22"/>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppLogger.h" line="7" column="22"/>
   </compounddef>
 </doxygen>

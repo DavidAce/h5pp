@@ -29,17 +29,11 @@ Includes
 --------
 
 
-- ``algorithm``
-
-- ``h5ppTypeSfinae.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppTypeSfinae.h`)
+- ``h5ppFormat.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppFormat.h`)
 
 - ``iostream``
 
-- ``list``
-
 - ``memory``
-
-- ``sstream``
 
 - ``string``
 
@@ -48,8 +42,6 @@ Includes
 Included By
 -----------
 
-
-- :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppFormat.h`
 
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppLogger.h`
 

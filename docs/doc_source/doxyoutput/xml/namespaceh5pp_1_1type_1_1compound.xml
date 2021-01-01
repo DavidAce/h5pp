@@ -451,7 +451,7 @@
         </inbodydescription>
         <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompoundCreate.h" line="55" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeCompoundCreate.h" bodystart="55" bodyend="91"/>
         <references refid="namespaceh5pp_1_1type_1_1compound_1aa6d20d609d54cc8799d142ca54acf9d5" compoundref="h5pp_type_compound_8h" startline="7">H5T_COMPLEX_SHORT</references>
-        <references refid="classh5pp_1_1hid_1_1hid__base_1a1833b03ce5f3e20d952680a8de5ab136" compoundref="h5pp_hid_8h" startline="92" endline="92">h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::valid</references>
+        <references refid="classh5pp_1_1hid_1_1hid__base_1a1833b03ce5f3e20d952680a8de5ab136" compoundref="h5pp_hid_8h" startline="94" endline="94">h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::valid</references>
         <references refid="namespaceh5pp_1_1type_1_1compound_1_1_create_1a7511644f50bb261fedc3a1ff97be5c64" compoundref="h5pp_type_compound_create_8h" startline="11" endline="21">h5pp::type::compound::Create::createComplexType</references>
         <references refid="namespaceh5pp_1_1type_1_1compound_1a72d333146d79727000434d8df8090771" compoundref="h5pp_type_compound_8h" startline="8">H5T_COMPLEX_INT</references>
         <references refid="namespaceh5pp_1_1type_1_1compound_1a226386f8edeba333cc587a196b28afc4" compoundref="h5pp_type_compound_8h" startline="9">H5T_COMPLEX_LONG</references>

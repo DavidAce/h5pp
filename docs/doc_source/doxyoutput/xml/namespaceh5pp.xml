@@ -8,6 +8,9 @@
     <innerclass refid="structh5pp_1_1_dset_info" prot="public">h5pp::DsetInfo</innerclass>
     <innerclass refid="classh5pp_1_1_file" prot="public">h5pp::File</innerclass>
     <innerclass refid="classh5pp_1_1_hyperslab" prot="public">h5pp::Hyperslab</innerclass>
+    <innerclass refid="structh5pp_1_1_indices" prot="public">h5pp::Indices</innerclass>
+    <innerclass refid="structh5pp_1_1_names" prot="public">h5pp::Names</innerclass>
+    <innerclass refid="structh5pp_1_1_names_or_indices" prot="public">h5pp::NamesOrIndices</innerclass>
     <innerclass refid="structh5pp_1_1_opt_dims_type" prot="public">h5pp::OptDimsType</innerclass>
     <innerclass refid="structh5pp_1_1_options" prot="public">h5pp::Options</innerclass>
     <innerclass refid="structh5pp_1_1_property_lists" prot="public">h5pp::PropertyLists</innerclass>
@@ -189,24 +192,24 @@
         </inbodydescription>
         <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" line="59" column="30" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" bodystart="59" bodyend="63"/>
       </memberdef>
-      <memberdef kind="enum" id="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26" prot="public" static="no" strong="yes">
+      <memberdef kind="enum" id="namespaceh5pp_1a2cdec76cdc0a46d0e12ae22f38aa49eb" prot="public" static="no" strong="yes">
         <type></type>
-        <name>ResizeMode</name>
-        <enumvalue id="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a6cd43a637f8b733c23575092197f3ebb" prot="public">
+        <name>ResizePolicy</name>
+        <enumvalue id="namespaceh5pp_1a2cdec76cdc0a46d0e12ae22f38aa49eba6cd43a637f8b733c23575092197f3ebb" prot="public">
           <name>RESIZE_TO_FIT</name>
           <briefdescription>
           </briefdescription>
           <detaileddescription>
           </detaileddescription>
         </enumvalue>
-        <enumvalue id="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a181a1e17c5afb4561e6b966d995c46f9" prot="public">
+        <enumvalue id="namespaceh5pp_1a2cdec76cdc0a46d0e12ae22f38aa49eba181a1e17c5afb4561e6b966d995c46f9" prot="public">
           <name>INCREASE_ONLY</name>
           <briefdescription>
           </briefdescription>
           <detaileddescription>
           </detaileddescription>
         </enumvalue>
-        <enumvalue id="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a0894c203073521ad32840dd9657949ab" prot="public">
+        <enumvalue id="namespaceh5pp_1a2cdec76cdc0a46d0e12ae22f38aa49eba0894c203073521ad32840dd9657949ab" prot="public">
           <name>DO_NOT_RESIZE</name>
           <briefdescription>
           </briefdescription>
@@ -219,7 +222,42 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" line="65" column="26" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" bodystart="65" bodyend="69"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" line="65" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" bodystart="65" bodyend="69"/>
+      </memberdef>
+      <memberdef kind="enum" id="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cb" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>LocationMode</name>
+        <enumvalue id="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cba66651169411c531c55145a79aa1dcfc0" prot="public">
+          <name>SAME_FILE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+<para>Interpret source and target location id&apos;s as being on the same file </para>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cbae9528f779bf975c7e7e2f72215c1bbd6" prot="public">
+          <name>OTHER_FILE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+<para>Interpret source and target location id&apos;s as being on different files </para>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cba0af51e8371a9775bddcaee4eb4738c5f" prot="public">
+          <name>DETECT</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+<para>Use H5Iget_file_id() to check. This is the default, but avoid when known. </para>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" line="71" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h" bodystart="71" bodyend="82"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="func">
@@ -238,8 +276,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="46" column="24" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" bodystart="46" bodyend="46"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="90" column="24" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" bodystart="90" bodyend="90"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">print</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -268,8 +306,33 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="49" column="18" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" bodystart="49" bodyend="66"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="93" column="18" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" bodystart="93" bodyend="110"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">print</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void h5pp::print</definition>
+        <argsstring>(Args... args)</argsstring>
+        <name>print</name>
+        <param>
+          <type>Args...</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="113" column="10" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" bodystart="113" bodyend="115"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">print</references>
       </memberdef>
       </sectiondef>
     <briefdescription>

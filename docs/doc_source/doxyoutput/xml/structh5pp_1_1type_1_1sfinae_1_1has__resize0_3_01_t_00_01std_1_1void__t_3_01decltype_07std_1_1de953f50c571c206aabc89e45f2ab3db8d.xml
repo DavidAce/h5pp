@@ -35,7 +35,7 @@
         </childnode>
       </node>
     </collaborationgraph>
-    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="52" column="47" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="52" bodyend="52"/>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" line="60" column="47" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppTypeSfinae.h" bodystart="60" bodyend="60"/>
     <listofallmembers>
     </listofallmembers>
   </compounddef>

@@ -11,6 +11,7 @@ Program Listing for File h5ppHid.h
 .. code-block:: cpp
 
    #pragma once
+   #include <stdexcept>
    #include <hdf5.h>
    #include <string>
    
@@ -23,6 +24,7 @@ Program Listing for File h5ppHid.h
            hid_t val = 0;
    
            public:
+           virtual ~hid_base() = default;
            hid_base() = default;
            hid_base(std::initializer_list<int>) = delete;
            // Use enable_if to avoid implicit conversion from hid_h5x and still have a non-explicit hid_t constructor
@@ -107,27 +109,27 @@ Program Listing for File h5ppHid.h
            // hid_t operators
            [[nodiscard]] virtual bool equal(const hid_t &rhs) const = 0;
    
-           template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+           template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
            bool operator==(const T &rhs) const {
                return equal(rhs);
            }
-           template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+           template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
            bool operator!=(const T &rhs) const {
                return not equal(rhs);
            }
-           template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+           template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
            bool operator<=(const T &rhs) const {
                return val <= rhs;
            }
-           template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+           template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
            bool operator>=(const T &rhs) const {
                return val >= rhs;
            }
-           template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+           template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
            bool operator<(const T &rhs) const {
                return val < rhs;
            }
-           template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+           template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
            bool operator>(const T &rhs) const {
                return val > rhs;
            }
@@ -147,7 +149,6 @@ Program Listing for File h5ppHid.h
            explicit             operator std::string() const { return tag() + ":" + std::to_string(val); }
            explicit             operator std::string_view() const { return tag() + ":" + std::string_view(val); }
            friend std::ostream &operator<<(std::ostream &os, const hid_h5x &t) { return os << t.tag() << ":" << t.val; }
-           virtual ~hid_base() = default;
        };
    
        // All our safe hid_t wrapper classes
@@ -268,7 +269,7 @@ Program Listing for File h5ppHid.h
            using hid_base::hid_base;
            ~h5f() final { close(); }
            [[nodiscard]] std::string tag() const final { return "h5f"; }
-           [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
+           [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs;}
            void                      close() final {
                if(H5Iget_ref(val) > 1)
                    H5Idec_ref(val);

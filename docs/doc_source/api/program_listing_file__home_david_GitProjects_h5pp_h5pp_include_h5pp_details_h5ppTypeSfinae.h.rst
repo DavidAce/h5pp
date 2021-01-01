@@ -48,6 +48,14 @@ Program Listing for File h5ppTypeSfinae.h
            return name;
        }
    
+       // helper constant for static asserts
+       template<class>
+       inline constexpr bool always_false_v = false;
+       template<class>
+       inline constexpr bool unrecognized_type_v = false;
+       template<class>
+       inline constexpr bool invalid_type_v = false;
+   
        template<typename T, typename = std::void_t<>>
        struct has_size : public std::false_type {};
        template<typename T>
@@ -79,7 +87,8 @@ Program Listing for File h5ppTypeSfinae.h
        template<typename T, auto rank, typename = std::void_t<>>
        struct has_resizeN : public std::false_type {};
        template<typename T, auto rank>
-       struct has_resizeN<T, rank, std::void_t<decltype(std::declval<T>().resize(std::declval<std::array<long, rank>>()))>> : public std::true_type {};
+       struct has_resizeN<T, rank, std::void_t<decltype(std::declval<T>().resize(std::declval<std::array<long, rank>>()))>>
+           : public std::true_type {};
        template<typename T, auto rank>
        inline constexpr bool has_resizeN_v = has_resizeN<T, rank>::value;
    
@@ -182,7 +191,8 @@ Program Listing for File h5ppTypeSfinae.h
        template<typename T, typename = std::void_t<>>
        struct is_iterable : public std::false_type {};
        template<typename T>
-       struct is_iterable<T, std::void_t<decltype(std::declval<T>().begin()), decltype(std::declval<T>().end()), typename T::value_type>> : public std::true_type {};
+       struct is_iterable<T, std::void_t<decltype(std::begin(std::declval<T>())), decltype(std::end(std::declval<T>()))>>
+           : public std::true_type {};
        template<typename T>
        inline constexpr bool is_iterable_v = is_iterable<T>::value;
    
@@ -215,8 +225,15 @@ Program Listing for File h5ppTypeSfinae.h
            public:
            static constexpr bool value = test<T>();
        };
+   
        template<typename T>
        inline constexpr bool is_integral_iterable_or_num_v = is_integral_iterable_or_num<T>::value;
+   
+       template<typename T>
+       inline constexpr bool is_iterable_or_num_v = is_iterable_v<T> or std::is_arithmetic_v<T>;
+   
+       template<typename T>
+       inline constexpr bool is_integral_iterable_num_or_nullopt_v = is_integral_iterable_or_num_v<T> or std::is_same_v<T, std::nullopt_t>;
    
        template<typename T>
        using enable_if_is_integral_iterable = std::enable_if_t<is_integral_iterable_v<T>>;
@@ -225,25 +242,44 @@ Program Listing for File h5ppTypeSfinae.h
        using enable_if_is_integral_iterable_or_num = std::enable_if_t<is_integral_iterable_or_num_v<T>>;
    
        template<typename T>
-       using enable_if_is_integral_iterable_or_nullopt = std::enable_if_t<is_integral_iterable_or_num_v<T> or std::is_same_v<T, std::nullopt_t>>;
-   
-   
+       using enable_if_is_integral_iterable_num_or_nullopt =
+           std::enable_if_t<is_integral_iterable_num_or_nullopt_v<T>>;
    
        template<typename T>
        using enable_if_is_iterable_or_nullopt = std::enable_if_t<is_iterable_v<T> or std::is_same_v<T, std::nullopt_t>>;
    
-   
+       template<typename T>
+       inline constexpr bool is_h5_loc_v = std::is_same_v<T, hid::h5f> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o>;
    
        template<typename T>
-       using enable_if_is_h5_loc = std::enable_if_t<std::is_same_v<T,hid::h5f> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o> or std::is_same_v<T, hid_t>>;
-       template<typename T>
-       using enable_if_is_h5_loc_or_hid_t = std::enable_if_t< std::is_same_v<T,hid::h5f> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o> or std::is_same_v<T, hid_t> or std::is_same_v<T,hid_t>>;
-       template<typename T>
-       using enable_if_is_h5_link = std::enable_if_t< std::is_same_v<T,hid::h5f> or std::is_same_v<T, hid::h5d> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o> or std::is_same_v<T, hid_t>>;
-       template<typename T>
-       using enable_if_is_h5_link_or_hid_t = std::enable_if_t< std::is_same_v<T,hid::h5f> or std::is_same_v<T, hid::h5d> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o> or std::is_same_v<T, hid_t> or std::is_same_v<T,hid_t>>;
+       inline constexpr bool is_h5_loc_or_hid_v = is_h5_loc_v<T> or std::is_same_v<T,hid_t>;
    
+       template<typename T>
+       inline constexpr bool is_h5_link_v = std::is_same_v<T, hid::h5d> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o>;
    
+       template<typename T>
+       inline constexpr bool is_h5_link_or_hid_v = is_h5_link_v<T> or std::is_same_v<T, hid_t>;
+   
+       template<typename T>
+       inline constexpr bool is_h5_type_v = std::is_same_v<T, hid::h5t> or std::is_same_v<T, hid_t>;
+   
+       template<typename T>
+       using enable_if_is_h5_loc_t = std::enable_if_t<is_h5_loc_v<T>>;
+   
+       template<typename T>
+       using enable_if_is_h5_loc_or_hid_t = std::enable_if_t<is_h5_loc_or_hid_v<T>>;
+   
+       template<typename T>
+       using enable_if_is_h5_link = std::enable_if_t<is_h5_link_v<T>>;
+   
+       template<typename T>
+       using enable_if_is_h5_link_or_hid_t = std::enable_if_t<is_h5_link_or_hid_v<T>>;
+   
+       template<typename T>
+       using enable_if_is_h5_type = std::enable_if_t<std::is_same_v<T, hid::h5t> or std::is_same_v<T, hid_t>>;
+   
+       template<typename T>
+       using enable_if_not_h5_type = std::enable_if_t<not std::is_same_v<T, hid::h5t> and not std::is_same_v<T, hid_t>>;
    
        template<typename T>
        struct is_text {

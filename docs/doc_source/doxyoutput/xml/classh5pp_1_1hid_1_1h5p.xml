@@ -16,8 +16,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="145" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="145" bodyend="145"/>
-        <references refid="classh5pp_1_1hid_1_1h5p_1abed05040c50c4527ae2cfe3517d639aa" compoundref="h5pp_hid_8h" startline="148" endline="155">close</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="146" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="146" bodyend="146"/>
+        <references refid="classh5pp_1_1hid_1_1h5p_1abed05040c50c4527ae2cfe3517d639aa" compoundref="h5pp_hid_8h" startline="149" endline="156">close</references>
       </memberdef>
       <memberdef kind="function" id="classh5pp_1_1hid_1_1h5p_1afb23b7bc2f97876ced00c88a23a49624" prot="public" static="no" const="yes" explicit="no" inline="yes" final="yes" virt="non-virtual">
         <type>std::string</type>
@@ -30,7 +30,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="146" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="146" bodyend="146"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="147" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="147" bodyend="147"/>
       </memberdef>
       <memberdef kind="function" id="classh5pp_1_1hid_1_1h5p_1a50d9fa4255cf23361868e4741eee79f6" prot="public" static="no" const="yes" explicit="no" inline="yes" final="yes" virt="virtual">
         <type>bool</type>
@@ -48,7 +48,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="147" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="147" bodyend="147"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="148" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="148" bodyend="148"/>
       </memberdef>
       <memberdef kind="function" id="classh5pp_1_1hid_1_1h5p_1abed05040c50c4527ae2cfe3517d639aa" prot="public" static="no" const="no" explicit="no" inline="yes" final="yes" virt="virtual">
         <type>void</type>
@@ -62,8 +62,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="148" column="35" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="148" bodyend="155"/>
-        <references refid="classh5pp_1_1hid_1_1hid__base_1a1833b03ce5f3e20d952680a8de5ab136" compoundref="h5pp_hid_8h" startline="92" endline="92">h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::valid</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="149" column="35" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="149" bodyend="156"/>
+        <references refid="classh5pp_1_1hid_1_1hid__base_1a1833b03ce5f3e20d952680a8de5ab136" compoundref="h5pp_hid_8h" startline="94" endline="94">h5pp::hid::hid_base&lt; hid_h5x, zeroValueIsOK &gt;::valid</references>
       </memberdef>
       <memberdef kind="function" id="classh5pp_1_1hid_1_1h5p_1a17cf65eae2f3b0cdce61164a6e63e18a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type></type>
@@ -76,7 +76,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="144" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="145" column="9"/>
       </memberdef>
       <memberdef kind="function" id="classh5pp_1_1hid_1_1h5p_1ad362fd74c0539b93ed2c58e6a36a10a0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type></type>
@@ -92,7 +92,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="144" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="145" column="9"/>
       </memberdef>
       <memberdef kind="function" id="classh5pp_1_1hid_1_1h5p_1a63ad03aa9ee0db24736621848dd474e1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -118,7 +118,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="144" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="18" bodyend="26"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="145" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="20" bodyend="28"/>
       </memberdef>
       <memberdef kind="function" id="classh5pp_1_1hid_1_1h5p_1a2524d5bb09c6c3737ddb954f3b079e24" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type></type>
@@ -135,7 +135,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="144" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="28" bodyend="38"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="145" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="30" bodyend="40"/>
       </memberdef>
       </sectiondef>
     <briefdescription>
@@ -166,7 +166,7 @@
         </childnode>
       </node>
     </collaborationgraph>
-    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="142" column="32" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="142" bodyend="156"/>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" line="143" column="32" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHid.h" bodystart="143" bodyend="157"/>
     <listofallmembers>
       <member refid="classh5pp_1_1hid_1_1h5p_1abed05040c50c4527ae2cfe3517d639aa" prot="public" virt="virtual"><scope>h5pp::hid::h5p</scope><name>close</name></member>
       <member refid="classh5pp_1_1hid_1_1h5p_1a50d9fa4255cf23361868e4741eee79f6" prot="public" virt="virtual"><scope>h5pp::hid::h5p</scope><name>equal</name></member>

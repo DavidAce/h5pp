@@ -18,7 +18,33 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="12" column="24" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="12" bodyend="25"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="12" column="25" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="12" bodyend="32"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1util_1ab2f0aac7f3d8f4aca18bc6c6112e2b67" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename PtrType</type>
+          </param>
+          <param>
+            <type>typename DataType</type>
+          </param>
+        </templateparamlist>
+        <type>PtrType</type>
+        <definition>PtrType h5pp::util::getVoidPointer</definition>
+        <argsstring>(DataType &amp;data)</argsstring>
+        <name>getVoidPointer</name>
+        <param>
+          <type>DataType &amp;</type>
+          <declname>data</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="35" column="21" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="35" bodyend="44"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1a90249541d4ff96184cf875393059b57d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -36,8 +62,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="28" column="15" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="28" bodyend="92"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="47" column="15" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="47" bodyend="112"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
         <references refid="namespaceh5pp_1_1type_1_1compound_1aa6d20d609d54cc8799d142ca54acf9d5" compoundref="h5pp_type_compound_8h" startline="7">h5pp::type::compound::H5T_COMPLEX_SHORT</references>
         <references refid="namespaceh5pp_1_1type_1_1compound_1a72d333146d79727000434d8df8090771" compoundref="h5pp_type_compound_8h" startline="8">h5pp::type::compound::H5T_COMPLEX_INT</references>
         <references refid="namespaceh5pp_1_1type_1_1compound_1a226386f8edeba333cc587a196b28afc4" compoundref="h5pp_type_compound_8h" startline="9">h5pp::type::compound::H5T_COMPLEX_LONG</references>
@@ -105,8 +131,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="95" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="95" bodyend="104"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="115" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="115" bodyend="128"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1a9c6370a9272f61844213254d2dac2715" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -140,7 +166,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="106" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="106" bodyend="108"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="130" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="130" bodyend="132"/>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1a9229eee1bf35278a380c831357a16819" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -179,9 +205,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="110" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="110" bodyend="112"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="134" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="134" bodyend="136"/>
       </memberdef>
-      <memberdef kind="function" id="namespaceh5pp_1_1util_1a7b782dfa72ad4bb7d929a453af051d68" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="namespaceh5pp_1_1util_1ac26695f53f087b3ca9b60fb2ac73f6db" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
           <param>
             <type>typename DataType</type>
@@ -189,10 +215,6 @@
           <param>
             <type>typename</type>
             <defval>std::enable_if_t&lt;not std::is_base_of_v&lt;hid::hid_base&lt;DataType&gt;, DataType&gt;&gt;</defval>
-          </param>
-          <param>
-            <type>typename</type>
-            <defval>std::enable_if_t&lt;<ref refid="namespaceh5pp_1_1type_1_1sfinae_1a49f926f789066101b5bc371e8c751507" kindref="member">h5pp::type::sfinae::is_text_v</ref>&lt;DataType&gt;&gt;</defval>
           </param>
         </templateparamlist>
         <type>size_t</type>
@@ -215,27 +237,23 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="117" column="13" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="117" bodyend="125"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="140" column="13" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="140" bodyend="151"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
       </memberdef>
-      <memberdef kind="function" id="namespaceh5pp_1_1util_1a987e926a0a32d8eb4a901ec473eaf7a1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="namespaceh5pp_1_1util_1ab65a7f474dfba709f25c8fcf7a6bf72e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
           <param>
-            <type>typename IntegralOrIterableType</type>
+            <type>typename DimType</type>
             <defval>std::initializer_list&lt;hsize_t&gt;</defval>
-          </param>
-          <param>
-            <type>typename</type>
-            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1a6c89cafb27bb29455e315a568f02d689" kindref="member">h5pp::type::sfinae::enable_if_is_integral_iterable_or_num</ref>&lt;IntegralOrIterableType&gt;</defval>
           </param>
         </templateparamlist>
         <type>std::vector&lt; hsize_t &gt;</type>
         <definition>std::vector&lt;hsize_t&gt; h5pp::util::getDimVector</definition>
-        <argsstring>(const IntegralOrIterableType &amp;iterable)</argsstring>
+        <argsstring>(const DimType &amp;dims)</argsstring>
         <name>getDimVector</name>
         <param>
-          <type>const IntegralOrIterableType &amp;</type>
-          <declname>iterable</declname>
+          <type>const DimType &amp;</type>
+          <declname>dims</declname>
         </param>
         <briefdescription>
         </briefdescription>
@@ -243,27 +261,23 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="129" column="18" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="129" bodyend="142"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="154" column="18" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="154" bodyend="173"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
       </memberdef>
-      <memberdef kind="function" id="namespaceh5pp_1_1util_1acf85b1dee38b0270a8c567a85d0047dd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="namespaceh5pp_1_1util_1a40ae831b6e3bc37aa9851f9e24271fae" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
           <param>
-            <type>typename IntegralOrIterableOrOptType</type>
+            <type>typename DimType</type>
             <defval>std::initializer_list&lt;hsize_t&gt;</defval>
-          </param>
-          <param>
-            <type>typename</type>
-            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1aca51c26f66e359d4e98c2c79f5c862af" kindref="member">h5pp::type::sfinae::enable_if_is_integral_iterable_or_nullopt</ref>&lt;IntegralOrIterableOrOptType&gt;</defval>
           </param>
         </templateparamlist>
         <type>std::optional&lt; std::vector&lt; hsize_t &gt; &gt;</type>
         <definition>std::optional&lt;std::vector&lt;hsize_t&gt; &gt; h5pp::util::getOptionalDimVector</definition>
-        <argsstring>(const IntegralOrIterableOrOptType &amp;iterable)</argsstring>
+        <argsstring>(const DimType &amp;dims)</argsstring>
         <name>getOptionalDimVector</name>
         <param>
-          <type>const IntegralOrIterableOrOptType &amp;</type>
-          <declname>iterable</declname>
+          <type>const DimType &amp;</type>
+          <declname>dims</declname>
         </param>
         <briefdescription>
         </briefdescription>
@@ -271,7 +285,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="146" column="20" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="146" bodyend="151"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="176" column="20" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="176" bodyend="185"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>hsize_t</type>
@@ -288,7 +303,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="153" column="21" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="153" bodyend="155"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="187" column="21" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="187" bodyend="189"/>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1aa8efa111edbaaac102e0bd279dc08a11" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -314,8 +329,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="158" column="14" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="158" bodyend="165"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="192" column="14" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="192" bodyend="201"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1a2d6e5f67ba925734776f2582c4db0a0e" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -337,8 +352,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="169" column="20" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="169" bodyend="180"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="204" column="20" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="204" bodyend="215"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1adef11453affa0b4886885661e217a8e4" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>int</type>
@@ -355,7 +370,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="182" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="182" bodyend="182"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="217" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="217" bodyend="217"/>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1a9c87e88d0a90d84e9a855e3e0ce47366" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -381,8 +396,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="185" column="18" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="185" bodyend="228"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="220" column="18" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="220" bodyend="268"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1aa1a1b298bd7d9baa9acd2bfb1464766b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::optional&lt; std::vector&lt; hsize_t &gt; &gt;</type>
@@ -403,12 +418,12 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="230" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="230" bodyend="245"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="270" column="27" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="270" bodyend="286"/>
       </memberdef>
-      <memberdef kind="function" id="namespaceh5pp_1_1util_1a470d92244e2113e96e7f9b2cd88a2f3a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+      <memberdef kind="function" id="namespaceh5pp_1_1util_1a51262a673a1ba63b27fd44c809e0b14f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type><ref refid="classh5pp_1_1hid_1_1h5s" kindref="compound">hid::h5s</ref></type>
         <definition>hid::h5s h5pp::util::getDsetSpace</definition>
-        <argsstring>(const hsize_t size, const std::vector&lt; hsize_t &gt; &amp;dims, const H5D_layout_t &amp;h5_layout, std::optional&lt; std::vector&lt; hsize_t &gt;&gt; desiredDimsMax=std::nullopt)</argsstring>
+        <argsstring>(const hsize_t size, const std::vector&lt; hsize_t &gt; &amp;dims, const H5D_layout_t &amp;h5Layout, std::optional&lt; std::vector&lt; hsize_t &gt;&gt; dimsMax=std::nullopt)</argsstring>
         <name>getDsetSpace</name>
         <param>
           <type>const hsize_t</type>
@@ -420,11 +435,11 @@
         </param>
         <param>
           <type>const H5D_layout_t &amp;</type>
-          <declname>h5_layout</declname>
+          <declname>h5Layout</declname>
         </param>
         <param>
           <type>std::optional&lt; std::vector&lt; hsize_t &gt;&gt;</type>
-          <declname>desiredDimsMax</declname>
+          <declname>dimsMax</declname>
           <defval>std::nullopt</defval>
         </param>
         <briefdescription>
@@ -433,9 +448,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="248" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="248" bodyend="282"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
-        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="153" endline="155">getSizeFromDimensions</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="288" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="288" bodyend="345"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
+        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="187" endline="189">getSizeFromDimensions</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1a5b62df990ff2d31cd5dc0843592941cd" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type><ref refid="classh5pp_1_1hid_1_1h5s" kindref="compound">hid::h5s</ref></type>
@@ -456,8 +471,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="291" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="291" bodyend="301"/>
-        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="153" endline="155">getSizeFromDimensions</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="354" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="354" bodyend="365"/>
+        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="187" endline="189">getSizeFromDimensions</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1a35003e09ae6a3d740c99e37a4a37cbf6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -479,8 +494,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="304" column="13" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="304" bodyend="316"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="368" column="13" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="368" bodyend="380"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1aa9ef02af8c76ad03c851818ac0453ff5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <templateparamlist>
@@ -511,8 +526,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="319" column="13" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="319" bodyend="351"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="383" column="13" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="383" bodyend="416"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1a46d5e965bfd9408b059d7621b2a617d8" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>H5D_layout_t</type>
@@ -533,7 +548,7 @@
 <para>Chunked Chunking is required for enabling compression and other filters, as well as for creating extendible or unlimited dimension datasets. Note that a chunk always has the same rank as the dataset and the chunk&apos;s dimensions do not need to be factors of the dataset dimensions.</para>
 <para>Compact A compact dataset is one in which the raw data is stored in the object header of the dataset. This layout is for very small datasets that can easily fit in the object header. The compact layout can improve storage and access performance for files that have many very tiny datasets. With one I/O access both the header and data values can be read. The compact layout reduces the size of a file, as the data is stored with the header which will always be allocated for a dataset. However, the object header is 64 KB in size, so this layout can only be used for very small datasets.</para>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="353" column="26" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="353" bodyend="384"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="418" column="26" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="418" bodyend="449"/>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1af6a0094dae2f3aa3815ab373445a3aaf" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -563,8 +578,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="387" column="26" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="387" bodyend="401"/>
-        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="153" endline="155">getSizeFromDimensions</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="453" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="453" bodyend="467"/>
+        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="187" endline="189">getSizeFromDimensions</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1ab497c3103b3f9fa58d0cc9b3711a6ec6" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::optional&lt; std::vector&lt; hsize_t &gt; &gt;</type>
@@ -593,7 +608,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="404" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="404" bodyend="457"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="469" column="26" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="469" bodyend="527"/>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1ac42743cca43b502d04b4faccf98a11b7" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -627,9 +642,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="460" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="460" bodyend="506"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
-        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="153" endline="155">getSizeFromDimensions</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="530" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="530" bodyend="551"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
+        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="187" endline="189">getSizeFromDimensions</references>
       </memberdef>
       <memberdef kind="function" id="namespaceh5pp_1_1util_1a4ac2338aca306326f5c514c96c69665b" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -655,9 +670,98 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="509" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="509" bodyend="546"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
-        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="153" endline="155">getSizeFromDimensions</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="554" column="17" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="554" bodyend="604"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
+        <references refid="namespaceh5pp_1_1util_1a75a70ac870194ad17968d2e180936bc2" compoundref="h5pp_utils_8h" startline="187" endline="189">getSizeFromDimensions</references>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1util_1adf8eb5cb637bc63fd5f08a5bfd8a0c78" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename h5xa</type>
+          </param>
+          <param>
+            <type>typename h5xb</type>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1a8951b861975f8ee36b3b180925ccb1c1" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t</ref>&lt;h5xa&gt;</defval>
+          </param>
+          <param>
+            <type>typename</type>
+            <defval><ref refid="namespaceh5pp_1_1type_1_1sfinae_1a8951b861975f8ee36b3b180925ccb1c1" kindref="member">h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t</ref>&lt;h5xb&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type>bool</type>
+        <definition>bool h5pp::util::onSameFile</definition>
+        <argsstring>(const h5xa &amp;loca, const h5xb &amp;locb, LocationMode locMode=LocationMode::DETECT)</argsstring>
+        <name>onSameFile</name>
+        <param>
+          <type>const h5xa &amp;</type>
+          <declname>loca</declname>
+        </param>
+        <param>
+          <type>const h5xb &amp;</type>
+          <declname>locb</declname>
+        </param>
+        <param>
+          <type><ref refid="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cb" kindref="member">LocationMode</ref></type>
+          <declname>locMode</declname>
+          <defval><ref refid="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cba0af51e8371a9775bddcaee4eb4738c5f" kindref="member">LocationMode::DETECT</ref></defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="610" column="18" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="610" bodyend="625"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1util_1a152452d053c6db19faae8cbc255ca49e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool h5pp::util::onSameFile</definition>
+        <argsstring>(const h5pp::fs::path &amp;patha, const h5pp::fs::path &amp;pathb, LocationMode locMode=LocationMode::DETECT)</argsstring>
+        <name>onSameFile</name>
+        <param>
+          <type>const h5pp::fs::path &amp;</type>
+          <declname>patha</declname>
+        </param>
+        <param>
+          <type>const h5pp::fs::path &amp;</type>
+          <declname>pathb</declname>
+        </param>
+        <param>
+          <type><ref refid="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cb" kindref="member">LocationMode</ref></type>
+          <declname>locMode</declname>
+          <defval><ref refid="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cba0af51e8371a9775bddcaee4eb4738c5f" kindref="member">LocationMode::DETECT</ref></defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="627" column="18" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="627" bodyend="635"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceh5pp_1_1util_1a451097ef2177a8d76f9449c88f4859c8" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cb" kindref="member">LocationMode</ref></type>
+        <definition>LocationMode h5pp::util::getLocationMode</definition>
+        <argsstring>(const h5pp::fs::path &amp;patha, const h5pp::fs::path &amp;pathb)</argsstring>
+        <name>getLocationMode</name>
+        <param>
+          <type>const h5pp::fs::path &amp;</type>
+          <declname>patha</declname>
+        </param>
+        <param>
+          <type>const h5pp::fs::path &amp;</type>
+          <declname>pathb</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" line="637" column="26" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppUtils.h" bodystart="637" bodyend="640"/>
       </memberdef>
       </sectiondef>
     <briefdescription>

@@ -55,7 +55,9 @@ Enums
 
 - :ref:`exhale_enum_namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddec`
 
-- :ref:`exhale_enum_namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26`
+- :ref:`exhale_enum_namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cb`
+
+- :ref:`exhale_enum_namespaceh5pp_1a2cdec76cdc0a46d0e12ae22f38aa49eb`
 
 - :ref:`exhale_enum_namespaceh5pp_1a068e3b6faabdd542d403b869560beeb8`
 

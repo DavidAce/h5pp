@@ -74,9 +74,22 @@ Program Listing for File h5ppEnums.h
            ALL,    // All elements of a table
        };
    
-       enum class ResizeMode {
+       enum class ResizePolicy {
            RESIZE_TO_FIT, // (Default)
            INCREASE_ONLY,
            DO_NOT_RESIZE,
+       };
+   
+       enum class LocationMode{
+           /*
+            * Some operations, such as h5pp::hdf5::copyLink support copying objects between files.
+            * However, detecting whether two given location id's are on the same file can become
+            * a bottleneck when batch processing a large amount of files.
+            *
+            */
+   
+           SAME_FILE,  
+           OTHER_FILE, 
+           DETECT,     
        };
    }

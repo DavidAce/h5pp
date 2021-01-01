@@ -48,6 +48,12 @@ Classes
 
 - :ref:`exhale_struct_structh5pp_1_1_dset_info`
 
+- :ref:`exhale_struct_structh5pp_1_1_indices`
+
+- :ref:`exhale_struct_structh5pp_1_1_names`
+
+- :ref:`exhale_struct_structh5pp_1_1_names_or_indices`
+
 - :ref:`exhale_struct_structh5pp_1_1_opt_dims_type`
 
 - :ref:`exhale_struct_structh5pp_1_1_options`
@@ -71,7 +77,9 @@ Enums
 
 - :ref:`exhale_enum_namespaceh5pp_1a88bc0bd45cab0918f639ead880c6ddec`
 
-- :ref:`exhale_enum_namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26`
+- :ref:`exhale_enum_namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cb`
+
+- :ref:`exhale_enum_namespaceh5pp_1a2cdec76cdc0a46d0e12ae22f38aa49eb`
 
 - :ref:`exhale_enum_namespaceh5pp_1a068e3b6faabdd542d403b869560beeb8`
 
@@ -83,3 +91,5 @@ Functions
 - :ref:`exhale_function_namespaceh5pp_1ad2b5b92d3e43f1709db8b36b48e8bf01`
 
 - :ref:`exhale_function_namespaceh5pp_1a1916ac19846807673af32b055bb98af4`
+
+- :ref:`exhale_function_namespaceh5pp_1ac868e8b1c14646766625645c067d195c`

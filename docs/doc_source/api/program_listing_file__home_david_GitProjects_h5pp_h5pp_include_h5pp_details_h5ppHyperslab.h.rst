@@ -24,14 +24,21 @@ Program Listing for File h5ppHyperslab.h
            public:
            // Hyperslab properties. Read here https://support.hdfgroup.org/HDF5/doc/RM/RM_H5S.html#Dataspace-SelectHyperslab
    
-           OptDimsType                 offset      = std::nullopt; 
-           OptDimsType                 extent      = std::nullopt; 
-           OptDimsType                 stride      = std::nullopt; 
-           OptDimsType                 blocks      = std::nullopt; 
-           std::optional<H5S_sel_type> select_type = std::nullopt;
-           Hyperslab()                             = default;
+           OptDimsType                 offset      = std::nullopt;   
+           OptDimsType                 extent      = std::nullopt;   
+           OptDimsType                 stride      = std::nullopt;   
+           OptDimsType                 blocks      = std::nullopt;   
+           std::optional<H5S_sel_type> select_type = std::nullopt;   
+           H5S_seloper_t               select_oper = H5S_SELECT_SET; 
+           Hyperslab() = default;
            Hyperslab(const DimsType &offset, const DimsType &extent, OptDimsType stride = std::nullopt, OptDimsType blocks = std::nullopt)
                : offset(offset), extent(extent), stride(std::move(stride)), blocks(std::move(blocks)) {}
+   
+           // Delete some constructors to avoid ambiguity. Both offset and extent are required if any of them is to be given
+           Hyperslab(DimsType) = delete;
+           Hyperslab(OptDimsType) = delete;
+           Hyperslab(std::initializer_list<hsize_t>) = delete;
+           Hyperslab(std::vector<hsize_t>) = delete;
    
            explicit Hyperslab(const hid::h5s &space) {
                int rank = H5Sget_simple_extent_ndims(space);
@@ -62,15 +69,18 @@ Program Listing for File h5ppHyperslab.h
                    offset = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
                    extent = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
                    H5Sget_simple_extent_dims(space, extent->data(), nullptr);
-               } else if(select_type.value() == H5S_SEL_ERROR)
+               } else if(select_type.value() == H5S_SEL_NONE)
+                   return;
+               else if(select_type.value() == H5S_SEL_ERROR)
                    throw std::runtime_error("Invalid hyperslab selection");
                else
                    throw std::runtime_error("Unsupported selection type. Choose space selection type NONE, ALL or HYPERSLABS");
            }
            [[nodiscard]] bool empty() const { return not offset and not extent and not stride and not blocks; }
    
-           [[nodiscard]] std::string string() const {
+           [[nodiscard]] std::string string(bool enable = true) const {
                std::string msg;
+               if(not enable) return msg;
                if(offset) msg.append(h5pp::format(" | offset {}", offset.value()));
                if(extent) msg.append(h5pp::format(" | extent {}", extent.value()));
                if(stride) msg.append(h5pp::format(" | stride {}", stride.value()));

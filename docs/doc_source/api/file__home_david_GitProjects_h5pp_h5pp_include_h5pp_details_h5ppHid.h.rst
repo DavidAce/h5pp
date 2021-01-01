@@ -31,6 +31,8 @@ Includes
 
 - ``hdf5.h``
 
+- ``stdexcept``
+
 - ``string``
 
 

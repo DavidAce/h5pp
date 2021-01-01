@@ -119,12 +119,25 @@
 <codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1a068e3b6faabdd542d403b869560beeb8a5fb1f955b45e38e31789286a1790398d" kindref="member">ALL</ref>,<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>All<sp/>elements<sp/>of<sp/>a<sp/>table</highlight><highlight class="normal"></highlight></codeline>
 <codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
 <codeline lineno="64"><highlight class="normal"></highlight></codeline>
-<codeline lineno="65" refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26" kindref="member">ResizeMode</ref><sp/>{</highlight></codeline>
-<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a6cd43a637f8b733c23575092197f3ebb" kindref="member">RESIZE_TO_FIT</ref>,<sp/></highlight><highlight class="comment">//<sp/>(Default)</highlight><highlight class="normal"></highlight></codeline>
-<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a181a1e17c5afb4561e6b966d995c46f9" kindref="member">INCREASE_ONLY</ref>,</highlight></codeline>
-<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1af9b92810fa1a1b95530abe990c38eb26a0894c203073521ad32840dd9657949ab" kindref="member">DO_NOT_RESIZE</ref>,</highlight></codeline>
+<codeline lineno="65" refid="namespaceh5pp_1a2cdec76cdc0a46d0e12ae22f38aa49eb" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1a2cdec76cdc0a46d0e12ae22f38aa49eb" kindref="member">ResizePolicy</ref><sp/>{</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1a2cdec76cdc0a46d0e12ae22f38aa49eba6cd43a637f8b733c23575092197f3ebb" kindref="member">RESIZE_TO_FIT</ref>,<sp/></highlight><highlight class="comment">//<sp/>(Default)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1a2cdec76cdc0a46d0e12ae22f38aa49eba181a1e17c5afb4561e6b966d995c46f9" kindref="member">INCREASE_ONLY</ref>,</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1a2cdec76cdc0a46d0e12ae22f38aa49eba0894c203073521ad32840dd9657949ab" kindref="member">DO_NOT_RESIZE</ref>,</highlight></codeline>
 <codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
-<codeline lineno="70"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"></highlight></codeline>
+<codeline lineno="71" refid="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cb" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/><ref refid="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cb" kindref="member">LocationMode</ref>{</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="73"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*<sp/>Some<sp/>operations,<sp/>such<sp/>as<sp/>h5pp::hdf5::copyLink<sp/>support<sp/>copying<sp/>objects<sp/>between<sp/>files.</highlight></codeline>
+<codeline lineno="74"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*<sp/>However,<sp/>detecting<sp/>whether<sp/>two<sp/>given<sp/>location<sp/>id&apos;s<sp/>are<sp/>on<sp/>the<sp/>same<sp/>file<sp/>can<sp/>become</highlight></codeline>
+<codeline lineno="75"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*<sp/>a<sp/>bottleneck<sp/>when<sp/>batch<sp/>processing<sp/>a<sp/>large<sp/>amount<sp/>of<sp/>files.</highlight></codeline>
+<codeline lineno="76"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*</highlight></codeline>
+<codeline lineno="77"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="78"><highlight class="normal"></highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cba66651169411c531c55145a79aa1dcfc0" kindref="member">SAME_FILE</ref>,<sp/><sp/></highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cbae9528f779bf975c7e7e2f72215c1bbd6" kindref="member">OTHER_FILE</ref>,<sp/></highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceh5pp_1ac0e4090698554d005eaec3fbaa2e69cba0af51e8371a9775bddcaee4eb4738c5f" kindref="member">DETECT</ref>,<sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="83"><highlight class="normal">}</highlight></codeline>
     </programlisting>
     <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppEnums.h"/>
   </compounddef>

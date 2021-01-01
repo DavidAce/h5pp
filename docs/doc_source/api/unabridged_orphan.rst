@@ -95,6 +95,11 @@ Files
 .. toctree::
    :maxdepth: 5
 
+   file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppInitListType.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
    file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppLogger.h.rst
 
 .. toctree::

@@ -19,9 +19,11 @@ Functions
 
 - :ref:`exhale_function_namespaceh5pp_1_1hdf5_1_1internal_1a409b40f0a175cd62ba82e3dbb3a43470`
 
+- :ref:`exhale_function_namespaceh5pp_1_1hdf5_1_1internal_1a0e085934ad9a3719057458689fd87d08`
+
 - :ref:`exhale_function_namespaceh5pp_1_1hdf5_1_1internal_1a61d3d50d1676ad84429777053ea0958e`
 
-- :ref:`exhale_function_namespaceh5pp_1_1hdf5_1_1internal_1aa16966556f6c28e51a0aa25cbf2010e1`
+- :ref:`exhale_function_namespaceh5pp_1_1hdf5_1_1internal_1a5aa557ed34a7c93f2e0dd07f4cceec7f`
 
 
 Variables

@@ -115,8 +115,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppPropertyLists.h" line="21" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppPropertyLists.h" bodystart="21" bodyend="26"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppPropertyLists.h" line="21" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppPropertyLists.h" bodystart="21" bodyend="30"/>
         <references refid="structh5pp_1_1_property_lists_1acfdbad484245deb004afb69c799cdc2a" compoundref="h5pp_property_lists_8h" startline="15">linkCreate</references>
+        <references refid="structh5pp_1_1_property_lists_1aa161c02310e4a1e3804ddc0f32ab3dec" compoundref="h5pp_property_lists_8h" startline="14">fileAccess</references>
       </memberdef>
       </sectiondef>
     <briefdescription>
@@ -149,7 +150,7 @@
         </childnode>
       </node>
     </collaborationgraph>
-    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppPropertyLists.h" line="12" column="24" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppPropertyLists.h" bodystart="12" bodyend="27"/>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppPropertyLists.h" line="12" column="24" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppPropertyLists.h" bodystart="12" bodyend="31"/>
     <listofallmembers>
       <member refid="structh5pp_1_1_property_lists_1a65bddc9bb006cced6ef80826170384b2" prot="public" virt="non-virtual"><scope>h5pp::PropertyLists</scope><name>dsetXfer</name></member>
       <member refid="structh5pp_1_1_property_lists_1aa161c02310e4a1e3804ddc0f32ab3dec" prot="public" virt="non-virtual"><scope>h5pp::PropertyLists</scope><name>fileAccess</name></member>

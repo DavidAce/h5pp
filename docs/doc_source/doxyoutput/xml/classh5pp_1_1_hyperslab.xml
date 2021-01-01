@@ -73,10 +73,27 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
+<para>Use to select hyperslab (i.e. subset), all or none </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
         <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="19" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classh5pp_1_1_hyperslab_1a3f7c133ad7f7585c6159dcc1301c083b" prot="public" static="no" mutable="no">
+        <type>H5S_seloper_t</type>
+        <definition>H5S_seloper_t h5pp::Hyperslab::select_oper</definition>
+        <argsstring></argsstring>
+        <name>select_oper</name>
+        <initializer>= H5S_SELECT_SET</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Default clears previous selection. <linebreak/>
+ </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="20" column="37" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" bodystart="20" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="public-func">
@@ -91,7 +108,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="20" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="22" column="9"/>
       </memberdef>
       <memberdef kind="function" id="classh5pp_1_1_hyperslab_1a3edfa7f0f3d75874d62a48068e0b9ab1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type></type>
@@ -122,12 +139,76 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="21" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" bodystart="21" bodyend="22"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="23" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" bodystart="23" bodyend="24"/>
         <references refid="classh5pp_1_1_hyperslab_1a5d6abc2530bdb98ee957a578f2e0d50f" compoundref="h5pp_hyperslab_8h" startline="15">offset</references>
-        <references refid="structh5pp_1_1_opt_dims_type_1addfe239705393f5303561ace17d85c84" compoundref="h5pp_dimension_type_8h" startline="74" endline="83">h5pp::OptDimsType::OptDimsType</references>
+        <references refid="structh5pp_1_1_opt_dims_type_1addfe239705393f5303561ace17d85c84" compoundref="h5pp_dimension_type_8h" startline="85" endline="97">h5pp::OptDimsType::OptDimsType</references>
         <references refid="classh5pp_1_1_hyperslab_1a84cc3c0b6b1407c3d1acfae05620e76d" compoundref="h5pp_hyperslab_8h" startline="16">extent</references>
         <references refid="classh5pp_1_1_hyperslab_1a8e27f0d9cfdba8016b98c697f11adb49" compoundref="h5pp_hyperslab_8h" startline="17">stride</references>
         <references refid="classh5pp_1_1_hyperslab_1aaf115b6a47c258e5f3820cd7b463fba6" compoundref="h5pp_hyperslab_8h" startline="18">blocks</references>
+      </memberdef>
+      <memberdef kind="function" id="classh5pp_1_1_hyperslab_1a04bec6ce6e72db8be79e015de7076cbf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>h5pp::Hyperslab::Hyperslab</definition>
+        <argsstring>(DimsType)=delete</argsstring>
+        <name>Hyperslab</name>
+        <param>
+          <type><ref refid="structh5pp_1_1_dims_type" kindref="compound">DimsType</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="27" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classh5pp_1_1_hyperslab_1a7ed20e8b7b99f22d642a915ecfb1eeec" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>h5pp::Hyperslab::Hyperslab</definition>
+        <argsstring>(OptDimsType)=delete</argsstring>
+        <name>Hyperslab</name>
+        <param>
+          <type><ref refid="structh5pp_1_1_opt_dims_type" kindref="compound">OptDimsType</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="28" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classh5pp_1_1_hyperslab_1a2f0e47ae422fc192da1646ca01814124" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>h5pp::Hyperslab::Hyperslab</definition>
+        <argsstring>(std::initializer_list&lt; hsize_t &gt;)=delete</argsstring>
+        <name>Hyperslab</name>
+        <param>
+          <type>std::initializer_list&lt; hsize_t &gt;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="29" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classh5pp_1_1_hyperslab_1ad441974b014a2a91fff710ab79a746e6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>h5pp::Hyperslab::Hyperslab</definition>
+        <argsstring>(std::vector&lt; hsize_t &gt;)=delete</argsstring>
+        <name>Hyperslab</name>
+        <param>
+          <type>std::vector&lt; hsize_t &gt;</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="30" column="9"/>
       </memberdef>
       <memberdef kind="function" id="classh5pp_1_1_hyperslab_1ac0cd734a86df5485080b3bd82ff5a553" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
         <type></type>
@@ -144,13 +225,13 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="24" column="18" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" bodystart="24" bodyend="57"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="32" column="18" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" bodystart="32" bodyend="67"/>
         <references refid="classh5pp_1_1_hyperslab_1ac4cd477ef921ec785ca5dd7029357f48" compoundref="h5pp_hyperslab_8h" startline="19">select_type</references>
         <references refid="classh5pp_1_1_hyperslab_1a5d6abc2530bdb98ee957a578f2e0d50f" compoundref="h5pp_hyperslab_8h" startline="15">offset</references>
         <references refid="classh5pp_1_1_hyperslab_1a84cc3c0b6b1407c3d1acfae05620e76d" compoundref="h5pp_hyperslab_8h" startline="16">extent</references>
         <references refid="classh5pp_1_1_hyperslab_1a8e27f0d9cfdba8016b98c697f11adb49" compoundref="h5pp_hyperslab_8h" startline="17">stride</references>
         <references refid="classh5pp_1_1_hyperslab_1aaf115b6a47c258e5f3820cd7b463fba6" compoundref="h5pp_hyperslab_8h" startline="18">blocks</references>
-        <references refid="structh5pp_1_1_opt_dims_type_1a8452ef9df661945c572f7ee17db88ad3" compoundref="h5pp_dimension_type_8h" startline="89" endline="89">h5pp::OptDimsType::operator-&gt;</references>
+        <references refid="structh5pp_1_1_opt_dims_type_1a8452ef9df661945c572f7ee17db88ad3" compoundref="h5pp_dimension_type_8h" startline="104" endline="104">h5pp::OptDimsType::operator-&gt;</references>
       </memberdef>
       <memberdef kind="function" id="classh5pp_1_1_hyperslab_1aacdbbf03cbb0288396c778bedc6200aa" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>bool</type>
@@ -163,27 +244,32 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="58" column="15" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" bodystart="58" bodyend="58"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="68" column="15" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" bodystart="68" bodyend="68"/>
         <references refid="classh5pp_1_1_hyperslab_1a5d6abc2530bdb98ee957a578f2e0d50f" compoundref="h5pp_hyperslab_8h" startline="15">offset</references>
         <references refid="classh5pp_1_1_hyperslab_1a84cc3c0b6b1407c3d1acfae05620e76d" compoundref="h5pp_hyperslab_8h" startline="16">extent</references>
         <references refid="classh5pp_1_1_hyperslab_1a8e27f0d9cfdba8016b98c697f11adb49" compoundref="h5pp_hyperslab_8h" startline="17">stride</references>
         <references refid="classh5pp_1_1_hyperslab_1aaf115b6a47c258e5f3820cd7b463fba6" compoundref="h5pp_hyperslab_8h" startline="18">blocks</references>
       </memberdef>
-      <memberdef kind="function" id="classh5pp_1_1_hyperslab_1a90c08aff27eb7b3587f0bd82922ea630" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+      <memberdef kind="function" id="classh5pp_1_1_hyperslab_1a81d9ed4124a5f06654cdc3413cfb8da8" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>std::string</type>
         <definition>std::string h5pp::Hyperslab::string</definition>
-        <argsstring>() const</argsstring>
+        <argsstring>(bool enable=true) const</argsstring>
         <name>string</name>
+        <param>
+          <type>bool</type>
+          <declname>enable</declname>
+          <defval>true</defval>
+        </param>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="60" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" bodystart="60" bodyend="67"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="70" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" bodystart="70" bodyend="78"/>
         <references refid="classh5pp_1_1_hyperslab_1a5d6abc2530bdb98ee957a578f2e0d50f" compoundref="h5pp_hyperslab_8h" startline="15">offset</references>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
-        <references refid="structh5pp_1_1_opt_dims_type_1afab86a953f1a6ed797a84cfc0402664e" compoundref="h5pp_dimension_type_8h" startline="85" endline="85">h5pp::OptDimsType::value</references>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
+        <references refid="structh5pp_1_1_opt_dims_type_1afab86a953f1a6ed797a84cfc0402664e" compoundref="h5pp_dimension_type_8h" startline="100" endline="100">h5pp::OptDimsType::value</references>
         <references refid="classh5pp_1_1_hyperslab_1a84cc3c0b6b1407c3d1acfae05620e76d" compoundref="h5pp_hyperslab_8h" startline="16">extent</references>
         <references refid="classh5pp_1_1_hyperslab_1a8e27f0d9cfdba8016b98c697f11adb49" compoundref="h5pp_hyperslab_8h" startline="17">stride</references>
         <references refid="classh5pp_1_1_hyperslab_1aaf115b6a47c258e5f3820cd7b463fba6" compoundref="h5pp_hyperslab_8h" startline="18">blocks</references>
@@ -209,18 +295,23 @@
         </childnode>
       </node>
     </collaborationgraph>
-    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="11" column="20" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" bodystart="11" bodyend="68"/>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" line="11" column="20" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppHyperslab.h" bodystart="11" bodyend="79"/>
     <listofallmembers>
       <member refid="classh5pp_1_1_hyperslab_1aaf115b6a47c258e5f3820cd7b463fba6" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>blocks</name></member>
       <member refid="classh5pp_1_1_hyperslab_1aacdbbf03cbb0288396c778bedc6200aa" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>empty</name></member>
       <member refid="classh5pp_1_1_hyperslab_1a84cc3c0b6b1407c3d1acfae05620e76d" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>extent</name></member>
       <member refid="classh5pp_1_1_hyperslab_1aa2ca4f5442d455ed0111c4bb0ae793cb" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>Hyperslab</name></member>
       <member refid="classh5pp_1_1_hyperslab_1a3edfa7f0f3d75874d62a48068e0b9ab1" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>Hyperslab</name></member>
+      <member refid="classh5pp_1_1_hyperslab_1a04bec6ce6e72db8be79e015de7076cbf" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>Hyperslab</name></member>
+      <member refid="classh5pp_1_1_hyperslab_1a7ed20e8b7b99f22d642a915ecfb1eeec" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>Hyperslab</name></member>
+      <member refid="classh5pp_1_1_hyperslab_1a2f0e47ae422fc192da1646ca01814124" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>Hyperslab</name></member>
+      <member refid="classh5pp_1_1_hyperslab_1ad441974b014a2a91fff710ab79a746e6" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>Hyperslab</name></member>
       <member refid="classh5pp_1_1_hyperslab_1ac0cd734a86df5485080b3bd82ff5a553" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>Hyperslab</name></member>
       <member refid="classh5pp_1_1_hyperslab_1a5d6abc2530bdb98ee957a578f2e0d50f" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>offset</name></member>
+      <member refid="classh5pp_1_1_hyperslab_1a3f7c133ad7f7585c6159dcc1301c083b" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>select_oper</name></member>
       <member refid="classh5pp_1_1_hyperslab_1ac4cd477ef921ec785ca5dd7029357f48" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>select_type</name></member>
       <member refid="classh5pp_1_1_hyperslab_1a8e27f0d9cfdba8016b98c697f11adb49" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>stride</name></member>
-      <member refid="classh5pp_1_1_hyperslab_1a90c08aff27eb7b3587f0bd82922ea630" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>string</name></member>
+      <member refid="classh5pp_1_1_hyperslab_1a81d9ed4124a5f06654cdc3413cfb8da8" prot="public" virt="non-virtual"><scope>h5pp::Hyperslab</scope><name>string</name></member>
     </listofallmembers>
   </compounddef>
 </doxygen>

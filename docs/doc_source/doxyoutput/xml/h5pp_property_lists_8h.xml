@@ -12,10 +12,13 @@
         <link refid="h5pp_property_lists_8h"/>
         <childnode refid="2" relation="include">
         </childnode>
-        <childnode refid="3" relation="include">
+        <childnode refid="4" relation="include">
         </childnode>
       </node>
-      <node id="4">
+      <node id="3">
+        <label>stdexcept</label>
+      </node>
+      <node id="5">
         <label>string</label>
       </node>
       <node id="2">
@@ -25,8 +28,10 @@
         </childnode>
         <childnode refid="4" relation="include">
         </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
       </node>
-      <node id="3">
+      <node id="4">
         <label>hdf5.h</label>
       </node>
     </incdepgraph>
@@ -90,9 +95,13 @@
 <codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>...<sp/>should<sp/>have<sp/>been<sp/>the<sp/>default<sp/>all<sp/>along?</highlight><highlight class="normal"></highlight></codeline>
 <codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1_property_lists_1acfdbad484245deb004afb69c799cdc2a" kindref="member">linkCreate</ref><sp/>=<sp/>H5Pcreate(H5P_LINK_CREATE);</highlight></codeline>
 <codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>H5Pset_create_intermediate_group(<ref refid="structh5pp_1_1_property_lists_1acfdbad484245deb004afb69c799cdc2a" kindref="member">linkCreate</ref>,<sp/>1);</highlight></codeline>
-<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
-<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
-<codeline lineno="28"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>h5pp<sp/>uses<sp/>H5F_CLOSE_STRONG<sp/>by<sp/>default<sp/>(id&apos;s<sp/>associated<sp/>to<sp/>a<sp/>file<sp/>are<sp/>closed<sp/>when<sp/>the<sp/>file<sp/>is<sp/>closed)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structh5pp_1_1_property_lists_1aa161c02310e4a1e3804ddc0f32ab3dec" kindref="member">fileAccess</ref><sp/>=<sp/>H5Pcreate(H5P_FILE_ACCESS);</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>H5Pset_fclose_degree(<ref refid="structh5pp_1_1_property_lists_1aa161c02310e4a1e3804ddc0f32ab3dec" kindref="member">fileAccess</ref>,<sp/>H5F_CLOSE_STRONG);</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="32"><highlight class="normal">}</highlight></codeline>
     </programlisting>
     <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppPropertyLists.h"/>
   </compounddef>

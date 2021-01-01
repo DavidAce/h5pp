@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="55" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="55" bodyend="-1"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="63" column="23" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="63" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="public-func">
@@ -31,9 +31,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="56" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="64" column="9"/>
       </memberdef>
-      <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1ad9234f3693a0660d25fba57e8208c2f6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1ad9234f3693a0660d25fba57e8208c2f6" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
         <type></type>
         <definition>h5pp::OptDimsType::OptDimsType</definition>
         <argsstring>(H5D_layout_t)=delete</argsstring>
@@ -47,9 +47,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="57" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="65" column="18"/>
       </memberdef>
-      <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a21d33655292f50afeb5621714185b154" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a21d33655292f50afeb5621714185b154" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
         <type></type>
         <definition>h5pp::OptDimsType::OptDimsType</definition>
         <argsstring>(hid::h5t)=delete</argsstring>
@@ -63,7 +63,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="58" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="66" column="18"/>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a3779bdd67539c334b5f45d9e611e50d3" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
         <type></type>
@@ -79,9 +79,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="59" column="18"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="67" column="18"/>
       </memberdef>
-      <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a399d5f30f944c190aa5099c23a58cdc2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a399d5f30f944c190aa5099c23a58cdc2" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
         <type></type>
         <definition>h5pp::OptDimsType::OptDimsType</definition>
         <argsstring>(std::string)=delete</argsstring>
@@ -95,9 +95,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="60" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="68" column="18"/>
       </memberdef>
-      <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1aa7ad9380e0bb99d99a0d09723e1ca5e1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1aa7ad9380e0bb99d99a0d09723e1ca5e1" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
         <type></type>
         <definition>h5pp::OptDimsType::OptDimsType</definition>
         <argsstring>(std::string_view)=delete</argsstring>
@@ -111,9 +111,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="61" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="69" column="18"/>
       </memberdef>
-      <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1ad3d0db290fba937272c2d2d54e34ba41" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+      <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1ad3d0db290fba937272c2d2d54e34ba41" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
         <type></type>
         <definition>h5pp::OptDimsType::OptDimsType</definition>
         <argsstring>(const char *)=delete</argsstring>
@@ -127,7 +127,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="62" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="70" column="18"/>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1aab542ea04ae8a7c76e6f3a2813e29a75" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type></type>
@@ -143,7 +143,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="63" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="71" column="9"/>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a82668c3b9e6ca994516627dada14eb92" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type></type>
@@ -159,7 +159,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="64" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="72" column="9"/>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a8441f7cc3723ec01bad2d6db854ca2ef" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type></type>
@@ -175,7 +175,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="65" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="73" column="9"/>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a87396dcd5dbdbe065ca8028e803902d2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type></type>
@@ -191,7 +191,23 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="66" column="9"/>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="74" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a69b929a7e5110f740c45b9bed06c9837" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>h5pp::OptDimsType::OptDimsType</definition>
+        <argsstring>(h5pp::Hyperslab)=delete</argsstring>
+        <name>OptDimsType</name>
+        <param>
+          <type><ref refid="classh5pp_1_1_hyperslab" kindref="compound">h5pp::Hyperslab</ref></type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="75" column="9"/>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a1145c25015ba215ce4f8b73494eab0ae" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type></type>
@@ -208,8 +224,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="68" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="68" bodyend="68"/>
-        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="55">dims</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="77" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="77" bodyend="77"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a533eefb7f50ef94341bc309b4da33407" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type></type>
@@ -226,8 +242,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="69" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="69" bodyend="69"/>
-        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="55">dims</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="78" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="78" bodyend="78"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a3cbbd8b60ee1ec95faea69b8ec7b8d0a" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -253,8 +269,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="71" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="71" bodyend="71"/>
-        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="55">dims</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="80" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="80" bodyend="82"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a6274936ed645a8ab46733bdf2e298d48" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type></type>
@@ -271,8 +287,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="72" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="72" bodyend="72"/>
-        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="55">dims</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="83" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="83" bodyend="83"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1addfe239705393f5303561ace17d85c84" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <templateparamlist>
@@ -294,9 +310,23 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="74" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="74" bodyend="83"/>
-        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="55">dims</references>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="85" column="9" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="85" bodyend="97"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
+      </memberdef>
+      <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a49ab8ba86914e6b0c66f05168a492610" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool h5pp::OptDimsType::has_value</definition>
+        <argsstring>() const</argsstring>
+        <name>has_value</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="98" column="38" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="98" bodyend="98"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a5ab3010beb646b9a9ffe09aa54aaabd8" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type></type>
@@ -309,8 +339,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="84" column="51" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="84" bodyend="84"/>
-        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="55">dims</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="99" column="51" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="99" bodyend="99"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1afab86a953f1a6ed797a84cfc0402664e" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>const std::vector&lt; hsize_t &gt; &amp;</type>
@@ -323,8 +353,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="85" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="85" bodyend="85"/>
-        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="55">dims</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="100" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="100" bodyend="100"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1ae823a511f8e2b297e1de4f015ed64499" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>std::vector&lt; hsize_t &gt; &amp;</type>
@@ -337,8 +367,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="86" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="86" bodyend="86"/>
-        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="55">dims</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="101" column="28" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="101" bodyend="101"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a7ffa4347bff4df0698f85588a65b6ae8" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type></type>
@@ -351,8 +381,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="87" column="38" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="87" bodyend="87"/>
-        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="55">dims</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="102" column="38" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="102" bodyend="102"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a5795ecac15590ffd009bb99cd3a1a733" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type></type>
@@ -365,8 +395,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="88" column="38" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="88" bodyend="88"/>
-        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="55">dims</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="103" column="38" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="103" bodyend="103"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1a8452ef9df661945c572f7ee17db88ad3" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
         <type>auto</type>
@@ -379,8 +409,8 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="89" column="51" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="89" bodyend="89"/>
-        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="55">dims</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="104" column="51" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="104" bodyend="104"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
       </memberdef>
       <memberdef kind="function" id="structh5pp_1_1_opt_dims_type_1aa3e046af43a65370969770b3b6e78aba" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
         <type>auto</type>
@@ -393,17 +423,18 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="90" column="51" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="90" bodyend="90"/>
-        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="55">dims</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="105" column="51" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="105" bodyend="105"/>
+        <references refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" compoundref="h5pp_dimension_type_8h" startline="63">dims</references>
       </memberdef>
       </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="54" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="54" bodyend="91"/>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" line="62" column="22" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppDimensionType.h" bodystart="62" bodyend="106"/>
     <listofallmembers>
       <member refid="structh5pp_1_1_opt_dims_type_1a19ef2010171e0f6eedf5778f72a2d534" prot="public" virt="non-virtual"><scope>h5pp::OptDimsType</scope><name>dims</name></member>
+      <member refid="structh5pp_1_1_opt_dims_type_1a49ab8ba86914e6b0c66f05168a492610" prot="public" virt="non-virtual"><scope>h5pp::OptDimsType</scope><name>has_value</name></member>
       <member refid="structh5pp_1_1_opt_dims_type_1a5ab3010beb646b9a9ffe09aa54aaabd8" prot="public" virt="non-virtual"><scope>h5pp::OptDimsType</scope><name>operator bool</name></member>
       <member refid="structh5pp_1_1_opt_dims_type_1a7ffa4347bff4df0698f85588a65b6ae8" prot="public" virt="non-virtual"><scope>h5pp::OptDimsType</scope><name>operator const std::optional&lt; std::vector&lt; hsize_t &gt;&gt; &amp;</name></member>
       <member refid="structh5pp_1_1_opt_dims_type_1a5795ecac15590ffd009bb99cd3a1a733" prot="public" virt="non-virtual"><scope>h5pp::OptDimsType</scope><name>operator std::optional&lt; std::vector&lt; hsize_t &gt;&gt; &amp;</name></member>
@@ -420,6 +451,7 @@
       <member refid="structh5pp_1_1_opt_dims_type_1a82668c3b9e6ca994516627dada14eb92" prot="public" virt="non-virtual"><scope>h5pp::OptDimsType</scope><name>OptDimsType</name></member>
       <member refid="structh5pp_1_1_opt_dims_type_1a8441f7cc3723ec01bad2d6db854ca2ef" prot="public" virt="non-virtual"><scope>h5pp::OptDimsType</scope><name>OptDimsType</name></member>
       <member refid="structh5pp_1_1_opt_dims_type_1a87396dcd5dbdbe065ca8028e803902d2" prot="public" virt="non-virtual"><scope>h5pp::OptDimsType</scope><name>OptDimsType</name></member>
+      <member refid="structh5pp_1_1_opt_dims_type_1a69b929a7e5110f740c45b9bed06c9837" prot="public" virt="non-virtual"><scope>h5pp::OptDimsType</scope><name>OptDimsType</name></member>
       <member refid="structh5pp_1_1_opt_dims_type_1a1145c25015ba215ce4f8b73494eab0ae" prot="public" virt="non-virtual"><scope>h5pp::OptDimsType</scope><name>OptDimsType</name></member>
       <member refid="structh5pp_1_1_opt_dims_type_1a533eefb7f50ef94341bc309b4da33407" prot="public" virt="non-virtual"><scope>h5pp::OptDimsType</scope><name>OptDimsType</name></member>
       <member refid="structh5pp_1_1_opt_dims_type_1a3cbbd8b60ee1ec95faea69b8ec7b8d0a" prot="public" virt="non-virtual"><scope>h5pp::OptDimsType</scope><name>OptDimsType</name></member>

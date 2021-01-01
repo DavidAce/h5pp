@@ -11,12 +11,15 @@ Program Listing for File h5ppInfo.h
 .. code-block:: cpp
 
    #pragma once
+   #include "h5ppDimensionType.h"
    #include "h5ppEnums.h"
    #include "h5ppHid.h"
+   #include "h5ppHyperslab.h"
    #include "h5ppLogger.h"
    #include "h5ppOptional.h"
    #include <hdf5.h>
    #include <hdf5_hl.h>
+   #include <numeric>
    #include <string>
    #include <typeindex>
    #include <variant>
@@ -58,18 +61,24 @@ Program Listing for File h5ppInfo.h
                    if(h5Layout.value() == H5D_CHUNKED) {}
                    if(h5Layout.value() == H5D_COMPACT) {
                        if(dimsChunk)
-                           error_msg.append(h5pp::format("Chunk dims {} | Layout is H5D_COMPACT | chunk dimensions are only meant for H5D_CHUNKED layouts\n", dimsChunk.value()));
-                       if(dimsMax and dims and dimsMax.value() != dims.value())
                            error_msg.append(h5pp::format(
-                               "dims {} | max dims {} | layout is H5D_COMPACT | dims and max dims must be equal unless the layout is H5D_CHUNKED\n", dims.value(), dimsMax.value()));
+                               "Chunk dims {} | Layout is H5D_COMPACT | chunk dimensions are only meant for H5D_CHUNKED layouts\n",
+                               dimsChunk.value()));
+                       if(dimsMax and dims and dimsMax.value() != dims.value())
+                           error_msg.append(h5pp::format("dims {} | max dims {} | layout is H5D_COMPACT | dims and max dims must be equal "
+                                                         "unless the layout is H5D_CHUNKED\n",
+                                                         dims.value(),
+                                                         dimsMax.value()));
                    }
                    if(h5Layout.value() == H5D_CONTIGUOUS) {
                        if(dimsChunk)
-                           error_msg.append(
-                               h5pp::format("Chunk dims {} | Layout is H5D_CONTIGUOUS | chunk dimensions are only meant for datasets with H5D_CHUNKED layout \n", dimsChunk.value()));
+                           error_msg.append(h5pp::format("Chunk dims {} | Layout is H5D_CONTIGUOUS | chunk dimensions are only meant for "
+                                                         "datasets with H5D_CHUNKED layout \n",
+                                                         dimsChunk.value()));
                        if(dimsMax)
-                           error_msg.append(
-                               h5pp::format("Max dims {} | Layout is H5D_CONTIGUOUS | max dimensions are only meant for datasets with H5D_CHUNKED layout \n", dimsMax.value()));
+                           error_msg.append(h5pp::format("Max dims {} | Layout is H5D_CONTIGUOUS | max dimensions are only meant for datasets "
+                                                         "with H5D_CHUNKED layout \n",
+                                                         dimsMax.value()));
                    }
                }
                std::string res1 = reportCompatibility(dims, dimsMax);
@@ -77,13 +86,15 @@ Program Listing for File h5ppInfo.h
                std::string res3 = reportCompatibility(dimsChunk, dimsMax);
                if(not res1.empty()) error_msg.append(h5pp::format("\t{}: dims {} | max dims {}\n", res1, dims.value(), dimsMax.value()));
                if(not res2.empty()) error_msg.append(h5pp::format("\t{}: dims {} | chunk dims {}\n", res2, dims.value(), dimsChunk.value()));
-               if(not res3.empty()) error_msg.append(h5pp::format("\t{}: chunk dims {} | max dims {}\n", res3, dimsChunk.value(), dimsMax.value()));
+               if(not res3.empty())
+                   error_msg.append(h5pp::format("\t{}: chunk dims {} | max dims {}\n", res3, dimsChunk.value(), dimsMax.value()));
                return error_msg;
            }
    
        }
    
        struct Options {
+           /* clang-format off */
            std::optional<std::string>      linkPath      = std::nullopt; 
            std::optional<std::string>      attrName      = std::nullopt; 
            OptDimsType                     dataDims      = std::nullopt; 
@@ -95,9 +106,11 @@ Program Listing for File h5ppInfo.h
            std::optional<hid::h5t>         h5Type        = std::nullopt; 
            std::optional<H5D_layout_t>     h5Layout      = std::nullopt; 
            std::optional<unsigned int>     compression   = std::nullopt; 
-           std::optional<h5pp::ResizeMode> resizeMode    = std::nullopt; 
-           [[nodiscard]] std::string       string() const {
+           std::optional<h5pp::ResizePolicy> resizePolicy    = std::nullopt; 
+           /* clang-format on */
+           [[nodiscard]] std::string string(bool enable = true) const {
                std::string msg;
+               if(not enable) return msg;
                /* clang-format off */
                if(dataDims) msg.append(h5pp::format(" | data dims {}", dataDims.value()));
                if(dsetDimsMax) msg.append(h5pp::format(" | max dims {}", dsetDimsMax.value()));
@@ -149,7 +162,7 @@ Program Listing for File h5ppInfo.h
                if(not dataByte) error_msg.append(" | dataByte");
                if(not dataDims) error_msg.append(" | dataDims");
                if(not dataRank) error_msg.append(" | dataRank");
-               if(not h5Space) error_msg.append(" | h5Space");
+               if(not h5Space)  error_msg.append(" | h5Space");
                if(not error_msg.empty())
                    throw std::runtime_error(h5pp::format("Cannot write from memory. The following fields are undefined:\n{}", error_msg));
                if(not h5Space->valid() ) error_msg.append(" | h5Space");
@@ -159,7 +172,8 @@ Program Listing for File h5ppInfo.h
                /* clang-format on */
                hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), static_cast<hsize_t>(1), std::multiplies<>());
                if(size_check != dataSize.value())
-                   throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | dataDims {} = size [{}]", dataSize.value(), dataDims.value(), size_check));
+                   throw std::runtime_error(h5pp::format(
+                       "Data size mismatch: dataSize [{}] | dataDims {} = size [{}]", dataSize.value(), dataDims.value(), size_check));
            }
    
            void assertReadReady() const {
@@ -169,7 +183,7 @@ Program Listing for File h5ppInfo.h
                if(not dataByte) error_msg.append(" | dataByte");
                if(not dataRank) error_msg.append(" | dataRank");
                if(not dataDims) error_msg.append(" | dataDims");
-               if(not h5Space) error_msg.append(" | h5Space");
+               if(not h5Space)  error_msg.append(" | h5Space");
                if(not error_msg.empty())
                    throw std::runtime_error(h5pp::format("Cannot read into memory. The following fields are undefined:\n{}", error_msg));
                if(not h5Space->valid() ) error_msg.append(" | h5Space");
@@ -178,11 +192,12 @@ Program Listing for File h5ppInfo.h
    
                /* clang-format on */
                hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), static_cast<hsize_t>(1), std::multiplies<>());
-               if(size_check != dataSize.value()) throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | size check [{}]", dataSize.value(), size_check));
+               if(size_check != dataSize.value())
+                   throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | size check [{}]", dataSize.value(), size_check));
            }
-           [[nodiscard]] std::string string() const {
-               //            std::string msg;
+           [[nodiscard]] std::string string(bool enable = true) const {
                std::string msg;
+               if(not enable) return msg;
                /* clang-format off */
                if(dataSize) msg.append(h5pp::format(" | size {}", dataSize.value()));
                if(dataByte) msg.append(h5pp::format(" | bytes {}", dataByte.value()));
@@ -199,38 +214,36 @@ Program Listing for File h5ppInfo.h
        };
    
        struct DsetInfo {
-           std::optional<hid::h5f>         h5File            = std::nullopt;
-           std::optional<hid::h5f>         h5Group           = std::nullopt;
-           std::optional<hid::h5f>         h5ObjLoc          = std::nullopt;
-           std::optional<hid::h5d>         h5Dset            = std::nullopt;
-           std::optional<hid::h5t>         h5Type            = std::nullopt;
-           std::optional<H5D_layout_t>     h5Layout          = std::nullopt;
-           std::optional<hid::h5s>         h5Space           = std::nullopt;
-           std::optional<hid::h5p>         h5PlistDsetCreate = std::nullopt;
-           std::optional<hid::h5p>         h5PlistDsetAccess = std::nullopt;
-           std::optional<std::string>      dsetPath          = std::nullopt;
-           std::optional<bool>             dsetExists        = std::nullopt;
-           std::optional<hsize_t>          dsetSize          = std::nullopt;
-           std::optional<size_t>           dsetByte          = std::nullopt;
-           std::optional<int>              dsetRank          = std::nullopt;
-           OptDimsType                     dsetDims          = std::nullopt;
-           OptDimsType                     dsetDimsMax       = std::nullopt;
-           OptDimsType                     dsetChunk         = std::nullopt;
-           std::optional<Hyperslab>        dsetSlab          = std::nullopt;
-           std::optional<h5pp::ResizeMode> resizeMode        = std::nullopt;
-           std::optional<unsigned int>     compression       = std::nullopt;
-           std::optional<std::string>      cppTypeName       = std::nullopt;
-           std::optional<size_t>           cppTypeSize       = std::nullopt;
-           std::optional<std::type_index>  cppTypeIndex      = std::nullopt;
+           std::optional<hid::h5f>           h5File            = std::nullopt;
+           std::optional<hid::h5d>           h5Dset            = std::nullopt;
+           std::optional<hid::h5t>           h5Type            = std::nullopt;
+           std::optional<H5D_layout_t>       h5Layout          = std::nullopt;
+           std::optional<hid::h5s>           h5Space           = std::nullopt;
+           std::optional<hid::h5p>           h5PlistDsetCreate = std::nullopt;
+           std::optional<hid::h5p>           h5PlistDsetAccess = std::nullopt;
+           std::optional<std::string>        dsetPath          = std::nullopt;
+           std::optional<bool>               dsetExists        = std::nullopt;
+           std::optional<hsize_t>            dsetSize          = std::nullopt;
+           std::optional<size_t>             dsetByte          = std::nullopt;
+           std::optional<int>                dsetRank          = std::nullopt;
+           OptDimsType                       dsetDims          = std::nullopt;
+           OptDimsType                       dsetDimsMax       = std::nullopt;
+           OptDimsType                       dsetChunk         = std::nullopt;
+           std::optional<Hyperslab>          dsetSlab          = std::nullopt;
+           std::optional<h5pp::ResizePolicy> resizePolicy      = std::nullopt;
+           std::optional<unsigned int>       compression       = std::nullopt;
+           std::optional<std::string>        cppTypeName       = std::nullopt;
+           std::optional<size_t>             cppTypeSize       = std::nullopt;
+           std::optional<std::type_index>    cppTypeIndex      = std::nullopt;
    
-           [[nodiscard]] hid_t getLocId() const {
+           [[nodiscard]] hid::h5f getLocId() const {
                if(h5File) return h5File.value();
-               if(h5Group) return h5Group.value();
-               if(h5ObjLoc) return h5ObjLoc.value();
+               if(h5Dset) return H5Iget_file_id(h5Dset.value());
                h5pp::logger::log->debug("Dataset location id is not defined");
-               return -1;
+               return static_cast<hid_t>(0);
            }
-           void assertCreateReady() const {
+           [[nodiscard]] bool hasLocId() const { return h5File.has_value() or h5Dset.has_value(); }
+           void               assertCreateReady() const {
                std::string error_msg;
                /* clang-format off */
                if(not dsetPath           ) error_msg.append("\t dsetPath\n");
@@ -247,7 +260,7 @@ Program Listing for File h5ppInfo.h
                if(not h5PlistDsetAccess->valid()  ) error_msg.append("\t h5PlistDsetAccess\n");
                if(not error_msg.empty())
                    throw std::runtime_error("Cannot create dataset. The following fields are not valid\n\t" + error_msg);
-               if(getLocId() < 0) throw std::runtime_error(h5pp::format("Cannot create dataset [{}]: The location ID is not set", dsetPath.value()));
+               if(not hasLocId()) throw std::runtime_error(h5pp::format("Cannot create dataset [{}]: The location ID is not set", dsetPath.value()));
                error_msg.append(debug::reportCompatibility(h5Layout,dsetDims,dsetChunk,dsetDimsMax));
                if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Dataset dimensions are not well defined:\n{}", error_msg));
                /* clang-format on */
@@ -257,7 +270,7 @@ Program Listing for File h5ppInfo.h
                /* clang-format off */
                if(dsetExists and dsetPath and not dsetExists.value()) error_msg.append(h5pp::format("\t Dataset does not exist [{}]", dsetPath.value()));
                else if(dsetExists and not dsetExists.value()) error_msg.append("\t Dataset does not exist");
-               if(resizeMode and resizeMode == h5pp::ResizeMode::DO_NOT_RESIZE) error_msg.append("\t Resize mode is set to DO_NOT_RESIZE");
+               if(resizePolicy and resizePolicy == h5pp::ResizePolicy::DO_NOT_RESIZE) error_msg.append("\t Resize mode is set to DO_NOT_RESIZE");
                if(not error_msg.empty())
                    throw std::runtime_error(h5pp::format("Cannot resize dataset.\n{}", error_msg));
                if(not dsetPath           ) error_msg.append("\t dsetPath\n");
@@ -314,9 +327,10 @@ Program Listing for File h5ppInfo.h
    
                /* clang-format on */
            }
-           [[nodiscard]] std::string string() const {
-               //            std::string msg;
+           [[nodiscard]] std::string string(bool enable = true) const {
                std::string msg;
+               if(not enable) return msg;
+   
                /* clang-format off */
                if(dsetSize)    msg.append(h5pp::format(" | size {}", dsetSize.value()));
                if(dsetByte)    msg.append(h5pp::format(" | bytes {}", dsetByte.value()));
@@ -333,25 +347,25 @@ Program Listing for File h5ppInfo.h
                }
                if(dsetChunk)   msg.append(h5pp::format(" | chunk dims {}", dsetChunk.value()));
                if(dsetDimsMax){
-                   std::vector<long> maxDimsLong;
+                   std::vector<long> dsetDimsMaxPretty;
                    for(auto &dim : dsetDimsMax.value()) {
                        if(dim == H5S_UNLIMITED)
-                           maxDimsLong.emplace_back(-1);
+                           dsetDimsMaxPretty.emplace_back(-1);
                        else
-                           maxDimsLong.emplace_back(static_cast<long>(dim));
+                           dsetDimsMaxPretty.emplace_back(static_cast<long>(dim));
                    }
-                   msg.append(h5pp::format(" | max dims {}", maxDimsLong));
+                   msg.append(h5pp::format(" | max dims {}", dsetDimsMaxPretty));
                }
                if (h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
                    Hyperslab slab(h5Space.value());
                    msg.append(h5pp::format(" | [ Hyperslab {} ]", slab.string()));
                }
-               if(resizeMode){
+               if(resizePolicy){
                    msg.append(" | resize mode ");
-                   switch(resizeMode.value()){
-                       case ResizeMode::RESIZE_TO_FIT: msg.append(h5pp::format("RESIZE_TO_FIT")); break;
-                       case ResizeMode::INCREASE_ONLY: msg.append(h5pp::format("INCREASE_ONLY")); break;
-                       case ResizeMode::DO_NOT_RESIZE: msg.append(h5pp::format("DO_NOT_RESIZE")); break;
+                   switch(resizePolicy.value()){
+                       case ResizePolicy::RESIZE_TO_FIT: msg.append(h5pp::format("RESIZE_TO_FIT")); break;
+                       case ResizePolicy::INCREASE_ONLY: msg.append(h5pp::format("INCREASE_ONLY")); break;
+                       case ResizePolicy::DO_NOT_RESIZE: msg.append(h5pp::format("DO_NOT_RESIZE")); break;
                        default: break;
                    }
                }
@@ -365,8 +379,9 @@ Program Listing for File h5ppInfo.h
        };
    
        struct AttrInfo {
-           std::optional<hid::h5a>             h5Attr            = std::nullopt;
+           std::optional<hid::h5f>             h5File            = std::nullopt;
            std::optional<hid::h5o>             h5Link            = std::nullopt;
+           std::optional<hid::h5a>             h5Attr            = std::nullopt;
            std::optional<hid::h5t>             h5Type            = std::nullopt;
            std::optional<hid::h5s>             h5Space           = std::nullopt;
            std::optional<hid::h5p>             h5PlistAttrCreate = std::nullopt;
@@ -384,6 +399,15 @@ Program Listing for File h5ppInfo.h
            std::optional<size_t>               cppTypeSize       = std::nullopt;
            std::optional<std::type_index>      cppTypeIndex      = std::nullopt;
    
+           [[nodiscard]] hid::h5f getLocId() const {
+               if(h5File) return h5File.value();
+               if(h5Link) return H5Iget_file_id(h5Link.value());
+               if(h5Attr) return H5Iget_file_id(h5Attr.value());
+               h5pp::logger::log->debug("Attribute location id is not defined");
+               return static_cast<hid_t>(0);
+           }
+           [[nodiscard]] bool hasLocId() const { return h5File.has_value() or h5Link.has_value() or h5Attr.has_value(); }
+   
            void assertCreateReady() const {
                std::string error_msg;
                /* clang-format off */
@@ -394,19 +418,20 @@ Program Listing for File h5ppInfo.h
                if(not h5Link             ) error_msg.append("\t h5Link\n");
                if(not h5Type             ) error_msg.append("\t h5Type\n");
                if(not h5Space            ) error_msg.append("\t h5Space\n");
-               if(not h5PlistAttrCreate) error_msg.append("\t h5PlistAttrCreate\n");
-               if(not h5PlistAttrAccess) error_msg.append("\t h5PlistAttrAccess\n");
+               if(not h5PlistAttrCreate  ) error_msg.append("\t h5PlistAttrCreate\n");
+               if(not h5PlistAttrAccess  ) error_msg.append("\t h5PlistAttrAccess\n");
                if(not error_msg.empty())
                    throw std::runtime_error(h5pp::format("Cannot create attribute. The following fields are undefined:\n{}", error_msg));
                if(not linkExists.value())
                    throw std::runtime_error(h5pp::format("Cannot create attribute [{}] for link [{}]. The link does not exist",attrName.value(),linkPath.value()));
-               if(not h5Link->valid()             ) error_msg.append("\t h5Link\n");
-               if(not h5Type->valid()             ) error_msg.append("\t h5Type\n");
-               if(not h5Space->valid()            ) error_msg.append("\t h5Space\n");
+               if(not h5Link->valid()           ) error_msg.append("\t h5Link\n");
+               if(not h5Type->valid()           ) error_msg.append("\t h5Type\n");
+               if(not h5Space->valid()          ) error_msg.append("\t h5Space\n");
                if(not h5PlistAttrCreate->valid()) error_msg.append("\t h5PlistAttrCreate\n");
                if(not h5PlistAttrAccess->valid()) error_msg.append("\t h5PlistAttrAccess\n");
                if(not error_msg.empty())
-                   throw std::runtime_error(h5pp::format("Cannot create attribute [{}] for link [{}]. The following fields are not valid: {}",attrName.value(),linkPath.value(),error_msg));
+                   throw std::runtime_error(h5pp::format("Cannot create attribute [{}] for link [{}]. The following fields are not valid: {}",
+                                               attrName.value(),linkPath.value(),error_msg));
                /* clang-format on */
            }
    
@@ -417,10 +442,12 @@ Program Listing for File h5ppInfo.h
                if(not h5Type             ) error_msg.append("\t h5Type\n");
                if(not error_msg.empty())
                    throw std::runtime_error(h5pp::format("Cannot create attribute. The following fields are undefined:\n{}", error_msg));
-               if(not h5Attr->valid()             ) error_msg.append("\t h5Attr\n");
-               if(not h5Type->valid()             ) error_msg.append("\t h5Type\n");
+               if(not h5Attr->valid()    ) error_msg.append("\t h5Attr\n");
+               if(not h5Type->valid()    ) error_msg.append("\t h5Type\n");
                if(not error_msg.empty())
-                   throw std::runtime_error(h5pp::format("Cannot create attribute [{}] for link [{}]. The following fields are not valid: {}",attrName.value(),linkPath.value(),error_msg));
+                   throw std::runtime_error(h5pp::format(
+                           "Cannot create attribute [{}] for link [{}]. The following fields are not valid: {}",
+                           attrName.value(),linkPath.value(),error_msg));
                /* clang-format on */
            }
    
@@ -439,8 +466,9 @@ Program Listing for File h5ppInfo.h
                /* clang-format on */
            }
    
-           [[nodiscard]] std::string string() const {
+           [[nodiscard]] std::string string(bool enable = true) const {
                std::string msg;
+               if(not enable) return msg;
                /* clang-format off */
                if(attrSize) msg.append(h5pp::format(" | size {}", attrSize.value()));
                if(attrByte) msg.append(h5pp::format(" | bytes {}", attrByte.value()));
@@ -455,6 +483,12 @@ Program Listing for File h5ppInfo.h
        };
    
        struct TableInfo {
+           std::optional<hid::h5f>                     h5File           = std::nullopt;
+           std::optional<hid::h5d>                     h5Dset           = std::nullopt;
+           std::optional<hid::h5t>                     h5Type           = std::nullopt;
+           std::optional<std::string>                  tableTitle       = std::nullopt;
+           std::optional<std::string>                  tablePath        = std::nullopt;
+           std::optional<std::string>                  tableGroupName   = std::nullopt;
            std::optional<size_t>                       numFields        = std::nullopt;
            std::optional<size_t>                       numRecords       = std::nullopt;
            std::optional<size_t>                       recordBytes      = std::nullopt;
@@ -463,30 +497,27 @@ Program Listing for File h5ppInfo.h
            std::optional<std::vector<size_t>>          fieldOffsets     = std::nullopt;
            std::optional<std::vector<hid::h5t>>        fieldTypes       = std::nullopt;
            std::optional<bool>                         tableExists      = std::nullopt;
-           std::optional<std::string>                  tableTitle       = std::nullopt;
-           std::optional<std::string>                  tablePath        = std::nullopt;
-           std::optional<std::string>                  tableGroupName   = std::nullopt;
-           std::optional<hid::h5f>                     tableFile        = std::nullopt;
-           std::optional<hid::h5g>                     tableGroup       = std::nullopt;
-           std::optional<hid::h5o>                     tableObjLoc      = std::nullopt;
-           std::optional<hid::h5d>                     tableDset        = std::nullopt;
-           std::optional<hid::h5t>                     tableType        = std::nullopt;
            std::optional<size_t>                       compressionLevel = std::nullopt;
            std::optional<hsize_t>                      chunkSize        = std::nullopt;
            std::optional<std::vector<std::string>>     cppTypeName      = std::nullopt;
            std::optional<std::vector<size_t>>          cppTypeSize      = std::nullopt;
            std::optional<std::vector<std::type_index>> cppTypeIndex     = std::nullopt;
    
-           [[nodiscard]] hid_t getTableLocId() const {
-               if(tableFile) return tableFile.value();
-               if(tableGroup) return tableGroup.value();
-               if(tableObjLoc) return tableObjLoc.value();
+           [[nodiscard]] hid::h5f getLocId() const {
+               if(h5File) return h5File.value();
+               if(h5Dset) return H5Iget_file_id(h5Dset.value());
                h5pp::logger::log->debug("Table location is not defined");
-               return -1;
+               return static_cast<hid_t>(0);
            }
+   
+           [[nodiscard]] bool hasLocId() const { return h5File.has_value() or h5Dset.has_value(); }
+   
            /* clang-format off */
            void assertCreateReady() const {
                std::string error_msg;
+               if(not tableTitle)          error_msg.append("\t tableTitle\n");
+               if(not tablePath)           error_msg.append("\t tablePath\n");
+               if(not tableGroupName)      error_msg.append("\t tableGroupName\n");
                if(not numFields)           error_msg.append("\t numFields\n");
                if(not numRecords)          error_msg.append("\t numRecords\n");
                if(not recordBytes)         error_msg.append("\t recordBytes\n");
@@ -494,34 +525,45 @@ Program Listing for File h5ppInfo.h
                if(not fieldSizes)          error_msg.append("\t fieldSizes\n");
                if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
                if(not fieldTypes)          error_msg.append("\t fieldTypes\n");
-               if(not tablePath)           error_msg.append("\t tablePath\n");
-               if(not tableGroupName)      error_msg.append("\t tableGroupName\n");
-               if(not tableTitle)          error_msg.append("\t tableTitle\n");
                if(not compressionLevel)    error_msg.append("\t compressionLevel\n");
                if(not chunkSize)           error_msg.append("\t chunkSize\n");
                if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot create new table: The following fields are not set:\n{}", error_msg));
+               if(not hasLocId())        throw std::runtime_error(h5pp::format("Cannot create new table [{}]: The location ID is not set", tablePath.value()));
            }
            void assertReadReady() const {
                std::string error_msg;
-               if(not recordBytes)         error_msg.append("\t recordBytes\n");
-               if(not fieldSizes)          error_msg.append("\t fieldSizes\n");
-               if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
+               if(not h5Dset)              error_msg.append("\t h5Dset\n");
+               if(not h5Type)              error_msg.append("\t h5Type\n");
                if(not tablePath)           error_msg.append("\t tablePath\n");
+               if(not tableExists)         error_msg.append("\t tableExists\n");
+               if(not numFields)           error_msg.append("\t numFields\n");
+               if(not numRecords)          error_msg.append("\t numRecords\n");
+               if(not recordBytes)         error_msg.append("\t recordBytes\n");
+               if(not fieldNames)          error_msg.append("\t fieldNames\n");
+               if(not fieldSizes)          error_msg.append("\t fieldSizes\n");
+               if(not fieldTypes)          error_msg.append("\t fieldTypes\n");
+               if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
                if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot read from table: The following fields are not set:\n{}", error_msg));
-               if(getTableLocId() < 0) throw std::runtime_error(h5pp::format("Cannot read from table [{}]: The location ID is not set", tablePath.value()));
+   //            if(not hasLocId()) throw std::runtime_error(h5pp::format("Cannot read from table [{}]: The location ID is not set", tablePath.value()));
            }
            void assertWriteReady() const {
                std::string error_msg;
+               if(not tablePath)           error_msg.append("\t tablePath\n");
+               if(not h5Dset)              error_msg.append("\t h5Dset\n");
+               if(not h5Type)              error_msg.append("\t h5Type\n");
+               if(not tableExists)         error_msg.append("\t tableExists\n");
+               if(not numFields)           error_msg.append("\t numFields\n");
+               if(not numRecords)          error_msg.append("\t numRecords\n");
                if(not recordBytes)         error_msg.append("\t recordBytes\n");
                if(not fieldSizes)          error_msg.append("\t fieldSizes\n");
                if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
-               if(not tablePath)           error_msg.append("\t tablePath\n");
                if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot write to table: The following fields are not set:\n{}", error_msg));
-               if(getTableLocId() < 0) throw std::runtime_error(h5pp::format("Cannot write to table [{}]: The location ID is not set", tablePath.value()));
+   //            if(not hasLocId()) throw std::runtime_error(h5pp::format("Cannot write to table [{}]: The location ID is not set", tablePath.value()));
            }
    
-           [[nodiscard]] std::string string() const {
+           [[nodiscard]] std::string string(bool enable = true) const {
                std::string msg;
+               if(not enable) return msg;
                if(tableTitle) msg.append(h5pp::format("Table title [{}]", tableTitle.value()));
                if(numFields)  msg.append(h5pp::format(" | num fields [{}]", numFields.value()));
                if(numRecords) msg.append(h5pp::format(" | num records [{}]", numRecords.value()));
@@ -544,8 +586,9 @@ Program Listing for File h5ppInfo.h
            std::optional<hid::h5t>             h5Type;
            std::optional<hid::h5o>             h5Link;
    
-           [[nodiscard]] std::string string() {
+           [[nodiscard]] std::string string(bool enable = true) const {
                std::string msg;
+               if(not enable) return msg;
                if(cppTypeName) msg.append(h5pp::format("C++: type [{}]", cppTypeName.value()));
                if(cppTypeBytes) msg.append(h5pp::format(" bytes [{}]", cppTypeBytes.value()));
                if(not msg.empty()) msg.append(" | HDF5:");

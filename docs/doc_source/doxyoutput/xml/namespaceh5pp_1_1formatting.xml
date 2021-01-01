@@ -32,14 +32,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="17" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" bodystart="17" bodyend="43"/>
-        <references refid="namespaceh5pp_1a1916ac19846807673af32b055bb98af4" compoundref="h5pp_format_8h" startline="49" endline="66">h5pp::format</references>
+        <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="61" column="19" bodyfile="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" bodystart="61" bodyend="87"/>
+        <references refid="namespaceh5pp_1ac868e8b1c14646766625645c067d195c" compoundref="h5pp_format_8h" startline="113" endline="115">h5pp::print</references>
       </memberdef>
       </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
     </detaileddescription>
-    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="14" column="24"/>
+    <location file="/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFormat.h" line="58" column="24"/>
   </compounddef>
 </doxygen>

@@ -26,6 +26,7 @@ Files
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppHid.h`
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppHyperslab.h`
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppInfo.h`
+- :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppInitListType.h`
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppLogger.h`
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppOptional.h`
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppPropertyLists.h`

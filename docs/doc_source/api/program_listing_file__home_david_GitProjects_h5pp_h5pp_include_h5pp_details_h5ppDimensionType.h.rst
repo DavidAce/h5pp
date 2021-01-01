@@ -22,23 +22,28 @@ Program Listing for File h5ppDimensionType.h
        struct DataInfo;
        struct TableInfo;
        struct OptDimsType;
+       class  Hyperslab;
+   
        struct DimsType {
            std::vector<hsize_t> dims;
-           DimsType()                 = default;
-           DimsType(H5D_layout_t)     = delete;
-           DimsType(hid::h5t)         = delete;
-           DimsType(hid_t)            = delete;
-           DimsType(std::string)      = delete;
-           DimsType(std::string_view) = delete;
-           DimsType(const char *)     = delete;
+           DimsType()                          = default;
+           explicit DimsType(H5D_layout_t)     = delete;
+           explicit DimsType(hid::h5t)         = delete;
+           explicit DimsType(hid_t)            = delete;
+           explicit DimsType(std::string)      = delete;
+           explicit DimsType(std::string_view) = delete;
+           explicit DimsType(const char *)     = delete;
            DimsType(h5pp::Options)    = delete;
            DimsType(h5pp::DsetInfo)   = delete;
            DimsType(h5pp::DataInfo)   = delete;
            DimsType(h5pp::TableInfo)  = delete;
+           DimsType(h5pp::Hyperslab)  = delete;
            DimsType(const std::nullopt_t &) { throw std::runtime_error("nullopt is not a valid dimension for this argument"); }
-           DimsType(std::initializer_list<hsize_t> &&list) { std::copy(list.begin(), list.end(), std::back_inserter(dims)); }
+           DimsType(std::initializer_list<hsize_t> &&list) { dims = std::vector<hsize_t>(std::begin(list), std::end(list)); }
            template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-           DimsType(std::initializer_list<T> &&list) { std::copy(list.begin(), list.end(), std::back_inserter(dims)); }
+           DimsType(std::initializer_list<T> &&list) {
+               dims = std::vector<hsize_t>(std::begin(list), std::end(list));
+           }
            DimsType(std::optional<std::vector<hsize_t>> otherDims) {
                if(not otherDims) throw std::runtime_error("Cannot initialize DimsType with nullopt");
                dims = otherDims.value();
@@ -48,7 +53,7 @@ Program Listing for File h5ppDimensionType.h
                if constexpr(std::is_integral_v<UnknownType>)
                    dims = std::vector<hsize_t>{static_cast<size_t>(dims_)};
                else if constexpr(h5pp::type::sfinae::is_iterable_v<UnknownType>)
-                   std::copy(dims_.begin(), dims_.end(), std::back_inserter(dims));
+                   dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
                else if constexpr(std::is_same_v<UnknownType, OptDimsType>)
                    if(not dims_)
                        throw std::runtime_error("Cannot initialize DimsType with nullopt");
@@ -56,48 +61,58 @@ Program Listing for File h5ppDimensionType.h
                        dims = dims_.value();
                else if constexpr(std::is_assignable_v<UnknownType, DimsType>)
                    dims = dims_;
-               else
-                   throw std::runtime_error(h5pp::format("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>()));
+               else {
+                   static_assert(h5pp::type::sfinae::invalid_type_v<UnknownType>, "Could not identify dimension type");
+                   throw std::runtime_error(
+                       h5pp::format("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>()));
+               }
            }
-           [[nodiscard]] operator const std::vector<hsize_t> &() const { return dims; } // Class can be used as an actual hid_t
-           [[nodiscard]] operator std::vector<hsize_t> &() { return dims; }             // Class can be used as an actual hid_t
+           [[nodiscard]] operator const std::vector<hsize_t> &() const { return dims; }
+           [[nodiscard]] operator std::vector<hsize_t> &() { return dims; }
        };
    
        struct OptDimsType {
            std::optional<std::vector<hsize_t>> dims = std::vector<hsize_t>();
            OptDimsType()                            = default;
-           OptDimsType(H5D_layout_t)                = delete;
-           OptDimsType(hid::h5t)                    = delete;
+           explicit OptDimsType(H5D_layout_t)       = delete;
+           explicit OptDimsType(hid::h5t)           = delete;
            explicit OptDimsType(hid_t)              = delete;
-           OptDimsType(std::string)                 = delete;
-           OptDimsType(std::string_view)            = delete;
-           OptDimsType(const char *)                = delete;
-           OptDimsType(h5pp::Options)               = delete;
-           OptDimsType(h5pp::DsetInfo)              = delete;
-           OptDimsType(h5pp::DataInfo)              = delete;
-           OptDimsType(h5pp::TableInfo)             = delete;
+           explicit OptDimsType(std::string)        = delete;
+           explicit OptDimsType(std::string_view)   = delete;
+           explicit OptDimsType(const char *)       = delete;
+           OptDimsType(h5pp::Options)    = delete;
+           OptDimsType(h5pp::DsetInfo)   = delete;
+           OptDimsType(h5pp::DataInfo)   = delete;
+           OptDimsType(h5pp::TableInfo)  = delete;
+           OptDimsType(h5pp::Hyperslab)  = delete;
    
            OptDimsType(const std::nullopt_t &nullopt) { dims = nullopt; }
-           OptDimsType(std::initializer_list<hsize_t> &&list) { std::copy(list.begin(), list.end(), std::back_inserter(dims.value())); }
+           OptDimsType(std::initializer_list<hsize_t> &&list) { dims = std::vector<hsize_t>(std::begin(list), std::end(list)); }
            template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-           OptDimsType(std::initializer_list<T> &&list) { std::copy(list.begin(), list.end(), std::back_inserter(dims.value())); }
+           OptDimsType(std::initializer_list<T> &&list) {
+               dims = std::vector<hsize_t>(std::begin(list), std::end(list));
+           }
            OptDimsType(std::optional<std::vector<hsize_t>> otherDims) : dims(std::move(otherDims)) {}
            template<typename UnknownType>
            OptDimsType(const UnknownType &dims_) {
                if constexpr(std::is_integral_v<UnknownType>)
                    dims = std::vector<hsize_t>{static_cast<size_t>(dims_)};
                else if constexpr(h5pp::type::sfinae::is_iterable_v<UnknownType>)
-                   std::copy(dims_.begin(), dims_.end(), std::back_inserter(dims.value()));
+                   dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
                else if constexpr(std::is_assignable_v<UnknownType, OptDimsType> or std::is_assignable_v<UnknownType, DimsType>)
                    dims = dims_;
-               else
-                   throw std::runtime_error(h5pp::format("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>()));
+               else {
+                   static_assert(h5pp::type::sfinae::invalid_type_v<UnknownType>, "Could not identify dimension type");
+                   throw std::runtime_error(
+                       h5pp::format("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>()));
+               }
            }
+           [[nodiscard]] bool                        has_value() const { return dims.has_value(); }
                                                      operator bool() const { return dims.has_value(); }
            [[nodiscard]] const std::vector<hsize_t> &value() const { return dims.value(); }
            [[nodiscard]] std::vector<hsize_t> &      value() { return dims.value(); }
-           [[nodiscard]]                             operator const std::optional<std::vector<hsize_t>> &() const { return dims; } // Class can be used as an actual hid_t
-           [[nodiscard]]                             operator std::optional<std::vector<hsize_t>> &() { return dims; }             // Class can be used as an actual hid_t
+           [[nodiscard]]                             operator const std::optional<std::vector<hsize_t>> &() const { return dims; }
+           [[nodiscard]]                             operator std::optional<std::vector<hsize_t>> &() { return dims; }
            auto                                      operator->() { return dims.operator->(); }
            auto                                      operator->() const { return dims.operator->(); }
        };

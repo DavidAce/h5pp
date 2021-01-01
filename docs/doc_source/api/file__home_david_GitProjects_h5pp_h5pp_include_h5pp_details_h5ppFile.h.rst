@@ -43,6 +43,8 @@ Includes
 
 - ``h5ppHid.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppHid.h`)
 
+- ``h5ppInitListType.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppInitListType.h`)
+
 - ``h5ppLogger.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppLogger.h`)
 
 - ``h5ppOptional.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppOptional.h`)

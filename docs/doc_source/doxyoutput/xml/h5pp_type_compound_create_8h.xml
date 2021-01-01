@@ -8,48 +8,51 @@
     <includes local="no">complex</includes>
     <includedby refid="h5pp_file_8h" local="yes">/home/david/GitProjects/h5pp/h5pp/include/h5pp/details/h5ppFile.h</includedby>
     <incdepgraph>
-      <node id="9">
+      <node id="10">
         <label>iterator</label>
       </node>
-      <node id="5">
+      <node id="6">
         <label>h5ppTypeCompound.h</label>
         <link refid="h5pp_type_compound_8h"/>
         <childnode refid="2" relation="include">
         </childnode>
-        <childnode refid="6" relation="include">
-        </childnode>
-        <childnode refid="3" relation="include">
-        </childnode>
-      </node>
-      <node id="10">
-        <label>numeric</label>
-      </node>
-      <node id="4">
-        <label>string</label>
-      </node>
-      <node id="7">
-        <label>h5ppTypeSfinae.h</label>
-        <link refid="h5pp_type_sfinae_8h"/>
-        <childnode refid="8" relation="include">
-        </childnode>
-        <childnode refid="11" relation="include">
-        </childnode>
-        <childnode refid="5" relation="include">
-        </childnode>
-        <childnode refid="12" relation="include">
-        </childnode>
-        <childnode refid="13" relation="include">
+        <childnode refid="7" relation="include">
         </childnode>
         <childnode refid="4" relation="include">
         </childnode>
+      </node>
+      <node id="3">
+        <label>stdexcept</label>
+      </node>
+      <node id="11">
+        <label>numeric</label>
+      </node>
+      <node id="5">
+        <label>string</label>
+      </node>
+      <node id="8">
+        <label>h5ppTypeSfinae.h</label>
+        <link refid="h5pp_type_sfinae_8h"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
         <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
         </childnode>
         <childnode refid="15" relation="include">
         </childnode>
         <childnode refid="16" relation="include">
         </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
       </node>
-      <node id="14">
+      <node id="15">
         <label>string_view</label>
       </node>
       <node id="2">
@@ -59,35 +62,37 @@
         </childnode>
         <childnode refid="4" relation="include">
         </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
       </node>
-      <node id="8">
+      <node id="9">
         <label>h5ppEigen.h</label>
         <link refid="h5pp_eigen_8h"/>
-        <childnode refid="9" relation="include">
-        </childnode>
         <childnode refid="10" relation="include">
         </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
       </node>
-      <node id="16">
+      <node id="17">
         <label>vector</label>
       </node>
-      <node id="12">
+      <node id="13">
         <label>array</label>
       </node>
-      <node id="13">
+      <node id="14">
         <label>sstream</label>
       </node>
-      <node id="3">
+      <node id="4">
         <label>hdf5.h</label>
       </node>
-      <node id="11">
+      <node id="12">
         <label>h5ppOptional.h</label>
         <link refid="h5pp_optional_8h"/>
       </node>
-      <node id="15">
+      <node id="16">
         <label>type_traits</label>
       </node>
-      <node id="6">
+      <node id="7">
         <label>complex</label>
       </node>
       <node id="1">
@@ -95,11 +100,11 @@
         <link refid="h5pp_type_compound_create_8h"/>
         <childnode refid="2" relation="include">
         </childnode>
-        <childnode refid="5" relation="include">
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
         </childnode>
         <childnode refid="7" relation="include">
-        </childnode>
-        <childnode refid="6" relation="include">
         </childnode>
       </node>
     </incdepgraph>

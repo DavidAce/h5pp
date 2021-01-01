@@ -29,9 +29,13 @@ Includes
 --------
 
 
+- ``h5ppDimensionType.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppDimensionType.h`)
+
 - ``h5ppEnums.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppEnums.h`)
 
 - ``h5ppHid.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppHid.h`)
+
+- ``h5ppHyperslab.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppHyperslab.h`)
 
 - ``h5ppLogger.h`` (:ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppLogger.h`)
 
@@ -40,6 +44,8 @@ Includes
 - ``hdf5.h``
 
 - ``hdf5_hl.h``
+
+- ``numeric``
 
 - ``string``
 

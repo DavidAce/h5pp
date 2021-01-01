@@ -30,6 +30,8 @@ Functions
 
 - :ref:`exhale_function_namespaceh5pp_1_1logger_1a964f0df3728a189192ec0630dc58bf95`
 
+- :ref:`exhale_function_namespaceh5pp_1_1logger_1a41856ce07cc22724ac358fab12ef879e`
+
 - :ref:`exhale_function_namespaceh5pp_1_1logger_1ae33f985957e93e9dfef42e01d43c9da4`
 
 - :ref:`exhale_function_namespaceh5pp_1_1logger_1ab30ac73a10a90842755bc4a54e2dc54e`

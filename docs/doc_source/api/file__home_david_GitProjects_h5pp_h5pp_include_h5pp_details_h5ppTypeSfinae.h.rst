@@ -53,15 +53,19 @@ Included By
 -----------
 
 
-- :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppSpdlog.h`
+- :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppFormat.h`
 
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppDimensionType.h`
 
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppHyperslab.h`
 
+- :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppLogger.h`
+
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppHdf5.h`
 
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppUtils.h`
+
+- :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppInitListType.h`
 
 - :ref:`file__home_david_GitProjects_h5pp_h5pp_include_h5pp_details_h5ppScan.h`
 
@@ -155,7 +159,7 @@ Classes
 
 - :ref:`exhale_struct_structh5pp_1_1type_1_1sfinae_1_1is__iterable`
 
-- :ref:`exhale_struct_structh5pp_1_1type_1_1sfinae_1_1is__iterable_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1de6e3b3dcbf25d5a5a5a59c09d851cfb86`
+- :ref:`exhale_struct_structh5pp_1_1type_1_1sfinae_1_1is__iterable_3_01_t_00_01std_1_1void__t_3_01decltype_07std_1_1be1f4ae131f3488b32c0ae3db477b62f8d`
 
 - :ref:`exhale_struct_structh5pp_1_1type_1_1sfinae_1_1is___scalar2`
 
@@ -203,26 +207,32 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1adf401c4a3b3421680902c64dbe555b4e`
+- :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1ac88477346d1f085aae53d46279b5aee5`
 
-- :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1a41e682f87c845644c480090084ebf250`
+- :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1a3c81e900ede5e0815f51cb963fffae12`
 
-- :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1ad06e0bc67b4b56229f57d47be812111b`
+- :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1a8951b861975f8ee36b3b180925ccb1c1`
 
-- :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1a4cd388a23730f9e6bdf931ad28f44c1e`
+- :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1a9ddb2e2972f4b017ca58ea16fb624515`
+
+- :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1aa7117c6d188d5e3febcea2d52530c501`
 
 - :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1aef79e32f07687d79da2dc562e3147956`
 
-- :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1aca51c26f66e359d4e98c2c79f5c862af`
+- :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1ad71607f2704256bf986055af56a2ffe7`
 
 - :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1a6c89cafb27bb29455e315a568f02d689`
 
 - :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1aa0540b95af468377117c0bfb8c303b27`
 
+- :ref:`exhale_typedef_namespaceh5pp_1_1type_1_1sfinae_1a19e1329b757d373809785294569e6805`
+
 
 Variables
 ---------
 
+
+- :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a7801e28eb264ebb3b5c05dfcda2a0600`
 
 - :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1aa27f32e9e806c6af54c448f6115bdbe6`
 
@@ -256,11 +266,27 @@ Variables
 
 - :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a431fb1fcf3562a544f5fad70fe76ff8f`
 
+- :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a99e8db33f4cfa7467743697da169c891`
+
 - :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a9472f1881eeeed771e714f96c32ada74`
+
+- :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1adcc73e01ed6949130f728b66f777391a`
+
+- :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a52ab5646051eea5dc7ea30c4571f8d67`
+
+- :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a9f2437c40612e2076a7f012158d16cd3`
+
+- :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a4dd31cfb5d92df1af161bc9621e2b299`
+
+- :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a0d7de087acd5f93dcd002bf9403655fc`
+
+- :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a0a8b7cf52476419fbf9d5b5ebc072dff`
 
 - :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a8d1392f58e8fb2d5fe8bf6db9b662888`
 
 - :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a261ef4473305db2f907e8d6cc68a8e14`
+
+- :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a30c35e77763514b8478b01df70d51d59`
 
 - :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1afa2776e84df04f30e65c0943682b6287`
 
@@ -277,4 +303,6 @@ Variables
 - :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a9ce71cf135b1f0d87b6461c077d32a0c`
 
 - :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1a49f926f789066101b5bc371e8c751507`
+
+- :ref:`exhale_variable_namespaceh5pp_1_1type_1_1sfinae_1acfd2f6873df27639fe8ec4fd50893c13`
 
