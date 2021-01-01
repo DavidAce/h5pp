@@ -1,4 +1,13 @@
 #include <h5pp/h5pp.h>
+
+/*
+ * An attribute is similar to a dataset, but can be appended to other HDF5 objects like datasets, groups or files.
+ * Users can append any number of attributes to a given HDF5 object. A common use case for attributes
+ * is to add descriptive metadata to an HDF5 object.
+ *
+ * This example shows how to add a couple of attributes to a dataset "intGroup/myInt"
+ */
+
 int main() {
 
     // Initialize a file
@@ -8,16 +17,14 @@ int main() {
 
     file.writeDataset(42, "intGroup/myInt");
 
-    // We can now write metadata, or "attributes" to the int which now exists on file
+    // We can now add attributes to the dataset
     file.writeAttribute("this is some info about my int", "myInt_stringAttribute", "intGroup/myInt");
     file.writeAttribute(3.14, "myInt_doubleAttribute", "intGroup/myInt");
 
-    // List all attributes associated with our int.
-    // The following will be printed:
-    //      myInt_stringAttribute
-    //      myInt_doubleAttribute
-    auto allAttributes = file.getAttributeNames("intGroup/myInt");
-    for(auto &attr : allAttributes) printf("%s\n",attr.c_str());
+    // List all attributes associated with our dataset. The following will be printed:
+    //      {"myInt_stringAttribute", "myInt_doubleAttribute"}
+    h5pp::print("{}\n",file.getAttributeNames("intGroup/myInt"));
+
 
     // Read the attribute data back
     auto stringAttribute = file.readAttribute<std::string>("myInt_stringAttribute", "intGroup/myInt");
