@@ -14,7 +14,7 @@ int main() {
     // Initialize a vector with size 25 filled with zeros
     std::vector<double> data5x5(25, 0);
 
-    // Write the data to a dataset, but interpret it as 5x5 matrix (read about reinterpreting dimensions in example 08a)
+    // Write the data to a dataset, but interpret it as a 5x5 matrix (read about reinterpreting dimensions in example 08a)
     // 0  0  0  0  0
     // 0  0  0  0  0
     // 0  0  0  0  0
@@ -22,17 +22,20 @@ int main() {
     // 0  0  0  0  0
     file.writeDataset(data5x5, "data5x5", {5, 5});
 
-    // In this example we would like write the 2x2 matrix
+    // In this example we would like write a 2x2 matrix
+    //
     // 1 2
     // 3 4
-    // into the larger dataset, with its top left corner starting at position (1,2), so that we get:
+    //
+    // into the larger 5x5 matrix, with the top left corner starting at position (1,2), so that we get:
+    //
     // 0  0  0  0  0
     // 0  0  1  2  0
     // 0  0  3  4  0
     // 0  0  0  0  0
     // 0  0  0  0  0
 
-    // Initialize the small vector with size 4 filled with 1,2,3,4 that we will interpret as the 2x2 matrix
+    // Initialize a small vector with size 4 filled with 1,2,3,4 which we will interpret as a 2x2 matrix
     std::vector<double> data2x2 = {1, 2, 3, 4};
 
     // Now we need to select a 2x2 hyperslab in data5x5. There are three ways of doing this:
@@ -42,7 +45,7 @@ int main() {
 
     // Let's try 1) here:
 
-    // The following lines can be replaced by file.writeHyperslab(data2x2, "data5x5", h5pp::Hyperslab({1,2},[2,2}));
+    // The following lines can be replaced by file.writeHyperslab(data2x2, "data5x5", h5pp::Hyperslab({1,2},{2,2}));
     auto hyperslab   = h5pp::Hyperslab();
     hyperslab.offset = {1, 2};            // The starting point
     hyperslab.extent = {2, 2};            // The dimensions of data2x2

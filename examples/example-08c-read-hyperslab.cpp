@@ -15,7 +15,7 @@ int main() {
     std::vector<double> data5x5(25);
     for(size_t i = 0; i < data5x5.size(); i++) data5x5[i] = static_cast<double>(i); // Populate the vector with 0,1,2,3...24
 
-    // Write the data to a dataset, but interpret it as 5x5 matrix (see example 08a to read more about reinterpreting dimensions)
+    // Write the data to a dataset, but interpret it as a 5x5 matrix (see example 08a to read more about reinterpreting dimensions)
     // 0  1  2  3  4
     // 5  6  7  8  9
     // 10 11 12 13 14

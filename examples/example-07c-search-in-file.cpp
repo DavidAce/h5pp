@@ -21,16 +21,17 @@ int main() {
 
     // Search for datasets with "e" in their path with search depth 0.
     std::string key   = "e";
-    std::string root  = "/";
-    long        hits  = -1;
-    long        depth = 0;
+    std::string root  = "/";    // Search root path
+    long        hits  = -1;     // A negative value returns all matches. Positive stops searching after finding "hits" number of results
+    long        depth = 0;      // A negative value searches the whole file recursively. Positive searches no further than "depth" number of group levels below root.
     h5pp::print("Searching for datasets with key [{}] in their path. Search root [{}] | Hits [{}] | Depth [{}] \n", key, root, hits, depth);
     for(auto &res : file.findDatasets(key, root, hits, depth)) h5pp::print(" -- found: [{}]\n", res);
+
     // Search for datasets with "C" in their path with search depth 1.
     key   = "C";
-    root  = "/"; // Search root path
-    hits  = -1;  // A negative value returns all matches. Positive stops searching after finding "hits" number of results
-    depth = 1;   // A negative value searches the whole file recursively. Positive searches no further than "depth" number of group levels below root.
+    root  = "/";
+    hits  = -1;
+    depth = 1;
     h5pp::print("Searching for datasets with key [{}] in their path. Search root [{}] | Hits [{}] | Depth [{}] \n", key, root, hits, depth);
     for(auto &res : file.findDatasets(key, root, hits, depth)) h5pp::print(" -- found: [{}]\n", res);
 

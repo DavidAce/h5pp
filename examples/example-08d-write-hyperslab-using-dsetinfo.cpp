@@ -16,7 +16,7 @@ int main() {
     // Initialize a vector with size 25 filled with zeros
     std::vector<double> data5x5(25, 0);
 
-    // Write the data to a dataset, but interpret it as 5x5 matrix (read about reinterpreting dimensions in example 08a)
+    // Write the data to a dataset, but interpret it as a 5x5 matrix (read about reinterpreting dimensions in example 08a)
     // 0  0  0  0  0
     // 0  0  0  0  0
     // 0  0  0  0  0
@@ -24,10 +24,13 @@ int main() {
     // 0  0  0  0  0
     h5pp::DsetInfo dsetInfo = file.writeDataset(data5x5, "data5x5", {5, 5}); // Store the generated metadata about data5x5 in dsetInfo
 
-    // In this example we would like write the 2x2 matrix
+    // In this example we would like write a 2x2 matrix
+    //
     // 1 2
     // 3 4
-    // into the larger dataset, with its top left corner starting at position (1,2), so that we get:
+    //
+    // into the larger 5x5 matrix, with the top left corner starting at position (1,2), so that we get:
+    //
     // 0  0  0  0  0
     // 0  0  1  2  0
     // 0  0  3  4  0
@@ -49,7 +52,7 @@ int main() {
     //       In the following, we make use of the h5pp::DsetInfo object that we just obtained, and make a hyperslab
     //       selection on it before passing it to .writeDataset(...) again.
 
-    // The following three lines below can be replaced by dsetInfo.dsetSlab = h5pp::Hyperslab({1,2},[2,2})
+    // The following three lines below can be replaced by dsetInfo.dsetSlab = h5pp::Hyperslab({1,2},{2,2})
     dsetInfo.dsetSlab         = h5pp::Hyperslab();
     dsetInfo.dsetSlab->offset = {1, 2}; // The starting point (top left corner of the slab)
     dsetInfo.dsetSlab->extent = {2, 2}; // The dimensions of data2x2

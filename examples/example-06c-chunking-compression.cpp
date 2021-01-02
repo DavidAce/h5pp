@@ -4,10 +4,10 @@
  * This example shows how to enable compression in HDF5 datasets with H5D_CHUNKED layout.
  * Datasets with H5D_CHUNKED layout are more versatile than the other layouts, i.e.
  * H5D_CONTIGUOUS (default) and H5D_COMPACT.
- * While H5D_CHUNKED has a bit more overhead it enables
- *      * unlimited max-size datasets
- *      * resizeable datasets
- *      * compressed datasets (a compression filter is applied to each chunk)
+ * The H5D_CHUNKED layout has a bit more overhead and enables
+ *      - unlimited max-size datasets
+ *      - resizeable datasets
+ *      - compressed datasets (a compression filter is applied to each chunk)
  *
  */
 

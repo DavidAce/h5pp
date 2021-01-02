@@ -17,7 +17,7 @@ int main() {
     // Initialize a vector with size 25 filled with zeros
     std::vector<double> data5x5(25, 0);
 
-    // Write the data to a dataset, but interpret it as 5x5 matrix (read about reinterpreting dimensions in example 08a)
+    // Write the data to a dataset, but interpret it as a 5x5 matrix (read about reinterpreting dimensions in example 08a)
     // 0  0  0  0  0
     // 0  0  0  0  0
     // 0  0  0  0  0
@@ -25,10 +25,13 @@ int main() {
     // 0  0  0  0  0
     file.writeDataset(data5x5, "data5x5", {5, 5});
 
-    // In this example we would like write the 2x2 matrix
+    // In this example we would like write a 2x2 matrix
+    //
     // 1 2
     // 3 4
-    // into the larger dataset, with its top left corner starting at position (1,2), so that we get:
+    //
+    // into the larger 5x5 matrix, with the top left corner starting at position (1,2), so that we get:
+    //
     // 0  0  0  0  0
     // 0  0  1  2  0
     // 0  0  3  4  0
@@ -55,7 +58,7 @@ int main() {
     options.dataDims = {2, 2};    // Interpret the given data, i.e. data2x2 as a 2x2 matrix. Not strictly required as it can be guessed from
                                   // the shape of the hyperslab
 
-    // The following three lines below can be replaced by options.dsetSlab = h5pp::Hyperslab({1,2},[2,2})
+    // The following three lines below can be replaced by options.dsetSlab = h5pp::Hyperslab({1,2},{2,2})
     options.dsetSlab         = h5pp::Hyperslab(); // options.dsetSlab is std::optional, so we initialize it first
     options.dsetSlab->offset = {1, 2};            // The starting point
     options.dsetSlab->extent = {2, 2};            // The dimensions of data2x2

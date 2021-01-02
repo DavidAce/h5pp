@@ -1,7 +1,7 @@
 
 #include <h5pp/h5pp.h>
 
-// In this example we want to treat a whole struct as a single writeable unit.
+// In this example we want to treat a whole struct as a single writeable unit, a so-called compound type.
 // To achieve this, the memory layout of the struct has to be registered with HDF5 in advance.
 
 // First define a trivial "POD" struct.
@@ -9,7 +9,7 @@ struct Particle {
     double x = 0, y = 0, z = 0, t = 0;
     int    id = 0;
     void   dummy_function(int) {} // Functions are OK
-    // Se example 6 for the case of static-size array members
+    // Se example 04b for the case of static-size array members
 };
 
 void print_particle(const Particle &p) {
@@ -33,8 +33,16 @@ int main() {
     Particle particle;
     file.writeDataset(particle, "particle", H5_PARTICLE_TYPE);
 
-    // Or write a container full of them! Let's write 10 particles into a vector.
+    // Now read a single particle back from file
+    auto particle_read = file.readDataset<Particle>("particle");
+    h5pp::print("Single particle read \n");
+    print_particle(particle_read);
+
+
+    // Or write a container full of them! Let's put 10 particles in a vector.
     std::vector<Particle> particles(10);
+
+    // Give each particle some dummy data
     int                   id = 1;
     for(auto &p : particles) {
         p.x  = id + 100;
@@ -47,16 +55,9 @@ int main() {
     // Write them all at once
     file.writeDataset(particles, "particles", H5_PARTICLE_TYPE);
 
-    // Now let's read them back
-
-    // Read a single particle read some specific entries
-    auto particle_read = file.readDataset<Particle>("particle");
-    h5pp::print("Single entry read \n");
-    print_particle(particle_read);
-
-    // ...or read all 10 particles into a new vector
+    // Now let's read them all back
     auto particles_read = file.readDataset<std::vector<Particle>>("particles");
-    h5pp::print("Multiple entry read \n");
+    h5pp::print("Multiple particles read \n");
     for(auto &p : particles_read) print_particle(p);
 
     return 0;

@@ -1,7 +1,7 @@
 #include <h5pp/h5pp.h>
 #include <iostream>
 
-// This example shows how to use to specify dimensions to reinterpret
+// This example shows how to specify dimensions to reinterpret
 // the shape of the given data when writing it to a new dataset
 
 
