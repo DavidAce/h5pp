@@ -3,8 +3,8 @@
 
 
 [requires]
-eigen/3.3.7@conan/stable
-spdlog/1.8.0
+eigen/3.3.9@conan/stable
+spdlog/1.8.2
 hdf5/1.12.0
 
 [generators]
