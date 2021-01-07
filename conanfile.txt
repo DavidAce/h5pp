@@ -3,7 +3,7 @@
 
 
 [requires]
-eigen/3.3.9@conan/stable
+eigen/3.3.9
 spdlog/1.8.2
 hdf5/1.12.0
 
