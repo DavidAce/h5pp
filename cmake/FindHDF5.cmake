@@ -186,7 +186,7 @@ function(find_package_hdf5_isolator hdf5_root)
     unset(HDF5_FOUND PARENT_SCOPE)
     set(HDF5_FOUND OFF)
     set(HDF5_FIND_REQUIRED OFF)
-
+    set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE ON)
     if(HDF5_FIND_VERBOSE)
         message(STATUS "Searching for hdf5 execs in ${hdf5_root}" )
     endif()
@@ -241,6 +241,32 @@ function(find_package_hdf5_isolator hdf5_root)
         set(ACCEPT_PACKAGE TRUE)
         set(HDF5_LIBNAMES)
         set(HDF5_LINK_LIBNAMES)
+
+        # When HDF5 is built with CMake the compiler wrappers are not linked properly.
+        # This causes the FindHDF5.cmake module bundled with CMake to give a false positive,
+        # claiming that the libraries are found when they actually aren't.
+        # Read more here
+        # https://gitlab.kitware.com/cmake/cmake/-/issues/20387
+
+        # In the rare cases the executable wrapper is broken we only the
+        # hdf5 libraries but not the extra libraries like m, dl, z and sz.
+        # Here we take care of this case by checking if they exist and adding
+        # them to the list of libraries manually
+
+
+        if(HDF5_C_RETURN_VALUE OR HDF5_CXX_RETURN_VALUE OR HDF5_Fortran_RETURN_VALUE)
+            message(WARNING "One or more HDF5 compiler wrappers may have failed")
+            foreach(lang ${HDF5_LANG})
+                foreach(lib m dl z sz aec)
+                    find_library(${lib}_var NAMES ${lib} QUIET)
+                    if(lib)
+                        list(APPEND HDF5_${lang}_LIBRARY_NAMES $<LINK_ONLY:${lib}>)
+                    endif()
+                endforeach()
+                message(STATUS "Added link libraries: ${HDF5_${lang}_LIBRARY_NAMES}")
+            endforeach()
+        endif()
+
 
         # Get a list of library names like hdf5 hdf5_hl hdf5_hl_cpp etc
         foreach(lang ${HDF5_LANG})
@@ -366,17 +392,35 @@ function(find_package_hdf5_exec_wrapper)
     endforeach()
 endfunction()
 
+
+
 function(find_package_hdf5_config_wrapper)
-    set(HDF5_FIND_REQUIRED False)
-#    set(HDF5_FIND_VERSION "") # The user has probably installed the latest version
+
+    # We unset the specified version because on some installations, hdf5-config.cmake will mark
+    # a new library (like 1.12) as incompatible with an older (like 1.8) even though h5pp is compatible with both.
+    unset(HDF5_FIND_VERSION) # The user has probably installed the latest version
+    unset(HDF5_FIND_VERSION_COMPLETE) # The user has probably installed the latest version
+    unset(HDF5_FIND_REQUIRED) # There is a chance we may find the library using the executable wrappers
     if(HDF5_FIND_DEBUG OR HDF5_FIND_VERBOSE)
         message(STATUS "Finding package HDF5 in CONFIG mode...")
     endif()
-    find_package(HDF5 ${HDF5_FIND_VERSION}
+
+    find_package(HDF5
+            ${HDF5_FIND_VERSION}
             COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
             HINTS ${CMAKE_INSTALL_PREFIX}
-            PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build hdf5/share/cmake
+            PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build share share/cmake share/cmake/hdf5 hdf5/share/cmake hdf5/share/cmake/hdf5
             ${NO_DEFAULT_PATH} ${NO_CMAKE_PACKAGE_REGISTRY} CONFIG)
+
+    #To print all variables, use the code below:
+#    get_cmake_property(_variableNames VARIABLES)
+#    foreach (_variableName ${_variableNames})
+#        if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5|package|PACKAGE|Package")
+#            message(STATUS "${_variableName}=${${_variableName}}")
+#        endif()
+#    endforeach()
+
+
     if(HDF5_FOUND)
         register_hdf5_targets(HDF5_TARGETS)
         register_found_components()
