@@ -20,6 +20,8 @@ endforeach ()
 if(H5PP_ENABLE_PCH)
     if(COMMAND target_precompile_headers)
         foreach (tgt ${example_tgt_list})
+            # Later CMake versions will only include system header paths for pch generation
+            target_include_directories(${tgt} SYSTEM INTERFACE ../h5pp/include)
             if(NOT TARGET ${first_tgt})
                 target_precompile_headers(${tgt} PRIVATE <h5pp/h5pp.h>)
                 set(first_tgt ${tgt})
