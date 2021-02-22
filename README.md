@@ -239,7 +239,7 @@ Notice the cast to `dtype=np.complex128` which interprets each element of the ar
 * [**Eigen**](http://eigen.tuxfamily.org): Write Eigen matrices and tensors directly. Tested with version >= 3.3.4
 * [**spdlog**](https://github.com/gabime/spdlog): Enables logging for debug purposes. Tested with version >= 1.3.1
     * [**fmt**](https://github.com/fmtlib/fmt): Formatting library used in `spdlog`.
-* [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_DOWNLOAD_METHOD=` `fetch` or `conan`
+* [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_PACKAGE_MANAGER=find-or-cmake`, `cmake` or `conan`
 
 
 **NOTE:** Logging works the same with or without [Spdlog](https://github.com/gabime/spdlog) enabled. When Spdlog is *not* found, 
@@ -295,15 +295,14 @@ with everything you need to link `h5pp` correctly (including dependencies, if yo
 If not set, `CMAKE_INSTALL_PREFIX` defaults to `${CMAKE_BINARY_DIR}/install`, where `${CMAKE_BINARY_DIR}` is the directory you are building from.
 
 ##### Opt-in automatic dependency installation with CMake
-The CMake flag `H5PP_DOWNLOAD_METHOD` controls the automated behavior for finding or installing dependencies. It can take one of these strings:
+The CMake flag `H5PP_PACKAGE_MANAGER` controls the automated behavior for finding or installing dependencies. It can take one of these strings:
 
 | Option | Description |
 | ---- | ---- |
-| `none`  **(default)**             | No handling of dependencies and linking is left to the user |
-| `find`                            | Use CMake's `find_package`  to find dependencies pre-installed on your system  |
-| `fetch` **(!)**                   | Use CMake-only features to download and install dependencies automatically. Disregards pre-installed dependencies on your system |
-| `find-or-fetch`                   | Start with `find` and then go to `fetch` if not found |
-| `conan`   **(!!)**                 | Use the [Conan package manager](https://conan.io/) to download and install dependencies automatically. Disregards libraries elsewhere on your system  |
+| `find` **(default)**              | Use CMake's `find_package`  to find dependencies pre-installed on your system  |
+| `cmake` **(!)**                   | Use CMake-only features to download and install dependencies automatically. Disregards pre-installed dependencies on your system |
+| `find-or-cmake`                   | Start with `find` and then go to `cmake` if not found |
+| `conan`   **(!!)**                | Use the [Conan package manager](https://conan.io/) to download and install dependencies automatically. Disregards libraries elsewhere on your system  |
 
 There are several variables you can pass to CMake to guide `find_package` calls, see [CMake build options](#cmake-build-options) below. 
 
@@ -324,13 +323,13 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 | `BUILD_SHARED_LIBS`               | `OFF`      | Link dependencies with static or shared libraries    |
 | `H5PP_ENABLE_TESTS`               | `OFF`      | Build tests (recommended!) |
 | `H5PP_BUILD_EXAMPLES`             | `OFF`      | Build example programs |
-| `H5PP_DOWNLOAD_METHOD`            | `none`     | Download method for dependencies, select `none`, `find`, `fetch`, `find-or-fetch` or `conan`. `Fetch` downloads and builds from sources |
+| `H5PP_PACKAGE_MANAGER`            | `find`     | Download method for dependencies, select, `find`, `cmake`, `find-or-cmake` or `conan` |
 | `H5PP_PRINT_INFO`                 | `OFF`      | Use h5pp with add_subdirectory() |
 | `H5PP_IS_SUBPROJECT`              | `OFF`      | Print extra CMake info about the host and generated targets during configure |
 | `H5PP_ENABLE_EIGEN3`              | `OFF`      | Enables Eigen3 linear algebra library support |
 | `H5PP_ENABLE_SPDLOG`              | `OFF`      | Enables Spdlog support for logging `h5pp` internal info to stdout |
 | `H5PP_DEPS_IN_SUBDIR`             | `OFF`      | Appends `<libname>` to install location of dependencies, i.e. `CMAKE_INSTALL_PREFIX/<libname>`. This allows simple removal |
-| `H5PP_PREFER_CONDA_LIBS`          | `OFF`      | Prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda. No effect when `H5PP_DOWNLOAD_METHOD=conan`  |
+| `H5PP_PREFER_CONDA_LIBS`          | `OFF`      | Prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda. No effect when `H5PP_PACKAGE_MANAGER=conan`  |
 
 The following variables can be set to help guide CMake's `find_package` to your pre-installed software (no defaults):
 
@@ -368,9 +367,9 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 *  `h5pp::h5pp` is the main target including "everything" and should normally be the only target that you need -- headers,flags and (if enabled) the found/downloaded dependencies.
 *  `h5pp::headers` links the `h5pp` headers only.
 *  `h5pp::deps` collects library targets to link all the dependencies that were found/downloaded when `h5pp` was built. These can of course be used independently.
-    * If `H5PP_DOWNLOAD_METHOD==find|find-or-fetch|fetch` the targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::all`, 
-    * If `H5PP_DOWNLOAD_METHOD==conan` the targets are `CONAN_PKG::eigen`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. 
-    * If `H5PP_DOWNLOAD_METHOD==none` then `h5pp::deps` is empty.
+    * If `H5PP_PACKAGE_MANAGER==find|cmake|find-or-cmake` the targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::all`, 
+    * If `H5PP_PACKAGE_MANAGER==conan` the targets are `CONAN_PKG::eigen`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. 
+    * If `H5PP_PACKAGE_MANAGER==none` then `h5pp::deps` is empty.
 *  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`. 
     On `MSVC` it sets `/permissive-` to enable logical `and`/`or` in C++. 
 

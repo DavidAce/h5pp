@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
+if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
     # Here we use find_package in config-mode, intended to find <packagename>Config.cmake
     # that is bundled with source installs of these packages.
 
@@ -9,7 +9,7 @@ if(H5PP_DOWNLOAD_METHOD MATCHES "fetch")
         # fmt is a dependency of spdlog
         # We fetch it here to get the latest version and to make sure we use the
         # compile library and avoid compile-time overhead in projects consuming h5pp.
-        # Note that spdlog may already have been found in if H5PP_DOWNLOAD_METHOD=find|fetch
+        # Note that spdlog may already have been found in if H5PP_PACKAGE_MANAGER=find|cmake
         # then we can assume that spdlog already knows how and where to get fmt.
         find_package(fmt 6.2.1
                 HINTS ${fmt_ROOT} ${CMAKE_INSTALL_PREFIX}
