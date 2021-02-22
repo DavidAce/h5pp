@@ -22,12 +22,12 @@ option(H5PP_ENABLE_PCH                 "Enable precompiled headers (if supported
 option(H5PP_ENABLE_CCACHE              "Enable ccache (if available) to speed up test compilation"              OFF)
 option(CMAKE_POSITION_INDEPENDENT_CODE "Use -fPIC when compiling shared libraries"                              ON)
 
-# Make an "enum" for valid download methods: none find fetch find-or-fetch conan
-set(H5PP_DOWNLOAD_METHODS_VALID none find fetch find-or-fetch conan)
-set(H5PP_DOWNLOAD_METHOD none CACHE STRING "Download method for external dependencies")
-set_property(CACHE H5PP_DOWNLOAD_METHOD PROPERTY STRINGS ${H5PP_DOWNLOAD_METHODS_VALID})
-if (NOT H5PP_DOWNLOAD_METHOD IN_LIST H5PP_DOWNLOAD_METHODS_VALID)
-    message(FATAL_ERROR "H5PP_DOWNLOAD_METHOD must be one of ${H5PP_DOWNLOAD_METHODS_VALID}")
+# Make an "enum" for valid package managers: find cmake find-or-cmake conan
+set(H5PP_PACKAGE_MANAGERS_VALID find cmake find-or-cmake conan)
+set(H5PP_PACKAGE_MANAGER find CACHE STRING "Package manager for external dependencies")
+set_property(CACHE H5PP_PACKAGE_MANAGER PROPERTY STRINGS ${H5PP_PACKAGE_MANAGERS_VALID})
+if (NOT H5PP_PACKAGE_MANAGER IN_LIST H5PP_PACKAGE_MANAGERS_VALID)
+    message(FATAL_ERROR "H5PP_PACKAGE_MANAGER must be one of ${H5PP_PACKAGE_MANAGERS_VALID}")
 endif ()
 
 
@@ -113,8 +113,8 @@ if (GCC_TOOLCHAIN AND ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
 endif ()
 
-# Add def for download method for use in installed h5ppConfig.cmake
-target_compile_definitions(deps INTERFACE H5PP_DOWNLOAD_METHOD=${H5PP_DOWNLOAD_METHOD})
+# Add def for package manager for use in installed h5ppConfig.cmake
+target_compile_definitions(deps INTERFACE H5PP_PACKAGE_MANAGER=${H5PP_PACKAGE_MANAGER})
 
 
 # Check  #include<optional> or #include<experimental/optional>
@@ -139,9 +139,9 @@ if(H5PP_ENABLE_ASAN)
 endif()
 
 
-#Try to find or fetch all dependencies
+#Try to find or get all dependencies
 include(cmake/SetupDependenciesFind.cmake)
-include(cmake/SetupDependenciesFetch.cmake)
+include(cmake/SetupDependenciesCMake.cmake)
 include(cmake/SetupDependenciesConan.cmake)
 
 
@@ -196,8 +196,8 @@ else()
     )
 
     configure_package_config_file(
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-fetch.cmake.in
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-fetch.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-cmake.cmake.in
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-cmake.cmake
             INSTALL_DESTINATION share/h5pp/cmake
             PATH_VARS Eigen3_ROOT spdlog_ROOT fmt_ROOT HDF5_ROOT
     )
@@ -218,7 +218,7 @@ else()
     ##Install the config, configversion and custom find modules
     install(FILES
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-fetch.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-cmake.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindEigen3.cmake
@@ -231,7 +231,7 @@ else()
             )
 
 
-    if (H5PP_DOWNLOAD_METHOD MATCHES "conan")
+    if (H5PP_PACKAGE_MANAGER MATCHES "conan")
         # Install conan related files to define dependency targets the same way
         # we've already done here.
         set(CONAN_INSTALL_FILES

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-if(H5PP_DOWNLOAD_METHOD MATCHES "conan")
+if(H5PP_PACKAGE_MANAGER MATCHES "conan")
 
     if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
         message(STATUS "Detected Conan build info: ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
