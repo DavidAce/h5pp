@@ -725,8 +725,19 @@ namespace h5pp::hdf5 {
         } else {
             h5pp::logger::log->debug("No C++ type match for non-committed HDF5 type");
         }
-
-        return getCppType<std::nullopt_t>();
+        std::string name = "UNKNOWN TYPE";
+        if(H5Tget_class(type) == H5T_class_t::H5T_INTEGER) name ="H5T_INTEGER";
+        else if(H5Tget_class(type) == H5T_class_t::H5T_FLOAT) name ="H5T_FLOAT";
+        else if(H5Tget_class(type) == H5T_class_t::H5T_TIME) name ="H5T_TIME";
+        else if(H5Tget_class(type) == H5T_class_t::H5T_STRING) name ="H5T_STRING";
+        else if(H5Tget_class(type) == H5T_class_t::H5T_BITFIELD) name ="H5T_BITFIELD";
+        else if(H5Tget_class(type) == H5T_class_t::H5T_OPAQUE) name ="H5T_OPAQUE";
+        else if(H5Tget_class(type) == H5T_class_t::H5T_COMPOUND) name ="H5T_COMPOUND";
+        else if(H5Tget_class(type) == H5T_class_t::H5T_REFERENCE) name ="H5T_REFERENCE";
+        else if(H5Tget_class(type) == H5T_class_t::H5T_ENUM) name ="H5T_ENUM";
+        else if(H5Tget_class(type) == H5T_class_t::H5T_VLEN) name ="H5T_VLEN";
+        else if(H5Tget_class(type) == H5T_class_t::H5T_ARRAY) name ="H5T_ARRAY";
+        return {typeid(nullptr), name, getBytesPerElem(type)};
     }
 
     [[nodiscard]] inline TypeInfo getTypeInfo(std::optional<std::string> objectPath,
