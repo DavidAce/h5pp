@@ -77,7 +77,7 @@ endif()
 # (even when a static is present) and use it to link to static
 # hdf5 libraries, causing a build error. Here we circumvent that
 # by specifying the shared/static SZIP library explicitly as needed
-if(NOT HDF5_ENABLE_SZIP_SUPPORT OR NOT SZIP_LIBRARY)
+if(NOT HDF5_ENABLE_SZIP_SUPPORT OR NOT SZIP_LIBRARY AND NOT CMAKE_HOST_APPLE)
     set(HDF5_ENABLE_SZIP_SUPPORT ON)
     find_library(SZIP_LIBRARY NAMES sz) # No built in FindSZIP.cmake
     if(SZIP_LIBRARY)
