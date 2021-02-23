@@ -580,7 +580,7 @@ namespace h5pp {
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
+        [[nodiscard]] DataType readDataset(DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
             DataType data;
             readDataset(data, dataInfo, dsetInfo);
             return data;
@@ -593,14 +593,14 @@ namespace h5pp {
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(const DsetInfo &dsetInfo, const Options &options = Options()) const {
+        [[nodiscard]] DataType readDataset(const DsetInfo &dsetInfo, const Options &options = Options()) const {
             DataType data;
             readDataset(data, dsetInfo, options);
             return data;
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(const DsetInfo &dsetInfo, const DimsType &dataDims) const {
+        [[nodiscard]] DataType readDataset(const DsetInfo &dsetInfo, const DimsType &dataDims) const {
             DataType data;
             Options  options;
             options.dataDims = dataDims;
@@ -623,7 +623,7 @@ namespace h5pp {
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
         }
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(std::string_view datasetPath, const Options &options) const {
+        [[nodiscard]] DataType readDataset(std::string_view datasetPath, const Options &options) const {
             DataType data;
             readDataset(data, options);
             return data;
@@ -638,7 +638,7 @@ namespace h5pp {
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readDataset(std::string_view datasetPath, const OptDimsType &dataDims = std::nullopt) const {
+        [[nodiscard]] DataType readDataset(std::string_view datasetPath, const OptDimsType &dataDims = std::nullopt) const {
             DataType data;
             readDataset(data, datasetPath, dataDims);
             return data;
@@ -693,7 +693,7 @@ namespace h5pp {
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        DataType readHyperslab(std::string_view dsetPath, const Hyperslab &hyperslab) const {
+        [[nodiscard]] DataType readHyperslab(std::string_view dsetPath, const Hyperslab &hyperslab) const {
             DataType data;
             readHyperslab(data,dsetPath, hyperslab);
             return data;
@@ -1116,7 +1116,7 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        DataType readTableRecords(std::string_view      tablePath,
+        [[nodiscard]] DataType readTableRecords(std::string_view      tablePath,
                                   std::optional<size_t> startIdx   = std::nullopt,
                                   std::optional<size_t> numRecords = std::nullopt) const {
             DataType data;
@@ -1125,7 +1125,7 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        DataType readTableRecords(std::string_view tablePath, h5pp::TableSelection tableSelection) const {
+        [[nodiscard]] DataType readTableRecords(std::string_view tablePath, h5pp::TableSelection tableSelection) const {
             DataType data;
             readTableRecords(data, tablePath, tableSelection);
             return data;
@@ -1159,7 +1159,7 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        DataType readTableField(std::string_view      tablePath,
+        [[nodiscard]] DataType readTableField(std::string_view      tablePath,
                                 NamesOrIndices &&     fieldNamesOrIndices,
                                 std::optional<size_t> startIdx   = std::nullopt,
                                 std::optional<size_t> numRecords = std::nullopt) const {
@@ -1200,7 +1200,7 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        DataType readTableField(std::string_view tablePath, NamesOrIndices &&fieldNamesOrIndices, TableSelection tableSelection) const {
+        [[nodiscard]] DataType readTableField(std::string_view tablePath, NamesOrIndices &&fieldNamesOrIndices, TableSelection tableSelection) const {
             DataType data;
             readTableField(data, tablePath, std::forward<NamesOrIndices>(fieldNamesOrIndices), tableSelection);
             return data;
