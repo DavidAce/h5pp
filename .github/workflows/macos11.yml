@@ -1,0 +1,97 @@
+name: macOS 11
+# INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+
+jobs:
+  ci:
+    name: ${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
+    runs-on: macos-11.0
+    env:
+      cache-name: macos-11-cache-${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
+    strategy:
+      fail-fast: true # True stops all on first error. Stick to false when debugging
+      matrix:
+        include:
+          - { compiler: cl, shared: OFF, conda: OFF, source: conan }
+          - { compiler: cl, shared: OFF, conda: OFF, source: cmake }
+          - { compiler: cl, shared: OFF, conda: OFF, source: find-or-cmake }
+          - { compiler: cl, shared: OFF, conda: ON , source: find-or-cmake }
+          - { compiler: cl, shared: OFF, conda: OFF, source: conan }
+          - { compiler: cl, shared: OFF, conda: OFF, source: cmake }
+          - { compiler: cl, shared: OFF, conda: OFF, source: find-or-cmake }
+          - { compiler: cl, shared: OFF, conda: ON , source: find-or-cmake }
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: actions/setup-python@v1
+        if: contains(matrix.source, 'conan')
+        with:
+          python-version: '3.x'
+
+      - uses: s-weigand/setup-conda@v1
+        if: contains(matrix.source,'conda')
+        with:
+          update-conda: false
+          conda-channels: conda-forge
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.conan/data
+            build/Debug/install
+          key: ${{ env.cache-name }}
+
+      - name: Setup conan
+        if: matrix.source == 'conan'
+        run: |
+          pip install conan
+          conan user
+
+      - name: Setup conda
+        if: matrix.source == 'conda'
+        run: conda install spdlog hdf5 hdf5-static eigen
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake -E make_directory build/Debug
+          cd build/Debug
+          cmake                                                    \
+          -DCMAKE_BUILD_TYPE=Debug                                 \
+          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared }}            \
+          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                         \
+          -DH5PP_ENABLE_EIGEN3:BOOL=ON                             \
+          -DH5PP_ENABLE_SPDLOG:BOOL=ON                             \
+          -DH5PP_ENABLE_ASAN:BOOL=OFF                              \
+          -DH5PP_ENABLE_TESTS:BOOL=ON                              \
+          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.source }}       \
+          -DH5PP_PREFER_CONDA_LIBS:BOOL=${{ matrix.conda }}        \
+          -DH5PP_PRINT_INFO:BOOL=ON                                \
+          -DH5PP_BUILD_EXAMPLES:BOOL=ON                            \
+           -G "Unix Makefiles"                                     \
+          ../../
+
+      - name: Build
+        run: |
+          cd build/Debug
+          cmake --build . --parallel 2
+
+      - name: Install
+        run: |
+          cd build/Debug
+          cmake --build . --target install
+
+      - name: Test
+        run: |
+          cd build/Debug
+          ctest -C Debug --output-on-failure
+
+
+
