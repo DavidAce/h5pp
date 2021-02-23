@@ -430,10 +430,10 @@ namespace h5pp {
             options.dataDims      = dataDims;
             options.dsetDimsChunk = dsetDimsChunk;
             options.dsetDimsMax   = dsetDimsMax;
-            options.h5Layout      = std::move(h5Layout);
+            options.h5Layout      = h5Layout;
             options.h5Type        = std::move(h5Type);
-            options.resizePolicy  = std::move(resizePolicy);
-            options.compression   = getCompressionLevel(std::move(compression));
+            options.resizePolicy  = resizePolicy;
+            options.compression   = getCompressionLevel(compression);
             return writeDataset(data, options);
         }
 
@@ -442,7 +442,7 @@ namespace h5pp {
             /* clang-format off */
             const DataType &            data,                         /*!< Eigen, stl-like object or pointer to data buffer */
             std::string_view            dsetPath,                     /*!< Path to HDF5 dataset relative to the file root */
-            hid::h5t                    h5Type,                       /*!< (On create) Type of dataset. Override automatic type detection. */
+            hid::h5t &                  h5Type,                       /*!< (On create) Type of dataset. Override automatic type detection. */
             const OptDimsType &         dataDims      = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
             std::optional<H5D_layout_t> h5Layout      = std::nullopt, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
             const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
@@ -458,10 +458,10 @@ namespace h5pp {
             options.dataDims      = dataDims;
             options.dsetDimsChunk = dsetDimsChunk;
             options.dsetDimsMax   = dsetDimsMax;
-            options.h5Layout      = std::move(h5Layout);
+            options.h5Layout      = h5Layout;
             options.h5Type        = h5Type;
-            options.resizePolicy  = std::move(resizePolicy);
-            options.compression   = getCompressionLevel(std::move(compression));
+            options.resizePolicy  = resizePolicy;
+            options.compression   = getCompressionLevel(compression);
             return writeDataset(data, options);
         }
 
@@ -487,8 +487,8 @@ namespace h5pp {
             options.dsetDimsMax   = dsetDimsMax;
             options.h5Layout      = h5Layout;
             options.h5Type        = std::move(h5Type);
-            options.resizePolicy  = std::move(resizePolicy);
-            options.compression   = getCompressionLevel(std::move(compression));
+            options.resizePolicy  = resizePolicy;
+            options.compression   = getCompressionLevel(compression);
             return writeDataset(data, options);
         }
 
@@ -535,7 +535,7 @@ namespace h5pp {
             options.dsetDimsMax   = dsetDimsMax;
             options.h5Layout      = H5D_CHUNKED;
             options.h5Type        = std::move(h5Type);
-            options.compression   = getCompressionLevel(std::move(compression));
+            options.compression   = getCompressionLevel(compression);
             return writeDataset(data, options);
         }
 
@@ -544,7 +544,7 @@ namespace h5pp {
             Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty, ´,
             options.linkPath    = dsetPath;
             options.h5Layout    = H5D_CHUNKED;
-            options.compression = getCompressionLevel(std::move(compression));
+            options.compression = getCompressionLevel(compression);
             return writeDataset(data, options);
         }
 
