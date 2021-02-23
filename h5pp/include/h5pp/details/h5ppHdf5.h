@@ -302,8 +302,8 @@ namespace h5pp::hdf5 {
         if(H5Tget_class(type) == H5T_STRING) {
             if(H5Tis_variable_str(type)) return; // These are resized on the fly
             if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
-                auto hdf5Byte = H5Tget_size(type); // Chars including null-terminator. The memory buffer must fit this size. Also, these
-                                                   // many bytes will participate in IO
+                // The memory buffer must fit hdf5Byte: that's how many bytes will participate in IO
+                auto hdf5Byte = H5Tget_size(type); // Chars including null-terminator.
                 auto hdf5Size = getSizeSelected(space);
                 auto dataByte = h5pp::util::getCharArraySize(data) + 1; // Chars including null terminator
                 auto dataSize = h5pp::util::getSize(data);
