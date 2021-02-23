@@ -1,4 +1,4 @@
-name: macOS 11
+name: macOS
 # INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
 
 on:
@@ -11,9 +11,9 @@ on:
 jobs:
   ci:
     name: ${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
-    runs-on: macos-11.0
+    runs-on: macos-latest
     env:
-      cache-name: macos-11-cache-${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
+      cache-name: macos-cache-${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
     strategy:
       fail-fast: true # True stops all on first error. Stick to false when debugging
       matrix:
