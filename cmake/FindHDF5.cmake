@@ -504,7 +504,7 @@ if(HDF5_FOUND)
         target_compile_definitions(hdf5::all INTERFACE H5_BUILT_AS_DYNAMIC_LIB)
     endif()
     if(APPLE AND "sz" IN_LIST HDF5_LINK_LIBNAMES)
-        find_library(SZIP_LIBRARY NAMES sz szip szip-static libsz libszip libszip-static HINTS /usr/local/opt) # No built in findSZIP.cmake
+        find_library(SZIP_LIBRARY NAMES sz szip szip-static HINTS /usr/local/opt /usr/local/lib) # No built in findSZIP.cmake
         if(SZIP_LIBRARY)
             message(STATUS "Found SZIP: ${SZIP_LIBRARY}")
             get_filename_component(SZIP_PARENT_DIR ${SZIP_LIBRARY} DIRECTORY)
