@@ -439,19 +439,20 @@ namespace h5pp {
 
         template<typename DataType>
         DsetInfo writeDataset(
-            const DataType &            data,                    /*!< Eigen, stl-like object or pointer to data buffer */
-            std::string_view            dsetPath,                /*!< Path to HDF5 dataset relative to the file root */
-            hid::h5t &                  h5Type,                  /*!< (On create) Type of dataset. Override automatic type detection. */
-            const OptDimsType &         dataDims = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
-            std::optional<H5D_layout_t> h5Layout =
-                std::nullopt, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
-            const OptDimsType &dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
-            const OptDimsType &dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
-            std::optional<ResizePolicy> resizePolicy =
-                std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
-            std::optional<unsigned int> compression =
-                std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+            /* clang-format off */
+            const DataType &            data,                         /*!< Eigen, stl-like object or pointer to data buffer */
+            std::string_view            dsetPath,                     /*!< Path to HDF5 dataset relative to the file root */
+            const hid::h5t &            h5Type,                       /*!< (On create) Type of dataset. Override automatic type detection. */
+            const OptDimsType &         dataDims      = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
+            std::optional<H5D_layout_t> h5Layout      = std::nullopt, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
+            const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
+            const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
+            std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+            std::optional<unsigned int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+            /* clang-format on */
+            )
         {
+//            hid::h5t test {4};
             Options options;
             options.linkPath      = dsetPath;
             options.dataDims      = dataDims;
@@ -466,17 +467,18 @@ namespace h5pp {
 
         template<typename DataType>
         DsetInfo writeDataset(
-            const DataType &   data,     /*!< Eigen, stl-like object or pointer to data buffer */
-            std::string_view   dsetPath, /*!< Path to HDF5 dataset relative to the file root */
-            H5D_layout_t       h5Layout, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
-            const OptDimsType &dataDims        = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
-            const OptDimsType &dsetDimsChunk   = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
-            const OptDimsType &dsetDimsMax     = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
-            std::optional<hid::h5t>     h5Type = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
-            std::optional<ResizePolicy> resizePolicy =
-                std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
-            std::optional<unsigned int> compression =
-                std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+            /* clang-format off */
+            const DataType &            data,                         /*!< Eigen, stl-like object or pointer to data buffer */
+            std::string_view            dsetPath,                     /*!< Path to HDF5 dataset relative to the file root */
+            H5D_layout_t                h5Layout,                     /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
+            const OptDimsType &         dataDims      = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
+            const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
+            const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
+            std::optional<hid::h5t>     h5Type        = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
+            std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+            std::optional<unsigned int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+            /* clang-format on */
+            )
         {
             Options options;
             options.linkPath      = dsetPath;
