@@ -621,24 +621,27 @@ namespace h5pp {
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
         }
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        [[nodiscard]] DataType readDataset(std::string_view datasetPath, const Options &options) const {
+        [[nodiscard]] DataType readDataset(std::string_view dsetPath, const Options &options) const {
+            Options options_internal = options;
+            options_internal.linkPath = dsetPath;
             DataType data;
-            readDataset(data, options);
+            readDataset(data, options_internal);
             return data;
         }
 
         template<typename DataType>
-        void readDataset(DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt) const {
+        void readDataset(DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt, std::optional<hid::h5t> h5Type = std::nullopt) const {
             Options options;
             options.linkPath = dsetPath;
             options.dataDims = dataDims;
+            options.h5Type = std::move(h5Type);
             readDataset(data, options);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        [[nodiscard]] DataType readDataset(std::string_view datasetPath, const OptDimsType &dataDims = std::nullopt) const {
+        [[nodiscard]] DataType readDataset(std::string_view datasetPath, const OptDimsType &dataDims = std::nullopt, std::optional<hid::h5t> h5Type = std::nullopt) const {
             DataType data;
-            readDataset(data, datasetPath, dataDims);
+            readDataset(data, datasetPath, dataDims, std::move(h5Type));
             return data;
         }
 

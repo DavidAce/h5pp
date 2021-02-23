@@ -21,6 +21,8 @@ namespace h5pp::scan {
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
         if(not options.linkPath and not info.dsetPath) throw std::runtime_error("Could not read dataset info: No dataset path was given");
+        // Start by copying fields in options which override later analysis
+        if(not info.h5Type)   info.h5Type   = options.h5Type;
         if(not info.dsetSlab) info.dsetSlab = options.dsetSlab;
         if(not info.dsetPath) info.dsetPath = h5pp::util::safe_str(options.linkPath.value());
         h5pp::logger::log->debug("Scanning metadata of dataset [{}]", info.dsetPath.value());
@@ -358,6 +360,7 @@ namespace h5pp::scan {
         if(not options.linkPath and not info.linkPath) throw std::runtime_error("Could not read attribute info: No link path was given");
         if(not options.attrName and not info.attrName) throw std::runtime_error("Could not read attribute info: No attribute name was given");
         if(not info.linkPath)    info.linkPath      = h5pp::util::safe_str(options.linkPath.value());
+        if(not info.h5Type)      info.h5Type        = options.h5Type;
         if(not info.attrName)    info.attrName      = h5pp::util::safe_str(options.attrName.value());
         if(not info.attrSlab)    info.attrSlab      = options.attrSlab;
         h5pp::logger::log->debug("Scanning metadata of attribute [{}] in link [{}]", info.attrName.value(), info.linkPath.value());
@@ -603,7 +606,10 @@ namespace h5pp::scan {
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         if(not options.linkPath and not info.tablePath)
             throw std::runtime_error("Could not read table info: No table path was given");
+        // Copy fields from options to override later analysis
         if(not info.tablePath) info.tablePath = h5pp::util::safe_str(options.linkPath.value());
+        if(not info.h5Type) info.h5Type = options.h5Type;
+
         h5pp::logger::log->debug("Scanning metadata of table [{}]", info.tablePath.value());
 
         // Copy the location

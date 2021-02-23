@@ -54,7 +54,7 @@ namespace h5pp::logger {
 
     inline void setLogger(const std::string &name, std::optional<size_t> levelZeroToFive = std::nullopt, std::optional<bool> timestamp = std::nullopt) {
         if(spdlog::get(name) == nullptr)
-            log = spdlog::stdout_color_mt(name);
+            log = spdlog::stdout_color_mt(name, spdlog::color_mode::automatic);
         else
             log = spdlog::get(name);
         log->set_pattern("[%n]%^[%=8l]%$ %v"); // Disabled timestamp is the default
