@@ -33,17 +33,17 @@ int main() {
     // Create a type for the char array from the template H5T_C_S1
     // The template describes a string with a single char.
     // Set the size with H5Tset_size.
-    h5pp::hid::h5t H5_NAME_TYPE = H5Tcopy(H5T_C_S1);
-    H5Tset_size(H5_NAME_TYPE, 10);
+    h5pp::hid::h5t H5_VERS_TYPE = H5Tcopy(H5T_C_S1);
+    H5Tset_size(H5_VERS_TYPE, 10);
     // Optionally set the null terminator '\0' and possibly padding.
-    H5Tset_strpad(H5_NAME_TYPE, H5T_STR_NULLTERM);
+    H5Tset_strpad(H5_VERS_TYPE, H5T_STR_NULLTERM);
 
     // Register the compound type
     h5pp::hid::h5t H5_PARTICLE_V1 = H5Tcreate(H5T_COMPOUND, sizeof(ParticleV1));
     H5Tinsert(H5_PARTICLE_V1, "x", HOFFSET(ParticleV1, x), H5T_NATIVE_DOUBLE);
     H5Tinsert(H5_PARTICLE_V1, "y", HOFFSET(ParticleV1, y), H5T_NATIVE_DOUBLE);
     H5Tinsert(H5_PARTICLE_V1, "id", HOFFSET(ParticleV1, id), H5T_NATIVE_INT);
-    H5Tinsert(H5_PARTICLE_V1, "version", HOFFSET(ParticleV1, version), H5_NAME_TYPE);
+    H5Tinsert(H5_PARTICLE_V1, "version", HOFFSET(ParticleV1, version), H5_VERS_TYPE);
 
 
     // Register the compound type
@@ -53,7 +53,7 @@ int main() {
     H5Tinsert(H5_PARTICLE_V2, "z", HOFFSET(ParticleV2, z), H5T_NATIVE_DOUBLE);
     H5Tinsert(H5_PARTICLE_V2, "t", HOFFSET(ParticleV2, t), H5T_NATIVE_DOUBLE);
     H5Tinsert(H5_PARTICLE_V2, "id", HOFFSET(ParticleV2, id), H5T_NATIVE_INT);
-    H5Tinsert(H5_PARTICLE_V2, "version", HOFFSET(ParticleV2, version), H5_NAME_TYPE);
+    H5Tinsert(H5_PARTICLE_V2, "version", HOFFSET(ParticleV2, version), H5_VERS_TYPE);
 
     // Define a single particle version 1
     ParticleV1 p1;
