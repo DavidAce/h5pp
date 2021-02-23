@@ -19,13 +19,13 @@ jobs:
       matrix:
         include:
           - { compiler: cl, shared: OFF, conda: OFF, source: conan }
-          - { compiler: cl, shared: OFF, conda: OFF, source: fetch }
-          - { compiler: cl, shared: OFF, conda: OFF, source: find-or-fetch }
-          - { compiler: cl, shared: OFF, conda: ON , source: find-or-fetch }
+          - { compiler: cl, shared: OFF, conda: OFF, source: cmake }
+          - { compiler: cl, shared: OFF, conda: OFF, source: find-or-cmake }
+          - { compiler: cl, shared: OFF, conda: ON , source: find-or-cmake }
           - { compiler: cl, shared: OFF, conda: OFF, source: conan }
-          - { compiler: cl, shared: OFF, conda: OFF, source: fetch }
-          - { compiler: cl, shared: OFF, conda: OFF, source: find-or-fetch }
-          - { compiler: cl, shared: OFF, conda: ON , source: find-or-fetch }
+          - { compiler: cl, shared: OFF, conda: OFF, source: cmake }
+          - { compiler: cl, shared: OFF, conda: OFF, source: find-or-cmake }
+          - { compiler: cl, shared: OFF, conda: ON , source: find-or-cmake }
 
     steps:
       - uses: actions/checkout@v2
@@ -71,7 +71,7 @@ jobs:
           -DH5PP_ENABLE_SPDLOG:BOOL=ON                             \
           -DH5PP_ENABLE_ASAN:BOOL=OFF                              \
           -DH5PP_ENABLE_TESTS:BOOL=ON                              \
-          -DH5PP_DOWNLOAD_METHOD:STRING=${{ matrix.source }}       \
+          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.source }}       \
           -DH5PP_PREFER_CONDA_LIBS:BOOL=${{ matrix.conda }}        \
           -DH5PP_PRINT_INFO:BOOL=ON                                \
           -DH5PP_BUILD_EXAMPLES:BOOL=ON                            \
