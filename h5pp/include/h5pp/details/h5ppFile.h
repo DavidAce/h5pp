@@ -79,7 +79,6 @@ namespace h5pp {
             init();
         }
 
-
         /* Flush HDF5 file cache */
         void flush() {
             H5Fflush(openFileHandle(), H5F_scope_t::H5F_SCOPE_GLOBAL);
@@ -117,16 +116,15 @@ namespace h5pp {
          *
          */
 
-        void setKeepFileOpened() const {fileHandle = openFileHandle();}
-        void setKeepFileClosed() const {fileHandle = std::nullopt;}
-
+        void setKeepFileOpened() const { fileHandle = openFileHandle(); }
+        void setKeepFileClosed() const { fileHandle = std::nullopt; }
 
         [[nodiscard]] h5pp::FilePermission getFilePermission() const { return permission; }
         [[nodiscard]] std::string          getFileName() const { return filePath.filename().string(); }
         [[nodiscard]] std::string          getFilePath() const { return filePath.string(); }
         void                               setFilePermission(h5pp::FilePermission permission_) { permission = permission_; }
 
-        void setCloseDegree(H5F_close_degree_t degree){
+        void setCloseDegree(H5F_close_degree_t degree) {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fclose_degree(plists.fileAccess, degree);
             if(fileHandle) { // Refresh if the filehandle being kept is open
@@ -288,9 +286,9 @@ namespace h5pp {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to resize dataset on read-only file [{}]", filePath.string()));
             Options options;
-            options.linkPath   = dsetPath;
+            options.linkPath     = dsetPath;
             options.resizePolicy = mode;
-            auto info          = h5pp::scan::inferDsetInfo(openFileHandle(), dsetPath, options, plists);
+            auto info            = h5pp::scan::inferDsetInfo(openFileHandle(), dsetPath, options, plists);
             if(not info.dsetExists.value())
                 throw std::runtime_error(h5pp::format("Failed to resize dataset [{}]: dataset does not exist", dsetPath));
             h5pp::hdf5::resizeDataset(info, newDimensions, mode);
@@ -398,7 +396,7 @@ namespace h5pp {
             h5pp::scan::scanDataInfo(dataInfo, data, options);
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
             // Resize dataset to fit the given data (or a selection therein)
-            h5pp::hdf5::resizeDataset(dsetInfo,dataInfo);
+            h5pp::hdf5::resizeDataset(dsetInfo, dataInfo);
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
         }
 
@@ -426,7 +424,7 @@ namespace h5pp {
             std::optional<ResizePolicy> resizePolicy   = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
             std::optional<unsigned int> compression    = std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
         {
-        /* clang-format on */
+            /* clang-format on */
             Options options;
             options.linkPath      = dsetPath;
             options.dataDims      = dataDims;
@@ -471,10 +469,10 @@ namespace h5pp {
             const DataType &   data,     /*!< Eigen, stl-like object or pointer to data buffer */
             std::string_view   dsetPath, /*!< Path to HDF5 dataset relative to the file root */
             H5D_layout_t       h5Layout, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
-            const OptDimsType &dataDims      = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
-            const OptDimsType &dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
-            const OptDimsType &dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
-            std::optional<hid::h5t>   h5Type = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
+            const OptDimsType &dataDims        = std::nullopt, /*!< Data dimensions hint. Required for pointer data */
+            const OptDimsType &dsetDimsChunk   = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
+            const OptDimsType &dsetDimsMax     = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
+            std::optional<hid::h5t>     h5Type = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
             std::optional<ResizePolicy> resizePolicy =
                 std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
             std::optional<unsigned int> compression =
@@ -548,20 +546,18 @@ namespace h5pp {
             return writeDataset(data, options);
         }
 
-
         template<typename DataType>
-        DsetInfo writeHyperslab(
-                const DataType &   data,     /*!< Eigen, stl-like object or pointer to data buffer */
-                std::string_view   dsetPath, /*!< Path to HDF5 dataset relative to the file root */
-                const Hyperslab &  hyperslab)/*!< Write data to a hyperslab selection */
+        DsetInfo writeHyperslab(const DataType & data,      /*!< Eigen, stl-like object or pointer to data buffer */
+                                std::string_view dsetPath,  /*!< Path to HDF5 dataset relative to the file root */
+                                const Hyperslab &hyperslab) /*!< Write data to a hyperslab selection */
         {
             Options options;
-            options.linkPath = dsetPath;
-            options.dsetSlab = hyperslab;
+            options.linkPath     = dsetPath;
+            options.dsetSlab     = hyperslab;
             options.resizePolicy = ResizePolicy::DO_NOT_RESIZE;
-            auto dsetInfo = h5pp::scan::readDsetInfo(openFileHandle(),options,plists);
+            auto dsetInfo        = h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value())
-                throw std::runtime_error(h5pp::format("Could not write hyperslab: dataset [{}] does not exist",dsetPath));
+                throw std::runtime_error(h5pp::format("Could not write hyperslab: dataset [{}] does not exist", dsetPath));
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             // Resize dataset to fit the given data (or a selection therein)
             h5pp::hdf5::resizeDataset(dsetInfo, dataInfo);
@@ -618,7 +614,7 @@ namespace h5pp {
             // Generate the metadata for given data
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             // Resize the given data container so that it fits the selection in the dataset
-            h5pp::hdf5::resizeData(data,dataInfo, dsetInfo);
+            h5pp::hdf5::resizeData(data, dataInfo, dsetInfo);
             // Read
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
         }
@@ -683,24 +679,20 @@ namespace h5pp {
             return appendToDataset(data, axis, options);
         }
 
-
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        void readHyperslab(DataType &data,std::string_view dsetPath, const Hyperslab &hyperslab) const {
+        void readHyperslab(DataType &data, std::string_view dsetPath, const Hyperslab &hyperslab) const {
             Options options;
             options.linkPath = dsetPath;
             options.dsetSlab = hyperslab;
-            readDataset(data,options);
+            readDataset(data, options);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
         [[nodiscard]] DataType readHyperslab(std::string_view dsetPath, const Hyperslab &hyperslab) const {
             DataType data;
-            readHyperslab(data,dsetPath, hyperslab);
+            readHyperslab(data, dsetPath, hyperslab);
             return data;
         }
-
-
-
 
         /*
          *
@@ -716,7 +708,8 @@ namespace h5pp {
             else
                 h5pp::scan::inferAttrInfo(attrInfo, openFileHandle(), options, plists);
 
-            h5pp::hdf5::createAttribute(attrInfo); }
+            h5pp::hdf5::createAttribute(attrInfo);
+        }
 
         template<typename DataType>
         AttrInfo createAttribute(const DataType &data, AttrInfo &attrInfo, const Options &options = Options()) {
@@ -774,10 +767,10 @@ namespace h5pp {
 
         template<typename DataType>
         AttrInfo writeAttribute(const DataType &        data,
-                            std::string_view        attrName,
-                            std::string_view        linkPath,
-                            const OptDimsType &     dataDims = std::nullopt,
-                            std::optional<hid::h5t> h5Type   = std::nullopt) {
+                                std::string_view        attrName,
+                                std::string_view        linkPath,
+                                const OptDimsType &     dataDims = std::nullopt,
+                                std::optional<hid::h5t> h5Type   = std::nullopt) {
             Options options;
             options.linkPath = linkPath;
             options.attrName = attrName;
@@ -843,7 +836,7 @@ namespace h5pp {
          *
          */
 
-        void createTable(TableInfo & info, const Options &options = Options()) {
+        void createTable(TableInfo &info, const Options &options = Options()) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             if(info.hasLocId())
@@ -852,7 +845,6 @@ namespace h5pp {
                 h5pp::scan::inferTableInfo(info, openFileHandle(), options, plists);
             h5pp::hdf5::createTable(info, plists);
         }
-
 
         TableInfo createTable(const hid::h5t &                  h5Type,
                               std::string_view                  tablePath,
@@ -1117,8 +1109,8 @@ namespace h5pp {
 
         template<typename DataType>
         [[nodiscard]] DataType readTableRecords(std::string_view      tablePath,
-                                  std::optional<size_t> startIdx   = std::nullopt,
-                                  std::optional<size_t> numRecords = std::nullopt) const {
+                                                std::optional<size_t> startIdx   = std::nullopt,
+                                                std::optional<size_t> numRecords = std::nullopt) const {
             DataType data;
             readTableRecords(data, tablePath, startIdx, numRecords);
             return data;
@@ -1160,9 +1152,9 @@ namespace h5pp {
 
         template<typename DataType>
         [[nodiscard]] DataType readTableField(std::string_view      tablePath,
-                                NamesOrIndices &&     fieldNamesOrIndices,
-                                std::optional<size_t> startIdx   = std::nullopt,
-                                std::optional<size_t> numRecords = std::nullopt) const {
+                                              NamesOrIndices &&     fieldNamesOrIndices,
+                                              std::optional<size_t> startIdx   = std::nullopt,
+                                              std::optional<size_t> numRecords = std::nullopt) const {
             DataType data;
             readTableField(data, tablePath, std::forward<NamesOrIndices>(fieldNamesOrIndices), startIdx, numRecords);
             return data;
@@ -1200,7 +1192,8 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        [[nodiscard]] DataType readTableField(std::string_view tablePath, NamesOrIndices &&fieldNamesOrIndices, TableSelection tableSelection) const {
+        [[nodiscard]] DataType
+            readTableField(std::string_view tablePath, NamesOrIndices &&fieldNamesOrIndices, TableSelection tableSelection) const {
             DataType data;
             readTableField(data, tablePath, std::forward<NamesOrIndices>(fieldNamesOrIndices), tableSelection);
             return data;
