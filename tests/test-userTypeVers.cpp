@@ -148,8 +148,8 @@ TEST_CASE( "Single particles are compatible", "[single-particles]" )
 
 TEST_CASE( "Vector of versioned structs is compatible" )
 {
-  for (const auto layout : {H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED})
-  {
+    auto layout = GENERATE( values( {H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED} ) );
+
     std::string layout_str = std::array<std::string,3>{"H5D_COMPACT","H5D_CONTIGUOUS","H5D_CHUNKED"}[layout];
 
     h5pp::File file("output/userTypeVers.h5", h5pp::FilePermission::REPLACE, 2);    
@@ -194,7 +194,6 @@ TEST_CASE( "Vector of versioned structs is compatible" )
             std::equal(vp2_as_v1_h1.begin(), vp2_as_v1_h1.end(), vp2.begin(), are_common_members_equal)
         );
     }
-  }
 }
 
 
