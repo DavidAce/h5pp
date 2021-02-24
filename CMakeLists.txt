@@ -6,6 +6,8 @@ project(h5pp VERSION 1.8.6
         LANGUAGES CXX
         )
 
+include(cmake/DeprecationWarnings.cmake)
+
 option(BUILD_SHARED_LIBS               "Builds shared libraries"                                                OFF)
 option(H5PP_BUILD_EXAMPLES             "Builds examples"                                                        OFF)
 option(H5PP_BUILD_DOCS                 "Builds documentation (Requires doxygen, sphinx and breathe)"            OFF)
