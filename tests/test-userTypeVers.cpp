@@ -3,40 +3,51 @@
 #include <h5pp/h5pp.h>
 #include <iostream>
 
+// Size (members packed): 31.
+// Size (member aligned): 31.
+// Stride in array such that each member is aligned: 32
 struct ParticleV1 {
     double x = 0, y = 0;
     int    id       = 0;
     char   name[11] = ""; // Can't be replaced by std::string, or anything resizeable?
-    bool   operator==(const ParticleV1 &p) const { return x == p.x and y == p.y and strncmp(name, p.name, 11) == 0 and id == p.id; }
+    bool   operator==(const ParticleV1 &p) const { return x == p.x and y == p.y and strncmp(name, p.name, sizeof(name)) == 0 and id == p.id; }
     bool   operator!=(const ParticleV1 &p) const { return not(*this == p); }
 };
 
+// Size (members packed): 52
+// Size (member aligned): 54
+// Stride in array such that each member is aligned: 56
 struct ParticleV2 {
-    double x = 0, y = 0, z = 0, t = 0;
+    double x = 0, y = 0;
+    double z = 3.1415;
+    short  t = 1;
     int    id       = 0;
-    char   name[11] = ""; // Can't be replaced by std::string, or anything resizeable?
-    bool   operator==(const ParticleV2 &p) const { return x == p.x and y == p.y and z == p.z and t == p.t and strncmp(name, p.name, 11) == 0 and id == p.id; }
+    char   name[22] = ""; // Can't be replaced by std::string, or anything resizeable?
+                          // size of name can be safely increased and decreased
+    bool   operator==(const ParticleV2 &p) const { return x == p.x and y == p.y and z == p.z and t == p.t and strncmp(name, p.name, sizeof(name)) == 0 and id == p.id; }
     bool   operator!=(const ParticleV2 &p) const { return not(*this == p); }
 };
 
 bool are_common_members_equal(const ParticleV1 &p1, const ParticleV2 &p2)
 {
-    return p1.x == p2.x and p1.y == p2.y and strncmp(p1.name, p2.name, 11) == 0 and p1.id == p2.id;
+    constexpr auto compare_len = sizeof(ParticleV1::name) == sizeof(ParticleV2::name) ? sizeof(ParticleV1::name) : std::min(sizeof(ParticleV1::name), sizeof(ParticleV2::name))-1;
+    return p1.x == p2.x and p1.y == p2.y and strncmp(p1.name, p2.name, compare_len) == 0 and p1.id == p2.id; // ignore 11th char - null for v1, but can be real character in v2.
 }
 
 bool are_common_members_equal_with_defaults(const ParticleV1 &p1, const ParticleV2 &p2)
 {
-    return are_common_members_equal(p1, p2) and p2.z == 0.0 and p2.t == 0.0;
+    const auto def = ParticleV2{};
+    return are_common_members_equal(p1, p2) and p2.z == def.z and p2.t == def.t;
 }
 
 auto create_unique_v1(int i)
 {
-    return ParticleV1{100.0+i, 200.0+i, 1000+i, "v1"};
+    return ParticleV1{100.0+i, 200.0+i, 1000+i, "v1-123456"};
 }
 
 auto create_unique_v2(int i)
 {
-    return ParticleV2{100.0+i, 200.0+i, 300.0+i, 400.0+i, 1000+i, "v2"};
+    return ParticleV2{100.0+i, 200.0+i, 300.0+i, (short)(400+i), 1000+i, "v2-1234567890123"};
 }
 
 void print_particle(const ParticleV1 &p, const std::string & msg = "") {
@@ -73,7 +84,7 @@ void register_types()
     H5Tinsert(H5_PARTICLE_V2, "x", HOFFSET(ParticleV2, x), H5T_NATIVE_DOUBLE);
     H5Tinsert(H5_PARTICLE_V2, "y", HOFFSET(ParticleV2, y), H5T_NATIVE_DOUBLE);
     H5Tinsert(H5_PARTICLE_V2, "z", HOFFSET(ParticleV2, z), H5T_NATIVE_DOUBLE);
-    H5Tinsert(H5_PARTICLE_V2, "t", HOFFSET(ParticleV2, t), H5T_NATIVE_DOUBLE);
+    H5Tinsert(H5_PARTICLE_V2, "t", HOFFSET(ParticleV2, t), H5T_NATIVE_SHORT);
     H5Tinsert(H5_PARTICLE_V2, "id", HOFFSET(ParticleV2, id), H5T_NATIVE_INT);
     H5Tinsert(H5_PARTICLE_V2, "name", HOFFSET(ParticleV2, name), H5_NAME_TYPE);
 }
