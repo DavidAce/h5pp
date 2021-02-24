@@ -64,7 +64,7 @@ class h5ppConan(ConanFile):
             self._cmake.definitions["H5PP_ENABLE_TESTS"]         = self.options.tests
             self._cmake.definitions["H5PP_BUILD_EXAMPLES"]       = self.options.examples
             self._cmake.definitions["H5PP_PRINT_INFO"]           = self.options.verbose
-            self._cmake.definitions["H5PP_DOWNLOAD_METHOD"]      = "conan"
+            self._cmake.definitions["H5PP_PACKAGE_MANAGER"]      = "conan"
             self._cmake.definitions["H5PP_ENABLE_PCH"]           = self.options.pch
             self._cmake.definitions["H5PP_ENABLE_CCACHE"]        = self.options.ccache
             self._cmake.configure()
