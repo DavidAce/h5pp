@@ -3,9 +3,10 @@ cmake_policy(SET CMP0074 NEW)
 project(external-fmt CXX)
 include(ExternalProject)
 ExternalProject_Add(external_fmt
-        URL         https://github.com/fmtlib/fmt/archive/7.0.1.tar.gz
+        URL         https://github.com/fmtlib/fmt/archive/7.1.3.tar.gz
 #        URL_MD5     f77569874b25ff3ece7f0229a4236feb # 6.2.1
-        URL_MD5     0cafa0aa67c0e28e9d79a2ebf8fc7732 # 7.0.1
+#        URL_MD5     0cafa0aa67c0e28e9d79a2ebf8fc7732 # 7.0.1
+        URL_MD5     2522ec65070c0bda0ca288677ded2831 # 7.1.3
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE
