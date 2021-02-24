@@ -1,4 +1,4 @@
-name: macOS
+name: macOS 10.15
 # INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
 
 on:
@@ -11,7 +11,7 @@ on:
 jobs:
   ci:
     name: ${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
-    runs-on: macos-latest
+    runs-on: macos-10.15
     env:
       cache-name: macos-cache-${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
     strategy:
