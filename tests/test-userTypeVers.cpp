@@ -122,7 +122,7 @@ TEST_CASE( "Single particles are compatible", "[single-particles]" )
 
     //
     // Forward compatibility: p1 written by v1 software is forward compatible with p2 read by v2 software
-    // with missing members initialized to 0 (not the same as default initialized).
+    // with missing members initialized to the default value.
     //
     SECTION( "p1 as v2|h2" ) {
         auto p1_as_v2_h2 = file.readDataset<ParticleV2>("singleParticle1", std::nullopt, H5_PARTICLE_V2);
