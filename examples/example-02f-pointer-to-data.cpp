@@ -19,7 +19,7 @@
  *  Naturally, passing size > 10 will cause problems, but size < 10
  *  is fine.
  *  Also, it is possible to pass for instance {2,5} to reinterpret
- *  the buffer as a 2x5 matrix. See example 9 for more details.
+ *  the buffer as a 2x5 matrix. See example 08a for more details.
  */
 
 int main() {
