@@ -48,7 +48,7 @@ namespace h5pp::hdf5 {
         ssize_t     bufSize = H5Iget_name(object, nullptr, 0); // Size in bytes of the object name (NOT including \0)
         if(bufSize > 0) {
             buf.resize(static_cast<size_t>(bufSize) + 1); // We allocate space for the null terminator
-            H5Iget_name(object, buf.data(), bufSize);
+            H5Iget_name(object, buf.data(), static_cast<size_t>(bufSize));
         }
         return buf.c_str(); // Use .c_str() to get a "standard" std::string, i.e. one where .size() does not include \0
     }
