@@ -47,8 +47,8 @@ int main() {
 
     // The following lines can be replaced by file.writeHyperslab(data2x2, "data5x5", h5pp::Hyperslab({1,2},{2,2}));
     auto hyperslab   = h5pp::Hyperslab();
-    hyperslab.offset = {1, 2};            // The starting point
-    hyperslab.extent = {2, 2};            // The dimensions of data2x2
+    hyperslab.offset = {1, 2}; // The starting point
+    hyperslab.extent = {2, 2}; // The dimensions of data2x2
     // Write the data
     file.writeHyperslab(data2x2, "data5x5", hyperslab);
 

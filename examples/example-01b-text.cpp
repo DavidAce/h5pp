@@ -8,7 +8,6 @@
  *
  */
 
-
 int main() {
     // Initialize a file
     h5pp::File file("exampledir/example-01b-text.h5", h5pp::FilePermission::REPLACE);

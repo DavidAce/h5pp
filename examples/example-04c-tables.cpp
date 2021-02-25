@@ -13,10 +13,9 @@ struct Particle {
     double x = 0, y = 0, z = 0, t = 0;
 };
 
-
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-04c-tables.h5", h5pp::FilePermission::REPLACE,0);
+    h5pp::File file("exampledir/example-04c-tables.h5", h5pp::FilePermission::REPLACE, 0);
 
     // Register the compound type
     h5pp::hid::h5t H5_PARTICLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Particle));
@@ -29,7 +28,7 @@ int main() {
     file.createTable(H5_PARTICLE_TYPE, "somegroup/particleTable", "Title");
 
     // Write table records
-    std::vector<Particle> particles(10,{1,2,3,4});
+    std::vector<Particle> particles(10, {1, 2, 3, 4});
     file.appendTableRecords(particles, "somegroup/particleTable");
 
     // Read single record
@@ -37,8 +36,10 @@ int main() {
     /*
      * NOTE
      * The full signature of readTableRecords(...) is
-     * readTableRecords(std::string_view tablePath, std::optional<size_t> startIdx = std::nullopt, std::optional<size_t> numRecords = std::nullopt)
-     * When startIdx and/or numRecords (arguments 3 and 4) are missing, h5pp can decide them for you. The behavior is explained in this pseudocode:
+     * readTableRecords(std::string_view tablePath, std::optional<size_t> startIdx = std::nullopt, std::optional<size_t> numRecords =
+     std::nullopt)
+     * When startIdx and/or numRecords (arguments 3 and 4) are missing, h5pp can decide them for you. The behavior is explained in this
+     pseudocode:
      *
      * If the read buffer is resizeable:
      *      If startIdx and numRecords == std::nullopt
@@ -65,13 +66,13 @@ int main() {
      */
 
     auto particle_read = file.readTableRecords<Particle>("somegroup/particleTable");
-    h5pp::print("Single record read:\n x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f}\n",particle_read.x,particle_read.y,particle_read.z,particle_read.t);
-
+    h5pp::print(
+        "Single record read:\n x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f}\n", particle_read.x, particle_read.y, particle_read.z, particle_read.t);
 
     // Or read multiple records into a resizeable container. Start from index 0 and read 10 records.
     auto particles_read = file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", 0, 10);
     h5pp::print("Multiple record read:\n");
-    for(auto &&p : particles_read) h5pp::print("x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f}\n",p.x,p.y,p.z,p.t);
+    for(auto &&p : particles_read) h5pp::print("x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f}\n", p.x, p.y, p.z, p.t);
 
     return 0;
 }

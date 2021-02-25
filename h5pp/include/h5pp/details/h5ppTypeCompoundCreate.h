@@ -15,7 +15,8 @@ namespace h5pp::type::compound::Create {
         herr_t   erri             = H5Tinsert(NEW_COMPLEX_TYPE, "imag", HOFFSET(H5T_COMPLEX_STRUCT<T>, imag), h5type);
         if(errr < 0 or erri < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to insert x or y in new complex type: \n real " + std::to_string(errr) + "\n imag " + std::to_string(erri));
+            throw std::runtime_error("Failed to insert x or y in new complex type: \n real " + std::to_string(errr) + "\n imag " +
+                                     std::to_string(erri));
         }
         return H5Tcopy(NEW_COMPLEX_TYPE);
     }
@@ -28,7 +29,8 @@ namespace h5pp::type::compound::Create {
         herr_t   erry             = H5Tinsert(NEW_SCALAR2_TYPE, "y", HOFFSET(H5T_SCALAR2<T>, y), h5type);
         if(errx < 0 or erry < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to insert x or y in new Scalar2: \n x " + std::to_string(errx) + "\n y " + std::to_string(erry));
+            throw std::runtime_error("Failed to insert x or y in new Scalar2: \n x " + std::to_string(errx) + "\n y " +
+                                     std::to_string(erry));
         }
         return NEW_SCALAR2_TYPE;
     }
@@ -43,7 +45,8 @@ namespace h5pp::type::compound::Create {
         errz = H5Tinsert(NEW_SCALAR3_TYPE, "z", HOFFSET(H5T_SCALAR3<T>, z), h5type);
         if(errx < 0 or erry < 0 or errz < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error("Failed to insert x y or z in new Scalar3: \n x " + std::to_string(errx) + "\n y " + std::to_string(erry) + "\n z" + std::to_string(errz));
+            throw std::runtime_error("Failed to insert x y or z in new Scalar3: \n x " + std::to_string(errx) + "\n y " +
+                                     std::to_string(erry) + "\n z" + std::to_string(errz));
         }
 
         return NEW_SCALAR3_TYPE;

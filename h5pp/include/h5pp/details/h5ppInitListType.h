@@ -10,10 +10,7 @@ namespace h5pp {
         std::vector<size_t> data;
 
         public:
-        Indices()                              = default;
-//        Indices(Indices &&indices)             = delete;
-//        Indices(Indices &&indices)             = default;
-//        Indices & operator=(Indices &&indices) = default;
+        Indices() = default;
         explicit Indices(const char *str)      = delete;
         explicit Indices(std::string_view str) = delete;
         explicit Indices(std::string &&str)    = delete;
@@ -35,8 +32,8 @@ namespace h5pp {
         }
         template<typename U, typename = std::enable_if_t<std::is_integral_v<U>>>
         Indices(std::initializer_list<U> &&il) : data(il) {}
-        operator std::vector<size_t> &() { return data; }
-        auto empty()const{return data.empty();}
+             operator std::vector<size_t> &() { return data; }
+        auto empty() const { return data.empty(); }
     };
 
     struct Names {
@@ -44,10 +41,7 @@ namespace h5pp {
         std::vector<std::string> data;
 
         public:
-        Names()              = default;
-//        Names(Names &&names) = delete;
-//        Names(Names &&names) = default;
-//        Names & operator=(Names &&names) = default;
+        Names() = default;
         template<typename U, typename = std::enable_if_t<h5pp::type::sfinae::is_text_v<U> or h5pp::type::sfinae::has_text_v<U>>>
         Names(U &&str) {
             if constexpr(h5pp::type::sfinae::is_text_v<U>)
@@ -65,14 +59,15 @@ namespace h5pp {
         };
         template<typename U, typename = std::enable_if_t<h5pp::type::sfinae::is_text_v<U>>>
         Names(std::initializer_list<U> &&il) : data(il) {}
-        operator std::vector<std::string> &() { return data; }
-        auto empty()const{return data.empty();}
+             operator std::vector<std::string> &() { return data; }
+        auto empty() const { return data.empty(); }
     };
 
     struct NamesOrIndices {
         private:
-        h5pp::Names names;
+        h5pp::Names   names;
         h5pp::Indices indices;
+
         public:
         template<typename T>
         NamesOrIndices(T &&data_) {
@@ -94,15 +89,18 @@ namespace h5pp {
                 static_assert(h5pp::type::sfinae::invalid_type_v<std::initializer_list<T>>, "Unrecognized type for indices or names");
         }
 
-        auto  index(){
-            if (not names.empty()) return 0;
-            if (not indices.empty()) return 1;
+        auto index() {
+            if(not names.empty()) return 0;
+            if(not indices.empty()) return 1;
             return -1;
         }
 
-        template<auto N> auto &get_value() {
-            if constexpr(N == 0) return names;
-            else if constexpr(N == 1) return indices;
+        template<auto N>
+        auto &get_value() {
+            if constexpr(N == 0)
+                return names;
+            else if constexpr(N == 1)
+                return indices;
         }
     };
 }

@@ -7,25 +7,25 @@
 // The struct can only contain fixed-size members,
 // i.e., struct byte layout has to be known at compile-time.
 struct SpaceTimePoint {
-    std::array<double, 4>                   coordinates = {0, 0, 0, 0}; // Specify the array "coordinates" as rank-1 array of length 4
-    char                                    type[32]    = "spacetime";
-    void                                    dummy_function(int) {} // Functions are OK
+    std::array<double, 4> coordinates = {0, 0, 0, 0}; // Specify the array "coordinates" as rank-1 array of length 4
+    char                  type[32]    = "spacetime";
+    void                  dummy_function(int) {} // Functions are OK
 };
 
 void print_point(const SpaceTimePoint &p) {
-    h5pp::print("x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f} type: %s\n",  p.coordinates[0], p.coordinates[1], p.coordinates[2], p.coordinates[3], p.type);
+    h5pp::print(
+        "x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f} type: %s\n", p.coordinates[0], p.coordinates[1], p.coordinates[2], p.coordinates[3], p.type);
 }
 
 int main() {
-    size_t logLevel = 2; // Default log level is 2: "info"
+    size_t     logLevel = 2; // Default log level is 2: "info"
     h5pp::File file("exampledir/example-04b-custom-struct-advanced.h5", h5pp::FilePermission::REPLACE, logLevel);
 
     // We can create a custom HDF5 type for multi-dimensional arrays using H5Tarray_create. It takes the
     // rank (i.e. number of indices) and the size of each dimension in a c-style array pointer.
     // In this case we just have a 1D array.
     std::array<hsize_t, 1> dims = {4}; // "dims" describes the shape of a "coordinates" array: in this case has 1 dimension of size 4
-    h5pp::hid::h5t H5_COORD_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE, static_cast<unsigned>(dims.size()), dims.data());
-
+    h5pp::hid::h5t         H5_COORD_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE, static_cast<unsigned>(dims.size()), dims.data());
 
     // Create a custom HDF5 type for the char array.
     // HDF5 provides a string template "H5T_C_S1", which describes a string with a single char.
@@ -36,7 +36,6 @@ int main() {
     // Optionally set the null terminator '\0' and possibly padding.
     H5Tset_strpad(H5_CHAR_TYPE, H5T_STR_NULLTERM);
 
-
     // Register whole struct as a the compound type. It is important to register
     // the struct members in the same order they were declared
     h5pp::hid::h5t H5_POINT_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(SpaceTimePoint));
@@ -46,21 +45,19 @@ int main() {
     // Now we can write single points or even containers with points.
 
     // Write a single point to file
-    SpaceTimePoint point {{1,2,3,0},"space"};
+    SpaceTimePoint point{{1, 2, 3, 0}, "space"};
     file.writeDataset(point, "point", H5_POINT_TYPE);
-
 
     // Read a single point back from file and print
     auto point_read = file.readDataset<SpaceTimePoint>("point");
     h5pp::print("Single entry read \n");
     print_point(point_read);
 
-
     // Or write a container full of them! Let's make a vector with 10 points.
     std::vector<SpaceTimePoint> points(10);
 
     // Give some dummy data to each point
-    int                         id = 1;
+    int id = 1;
     for(auto &p : points) {
         p.coordinates[0] = id + 100;
         p.coordinates[1] = id + 200;
@@ -72,12 +69,10 @@ int main() {
     // Write them all at once
     file.writeDataset(points, "points", H5_POINT_TYPE);
 
-
     // Now let's read them back into a new vector and print
     auto points_read = file.readDataset<std::vector<SpaceTimePoint>>("points");
     h5pp::print("Multiple entry read\n");
-    for(auto &p : points_read)  print_point(p);
-
+    for(auto &p : points_read) print_point(p);
 
     return 0;
 }

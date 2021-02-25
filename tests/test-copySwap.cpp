@@ -4,7 +4,8 @@
 #include <iostream>
 
 /*! \brief Prints the content of a vector nicely */
-template<typename T> std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
+template<typename T>
+std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
     if(!v.empty()) {
         out << "[ ";
         std::copy(v.begin(), v.end(), std::ostream_iterator<T>(out, " "));
@@ -18,10 +19,11 @@ using namespace std::complex_literals;
 // Store some dummy data to an hdf5 file
 
 int main() {
-    static_assert(h5pp::type::sfinae::has_data<std::vector<double>>() and
-                  "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
+    static_assert(
+        h5pp::type::sfinae::has_data<std::vector<double>>() and
+        "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
-    size_t     logLevel = 0;
+    size_t logLevel = 0;
 
     h5pp::File file0;
     std::cout << "file0: " << file0.getFilePath() << std::endl;

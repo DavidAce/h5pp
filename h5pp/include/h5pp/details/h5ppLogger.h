@@ -25,34 +25,40 @@ namespace h5pp::logger {
     }
 
     template<typename levelType>
-    inline bool logIf(levelType levelZeroToFive){
+    inline bool logIf(levelType levelZeroToFive) {
         if constexpr(std::is_integral_v<levelType>)
             return getLogLevel() <= static_cast<size_t>(levelZeroToFive);
         else if constexpr(std::is_same_v<levelType, spdlog::level::level_enum>)
             return static_cast<spdlog::level::level_enum>(getLogLevel()) <= levelZeroToFive;
         else
-            static_assert(h5pp::type::sfinae::invalid_type_v<levelType>, "Log level type must be an integral type or spdlog::level::level_enum");
+            static_assert(h5pp::type::sfinae::invalid_type_v<levelType>,
+                          "Log level type must be an integral type or spdlog::level::level_enum");
     }
-
 
     template<typename levelType>
     inline void setLogLevel(levelType levelZeroToFive) {
         if constexpr(std::is_same_v<levelType, spdlog::level::level_enum>)
             log->set_level(levelZeroToFive);
         else if constexpr(std::is_integral_v<levelType>) {
-            if(levelZeroToFive > 5) { throw std::runtime_error("Expected verbosity level integer in [0-5]. Got: " + std::to_string(levelZeroToFive)); }
+            if(levelZeroToFive > 5) {
+                throw std::runtime_error("Expected verbosity level integer in [0-5]. Got: " + std::to_string(levelZeroToFive));
+            }
             return setLogLevel(static_cast<spdlog::level::level_enum>(levelZeroToFive));
-        } else if constexpr(std::is_same_v<levelType, std::optional<spdlog::level::level_enum>> or std::is_same_v<levelType, std::optional<size_t>>) {
+        } else if constexpr(std::is_same_v<levelType, std::optional<spdlog::level::level_enum>> or
+                            std::is_same_v<levelType, std::optional<size_t>>) {
             if(levelZeroToFive)
                 return setLogLevel(levelZeroToFive.value());
             else
                 return;
         } else {
-            static_assert(h5pp::type::sfinae::invalid_type_v<levelType>, "Log level type must be an integral type or spdlog::level::level_enum");
+            static_assert(h5pp::type::sfinae::invalid_type_v<levelType>,
+                          "Log level type must be an integral type or spdlog::level::level_enum");
         }
     }
 
-    inline void setLogger(const std::string &name, std::optional<size_t> levelZeroToFive = std::nullopt, std::optional<bool> timestamp = std::nullopt) {
+    inline void setLogger(const std::string &   name,
+                          std::optional<size_t> levelZeroToFive = std::nullopt,
+                          std::optional<bool>   timestamp       = std::nullopt) {
         if(spdlog::get(name) == nullptr)
             log = spdlog::stdout_color_mt(name, spdlog::color_mode::automatic);
         else
@@ -107,7 +113,7 @@ namespace h5pp::logger {
     }
 
     template<typename levelType>
-    inline bool logIf(levelType levelZeroToFive){
+    inline bool logIf(levelType levelZeroToFive) {
         if constexpr(std::is_integral_v<levelType>)
             return getLogLevel() <= static_cast<size_t>(levelZeroToFive);
         else
@@ -117,8 +123,11 @@ namespace h5pp::logger {
     template<typename levelType>
     inline void setLogLevel([[maybe_unused]] levelType levelZeroToFive) {
         if constexpr(std::is_integral_v<levelType>) {
-            if(levelZeroToFive > 5) { throw std::runtime_error("Expected verbosity level integer in [0-5]. Got: " + std::to_string(levelZeroToFive)); }
-            //            log->info("Log verbosity level: {}   | trace:0 | debug:1 | info:2 | warn:3 | error:4 | critical:5 |", levelZeroToFive);
+            if(levelZeroToFive > 5) {
+                throw std::runtime_error("Expected verbosity level integer in [0-5]. Got: " + std::to_string(levelZeroToFive));
+            }
+            //            log->info("Log verbosity level: {}   | trace:0 | debug:1 | info:2 | warn:3 | error:4 | critical:5 |",
+            //            levelZeroToFive);
             log->debug("Log verbosity level: {}");
             if(log != nullptr) log->logLevel = levelZeroToFive;
         } else if constexpr(std::is_same_v<levelType, std::optional<size_t>>) {
@@ -127,7 +136,8 @@ namespace h5pp::logger {
             else
                 return;
         } else {
-            static_assert(h5pp::type::sfinae::invalid_type_v<levelType>, "Log level type must be an integral type or spdlog::level::level_enum");
+            static_assert(h5pp::type::sfinae::invalid_type_v<levelType>,
+                          "Log level type must be an integral type or spdlog::level::level_enum");
             throw std::runtime_error("Given wrong type for spdlog verbosity level");
         }
     }

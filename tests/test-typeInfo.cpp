@@ -3,8 +3,9 @@
 #include <iostream>
 
 int main() {
-    static_assert(h5pp::type::sfinae::has_data<std::vector<double>>() and
-                  "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
+    static_assert(
+        h5pp::type::sfinae::has_data<std::vector<double>>() and
+        "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     // Generate dummy data
     int                               AttributeInt                 = 7;
@@ -14,8 +15,9 @@ int main() {
     std::array<long, 4>               AttributeArrayLong           = {1, 2, 3, 4};
     float                             AttributeCArrayFloat[4]      = {1, 2, 3, 4};
     std::vector<std::complex<double>> AttributeVectorComplexDouble = {{2.0, 5.0}, {3.1, -2.3}, 3.0, {-51.2, 5}};
-    std::vector<double>               AttributeVectorDouble        = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
-                                                 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
+    std::vector<double>               AttributeVectorDouble        = {1.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
+                                                 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
+                                                 -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
     std::string                       AttributeString              = "This is a very long string that I am testing";
     char                              AttributeCharArray[]         = "This is a char array";
 
@@ -39,9 +41,7 @@ int main() {
     file.writeAttribute(AttributeString, "AttributeString", "testGroup/vectorDouble");
     file.writeAttribute(AttributeCharArray, "AttributeCharArray", "testGroup/vectorDouble");
 
-    for(auto &info : file.getTypeInfoAttributes("testGroup/vectorDouble")) {
-        std::cout << info.string() << std::endl;
-    }
+    for(auto &info : file.getTypeInfoAttributes("testGroup/vectorDouble")) { std::cout << info.string() << std::endl; }
 
     auto info = file.getTypeInfoDataset("testGroup/vectorDouble");
     std::cout << info.string() << std::endl;

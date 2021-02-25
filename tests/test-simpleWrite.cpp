@@ -7,7 +7,7 @@ int main() {
     std::string                       outputFilename = "output/simpleWrite.h5";
     size_t                            logLevel       = 0;
     h5pp::File                        file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
-    bool                              Boolean = true;
+    bool                              Boolean   = true;
     std::string                       String    = "This is a string";
     char                              Char[100] = "This is a char array";
     double                            Double    = 2.0;
@@ -60,9 +60,9 @@ int main() {
     file.writeDataset(field3array, "simpleWriteGroup/field3array");
 
     // Test passing pointers
-    file.writeDataset(vectorInt.data(), "simpleWriteGroup/vectorInt",vectorInt.size());
-    file.writeDataset(vectorDouble.data(), "simpleWriteGroup/vectorDouble",vectorDouble.size());
-    file.writeDataset(vectorInt.data(), "simpleWriteGroup/vectorInt",vectorInt.size());
+    file.writeDataset(vectorInt.data(), "simpleWriteGroup/vectorInt", vectorInt.size());
+    file.writeDataset(vectorDouble.data(), "simpleWriteGroup/vectorDouble", vectorDouble.size());
+    file.writeDataset(vectorInt.data(), "simpleWriteGroup/vectorInt", vectorInt.size());
 
 #ifdef H5PP_EIGEN3
     Eigen::MatrixXi  matrixInt(2, 2);

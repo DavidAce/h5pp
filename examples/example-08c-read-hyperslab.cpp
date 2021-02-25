@@ -44,16 +44,17 @@ int main() {
     }
 
 #ifdef H5PP_EIGEN3
-        // Eigen comes in handy when dealing with matrices
-        // Note 1: h5pp resizes the Eigen container as indicated by the dataset dimensions
-        // Note 2: The rank (number of dimensions) of the Eigen container must agree with the rank of the dataset
-        // Note 3: Eigen uses column-major storage. Internally, h5pp needs to make a transposed copy to transform
-        //         the data from row-major to column-major. For very large datasets this operation can be expensive.
-        //         In that case consider using row-major Eigen containers, such as
-        //              Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>
-        //
+    // Eigen comes in handy when dealing with matrices
+    // Note 1: h5pp resizes the Eigen container as indicated by the dataset dimensions
+    // Note 2: The rank (number of dimensions) of the Eigen container must agree with the rank of the dataset
+    // Note 3: Eigen uses column-major storage. Internally, h5pp needs to make a transposed copy to transform
+    //         the data from row-major to column-major. For very large datasets this operation can be expensive.
+    //         In that case consider using row-major Eigen containers, such as
+    //              Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>
+    //
 
-    std::cout << "Read 2x4 Eigen matrix: \n" << file.readHyperslab<Eigen::MatrixXd>("data5x5",h5pp::Hyperslab({3,1},{2,4})) << std::endl;
+    std::cout << "Read 2x4 Eigen matrix: \n"
+              << file.readHyperslab<Eigen::MatrixXd>("data5x5", h5pp::Hyperslab({3, 1}, {2, 4})) << std::endl;
 #endif
 
     return 0;

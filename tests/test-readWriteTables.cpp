@@ -53,7 +53,7 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
     }
 
     SECTION("Create table") {
-        auto tableInfo = file.createTable(MY_HDF5_PARTICLE_TYPE, "somegroup/particleTable", "particleTable",std::nullopt,6);
+        auto tableInfo = file.createTable(MY_HDF5_PARTICLE_TYPE, "somegroup/particleTable", "particleTable", std::nullopt, 6);
         CHECK(tableInfo.tableTitle.value() == "particleTable");
         CHECK(tableInfo.numRecords.value() == 0);
         CHECK(tableInfo.recordBytes.value() == sizeof(Particle));
@@ -72,7 +72,7 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
     SECTION("Read single entry") {
         std::vector<Particle> particle_read;
         particle_read.emplace_back(file.readTableRecords<Particle>("somegroup/particleTable"));
-        particle_read.emplace_back(file.readTableRecords<Particle>(std::string("somegroup/particl\0eTable",24))); // Non-standard string!
+        particle_read.emplace_back(file.readTableRecords<Particle>(std::string("somegroup/particl\0eTable", 24))); // Non-standard string!
         particle_read.emplace_back(file.readTableRecords<Particle>(std::string("somegroup/particleTable")));
         particle_read.emplace_back(file.readTableRecords<Particle>(std::string_view("somegroup/particleTable")));
         for(auto &p : particle_read) compare(p, Particle());
@@ -92,10 +92,11 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
         for(auto &particle_read : result_container)
             for(auto &p : particle_read) compare(p, Particle());
     }
-    SECTION("Copy a table entry to another file"){
-        auto info1 = file.getTableInfo("somegroup/particleTable");
+    SECTION("Copy a table entry to another file") {
+        auto       info1 = file.getTableInfo("somegroup/particleTable");
         h5pp::File file2("output/readWriteTablesCopy.h5", h5pp::FilePermission::REPLACE, 2);
-        auto info2 = file2.appendTableRecords(file.openFileHandle(), "somegroup/particleTable",h5pp::TableSelection::LAST, "somegroup/particleTable");
+        auto       info2 = file2.appendTableRecords(
+            file.openFileHandle(), "somegroup/particleTable", h5pp::TableSelection::LAST, "somegroup/particleTable");
         CHECK(info2.tableTitle.value() == info1.tableTitle.value());
         CHECK(info2.numRecords.value() == 1);
         CHECK(info2.recordBytes.value() == info1.recordBytes.value());
@@ -109,7 +110,7 @@ int main(int argc, char *argv[]) {
     if(returnCode != 0) // Indicates a command line error
         return returnCode;
 
-//    session.configData().showSuccessfulTests = true;
+    //    session.configData().showSuccessfulTests = true;
     //    session.configData().reporterName = "compact";
     return session.run();
 }

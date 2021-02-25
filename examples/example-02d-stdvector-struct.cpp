@@ -8,12 +8,12 @@
  */
 
 struct Int2 {
-    int         x, y;
+    int                       x, y;
     [[nodiscard]] std::string string() const { return h5pp::format("x: {} y: {}", x, y); }
 };
 
 struct Double3 {
-    double      x, y, z;
+    double                    x, y, z;
     [[nodiscard]] std::string string() const { return h5pp::format("x: {} y: {} z: {}", x, y, z); }
 };
 
@@ -42,8 +42,8 @@ int main() {
     h5pp::File file("exampledir/example-02d-stdvector-struct.h5", h5pp::FilePermission::REPLACE);
 
     // Initialize vectors with struct-type dummy data
-    std::vector<Int2>    coord2d = {{1,2},{3,4},{5,6}};
-    std::vector<Double3> coord3d = {{10.0,20.0,30.0},{40.0,50.0,60.0},{70.0,80.0,90.0}};
+    std::vector<Int2>    coord2d = {{1, 2}, {3, 4}, {5, 6}};
+    std::vector<Double3> coord3d = {{10.0, 20.0, 30.0}, {40.0, 50.0, 60.0}, {70.0, 80.0, 90.0}};
 
     // Read and write as in the previous examples
     writeThenRead(file, coord2d, "CoordinatesInTwoDimensions");

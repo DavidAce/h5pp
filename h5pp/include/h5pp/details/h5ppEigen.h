@@ -80,10 +80,13 @@ namespace h5pp {
         template<std::size_t N, typename idxType>
         H5PP_CONSTEXPR idxlistpair<N> idx(const idxType (&list1)[N], const idxType (&list2)[N]) {
             // Use numpy-style indexing for contraction. Each list contains a list of indices to be contracted for the respective
-            // tensors. This function zips them together into pairs as used in Eigen::Tensor module. This does not sort the indices in decreasing order.
+            // tensors. This function zips them together into pairs as used in Eigen::Tensor module. This does not sort the indices in
+            // decreasing order.
             static_assert(std::is_integral_v<idxType>);
             idxlistpair<N> pairlistOut;
-            for(size_t i = 0; i < N; i++) { pairlistOut[i] = Eigen::IndexPair<Eigen::Index>{static_cast<Eigen::Index>(list1[i]), static_cast<Eigen::Index>(list2[i])}; }
+            for(size_t i = 0; i < N; i++) {
+                pairlistOut[i] = Eigen::IndexPair<Eigen::Index>{static_cast<Eigen::Index>(list1[i]), static_cast<Eigen::Index>(list2[i])};
+            }
             return pairlistOut;
         }
 
@@ -94,7 +97,9 @@ namespace h5pp {
         };
 
         template<std::size_t NB, std::size_t N>
-        H5PP_CONSTEXPR idxlistpair<N> sortIdx(const Eigen::array<Eigen::Index, NB> &dimensions, const Eigen::Index (&idx_ctrct_A)[N], const Eigen::Index (&idx_ctrct_B)[N]) {
+        H5PP_CONSTEXPR idxlistpair<N> sortIdx(const Eigen::array<Eigen::Index, NB> &dimensions,
+                                              const Eigen::Index (&idx_ctrct_A)[N],
+                                              const Eigen::Index (&idx_ctrct_B)[N]) {
             // When doing contractions, some indices may be larger than others. For performance, you want to
             // contract the largest indices first. This will return a sorted index list in decreasing order.
             Eigen::array<idx_dim_pair, N> idx_dim_pair_list;
@@ -164,7 +169,8 @@ namespace h5pp {
         using is_arrayObject = std::is_base_of<Eigen::ArrayBase<std::decay_t<Derived>>, std::decay_t<Derived>>;
 
         template<typename Derived, auto rank>
-        constexpr Eigen::Tensor<typename Derived::Scalar, rank> Matrix_to_Tensor(const Eigen::EigenBase<Derived> &matrix, const array<rank> &dims) {
+        constexpr Eigen::Tensor<typename Derived::Scalar, rank> Matrix_to_Tensor(const Eigen::EigenBase<Derived> &matrix,
+                                                                                 const array<rank> &              dims) {
             if constexpr(is_plainObject<Derived>::value) {
                 // Return map from raw input.
                 return Eigen::TensorMap<const Eigen::Tensor<const typename Derived::Scalar, rank>>(matrix.derived().eval().data(), dims);
@@ -177,12 +183,14 @@ namespace h5pp {
 
         // Helpful overload
         template<typename Derived, typename... Dims>
-        constexpr Eigen::Tensor<typename Derived::Scalar, sizeof...(Dims)> Matrix_to_Tensor(const Eigen::EigenBase<Derived> &matrix, const Dims... dims) {
+        constexpr Eigen::Tensor<typename Derived::Scalar, sizeof...(Dims)> Matrix_to_Tensor(const Eigen::EigenBase<Derived> &matrix,
+                                                                                            const Dims... dims) {
             return Matrix_to_Tensor(matrix, array<sizeof...(Dims)>{dims...});
         }
         // Helpful overload
         template<typename Derived, auto rank>
-        constexpr Eigen::Tensor<typename Derived::Scalar, rank> Matrix_to_Tensor(const Eigen::EigenBase<Derived> &matrix, const DSizes<rank> &dims) {
+        constexpr Eigen::Tensor<typename Derived::Scalar, rank> Matrix_to_Tensor(const Eigen::EigenBase<Derived> &matrix,
+                                                                                 const DSizes<rank> &             dims) {
             array<rank> dim_array = dims;
             std::copy(std::begin(dims), std::end(dims), std::begin(dim_array));
             return Matrix_to_Tensor(matrix, dim_array);
@@ -227,7 +235,8 @@ namespace h5pp {
                 array<Derived::NumIndices> neworder;
                 std::iota(std::begin(neworder), std::end(neworder), 0);
                 std::reverse(neworder.data(), neworder.data() + neworder.size());
-                return Eigen::Tensor<typename Derived::Scalar, Derived::NumIndices, Eigen::RowMajor>(tensor.swap_layout().shuffle(neworder));
+                return Eigen::Tensor<typename Derived::Scalar, Derived::NumIndices, Eigen::RowMajor>(
+                    tensor.swap_layout().shuffle(neworder));
             }
         }
 
@@ -239,7 +248,8 @@ namespace h5pp {
                 array<Derived::NumIndices> neworder;
                 std::iota(std::begin(neworder), std::end(neworder), 0);
                 std::reverse(neworder.data(), neworder.data() + neworder.size());
-                return Eigen::Tensor<typename Derived::Scalar, Derived::NumIndices, Eigen::ColMajor>(tensor.swap_layout().shuffle(neworder));
+                return Eigen::Tensor<typename Derived::Scalar, Derived::NumIndices, Eigen::ColMajor>(
+                    tensor.swap_layout().shuffle(neworder));
             }
         }
 
@@ -247,9 +257,11 @@ namespace h5pp {
         auto to_RowMajor(const Eigen::DenseBase<Derived> &dense) {
             if constexpr(Derived::IsRowMajor) { return dense; }
             if constexpr(is_matrixObject<Derived>::value) {
-                return Eigen::Matrix<typename Derived::Scalar, Derived::RowsAtCompileTime, Derived::ColsAtCompileTime, Eigen::RowMajor>(dense);
+                return Eigen::Matrix<typename Derived::Scalar, Derived::RowsAtCompileTime, Derived::ColsAtCompileTime, Eigen::RowMajor>(
+                    dense);
             } else if constexpr(is_arrayObject<Derived>::value) {
-                return Eigen::Array<typename Derived::Scalar, Derived::RowsAtCompileTime, Derived::ColsAtCompileTime, Eigen::RowMajor>(dense);
+                return Eigen::Array<typename Derived::Scalar, Derived::RowsAtCompileTime, Derived::ColsAtCompileTime, Eigen::RowMajor>(
+                    dense);
             }
             throw std::runtime_error("Wrong dense type?? Report this bug!");
         }
@@ -258,9 +270,11 @@ namespace h5pp {
         auto to_ColMajor(const Eigen::DenseBase<Derived> &dense) {
             if constexpr(not Derived::IsRowMajor) { return dense; }
             if constexpr(is_matrixObject<Derived>::value) {
-                return Eigen::Matrix<typename Derived::Scalar, Derived::RowsAtCompileTime, Derived::ColsAtCompileTime, Eigen::ColMajor>(dense);
+                return Eigen::Matrix<typename Derived::Scalar, Derived::RowsAtCompileTime, Derived::ColsAtCompileTime, Eigen::ColMajor>(
+                    dense);
             } else if constexpr(is_arrayObject<Derived>::value) {
-                return Eigen::Array<typename Derived::Scalar, Derived::RowsAtCompileTime, Derived::ColsAtCompileTime, Eigen::ColMajor>(dense);
+                return Eigen::Array<typename Derived::Scalar, Derived::RowsAtCompileTime, Derived::ColsAtCompileTime, Eigen::ColMajor>(
+                    dense);
             }
             throw std::runtime_error("Wrong dense type?? Report this bug!");
         }

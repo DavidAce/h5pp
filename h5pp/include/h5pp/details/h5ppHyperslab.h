@@ -24,10 +24,10 @@ namespace h5pp {
             : offset(offset), extent(extent), stride(std::move(stride)), blocks(std::move(blocks)) {}
 
         // Delete some constructors to avoid ambiguity. Both offset and extent are required if any of them is to be given
-        Hyperslab(DimsType) = delete;
-        Hyperslab(OptDimsType) = delete;
+        Hyperslab(DimsType)                       = delete;
+        Hyperslab(OptDimsType)                    = delete;
         Hyperslab(std::initializer_list<hsize_t>) = delete;
-        Hyperslab(std::vector<hsize_t>) = delete;
+        Hyperslab(std::vector<hsize_t>)           = delete;
 
         explicit Hyperslab(const hid::h5s &space) {
             int rank = H5Sget_simple_extent_ndims(space);

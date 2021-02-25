@@ -2,14 +2,13 @@
 
 namespace h5pp {
 
-
     enum class FilePermission {
 
         // Read more about the original HDF5 file permissions here:
         // https://portal.hdfgroup.org/display/HDF5/H5F_CREATE
         // and
         // https://portal.hdfgroup.org/display/HDF5/H5F_OPEN
-
+        /* clang-format off */
         /*
          *
          `h5pp` offers more flags for file access permissions than HDF5. The new flags are primarily intended to
@@ -31,10 +30,18 @@ namespace h5pp {
          * When a new file is created, `READWRITE` permission to it is implied.
          *
          */
-        READONLY, COLLISION_FAIL, RENAME, READWRITE, BACKUP, REPLACE
+        /* clang-format on */
+
+        READONLY,
+        COLLISION_FAIL,
+        RENAME,
+        READWRITE,
+        BACKUP,
+        REPLACE
     };
 
-    enum class FileDriver{
+    enum class FileDriver {
+        /* clang-format off */
         /*
         From the HDF5 manual:
         ------------------
@@ -51,15 +58,24 @@ namespace h5pp {
         Split	 	        H5FD_SPLIT	 	    This file driver splits a file into two parts. One part stores metadata, and the other part stores raw data. This splitting a file into two parts is a limited case of the Multi driver.
         Parallel	        H5FD_MPIO	 	    This is the standard HDF5 file driver for parallel file systems. This driver uses the MPI standard for both communication and file I/O.
         */
+        /* clang-format on */
 
-        SEC2,DIRECT,LOG,WINDOWS,STDIO,CORE,FAMILY,MULTI,SPLIT,MPIO
+        SEC2,
+        DIRECT,
+        LOG,
+        WINDOWS,
+        STDIO,
+        CORE,
+        FAMILY,
+        MULTI,
+        SPLIT,
+        MPIO
     };
 
-
     enum class TableSelection {
-        FIRST,  // First element in a table
-        LAST,   // Last element in a table
-        ALL,    // All elements of a table
+        FIRST, // First element in a table
+        LAST,  // Last element in a table
+        ALL,   // All elements of a table
     };
 
     enum class ResizePolicy {
@@ -68,7 +84,7 @@ namespace h5pp {
         DO_NOT_RESIZE,
     };
 
-    enum class LocationMode{
+    enum class LocationMode {
         /*
          * Some operations, such as h5pp::hdf5::copyLink support copying objects between files.
          * However, detecting whether two given location id's are on the same file can become

@@ -16,7 +16,6 @@
  *
  */
 
-
 // First define a typical struct.
 // Note that it cannot have dynamically sized members (such as std::vector or std::string)
 

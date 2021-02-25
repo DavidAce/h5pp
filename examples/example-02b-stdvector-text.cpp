@@ -10,11 +10,11 @@ int main() {
 
     // Write to file
     file.writeDataset(singleString, "example-group/mySingleString");
-    h5pp::print("h5pp wrote: {}\n",singleString);
+    h5pp::print("h5pp wrote: {}\n", singleString);
 
     // Read from file
     auto singleStringRead = file.readDataset<std::string>("example-group/mySingleString");
-    h5pp::print("h5pp read : {}\n",singleStringRead);
+    h5pp::print("h5pp read : {}\n", singleStringRead);
 
     // We can write multiple strings at a time ...
     std::vector<std::string> multipleStrings;
@@ -25,10 +25,10 @@ int main() {
 
     // and read them back in one go...
     auto multipleStringsRead = file.readDataset<std::vector<std::string>>("example-group/multipleStrings");
-    h5pp::print("Multiple strings as vector of strings: \n{}\n",multipleStringsRead);
+    h5pp::print("Multiple strings as vector of strings: \n{}\n", multipleStringsRead);
 
     // or read them all into a single string! We use \n as separator for each element.
     auto multipleStringsAsString = file.readDataset<std::string>("example-group/multipleStrings");
-    h5pp::print("Multiple strings as string separated by \\n: \n{}\n",multipleStringsAsString);
+    h5pp::print("Multiple strings as string separated by \\n: \n{}\n", multipleStringsAsString);
     return 0;
 }

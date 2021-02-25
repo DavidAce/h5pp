@@ -7,12 +7,15 @@ struct Particle {
     int    id       = 0;
     char   name[10] = "some name"; // Can't be replaced by std::string, or anything resizeable?
     void   dummy_function(int) {}
-    bool   operator==(const Particle &p) const { return x == p.x and y == p.y and z == p.z and t == p.t and strncmp(name, p.name, 10) == 0 and id == p.id; }
-    bool   operator!=(const Particle &p) const { return not(*this == p); }
+    bool   operator==(const Particle &p) const {
+        return x == p.x and y == p.y and z == p.z and t == p.t and strncmp(name, p.name, 10) == 0 and id == p.id;
+    }
+    bool operator!=(const Particle &p) const { return not(*this == p); }
 };
 
 void print_particle(const Particle &p) {
-    std::cout << " \t x: " << p.x << " \t y: " << p.y << " \t z: " << p.z << " \t t: " << p.t << " \t id: " << p.id << "\t name: " << p.name << std::endl;
+    std::cout << " \t x: " << p.x << " \t y: " << p.y << " \t z: " << p.z << " \t t: " << p.t << " \t id: " << p.id << "\t name: " << p.name
+              << std::endl;
 }
 
 int main() {
@@ -64,19 +67,18 @@ int main() {
         p.t  = i + 1000;
         p.id = i++;
     }
-    for (auto &p : particles)print_particle(p);
+    for(auto &p : particles) print_particle(p);
 
     file.writeDataset(particles, "particles", MY_HDF5_PARTICLE_TYPE);
 
     // read them back
     auto particles_read = file.readDataset<std::vector<Particle>>("particles");
-    for (auto &p : particles_read)print_particle(p);
+    for(auto &p : particles_read) print_particle(p);
 
     if(particles.size() != particles_read.size()) throw std::runtime_error("Particles container size mismatch");
     i = 0;
-    for(auto & p : particles)if(p != particles_read[(size_t) i++]) throw std::runtime_error("Particle mismatch position "+ std::to_string(--i));
-
-
+    for(auto &p : particles)
+        if(p != particles_read[(size_t) i++]) throw std::runtime_error("Particle mismatch position " + std::to_string(--i));
 
     // TODO: Add support for packed datatypes. The test below will not crash, but the data in the hdf5 file will be scrambled.
     // One can optionally repack the datatype to squeeze out any padding present in the struct.

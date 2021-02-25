@@ -233,8 +233,7 @@ namespace h5pp::type::sfinae {
     using enable_if_is_integral_iterable_or_num = std::enable_if_t<is_integral_iterable_or_num_v<T>>;
 
     template<typename T>
-    using enable_if_is_integral_iterable_num_or_nullopt =
-        std::enable_if_t<is_integral_iterable_num_or_nullopt_v<T>>;
+    using enable_if_is_integral_iterable_num_or_nullopt = std::enable_if_t<is_integral_iterable_num_or_nullopt_v<T>>;
 
     template<typename T>
     using enable_if_is_iterable_or_nullopt = std::enable_if_t<is_iterable_v<T> or std::is_same_v<T, std::nullopt_t>>;
@@ -243,7 +242,7 @@ namespace h5pp::type::sfinae {
     inline constexpr bool is_h5_loc_v = std::is_same_v<T, hid::h5f> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o>;
 
     template<typename T>
-    inline constexpr bool is_h5_loc_or_hid_v = is_h5_loc_v<T> or std::is_same_v<T,hid_t>;
+    inline constexpr bool is_h5_loc_or_hid_v = is_h5_loc_v<T> or std::is_same_v<T, hid_t>;
 
     template<typename T>
     inline constexpr bool is_h5_link_v = std::is_same_v<T, hid::h5d> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o>;

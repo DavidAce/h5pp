@@ -1,8 +1,8 @@
 #include <h5pp/h5pp.h>
 
-void print_complex(const std::string & msg, const std::vector<std::complex<double>> & v){
+void print_complex(const std::string &msg, const std::vector<std::complex<double>> &v) {
     h5pp::print(msg);
-    for(auto && c: v) h5pp::print("{}, ",c);
+    for(const auto &c : v) h5pp::print("{}, ", c);
     h5pp::print("\n");
 }
 
@@ -15,7 +15,6 @@ int main() {
     // Write data
     file.writeDataset(v_write, "myStdVectorComplex");
     print_complex("Wrote dataset: ", v_write);
-
 
     // Read data. The vector is resized automatically by h5pp.
     std::vector<std::complex<double>> v_read;

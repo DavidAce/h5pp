@@ -1,7 +1,6 @@
 #include <h5pp/h5pp.h>
 #include <iostream>
 
-
 // Store some dummy data to an hdf5 file
 
 int main() {
@@ -11,7 +10,6 @@ int main() {
     fileA.writeDataset("A", "groupA/A");
     fileA.moveLinkToFile("groupA/A", "output/moveLinkA.h5", "groupA_from_file_A/A");
     fileA.moveLinkToFile("groupA_from_file_A/A", "output/moveLinkA.h5", "groupA/A");
-
 
     // Different file
     fileA.moveLinkToFile("groupA/A", "output/moveLinkB.h5", "groupA_from_file_A/A", h5pp::FilePermission::REPLACE);

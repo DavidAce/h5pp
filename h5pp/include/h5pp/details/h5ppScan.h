@@ -22,7 +22,7 @@ namespace h5pp::scan {
 
         if(not options.linkPath and not info.dsetPath) throw std::runtime_error("Could not read dataset info: No dataset path was given");
         // Start by copying fields in options which override later analysis
-        if(not info.h5Type)   info.h5Type   = options.h5Type;
+        if(not info.h5Type) info.h5Type = options.h5Type;
         if(not info.dsetSlab) info.dsetSlab = options.dsetSlab;
         if(not info.dsetPath) info.dsetPath = h5pp::util::safe_str(options.linkPath.value());
         h5pp::logger::log->debug("Scanning metadata of dataset [{}]", info.dsetPath.value());
@@ -87,7 +87,8 @@ namespace h5pp::scan {
      * @param plists (optional) access property for the file. Used to determine link access property when searching for the dataset.
      */
     template<typename h5x>
-    [[nodiscard]] inline h5pp::DsetInfo readDsetInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+    [[nodiscard]] inline h5pp::DsetInfo
+        readDsetInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         if(not options.linkPath) throw std::runtime_error("Could not read dataset info: No dataset path was given in options");
         h5pp::DsetInfo info;
         readDsetInfo(info, loc, options, plists);
@@ -109,13 +110,13 @@ namespace h5pp::scan {
         if(info.dsetExists.value()) return info;
         h5pp::logger::log->debug("Creating metadata for new dataset [{}]", options.linkPath.value());
         // First copy the parameters given in options
-        info.dsetDims    = options.dataDims;
-        info.dsetDimsMax = options.dsetDimsMax;
-        info.dsetChunk   = options.dsetDimsChunk;
-        info.dsetSlab    = options.dsetSlab;
-        info.h5Type      = options.h5Type;
-        info.h5Layout    = options.h5Layout;
-        info.compression = options.compression;
+        info.dsetDims     = options.dataDims;
+        info.dsetDimsMax  = options.dsetDimsMax;
+        info.dsetChunk    = options.dsetDimsChunk;
+        info.dsetSlab     = options.dsetSlab;
+        info.h5Type       = options.h5Type;
+        info.h5Layout     = options.h5Layout;
+        info.compression  = options.compression;
         info.resizePolicy = options.resizePolicy;
 
         // Some sanity checks
@@ -200,9 +201,9 @@ namespace h5pp::scan {
      */
     template<typename DataType, typename h5x>
     [[nodiscard]] inline h5pp::DsetInfo inferDsetInfo(const h5x &          loc,
-                                        const DataType &     data,
-                                        const Options &      options = Options(),
-                                        const PropertyLists &plists  = PropertyLists()) {
+                                                      const DataType &     data,
+                                                      const Options &      options = Options(),
+                                                      const PropertyLists &plists  = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
                       "Template function [h5pp::scan::inferDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
@@ -419,7 +420,8 @@ namespace h5pp::scan {
 
     /*! \brief Creates and returns a populated AttrInfo object with properties read from file */
     template<typename h5x>
-    [[nodiscard]] inline h5pp::AttrInfo readAttrInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+    [[nodiscard]] inline h5pp::AttrInfo
+        readAttrInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         h5pp::AttrInfo info;
         readAttrInfo(info, loc, options, plists);
         return info;
@@ -510,7 +512,7 @@ namespace h5pp::scan {
 
     /*! \brief Populates an AttrInfo object based entirely on given options */
     template<typename h5x>
-    inline void makeAttrInfo(AttrInfo & info,const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+    inline void makeAttrInfo(AttrInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
                       "Template function [h5pp::scan::makeAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
@@ -519,7 +521,7 @@ namespace h5pp::scan {
         h5pp::logger::log->debug("Creating new attribute info for [{}] at link [{}]", options.attrName.value(), options.linkPath.value());
 
         // First copy the parameters given in options
-        if(not info.h5Type) info.h5Type     = options.h5Type;
+        if(not info.h5Type) info.h5Type = options.h5Type;
         if(not info.attrDims) info.attrDims = options.dataDims;
         if(not info.attrSlab) info.attrSlab = options.attrSlab;
         if(not info.linkPath) info.linkPath = options.linkPath;
@@ -558,45 +560,41 @@ namespace h5pp::scan {
 
     /*! \brief Creates and returns a populated AttrInfo object based entirely on given options */
     template<typename h5x>
-    [[nodiscard]] inline h5pp::AttrInfo makeAttrInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+    [[nodiscard]] inline h5pp::AttrInfo
+        makeAttrInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         h5pp::AttrInfo info;
         inferAttrInfo(info, loc, options, plists);
         return info;
     }
 
-
-
     template<typename h5x>
-    inline void inferAttrInfo(AttrInfo & info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+    inline void inferAttrInfo(AttrInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
                       "Template function [h5pp::scan::inferAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
-        if(not options.linkPath and not info.linkPath)
-            throw std::runtime_error("Could not infer attribute info: No link path was given");
+        if(not options.linkPath and not info.linkPath) throw std::runtime_error("Could not infer attribute info: No link path was given");
         if(not options.attrName and not info.attrName)
             throw std::runtime_error("Could not infer attribute info: No attribute name was given");
         if(not info.linkPath) info.linkPath = h5pp::util::safe_str(options.linkPath.value());
         if(not info.attrName) info.attrName = h5pp::util::safe_str(options.attrName.value());
 
-        if(not info.linkExists)
-            info.linkExists = h5pp::hdf5::checkIfLinkExists(loc, info.linkPath.value(), plists.linkAccess);
+        if(not info.linkExists) info.linkExists = h5pp::hdf5::checkIfLinkExists(loc, info.linkPath.value(), plists.linkAccess);
         if(info.linkExists.value())
-            if(not info.h5Link) info.h5Link = h5pp::hdf5::openLink<hid::h5o>(loc,info.linkPath.value(),info.linkExists,plists.linkAccess);
-        if(not info.attrExists){
+            if(not info.h5Link)
+                info.h5Link = h5pp::hdf5::openLink<hid::h5o>(loc, info.linkPath.value(), info.linkExists, plists.linkAccess);
+        if(not info.attrExists) {
             if(info.h5Link)
                 info.attrExists = h5pp::hdf5::checkIfAttrExists(info.h5Link.value(), info.attrName.value(), plists.linkAccess);
             else
-                info.attrExists = h5pp::hdf5::checkIfAttrExists(loc, info.linkPath.value(), info.attrName.value(), info.linkExists, plists.linkAccess);
+                info.attrExists =
+                    h5pp::hdf5::checkIfAttrExists(loc, info.linkPath.value(), info.attrName.value(), info.linkExists, plists.linkAccess);
         }
 
         if(info.attrExists.value())
-            readAttrInfo(info,loc,options,plists); // Table exists so we can read properties from file
+            readAttrInfo(info, loc, options, plists); // Table exists so we can read properties from file
         else
-            makeAttrInfo(info,loc,options,plists);
+            makeAttrInfo(info, loc, options, plists);
     }
-
-
-
 
     /*! \brief Populates a TableInfo object with properties read from file */
     template<typename h5x>
@@ -604,8 +602,7 @@ namespace h5pp::scan {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
                       "Template function [h5pp::scan::readTableInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
-        if(not options.linkPath and not info.tablePath)
-            throw std::runtime_error("Could not read table info: No table path was given");
+        if(not options.linkPath and not info.tablePath) throw std::runtime_error("Could not read table info: No table path was given");
         // Copy fields from options to override later analysis
         if(not info.tablePath) info.tablePath = h5pp::util::safe_str(options.linkPath.value());
         if(not info.h5Type) info.h5Type = options.h5Type;
@@ -692,7 +689,7 @@ namespace h5pp::scan {
         }
 
         // Get c++ properties
-        if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize){
+        if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize) {
             info.cppTypeIndex = std::vector<std::type_index>();
             info.cppTypeName  = std::vector<std::string>();
             info.cppTypeSize  = std::vector<size_t>();
@@ -713,17 +710,18 @@ namespace h5pp::scan {
     }
 
     template<typename h5x>
-    inline void
-    makeTableInfo(h5pp::TableInfo & info, const h5x &loc, const Options &options, std::string_view tableTitle, const PropertyLists &plists = PropertyLists()) {
-        readTableInfo(info,loc, options, plists);
+    inline void makeTableInfo(h5pp::TableInfo &    info,
+                              const h5x &          loc,
+                              const Options &      options,
+                              std::string_view     tableTitle,
+                              const PropertyLists &plists = PropertyLists()) {
+        readTableInfo(info, loc, options, plists);
         if(info.tableExists.value()) return;
-        if(not options.linkPath and not info.tablePath)
-            throw std::runtime_error("Could not make table info: No table path was given");
+        if(not options.linkPath and not info.tablePath) throw std::runtime_error("Could not make table info: No table path was given");
         if(not info.tablePath) info.tablePath = h5pp::util::safe_str(options.linkPath.value());
 
         h5pp::logger::log->debug("Creating metadata for new table [{}]", info.tablePath.value());
-        if(not options.h5Type and not info.h5Type)
-            throw std::runtime_error("Could not make table info: No hdf5 compound type was given");
+        if(not options.h5Type and not info.h5Type) throw std::runtime_error("Could not make table info: No hdf5 compound type was given");
 
         /* clang-format off */
         if(not info.tableTitle       ) info.tableTitle       = tableTitle;
@@ -779,37 +777,32 @@ namespace h5pp::scan {
         /* clang-format on */
     }
 
-
     template<typename h5x>
     [[nodiscard]] inline h5pp::TableInfo
-    makeTableInfo(const h5x &loc, const Options &options, std::string_view tableTitle, const PropertyLists &plists = PropertyLists()) {
+        makeTableInfo(const h5x &loc, const Options &options, std::string_view tableTitle, const PropertyLists &plists = PropertyLists()) {
         TableInfo info;
         makeTableInfo(info, loc, options, tableTitle, plists);
         return info;
     }
 
-
     template<typename h5x>
-    inline void inferTableInfo(TableInfo & info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+    inline void inferTableInfo(TableInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
                       "Template function [h5pp::scan::inferTableInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
-        if(not options.linkPath and not info.tablePath)
-            throw std::runtime_error("Could not infer table info: No table path was given");
+        if(not options.linkPath and not info.tablePath) throw std::runtime_error("Could not infer table info: No table path was given");
         if(not info.tablePath) info.tablePath = h5pp::util::safe_str(options.linkPath.value());
 
         if(not info.tableExists)
             info.tableExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.tablePath.value(), plists.linkAccess);
 
         if(info.tableExists.value())
-            readTableInfo(info,loc,options,plists); // Table exists so we can read properties from file
+            readTableInfo(info, loc, options, plists); // Table exists so we can read properties from file
         else if(not info.tableExists.value() and info.tableTitle)
-            makeTableInfo(info,loc,options, info.tableTitle.value(),plists);
+            makeTableInfo(info, loc, options, info.tableTitle.value(), plists);
         else if(not info.tableTitle)
-            throw std::runtime_error(h5pp::format("Could not infer table info for new table [{}]: No table title given", info.tablePath.value()));
+            throw std::runtime_error(
+                h5pp::format("Could not infer table info for new table [{}]: No table title given", info.tablePath.value()));
     }
-
-
-
 
 }

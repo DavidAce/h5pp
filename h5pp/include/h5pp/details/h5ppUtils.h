@@ -122,7 +122,7 @@ namespace h5pp::util {
             if(countChars)
                 return std::min(std::string_view(arr).size(), size) + 1; // Add null-terminator
             else
-                return std::max(std::string_view(arr).size(), size-1) + 1; // Include null terminator
+                return std::max(std::string_view(arr).size(), size - 1) + 1; // Include null terminator
         } else
             return size;
     }
@@ -135,8 +135,7 @@ namespace h5pp::util {
         return {rows, cols, depth};
     }
 
-    template<typename DataType,
-             typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
+    template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] size_t getCharArraySize(const DataType &data, [[maybe_unused]] bool countChars = true) {
         static_assert(h5pp::type::sfinae::is_text_v<DataType>,
                       "Template function [h5pp::util::getCharArraySize(const DataType & data)] requires type DataType to be "
@@ -145,9 +144,9 @@ namespace h5pp::util {
         // including the null terminator.
         if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return data.size() + 1; // string and string_view have size without nullterm
         if constexpr(std::is_array_v<DataType>) return getArraySize(data, countChars); // getarraysize includes nullterm already
-        if constexpr(h5pp::type::sfinae::has_c_str_v<DataType>) return strlen(data.c_str()) + 1; //strlen does not include nullterm
-        if constexpr(std::is_pointer_v<DataType>) return strlen(data) + 1; //strlen does not include nullterm
-        return 1; // Probably a char?
+        if constexpr(h5pp::type::sfinae::has_c_str_v<DataType>) return strlen(data.c_str()) + 1; // strlen does not include nullterm
+        if constexpr(std::is_pointer_v<DataType>) return strlen(data) + 1;                       // strlen does not include nullterm
+        return 1;                                                                                // Probably a char?
     }
 
     template<typename DimType = std::initializer_list<hsize_t>>
@@ -167,7 +166,7 @@ namespace h5pp::util {
                 return std::vector<hsize_t>{static_cast<hsize_t>(dims)};
             } else
                 static_assert(h5pp::type::sfinae::invalid_type_v<DimType>,
-                    "Template function [h5pp::util::getDimVector(const DimType & dims)] failed to statically detect "
+                              "Template function [h5pp::util::getDimVector(const DimType & dims)] failed to statically detect "
                               "an invalid type for DimsType. Please submit a bug report.");
         }
     }
@@ -603,40 +602,48 @@ namespace h5pp::util {
         }
     }
 
-    template<typename h5xa,typename h5xb,
-    // enable_if so the compiler doesn't think it can use overload with fs::path those arguments
-    typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5xa>,
-    typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5xb>>
-    [[nodiscard]] inline bool onSameFile(const h5xa & loca, const h5xb & locb, LocationMode locMode = LocationMode::DETECT){
-        switch(locMode){
+    template<typename h5xa,
+             typename h5xb,
+             // enable_if so the compiler doesn't think it can use overload with fs::path those arguments
+             typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5xa>,
+             typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5xb>>
+    [[nodiscard]] inline bool onSameFile(const h5xa &loca, const h5xb &locb, LocationMode locMode = LocationMode::DETECT) {
+        switch(locMode) {
             case LocationMode::SAME_FILE: return true;
             case LocationMode::OTHER_FILE: return false;
-            case LocationMode::DETECT:{
+            case LocationMode::DETECT: {
                 hid::h5f filea;
                 hid::h5f fileb;
-                if constexpr(std::is_same_v<h5xa, hid::h5f>) filea = loca;
-                else filea = H5Iget_file_id(loca);
-                if constexpr(std::is_same_v<h5xb, hid::h5f>) fileb = locb;
-                else fileb = H5Iget_file_id(locb);
+                if constexpr(std::is_same_v<h5xa, hid::h5f>)
+                    filea = loca;
+                else
+                    filea = H5Iget_file_id(loca);
+                if constexpr(std::is_same_v<h5xb, hid::h5f>)
+                    fileb = locb;
+                else
+                    fileb = H5Iget_file_id(locb);
                 return filea == fileb;
             }
             default: throw std::runtime_error("Unhandled switch case for locMode");
         }
     }
 
-    [[nodiscard]] inline bool onSameFile(const h5pp::fs::path & patha, const h5pp::fs::path & pathb, LocationMode locMode = LocationMode::DETECT){
-        switch(locMode){
+    [[nodiscard]] inline bool
+        onSameFile(const h5pp::fs::path &patha, const h5pp::fs::path &pathb, LocationMode locMode = LocationMode::DETECT) {
+        switch(locMode) {
             case LocationMode::SAME_FILE: return true;
             case LocationMode::OTHER_FILE: return false;
-            case LocationMode::DETECT:{
-                return h5pp::fs::equivalent(patha,pathb);
+            case LocationMode::DETECT: {
+                return h5pp::fs::equivalent(patha, pathb);
             }
         }
     }
 
-    [[nodiscard]] inline LocationMode getLocationMode(const h5pp::fs::path & patha, const h5pp::fs::path & pathb){
-        if(h5pp::fs::equivalent(patha,pathb)) return LocationMode::SAME_FILE;
-        else return LocationMode::OTHER_FILE;
+    [[nodiscard]] inline LocationMode getLocationMode(const h5pp::fs::path &patha, const h5pp::fs::path &pathb) {
+        if(h5pp::fs::equivalent(patha, pathb))
+            return LocationMode::SAME_FILE;
+        else
+            return LocationMode::OTHER_FILE;
     }
 
 }

@@ -12,12 +12,10 @@ struct Particle {
     // Se example 04b for the case of static-size array members
 };
 
-void print_particle(const Particle &p) {
-    h5pp::print("x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f} id:{}\n",p.x,p.y,p.z,p.t, p.id);
-}
+void print_particle(const Particle &p) { h5pp::print("x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f} id:{}\n", p.x, p.y, p.z, p.t, p.id); }
 
 int main() {
-    h5pp::File file("exampledir/example-04a-custom-struct-easy.h5", h5pp::FilePermission::REPLACE,0);
+    h5pp::File file("exampledir/example-04a-custom-struct-easy.h5", h5pp::FilePermission::REPLACE, 0);
 
     // Register the compound type
     h5pp::hid::h5t H5_PARTICLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Particle));
@@ -38,12 +36,11 @@ int main() {
     h5pp::print("Single particle read \n");
     print_particle(particle_read);
 
-
     // Or write a container full of them! Let's put 10 particles in a vector.
     std::vector<Particle> particles(10);
 
     // Give each particle some dummy data
-    int                   id = 1;
+    int id = 1;
     for(auto &p : particles) {
         p.x  = id + 100;
         p.y  = id + 200;

@@ -450,9 +450,8 @@ namespace h5pp {
             std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
             std::optional<unsigned int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
             /* clang-format on */
-            )
-        {
-//            hid::h5t test {4};
+        ) {
+            //            hid::h5t test {4};
             Options options;
             options.linkPath      = dsetPath;
             options.dataDims      = dataDims;
@@ -478,8 +477,7 @@ namespace h5pp {
             std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
             std::optional<unsigned int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
             /* clang-format on */
-            )
-        {
+        ) {
             Options options;
             options.linkPath      = dsetPath;
             options.dataDims      = dataDims;
@@ -622,7 +620,7 @@ namespace h5pp {
         }
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
         [[nodiscard]] DataType readDataset(std::string_view dsetPath, const Options &options) const {
-            Options options_internal = options;
+            Options options_internal  = options;
             options_internal.linkPath = dsetPath;
             DataType data;
             readDataset(data, options_internal);
@@ -630,16 +628,21 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        void readDataset(DataType &data, std::string_view dsetPath, const OptDimsType &dataDims = std::nullopt, std::optional<hid::h5t> h5Type = std::nullopt) const {
+        void readDataset(DataType &              data,
+                         std::string_view        dsetPath,
+                         const OptDimsType &     dataDims = std::nullopt,
+                         std::optional<hid::h5t> h5Type   = std::nullopt) const {
             Options options;
             options.linkPath = dsetPath;
             options.dataDims = dataDims;
-            options.h5Type = std::move(h5Type);
+            options.h5Type   = std::move(h5Type);
             readDataset(data, options);
         }
 
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-        [[nodiscard]] DataType readDataset(std::string_view datasetPath, const OptDimsType &dataDims = std::nullopt, std::optional<hid::h5t> h5Type = std::nullopt) const {
+        [[nodiscard]] DataType readDataset(std::string_view        datasetPath,
+                                           const OptDimsType &     dataDims = std::nullopt,
+                                           std::optional<hid::h5t> h5Type   = std::nullopt) const {
             DataType data;
             readDataset(data, datasetPath, dataDims, std::move(h5Type));
             return data;

@@ -27,24 +27,23 @@ int main() {
     h5pp::File file("exampledir/example-02f-pointer-to-data.h5", h5pp::FilePermission::REPLACE);
 
     // Initialize a dummy array buffer for writing
-    auto * w_array = new double [10];
+    auto *w_array = new double[10];
     for(size_t i = 0; i < 10; i++) w_array[i] = 3.14;
 
     // Write data
     file.writeDataset(w_array, "myArrayDouble", 10); // Size information can be a scalar "10" or a list "{10}"
 
     // Initialize a dummy array buffer for reading
-    auto * r_array = new double [10];
+    auto *r_array = new double[10];
 
     // Read data.
     // Note that h5pp will only resize containers with a ".resize()" member,
     // and therefore does NOT resize pointer buffers
-    file.readDataset(r_array, "myArrayDouble",10); // Size information can be a scalar "10" or a list "{10}"
+    file.readDataset(r_array, "myArrayDouble", 10); // Size information can be a scalar "10" or a list "{10}"
 
     // Print
     h5pp::print("Read dataset: \n");
     for(size_t i = 0; i < 10; i++) h5pp::print("{}\n", r_array[i]);
-
 
     delete[] w_array;
     delete[] r_array;

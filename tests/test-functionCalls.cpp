@@ -14,13 +14,13 @@ std::vector<std::string>                 layout_names = {"auto", "compact", "con
 
 TEST_CASE("Test createDataset given options call signatures", "[options]") {
     h5pp::Options options;
-    options.h5Type       = H5Tcopy(H5T_NATIVE_DOUBLE);
+    options.h5Type        = H5Tcopy(H5T_NATIVE_DOUBLE);
     options.dataDims      = {4};
     std::string dsetGroup = "optionsCreateGroup/";
     for(size_t idx = 0; idx < layouts.size(); idx++) {
         SECTION(h5pp::format("Create from options only: {}", layout_names[idx])) {
             std::string dsetName = dsetGroup + "vectorDouble_" + layout_names[idx];
-            options.linkPath = dsetName;
+            options.linkPath     = dsetName;
             options.h5Layout     = layouts[idx];
             file.createDataset(options);
             REQUIRE_THAT(file.readDataset<std::vector<double>>(dsetName), Catch::Equals<double>({0, 0, 0, 0}));
@@ -54,7 +54,6 @@ int main(int argc, char *argv[]) {
     //    session.configData().reporterName = "compact";
     return session.run();
 }
-
 
 // TEST_CASE("Test createDataset manual call signatures", "[manual]") {
 //    std::string         dsetGroup = "manualCreateGroup/";
