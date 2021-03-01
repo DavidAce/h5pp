@@ -22,6 +22,7 @@ if(H5PP_PRINT_INFO)
             "-- | H5PP_ENABLE_TESTS       : ${H5PP_ENABLE_TESTS}\n"
             "-- | H5PP_ENABLE_EIGEN3      : ${H5PP_ENABLE_EIGEN3}\n"
             "-- | H5PP_ENABLE_SPDLOG      : ${H5PP_ENABLE_SPDLOG}\n"
+            "-- | H5PP_ENABLE_FMT         : ${H5PP_ENABLE_FMT}\n"
             "-- | H5PP_ENABLE_MPI         : ${H5PP_ENABLE_MPI}\n"
             "-- | H5PP_IS_SUBPROJECT      : ${H5PP_IS_SUBPROJECT}\n"
             "-- | H5PP_PACKAGE_MANAGER    : ${H5PP_PACKAGE_MANAGER}\n"

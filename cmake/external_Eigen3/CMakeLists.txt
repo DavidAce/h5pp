@@ -3,11 +3,8 @@ cmake_policy(SET CMP0074 NEW)
 project(external-eigen3 CXX)
 include(ExternalProject)
 ExternalProject_Add(external_eigen3
-        GIT_REPOSITORY https://github.com/eigenteam/eigen-git-mirror.git
-        GIT_TAG 3.3.7
-        GIT_PROGRESS TRUE
-        GIT_SHALLOW TRUE
-        PATCH_COMMAND git apply ${PROJECT_SOURCE_DIR}/Eigen_3.3.7.patch
+        URL      https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.tar.gz
+        URL_MD5  609286804b0f79be622ccf7f9ff2b660
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE

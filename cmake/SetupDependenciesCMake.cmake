@@ -5,7 +5,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
     # that is bundled with source installs of these packages.
 
     # Download fmt
-    if (H5PP_ENABLE_SPDLOG AND NOT TARGET fmt::fmt AND NOT TARGET spdlog::spdlog)
+    if (H5PP_ENABLE_FMT AND NOT TARGET fmt::fmt)
         # fmt is a dependency of spdlog
         # We fetch it here to get the latest version and to make sure we use the
         # compile library and avoid compile-time overhead in projects consuming h5pp.

@@ -37,8 +37,9 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find")
         endif()
     endif()
 
-    if(H5PP_ENABLE_SPDLOG AND NOT TARGET fmt::fmt)
-        find_package(fmt 6.0.0 ${REQUIRED})
+
+    if(H5PP_ENABLE_FMT AND NOT TARGET fmt::fmt)
+        find_package(fmt 6.2.1 ${REQUIRED})
         if(TARGET fmt::fmt)
             list(APPEND H5PP_TARGETS fmt::fmt)
             target_link_libraries(deps INTERFACE fmt::fmt)
@@ -46,8 +47,6 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find")
     endif()
 
     if(H5PP_ENABLE_SPDLOG AND NOT TARGET spdlog::spdlog)
-        # We don't need to find fmt here because
-        # spdlog will try to find it in its config script
         find_package(spdlog 1.3.1 ${REQUIRED})
         if(TARGET spdlog)
             add_library(spdlog::spdlog ALIAS spdlog)

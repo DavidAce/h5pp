@@ -17,12 +17,18 @@ option(H5PP_DEPS_IN_SUBDIR             "Install dependencies into CMAKE_INSTALL_
 option(H5PP_PREFER_CONDA_LIBS          "Search for libraries in anaconda/miniconda first"                       OFF)
 option(H5PP_PRINT_INFO                 "Print info during cmake configuration"                                  OFF)
 option(H5PP_ENABLE_EIGEN3              "Enables Eigen3 linear algebra library"                                  OFF)
-option(H5PP_ENABLE_SPDLOG              "Enables Spdlog for logging h5pp internal info to stdout"                OFF)
+option(H5PP_ENABLE_FMT                 "Enables the {fmt} formatting library"                                   OFF)
+option(H5PP_ENABLE_SPDLOG              "Enables Spdlog for logging h5pp internal info to stdout (implies fmt)"  OFF)
 option(H5PP_ENABLE_MPI                 "Enables use of MPI (work in progress)"                                  OFF)
 option(H5PP_ENABLE_ASAN                "Enable runtime address sanitizer -fsanitize=address"                    OFF)
 option(H5PP_ENABLE_PCH                 "Enable precompiled headers (if supported) to speed up test compilation" ON)
 option(H5PP_ENABLE_CCACHE              "Enable ccache (if available) to speed up test compilation"              OFF)
 option(CMAKE_POSITION_INDEPENDENT_CODE "Use -fPIC when compiling shared libraries"                              ON)
+
+if(H5PP_ENABLE_SPDLOG)
+    set(H5PP_ENABLE_FMT ON CACHE INTERNAL "H5PP_ENABLE_SPDLOG:ON implies H5PP_ENABLE_FMT:ON)")
+endif()
+
 
 # Make an "enum" for valid package managers: find cmake find-or-cmake conan
 set(H5PP_PACKAGE_MANAGERS_VALID find cmake find-or-cmake conan)

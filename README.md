@@ -260,7 +260,7 @@ For full working examples see the directory [quickstart](https://github.com/Davi
 
 #### Option 1: Copy the headers
 Copy the files under `h5pp/source/include` and add `#include<h5pp/h5pp.h>`.
-Make sure to compile with `-std=c++17 -lstdc++fs` and link the dependencies `hdf5`, `Eigen3` and `spdlog`. The actual linking
+Make sure to compile with `-std=c++17 -lstdc++fs` and link the dependencies `HDF5`, `Eigen3`, `fmt`, and `spdlog`. The actual linking
 is a non-trivial step, see [linking](#linking) below.
 
 
@@ -272,7 +272,7 @@ Then run the following command:
 $ conan install h5pp/1.8.5@ --build=missing
 ```
 
-The flag `--build=missing` lets conan install dependencies such as HDF5, Eigen3 and spdlog.
+The flag `--build=missing` lets conan install dependencies: `HDF5`, `Eigen` and `fmt` and `spdlog`.
 
 After this step, use `h5pp` like any other conan package. 
 For more information refer to the [conan docs](https://docs.conan.io/en/latest/getting_started.html) or have a look at [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart).
@@ -324,10 +324,11 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 | `H5PP_ENABLE_TESTS`               | `OFF`      | Build tests (recommended!) |
 | `H5PP_BUILD_EXAMPLES`             | `OFF`      | Build example programs |
 | `H5PP_PACKAGE_MANAGER`            | `find`     | Download method for dependencies, select, `find`, `cmake`, `find-or-cmake` or `conan` |
-| `H5PP_PRINT_INFO`                 | `OFF`      | Use h5pp with add_subdirectory() |
+| `H5PP_PRINT_INFO`                 | `OFF`      | Use `h5pp` with add_subdirectory() |
 | `H5PP_IS_SUBPROJECT`              | `OFF`      | Print extra CMake info about the host and generated targets during configure |
-| `H5PP_ENABLE_EIGEN3`              | `OFF`      | Enables Eigen3 linear algebra library support |
-| `H5PP_ENABLE_SPDLOG`              | `OFF`      | Enables Spdlog support for logging `h5pp` internal info to stdout |
+| `H5PP_ENABLE_EIGEN3`              | `OFF`      | Enables `Eigen` linear algebra library support |
+| `H5PP_ENABLE_FMT`                 | `OFF`      | Enables `{fmt}` string formatting library |
+| `H5PP_ENABLE_SPDLOG`              | `OFF`      | Enables `spdlog` support for logging `h5pp` internal info to stdout (implies fmt) |
 | `H5PP_DEPS_IN_SUBDIR`             | `OFF`      | Appends `<libname>` to install location of dependencies, i.e. `CMAKE_INSTALL_PREFIX/<libname>`. This allows simple removal |
 | `H5PP_PREFER_CONDA_LIBS`          | `OFF`      | Prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda. No effect when `H5PP_PACKAGE_MANAGER=conan`  |
 
@@ -367,15 +368,14 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 *  `h5pp::h5pp` is the main target including "everything" and should normally be the only target that you need -- headers,flags and (if enabled) the found/downloaded dependencies.
 *  `h5pp::headers` links the `h5pp` headers only.
 *  `h5pp::deps` collects library targets to link all the dependencies that were found/downloaded when `h5pp` was built. These can of course be used independently.
-    * If `H5PP_PACKAGE_MANAGER==find|cmake|find-or-cmake` the targets are `Eigen3::Eigen`, `spdlog::spdlog` and `hdf5::all`, 
-    * If `H5PP_PACKAGE_MANAGER==conan` the targets are `CONAN_PKG::eigen`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. 
-    * If `H5PP_PACKAGE_MANAGER==none` then `h5pp::deps` is empty.
+    * If `H5PP_PACKAGE_MANAGER==find|cmake|find-or-cmake` the targets are `Eigen3::Eigen`,`fmt::fmt`, `spdlog::spdlog` and `hdf5::all`, 
+    * If `H5PP_PACKAGE_MANAGER==conan` the targets are `CONAN_PKG::eigen`,`CONAN_PKG::fmt`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. 
 *  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`. 
     On `MSVC` it sets `/permissive-` to enable logical `and`/`or` in C++. 
 
 
 ### Link manually (not as easy)
-From the command-line you can of course link using linker flags such as `-std=c++17 -lstdc++fs -leigen3 -lspdlog -lhdf5_hl -lhdf5` provided these flags make sense on your system.
+From the command-line you can of course link using linker flags such as `-std=c++17 -lstdc++fs -leigen3 -lfmt -lspdlog -lhdf5_hl -lhdf5` provided these flags make sense on your system.
 You could also use CMake's `find_package(...)` mechanism. A minimal `CMakeLists.txt` could be:
 
 ```cmake
