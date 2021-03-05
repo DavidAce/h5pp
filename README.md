@@ -238,7 +238,7 @@ Notice the cast to `dtype=np.complex128` which interprets each element of the ar
 #### Optional dependencies:
 * [**Eigen**](http://eigen.tuxfamily.org): Write Eigen matrices and tensors directly. Tested with version >= 3.3.4
 * [**spdlog**](https://github.com/gabime/spdlog): Enables logging for debug purposes. Tested with version >= 1.3.1
-    * [**fmt**](https://github.com/fmtlib/fmt): Formatting library used in `spdlog`.
+* [**fmt**](https://github.com/fmtlib/fmt): String formatting library (used in `spdlog`).
 * [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_PACKAGE_MANAGER=find-or-cmake`, `cmake` or `conan`
 
 
@@ -369,7 +369,7 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 *  `h5pp::headers` links the `h5pp` headers only.
 *  `h5pp::deps` collects library targets to link all the dependencies that were found/downloaded when `h5pp` was built. These can of course be used independently.
     * If `H5PP_PACKAGE_MANAGER==find|cmake|find-or-cmake` the targets are `Eigen3::Eigen`,`fmt::fmt`, `spdlog::spdlog` and `hdf5::all`, 
-    * If `H5PP_PACKAGE_MANAGER==conan` the targets are `CONAN_PKG::eigen`,`CONAN_PKG::fmt`, `CONAN_PKG::spdlog` and `CONAN_PKG::HDF5`. 
+    * If `H5PP_PACKAGE_MANAGER==conan` the targets are `CONAN_PKG::eigen`,`CONAN_PKG::fmt`, `CONAN_PKG::spdlog` and `CONAN_PKG::hdf5`. 
 *  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`. 
     On `MSVC` it sets `/permissive-` to enable logical `and`/`or` in C++. 
 
