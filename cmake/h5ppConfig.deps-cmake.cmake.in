@@ -5,6 +5,7 @@
 ####################################################################
 ### Append search paths for find_package and find_library calls  ###
 ####################################################################
+cmake_policy(SET CMP0074 NEW) # To let find_dependency use _ROOT variables
 
 # Search the same directories as during configure
 set(Eigen3_ROOT @PACKAGE_Eigen3_ROOT@)
