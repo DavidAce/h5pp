@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 if(H5PP_PRINT_INFO)
 
+    message(STATUS "CMake Version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}")
+
     # Print host properties
     cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)
     cmake_host_system_information(RESULT _proc_type QUERY PROCESSOR_DESCRIPTION)
@@ -10,6 +12,7 @@ if(H5PP_PRINT_INFO)
     cmake_host_system_information(RESULT _os_platform QUERY OS_PLATFORM)
     message(STATUS "| H5PP BUILD INFO:\n"
             "-- |----------------\n"
+            "-- | CMake Version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}\n"
             "-- | ${_host_name}\n"
             "-- | ${_os_name} ${_os_platform} ${_os_release}\n"
             "-- | ${_proc_type}\n"
