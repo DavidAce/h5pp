@@ -20,7 +20,6 @@ function(build_dependency dep_name install_dir extra_flags)
     execute_process( COMMAND  ${CMAKE_COMMAND} -E make_directory ${build_dir})
     execute_process(
             COMMAND  ${CMAKE_COMMAND}
-            --parallel ${num_threads}
             # CMake flags
             -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
             -DCMAKE_EXE_LINKER_FLAGS_INIT=${CMAKE_EXE_LINKER_FLAGS}
