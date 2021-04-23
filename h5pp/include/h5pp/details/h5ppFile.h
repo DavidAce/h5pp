@@ -116,7 +116,11 @@ namespace h5pp {
          *
          */
 
-        void setKeepFileOpened() const { fileHandle = openFileHandle(); }
+        void setKeepFileOpened() const {
+            // Check before setting onto self:
+            // otherwise repeated calls to setKeepFileOpened() would increment the reference count,
+            // without there existing a handle to decrement it --> memory leak
+            if(not fileHandle) fileHandle = openFileHandle(); }
         void setKeepFileClosed() const { fileHandle = std::nullopt; }
 
         [[nodiscard]] h5pp::FilePermission getFilePermission() const { return permission; }
