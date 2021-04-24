@@ -949,7 +949,7 @@ namespace h5pp::hdf5 {
             dsetInfo.dsetChunk    = std::nullopt;
             dsetInfo.dsetDimsMax  = std::nullopt;
             dsetInfo.h5Layout     = H5D_CONTIGUOUS; // In case it's a big text
-            dsetInfo.resizePolicy = h5pp::ResizePolicy::DO_NOT_RESIZE;
+            dsetInfo.resizePolicy = h5pp::ResizePolicy::OFF;
             setProperty_layout(dsetInfo);
             return;
         }
@@ -1295,13 +1295,13 @@ namespace h5pp::hdf5 {
 
     inline void
         resizeDataset(DsetInfo &info, const std::vector<hsize_t> &newDimensions, std::optional<h5pp::ResizePolicy> policy = std::nullopt) {
-        if(info.resizePolicy == h5pp::ResizePolicy::DO_NOT_RESIZE) return;
+        if(info.resizePolicy == h5pp::ResizePolicy::OFF) return;
         if(not policy) policy = info.resizePolicy;
         if(not policy and info.dsetSlab)
-            policy = h5pp::ResizePolicy::INCREASE_ONLY; // A hyperslab selection on the dataset has been made. Let's not shrink!
-        if(not policy) policy = h5pp::ResizePolicy::RESIZE_TO_FIT;
-        if(policy == h5pp::ResizePolicy::DO_NOT_RESIZE) return;
-        if(policy == h5pp::ResizePolicy::RESIZE_TO_FIT and info.dsetSlab) {
+            policy = h5pp::ResizePolicy::GROW; // A hyperslab selection on the dataset has been made. Let's not shrink!
+        if(not policy) policy = h5pp::ResizePolicy::FIT;
+        if(policy == h5pp::ResizePolicy::OFF) return;
+        if(policy == h5pp::ResizePolicy::FIT and info.dsetSlab) {
             bool outofbounds = false;
             for(size_t idx = 0; idx < newDimensions.size(); idx++) {
                 if(info.dsetSlab->extent and newDimensions[idx] < info.dsetSlab->extent->at(idx)) {
@@ -1315,7 +1315,7 @@ namespace h5pp::hdf5 {
             }
             if(outofbounds)
                 h5pp::logger::log->warn("A hyperslab selection was made on the dataset [{}{}]. "
-                                        "However, resize policy [RESIZE_TO_FIT] will resize this dataset to dimensions {}. "
+                                        "However, resize policy [FIT] will resize this dataset to dimensions {}. "
                                         "This is likely an error.",
                                         info.dsetPath.value(),
                                         info.dsetSlab->string(),
@@ -1347,7 +1347,7 @@ namespace h5pp::hdf5 {
                              info.dsetPath.value(),
                              info.dsetDims.value(),
                              newDimensions));
-        if(policy == h5pp::ResizePolicy::INCREASE_ONLY) {
+        if(policy == h5pp::ResizePolicy::GROW) {
             bool allDimsAreSmaller = true;
             for(size_t idx = 0; idx < newDimensions.size(); idx++)
                 if(newDimensions[idx] > info.dsetDims.value()[idx]) allDimsAreSmaller = false;

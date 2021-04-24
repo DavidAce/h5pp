@@ -192,7 +192,7 @@ namespace h5pp {
 
         /*
          *
-         * Functions for transfering contents between locations or files
+         * Functions for transferring contents between locations or files
          *
          */
 
@@ -425,7 +425,7 @@ namespace h5pp {
             const OptDimsType &         dsetDimsChunk  = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
             const OptDimsType &         dsetDimsMax    = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
             std::optional<hid::h5t>     h5Type         = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
-            std::optional<ResizePolicy> resizePolicy   = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+            std::optional<ResizePolicy> resizePolicy   = std::nullopt, /*!< Type of resizing if needed. Choose GROW, FIT,OFF */
             std::optional<unsigned int> compression    = std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
         {
             /* clang-format on */
@@ -451,7 +451,7 @@ namespace h5pp {
             std::optional<H5D_layout_t> h5Layout      = std::nullopt, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
             const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
             const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
-            std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+            std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose GROW, FIT, OFF */
             std::optional<unsigned int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
             /* clang-format on */
         ) {
@@ -478,7 +478,7 @@ namespace h5pp {
             const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
             const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
             std::optional<hid::h5t>     h5Type        = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
-            std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+            std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose GROW, FIT, OFF */
             std::optional<unsigned int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
             /* clang-format on */
         ) {
@@ -558,7 +558,7 @@ namespace h5pp {
             Options options;
             options.linkPath     = dsetPath;
             options.dsetSlab     = hyperslab;
-            options.resizePolicy = ResizePolicy::DO_NOT_RESIZE;
+            options.resizePolicy = ResizePolicy::OFF;
             auto dsetInfo        = h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value())
                 throw std::runtime_error(h5pp::format("Could not write hyperslab: dataset [{}] does not exist", dsetPath));

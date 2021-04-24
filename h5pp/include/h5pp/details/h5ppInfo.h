@@ -94,7 +94,7 @@ namespace h5pp {
         std::optional<hid::h5t>         h5Type        = std::nullopt; /*!< (On create) Type of dataset. Override automatic type detection. */
         std::optional<H5D_layout_t>     h5Layout      = std::nullopt; /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
         std::optional<unsigned int>     compression   = std::nullopt; /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
-        std::optional<h5pp::ResizePolicy> resizePolicy    = std::nullopt; /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+        std::optional<h5pp::ResizePolicy> resizePolicy    = std::nullopt; /*!< Type of resizing if needed. Choose GROW, TO_FIT,OFF */
         /* clang-format on */
         [[nodiscard]] std::string string(bool enable = true) const {
             std::string msg;
@@ -266,7 +266,7 @@ namespace h5pp {
             /* clang-format off */
             if(dsetExists and dsetPath and not dsetExists.value()) error_msg.append(h5pp::format("\t Dataset does not exist [{}]", dsetPath.value()));
             else if(dsetExists and not dsetExists.value()) error_msg.append("\t Dataset does not exist");
-            if(resizePolicy and resizePolicy == h5pp::ResizePolicy::DO_NOT_RESIZE) error_msg.append("\t Resize mode is set to DO_NOT_RESIZE");
+            if(resizePolicy and resizePolicy == h5pp::ResizePolicy::OFF) error_msg.append("\t Resize policy is [OFF]");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot resize dataset.\n{}", error_msg));
             if(not dsetPath           ) error_msg.append("\t dsetPath\n");
@@ -359,9 +359,9 @@ namespace h5pp {
             if(resizePolicy){
                 msg.append(" | resize mode ");
                 switch(resizePolicy.value()){
-                    case ResizePolicy::RESIZE_TO_FIT: msg.append(h5pp::format("RESIZE_TO_FIT")); break;
-                    case ResizePolicy::INCREASE_ONLY: msg.append(h5pp::format("INCREASE_ONLY")); break;
-                    case ResizePolicy::DO_NOT_RESIZE: msg.append(h5pp::format("DO_NOT_RESIZE")); break;
+                    case ResizePolicy::FIT: msg.append(h5pp::format("FIT")); break;
+                    case ResizePolicy::GROW: msg.append(h5pp::format("GROW")); break;
+                    case ResizePolicy::OFF: msg.append(h5pp::format("OFF")); break;
                     default: break;
                 }
             }
