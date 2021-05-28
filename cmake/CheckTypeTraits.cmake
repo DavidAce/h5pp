@@ -1,6 +1,6 @@
 function(CheckTypeTraits)
     set(CMAKE_REQUIRED_FLAGS "-std=c++17")
-    list(APPEND CMAKE_REQUIRED_INCLUDES ${PROJECT_SOURCE_DIR}/h5pp/include/h5pp/details)
+    list(APPEND CMAKE_REQUIRED_INCLUDES ${PROJECT_SOURCE_DIR}/include/h5pp/details)
 
     include(CheckIncludeFileCXX)
     check_include_file_cxx(experimental/type_traits    has_type_traits  )

@@ -134,7 +134,7 @@ target_compile_features(flags INTERFACE cxx_std_17)
 target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) # Need this for and/or logical operators on VS
 target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/EHsc>)        # Need this for try/catch without warnings on VS
 target_compile_definitions(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX>) # Otherwise std::min and std::max will not work as expected
-target_include_directories(headers INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/include>)
+target_include_directories(headers INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 target_include_directories(headers SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
 
 
@@ -183,7 +183,7 @@ else()
 
     # Install library
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/include/ DESTINATION include COMPONENT headers)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include COMPONENT headers)
     install(TARGETS h5pp headers deps flags EXPORT h5ppTargets)
 
     #Export the targets to a script

@@ -29,8 +29,7 @@ namespace h5pp {
     class File {
         private:
         fs::path             filePath;                                  /*!< Full path to the file, e.g. /path/to/project/filename.h5 */
-        h5pp::FilePermission permission = h5pp::FilePermission::RENAME; /*!< Decides action on file collision and read/write permission on
-                                                                           existing files. Default RENAME avoids loss of data  */
+        h5pp::FilePermission permission = h5pp::FilePermission::RENAME; /*!< Policy for file open/create.RENAME avoids loss of data  */
         mutable std::optional<h5pp::hid::h5f> fileHandle = std::nullopt;
         size_t logLevel = 2; /*!< Console log level for new file objects. 0 [trace] has highest verbosity, and 5 [critical] the lowest.  */
         bool   logTimestamp = false; /*!< Add a time stamp to console log output   */
@@ -120,7 +119,8 @@ namespace h5pp {
             // Check before setting onto self:
             // otherwise repeated calls to setKeepFileOpened() would increment the reference count,
             // without there existing a handle to decrement it --> memory leak
-            if(not fileHandle) fileHandle = openFileHandle(); }
+            if(not fileHandle) fileHandle = openFileHandle();
+        }
         void setKeepFileClosed() const { fileHandle = std::nullopt; }
 
         [[nodiscard]] h5pp::FilePermission getFilePermission() const { return permission; }
@@ -204,8 +204,12 @@ namespace h5pp {
         }
 
         void copyLinkFromFile(std::string_view localLinkPath, const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath) {
-            return h5pp::hdf5::copyLink(
-                sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
+            return h5pp::hdf5::copyLink(sourceFilePath,
+                                        sourceLinkPath,
+                                        getFilePath(),
+                                        localLinkPath,
+                                        h5pp::FilePermission::READWRITE,
+                                        plists);
         }
 
         template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_tgt>>
@@ -226,8 +230,12 @@ namespace h5pp {
         }
 
         void moveLinkFromFile(std::string_view localLinkPath, const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath) {
-            return h5pp::hdf5::moveLink(
-                sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
+            return h5pp::hdf5::moveLink(sourceFilePath,
+                                        sourceLinkPath,
+                                        getFilePath(),
+                                        localLinkPath,
+                                        h5pp::FilePermission::READWRITE,
+                                        plists);
         }
 
         template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_tgt>>
