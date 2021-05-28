@@ -52,15 +52,6 @@ if (NOT H5PP_IS_SUBPROJECT)
 endif ()
 
 
-# Set default install directory for h5pp and its dependencies
-# Append directory <libname> to CMAKE_INSTALL_PREFIX
-# Useful if you want to have separate directories for each libs
-# and to easily delete them individually
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
-    message(STATUS "Setting default install location: CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/install")
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "..." FORCE)
-endif ()
-
 # Setup paths that find_package should search and
 # let cmake find our Find<package>.cmake modules
 include(cmake/SetupSearchPaths.cmake)
