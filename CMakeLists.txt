@@ -6,50 +6,54 @@ project(h5pp VERSION 1.9.0
         LANGUAGES CXX
         )
 
-include(cmake/DeprecationWarnings.cmake)
+include(cmake/DeprecationWarnings.cmake) # Warn if user passes deprecated settings
+include(cmake/SetupCMakePolicies.cmake) # Setup several cmake policies to use NEW behavior
 
-option(BUILD_SHARED_LIBS               "Builds shared libraries"                                                OFF)
-option(H5PP_BUILD_EXAMPLES             "Builds examples"                                                        OFF)
-option(H5PP_BUILD_DOCS                 "Builds documentation (Requires doxygen, sphinx and breathe)"            OFF)
-option(H5PP_ENABLE_TESTS               "Enable testing"                                                         OFF)
-option(H5PP_IS_SUBPROJECT              "Use h5pp with add_subdirectory()"                                       OFF)
-option(H5PP_DEPS_IN_SUBDIR             "Install dependencies into CMAKE_INSTALL_PREFIX/<libname>"               OFF)
-option(H5PP_PREFER_CONDA_LIBS          "Search for libraries in anaconda/miniconda first"                       OFF)
-option(H5PP_PRINT_INFO                 "Print info during cmake configuration"                                  OFF)
-option(H5PP_ENABLE_EIGEN3              "Enables Eigen3 linear algebra library"                                  OFF)
-option(H5PP_ENABLE_FMT                 "Enables the {fmt} formatting library"                                   OFF)
-option(H5PP_ENABLE_SPDLOG              "Enables Spdlog for logging h5pp internal info to stdout (implies fmt)"  OFF)
-option(H5PP_ENABLE_MPI                 "Enables use of MPI (work in progress)"                                  OFF)
-option(H5PP_ENABLE_ASAN                "Enable runtime address sanitizer -fsanitize=address"                    OFF)
-option(H5PP_ENABLE_PCH                 "Enable precompiled headers (if supported) to speed up test compilation" ON)
-option(H5PP_ENABLE_CCACHE              "Enable ccache (if available) to speed up test compilation"              OFF)
-option(CMAKE_POSITION_INDEPENDENT_CODE "Use -fPIC when compiling shared libraries"                              ON)
+# Used when h5pp is included as subproject (e.g., as Git submodule/subtree) in the source
+# tree of a project that uses it. Users may set the option H5PP_IS_SUBPROJECT
+# before add_subdirectory(h5pp)
+if (NOT DEFINED H5PP_IS_SUBPROJECT)
+    if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+        option(H5PP_IS_SUBPROJECT "Use h5pp with add_subdirectory()" OFF)
+    else ()
+        message(STATUS "Detected h5pp as subproject")
+        option(H5PP_IS_SUBPROJECT "Use h5pp with add_subdirectory()" ON)
+    endif ()
+endif ()
+
+
+
+
+option(BUILD_SHARED_LIBS                "Builds shared libraries"                                                OFF)
+option(H5PP_BUILD_EXAMPLES              "Builds examples"                                                        OFF)
+option(H5PP_BUILD_DOCS                  "Builds documentation (Requires doxygen, sphinx and breathe)"            OFF)
+option(H5PP_ENABLE_TESTS                "Enable testing"                                                         OFF)
+option(H5PP_IS_SUBPROJECT               "Use h5pp with add_subdirectory()"                                       OFF)
+option(H5PP_DEPS_IN_SUBDIR              "Install dependencies into <INSTALL_DIR>/<libname>"                      OFF)
+option(H5PP_PREFER_CONDA_LIBS           "Search for libraries in anaconda/miniconda first"                       OFF)
+option(H5PP_PRINT_INFO                  "Print info during cmake configuration"                                  OFF)
+option(H5PP_ENABLE_EIGEN3               "Enables Eigen3 linear algebra library"                                  OFF)
+option(H5PP_ENABLE_FMT                  "Enables the {fmt} formatting library"                                   OFF)
+option(H5PP_ENABLE_SPDLOG               "Enables Spdlog for logging h5pp internal info to stdout (implies fmt)"  OFF)
+option(H5PP_ENABLE_MPI                  "Enables use of MPI (work in progress)"                                  OFF)
+option(H5PP_ENABLE_ASAN                 "Enable runtime address sanitizer -fsanitize=address"                    OFF)
+option(H5PP_ENABLE_PCH                  "Enable precompiled headers (if supported) to speed up test compilation" ON)
+option(H5PP_ENABLE_CCACHE               "Enable ccache (if available) to speed up test compilation"              OFF)
+option(CMAKE_POSITION_INDEPENDENT_CODE  "Use -fPIC when compiling shared libraries"                              ON)
 
 if(H5PP_ENABLE_SPDLOG)
     set(H5PP_ENABLE_FMT ON CACHE INTERNAL "H5PP_ENABLE_SPDLOG:ON implies H5PP_ENABLE_FMT:ON)")
 endif()
 
 
-# Make an "enum" for valid package managers: find cmake find-or-cmake conan
-set(H5PP_PACKAGE_MANAGERS_VALID find cmake find-or-cmake conan)
+# Make an "enum" for valid package managers: find cmake fetch find-or-cmake conan
+set(H5PP_PACKAGE_MANAGERS_VALID find fetch cmake  find-or-fetch find-or-cmake conan)
 set(H5PP_PACKAGE_MANAGER find CACHE STRING "Package manager for external dependencies")
 set_property(CACHE H5PP_PACKAGE_MANAGER PROPERTY STRINGS ${H5PP_PACKAGE_MANAGERS_VALID})
 if (NOT H5PP_PACKAGE_MANAGER IN_LIST H5PP_PACKAGE_MANAGERS_VALID)
     message(FATAL_ERROR "H5PP_PACKAGE_MANAGER must be one of ${H5PP_PACKAGE_MANAGERS_VALID}")
 endif ()
 
-
-# Used when h5pp is included as subproject (e.g., as Git submodule/subtree) in the source
-# tree of a project that uses it. Users may set the option H5PP_IS_SUBPROJECT
-# before add_subdirectory(h5pp)
-if (NOT H5PP_IS_SUBPROJECT)
-    if ("^${CMAKE_SOURCE_DIR}$" STREQUAL "^${PROJECT_SOURCE_DIR}$")
-        set(H5PP_IS_SUBPROJECT OFF)
-    else ()
-        message(STATUS "Detected h5pp as subproject")
-        set(H5PP_IS_SUBPROJECT ON)
-    endif ()
-endif ()
 
 
 # Setup paths that find_package should search and
@@ -140,6 +144,7 @@ endif()
 
 #Try to find or get all dependencies
 include(cmake/SetupDependenciesFind.cmake)
+include(cmake/SetupDependenciesFetch.cmake)
 include(cmake/SetupDependenciesCMake.cmake)
 include(cmake/SetupDependenciesConan.cmake)
 
@@ -264,14 +269,14 @@ endif ()
 
 
 # Simple testing with ctest
-if (NOT H5PP_IS_SUBPROJECT AND H5PP_ENABLE_TESTS AND TARGET h5pp)
+if (H5PP_ENABLE_TESTS AND TARGET h5pp)
     enable_testing()
     add_subdirectory(tests)
 endif ()
 
 
 # Build examples
-if (NOT H5PP_IS_SUBPROJECT AND H5PP_BUILD_EXAMPLES AND TARGET h5pp)
+if (H5PP_BUILD_EXAMPLES AND TARGET h5pp)
     add_subdirectory(examples)
 endif ()
 
