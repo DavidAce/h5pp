@@ -8,8 +8,8 @@ endif()
 project(external-eigen3 CXX)
 include(ExternalProject)
 ExternalProject_Add(external_eigen3
-        URL      https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.tar.gz
-        URL_MD5  609286804b0f79be622ccf7f9ff2b660
+        URL      https://gitlab.com/libeigen/eigen/-/archive/3.4-rc1/eigen-3.4-rc1.tar.gz
+        URL_MD5  0839b9721e65d2328fb96eb4290d74cc
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE
