@@ -1,22 +1,22 @@
 cmake_minimum_required(VERSION 3.12)
 project(tests CXX)
 file(GLOB TESTS "*.cpp")
-add_custom_target(all-tests)
+add_custom_target(h5pp-test-all)
 foreach (test ${TESTS})
     get_filename_component(test_src ${test} NAME)
     get_filename_component(test_nwe ${test} NAME_WE)
-    add_executable(${test_nwe} ${test_src})
-    target_link_libraries(${test_nwe} PRIVATE h5pp)
-    add_test(NAME ${test_nwe} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND ${test_nwe})
+    add_executable(h5pp-${test_nwe} ${test_src})
+    target_link_libraries(h5pp-${test_nwe} PRIVATE h5pp)
+    add_test(NAME h5pp-${test_nwe} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND h5pp-${test_nwe})
     if (MSVC)
         set_target_properties(${test_nwe} PROPERTIES LINK_FLAGS "/ignore:4099")
     endif()
-    add_dependencies(all-tests ${test_nwe})
-    list(APPEND test_tgt_list ${test_nwe})
+    add_dependencies(h5pp-test-all h5pp-${test_nwe})
+    list(APPEND test_tgt_list h5pp-${test_nwe})
 endforeach ()
 
 add_custom_command(
-        TARGET all-tests
+        TARGET h5pp-test-all
         POST_BUILD
         COMMENT "Running Tests"
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
