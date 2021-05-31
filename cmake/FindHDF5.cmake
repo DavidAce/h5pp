@@ -361,8 +361,6 @@ function(find_package_hdf5_exec_wrapper)
             ${HDF5_ROOT}
             $ENV{HDF5_ROOT}
             ${HDF5_PREFIX_PATH}
-            ${HDF5_DIRECTORY_HINTS}
-            ${H5PP_DIRECTORY_HINTS}
             ${EBROOTHDF5})
     list(REMOVE_DUPLICATES HDF5_PATHS)
     if(NOT HDF5_NO_DEFAULT_PATH)
