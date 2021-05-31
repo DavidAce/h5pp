@@ -14,7 +14,7 @@
 # FMT_CONFIG_ONLY
 
 # The user can set search directory hints from CMake or environment, such as
-# FMT_DIR, fmt_DIR, FMT_ROOT fmt_ROOT, etc.
+# fmt_DIR, fmt_ROOT, etc.
 
 if(NOT fmt_FIND_VERSION)
     if(NOT fmt_FIND_VERSION_MAJOR)
@@ -29,9 +29,9 @@ if(NOT fmt_FIND_VERSION)
     set(fmt_FIND_VERSION "${fmt_FIND_VERSION_MAJOR}.${fmt_FIND_VERSION_MINOR}.${fmt_FIND_VERSION_PATCH}")
 endif()
 
-function(fmt_check_version var)
-    if (${var} AND EXISTS ${${var}})
-        set(include ${${var}})
+function(fmt_check_version_include incdir)
+    if (IS_DIRECTORY "${incdir}")
+        set(include ${incdir})
     endif()
     if(EXISTS ${include}/fmt/core.h)
         set(_fmt_version_file "${include}/fmt/core.h")
@@ -49,17 +49,51 @@ function(fmt_check_version var)
             math(EXPR FMT_VERSION "(${FMT_VERSION} - ${${ver}}) / 100")
         endforeach()
         set(FMT_VERSION "${FMT_VERSION_MAJOR}.${FMT_VERSION_MINOR}.${FMT_VERSION_PATCH}")
-        if(${FMT_VERSION} VERSION_LESS ${fmt_FIND_VERSION})
-            set(FMT_VERSION_OK FALSE)
-        else()
-            set(FMT_VERSION_OK TRUE)
-        endif()
-        set(FMT_VERSION      ${FMT_VERSION}       PARENT_SCOPE)
-        set(FMT_VERSION_OK   ${FMT_VERSION_OK}    PARENT_SCOPE)
+    endif()
+
+    if(FMT_VERSION VERSION_GREATER_EQUAL fmt_FIND_VERSION)
+        set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
+        set(FMT_VERSION_OK TRUE)
+        set(FMT_VERSION_OK TRUE PARENT_SCOPE)
     else()
+        set(FMT_VERSION_OK FALSE)
         set(FMT_VERSION_OK FALSE PARENT_SCOPE)
     endif()
 endfunction()
+
+
+function(fmt_check_version_include_genexp genexp_incdir)
+    string(REGEX REPLACE "BUILD_INTERFACE|INSTALL_INTERFACE|<|>|:" ";" incdirs "${${genexp_incdir}}")
+    foreach(inc ${incdirs})
+        if(inc STREQUAL "$") # The regex does not match dollar signs in generator expressions
+            continue()
+        endif()
+        fmt_check_version_include(${inc})
+        if(FMT_VERSION_OK)
+            set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
+            set(FMT_VERSION_OK TRUE PARENT_SCOPE)
+            break()
+        endif()
+    endforeach()
+endfunction()
+
+function(fmt_check_version_target tgt)
+    if(TARGET ${tgt})
+        get_target_property(FMT_VERSION ${tgt} VERSION)
+        get_target_property(FMT_INCLUDE_DIR fmt::fmt INTERFACE_INCLUDE_DIRECTORIES)
+        set(FMT_INCLUDE_DIR ${FMT_INCLUDE_DIR} PARENT_SCOPE)
+        if(FMT_VERSION VERSION_GREATER_EQUAL fmt_FIND_VERSION)
+            set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
+            set(FMT_VERSION_OK TRUE)
+            set(FMT_VERSION_OK TRUE PARENT_SCOPE)
+        else()
+            fmt_check_version_include_genexp(FMT_INCLUDE_DIR)
+            set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
+            set(FMT_VERSION_OK ${FMT_VERSION_OK} PARENT_SCOPE)
+        endif()
+    endif()
+endfunction()
+
 
 if(FMT_NO_DEFAULT_PATH)
     set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
@@ -82,8 +116,7 @@ if(NOT FMT_NO_CONFIG OR FMT_CONFIG_ONLY)
             CONFIG QUIET
             )
     if(TARGET fmt::fmt)
-        get_target_property(FMT_INCLUDE_DIR fmt::fmt INTERFACE_INCLUDE_DIRECTORIES)
-        fmt_check_version(FMT_INCLUDE_DIR)
+        fmt_check_version_target(fmt::fmt)
         if(NOT FMT_VERSION_OK OR NOT FMT_VERSION)
             message(WARNING "Could not determine the version of fmt.\n"
                     "However, the target fmt::fmt has already been defined, so it will be used:\n"
@@ -110,7 +143,7 @@ if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
             ${NO_SYSTEM_ENVIRONMENT_PATH}
             )
     if(FMT_INCLUDE_DIR)
-        fmt_check_version(FMT_INCLUDE_DIR)
+        fmt_check_version_include(FMT_INCLUDE_DIR)
         # Check if there is a compiled library to go with the headers
         find_library(FMT_LIBRARY
                 NAMES fmt
@@ -131,7 +164,7 @@ if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}
                 )
-        fmt_check_version(SPDLOG_FMT_BUNDLED)
+        fmt_check_version_include(SPDLOG_FMT_BUNDLED)
     endif()
 
     if(FMT_VERSION_OK)
@@ -153,6 +186,14 @@ endif()
 
 if(TARGET fmt::fmt)
     set(fmt_FOUND TRUE)
+    if(FMT_VERSION AND FMT_VERSION_OK)
+        get_target_property(fmt_aliased fmt::fmt ALIASED_TARGET )
+        if(fmt_aliased)
+            set_target_properties(${fmt_aliased} PROPERTIES VERSION ${FMT_VERSION})
+        else()
+            set_target_properties(fmt::fmt PROPERTIES VERSION ${FMT_VERSION})
+        endif()
+    endif()
 endif()
 
 
