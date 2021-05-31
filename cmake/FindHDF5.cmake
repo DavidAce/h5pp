@@ -406,9 +406,15 @@ function(find_package_hdf5_config_wrapper)
     find_package(HDF5
             ${HDF5_FIND_VERSION}
             COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
-            HINTS ${CMAKE_INSTALL_PREFIX}
+            PATHS ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build share share/cmake share/cmake/hdf5 hdf5/share/cmake hdf5/share/cmake/hdf5
-            ${NO_DEFAULT_PATH} ${NO_CMAKE_PACKAGE_REGISTRY} CONFIG)
+            # The following flags are enabled with HDF5_NO_... before calling find_package(HDF5)
+            ${NO_SYSTEM_ENVIRONMENT_PATH}
+            ${NO_CMAKE_PACKAGE_REGISTRY}
+            ${NO_CMAKE_SYSTEM_PATH}
+            ${NO_CMAKE_SYSTEM_PACKAGE_REGISTRY}
+            ${NO_DEFAULT_PATH} # If enabled, this will ignore HDF5_ROOT
+            CONFIG)
 
     #To print all variables, use the code below:
 #    get_cmake_property(_variableNames VARIABLES)
