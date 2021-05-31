@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 
 if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
     # Here we use find_package in config-mode, intended to find <packagename>Config.cmake

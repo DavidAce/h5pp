@@ -1,4 +1,9 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
+cmake_policy(SET CMP0074 NEW)
+if(SUPER_CACHEFILE_DIR)
+    message(STATUS "Detected external cache file: ${SUPER_CACHEFILE_DIR}")
+    load_cache(${SUPER_CACHEFILE_DIR} EXCLUDE CMAKE_INSTALL_PREFIX)
+endif()
 project(external-ghcFilesystem CXX)
 
 include(ExternalProject)

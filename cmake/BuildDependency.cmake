@@ -1,4 +1,10 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
+
+
+# This function will configure, build and install a dependency at configure-time
+# by running cmake in a subprocess. The current CMake configuration is transmitted
+# by setting the flags manually.
+
 function(build_dependency dep_name install_dir extra_flags)
     set(build_dir    ${CMAKE_BINARY_DIR}/h5pp-deps-build/${dep_name})
     if (H5PP_DEPS_IN_SUBDIR)
