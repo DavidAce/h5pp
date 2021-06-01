@@ -409,27 +409,33 @@ function(find_package_hdf5_config_wrapper)
     if(HDF5_FIND_DEBUG OR HDF5_FIND_VERBOSE)
         message(STATUS "Finding package HDF5 in CONFIG mode...")
     endif()
+    message("HDF5_ROOT: ${HDF5_ROOT}")
     # Honor the HDF5_NO_<option> flags
     list(APPEND NO_OPTIONS
-            NO_DEFAULT_PATH
+            NO_PACKAGE_ROOT_PATH
             NO_CMAKE_PATH
             NO_CMAKE_PACKAGE_REGISTRY
             NO_SYSTEM_ENVIRONMENT_PATH
             NO_CMAKE_SYSTEM_PATH
-            NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+            NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
+            NO_DEFAULT_PATH
+            )
 
     foreach(opt ${NO_OPTIONS})
         if(DEFINED HDF5_${opt} AND NOT DEFINED ${opt})
             set(${opt} ${opt})
-            message(STATUS "${opt} = ${${opt}}")
+            if(HDF5_FIND_VERBOSE)
+                message(STATUS "HDF5 find policy: ${${opt}}")
+            endif()
         endif()
     endforeach()
     find_package(HDF5
             ${HDF5_FIND_VERSION}
             COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
             PATHS ${CMAKE_INSTALL_PREFIX}
-            PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build share share/cmake share/cmake/hdf5 hdf5/share/cmake hdf5/share/cmake/hdf5
+            PATH_SUFFIXES  hdf5
             # The following flags are enabled with HDF5_NO_... before calling find_package(HDF5)
+            ${NO_PACKAGE_ROOT_PATH}
             ${NO_SYSTEM_ENVIRONMENT_PATH}
             ${NO_CMAKE_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -439,12 +445,12 @@ function(find_package_hdf5_config_wrapper)
             CONFIG)
 
     #To print all variables, use the code below:
-#    get_cmake_property(_variableNames VARIABLES)
-#    foreach (_variableName ${_variableNames})
-#        if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5|package|PACKAGE|Package")
-#            message(STATUS "${_variableName}=${${_variableName}}")
-#        endif()
-#    endforeach()
+    #    get_cmake_property(_variableNames VARIABLES)
+    #    foreach (_variableName ${_variableNames})
+    #        if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5|package|PACKAGE|Package")
+    #            message(STATUS "${_variableName}=${${_variableName}}")
+    #        endif()
+    #    endforeach()
 
 
     if(HDF5_FOUND)
