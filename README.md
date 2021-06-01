@@ -329,7 +329,7 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 | `H5PP_ENABLE_EIGEN3`              | `OFF`      | Enables `Eigen` linear algebra library support |
 | `H5PP_ENABLE_FMT`                 | `OFF`      | Enables `{fmt}` string formatting library |
 | `H5PP_ENABLE_SPDLOG`              | `OFF`      | Enables `spdlog` support for logging `h5pp` internal info to stdout (implies fmt) |
-| `H5PP_DEPS_IN_SUBDIR`             | `OFF`      | Appends `<libname>` to install location of dependencies, i.e. `CMAKE_INSTALL_PREFIX/<libname>`. This allows simple removal |
+| `H5PP_DEPS_IN_SUBDIR`             | `ON`       | Appends `<libname>` to install location of dependencies, i.e. `H5PP_DEPS_INSTALL_DIR/<libname>`. This allows simple removal |
 | `H5PP_PREFER_CONDA_LIBS`          | `OFF`      | Prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda. No effect when `H5PP_PACKAGE_MANAGER=conan`  |
 
 The following variables can be set to help guide CMake's `find_package` to your pre-installed software (no defaults):

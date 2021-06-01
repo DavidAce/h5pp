@@ -29,7 +29,7 @@ option(H5PP_BUILD_EXAMPLES              "Builds examples"                       
 option(H5PP_BUILD_DOCS                  "Builds documentation (Requires doxygen, sphinx and breathe)"            OFF)
 option(H5PP_ENABLE_TESTS                "Enable testing"                                                         OFF)
 option(H5PP_IS_SUBPROJECT               "Use h5pp with add_subdirectory()"                                       OFF)
-option(H5PP_DEPS_IN_SUBDIR              "Install dependencies into <INSTALL_DIR>/<libname>"                      OFF)
+option(H5PP_DEPS_IN_SUBDIR              "Install dependencies into <INSTALL_DIR>/<libname>"                      ON)
 option(H5PP_PREFER_CONDA_LIBS           "Search for libraries in anaconda/miniconda first"                       OFF)
 option(H5PP_PRINT_INFO                  "Print info during cmake configuration"                                  OFF)
 option(H5PP_ENABLE_EIGEN3               "Enables Eigen3 linear algebra library"                                  OFF)
@@ -59,8 +59,6 @@ endif ()
 # Setup paths that find_package should search and
 # let cmake find our Find<package>.cmake modules
 include(cmake/SetupSearchPaths.cmake)
-
-
 
 # Print cmake build info options and host properties
 include(cmake/PrintBuildInfo.cmake)
