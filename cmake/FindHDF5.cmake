@@ -116,13 +116,13 @@ function(define_hdf5_target lang libnames target_list)
             list(APPEND othernames z dl rt m)
             list(REMOVE_DUPLICATES othernames)
         else()
-            #To print all variables, use the code below:
-            #        get_cmake_property(_variableNames VARIABLES)
-            #        foreach (_variableName ${_variableNames})
-            #            if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
-            #                message(STATUS "${_variableName}=${${_variableName}}")
-            #            endif()
-            #        endforeach()
+#            # To print all variables, use the code below:
+#            get_cmake_property(_variableNames VARIABLES)
+#            foreach (_variableName ${_variableNames})
+#                if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
+#                    message(STATUS "${_variableName}=${${_variableName}}")
+#                endif()
+#            endforeach()
             message(STATUS "Could not match lib ${lib} and language ${lang} to a defined variable \n"
                     "-- Considered in order: \n"
                     "--     HDF5_${lang}_LIBRARY_${lib} \n"
@@ -362,14 +362,20 @@ function(find_package_hdf5_exec_wrapper)
             $ENV{HDF5_ROOT}
             ${HDF5_PREFIX_PATH}
             ${EBROOTHDF5})
-    list(REMOVE_DUPLICATES HDF5_PATHS)
-    if(NOT HDF5_NO_DEFAULT_PATH)
+    if(NOT HDF5_NO_CMAKE_PATH)
+        list(APPEND HDF5_PATHS ${CMAKE_PREFIX_PATH})
+    endif()
+    if(NOT HDF5_NO_SYSTEM_ENVIRONMENT_PATH)
         if(DEFINED ENV{PATH})
             string(REPLACE ":" ";" ENVPATH $ENV{PATH})
         endif()
-        list(APPEND HDF5_PATHS ${CMAKE_PREFIX_PATH} ${ENVPATH} /usr /usr/local)
+        list(APPEND HDF5_PATHS ${ENVPATH})
+    endif()
+    if(NOT HDF5_NO_CMAKE_SYSTEM_PATH)
+        list(APPEND HDF5_PATHS ${CMAKE_SYSTEM_PREFIX_PATH})
     endif()
 
+    list(REMOVE_DUPLICATES HDF5_PATHS)
 
     foreach(hdf5_root ${HDF5_PATHS})
         find_package_hdf5_isolator("${hdf5_root}")
@@ -399,10 +405,25 @@ function(find_package_hdf5_config_wrapper)
     unset(HDF5_FIND_VERSION) # The user has probably installed the latest version
     unset(HDF5_FIND_VERSION_COMPLETE) # The user has probably installed the latest version
     unset(HDF5_FIND_REQUIRED) # There is a chance we may find the library using the executable wrappers
+
     if(HDF5_FIND_DEBUG OR HDF5_FIND_VERBOSE)
         message(STATUS "Finding package HDF5 in CONFIG mode...")
     endif()
+    # Honor the HDF5_NO_<option> flags
+    list(APPEND NO_OPTIONS
+            NO_DEFAULT_PATH
+            NO_CMAKE_PATH
+            NO_CMAKE_PACKAGE_REGISTRY
+            NO_SYSTEM_ENVIRONMENT_PATH
+            NO_CMAKE_SYSTEM_PATH
+            NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
 
+    foreach(opt ${NO_OPTIONS})
+        if(DEFINED HDF5_${opt} AND NOT DEFINED ${opt})
+            set(${opt} ${opt})
+            message(STATUS "${opt} = ${${opt}}")
+        endif()
+    endforeach()
     find_package(HDF5
             ${HDF5_FIND_VERSION}
             COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
@@ -410,6 +431,7 @@ function(find_package_hdf5_config_wrapper)
             PATH_SUFFIXES  bin hdf5 hdf5/bin build hdf5/build share share/cmake share/cmake/hdf5 hdf5/share/cmake hdf5/share/cmake/hdf5
             # The following flags are enabled with HDF5_NO_... before calling find_package(HDF5)
             ${NO_SYSTEM_ENVIRONMENT_PATH}
+            ${NO_CMAKE_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
             ${NO_CMAKE_SYSTEM_PATH}
             ${NO_CMAKE_SYSTEM_PACKAGE_REGISTRY}
@@ -473,22 +495,6 @@ function(find_hdf5)
     if(NOT HDF5_FIND_VERBOSE)
         set(HDF5_FIND_VERBOSE OFF)
     endif()
-    if(HDF5_NO_DEFAULT_PATH)
-        set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
-    endif()
-    if(HDF5_NO_CMAKE_PACKAGE_REGISTRY)
-        set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
-    endif()
-    if(HDF5_NO_SYSTEM_ENVIRONMENT_PATH)
-        set(NO_SYSTEM_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH)
-    endif()
-    if(HDF5_NO_CMAKE_SYSTEM_PATH)
-        set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH)
-    endif()
-    if(HDF5_NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
-        set(NO_CMAKE_SYSTEM_PACKAGE_REGISTRY NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
-    endif()
-
 
     if(NOT HDF5_FOUND)
         # Try finding HDF5 where it would have been installed previously by h5pp
