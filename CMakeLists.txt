@@ -104,6 +104,26 @@ if (NOT TARGET Threads::Threads)
     endif ()
 endif ()
 
+
+##################################################################
+### Preempt Threads::Threads                                   ###
+### It's looked for in dependencies, so we make it right       ###
+### before it's done wrong, i.e. with pthread instead of       ###
+### -lpthread.                                                 ###
+### Otherwise, we get linker errors consuming h5pp             ###
+### Here we specify the linking twice                          ###
+### 1) As string to make sure -lpthread gets sandwiched by     ###
+###    -Wl,--whole-archive.... -Wl,--no-whole-archive          ###
+### 2) As usual to make sure that if somebody links            ###
+###    Threads::Threads, then any repeated pthread appended    ###
+###    to the end (the wrong order causes linking errors)      ###
+##################################################################
+if(NOT TARGET Threads::Threads)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads)
+endif()
+
+
 if (H5PP_ENABLE_MPI AND NOT WIN32)
     find_package(MPI)
     if (TARGET MPI::MPI_CXX)
@@ -143,6 +163,7 @@ endif()
 
 
 #Try to find or get all dependencies
+include(cmake/SetupStdFilesystem.cmake)
 include(cmake/SetupDependenciesFind.cmake)
 include(cmake/SetupDependenciesFetch.cmake)
 include(cmake/SetupDependenciesCMake.cmake)
@@ -189,23 +210,18 @@ else()
             DESTINATION share/h5pp/cmake)
 
 
-    #Create a ConfigVersion.cmake file
     include(CMakePackageConfigHelpers)
-
-
     configure_package_config_file(
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
             INSTALL_DESTINATION share/h5pp/cmake
     )
-
     configure_package_config_file(
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-cmake.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-cmake.cmake
             INSTALL_DESTINATION share/h5pp/cmake
-            PATH_VARS Eigen3_ROOT spdlog_ROOT fmt_ROOT HDF5_ROOT
+            PATH_VARS H5PP_DEPS_INSTALL_DIR
     )
-
     configure_package_config_file(
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-conan.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
@@ -218,8 +234,7 @@ else()
             COMPATIBILITY AnyNewerVersion
     )
 
-
-    ##Install the config, configversion and custom find modules
+    #Install the config, configversion and custom find modules
     install(FILES
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-cmake.cmake
