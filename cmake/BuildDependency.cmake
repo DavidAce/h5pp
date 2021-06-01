@@ -22,6 +22,16 @@ function(build_dependency dep_name install_dir extra_flags)
         set(ENV{FC} ${CMAKE_Fortran_COMPILER})
     endif()
 
+    if(NOT CMAKE_CXX_STANDARD)
+        set(CMAKE_CXX_STANDARD 17)
+    endif()
+    if(NOT CMAKE_CXX_STANDARD_REQUIRED)
+        set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+    endif()
+    if(NOT CMAKE_CXX_EXTENSIONS)
+        set(CMAKE_CXX_EXTENSIONS FALSE)
+    endif()
+
     execute_process( COMMAND  ${CMAKE_COMMAND} -E remove ${build_dir}/CMakeCache.txt)
     execute_process( COMMAND  ${CMAKE_COMMAND} -E make_directory ${build_dir})
     execute_process(
