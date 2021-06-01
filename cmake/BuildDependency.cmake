@@ -38,6 +38,7 @@ function(build_dependency dep_name install_dir extra_flags)
             COMMAND  ${CMAKE_COMMAND}
             # CMake flags
             -DSUPER_CACHEFILE_DIR=${CMAKE_CACHEFILE_DIR}
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             -DCMAKE_INSTALL_PREFIX:PATH=${install_dir}
             -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
             -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
