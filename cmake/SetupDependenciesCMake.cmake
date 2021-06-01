@@ -1,22 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
 if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
-    # Here we use find_package in config-mode, intended to find <packagename>Config.cmake
-    # that is bundled with source installs of these packages.
-
-
-    # Setup build and install directories for dependencies
-    if(NOT H5PP_DEPS_BUILD_DIR)
-        set(H5PP_DEPS_BUILD_DIR ${CMAKE_BINARY_DIR}/h5pp-deps-build)
-    endif()
-    if(NOT H5PP_DEPS_INSTALL_DIR)
-        set(H5PP_DEPS_INSTALL_DIR ${CMAKE_BINARY_DIR}/h5pp-deps-install)
-    endif()
-
-    set(CMAKE_CXX_STANDARD 17)
-    set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-    set(CMAKE_CXX_EXTENSIONS FALSE)
-
 
     # Download fmt
     if (H5PP_ENABLE_FMT AND NOT TARGET fmt::fmt)

@@ -1,7 +1,15 @@
-cmake_minimum_required(VERSION 3.14)
-
 # Append search paths for find_package and find_library calls
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+
+
+# Setup build and install directories for dependencies
+if(NOT H5PP_DEPS_BUILD_DIR)
+    set(H5PP_DEPS_BUILD_DIR ${CMAKE_BINARY_DIR}/h5pp-deps-build)
+endif()
+if(NOT H5PP_DEPS_INSTALL_DIR)
+    set(H5PP_DEPS_INSTALL_DIR ${CMAKE_BINARY_DIR}/h5pp-deps-install)
+endif()
 
 
 # Paths to search for conda libraries
@@ -36,31 +44,10 @@ list(APPEND H5PP_CONAN_CANDIDATE_PATHS
         )
 
 # Append candidate paths to <PackageName>_ROOT variables so that find_package(...) calls can search these paths
-# Note that user-specified paths are searched first.
-list(APPEND Eigen3_ROOT
-        $ENV{EBROOTEIGEN}
-        ${CMAKE_INSTALL_PREFIX}/Eigen3
-        ${CMAKE_INSTALL_PREFIX}
-        )
-
-list(APPEND spdlog_ROOT
-        $ENV{EBROOTSPDLOG}
-        ${CMAKE_INSTALL_PREFIX}/spdlog
-        ${CMAKE_INSTALL_PREFIX}
-        )
-
-list(APPEND fmt_ROOT
-        $ENV{EBROOTFMT}
-        ${CMAKE_INSTALL_PREFIX}/fmt
-        ${CMAKE_INSTALL_PREFIX}
-        )
-
-list(APPEND HDF5_ROOT
-        $ENV{EBROOTHDF5}
-        $ENV{HDF5_ROOT}
-        ${CMAKE_INSTALL_PREFIX}/hdf5
-        ${CMAKE_INSTALL_PREFIX}
-        )
+list(APPEND Eigen3_ROOT $ENV{Eigen_ROOT} $ENV{Eigen3_ROOT} $ENV{EBROOTEIGEN} )
+list(APPEND spdlog_ROOT $ENV{spdlog_ROOT} $ENV{EBROOTSPDLOG})
+list(APPEND fmt_ROOT $ENV{fmt_ROOT} $ENV{EBROOTFMT})
+list(APPEND HDF5_ROOT $ENV{HDF5_ROOT} $ENV{EBROOTHDF5})
 
 mark_as_advanced(Eigen3_ROOT)
 mark_as_advanced(spdlog_ROOT)
@@ -68,5 +55,5 @@ mark_as_advanced(fmt_ROOT)
 mark_as_advanced(HDF5_ROOT)
 mark_as_advanced(H5PP_CONDA_CANDIDATE_PATHS)
 mark_as_advanced(H5PP_CONAN_CANDIDATE_PATHS)
-
-
+mark_as_advanced(H5PP_DEPS_BUILD_DIR)
+mark_as_advanced(H5PP_DEPS_INSTALL_DIR)
