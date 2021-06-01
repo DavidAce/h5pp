@@ -10,7 +10,7 @@ function(build_dependency dep_name install_dir extra_flags)
     if (H5PP_DEPS_IN_SUBDIR)
         set(install_dir ${install_dir}/${dep_name})
         mark_as_advanced(install_dir)
-    endif ()
+    endif()
 
     if(NOT DEFINED ENV{CC} AND DEFINED CMAKE_C_COMPILER)
         set(ENV{CC} ${CMAKE_C_COMPILER})
