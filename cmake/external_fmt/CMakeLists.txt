@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
-cmake_policy(SET CMP0074 NEW)
+
 if(SUPER_CACHEFILE_DIR)
     message(STATUS "Detected external cache file: ${SUPER_CACHEFILE_DIR}")
     load_cache(${SUPER_CACHEFILE_DIR} EXCLUDE CMAKE_INSTALL_PREFIX)
 endif()
+
 project(external-fmt CXX)
 include(ExternalProject)
 ExternalProject_Add(external_fmt
@@ -11,9 +12,7 @@ ExternalProject_Add(external_fmt
         URL_MD5     2522ec65070c0bda0ca288677ded2831 # 7.1.3
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
-        BUILD_ALWAYS TRUE
         CMAKE_ARGS
-        # CMake flags
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
