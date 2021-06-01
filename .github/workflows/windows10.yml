@@ -67,7 +67,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Debug                                 \
           -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared }}            \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                         \
-          -DCMAKE_INSTALL_PREFIX:PATH=${{ home }}/h5pp             \
+          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp             \
           -DH5PP_ENABLE_EIGEN3:BOOL=ON                             \
           -DH5PP_ENABLE_SPDLOG:BOOL=ON                             \
           -DH5PP_ENABLE_ASAN:BOOL=OFF                              \
