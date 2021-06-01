@@ -1,12 +1,19 @@
-cmake_minimum_required(VERSION 3.14)
-find_package(ghcFilesystem HINTS ${CMAKE_INSTALL_PREFIX} PATH_SUFFIXES ghcFilesystem)
+find_package(
+        ghcFilesystem
+        HINTS ${H5PP_DEPS_INSTALL_DIR}
+        PATH_SUFFIXES ghcFilesystem
+        NO_SYSTEM_ENVIRONMENT_PATH
+        NO_CMAKE_PACKAGE_REGISTRY
+        NO_CMAKE_SYSTEM_PATH
+        NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+
 if  (NOT TARGET ghcFilesystem::ghc_filesystem)
-    message(STATUS "ghcFilesystem will be installed into ${CMAKE_INSTALL_PREFIX}")
+    message(STATUS "ghcFilesystem will be installed into ${H5PP_DEPS_INSTALL_DIR}")
     include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)
-    build_dependency(ghcFilesystem  "${CMAKE_INSTALL_PREFIX}" "" "")
-    find_package(ghcFilesystem HINTS ${CMAKE_INSTALL_PREFIX}
+    build_dependency(ghcFilesystem  "${H5PP_DEPS_INSTALL_DIR}" "" "")
+    find_package(ghcFilesystem HINTS ${H5PP_DEPS_INSTALL_DIR}
                 PATH_SUFFIXES ghcFilesystem
-                NO_DEFAULT_PATH NO_CMAKE_PACKAGE_REGISTRY )
+                NO_DEFAULT_PATH)
 
     if(TARGET ghcFilesystem::ghc_filesystem)
         message(STATUS "ghcFilesystem installed successfully")
