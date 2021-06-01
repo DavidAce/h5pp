@@ -7,9 +7,10 @@ if(SUPER_CACHEFILE_DIR)
 endif()
 
 project(external-hdf5 C CXX)
-
 option(HDF5_ENABLE_PARALLEL "Enables HDF5 Parallel MPI" OFF)
-option(HDF5_EXTERNALLY_CONFIGURED "" ON)
+option(HDF5_ENABLE_SZIP_SUPPORT "Enable SZIP compression" OFF)
+option(HDF5_ENABLE_Z_LIB_SUPPORT "Enable ZLIB compression" OFF)
+
 
 if(ENV{CONDA_PREFIX})
     message(WARNING "The current conda environment may conflict with the build of HDF5: $ENV{CONDA_PREFIX}")
@@ -21,91 +22,26 @@ else()
     set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
 endif()
 
-
-# The following check is needed because HDF5 will blindly use
-# find_package(ZLIB), which finds the shared library
-# (even when a static is present) and use it to link to static
-# hdf5 libraries, causing a build error. Even worse, if the build
-# succeeds it will hardcode the path to libz.so for as an interface
-# library for the static library.
-# Here we circumvent that by specifying "z" as the zlib library
-# so the hdf5-static target gets $<LINK_ONLY:z> ---> "-lz" as link
-# flag instead. Of course this only works if the shared/static library
-# actualy exists.
-
-if(NOT HDF5_ENABLE_Z_LIB_SUPPORT OR NOT ZLIB_LIBRARY)
-
-    set(HDF5_ENABLE_Z_LIB_SUPPORT ON)
-    find_package(ZLIB)
-    unset(ZLIB_LIBRARY)
-    if(TARGET ZLIB::ZLIB)
-        get_target_property(ZLIB_LIBRARY ZLIB::ZLIB LOCATION)
-        get_filename_component(ZLIB_EXT ${ZLIB_LIBRARY} EXT)
-        get_filename_component(ZLIB_WE  ${ZLIB_LIBRARY} NAME_WE)
-        get_filename_component(ZLIB_DIR  ${ZLIB_LIBRARY} DIRECTORY)
-        if(NOT ZLIB_EXT MATCHES "${CMAKE_FIND_LIBRARY_SUFFIXES}")
-            message(STATUS "find_package(ZLIB) found library ${ZLIB_LIBRARY} which has incorrect suffix. Attempting fix")
-            find_library(ZLIB_LIBRARY NAMES ${ZLIB_WE}${CMAKE_FIND_LIBRARY_SUFFIXES} libz${CMAKE_FIND_LIBRARY_SUFFIXES} HINTS ${ZLIB_DIR})
-            if(ZLIB_LIBRARY)
-                set(ZLIB_LIBRARY z) # Replace the full path so that the linker can decide later instead
-                set(HDF5_ENABLE_Z_LIB_SUPPORT ON)
-            else()
-                unset(ZLIB_LIBRARY)
-                message(STATUS "Could not find static ZLIB: disabling ZLIB support for hdf5")
-                set(HDF5_ENABLE_Z_LIB_SUPPORT OFF)
-            endif()
-        else()
-            set(ZLIB_LIBRARY z) # Replace the full path so that the linker can decide later instead
-            message(STATUS "find_package(ZLIB) found library ${ZLIB_LIBRARY} which has the correct suffix")
-        endif()
-    else()
-        message(STATUS "Could not find ZLIB: disabling ZLIB support for hdf5")
-        set(HDF5_ENABLE_Z_LIB_SUPPORT OFF)
-    endif()
+if(NOT SZIP_LIBRARY)
+    find_library(SZIP_LIBRARY NAMES sz HINTS ${CMAKE_INSTALL_PREFIX} ${CMAKE_INSTALL_PREFIX}/.. PATH_SUFFIXES aec aec/lib)
+endif()
+if(NOT AEC_LIBRARY)
+    find_library(AEC_LIBRARY NAMES aec HINTS ${CMAKE_INSTALL_PREFIX} ${CMAKE_INSTALL_PREFIX}/.. PATH_SUFFIXES aec aec/lib)
+endif()
+if(NOT ZLIB_LIBRARY)
+    find_library(ZLIB_LIBRARY NAMES  z HINTS ${CMAKE_INSTALL_PREFIX} ${CMAKE_INSTALL_PREFIX}/.. PATH_SUFFIXES zlib zlib/lib)
 endif()
 
-
-
-# The following check is needed because HDF5 will blindly use
-# find_package(SZIP), which finds the shared library
-# (even when a static is present) and use it to link to static
-# hdf5 libraries, causing a build error. Even worse, if the build
-# succeeds it will hardcode the path to libsz.so for as an interface
-# library for the static library.
-# Here we circumvent that by specifying "sz" as the szip library
-# so the hdf5-static target gets $<LINK_ONLY:sz> ---> "-lsz" as link
-# flag instead. Of course this only works if the shared/static library
-# actualy exists.
-
-# The following check is needed because HDF5 will blindly use
-# find_package(SZIP), which finds the shared library
-# (even when a static is present) and use it to link to static
-# hdf5 libraries, causing a build error. Here we circumvent that
-# by specifying the shared/static SZIP library explicitly as needed
-if(NOT HDF5_ENABLE_SZIP_SUPPORT OR NOT SZIP_LIBRARY AND NOT CMAKE_HOST_APPLE)
-    set(HDF5_ENABLE_SZIP_SUPPORT ON)
-    find_library(SZIP_LIBRARY NAMES sz) # No built in FindSZIP.cmake
-    if(SZIP_LIBRARY)
-        message(STATUS "Found SZIP: ${SZIP_LIBRARY}")
-        get_filename_component(SZIP_EXT ${SZIP_LIBRARY} EXT)
-        if(SZIP_EXT MATCHES "${CMAKE_FIND_LIBRARY_SUFFIXES}")
-            set(SZIP_LIBRARY sz)
-            find_library(AEC_LIBRARY NAMES aec)
-            if(AEC_LIBRARY)
-                message(STATUS "Found AEC: ${AEC_LIBRARY}")
-                set(SZIP_LIBRARY "sz$<SEMICOLON>aec")
-            endif()
-        else()
-            message(STATUS "Could not find SZIP with the correct extension: disabling SZIP support for HDF5")
-            set(HDF5_ENABLE_SZIP_SUPPORT OFF)
-            unset(SZIP_LIBRARY)
-        endif()
-    else()
-        message(STATUS "Could not find SZIP: disabling SZIP support for hdf5")
-        set(HDF5_ENABLE_SZIP_SUPPORT OFF)
-        unset(SZIP_LIBRARY)
-    endif()
+if(SZIP_LIBRARY)
+    set(HDF5_ENABLE_SZIP_SUPPORT  ON CACHE BOOL "HDF5 will use SZIP library: ${SZIP_LIBRARY};${AEC_LIBRARY}" FORCE)
 endif()
+if(ZLIB_LIBRARY)
+    set(HDF5_ENABLE_Z_LIB_SUPPORT ON CACHE BOOL "HDF5 will use ZLIB library: ${ZLIB_LIBRARY}" FORCE)
+endif()
+
+message(STATUS "HDF5 will use SZIP ${HDF5_ENABLE_SZIP_SUPPORT}: ${SZIP_LIBRARY}")
+message(STATUS "HDF5 will use AEC  ${HDF5_ENABLE_SZIP_SUPPORT}: ${AEC_LIBRARY}")
+message(STATUS "HDF5 will use ZLIB ${HDF5_ENABLE_Z_LIB_SUPPORT}: ${ZLIB_LIBRARY}")
 
 include(ExternalProject)
 ExternalProject_Add(external_hdf5
@@ -115,23 +51,16 @@ ExternalProject_Add(external_hdf5
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE
         CMAKE_ARGS
-        # CMake flags
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
-        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
+        -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
         -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
         -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
         -DCMAKE_CXX_EXTENSIONS:BOOL=${CMAKE_CXX_EXTENSIONS}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_INSTALL_MESSAGE=NEVER
-
         # HDF5 flags
-#        -DBUILD_STATIC_EXECS:BOOL=OFF
-#        -DBUILD_STATIC_LIBS:BOOL=ON
         -DBUILD_TESTING:BOOL=OFF
-#        -DZLIB_LIBRARY:PATH=${ZLIB_LIBRARY}
         -DZLIB_LIBRARY=${ZLIB_LIBRARY}
-        -DSZIP_LIBRARY=${SZIP_LIBRARY}
+        -DSZIP_LIBRARY=${SZIP_LIBRARY}$<SEMICOLON>${AEC_LIBRARY}
         -DHDF5_ENABLE_PARALLEL:BOOL=${HDF5_ENABLE_PARALLEL}
         -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=${HDF5_ENABLE_Z_LIB_SUPPORT}
         -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=${HDF5_ENABLE_SZIP_SUPPORT}

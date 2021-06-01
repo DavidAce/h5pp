@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.14)
+if(SUPER_CACHEFILE_DIR)
+    message(STATUS "Detected external cache file: ${SUPER_CACHEFILE_DIR}")
+    load_cache(${SUPER_CACHEFILE_DIR} EXCLUDE CMAKE_INSTALL_PREFIX)
+endif()
+
+project(external-zlib C CXX)
+include(ExternalProject)
+ExternalProject_Add(external_zlib
+        URL         https://github.com/madler/zlib/archive/refs/tags/v1.2.11.tar.gz
+        URL_MD5     0095d2d2d1f3442ce1318336637b695f
+        PREFIX      ${CMAKE_BINARY_DIR}
+        INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+        CMAKE_ARGS
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
+        -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+        -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
+        -DCMAKE_CXX_EXTENSIONS:BOOL=${CMAKE_CXX_EXTENSIONS}
+        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+        -DCMAKE_INSTALL_MESSAGE=NEVER
+        )
+
+
