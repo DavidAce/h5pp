@@ -50,6 +50,7 @@ if(HDF5_ENABLE_Z_LIB_SUPPORT)
     message(STATUS "HDF5 will use ZLIB INC ${ZLIB_INCLUDE_DIR}")
 endif()
 
+include(GNUInstallDirs)
 include(ExternalProject)
 ExternalProject_Add(external_hdf5
         URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz
@@ -61,6 +62,10 @@ ExternalProject_Add(external_hdf5
         ${INIT_CACHE_ARG}
         -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+        -DCMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/${CMAKE_INSTALL_LIBDIR}
+        -DCMAKE_SKIP_BUILD_RPATH:BOOL=OFF
+        -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=OFF
+        -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON
         -DCMAKE_INSTALL_MESSAGE=LAZY
         # HDF5 flags
         -DBUILD_TESTING:BOOL=OFF
