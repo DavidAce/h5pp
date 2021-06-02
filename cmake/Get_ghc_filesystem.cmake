@@ -7,7 +7,7 @@ find_package(
         NO_CMAKE_SYSTEM_PATH
         NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
 
-if  (NOT TARGET ghcFilesystem::ghc_filesystem)
+if  (NOT ghc_filesystem_FOUND OR NOT TARGET ghcFilesystem::ghc_filesystem)
     message(STATUS "ghc_filesystem will be installed into ${H5PP_DEPS_INSTALL_DIR}")
     include(cmake/InstallPackage.cmake)
     install_package(ghc_filesystem  "${H5PP_DEPS_INSTALL_DIR}" "" "")
@@ -17,7 +17,5 @@ if  (NOT TARGET ghcFilesystem::ghc_filesystem)
                 NO_DEFAULT_PATH
                 REQUIRED)
 
-    if(TARGET ghcFilesystem::ghc_filesystem)
-        message(STATUS "ghcFilesystem installed successfully")
-    endif()
+    message(STATUS "ghcFilesystem installed successfully")
 endif()
