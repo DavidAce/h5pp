@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
+project(external-zlib)
 if(INIT_CACHE_FILE)
     set(INIT_CACHE_ARG -C${INIT_CACHE_FILE})
 endif()
-
-project(external-zlib C CXX)
 include(ExternalProject)
 ExternalProject_Add(external_zlib
         URL         https://github.com/madler/zlib/archive/refs/tags/v1.2.11.tar.gz
