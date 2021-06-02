@@ -9,8 +9,8 @@ find_package(
 
 if  (NOT TARGET ghcFilesystem::ghc_filesystem)
     message(STATUS "ghcFilesystem will be installed into ${H5PP_DEPS_INSTALL_DIR}")
-    include(${PROJECT_SOURCE_DIR}/cmake/BuildDependency.cmake)
-    build_dependency(ghcFilesystem  "${H5PP_DEPS_INSTALL_DIR}" "" "")
+    include(cmake/InstallPackage.cmake)
+    install_package(ghcFilesystem  "${H5PP_DEPS_INSTALL_DIR}" "" "")
     find_package(ghcFilesystem HINTS ${H5PP_DEPS_INSTALL_DIR}
                 PATH_SUFFIXES ghcFilesystem
                 NO_DEFAULT_PATH)
