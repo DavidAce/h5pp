@@ -1,6 +1,17 @@
 # Append search paths for find_package and find_library calls
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+# Make sure find_library prefers static/shared library depending on BUILD_SHARED_LIBS
+# This is important when finding dependencies such as zlib which provides both shared and static libraries.
+if(BUILD_SHARED_LIBS AND NOT DEFINED CMAKE_FIND_LIBRARY_SUFFIXES)
+    # This is order is the default
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX};${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE STRING "Prefer finding shared libraries" FORCE )
+else()
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX};${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE STRING "Prefer finding static libraries" FORCE )
+endif()
+
+
+
 
 
 # Setup build and install directories for dependencies
