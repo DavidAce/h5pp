@@ -1,7 +1,24 @@
 cmake_minimum_required(VERSION 3.14)
 
+# Dumps cached variables to H5PP_INIT_CACHE_FILE so that we can propagate
+# the current build configuration to dependencies
+function(generate_init_cache)
+    set(H5PP_INIT_CACHE_FILE ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/init-cache.cmake)
+    set(H5PP_INIT_CACHE_FILE ${H5PP_INIT_CACHE_FILE} PARENT_SCOPE)
+    file(WRITE  ${H5PP_INIT_CACHE_FILE} "# These variables will initialize the CMake cache for subprocesses.\n")
+    get_cmake_property(vars CACHE_VARIABLES)
+    foreach(var ${vars})
+        if(var MATCHES "CMAKE_CACHE|CMAKE_HOME|CMAKE_EXTRA|CMAKE_PROJECT|MACRO" OR NOT ${var})
+            continue()
+        endif()
+        get_property(help CACHE "${var}" PROPERTY HELPSTRING)
+        get_property(type CACHE "${var}" PROPERTY TYPE)
+        file(APPEND ${H5PP_INIT_CACHE_FILE} "set(${var} \"${${var}}\" CACHE ${type} \"${help}\" FORCE)\n")
+    endforeach()
+endfunction()
 
-# This function will configure, build and install a dependency at configure-time
+
+# This function will configure, build and install a package at configure-time
 # by running cmake in a subprocess. The current CMake configuration is transmitted
 # by setting the flags manually.
 
@@ -32,13 +49,13 @@ function(build_dependency dep_name install_dir extra_flags)
         set(CMAKE_CXX_EXTENSIONS FALSE)
     endif()
 
-    execute_process( COMMAND  ${CMAKE_COMMAND} -E remove ${build_dir}/CMakeCache.txt)
+    generate_init_cache()
     execute_process( COMMAND  ${CMAKE_COMMAND} -E make_directory ${build_dir})
     execute_process(
-            COMMAND  ${CMAKE_COMMAND}
-            # CMake flags
-            -DSUPER_CACHEFILE_DIR=${CMAKE_CACHEFILE_DIR}
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            COMMAND
+            ${CMAKE_COMMAND}
+            -C ${H5PP_INIT_CACHE_FILE}                # For the subproject in external_<libname>
+            -DINIT_CACHE_FILE=${H5PP_INIT_CACHE_FILE} # For externalproject_add inside the subproject
             -DCMAKE_INSTALL_PREFIX:PATH=${install_dir}
             -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
             -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}

@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
-
-if(SUPER_CACHEFILE_DIR)
-    message(STATUS "Detected external cache file: ${SUPER_CACHEFILE_DIR}")
-    load_cache(${SUPER_CACHEFILE_DIR} EXCLUDE CMAKE_INSTALL_PREFIX)
-endif()
-
 project(external-eigen3 CXX)
+if(INIT_CACHE_FILE)
+    set(INIT_CACHE_ARG -C${INIT_CACHE_FILE})
+endif()
 include(ExternalProject)
 ExternalProject_Add(external_eigen3
         URL      https://gitlab.com/libeigen/eigen/-/archive/3.4-rc1/eigen-3.4-rc1.tar.gz
@@ -13,9 +10,7 @@ ExternalProject_Add(external_eigen3
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         CMAKE_ARGS
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
-        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
+        ${INIT_CACHE_ARG}
         -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
         -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
         -DCMAKE_CXX_EXTENSIONS:BOOL=${CMAKE_CXX_EXTENSIONS}

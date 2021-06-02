@@ -1,12 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
-cmake_policy(SET CMP0074 NEW)
-
-if(SUPER_CACHEFILE_DIR)
-    message(STATUS "Detected external cache file: ${SUPER_CACHEFILE_DIR}")
-    load_cache(${SUPER_CACHEFILE_DIR} EXCLUDE CMAKE_INSTALL_PREFIX)
-endif()
-
 project(external-spdlog CXX)
+if(INIT_CACHE_FILE)
+    set(INIT_CACHE_ARG -C${INIT_CACHE_FILE})
+endif()
 include(ExternalProject)
 ExternalProject_Add(external_spdlog
         URL         https://github.com/gabime/spdlog/archive/refs/tags/v1.8.5.tar.gz
@@ -14,10 +10,8 @@ ExternalProject_Add(external_spdlog
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         CMAKE_ARGS
+        ${INIT_CACHE_ARG}
         -DCMAKE_POLICY_DEFAULT_CMP0074=NEW
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
-        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
         -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
         -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
         -DCMAKE_CXX_EXTENSIONS:BOOL=${CMAKE_CXX_EXTENSIONS}

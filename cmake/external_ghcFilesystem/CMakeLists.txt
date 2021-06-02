@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
-
-if(SUPER_CACHEFILE_DIR)
-    message(STATUS "Detected external cache file: ${SUPER_CACHEFILE_DIR}")
-    load_cache(${SUPER_CACHEFILE_DIR} EXCLUDE CMAKE_INSTALL_PREFIX)
-endif()
-
 project(external-ghcFilesystem CXX)
+if(INIT_CACHE_FILE)
+    set(INIT_CACHE_ARG -C${INIT_CACHE_FILE})
+endif()
 include(ExternalProject)
 ExternalProject_Add(external_ghcFilesystem
     URL         https://github.com/gulrak/filesystem/archive/refs/tags/v1.5.6.tar.gz
@@ -13,9 +10,7 @@ ExternalProject_Add(external_ghcFilesystem
     PREFIX      ${CMAKE_BINARY_DIR}
     INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
     CMAKE_ARGS
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
-        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
+        ${INIT_CACHE_ARG}
         -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
         -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
         -DCMAKE_CXX_EXTENSIONS:BOOL=${CMAKE_CXX_EXTENSIONS}
@@ -25,4 +20,4 @@ ExternalProject_Add(external_ghcFilesystem
         -DGHC_FILESYSTEM_BUILD_TESTING:BOOL=OFF
         -DGHC_FILESYSTEM_BUILD_EXAMPLES:BOOL=OFF
         -DGHC_FILESYSTEM_WITH_INSTALL:BOOL=ON
-)
+        )
