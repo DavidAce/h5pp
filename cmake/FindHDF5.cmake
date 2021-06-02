@@ -409,7 +409,6 @@ function(find_package_hdf5_config_wrapper)
     if(HDF5_FIND_DEBUG OR HDF5_FIND_VERBOSE)
         message(STATUS "Finding package HDF5 in CONFIG mode...")
     endif()
-    message("HDF5_ROOT: ${HDF5_ROOT}")
     # Honor the HDF5_NO_<option> flags
     list(APPEND NO_OPTIONS
             NO_PACKAGE_ROOT_PATH
