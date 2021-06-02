@@ -29,14 +29,17 @@ function(install_package package_name install_dir extra_flags)
         mark_as_advanced(install_dir)
     endif()
 
-    if(NOT CMAKE_CXX_STANDARD)
-        set(CMAKE_CXX_STANDARD 17)
+    if(NOT DEFINED CMAKE_CXX_STANDARD)
+        set(CMAKE_CXX_STANDARD 17 CACHE STRING "" FORCE)
     endif()
-    if(NOT CMAKE_CXX_STANDARD_REQUIRED)
-        set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+    if(NOT DEFINED CMAKE_CXX_STANDARD_REQUIRED)
+        set(CMAKE_CXX_STANDARD_REQUIRED TRUE CACHE BOOL "" FORCE)
     endif()
-    if(NOT CMAKE_CXX_EXTENSIONS)
-        set(CMAKE_CXX_EXTENSIONS FALSE)
+    if(NOT DEFINED CMAKE_CXX_EXTENSIONS)
+        set(CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL "" FORCE)
+    endif()
+    if(NOT DEFINED CMAKE_INSTALL_RPATH_USE_LINK_PATH)
+        set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE CACHE BOOL "Keep rpath on installed packages" FORCE)
     endif()
 
     generate_init_cache()
@@ -48,9 +51,6 @@ function(install_package package_name install_dir extra_flags)
             -C ${H5PP_INIT_CACHE_FILE}                # For the subproject in external_<libname>
             -DINIT_CACHE_FILE=${H5PP_INIT_CACHE_FILE} # For externalproject_add inside the subproject
             -DCMAKE_INSTALL_PREFIX:PATH=${install_dir}
-            -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
-            -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
-            -DCMAKE_CXX_EXTENSIONS:BOOL=${CMAKE_CXX_EXTENSIONS}
             ${extra_flags}
             ${PROJECT_SOURCE_DIR}/cmake/external_${package_name}
             WORKING_DIRECTORY ${build_dir}
