@@ -139,7 +139,7 @@ target_compile_definitions(deps INTERFACE H5PP_PACKAGE_MANAGER=${H5PP_PACKAGE_MA
 
 
 # Check  #include<optional> or #include<experimental/optional>
-include(${PROJECT_SOURCE_DIR}/cmake/CheckCXXOptional.cmake)
+include(cmake/CheckCXXOptional.cmake)
 CheckCXXOptional()
 
 # Required compiler features
