@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(examples CXX)
+project(h5pp-examples CXX)
 file(GLOB EXAMPLES "*.cpp")
 add_custom_target(h5pp-example-all)
 

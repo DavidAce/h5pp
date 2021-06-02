@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(tests CXX)
+project(h5pp-tests CXX)
 file(GLOB TESTS "*.cpp")
 add_custom_target(h5pp-test-all)
 foreach (test ${TESTS})
