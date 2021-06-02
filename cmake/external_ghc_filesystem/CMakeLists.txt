@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
-project(external-ghcFilesystem)
+project(external-ghc_filesystem)
 if(INIT_CACHE_FILE)
     set(INIT_CACHE_ARG -C${INIT_CACHE_FILE})
 endif()
 include(ExternalProject)
-ExternalProject_Add(external_ghcFilesystem
+ExternalProject_Add(external_ghc_filesystem
     URL         https://github.com/gulrak/filesystem/archive/refs/tags/v1.5.6.tar.gz
     URL_MD5     95b3b55c4f5e29f5915a1b21111e043f
     PREFIX      ${CMAKE_BINARY_DIR}
