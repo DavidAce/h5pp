@@ -1,24 +1,27 @@
 #pragma once
 
-#if defined(SPDLOG_FMT_EXTERNAL) &&                                                                                                        \
-    __has_include(<fmt/core.h>) &&  __has_include(<fmt/format.h>) && __has_include(<fmt/ranges.h>) &&  __has_include(<fmt/ostream.h>)
-    #include <fmt/core.h>
-    #include <fmt/format.h>
-    #include <fmt/ostream.h>
-    #include <fmt/ranges.h>
-#elif !defined(SPDLOG_FMT_EXTERNAL) &&                                                                                                     \
-    __has_include(<spdlog/fmt/fmt.h>) && __has_include(<spdlog/fmt/bundled/ranges.h>) &&  __has_include(<spdlog/fmt/bundled/ostream.h>)
-    #include <spdlog/fmt/bundled/ostream.h>
-    #include <spdlog/fmt/bundled/ranges.h>
+#if !defined(SPDLOG_COMPILED_LIB)
+    #if !defined(SPDLOG_HEADER_ONLY)
+        #define(SPDLOG_HEADER_ONLY)
+    #endif
+#endif
+
+#if __has_include(<spdlog/fmt/fmt.h>)
+    // Spdlog will include the bundled fmt unless SPDLOG_FMT_EXTERNAL is defined, in which case <fmt/core.h> gets included instead
+    // If SPDLOG_HEADER_ONLY is defined this will cause FMT_HEADER_ONLY to also get defined
     #include <spdlog/fmt/fmt.h>
+    #if defined(SPDLOG_FMT_EXTERNAL)
+         #include <fmt/ostream.h>
+         #include <fmt/ranges.h>
+    #else
+        #include <spdlog/fmt/bundled/ostream.h>
+        #include <spdlog/fmt/bundled/ranges.h>
+    #endif
 #elif __has_include(<fmt/core.h>) &&  __has_include(<fmt/format.h>) && __has_include(<fmt/ranges.h>) &&  __has_include(<fmt/ostream.h>)
-// Check if there are already fmt headers installed independently from Spdlog
-// Note that in this case the user hasn't enabled Spdlog for h5pp, so the build hasn't linked any compiled FMT libraries
-// To avoid undefined references we coult opt in to the header-only mode of FMT.
-// Note that this check should be skipped if using conan. Then, SPDLOG_FMT_EXTERNAL is defined
-    #ifdef FMT_HEADER_ONLY
-        #pragma message                                                                                                                    \
-            "{fmt} has been included as header-only library by defining the compile option FMT_HEADER_ONLY. This may cause a large compile-time overhead"
+    #if defined(SPDLOG_HEADER_ONLY)
+        // Since spdlog is header-only, let's assume fmt is as well
+        // We do this because we have no way of knowing if this is getting linked to libfmt
+        #define(FMT_HEADER_ONLY)
     #endif
     #include <fmt/core.h>
     #include <fmt/format.h>
@@ -27,7 +30,7 @@
 #else
     // In this case there is no fmt so we make our own simple formatter
     #pragma message                                                                                                                       \
-        "h5pp warning: could not find header fmt library headers <fmt/core.h> or <spdlog/fmt/fmt.h>: A hand-made formatter will be used instead. Consider using the fmt library for maximum performance"
+        "h5pp warning: could not find fmt library headers <fmt/core.h> or <spdlog/fmt/fmt.h>: A hand-made formatter will be used instead. Consider using the fmt library for maximum performance"
 
 #endif
 
