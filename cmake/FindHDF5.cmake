@@ -513,7 +513,7 @@ function(find_hdf5)
 
     if(HDF5_FOUND)
         if(NOT TARGET hdf5::all)
-            add_library(hdf5::all IMPORTED INTERFACE)
+            add_library(hdf5::all INTERFACE IMPORTED)
         endif()
 
         target_link_libraries(hdf5::all INTERFACE ${HDF5_TARGETS})
