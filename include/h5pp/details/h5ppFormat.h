@@ -2,7 +2,7 @@
 
 #if !defined(SPDLOG_COMPILED_LIB)
     #if !defined(SPDLOG_HEADER_ONLY)
-        #define(SPDLOG_HEADER_ONLY)
+        #define SPDLOG_HEADER_ONLY
     #endif
 #endif
 
@@ -21,7 +21,7 @@
     #if defined(SPDLOG_HEADER_ONLY)
         // Since spdlog is header-only, let's assume fmt is as well
         // We do this because we have no way of knowing if this is getting linked to libfmt
-        #define(FMT_HEADER_ONLY)
+        #define FMT_HEADER_ONLY
     #endif
     #include <fmt/core.h>
     #include <fmt/format.h>
