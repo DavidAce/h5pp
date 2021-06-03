@@ -1,19 +1,16 @@
 cmake_minimum_required(VERSION 3.19)
 
 # Append search paths for find_package and find_library calls
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)
 
 # Make sure find_library prefers static/shared library depending on BUILD_SHARED_LIBS
 # This is important when finding dependencies such as zlib which provides both shared and static libraries.
 if(BUILD_SHARED_LIBS AND NOT DEFINED CMAKE_FIND_LIBRARY_SUFFIXES)
     # This is order is the default
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX};${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE STRING "Prefer finding shared libraries" FORCE )
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX};${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE STRING "Prefer finding shared libraries")
 else()
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX};${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE STRING "Prefer finding static libraries" FORCE )
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX};${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE STRING "Prefer finding static libraries")
 endif()
-
-
-
 
 
 # Setup build and install directories for dependencies
@@ -56,16 +53,6 @@ list(APPEND H5PP_CONAN_CANDIDATE_PATHS
         $ENV{HOME}/.conda
         )
 
-# Append candidate paths to <PackageName>_ROOT variables so that find_package(...) calls can search these paths
-list(APPEND Eigen3_ROOT $ENV{Eigen_ROOT} $ENV{Eigen3_ROOT} $ENV{EBROOTEIGEN} )
-list(APPEND spdlog_ROOT $ENV{spdlog_ROOT} $ENV{EBROOTSPDLOG})
-list(APPEND fmt_ROOT $ENV{fmt_ROOT} $ENV{EBROOTFMT})
-list(APPEND HDF5_ROOT $ENV{HDF5_ROOT} $ENV{EBROOTHDF5})
-
-mark_as_advanced(Eigen3_ROOT)
-mark_as_advanced(spdlog_ROOT)
-mark_as_advanced(fmt_ROOT)
-mark_as_advanced(HDF5_ROOT)
 mark_as_advanced(H5PP_CONDA_CANDIDATE_PATHS)
 mark_as_advanced(H5PP_CONAN_CANDIDATE_PATHS)
 mark_as_advanced(H5PP_DEPS_BUILD_DIR)
