@@ -7,7 +7,6 @@ project(h5pp VERSION 1.9.0
         )
 
 include(cmake/DeprecationWarnings.cmake) # Warn if user passes deprecated settings
-include(cmake/SetupCMakePolicies.cmake) # Setup several cmake policies to use NEW behavior
 
 # Used when h5pp is included as subproject (e.g., as Git submodule/subtree) in the source
 # tree of a project that uses it. Users may set the option H5PP_IS_SUBPROJECT
