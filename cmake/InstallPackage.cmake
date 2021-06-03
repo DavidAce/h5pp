@@ -14,6 +14,8 @@ function(generate_init_cache)
         get_property(help CACHE "${var}" PROPERTY HELPSTRING)
         get_property(type CACHE "${var}" PROPERTY TYPE)
         string(REPLACE "\\" "/" ${var} "${${var}}") # Fix windows backslash paths
+        string(REPLACE "\"" "\\\"" help "${help}") #Fix quotes on some cuda-related descriptions
+        string(REPLACE "\"" "\\\"" ${var} "${${var}}") #Fix quotes
         file(APPEND ${H5PP_INIT_CACHE_FILE} "set(${var} \"${${var}}\" CACHE ${type} \"${help}\" FORCE)\n")
     endforeach()
 endfunction()
