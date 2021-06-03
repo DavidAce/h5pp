@@ -10,8 +10,8 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
         # compile library and avoid compile-time overhead in projects consuming h5pp.
         # Note that spdlog may already have been found in if H5PP_PACKAGE_MANAGER=find|cmake
         # then we can assume that spdlog already knows how and where to get fmt.
-        find_package(fmt 6.2.1
-                HINTS ${H5PP_DEPS_INSTALL_DIR}
+        set(fmt_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for fmt installed by h5pp")
+        find_package(fmt 7.1.3 CONFIG
                 NO_SYSTEM_ENVIRONMENT_PATH
                 NO_CMAKE_PACKAGE_REGISTRY
                 NO_CMAKE_SYSTEM_PATH
@@ -19,10 +19,11 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
         if(NOT fmt_FOUND OR NOT TARGET fmt::fmt)
             message(STATUS "fmt will be installed into ${H5PP_DEPS_INSTALL_DIR}")
             install_package(fmt  "${H5PP_DEPS_INSTALL_DIR}" "${FMT_CMAKE_OPTIONS}")
-            find_package(fmt 6.2.1
-                    HINTS ${H5PP_DEPS_INSTALL_DIR}
-                    NO_DEFAULT_PATH
-                    REQUIRED)
+            find_package(fmt 7.1.3 CONFIG REQUIRED
+                    NO_SYSTEM_ENVIRONMENT_PATH
+                    NO_CMAKE_PACKAGE_REGISTRY
+                    NO_CMAKE_SYSTEM_PATH
+                    NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
         endif()
         if(TARGET fmt::fmt AND fmt_FOUND)
             list(APPEND H5PP_TARGETS fmt::fmt)
@@ -34,8 +35,8 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
 
     # Download spdlog
     if (H5PP_ENABLE_SPDLOG AND NOT TARGET spdlog::spdlog)
-        find_package(spdlog 1.3
-                HINTS ${H5PP_DEPS_INSTALL_DIR}
+        set(spdlog_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for spdlog installed by h5pp")
+        find_package(spdlog 1.8.5 CONFIG
                 NO_SYSTEM_ENVIRONMENT_PATH
                 NO_CMAKE_PACKAGE_REGISTRY
                 NO_CMAKE_SYSTEM_PATH
@@ -49,10 +50,11 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
                 list(APPEND SPDLOG_CMAKE_OPTIONS  "-Dfmt_ROOT:PATH=${fmt_ROOT}")
             endif()
             install_package(spdlog  "${H5PP_DEPS_INSTALL_DIR}" "${SPDLOG_CMAKE_OPTIONS}")
-            find_package(spdlog 1.8.5
-                    HINTS ${H5PP_DEPS_INSTALL_DIR}
-                    NO_DEFAULT_PATH
-                    REQUIRED)
+            find_package(spdlog 1.8.5 CONFIG REQUIRED
+                    NO_SYSTEM_ENVIRONMENT_PATH
+                    NO_CMAKE_PACKAGE_REGISTRY
+                    NO_CMAKE_SYSTEM_PATH
+                    NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
             message(STATUS "spdlog installed successfully")
         endif()
         if(spdlog_FOUND AND TARGET spdlog::spdlog)
@@ -68,8 +70,8 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
 
     # Download Eigen3
     if (H5PP_ENABLE_EIGEN3 AND NOT TARGET Eigen3::Eigen)
+        set(Eigen3_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for Eigen3 installed by h5pp")
         find_package(Eigen3 3.3.7
-                HINTS ${H5PP_DEPS_INSTALL_DIR} ${EIGEN3_INCLUDE_DIR}
                 NO_SYSTEM_ENVIRONMENT_PATH
                 NO_CMAKE_PACKAGE_REGISTRY
                 NO_CMAKE_SYSTEM_PATH
@@ -79,8 +81,10 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
             message(STATUS "Eigen3 will be installed into ${H5PP_DEPS_INSTALL_DIR}")
             install_package(Eigen3 "${H5PP_DEPS_INSTALL_DIR}" "")
             find_package(Eigen3 3.3.7
-                    HINTS ${H5PP_DEPS_INSTALL_DIR}
-                    NO_DEFAULT_PATH
+                    NO_SYSTEM_ENVIRONMENT_PATH
+                    NO_CMAKE_PACKAGE_REGISTRY
+                    NO_CMAKE_SYSTEM_PATH
+                    NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
                     REQUIRED)
             message(STATUS "Eigen3 installed successfully")
         endif()
@@ -94,9 +98,40 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
 
 
     # Download HDF5 (and ZLIB and SZIP)
-    if(NOT TARGET hdf5::all)
-        list(INSERT HDF5_ROOT 0 ${H5PP_DEPS_INSTALL_DIR})
-#        set(CMAKE_FIND_DEBUG_MODE ON)
+    if(NOT szip_FOUND OR NOT TARGET szip-static)
+        set(SZIP_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for SZIP installed by h5pp")
+        find_package(SZIP CONFIG NAMES szip sz COMPONENTS static
+                PATH_SUFFIXES share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
+                NO_SYSTEM_ENVIRONMENT_PATH
+                NO_CMAKE_PACKAGE_REGISTRY
+                NO_CMAKE_SYSTEM_PATH
+                NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+        if(szip_FOUND OR NOT TARGET szip-static)
+            install_package(szip "${H5PP_DEPS_INSTALL_DIR}" "")
+            find_package(SZIP CONFIG NAMES szip sz COMPONENTS static
+                    PATH_SUFFIXES share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
+                    NO_SYSTEM_ENVIRONMENT_PATH
+                    NO_CMAKE_SYSTEM_PATH
+                    NO_CMAKE_PACKAGE_REGISTRY
+                    NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
+                    REQUIRED)
+            get_target_property(SZIP_LIBRARY szip-static LOCATION)
+            get_target_property(SZIP_INCLUDE_DIR szip-static LOCATION)
+        endif()
+    endif()
+
+    if(NOT ZLIB_LIBRARY OR NOT ZLIB_INCLUDE_DIR)
+        find_library(ZLIB_LIBRARY NAMES z HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib/lib NO_DEFAULT_PATH)
+        find_path(ZLIB_INCLUDE_DIR NAMES zlib.h HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib/include NO_DEFAULT_PATH)
+        if(NOT ZLIB_LIBRARY OR NOT ZLIB_INCLUDE_DIR)
+            install_package(zlib "${H5PP_DEPS_INSTALL_DIR}" "")
+            find_library(ZLIB_LIBRARY NAMES z HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib/lib NO_DEFAULT_PATH REQUIRED)
+            find_path(ZLIB_INCLUDE_DIR NAMES zlib.h HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib/include NO_DEFAULT_PATH REQUIRED)
+        endif()
+    endif()
+
+    if(NOT HDF5_FOUND OR NOT TARGET hdf5::all)
+        set(HDF5_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for HDF5 installed by h5pp")
         set(HDF5_NO_SYSTEM_ENVIRONMENT_PATH ON)
         set(HDF5_NO_CMAKE_PACKAGE_REGISTRY ON)
         set(HDF5_NO_CMAKE_SYSTEM_PATH ON)
@@ -109,37 +144,23 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
         mark_as_advanced(HDF5_NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
         mark_as_advanced(HDF5_FIND_VERBOSE)
         mark_as_advanced(HDF5_FIND_DEBUG)
-
-        find_package(HDF5 1.8 COMPONENTS C HL)
+        # This one uses our own module, but will call the config-mode internally first.
+        find_package(HDF5 1.12 COMPONENTS C HL)
         if(NOT HDF5_FOUND OR NOT TARGET hdf5::all)
             message(STATUS "HDF5 will be installed into ${H5PP_DEPS_INSTALL_DIR}")
-            find_library(SZIP_LIBRARY NAMES sz szip     HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES aec lib aec/lib NO_DEFAULT_PATH)
-            find_library(AEC_LIBRARY  NAMES aec         HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES aec lib aec/lib NO_DEFAULT_PATH)
-            find_library(ZLIB_LIBRARY NAMES  z          HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib lib zlib/lib NO_DEFAULT_PATH)
-            find_path(SZIP_ROOT NAMES include/szlib.h   HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES aec NO_DEFAULT_PATH)
-            find_path(SZIP_INCLUDE_DIR NAMES szlib.h    HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES aec/include NO_DEFAULT_PATH)
-            find_path(ZLIB_ROOT NAMES include/zlib.h    HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib NO_DEFAULT_PATH)
-            find_path(ZLIB_INCLUDE_DIR NAMES zlib.h     HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib/include NO_DEFAULT_PATH)
-            if(NOT SZIP_LIBRARY OR NOT AEC_LIBRARY)
-                install_package(aec "${H5PP_DEPS_INSTALL_DIR}" "")
-                find_library(SZIP_LIBRARY NAMES sz szip     HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES aec lib aec/lib NO_DEFAULT_PATH REQUIRED)
-                find_library(AEC_LIBRARY  NAMES aec         HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES aec lib aec/lib NO_DEFAULT_PATH REQUIRED)
-                find_path(SZIP_ROOT NAMES include/szlib.h   HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES aec NO_DEFAULT_PATH REQUIRED)
-                find_path(SZIP_INCLUDE_DIR NAMES szlib.h    HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES aec/include NO_DEFAULT_PATH REQUIRED)
-            endif()
-            if(NOT ZLIB_LIBRARY)
-                install_package(zlib "${H5PP_DEPS_INSTALL_DIR}" "")
-                find_library(ZLIB_LIBRARY NAMES  z  HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib lib zlib/lib NO_DEFAULT_PATH REQUIRED)
-                find_path(ZLIB_ROOT NAMES include/zlib.h HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib NO_DEFAULT_PATH REQUIRED)
-                find_path(ZLIB_INCLUDE_DIR NAMES zlib.h HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib/include NO_DEFAULT_PATH REQUIRED)
-            endif()
+            list(APPEND H5PP_HDF5_OPTIONS  "-DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON")
+            list(APPEND H5PP_HDF5_OPTIONS  "-DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON")
+            list(APPEND H5PP_HDF5_OPTIONS  "-DZLIB_LIBRARY:BOOL=${ZLIB_LIBRARY}")
+            list(APPEND H5PP_HDF5_OPTIONS  "-DZLIB_INCLUDE_DIR:BOOL=${ZLIB_INCLUDE_DIR}")
+            list(APPEND H5PP_HDF5_OPTIONS  "-DSZIP_LIBRARY:BOOL=${SZIP_LIBRARY}")
+            list(APPEND H5PP_HDF5_OPTIONS  "-DSZIP_INCLUDE_DIR:BOOL=${SZIP_INCLUDE_DIR}")
             list(APPEND H5PP_HDF5_OPTIONS  "-DHDF5_ENABLE_PARALLEL:BOOL=${H5PP_ENABLE_MPI}")
             install_package(hdf5 "${H5PP_DEPS_INSTALL_DIR}" "${H5PP_HDF5_OPTIONS}")
-            # This one uses our own module though, but will call the config-mode internally first.
+            # This one uses our own module, but will call the config-mode internally first.
             find_package(HDF5 1.12 COMPONENTS C HL REQUIRED)
             message(STATUS "hdf5 installed successfully")
+
         endif()
-#        set(CMAKE_FIND_DEBUG_MODE OFF)
         if(HDF5_FOUND AND TARGET hdf5::all)
             list(APPEND H5PP_TARGETS hdf5::all)
             target_link_libraries(deps INTERFACE hdf5::all)
