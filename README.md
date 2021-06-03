@@ -232,7 +232,7 @@ Notice the cast to `dtype=np.complex128` which interprets each element of the ar
 
 ### Requirements
 * C++17 capable compiler. GCC version >= 7 or Clang version >= 7.0
-* CMake version >= 3.14
+* CMake version >= 3.19
 * [**HDF5**](https://support.hdfgroup.org/HDF5/)  library, version >= 1.8
 
 #### Optional dependencies:
