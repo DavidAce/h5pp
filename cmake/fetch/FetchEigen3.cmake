@@ -12,7 +12,9 @@ FetchContent_Declare(fetch-eigen3
         )
 if(NOT TARGET Eigen3::Eigen)
     FetchContent_MakeAvailable(fetch-eigen3) # Avoid needless configure on header only library
-    add_library(Eigen3::Eigen ALIAS eigen)
+    if(NOT TARGET Eigen3::Eigen AND TARGET eigen)
+        add_library(Eigen3::Eigen ALIAS eigen)
+    endif()
 endif()
 
 
