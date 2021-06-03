@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
-cmake_policy(SET CMP0074 NEW)
+cmake_minimum_required(VERSION 3.19)
 project(external-hdf5)
 
 if(INIT_CACHE_FILE)

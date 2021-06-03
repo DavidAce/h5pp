@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.19)
 
 function(replace_or_remove_shared target_name)
     if(NOT TARGET ${target_name})

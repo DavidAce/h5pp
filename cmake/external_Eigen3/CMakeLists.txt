@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.19)
 project(external-eigen3)
 if(INIT_CACHE_FILE)
     set(INIT_CACHE_ARG -C${INIT_CACHE_FILE})

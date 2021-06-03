@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.19)
 function(try_compile_std_optional)
     if(NOT OPTIONAL_COMPILES)
         file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/check-std-optional.cpp

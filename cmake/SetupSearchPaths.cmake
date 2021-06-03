@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.19)
+
 # Append search paths for find_package and find_library calls
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
