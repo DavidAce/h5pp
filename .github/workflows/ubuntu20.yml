@@ -122,7 +122,7 @@ jobs:
       - name: Test
         run: |
           cd build/Debug
-          ctest -C Debug --output-on-failure
+          ctest -C Debug --output-on-failure -R h5pp
 
 
 
