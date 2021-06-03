@@ -91,26 +91,26 @@ things could be even simpler.
 Using `h5pp` is intended to be simple. After initializing a file, 
 most of the work can be achieved using just two member functions `.writeDataset(...)` and `.readDataset(...)`.
 
-### Example: Writing an `std::vector`
+### Example: Write an `std::vector`
 ```c++
     #include <h5pp/h5pp.h>
-    
     int main() {
-        
-        // Initialize a file
-        h5pp::File file("myDir/someFile.h5");
-    
-        // Initialize a vector doubles
-        std::vector<double> v = {1.0, 2.0, 3.0};
-        
-        // Write the vector to file.
-        // Inside the file, the data will be stored in a dataset named "myStdVector"
-        file.writeDataset(v, "myStdVector");
-        return 0;
+        std::vector<double> v = {1.0, 2.0, 3.0};    // Define a vector
+        h5pp::File file("somePath/someFile.h5");    // Create a file 
+        file.writeDataset(v, "myStdVector");        // Write the vector into a new dataset "myStdVector"
     }
 ```
 
-Find more code examples in the [examples directory](https://github.com/DavidAce/h5pp/tree/master/examples) or in the [Wiki](https://github.com/DavidAce/h5pp/wiki).
+### Example: Read an `std::vector`
+```c++
+    #include <h5pp/h5pp.h>
+    int main() {
+        h5pp::File file("somePath/someFile.h5", h5pp::FilePermission::READWRITE);    // Open (or create) a file
+        auto v = file.readDataset<std::vector<double>>("myStdVector");               // Read the dataset from file
+    }
+```
+
+Find more code examples in the [examples directory](https://github.com/DavidAce/h5pp/tree/master/examples).
 
 
 ### File permissions
@@ -136,7 +136,7 @@ The flags are listed in the order of increasing "danger" that they pose to previ
 To give a concrete example, the syntax works as follows
 
 ```c++
-    h5pp::File file("myDir/someFile.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("somePath/someFile.h5", h5pp::FilePermission::REPLACE);
 ```
 
 ### Storage Layout
@@ -167,8 +167,15 @@ functions to set or check the compression level:
 
 or pass a temporary compression level as the fifth argument when writing a dataset:
 ```c++
-    file.writeDataset(myData, "science/myCompressedData", H5D_CHUNKED, std::nullopt, 8); // Creates a chunked dataset with compression level 8.
+    file.writeDataset(myData, "science/myCompressedData", H5D_CHUNKED, std::nullopt, 3); // Creates a chunked dataset with compression level 3.
 ```
+
+or use the shorthand member function for this task:
+
+```c++
+   file.writeDataset_compressed(myData, "science/myCompressedData", 3) // // Creates a chunked dataset with compression level 3 (default).
+```
+
 
 
 
@@ -239,7 +246,7 @@ Notice the cast to `dtype=np.complex128` which interprets each element of the ar
 * [**Eigen**](http://eigen.tuxfamily.org): Write Eigen matrices and tensors directly. Tested with version >= 3.3.4
 * [**spdlog**](https://github.com/gabime/spdlog): Enables logging for debug purposes. Tested with version >= 1.3.1
 * [**fmt**](https://github.com/fmtlib/fmt): String formatting library (used in `spdlog`).
-* [**ghc::filesystem**](https://github.com/gulrak/filesystem): This drop-in replacement for `std::filesystem` is downloaded and installed automatically when needed, but only if `H5PP_PACKAGE_MANAGER=find-or-cmake`, `cmake` or `conan`
+* [**ghc::filesystem**](https://github.com/gulrak/filesystem): If your compiler lacks `std::filesystem` this drop-in replacement is downloaded at the configuration step if `H5PP_PACKAGE_MANAGER=cmake|fetch|conan`
 
 
 **NOTE:** Logging works the same with or without [Spdlog](https://github.com/gabime/spdlog) enabled. When Spdlog is *not* found, 
