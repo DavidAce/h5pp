@@ -100,7 +100,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
     # Download HDF5 (and ZLIB and SZIP)
     if(NOT szip_FOUND OR NOT TARGET szip-static)
         set(SZIP_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for SZIP installed by h5pp")
-        find_package(SZIP CONFIG NAMES szip sz COMPONENTS static
+        find_package(szip CONFIG NAMES szip sz COMPONENTS static
                 PATH_SUFFIXES share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
                 NO_SYSTEM_ENVIRONMENT_PATH
                 NO_CMAKE_PACKAGE_REGISTRY
@@ -108,7 +108,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
                 NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
         if(szip_FOUND OR NOT TARGET szip-static)
             install_package(szip "${H5PP_DEPS_INSTALL_DIR}" "")
-            find_package(SZIP CONFIG NAMES szip sz COMPONENTS static
+            find_package(szip CONFIG NAMES szip sz COMPONENTS static
                     PATH_SUFFIXES share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
                     NO_SYSTEM_ENVIRONMENT_PATH
                     NO_CMAKE_SYSTEM_PATH
