@@ -98,17 +98,17 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
 
 
     # Download HDF5 (and ZLIB and SZIP)
-    if(NOT szip_FOUND OR NOT TARGET szip-static)
-        set(szip_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for SZIP installed by h5pp")
-        find_package(szip CONFIG NAMES szip sz COMPONENTS static
+    if(NOT SZIP_FOUND OR NOT TARGET szip-static)
+        set(SZIP_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for SZIP installed by h5pp")
+        find_package(SZIP CONFIG NAMES szip sz COMPONENTS static shared
                 PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
                 NO_SYSTEM_ENVIRONMENT_PATH
                 NO_CMAKE_PACKAGE_REGISTRY
                 NO_CMAKE_SYSTEM_PATH
                 NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
-        if(szip_FOUND OR NOT TARGET szip-static)
+        if(NOT SZIP_FOUND OR NOT TARGET szip-static)
             install_package(szip "${H5PP_DEPS_INSTALL_DIR}" "")
-            find_package(szip CONFIG NAMES szip sz COMPONENTS static
+            find_package(SZIP CONFIG NAMES szip sz COMPONENTS static shared
                     PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
                     NO_SYSTEM_ENVIRONMENT_PATH
                     NO_CMAKE_SYSTEM_PATH
@@ -148,13 +148,13 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
         find_package(HDF5 1.12 COMPONENTS C HL)
         if(NOT HDF5_FOUND OR NOT TARGET hdf5::all)
             message(STATUS "HDF5 will be installed into ${H5PP_DEPS_INSTALL_DIR}")
+            list(APPEND H5PP_HDF5_OPTIONS  "-DHDF5_ENABLE_PARALLEL:BOOL=${H5PP_ENABLE_MPI}")
             list(APPEND H5PP_HDF5_OPTIONS  "-DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON")
             list(APPEND H5PP_HDF5_OPTIONS  "-DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON")
-            list(APPEND H5PP_HDF5_OPTIONS  "-DZLIB_LIBRARY:BOOL=${ZLIB_LIBRARY}")
-            list(APPEND H5PP_HDF5_OPTIONS  "-DZLIB_INCLUDE_DIR:BOOL=${ZLIB_INCLUDE_DIR}")
-            list(APPEND H5PP_HDF5_OPTIONS  "-DSZIP_LIBRARY:BOOL=${SZIP_LIBRARY}")
-            list(APPEND H5PP_HDF5_OPTIONS  "-DSZIP_INCLUDE_DIR:BOOL=${SZIP_INCLUDE_DIR}")
-            list(APPEND H5PP_HDF5_OPTIONS  "-DHDF5_ENABLE_PARALLEL:BOOL=${H5PP_ENABLE_MPI}")
+            list(APPEND H5PP_HDF5_OPTIONS  "-DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}")
+            list(APPEND H5PP_HDF5_OPTIONS  "-DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}")
+            list(APPEND H5PP_HDF5_OPTIONS  "-DSZIP_LIBRARY:FILEPATH=${SZIP_LIBRARY}")
+            list(APPEND H5PP_HDF5_OPTIONS  "-DSZIP_INCLUDE_DIR:PATH=${SZIP_INCLUDE_DIR}")
             install_package(hdf5 "${H5PP_DEPS_INSTALL_DIR}" "${H5PP_HDF5_OPTIONS}")
             # This one uses our own module, but will call the config-mode internally first.
             find_package(HDF5 1.12 COMPONENTS C HL REQUIRED)

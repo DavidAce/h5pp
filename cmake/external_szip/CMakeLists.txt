@@ -13,6 +13,7 @@ ExternalProject_Add(external_szip # Replaces szip
         BUILD_ALWAYS TRUE
         CMAKE_ARGS
         ${INIT_CACHE_ARG}
+        -DBUILD_SHARED_LIBS:BOOL=ON # HDF5 will search for both static and shared components. Static is always built.
         -DCMAKE_POLICY_DEFAULT_CMP0075=NEW
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/${CMAKE_INSTALL_LIBDIR}
