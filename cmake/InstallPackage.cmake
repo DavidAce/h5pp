@@ -35,6 +35,10 @@ function(install_package package_name install_dir extra_flags)
     set(CMAKE_CXX_STANDARD_REQUIRED TRUE CACHE BOOL "")
     set(CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL "")
 
+    # Set policies for CMakeLists in packages that require older CMake versions
+    set(CMAKE_POLICY_DEFAULT_CMP0074 NEW CACHE STRING "Honor <PackageName>_ROOT")
+    set(CMAKE_POLICY_DEFAULT_CMP0091 NEW CACHE STRING "Use MSVC_RUNTIME_LIBRARY") # Fixes spdlog on MSVC
+
     # Generate an init cache to propagate the current configuration
     generate_init_cache()
 
