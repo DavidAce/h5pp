@@ -35,7 +35,10 @@ function(install_package package_name install_dir extra_flags)
     set(CMAKE_CXX_STANDARD_REQUIRED TRUE CACHE BOOL "")
     set(CMAKE_CXX_EXTENSIONS FALSE CACHE BOOL "")
 
+    # Generate an init cache to propagate the current configuration
     generate_init_cache()
+
+    # Configure the package
     execute_process( COMMAND  ${CMAKE_COMMAND} -E make_directory ${build_dir})
     execute_process( COMMAND  ${CMAKE_COMMAND} -E remove ${build_dir}/CMakeCache.txt)
     execute_process(
@@ -59,21 +62,44 @@ function(install_package package_name install_dir extra_flags)
     endif()
 
 
+    # Make sure to do multithreaded builds if possible
     include(cmake/GetNumThreads.cmake)
     get_num_threads(num_threads)
-    execute_process(COMMAND  ${CMAKE_COMMAND} --build . --parallel ${num_threads}
-            WORKING_DIRECTORY "${build_dir}"
-            RESULT_VARIABLE build_result
-    )
 
-    if(build_result)
-        message(STATUS "Got non-zero exit code while building package: ${package_name}")
-        message(STATUS  "build_dir         : ${build_dir}")
-        message(STATUS  "install_dir       : ${install_dir}")
-        message(STATUS  "extra_flags       : ${extra_flags}")
-        message(STATUS  "build_result      : ${build_result}")
-        message(FATAL_ERROR "Failed to build package: ${package_name}")
+    # Build the package
+    if(CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+        # This branch is for multi-config generators such as Visual Studio 16 2019
+        foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
+            execute_process(COMMAND  ${CMAKE_COMMAND} --build . --parallel ${num_threads} --config ${CONFIG}
+                    WORKING_DIRECTORY "${build_dir}"
+                    RESULT_VARIABLE build_result
+            )
+            if(build_result)
+                message(STATUS "Got non-zero exit code while building package: ${package_name}")
+                message(STATUS  "build_type        : ${CONFIG}")
+                message(STATUS  "build_dir         : ${build_dir}")
+                message(STATUS  "install_dir       : ${install_dir}")
+                message(STATUS  "extra_flags       : ${extra_flags}")
+                message(STATUS  "build_result      : ${build_result}")
+                message(FATAL_ERROR "Failed to build package: ${package_name}")
+            endif()
+        endforeach()
+    else()
+        # This is for single-config generators such as Unix Makefiles and Ninja
+        execute_process(COMMAND  ${CMAKE_COMMAND} --build . --parallel ${num_threads}
+                WORKING_DIRECTORY "${build_dir}"
+                RESULT_VARIABLE build_result
+                )
+        if(build_result)
+            message(STATUS "Got non-zero exit code while building package: ${package_name}")
+            message(STATUS  "build_dir         : ${build_dir}")
+            message(STATUS  "install_dir       : ${install_dir}")
+            message(STATUS  "extra_flags       : ${extra_flags}")
+            message(STATUS  "build_result      : ${build_result}")
+            message(FATAL_ERROR "Failed to build package: ${package_name}")
+        endif()
     endif()
+
 
     # Copy the install manifest if it exists
     file(GLOB_RECURSE INSTALL_MANIFEST "${build_dir}/*/install_manifest.txt")
