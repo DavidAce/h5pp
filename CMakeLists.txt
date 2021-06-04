@@ -204,25 +204,25 @@ else()
     install(EXPORT
             h5ppTargets
             NAMESPACE h5pp::
-            DESTINATION share/h5pp/cmake)
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp)
 
 
     include(CMakePackageConfigHelpers)
     configure_package_config_file(
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
-            INSTALL_DESTINATION share/h5pp/cmake
+            INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
     )
     configure_package_config_file(
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-cmake.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-cmake.cmake
-            INSTALL_DESTINATION share/h5pp/cmake
+            INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
             PATH_VARS H5PP_DEPS_INSTALL_DIR
     )
     configure_package_config_file(
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-conan.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
-            INSTALL_DESTINATION share/h5pp/cmake
+            INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
     )
 
     write_basic_package_version_file(
@@ -242,7 +242,7 @@ else()
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findfmt.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindHDF5.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake
-            DESTINATION share/h5pp/cmake
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
             COMPONENT config
             )
 
@@ -259,7 +259,7 @@ else()
         foreach (conan_file ${CONAN_INSTALL_FILES})
             if (EXISTS "${conan_file}")
                 install(FILES ${conan_file}
-                        DESTINATION share/h5pp/cmake
+                        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
                         COMPONENT config)
             endif ()
         endforeach ()
