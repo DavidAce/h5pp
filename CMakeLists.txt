@@ -57,7 +57,7 @@ endif ()
 
 # Setup paths that find_package should search and
 # let cmake find our Find<package>.cmake modules
-include(cmake/SetupSearchPaths.cmake)
+include(cmake/SetupPaths.cmake)
 
 # Print cmake build info options and host properties
 include(cmake/PrintBuildInfo.cmake)
@@ -197,7 +197,9 @@ else()
 
     # Install library
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include COMPONENT headers)
+    include(GNUInstallDirs)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT include)
+#    install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/ DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin)
     install(TARGETS h5pp headers deps flags EXPORT h5ppTargets)
 
     #Export the targets to a script
