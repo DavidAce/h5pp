@@ -1,9 +1,9 @@
 
 if(H5PP_DOWNLOAD_METHOD)
-    message(WARNING "The following CMake variable has been deprecated\n"
-            "\t H5PP_DOWNLOAD_METHOD=[none|find|fetch|find-or-fetch|conan]\n"
-            "Update this variable to\n"
-            "\t H5PP_PACKAGE_MANAGER=[find|cmake|find-or-cmake|conan]")
+    message(WARNING "The variable [H5PP_DOWNLOAD_METHOD] has been deprecated\n"
+            "Use the following variable instead:\n"
+            "\t H5PP_PACKAGE_MANAGER:STRING=[find|cmake|fetch|find-or-cmake|find-or-fetch|conan]")
+    set(H5PP_PACKAGE_MANAGER ${H5PP_DOWNLOAD_METHOD} CACHE STRING "")
 endif()
 
 if(H5PP_DEPS_IN_SUBDIR)
