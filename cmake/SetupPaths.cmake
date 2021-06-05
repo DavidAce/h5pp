@@ -22,6 +22,22 @@ if(NOT H5PP_DEPS_INSTALL_DIR)
     set(H5PP_DEPS_INSTALL_DIR ${CMAKE_BINARY_DIR}/h5pp-deps-install)
 endif()
 
+if(H5PP_PREFIX_ADD_PKGNAME)
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/h5pp CACHE STRING
+            "The option H5PP_PREFIX_ADD_PKGNAME=ON sets the install directory: <CMAKE_INSTALL_PREFIX>/h5pp"
+            FORCE)
+endif()
+
+
+if(WIN32)
+    # On Windows it is standard practice to collect binaries into one directory.
+    # This way we avoid errors from .dll's not being found at runtime.
+    # These directories will contain h5pp tests, examples and possibly dependencies
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" CACHE PATH "Collect .exe and .dll")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE PATH "Collect .lib")
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE PATH "Collect .lib")
+endif()
+
 
 # Paths to search for conda libraries
 # These paths should only be searched when H5PP_PREFER_CONDA_LIBS = ON
