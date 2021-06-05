@@ -5,7 +5,8 @@ list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake)
 
 # Make sure find_library prefers static/shared library depending on BUILD_SHARED_LIBS
 # This is important when finding dependencies such as zlib which provides both shared and static libraries.
-if(BUILD_SHARED_LIBS AND NOT DEFINED CMAKE_FIND_LIBRARY_SUFFIXES)
+# Note that we do not force this cache variable, so users can override it
+if(BUILD_SHARED_LIBS)
     # This is order is the default
     set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX};${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE STRING "Prefer finding shared libraries")
 else()
