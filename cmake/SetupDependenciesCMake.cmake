@@ -127,11 +127,6 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
         if(NOT ZLIB_LIBRARY)
             install_package(zlib "${H5PP_DEPS_INSTALL_DIR}" "")
         endif()
-        find_library(ZLIB_LIBRARY NAMES
-                z zlib zdll zlib1 zlibstatic # Release names
-                zd zlibd zdlld zlibd1 zlib1d zlibstaticd # Debug names
-                HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib/lib NO_DEFAULT_PATH REQUIRED)
-        find_path(ZLIB_INCLUDE_DIR NAMES zlib.h HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib/include NO_DEFAULT_PATH REQUIRED)
         # HDF5 will call find_package(ZLIB). If it succeeds here it will probably succeed then.
         # This module searches ZLIB_ROOT first
         find_package(ZLIB REQUIRED)
