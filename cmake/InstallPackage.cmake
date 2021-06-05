@@ -25,10 +25,9 @@ endfunction()
 # by running cmake in a subprocess. The current CMake configuration is transmitted
 # by setting the flags manually.
 function(install_package package_name install_dir extra_flags)
-    set(build_dir    ${H5PP_DEPS_BUILD_DIR}/${package_name})
-    if (H5PP_DEPS_IN_SUBDIR)
+    set(build_dir ${H5PP_DEPS_BUILD_DIR}/${package_name})
+    if (H5PP_PREFIX_ADD_PKGNAME)
         set(install_dir ${install_dir}/${package_name})
-        mark_as_advanced(install_dir)
     endif()
 
     set(CMAKE_CXX_STANDARD 17 CACHE STRING "")
