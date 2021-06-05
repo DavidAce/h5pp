@@ -72,5 +72,3 @@ list(APPEND H5PP_CONAN_CANDIDATE_PATHS
 
 mark_as_advanced(H5PP_CONDA_CANDIDATE_PATHS)
 mark_as_advanced(H5PP_CONAN_CANDIDATE_PATHS)
-mark_as_advanced(H5PP_DEPS_BUILD_DIR)
-mark_as_advanced(H5PP_DEPS_INSTALL_DIR)
