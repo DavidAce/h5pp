@@ -39,3 +39,5 @@ endif()
 if(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cmake")
     include(${CMAKE_CURRENT_LIST_DIR}/h5ppConfig.deps-cmake.cmake)
 endif()
+
+check_required_components(h5pp)
