@@ -45,7 +45,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "fetch")
         endif()
     endif()
 
-
+    include(cmake/InstallPackage.cmake)
     # Download HDF5 (and ZLIB and SZIP)
     if(NOT SZIP_FOUND)
         set(SZIP_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for SZIP installed by h5pp")
