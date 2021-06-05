@@ -19,7 +19,7 @@ if(NOT H5PP_DEPS_BUILD_DIR)
     set(H5PP_DEPS_BUILD_DIR ${CMAKE_BINARY_DIR}/h5pp-deps-build)
 endif()
 if(NOT H5PP_DEPS_INSTALL_DIR)
-    set(H5PP_DEPS_INSTALL_DIR ${CMAKE_BINARY_DIR}/h5pp-deps-install)
+    set(H5PP_DEPS_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}) # Install to the same location as h5pp by default
 endif()
 
 if(H5PP_PREFIX_ADD_PKGNAME)
