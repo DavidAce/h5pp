@@ -135,12 +135,11 @@ namespace h5pp::hdf5 {
         std::array<unsigned int, 1> cdval   = {0};
         std::array<size_t, 1>       cdelm   = {0};
         for(int idx = 0; idx < nfilter; idx++) {
-            constexpr size_t size = 10;
             filter                = H5Pget_filter(dsetCreatePropertyList, idx, nullptr, cdelm.data(), cdval.data(), 0, nullptr, nullptr);
             if(filter != H5Z_FILTER_DEFLATE) continue;
             H5Pget_filter_by_id(dsetCreatePropertyList, filter, nullptr, cdelm.data(), cdval.data(), 0, nullptr, nullptr);
         }
-        return cdval[0];
+        return static_cast<int>(cdval[0]);
     }
 
     [[nodiscard]] inline std::optional<std::vector<hsize_t>> getMaxDimensions(const hid::h5s &space, H5D_layout_t layout) {
