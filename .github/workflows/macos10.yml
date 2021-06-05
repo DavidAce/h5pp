@@ -20,12 +20,14 @@ jobs:
         include:
           - { compiler: cl, shared: OFF, conda: OFF, source: conan }
           - { compiler: cl, shared: OFF, conda: OFF, source: cmake }
-          - { compiler: cl, shared: OFF, conda: OFF, source: find-or-cmake }
-          - { compiler: cl, shared: OFF, conda: ON , source: find-or-cmake }
-          - { compiler: cl, shared: OFF, conda: OFF, source: conan }
-          - { compiler: cl, shared: OFF, conda: OFF, source: cmake }
-          - { compiler: cl, shared: OFF, conda: OFF, source: find-or-cmake }
-          - { compiler: cl, shared: OFF, conda: ON , source: find-or-cmake }
+          - { compiler: cl, shared: OFF, conda: OFF, source: fetch }
+          - { compiler: cl, shared: OFF, conda: OFF, source: find }
+          - { compiler: cl, shared: OFF, conda: ON , source: find }
+          - { compiler: cl, shared: ON,  conda: OFF, source: conan }
+          - { compiler: cl, shared: ON,  conda: OFF, source: cmake }
+          - { compiler: cl, shared: ON,  conda: OFF, source: fetch }
+          - { compiler: cl, shared: ON,  conda: OFF, source: find }
+          - { compiler: cl, shared: ON,  conda: ON , source: find }
 
     steps:
       - uses: actions/checkout@v2

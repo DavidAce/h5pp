@@ -18,22 +18,26 @@ jobs:
       fail-fast: true # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { compiler: gcc,   conda : OFF, shared: OFF, source: cmake }
-          - { compiler: gcc,   conda : OFF, shared: ON , source: cmake }
-          - { compiler: gcc,   conda : OFF, shared: OFF, source: conan }
-          - { compiler: gcc,   conda : OFF, shared: ON , source: conan }
-          - { compiler: gcc,   conda : OFF, shared: OFF, source: find-or-cmake }
-          - { compiler: gcc,   conda : OFF, shared: ON , source: find-or-cmake }
-          - { compiler: gcc,   conda : ON , shared: OFF, source: find-or-cmake }
-          - { compiler: gcc,   conda : ON , shared: ON , source: find-or-cmake }
-          - { compiler: clang, conda : OFF, shared: OFF, source: cmake }
-          - { compiler: clang, conda : OFF, shared: ON , source: cmake }
-          - { compiler: clang, conda : OFF, shared: OFF, source: conan }
-          - { compiler: clang, conda : OFF, shared: ON , source: conan }
-          - { compiler: clang, conda : OFF, shared: OFF, source: find-or-cmake }
-          - { compiler: clang, conda : OFF, shared: ON , source: find-or-cmake }
-          - { compiler: clang, conda : ON , shared: OFF, source: find-or-cmake }
-          - { compiler: clang, conda : ON , shared: ON , source: find-or-cmake }
+          - { compiler: gcc,   shared: OFF,  conda: OFF, source: cmake }
+          - { compiler: gcc,   shared: OFF,  conda: OFF, source: conan }
+          - { compiler: gcc,   shared: OFF,  conda: OFF, source: fetch }
+          - { compiler: gcc,   shared: OFF,  conda: OFF, source: find  }
+          - { compiler: gcc,   shared: OFF,  conda: ON,  source: find  }
+          - { compiler: gcc,   shared: ON,   conda: OFF, source: cmake }
+          - { compiler: gcc,   shared: ON,   conda: OFF, source: conan }
+          - { compiler: gcc,   shared: ON,   conda: OFF, source: fetch }
+          - { compiler: gcc,   shared: ON,   conda: OFF, source: find  }
+          - { compiler: gcc,   shared: ON,   conda: ON , source: find  }
+          - { compiler: clang, shared: OFF,  conda: OFF, source: cmake }
+          - { compiler: clang, shared: OFF,  conda: OFF, source: conan }
+          - { compiler: clang, shared: OFF,  conda: OFF, source: fetch }
+          - { compiler: clang, shared: OFF,  conda: OFF, source: find  }
+          - { compiler: clang, shared: OFF,  conda: ON,  source: find  }
+          - { compiler: clang, shared: ON,   conda: OFF, source: cmake }
+          - { compiler: clang, shared: ON,   conda: OFF, source: conan }
+          - { compiler: clang, shared: ON,   conda: OFF, source: fetch }
+          - { compiler: clang, shared: ON,   conda: OFF, source: find  }
+          - { compiler: clang, shared: ON,   conda: ON , source: find  }
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
