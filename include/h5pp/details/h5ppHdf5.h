@@ -12,6 +12,7 @@
 #include <map>
 #include <typeindex>
 #include <utility>
+#include <cstddef>
 /*!
  * \brief A collection of functions to create (or get information about) datasets and attributes in HDF5 files
  */
