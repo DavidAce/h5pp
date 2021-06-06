@@ -618,3 +618,6 @@ find_package_handle_standard_args(HDF5
         HANDLE_COMPONENTS
         FAIL_MESSAGE "Failed to find HDF5"
         )
+if(HDF5_FIND_REQUIRED AND NOT HDF5_FOUND)
+    message(FATAL_ERROR "Could not find HDF5")
+endif()
