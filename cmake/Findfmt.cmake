@@ -134,27 +134,27 @@ endif()
 
 if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
     find_path(FMT_INCLUDE_DIR
-            fmt/fmt.h
-            HINTS ${fmt_ROOT} ${FMT_INCLUDE_DIR}
+            fmt/core.h
+            HINTS ${H5PP_DEPS_INSTALL_DIR} ${CONAN_FMT_ROOT} ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES fmt fmt/include include include/fmt
             ${NO_DEFAULT_PATH}
-            ${NO_CMAKE_PACKAGE_REGISTRY}
             ${NO_CMAKE_SYSTEM_PATH}
             ${NO_SYSTEM_ENVIRONMENT_PATH}
             )
     if(FMT_INCLUDE_DIR)
         fmt_check_version_include(FMT_INCLUDE_DIR)
-        # Check if there is a compiled library to go with the headers
-        include(GNUInstallDirs)
-        find_library(FMT_LIBRARY
-                NAMES fmt
-                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
-                PATH_SUFFIXES fmt fmt/lib lib/fmt fmt/${CMAKE_INSTALL_LIBDIR} spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
-                ${NO_DEFAULT_PATH}
-                ${NO_CMAKE_PACKAGE_REGISTRY}
-                ${NO_CMAKE_SYSTEM_PATH}
-                ${NO_SYSTEM_ENVIRONMENT_PATH}
-                )
+        if(FMT_VERSION_OK)
+            # Check if there is a compiled library to go with the headers
+            include(GNUInstallDirs)
+            find_library(FMT_LIBRARY
+                    NAMES fmt
+                    HINTS ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
+                    PATH_SUFFIXES fmt fmt/lib
+                    ${NO_DEFAULT_PATH}
+                    ${NO_CMAKE_SYSTEM_PATH}
+                    ${NO_SYSTEM_ENVIRONMENT_PATH}
+                    )
+        endif()
     else()
         # Check if fmt has been bundled with spdlog, in which case we use it as header-only
         find_path(SPDLOG_FMT_BUNDLED
@@ -163,6 +163,7 @@ if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
                 PATH_SUFFIXES spdlog/include include spdlog include/spdlog spdlog/include/spdlog
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}
+                ${NO_SYSTEM_ENVIRONMENT_PATH}
                 )
         fmt_check_version_include(SPDLOG_FMT_BUNDLED)
     endif()
