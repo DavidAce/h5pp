@@ -2,7 +2,6 @@
 [![Ubuntu 20.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2020.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Windows 10](https://github.com/DavidAce/h5pp/workflows/Windows%2010/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![MacOS 10.15](https://github.com/DavidAce/h5pp/workflows/macOS%2010.15/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
-[![Anaconda-Server Badge](https://anaconda.org/davidace/h5pp/badges/installer/conda.svg)](https://conda.anaconda.org/davidace)
 [![Download](https://img.shields.io/badge/Install%20with-conan-green)](https://conan.io/center/h5pp)
 [![Download](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)
 
@@ -82,7 +81,7 @@ things could be even simpler.
 *  Support for user-defined compound HDF5 types (see [example](https://github.com/DavidAce/h5pp/blob/master/examples/example-04a-custom-struct-easy.cpp))
 *  Support for HDF5 tables (with user-defined compound HDF5 types for entries)
 *  Modern installation of `h5pp` and its dependencies. Choose:
-    *  Installation with package managers: [conan](https://conan.io/), [conda](https://www.anaconda.com) or apt (.deb installation file)
+    *  Installation with package managers: [conan](https://conan.io/), or apt (.deb installation file)
     *  CMake installation providing targets for linking to your projects. (Opt-in) Automatically find or download dependencies with "CMake-only" methods.
 *  Multi-platform: Linux, Windows, OSX. (Developed under Linux)
 
@@ -256,7 +255,6 @@ considerations (implemented with STL lists, strings and streams).
 ### Obtaining `h5pp`
 There are currently 4 ways to obtain `h5pp`:
 * `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
-* From conda: `conda install -c davidace h5pp`
 * From [conan-center](https://conan.io/center/h5pp/1.8.5)
 * (Ubuntu/Debian only) Download the [latest release](https://github.com/DavidAce/h5pp/releases) and install with apt: `sudo apt install ./h5pp_<version>_amd64.deb` 
 
@@ -338,7 +336,6 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 | `H5PP_ENABLE_FMT`                 | `OFF`      | Enables `{fmt}` string formatting library |
 | `H5PP_ENABLE_SPDLOG`              | `OFF`      | Enables `spdlog` support for logging `h5pp` internal info to stdout (implies fmt) |
 | `H5PP_DEPS_IN_SUBDIR`             | `ON`       | Appends `<libname>` to install location of dependencies, i.e. `H5PP_DEPS_INSTALL_DIR/<libname>`. This allows simple removal |
-| `H5PP_PREFER_CONDA_LIBS`          | `OFF`      | Prioritize finding dependencies  `hdf5`, `Eigen3` and `spdlog` installed through conda. No effect when `H5PP_PACKAGE_MANAGER=conan`  |
 
 The following variables can be set to help guide CMake's `find_package` to your pre-installed software (no defaults):
 
@@ -366,7 +363,7 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
     cmake_minimum_required(VERSION 3.12)
     project(myProject)
     add_executable(myExecutable main.cpp)
-    find_package(h5pp PATHS <path-to-h5pp-install-dir> REQUIRED) # If h5pp is installed through conda the path may be $ENV{CONDA_PREFIX}
+    find_package(h5pp PATHS <path-to-h5pp-install-dir> REQUIRED)
     target_link_libraries(myExecutable PRIVATE h5pp::h5pp)
 ```
 
@@ -423,7 +420,7 @@ The difficult part is linking to HDF5 libraries and its dependencies.
 #### Use the custom FindHDF5.cmake bundled with `h5pp`
 When installing `h5pp`, finding HDF5 and setting up the CMake target `hdf5::all` for linking is handled by a custom module for finding HDF5, defined in `cmake/FindHDF5.cmake`. 
 This module wraps the default `FindHDF5.cmake` which comes with CMake and uses the same call signature, but fixes some annoyances with naming conventions in different versions of CMake and HDF5 executables.
-It reads hints passed through CMake flags to find HDF5 somewhere on your system (can be installed via `conda`,`apt`,`yum`, `brew`, `Easybuild`, etc) and defines a CMake target `hdf5::all` with everything you need to link correctly.
+It reads hints passed through CMake flags to find HDF5 somewhere on your system (can be installed via,`apt`,`yum`, `brew`, `Easybuild`, etc) and defines a CMake target `hdf5::all` with everything you need to link correctly.
 Most importantly, it avoids injecting shared versions of libraries (dl, zlib, szip, aec) during static builds on older platforms.
 You can use the custom module too. Add the path pointing to `FindHDF5.cmake` to the variable `CMAKE_MODULE_PATH` from within your own project:
 

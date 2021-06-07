@@ -301,7 +301,7 @@ function(find_package_hdf5_isolator hdf5_root)
                     # or else we have to reject this package.
                     unset(HDF5_LINK_LIBNAME_${lib})
                     unset(HDF5_LINK_LIBNAME_${lib} CACHE)
-                    find_library(HDF5_LINK_LIBNAME_${lib} NAMES ${lib} HINTS /usr/local/opt ${H5PP_CONDA_CANDIDATE_PATHS})
+                    find_library(HDF5_LINK_LIBNAME_${lib} NAMES ${lib} HINTS /usr/local/opt)
                     if(HDF5_LINK_LIBNAME_${lib})
                         get_filename_component(HDF5_LINK_LIBNAME_${lib}_DIR ${HDF5_LINK_LIBNAME_${lib}} DIRECTORY)
 #                        target_link_libraries(hdf5::hdf5 INTERFACE -L${HDF5_LINK_LIBNAME_${lib}_DIR})

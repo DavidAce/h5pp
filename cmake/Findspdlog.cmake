@@ -170,7 +170,7 @@ endif()
 if(NOT TARGET spdlog::spdlog AND NOT SPDLOG_CONFIG_ONLY)
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h
-            HINTS ${H5PP_CONDA_CANDIDATE_PATHS} ${CMAKE_INSTALL_PREFIX}
+            HINTS ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES spdlog/include include spdlog include/spdlog spdlog/include/spdlog
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}

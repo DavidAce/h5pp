@@ -135,7 +135,7 @@ endif()
 if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
     find_path(FMT_INCLUDE_DIR
             fmt/fmt.h
-            HINTS ${fmt_ROOT} ${FMT_INCLUDE_DIR} ${H5PP_CONDA_CANDIDATE_PATHS}
+            HINTS ${fmt_ROOT} ${FMT_INCLUDE_DIR}
             PATH_SUFFIXES fmt fmt/include include include/fmt
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -148,7 +148,6 @@ if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
         find_library(FMT_LIBRARY
                 NAMES fmt
                 HINTS ${fmt_ROOT} ${CMAKE_INSTALL_PREFIX}
-                PATHS ${H5PP_CONDA_CANDIDATE_PATHS}
                 PATH_SUFFIXES fmt fmt/lib lib/fmt fmt/${CMAKE_INSTALL_LIBDIR} spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}

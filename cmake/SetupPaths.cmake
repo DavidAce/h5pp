@@ -39,24 +39,6 @@ if(WIN32)
 endif()
 
 
-# Paths to search for conda libraries
-# These paths should only be searched when H5PP_PREFER_CONDA_LIBS = ON
-if(H5PP_PREFER_CONDA_LIBS)
-    list(APPEND H5PP_CONDA_CANDIDATE_PATHS
-            ${CONDA_PREFIX}
-            $ENV{CONDA_PREFIX}
-            $ENV{HOME}/anaconda3
-            $ENV{HOME}/anaconda
-            $ENV{HOME}/miniconda3
-            $ENV{HOME}/miniconda
-            $ENV{HOME}/.conda
-            )
-    list(APPEND Eigen3_ROOT ${H5PP_CONDA_CANDIDATE_PATHS})
-    list(APPEND spdlog_ROOT ${H5PP_CONDA_CANDIDATE_PATHS})
-    list(APPEND fmt_ROOT ${H5PP_CONDA_CANDIDATE_PATHS})
-    list(APPEND HDF5_ROOT ${H5PP_CONDA_CANDIDATE_PATHS})
-endif()
-
 # Paths to search for conan installation.
 list(APPEND H5PP_CONAN_CANDIDATE_PATHS
         ${CONAN_PREFIX}
@@ -70,5 +52,4 @@ list(APPEND H5PP_CONAN_CANDIDATE_PATHS
         $ENV{HOME}/.conda
         )
 
-mark_as_advanced(H5PP_CONDA_CANDIDATE_PATHS)
 mark_as_advanced(H5PP_CONAN_CANDIDATE_PATHS)

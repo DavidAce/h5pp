@@ -33,7 +33,6 @@ if(H5PP_PRINT_INFO)
             "-- | H5PP_IS_SUBPROJECT       : ${H5PP_IS_SUBPROJECT}\n"
             "-- | H5PP_PACKAGE_MANAGER     : ${H5PP_PACKAGE_MANAGER}\n"
             "-- | H5PP_PREFIX_ADD_PKGNAME  : ${H5PP_PREFIX_ADD_PKGNAME}\n"
-            "-- | H5PP_PREFER_CONDA_LIBS   : ${H5PP_PREFER_CONDA_LIBS}\n"
             "-- | H5PP_PRINT_INFO          : ${H5PP_PRINT_INFO}\n")
 else()
     # Print less CMake options

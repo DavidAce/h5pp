@@ -10,55 +10,44 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
+    name: ${{ matrix.compiler }}-shared-[${{ matrix.shared }}]-${{ matrix.manager }}
     runs-on: windows-2019
     env:
-      cache-name: cache-${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
+      cache-name: cache-${{ matrix.compiler }}-shared-[${{ matrix.shared }}]-${{ matrix.manager }}
     strategy:
       fail-fast: true # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { compiler: cl, shared: OFF, conda: OFF, source: conan }
-          - { compiler: cl, shared: OFF, conda: OFF, source: cmake }
-          - { compiler: cl, shared: OFF, conda: OFF, source: fetch }
-          - { compiler: cl, shared: OFF, conda: OFF, source: find-or-cmake }
-          - { compiler: cl, shared: ON,  conda: OFF, source: conan }
-          - { compiler: cl, shared: ON,  conda: OFF, source: cmake }
-          - { compiler: cl, shared: ON,  conda: OFF, source: fetch }
-          - { compiler: cl, shared: ON,  conda: OFF, source: find-or-cmake }
-          - { compiler: cl, shared: OFF, conda: ON, source: find-or-cmake }
-          - { compiler: cl, shared: ON,  conda: ON, source: find-or-cmake }
+          - { compiler: cl, shared: OFF, manager: conan }
+          - { compiler: cl, shared: OFF, manager: cmake }
+          - { compiler: cl, shared: OFF, manager: fetch }
+          - { compiler: cl, shared: OFF, manager: find-or-cmake }
+          - { compiler: cl, shared: ON,  manager: conan }
+          - { compiler: cl, shared: ON,  manager: cmake }
+          - { compiler: cl, shared: ON,  manager: fetch }
+          - { compiler: cl, shared: ON,  manager: find-or-cmake }
 
     steps:
       - uses: actions/checkout@v2
       - uses: ilammy/msvc-dev-cmd@v1
       - uses: actions/setup-python@v1
-        if: contains(matrix.source, 'conan')
+        if: contains(matrix.manager, 'conan')
         with:
           python-version: '3.x'
-
-      - uses: s-weigand/setup-conda@v1
-        if: contains(matrix.source,'conda')
-        with:
-          update-conda: false
-          conda-channels: conda-forge
 
       - uses: actions/cache@v2
         with:
           path: |
             ~/.conan/data
+            ~/h5pp-install
 #            build/Debug/h5pp-deps-install
           key: ${{ runner.os }}-${{ env.cache-name }}
 
       - name: Setup conan
-        if: matrix.source == 'conan'
+        if: matrix.manager == 'conan'
         run: |
           pip install conan
           conan user
-
-      - name: Setup conda
-        if: matrix.source == 'conda'
-        run: conda install spdlog hdf5 hdf5-static eigen
 
       - name: Configure
         shell: bash
@@ -69,13 +58,12 @@ jobs:
           -DCMAKE_BUILD_TYPE=Debug                                 \
           -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared }}            \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                         \
-          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp                       \
+          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install               \
           -DH5PP_ENABLE_EIGEN3:BOOL=ON                             \
           -DH5PP_ENABLE_SPDLOG:BOOL=ON                             \
           -DH5PP_ENABLE_ASAN:BOOL=OFF                              \
           -DH5PP_ENABLE_TESTS:BOOL=ON                              \
-          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.source }}       \
-          -DH5PP_PREFER_CONDA_LIBS:BOOL=${{ matrix.conda }}        \
+          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}      \
           -DH5PP_PRINT_INFO:BOOL=ON                                \
           -DH5PP_BUILD_EXAMPLES:BOOL=ON                            \
            -G "Visual Studio 16 2019" -A x64                       \

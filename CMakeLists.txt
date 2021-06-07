@@ -29,7 +29,6 @@ option(H5PP_BUILD_DOCS                  "Builds documentation (Requires doxygen,
 option(H5PP_ENABLE_TESTS                "Enable testing"                                                          OFF)
 option(H5PP_IS_SUBPROJECT               "Use h5pp with add_subdirectory()"                                        OFF)
 option(H5PP_PREFIX_ADD_PKGNAME          "Install h5pp and dependencies into <CMAKE_INSTALL_PREFIX>/<PackageName>" OFF)
-option(H5PP_PREFER_CONDA_LIBS           "Search for libraries in anaconda/miniconda first"                        OFF)
 option(H5PP_PRINT_INFO                  "Print info during cmake configuration"                                   OFF)
 option(H5PP_ENABLE_EIGEN3               "Enables Eigen3 linear algebra library"                                   OFF)
 option(H5PP_ENABLE_FMT                  "Enables the {fmt} formatting library"                                    OFF)
