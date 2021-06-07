@@ -1,7 +1,7 @@
 
 if(H5PP_PACKAGE_MANAGER MATCHES "find")
     if(H5PP_PACKAGE_MANAGER STREQUAL "find")
-        set(REQUIRED ${REQUIRED})
+        set(REQUIRED REQUIRED)
     endif()
     # Start finding the dependencies
     if(H5PP_ENABLE_EIGEN3 AND NOT TARGET Eigen3::Eigen )
