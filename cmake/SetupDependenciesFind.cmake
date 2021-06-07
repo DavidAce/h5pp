@@ -13,7 +13,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find")
     endif()
 
     if(H5PP_ENABLE_FMT AND NOT TARGET fmt::fmt)
-        find_package(fmt 6.2.1 ${REQUIRED})
+        find_package(fmt 6.1.2 ${REQUIRED})
         if(fmt_FOUND AND TARGET fmt::fmt)
             list(APPEND H5PP_TARGETS fmt::fmt)
             target_link_libraries(deps INTERFACE fmt::fmt)
