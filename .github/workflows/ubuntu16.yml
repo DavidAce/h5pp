@@ -25,7 +25,7 @@ jobs:
           - { compiler: gcc,   shared: ON,  manager: cmake }
           - { compiler: gcc,   shared: ON,  manager: conan }
           - { compiler: gcc,   shared: ON,  manager: fetch }
-          - { compiler: gcc,   shared: ON,  manager: find  }
+          - { compiler: gcc,   shared: ON,  manager: find-or-cmake  }
           - { compiler: clang, shared: OFF, manager: cmake }
           - { compiler: clang, shared: OFF, manager: conan }
           - { compiler: clang, shared: OFF, manager: fetch }
@@ -33,7 +33,7 @@ jobs:
           - { compiler: clang, shared: ON,  manager: cmake }
           - { compiler: clang, shared: ON,  manager: conan }
           - { compiler: clang, shared: ON,  manager: fetch }
-          - { compiler: clang, shared: ON,  manager: find }
+          - { compiler: clang, shared: ON,  manager: find-or-cmake }
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
