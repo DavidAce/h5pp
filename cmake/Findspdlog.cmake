@@ -141,7 +141,7 @@ endif()
 # First try finding a config somewhere in the system
 if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
     find_package(spdlog ${spdlog_FIND_VERSION}
-            HINTS ${CONAN_SPDLOG_ROOT} ${CMAKE_INSTALL_PREFIX}
+            HINTS ${H5PP_DEPS_INSTALL_DIR} ${CONAN_SPDLOG_ROOT} ${CMAKE_INSTALL_PREFIX} ${H5PP_DEPS_INSTALL_DIR}
             PATH_SUFFIXES include spdlog include/spdlog spdlog/include/spdlog
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -170,7 +170,7 @@ endif()
 if(NOT TARGET spdlog::spdlog AND NOT SPDLOG_CONFIG_ONLY)
     find_path(SPDLOG_INCLUDE_DIR
             NAMES spdlog/spdlog.h
-            HINTS ${CMAKE_INSTALL_PREFIX}
+            HINTS ${H5PP_DEPS_INSTALL_DIR} ${CONAN_SPDLOG_ROOT} ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES spdlog/include include spdlog include/spdlog spdlog/include/spdlog
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -194,6 +194,7 @@ if(NOT TARGET spdlog::spdlog AND NOT SPDLOG_CONFIG_ONLY)
                 target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_HEADER_ONLY)
             else()
                 # There may or may not be a compiled library to go with the headers
+                include(GNUInstallDirs)
                 find_library(SPDLOG_LIBRARY
                         NAMES spdlog
                         HINTS ${SPDLOG_INCLUDE_DIR}

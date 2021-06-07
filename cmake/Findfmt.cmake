@@ -107,7 +107,7 @@ endif()
 # First try finding a config somewhere in the system
 if(NOT FMT_NO_CONFIG OR FMT_CONFIG_ONLY)
     find_package(fmt ${fmt_FIND_VERSION}
-            HINTS  ${fmt_ROOT} ${CONAN_FMT_ROOT} ${CMAKE_INSTALL_PREFIX}
+            HINTS  ${H5PP_DEPS_INSTALL_DIR} ${CONAN_FMT_ROOT} ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES include fmt include/fmt fmt/include/fmt
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -145,9 +145,10 @@ if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
     if(FMT_INCLUDE_DIR)
         fmt_check_version_include(FMT_INCLUDE_DIR)
         # Check if there is a compiled library to go with the headers
+        include(GNUInstallDirs)
         find_library(FMT_LIBRARY
                 NAMES fmt
-                HINTS ${fmt_ROOT} ${CMAKE_INSTALL_PREFIX}
+                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
                 PATH_SUFFIXES fmt fmt/lib lib/fmt fmt/${CMAKE_INSTALL_LIBDIR} spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -158,7 +159,7 @@ if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
         # Check if fmt has been bundled with spdlog, in which case we use it as header-only
         find_path(SPDLOG_FMT_BUNDLED
                 spdlog/fmt/fmt.h
-                HINTS ${SPDLOG_INCLUDE_DIR} ${spdlog_ROOT} ${CONAN_SPDLOG_ROOT} ${CMAKE_INSTALL_PREFIX}
+                HINTS ${SPDLOG_INCLUDE_DIR} ${spdlog_ROOT} ${CONAN_SPDLOG_ROOT} ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
                 PATH_SUFFIXES spdlog/include include spdlog include/spdlog spdlog/include/spdlog
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}
