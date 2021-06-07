@@ -248,6 +248,8 @@ function(target_link_fmt tgt)
     endif()
 endfunction()
 
+find_spdlog_config()
+find_spdlog_manual()
 
 if(TARGET spdlog::spdlog AND SPDLOG_VERSION AND SPDLOG_VERSION_OK)
     set(spdlog_FOUND TRUE)
