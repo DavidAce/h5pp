@@ -116,8 +116,8 @@ function(find_spdlog_config)
     if(NOT BUILD_SHARED_LIBS)
         # Spdlog from ubuntu apt injects shared library into static builds.
         # Can't take any chances here.
-        set(NO_CMAKE_SYSTEM_PATH ${NO_CMAKE_SYSTEM_PATH})
-        set(NO_SYSTEM_ENVIRONMENT_PATH ${NO_SYSTEM_ENVIRONMENT_PATH})
+        set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH)
+        set(NO_SYSTEM_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH)
         set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
     endif()
     # First try finding a config somewhere in the system
@@ -182,8 +182,8 @@ function(find_spdlog_manual)
                     if(NOT BUILD_SHARED_LIBS)
                         # Spdlog from ubuntu apt injects shared library into static builds.
                         # Can't take any chances here.
-                        set(NO_CMAKE_SYSTEM_PATH ${NO_CMAKE_SYSTEM_PATH})
-                        set(NO_SYSTEM_ENVIRONMENT_PATH ${NO_SYSTEM_ENVIRONMENT_PATH})
+                        set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH})
+                        set(NO_SYSTEM_ENVIRONMENT_PATH  NO_SYSTEM_ENVIRONMENT_PATH)
                         set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
                     endif()
                     # There may or may not be a compiled library to go with the headers
