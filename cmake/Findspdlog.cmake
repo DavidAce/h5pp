@@ -31,11 +31,6 @@ endif()
 if(SPDLOG_NO_SYSTEM_ENVIRONMENT_PATH)
     set(NO_SYSTEM_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH)
 endif()
-if(NOT BUILD_SHARED_LIBS)
-    # Spdlog from ubuntu apt injects shared library into static builds.
-    # Can't take any chances here.
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
-endif()
 
 if(NOT spdlog_FIND_VERSION)
     if(NOT spdlog_FIND_VERSION_MAJOR)
