@@ -20,12 +20,6 @@
 if(SPDLOG_NO_DEFAULT_PATH)
     set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
 endif()
-if(NOT BUILD_SHARED_LIBS)
-    # Spdlog from ubuntu apt injects shared library into static buolds.
-    # Can't take any chances here.
-    set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH)
-    set(NO_SYSTEM_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH)
-endif()
 
 if(SPDLOG_NO_CMAKE_PACKAGE_REGISTRY)
     set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
@@ -166,6 +160,12 @@ if(NOT TARGET spdlog::spdlog AND NOT SPDLOG_CONFIG_ONLY)
                 # /home/user/miniconda/lib/libspdlog.a: error adding symbols: Bad value
                 target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_HEADER_ONLY)
             else()
+                if(NOT BUILD_SHARED_LIBS)
+                    # Spdlog from ubuntu apt injects shared library into static buolds.
+                    # Can't take any chances here.
+                    set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH)
+                    set(NO_SYSTEM_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH)
+                endif()
                 # There may or may not be a compiled library to go with the headers
                 include(GNUInstallDirs)
                 find_library(SPDLOG_LIBRARY
