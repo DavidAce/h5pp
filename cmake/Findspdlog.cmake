@@ -16,6 +16,29 @@
 # The user can set search directory hints from CMake or environment, such as
 # spdlog_DIR, spdlog_ROOT, etc.
 
+
+if(SPDLOG_NO_DEFAULT_PATH)
+    set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
+endif()
+if(NOT BUILD_SHARED_LIBS)
+    # Spdlog from ubuntu apt injects shared library into static buolds.
+    # Can't take any chances here.
+    set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH)
+    set(NO_SYSTEM_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH)
+endif()
+
+if(SPDLOG_NO_CMAKE_PACKAGE_REGISTRY)
+    set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
+endif()
+
+if(SPDLOG_NO_CMAKE_SYSTEM_PATH)
+    set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH)
+endif()
+if(SPDLOG_NO_SYSTEM_ENVIRONMENT_PATH)
+    set(NO_SYSTEM_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH)
+endif()
+
+
 if(NOT spdlog_FIND_VERSION)
     if(NOT spdlog_FIND_VERSION_MAJOR)
         set(spdlog_FIND_VERSION_MAJOR 1)
@@ -122,21 +145,6 @@ function(spdlog_check_version var)
 endfunction()
 
 
-if(SPDLOG_NO_DEFAULT_PATH)
-    set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
-endif()
-if(NOT BUILD_SHARED_LIBS)
-    # Spdlog from ubuntu apt injects shared library into static buolds.
-    # Can't take any chances here.
-    set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH)
-    set(NO_SYSTEM_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH)
-endif()
-
-if(SPDLOG_NO_CMAKE_PACKAGE_REGISTRY)
-    set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
-endif()
-
-
 # First try finding a config somewhere in the system
 if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
     find_package(spdlog ${spdlog_FIND_VERSION}
@@ -150,8 +158,6 @@ if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
             )
     if(TARGET spdlog::spdlog)
         spdlog_check_version_target(spdlog::spdlog)
-#        get_target_property(SPDLOG_INCLUDE_DIR spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
-#        spdlog_check_version(SPDLOG_INCLUDE_DIR)
         if(NOT SPDLOG_VERSION_OK OR NOT SPDLOG_VERSION)
             message(WARNING "Could not determine the spdlog version.\n"
                     "However, the target spdlog::spdlog has already been defined, so it will be used:\n"
@@ -178,7 +184,7 @@ if(NOT TARGET spdlog::spdlog AND NOT SPDLOG_CONFIG_ONLY)
             QUIET
             )
     if(SPDLOG_INCLUDE_DIR)
-        spdlog_check_version(SPDLOG_INCLUDE_DIR)
+        spdlog_check_version_include(SPDLOG_INCLUDE_DIR)
         if(SPDLOG_VERSION_OK)
             set(spdlog_FOUND TRUE)
             add_library(spdlog::spdlog INTERFACE IMPORTED)
