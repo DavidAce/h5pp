@@ -113,38 +113,6 @@ function(spdlog_check_version_target tgt)
     endif()
 endfunction()
 
-
-
-function(spdlog_check_version var)
-    if(var AND EXISTS ${var})
-        set(include ${var})
-    elseif (${var} AND EXISTS ${${var}})
-        set(include ${${var}})
-    endif()
-    if(EXISTS ${include}/spdlog/version.h)
-        file(READ "${include}/spdlog/version.h" _spdlog_version_header)
-        string(REGEX MATCH "define[ \t]+SPDLOG_VER_MAJOR[ \t]+([0-9]+)" _spdlog_world_version_match "${_spdlog_version_header}")
-        set(SPDLOG_WORLD_VERSION "${CMAKE_MATCH_1}")
-        string(REGEX MATCH "define[ \t]+SPDLOG_VER_MINOR[ \t]+([0-9]+)" _spdlog_major_version_match "${_spdlog_version_header}")
-        set(SPDLOG_MAJOR_VERSION "${CMAKE_MATCH_1}")
-        string(REGEX MATCH "define[ \t]+SPDLOG_VER_PATCH[ \t]+([0-9]+)" _spdlog_minor_version_match "${_spdlog_version_header}")
-        set(SPDLOG_MINOR_VERSION "${CMAKE_MATCH_1}")
-
-        set(SPDLOG_VERSION ${SPDLOG_WORLD_VERSION}.${SPDLOG_MAJOR_VERSION}.${SPDLOG_MINOR_VERSION})
-        if(${SPDLOG_VERSION} VERSION_LESS ${spdlog_FIND_VERSION})
-            set(SPDLOG_VERSION_OK FALSE)
-        else()
-            set(SPDLOG_VERSION_OK TRUE)
-        endif()
-        set(SPDLOG_VERSION      ${SPDLOG_VERSION}       PARENT_SCOPE)
-        set(SPDLOG_VERSION_OK   ${SPDLOG_VERSION_OK}    PARENT_SCOPE)
-        message(STATUS "Found version ${SPDLOG_VERSION} SPDLOG_VERSION_OK")
-    else()
-        set(SPDLOG_VERSION_OK FALSE PARENT_SCOPE)
-    endif()
-endfunction()
-
-
 # First try finding a config somewhere in the system
 if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
     find_package(spdlog ${spdlog_FIND_VERSION}
