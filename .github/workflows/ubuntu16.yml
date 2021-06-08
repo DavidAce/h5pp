@@ -21,15 +21,15 @@ jobs:
           - { compiler: gcc,   shared: OFF, manager: cmake }
           - { compiler: gcc,   shared: OFF, manager: conan }
           - { compiler: gcc,   shared: OFF, manager: fetch }
-          - { compiler: gcc,   shared: OFF, manager: find  }
+          - { compiler: gcc,   shared: OFF, manager: find-or-cmake }
           - { compiler: gcc,   shared: ON,  manager: cmake }
           - { compiler: gcc,   shared: ON,  manager: conan }
           - { compiler: gcc,   shared: ON,  manager: fetch }
-          - { compiler: gcc,   shared: ON,  manager: find-or-cmake  }
+          - { compiler: gcc,   shared: ON,  manager: find-or-cmake }
           - { compiler: clang, shared: OFF, manager: cmake }
           - { compiler: clang, shared: OFF, manager: conan }
           - { compiler: clang, shared: OFF, manager: fetch }
-          - { compiler: clang, shared: OFF, manager: find }
+          - { compiler: clang, shared: OFF, manager: find-or-cmake }
           - { compiler: clang, shared: ON,  manager: cmake }
           - { compiler: clang, shared: ON,  manager: conan }
           - { compiler: clang, shared: ON,  manager: fetch }
