@@ -15,7 +15,7 @@ jobs:
     env:
       cache-name: cache-${{ matrix.compiler }}-shared-[${{ matrix.shared }}]-${{ matrix.manager }}
     strategy:
-      fail-fast: true # True stops all on first error. Stick to false when debugging
+      fail-fast: false # True stops all on first error. Stick to false when debugging
       matrix:
         include:
           - { compiler: gcc,   shared: OFF, manager: cmake }
