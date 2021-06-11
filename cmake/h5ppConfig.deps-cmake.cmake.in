@@ -49,7 +49,7 @@ if(NOT TARGET std::filesystem)
     else()
         message(WARNING "<filesystem> header and/or library not found\n"
                 "Your compiler seems to lack std::filesystem\n"
-                "Set H5PP_PACKAGE_MANAGER to 'cmake', 'fetch' or 'conan' to get the ghc::filesystem replacement."
+                "Set H5PP_PACKAGE_MANAGER to 'cmake', 'fetch', 'cpm' or 'conan' to get the ghc::filesystem replacement."
                 "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem\n")
     endif()
 endif()
