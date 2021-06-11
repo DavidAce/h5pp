@@ -1830,7 +1830,7 @@ namespace h5pp::hdf5 {
         herr_t retval = 0;
 
         // Get the memory address to the data buffer
-        auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
+        [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
 
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::has_text_v<DataType>) {
             auto vec = getCharPtrVector(data);
