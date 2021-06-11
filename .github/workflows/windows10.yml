@@ -21,10 +21,12 @@ jobs:
           - { compiler: cl, shared: OFF, manager: conan }
           - { compiler: cl, shared: OFF, manager: cmake }
           - { compiler: cl, shared: OFF, manager: fetch }
+          - { compiler: cl, shared: OFF, manager: cpm }
           - { compiler: cl, shared: OFF, manager: find-or-cmake }
           - { compiler: cl, shared: ON,  manager: conan }
           - { compiler: cl, shared: ON,  manager: cmake }
           - { compiler: cl, shared: ON,  manager: fetch }
+          - { compiler: cl, shared: ON,  manager: cpm }
           - { compiler: cl, shared: ON,  manager: find-or-cmake }
 
     steps:
