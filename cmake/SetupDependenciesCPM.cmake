@@ -48,7 +48,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cpm")
                 "SPDLOG_BUILD_SHARED ${BUILD_SHARED_LIBS}"
                 "SPDLOG_FMT_EXTERNAL ON"
                 "SPDLOG_FMT_EXTERNAL_HO OFF"
-                "SPDLOG_ENABLE_PCH ON"
+                "SPDLOG_ENABLE_PCH ${H5PP_ENABLE_PCH}"
                 "SPDLOG_BUILD_EXAMPLE OFF"
                 "SPDLOG_BUILD_EXAMPLE_HO OFF"
                 "SPDLOG_BUILD_TESTS OFF"
