@@ -45,7 +45,7 @@ endif()
 
 
 # Make an "enum" for valid package managers: find cmake fetch find-or-cmake conan
-set(H5PP_PACKAGE_MANAGERS_VALID find fetch cmake  find-or-fetch find-or-cmake conan)
+set(H5PP_PACKAGE_MANAGERS_VALID find fetch cmake cpm find-or-fetch find-or-cmake conan)
 set(H5PP_PACKAGE_MANAGER find CACHE STRING "Package manager for external dependencies")
 set_property(CACHE H5PP_PACKAGE_MANAGER PROPERTY STRINGS ${H5PP_PACKAGE_MANAGERS_VALID})
 if (NOT H5PP_PACKAGE_MANAGER IN_LIST H5PP_PACKAGE_MANAGERS_VALID)
@@ -163,6 +163,7 @@ include(cmake/SetupStdFilesystem.cmake)
 include(cmake/SetupDependenciesFind.cmake)
 include(cmake/SetupDependenciesFetch.cmake)
 include(cmake/SetupDependenciesCMake.cmake)
+include(cmake/SetupDependenciesCPM.cmake)
 include(cmake/SetupDependenciesConan.cmake)
 
 
