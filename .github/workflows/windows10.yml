@@ -39,6 +39,7 @@ jobs:
         with:
           path: |
             ~/.conan/data
+            ~/cpm-cache
 #            ~/h5pp-install
 #            build/Debug/h5pp-deps-install
           key: ${{ runner.os }}-${{ env.cache-name }}

@@ -45,9 +45,15 @@ jobs:
         with:
           path: |
             ~/.conan/data
+            ~/cpm-cache
 #            ~/h5pp-install
 #            build/Debug/h5pp-deps-install
           key: ${{ runner.os }}-${{ env.cache-name }}
+
+      - uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ runner.os }}-${{ env.cache-name }}
+          max-size: 500M
 
       - name: Setup gcc
         if: matrix.compiler == 'gcc'
@@ -85,6 +91,8 @@ jobs:
           -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared }}            \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                         \
           -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install               \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache                       \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                     \
           -DH5PP_ENABLE_EIGEN3:BOOL=ON                             \
           -DH5PP_ENABLE_FMT:BOOL=OFF                               \
           -DH5PP_ENABLE_SPDLOG:BOOL=ON                             \
