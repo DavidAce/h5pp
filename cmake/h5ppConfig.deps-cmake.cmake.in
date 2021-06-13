@@ -62,7 +62,7 @@ if(TARGET Eigen3::Eigen)
 endif()
 
 if (NOT TARGET fmt::fmt AND fmt::fmt IN_LIST H5PP_ENABLED_TARGETS)
-    find_dependency(fmt 6.2.1 REQUIRED)
+    find_dependency(fmt 6.1.2 REQUIRED)
     if(TARGET fmt AND NOT TARGET fmt::fmt)
         add_library(fmt::fmt ALIAS fmt)
     endif()
