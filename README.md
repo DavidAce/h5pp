@@ -305,16 +305,17 @@ The CMake flag `H5PP_PACKAGE_MANAGER` controls the automated behavior for findin
 | ---- | ---- |
 | `find` **(default)**              | Use CMake's `find_package`  to find dependencies pre-installed on your system  |
 | `cmake` **(!)**                   | Use isolated CMake instances to download and install dependencies during configure. Disregards pre-installed dependencies on your system |
-| `fetch` **(!!)**                  | Use FetchContent to download and install dependencies. Disregards pre-installed dependencies on your system |
+| `fetch` **(#)**                   | Use FetchContent to download and install dependencies. Disregards pre-installed dependencies on your system |
+| `cpm` **(!!)**                    | Use [https://github.com/cpm-cmake/CPM.cmake](CPM)to download and install dependencies. Disregards pre-installed dependencies on your system |
 | `find-or-cmake`                   | Start with `find` and then go to `cmake` if not found |
 | `find-or-fetch`                   | Start with `find` and then go to `fetch` if not found |
-| `conan`   **(!!!)**               | Use the [Conan package manager](https://conan.io/) to download and install dependencies automatically. Disregards libraries elsewhere on your system  |
+| `conan`   **(\*)**               | Use the [Conan package manager](https://conan.io/) to download and install dependencies automatically. Disregards libraries elsewhere on your system  |
 
-There are several variables you can pass to CMake to guide `find_package` calls, see [CMake build options](#cmake-build-options) below. 
+There are several variables you can pass to CMake to guide `find_package` calls and install location, see [CMake options](#cmake-options) below. 
 
-**(!)** Dependencies are installed into `H5PP_DEPS_INSTALL_DIR [/<PackageName>]`, which defaults to `${CMAKE_BINARY_DIR} [/<PackageName]`.
-**(!!)** Dependencies are installed into `CMAKE_BINARY_DIR/_deps`.
-**(!!!)** Conan is guided by `conanfile.txt` found in this project's root directory. This method requires conan to be installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
+**(!)** Dependencies are installed into `${H5PP_DEPS_INSTALL_DIR}[/<PackageName>]`, where the variable defaults to `${CMAKE_INSTALL_PREFIX}`.
+**(#)** Dependencies are installed into `${CMAKE_INSTALL_PREFIX}[/<PackageName>]`.
+**(\*)** Conan is guided by `conanfile.txt` found in this project's root directory. This method requires conan to be installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
   * Add Conan install (or bin) directory to the environment variable `PATH`.
   * Export Conan install (or bin) directory in the environment variable `CONAN_PREFIX`, i.e. from command line: `export CONAN_PREFIX=<path-to-conan>` 
   * Give the variable `CONAN_PREFIX` directly to CMake, i.e. from command line: `cmake -DCONAN_PREFIX:PATH=<path-to-conan> ...`
@@ -325,30 +326,23 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 
 | Var | Default | Description |
 | ---- | ---- | ---- |
-| `CMAKE_INSTALL_PREFIX`            | `${CMAKE_BINARY_DIR}/install` | Specify `h5pp` install directory  |
-| `BUILD_SHARED_LIBS`               | `OFF`      | Link dependencies with static or shared libraries    |
-| `H5PP_ENABLE_TESTS`               | `OFF`      | Build tests (recommended!) |
-| `H5PP_BUILD_EXAMPLES`             | `OFF`      | Build example programs |
-| `H5PP_PACKAGE_MANAGER`            | `find`     | Download method for dependencies, select, `find`, `cmake`,`fetch`, `find-or-cmake`, `find-or-fetch` or `conan` |
-| `H5PP_PRINT_INFO`                 | `OFF`      | Use `h5pp` with add_subdirectory() |
-| `H5PP_IS_SUBPROJECT`              | `OFF`      | Print extra CMake info about the host and generated targets during configure |
-| `H5PP_ENABLE_EIGEN3`              | `OFF`      | Enables `Eigen` linear algebra library support |
-| `H5PP_ENABLE_FMT`                 | `OFF`      | Enables `{fmt}` string formatting library |
-| `H5PP_ENABLE_SPDLOG`              | `OFF`      | Enables `spdlog` support for logging `h5pp` internal info to stdout (implies fmt) |
-| `H5PP_DEPS_IN_SUBDIR`             | `ON`       | Appends `<libname>` to install location of dependencies, i.e. `H5PP_DEPS_INSTALL_DIR/<libname>`. This allows simple removal |
+| `H5PP_ENABLE_EIGEN3`              | `OFF`                     | Enables `Eigen` linear algebra library support |
+| `H5PP_ENABLE_FMT`                 | `OFF`                     | Enables `{fmt}` string formatting library |
+| `H5PP_ENABLE_SPDLOG`              | `OFF`                     | Enables `spdlog` support for logging `h5pp` internal info to stdout (implies fmt) |
+| `H5PP_PACKAGE_MANAGER`            | `find`                    | Download method for dependencies, select, `find`, `cmake`,`fetch`, `cpm`, `find-or-cmake`, `find-or-fetch` or `conan` |
+| `BUILD_SHARED_LIBS`               | `OFF`                     | Link dependencies with static or shared libraries    |
+| `CMAKE_INSTALL_PREFIX`            | None                      | Install directory for `h5pp` and dependencies  |
+| `H5PP_DEPS_INSTALL_DIR`           | `CMAKE_INSTALL_PREFIX`    | Install directory for dependencies only (if a different one is desired) |
+| `H5PP_PREFIX_ADD_PKGNAME`         | `OFF`                     | Appends `<PackageName>` to install location of dependencies, i.e. `${H5PP_DEPS_INSTALL_DIR}/<PackageName>`. This allows simple removal |
+| `H5PP_ENABLE_PCH`                 | `OFF`                     | Use precompiled headers to speed up compilation of tests and examples |
+| `H5PP_ENABLE_CCACHE`              | `OFF`                     | Use ccache to speed up compilation of tests and examples |
+| `H5PP_ENABLE_TESTS`               | `OFF`                     | Build tests (recommended!) |
+| `H5PP_BUILD_EXAMPLES`             | `OFF`                     | Build example programs |
+| `H5PP_IS_SUBPROJECT`              | `OFF`                     | Use `h5pp` with add_subdirectory() (automatic detection if not set) |
+| `H5PP_PRINT_INFO`                 | `OFF`                     | Print extra CMake info about the host and generated targets during configure |
+| `CONAN_PREFIX`                    | None                      | conan install directory  |
 
-The following variables can be set to help guide CMake's `find_package` to your pre-installed software (no defaults):
-
-| Var | Path to |
-| ---- | ---- |
-| `Eigen3_DIR`          | Eigen3Config.cmake  |
-| `Eigen3_ROOT`         | Eigen3 install directory    |
-| `EIGEN3_INCLUDE_DIR`  | Eigen3 include directory    |
-| `spdlog_DIR`          | spdlogConfig.cmake    |
-| `spdlog_ROOT`         | Spdlog install directory    |
-| `HDF5_DIR`            | HDF5Config.cmake |
-| `HDF5_ROOT`           | HDF5 install directory |
-| `CONAN_PREFIX`        | conan install directory |
+In addition, variables such as [`<PackageName>_ROOT`](https://cmake.org/cmake/help/latest/variable/PackageName_ROOT.html) and [`<PackageName>_DIR`](https://cmake.org/cmake/help/latest/command/find_package.html) can be set to help guide CMake's `find_package` calls:
 
 
 ## Link to your project
