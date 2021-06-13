@@ -338,7 +338,7 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 | `H5PP_ENABLE_CCACHE`              | `OFF`                     | Use ccache to speed up compilation of tests and examples |
 | `H5PP_ENABLE_TESTS`               | `OFF`                     | Build tests (recommended!) |
 | `H5PP_BUILD_EXAMPLES`             | `OFF`                     | Build example programs |
-| `H5PP_IS_SUBPROJECT`              | `OFF`                     | Use `h5pp` with add_subdirectory() (automatic detection if not set) |
+| `H5PP_IS_SUBPROJECT`              | `OFF`                     | Use `h5pp` with add_subdirectory(). Skips installation of targets if true. Automatic detection if not set |
 | `H5PP_PRINT_INFO`                 | `OFF`                     | Print extra CMake info about the host and generated targets during configure |
 | `CONAN_PREFIX`                    | None                      | conan install directory  |
 
@@ -354,10 +354,10 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 
 
 ```cmake
-    cmake_minimum_required(VERSION 3.12)
+    cmake_minimum_required(VERSION 3.19)
     project(myProject)
     add_executable(myExecutable main.cpp)
-    find_package(h5pp PATHS <path-to-h5pp-install-dir> REQUIRED)
+    find_package(h5pp HINTS <h5pp-root-dir> REQUIRED)
     target_link_libraries(myExecutable PRIVATE h5pp::h5pp)
 ```
 
@@ -366,8 +366,8 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 
 *  `h5pp::h5pp` is the main target including "everything" and should normally be the only target that you need -- headers,flags and (if enabled) the found/downloaded dependencies.
 *  `h5pp::headers` links the `h5pp` headers only.
-*  `h5pp::deps` collects library targets to link all the dependencies that were found/downloaded when `h5pp` was built. These can of course be used independently.
-    * If `H5PP_PACKAGE_MANAGER==find|cmake|find-or-cmake` the targets are `Eigen3::Eigen`,`fmt::fmt`, `spdlog::spdlog` and `hdf5::all`, 
+*  `h5pp::deps` collects targets to link all the dependencies that were found/downloaded when `h5pp` was installed. These can of course be used independently.
+    * If `H5PP_PACKAGE_MANAGER==find|cmake|fetch|cmp` the targets are `Eigen3::Eigen`,`fmt::fmt`, `spdlog::spdlog` and `hdf5::all`, 
     * If `H5PP_PACKAGE_MANAGER==conan` the targets are `CONAN_PKG::eigen`,`CONAN_PKG::fmt`, `CONAN_PKG::spdlog` and `CONAN_PKG::hdf5`. 
 *  `h5pp::flags` sets compile and linker flags to  enable C++17 and std::filesystem library, i.e. `-std=c++17` and `-lstdc++fs`. 
     On `MSVC` it sets `/permissive-` to enable logical `and`/`or` in C++. 
@@ -378,7 +378,7 @@ From the command-line you can of course link using linker flags such as `-std=c+
 You could also use CMake's `find_package(...)` mechanism. A minimal `CMakeLists.txt` could be something like:
 
 ```cmake
-    cmake_minimum_required(VERSION 3.12)
+    cmake_minimum_required(VERSION 3.19)
     project(myProject)
     
     add_executable(myExecutable main.cpp)
@@ -387,18 +387,17 @@ You could also use CMake's `find_package(...)` mechanism. A minimal `CMakeLists.
     target_compile_features(myExecutable PRIVATE cxx_std_17)
     target_link_libraries(myExecutable PRIVATE  stdc++fs) # To get <filesystem> headers working. Not needed after GCC 9.1 
     
-    # Newer CMake versions bundle a good FindHDF5.cmake module to use with find_package
-    # Note that h5pp only needs the C libs of HDF5.
-    find_package(HDF5 COMPONENTS C HL REQUIRED)
-    target_link_libraries(myExecutable PRIVATE hdf5::hdf5) # *Should* take care of everything.
+    # CMake versions >= 3.19 bundle a good FindHDF5.cmake module to use with find_package
+    find_package(HDF5 1.8 COMPONENTS C HL REQUIRED)  # Note that h5pp only needs the C libs of HDF5.
+    target_link_libraries(myExecutable PRIVATE hdf5::hdf5_hl hdf5::hdf5) # *Should* take care of everything.
     # Otherwise HDF5 has to be linked manually. 
     # target_link_libraries(myExecutable PRIVATE hdf5_hl hdf5 rt dl m z pthread) # Possibly more libs, such as aec, dependending on your HDF5 installation
     # target_include_directories(myExecutable PRIVATE <path-to-HDF5-include-dir>)
 
 
-    # The other dependencies lack bundled find_package modules, so this can be trickier.
+    # The other dependencies lack find_package modules bundled with CMake, so this can be trickier.
     # You can
-    #   1) Use find_package() to find installed packages in config-mode
+    #   1) Use find_package() to find installed packages in config-mode in your system
     #   2) Use find_library() + add_library() to find libfmt, libspdlog in your system.
     #   3) Just link -lfmt, -lspdlog and hope that these libraries are found by the linker.
     target_link_libraries(myExecutable PRIVATE spdlog fmt)
