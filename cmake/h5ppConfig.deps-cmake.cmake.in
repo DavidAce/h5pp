@@ -22,6 +22,10 @@ endif()
 if(NOT DEFINED HDF5_ROOT)
     set(HDF5_ROOT @PACKAGE_H5PP_DEPS_INSTALL_DIR@)
 endif()
+if(NOT DEFINED ghc_filesystem_ROOT)
+    set(ghc_filesystem_ROOT @PACKAGE_H5PP_DEPS_INSTALL_DIR@)
+endif()
+
 
 # Make sure we use h5pp find modules
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
@@ -37,23 +41,15 @@ endif()
 include(CMakeFindDependencyMacro)
 
 # h5pp requires the filesystem header (and possibly stdc++fs library)
-if(NOT TARGET std::filesystem)
-    find_dependency(Filesystem COMPONENTS Final Experimental)
-    if (TARGET std::filesystem)
-        list(APPEND H5PP_FOUND_TARGETS std::filesystem)
-    else()
-        find_dependency(ghcFilesystem)
-        if(TARGET ghcFilesystem::ghc_filesystem)
-            list(APPEND H5PP_FOUND_TARGETS ghcFilesystem::ghc_filesystem)
-        endif()
-    else()
-        message(WARNING "<filesystem> header and/or library not found\n"
-                "Your compiler seems to lack std::filesystem\n"
-                "Set H5PP_PACKAGE_MANAGER to 'cmake', 'fetch', 'cpm' or 'conan' to get the ghc::filesystem replacement."
-                "Read more about ghc::filesystem here: https://github.com/gulrak/filesystem\n")
-    endif()
+find_dependency(Filesystem COMPONENTS Final Experimental)
+if (TARGET std::filesystem)
+    list(APPEND H5PP_FOUND_TARGETS std::filesystem)
+else()
+    find_dependency(ghc_filesystem
+                 PATH_SUFFIXES ghc_filesystem
+                 REQUIRED)
+    list(APPEND H5PP_FOUND_TARGETS ghc::filesystem)
 endif()
-
 
 if (NOT TARGET Eigen3::Eigen AND Eigen3::Eigen IN_LIST H5PP_ENABLED_TARGETS)
     find_dependency(Eigen3 3.3 REQUIRED)
