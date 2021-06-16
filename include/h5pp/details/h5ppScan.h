@@ -625,7 +625,7 @@ namespace h5pp::scan {
             info.tableGroupName = "";
             size_t pos          = info.tablePath.value().find_last_of('/');
             if(pos != std::string::npos)
-                info.tableGroupName.value().assign(info.tablePath.value().begin(), info.tablePath.value().begin() + static_cast<long>(pos));
+                info.tableGroupName.value().assign(info.tablePath->begin(), info.tablePath->begin() + static_cast<long>(pos));
         }
         // This is as far as we get if the table does not exist
         if(not info.tableExists.value()) return;

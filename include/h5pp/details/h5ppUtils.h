@@ -113,10 +113,10 @@ namespace h5pp::util {
     }
 
     template<typename DataType, size_t size>
-    [[nodiscard]] constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size], [[maybe_unused]] bool countChars = false)
-        noexcept
+    [[nodiscard]] constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size],
+                                                [[maybe_unused]] bool countChars = false) noexcept
     /*! Returns the size of a C-style array.
-    */
+     */
     {
         if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
             // A C-style char array is a null-terminated array, that has size = characters + 1
@@ -136,7 +136,7 @@ namespace h5pp::util {
         return {rows, cols};
     }
     template<typename DataType, size_t rows, size_t cols, size_t depth>
-    [[nodiscard]] constexpr std::array<size_t, 3> getArraySize([[maybe_unused]] const DataType (&arr)[rows][cols][depth]) noexcept{
+    [[nodiscard]] constexpr std::array<size_t, 3> getArraySize([[maybe_unused]] const DataType (&arr)[rows][cols][depth]) noexcept {
         return {rows, cols, depth};
     }
 
@@ -189,7 +189,7 @@ namespace h5pp::util {
     }
 
     [[nodiscard]] inline hsize_t getSizeFromDimensions(const std::vector<hsize_t> &dims) {
-        return std::accumulate(dims.begin(), dims.end(), static_cast<hsize_t>(1), std::multiplies<>());
+        return std::accumulate(std::begin(dims), std::end(dims), static_cast<hsize_t>(1), std::multiplies<>());
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
@@ -227,10 +227,8 @@ namespace h5pp::util {
         constexpr int rank = getRank<DataType>();
         if constexpr(rank == 0) return {};
         if constexpr(h5pp::type::sfinae::has_dimensions_v<DataType>) {
-            std::vector<hsize_t> dims(
-                data.dimensions().begin(),
-                data.dimensions()
-                    .end()); // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
+            // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
+            std::vector<hsize_t> dims(std::begin(data.dimensions()), std::end(data.dimensions()));
             if(data.dimensions().size() != rank) throw std::runtime_error("given dimensions do not match detected rank");
             if(dims.size() != rank) throw std::runtime_error("copied dimensions do not match detected rank");
             return dims;
@@ -240,16 +238,10 @@ namespace h5pp::util {
 #ifdef H5PP_EIGEN3
         else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             if(data.dimensions().size() != rank) throw std::runtime_error("given dimensions do not match detected rank");
-            std::vector<hsize_t> dims(
-                data.dimensions().begin(),
-                data.dimensions()
-                    .end()); // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
-            return dims;
+            // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
+            return std::vector<hsize_t>(std::begin(data.dimensions()), std::end(data.dimensions()));
         } else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType>) {
-            std::vector<hsize_t> dims(rank);
-            dims[0] = static_cast<hsize_t>(data.rows());
-            dims[1] = static_cast<hsize_t>(data.cols());
-            return dims;
+            return {static_cast<hsize_t>(data.rows()), static_cast<hsize_t>(data.cols())};
         }
 #endif
         else if constexpr(h5pp::type::sfinae::is_ScalarN<DataType>())
@@ -283,10 +275,12 @@ namespace h5pp::util {
          *  Any dataset with an unlimited dimension must also be chunked; see H5Pset_chunk.
          *  Similarly, a dataset must be chunked if current_dims does not equal maximum_dims.
          */
-        if(h5_layout and h5_layout.value() != H5D_CHUNKED) return std::nullopt;
-        std::vector<hsize_t> dimsMax = dims;
-        if(h5_layout == H5D_CHUNKED) std::fill_n(dimsMax.begin(), dims.size(), H5S_UNLIMITED);
-        return dimsMax;
+        if(h5_layout and h5_layout.value() == H5D_CHUNKED)
+            return std::vector<hsize_t>(dims.size(), H5S_UNLIMITED);
+        else if(h5_layout and h5_layout.value() != H5D_CHUNKED)
+            return std::nullopt;
+        else
+            return dims;
     }
 
     [[nodiscard]] inline hid::h5s getDsetSpace(const hsize_t                       size,
