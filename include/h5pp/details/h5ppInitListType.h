@@ -10,7 +10,7 @@ namespace h5pp {
         std::vector<size_t> data;
 
         public:
-        Indices() = default;
+        Indices()                              = default;
         explicit Indices(const char *str)      = delete;
         explicit Indices(std::string_view str) = delete;
         explicit Indices(std::string &&str)    = delete;

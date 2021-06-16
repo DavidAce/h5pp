@@ -11,8 +11,8 @@
     // If SPDLOG_HEADER_ONLY is defined this will cause FMT_HEADER_ONLY to also get defined
     #include <spdlog/fmt/fmt.h>
     #if defined(SPDLOG_FMT_EXTERNAL)
-         #include <fmt/ostream.h>
-         #include <fmt/ranges.h>
+        #include <fmt/ostream.h>
+        #include <fmt/ranges.h>
     #else
         #include <spdlog/fmt/bundled/ostream.h>
         #include <spdlog/fmt/bundled/ranges.h>
@@ -29,7 +29,7 @@
     #include <fmt/ranges.h>
 #else
     // In this case there is no fmt so we make our own simple formatter
-    #pragma message                                                                                                                       \
+    #pragma message \
         "h5pp warning: could not find fmt library headers <fmt/core.h> or <spdlog/fmt/fmt.h>: A hand-made formatter will be used instead. Consider using the fmt library for maximum performance"
 
 #endif
@@ -76,9 +76,7 @@ namespace h5pp {
                 sstr << std::boolalpha << "{";
                 for(const auto &elem : first) sstr << elem << ",";
                 //  Laborious casting here to avoid MSVC warnings and errors in std::min()
-                auto max_rewind = static_cast<long>(first.size());
-                auto min_rewind = static_cast<long>(1);
-                long rewind     = -1 * std::min(max_rewind, min_rewind);
+                long rewind = -1 * std::min(1l, static_cast<long>(first.size()));
                 sstr.seekp(rewind, std::ios_base::end);
                 sstr << "}";
                 result.emplace_back(sstr.str());
@@ -94,16 +92,16 @@ namespace h5pp {
 
     template<typename... Args>
     [[nodiscard]] std::string format(const std::string &fmtstring, [[maybe_unused]] Args... args) {
-        auto brackets_left  = std::count(fmtstring.begin(), fmtstring.end(), '{');
+        auto brackets_left = std::count(fmtstring.begin(), fmtstring.end(), '{');
         auto brackets_right = std::count(fmtstring.begin(), fmtstring.end(), '}');
         if(brackets_left != brackets_right) return std::string("FORMATTING ERROR: GOT STRING: " + fmtstring);
-        auto                   arglist  = formatting::convert_to_string_list(args...);
-        std::string            result   = fmtstring;
+        auto arglist = formatting::convert_to_string_list(args...);
+        std::string result = fmtstring;
         std::string::size_type curr_pos = 0;
         while(true) {
             if(arglist.empty()) break;
             std::string::size_type start_pos = result.find('{', curr_pos);
-            std::string::size_type end_pos   = result.find('}', curr_pos);
+            std::string::size_type end_pos = result.find('}', curr_pos);
             if(start_pos == std::string::npos or end_pos == std::string::npos or start_pos - end_pos == 0) break;
             result.replace(start_pos, end_pos - start_pos + 1, arglist.front());
             curr_pos = start_pos + arglist.front().size();

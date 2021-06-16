@@ -28,13 +28,13 @@ namespace h5pp {
 
     class File {
         private:
-        fs::path             filePath;                                  /*!< Full path to the file, e.g. /path/to/project/filename.h5 */
-        h5pp::FilePermission permission = h5pp::FilePermission::RENAME; /*!< Policy for file open/create.RENAME avoids loss of data  */
-        mutable std::optional<h5pp::hid::h5f> fileHandle = std::nullopt;
-        size_t logLevel = 2; /*!< Console log level for new file objects. 0 [trace] has highest verbosity, and 5 [critical] the lowest.  */
-        bool   logTimestamp = false; /*!< Add a time stamp to console log output   */
-        hid::h5e     error_stack;    /*!< Holds a reference to the error stack used by HDF5   */
-        unsigned int currentCompressionLevel = 0;
+        fs::path                        filePath;                                               /*!< Full path to the file */
+        h5pp::FilePermission            permission              = h5pp::FilePermission::RENAME; /*!< File open/create policy. */
+        mutable std::optional<hid::h5f> fileHandle              = std::nullopt; /*!< Keeps a file handle alive in batch operations */
+        size_t                          logLevel                = 2;            /*!< Log verbosity from 0 [trace] to 6 [off] */
+        bool                            logTimestamp            = false;        /*!< Add a time stamp to console log output */
+        hid::h5e                        error_stack             = H5E_DEFAULT;  /*!< Holds a reference to the error stack used by HDF5 */
+        unsigned int                    currentCompressionLevel = 0;            /*!< Holds the default compression level */
 
         void init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);

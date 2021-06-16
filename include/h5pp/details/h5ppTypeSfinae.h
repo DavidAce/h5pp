@@ -10,7 +10,7 @@
 #include <vector>
 
 /*!
- * \brief A collection of type-detection and type-analysis utilities using SFINAE
+ * \brief A collection of type-detection utilities using SFINAE
  */
 namespace h5pp::type::sfinae {
 

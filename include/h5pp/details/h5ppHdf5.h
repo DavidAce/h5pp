@@ -8,11 +8,11 @@
 #include "h5ppPropertyLists.h"
 #include "h5ppTypeSfinae.h"
 #include "h5ppUtils.h"
+#include <cstddef>
 #include <hdf5.h>
 #include <map>
 #include <typeindex>
 #include <utility>
-#include <cstddef>
 /*!
  * \brief A collection of functions to create (or get information about) datasets and attributes in HDF5 files
  */
@@ -48,10 +48,10 @@ namespace h5pp::hdf5 {
         std::string buf;
         ssize_t     bufSize = H5Iget_name(object, nullptr, 0); // Size in bytes of the object name (NOT including \0)
         if(bufSize > 0) {
-            buf.resize(static_cast<size_t>(bufSize) + 1); // We allocate space for the null terminator
-            H5Iget_name(object, buf.data(), static_cast<size_t>(bufSize+1));
+            buf.resize(static_cast<size_t>(bufSize) + 1); // We allocate space for the null terminator with +1
+            H5Iget_name(object, buf.data(), static_cast<size_t>(bufSize + 1)); // Read name including \0 with +1
         }
-        return buf.c_str(); // Use .c_str() to get a "standard" std::string, i.e. one where .size() does not include \0
+        return buf.c_str(); // Use .c_str() to convert to a "standard" std::string, i.e. one where .size() does not include \0
     }
 
     [[nodiscard]] inline int getRank(const hid::h5s &space) { return H5Sget_simple_extent_ndims(space); }
@@ -136,7 +136,7 @@ namespace h5pp::hdf5 {
         std::array<unsigned int, 1> cdval   = {0};
         std::array<size_t, 1>       cdelm   = {0};
         for(int idx = 0; idx < nfilter; idx++) {
-            filter                = H5Pget_filter(dsetCreatePropertyList, idx, nullptr, cdelm.data(), cdval.data(), 0, nullptr, nullptr);
+            filter = H5Pget_filter(dsetCreatePropertyList, idx, nullptr, cdelm.data(), cdval.data(), 0, nullptr, nullptr);
             if(filter != H5Z_FILTER_DEFLATE) continue;
             H5Pget_filter_by_id(dsetCreatePropertyList, filter, nullptr, cdelm.data(), cdval.data(), 0, nullptr, nullptr);
         }
@@ -174,7 +174,7 @@ namespace h5pp::hdf5 {
         auto                      size = H5Sget_simple_extent_npoints(space);
         std::vector<const char *> vdata{static_cast<size_t>(size)}; // Allocate for pointers for "size" number of strings
         // HDF5 allocates space for each string
-        herr_t retval = H5Dread(dset, type, H5S_ALL, H5S_ALL, H5P_DEFAULT, vdata.data());
+        herr_t                    retval = H5Dread(dset, type, H5S_ALL, H5S_ALL, H5P_DEFAULT, vdata.data());
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             return 0;
@@ -197,7 +197,7 @@ namespace h5pp::hdf5 {
         auto                      size = H5Sget_simple_extent_npoints(space);
         std::vector<const char *> vdata{static_cast<size_t>(size)}; // Allocate pointers for "size" number of strings
         // HDF5 allocates space for each string
-        herr_t retval = H5Aread(attr, type, vdata.data());
+        herr_t                    retval = H5Aread(attr, type, vdata.data());
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             return 0;
@@ -376,8 +376,9 @@ namespace h5pp::hdf5 {
             hid::h5t nativetype     = H5Tget_native_type(h5Type, H5T_DIR_ASCEND);
             dsetTypeSize            = h5pp::hdf5::getBytesPerElem(nativetype);
             if(dataTypeSize != dsetTypeSize)
-                throw std::runtime_error(h5pp::format(
-                    "Type size mismatch: dataset type is [{}] bytes | Type of given data is [{}] bytes", dsetTypeSize, dataTypeSize));
+                throw std::runtime_error(h5pp::format("Type size mismatch: dataset type is [{}] bytes | Type of given data is [{}] bytes",
+                                                      dsetTypeSize,
+                                                      dataTypeSize));
             else
                 h5pp::logger::log->warn(
                     "Detected packed HDF5 type: packed size {} bytes | native size {} bytes. This is not supported by h5pp yet!",
@@ -465,10 +466,10 @@ namespace h5pp::hdf5 {
                     // "The size set for a string datatype should include space for
                     // the null-terminator character, otherwise it will not be
                     // stored on (or retrieved from) disk"
-                    retval = H5Tset_size(type, desiredSize); // Desired size should be num chars + null terminator
-                    dims   = {};
-                    size   = 1;
-                    bytes  = desiredSize;
+                    retval              = H5Tset_size(type, desiredSize); // Desired size should be num chars + null terminator
+                    dims                = {};
+                    size                = 1;
+                    bytes               = desiredSize;
                 }
             } else if(h5pp::type::sfinae::has_text_v<DataType>) {
                 // Case 3
@@ -1086,8 +1087,9 @@ namespace h5pp::hdf5 {
         } else if(valid == 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             Hyperslab slab(space);
-            throw std::runtime_error(h5pp::format(
-                "Hyperslab selection is not contained in the given space. {} | space dims {}", getDimensions(space), slab.string()));
+            throw std::runtime_error(h5pp::format("Hyperslab selection is not contained in the given space. {} | space dims {}",
+                                                  getDimensions(space),
+                                                  slab.string()));
         }
     }
 
@@ -1372,8 +1374,10 @@ namespace h5pp::hdf5 {
         herr_t err = H5Dset_extent(info.h5Dset.value(), newDimensions.data());
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format(
-                "Failed to resize dataset [{}] from dimensions {} to {}", info.dsetPath.value(), info.dsetDims.value(), newDimensions));
+            throw std::runtime_error(h5pp::format("Failed to resize dataset [{}] from dimensions {} to {}",
+                                                  info.dsetPath.value(),
+                                                  info.dsetDims.value(),
+                                                  newDimensions));
         }
         // By default, all the space (old and new) is selected
         info.dsetDims = newDimensions;
@@ -1439,8 +1443,9 @@ namespace h5pp::hdf5 {
             }
             h5pp::util::resizeData(data, extent);
             if(bytes != h5pp::util::getBytesTotal(data))
-                h5pp::logger::log->debug(
-                    "Size mismatch after resize: data [{}] bytes | dset [{}] bytes ", h5pp::util::getBytesTotal(data), bytes);
+                h5pp::logger::log->debug("Size mismatch after resize: data [{}] bytes | dset [{}] bytes ",
+                                         h5pp::util::getBytesTotal(data),
+                                         bytes);
         }
     }
 
@@ -1689,8 +1694,13 @@ namespace h5pp::hdf5 {
                                     H5O_INFO_BASIC,
                                     linkAccess);
 #else
-            return H5Ovisit_by_name(
-                loc, util::safe_str(root).c_str(), H5_INDEX_NAME, H5_ITER_NATIVE, internal::matcher<ObjType>, &matchList, linkAccess);
+            return H5Ovisit_by_name(loc,
+                                    util::safe_str(root).c_str(),
+                                    H5_INDEX_NAME,
+                                    H5_ITER_NATIVE,
+                                    internal::matcher<ObjType>,
+                                    &matchList,
+                                    linkAccess);
 #endif
         }
 
@@ -1715,8 +1725,9 @@ namespace h5pp::hdf5 {
         herr_t err          = internal::visit_by_name<ObjType>(loc, searchRoot, matchList, linkAccess);
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format(
-                "Failed to find links of type [{}] while iterating from root [{}]", internal::getObjTypeName<ObjType>(), searchRoot));
+            throw std::runtime_error(h5pp::format("Failed to find links of type [{}] while iterating from root [{}]",
+                                                  internal::getObjTypeName<ObjType>(),
+                                                  searchRoot));
         }
         return matchList;
     }
@@ -1764,8 +1775,9 @@ namespace h5pp::hdf5 {
         // Here we create, or register, the attribute id and set its properties before writing data to it.
         attrInfo.assertCreateReady();
         if(attrInfo.attrExists and attrInfo.attrExists.value()) {
-            h5pp::logger::log->trace(
-                "No need to create attribute [{}] in link [{}]: exists already", attrInfo.attrName.value(), attrInfo.linkPath.value());
+            h5pp::logger::log->trace("No need to create attribute [{}] in link [{}]: exists already",
+                                     attrInfo.attrName.value(),
+                                     attrInfo.linkPath.value());
             return;
         }
         h5pp::logger::log->trace("Creating attribute {}", attrInfo.string(h5pp::logger::logIf(0)));
@@ -1861,7 +1873,7 @@ namespace h5pp::hdf5 {
                         for(size_t i = 0; i < vec.size(); i++) {
                             auto start_src = strContiguous.data() + static_cast<long>(i * bytesPerStr);
                             // Construct a view of the null-terminated character string, not including the null character.
-                            auto view = std::string_view(vec[i]); // view.size() will not include null term here!
+                            auto view      = std::string_view(vec[i]); // view.size() will not include null term here!
                             std::copy_n(std::begin(view), std::min(view.size(), bytesPerStr - 1), start_src); // Do not copy null character
                         }
                         retval = H5Dwrite(dsetInfo.h5Dset.value(),
@@ -1934,8 +1946,12 @@ namespace h5pp::hdf5 {
                 auto                size = H5Sget_select_npoints(dsetInfo.h5Space.value());
                 std::vector<char *> vdata(static_cast<size_t>(size)); // Allocate pointers for "size" number of strings
                 // HDF5 allocates space for each string in vdata
-                retval = H5Dread(
-                    dsetInfo.h5Dset.value(), dsetInfo.h5Type.value(), H5S_ALL, dsetInfo.h5Space.value(), plists.dsetXfer, vdata.data());
+                retval = H5Dread(dsetInfo.h5Dset.value(),
+                                 dsetInfo.h5Type.value(),
+                                 H5S_ALL,
+                                 dsetInfo.h5Space.value(),
+                                 plists.dsetXfer,
+                                 vdata.data());
                 // Now vdata contains the whole dataset and we need to put the data into the user-given container.
                 if constexpr(std::is_same_v<DataType, std::string>) {
                     // A vector of strings (vdata) can be put into a single string (data) with entries separated by new-lines
@@ -1980,8 +1996,10 @@ namespace h5pp::hdf5 {
                 } else if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::string> and
                                     h5pp::type::sfinae::has_resize_v<DataType>) {
                     if(data.size() != static_cast<size_t>(size))
-                        throw std::runtime_error(h5pp::format(
-                            "Given container of strings has the wrong size: dset size {} | container size {}", size, data.size()));
+                        throw std::runtime_error(
+                            h5pp::format("Given container of strings has the wrong size: dset size {} | container size {}",
+                                         size,
+                                         data.size()));
                     for(size_t i = 0; i < static_cast<size_t>(size); i++) {
                         // Each data[i] has type std::string, so we can use the std::string constructor to copy data
                         data[i] = std::string(fdata.data() + i * bytesPerString, bytesPerString);
@@ -2065,7 +2083,7 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertReadSpaceIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
-        herr_t retval = 0;
+        herr_t                retval  = 0;
         // Get the memory address to the data buffer
         [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<void *>(data);
 
@@ -2200,8 +2218,9 @@ namespace h5pp::hdf5 {
             if(permission == h5pp::FilePermission::READWRITE) return filePath;
             if(permission == h5pp::FilePermission::BACKUP) {
                 auto backupPath = getBackupFileName(filePath);
-                h5pp::logger::log->info(
-                    "[BACKUP]: Backing up existing file [{}] --> [{}]", filePath.filename().string(), backupPath.filename().string());
+                h5pp::logger::log->info("[BACKUP]: Backing up existing file [{}] --> [{}]",
+                                        filePath.filename().string(),
+                                        backupPath.filename().string());
                 fs::rename(filePath, backupPath);
             }
             if(permission == h5pp::FilePermission::REPLACE) {} // Do nothing
@@ -2263,18 +2282,18 @@ namespace h5pp::hdf5 {
         for(auto &name : info.fieldNames.value()) fieldNames.push_back(name.c_str());
         int    compression = info.compressionLevel.value() == 0 ? 0 : 1; // Only true/false (1/0). Is set to level 6 in HDF5 sources
         herr_t retval      = H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
-                                       info.getLocId(),
-                                       util::safe_str(info.tablePath.value()).c_str(),
-                                       info.numFields.value(),
-                                       info.numRecords.value(),
-                                       info.recordBytes.value(),
-                                       fieldNames.data(),
-                                       info.fieldOffsets.value().data(),
-                                       fieldTypesHidT.data(),
-                                       info.chunkSize.value(),
-                                       nullptr,
-                                       compression,
-                                       nullptr);
+                                            info.getLocId(),
+                                            util::safe_str(info.tablePath.value()).c_str(),
+                                            info.numFields.value(),
+                                            info.numRecords.value(),
+                                            info.recordBytes.value(),
+                                            fieldNames.data(),
+                                            info.fieldOffsets.value().data(),
+                                            fieldTypesHidT.data(),
+                                            info.chunkSize.value(),
+                                            nullptr,
+                                            compression,
+                                            nullptr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Could not create table [{}]", info.tablePath.value()));
@@ -2636,8 +2655,10 @@ namespace h5pp::hdf5 {
             }
         } else if(startIdx and not numReadRecords) {
             if(startIdx.value() > totalRecords - 1)
-                throw std::runtime_error(h5pp::format(
-                    "Invalid start record {} for table [{}] | total records [{}]", startIdx.value(), info.tablePath.value(), totalRecords));
+                throw std::runtime_error(h5pp::format("Invalid start record {} for table [{}] | total records [{}]",
+                                                      startIdx.value(),
+                                                      info.tablePath.value(),
+                                                      totalRecords));
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 numReadRecords = totalRecords - startIdx.value();
             } else {
@@ -2693,8 +2714,11 @@ namespace h5pp::hdf5 {
         if(dataSize != tgtFieldSizeSum) {
             std::string error_msg = h5pp::format("Could not read fields {} from table [{}]\n", tgtFieldNames, info.tablePath.value());
             for(auto &idx : srcFieldIndices)
-                error_msg += h5pp::format(
-                    "{:<10} Field index {:<6} {:<24} = {} bytes\n", " ", idx, info.fieldNames.value()[idx], info.fieldSizes.value()[idx]);
+                error_msg += h5pp::format("{:<10} Field index {:<6} {:<24} = {} bytes\n",
+                                          " ",
+                                          idx,
+                                          info.fieldNames.value()[idx],
+                                          info.fieldSizes.value()[idx]);
 
             std::string dataTypeName;
             if constexpr(h5pp::type::sfinae::has_value_type_v<DataType>)
@@ -2807,8 +2831,12 @@ namespace h5pp::hdf5 {
         h5pp::logger::log->trace("Copying link [{}] --> [{}]", srcLinkPath, tgtLinkPath);
         // Copy the link srcLinkPath to tgtLinkPath. Note that H5Ocopy does this recursively, so we don't need
         // to iterate links recursively here.
-        auto retval = H5Ocopy(
-            srcLocId, util::safe_str(srcLinkPath).c_str(), tgtLocId, util::safe_str(tgtLinkPath).c_str(), H5P_DEFAULT, plists.linkCreate);
+        auto retval = H5Ocopy(srcLocId,
+                              util::safe_str(srcLinkPath).c_str(),
+                              tgtLocId,
+                              util::safe_str(tgtLinkPath).c_str(),
+                              H5P_DEFAULT,
+                              plists.linkCreate);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Could not copy link [{}] --> [{}]", srcLinkPath, tgtLinkPath));

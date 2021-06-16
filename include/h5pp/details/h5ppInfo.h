@@ -164,8 +164,10 @@ namespace h5pp {
             /* clang-format on */
             hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), static_cast<hsize_t>(1), std::multiplies<>());
             if(size_check != dataSize.value())
-                throw std::runtime_error(h5pp::format(
-                    "Data size mismatch: dataSize [{}] | dataDims {} = size [{}]", dataSize.value(), dataDims.value(), size_check));
+                throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | dataDims {} = size [{}]",
+                                                      dataSize.value(),
+                                                      dataDims.value(),
+                                                      size_check));
         }
 
         void assertReadReady() const {

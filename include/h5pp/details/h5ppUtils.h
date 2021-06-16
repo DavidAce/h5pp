@@ -106,13 +106,18 @@ namespace h5pp::util {
 
         /* clang-format on */
         h5pp::logger::log->critical("getH5Type could not match the type provided: {}", type::sfinae::type_name<DecayType>());
-        throw std::logic_error(h5pp::format(
-            "getH5Type could not match the type provided [{}] | size {}", type::sfinae::type_name<DecayType>(), sizeof(DecayType)));
+        throw std::logic_error(h5pp::format("getH5Type could not match the type provided [{}] | size {}",
+                                            type::sfinae::type_name<DecayType>(),
+                                            sizeof(DecayType)));
         return hid_t(0);
     }
 
     template<typename DataType, size_t size>
-    [[nodiscard]] constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size], [[maybe_unused]] bool countChars = false) {
+    [[nodiscard]] constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size], [[maybe_unused]] bool countChars = false)
+        noexcept
+    /*! Returns the size of a C-style array.
+    */
+    {
         if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
             // A C-style char array is a null-terminated array, that has size = characters + 1
             // Here we want to return the number of characters that can fit in the array,
@@ -127,25 +132,25 @@ namespace h5pp::util {
             return size;
     }
     template<typename DataType, size_t rows, size_t cols>
-    [[nodiscard]] constexpr std::array<size_t, 2> getArraySize([[maybe_unused]] const DataType (&arr)[rows][cols]) {
+    [[nodiscard]] constexpr std::array<size_t, 2> getArraySize([[maybe_unused]] const DataType (&arr)[rows][cols]) noexcept {
         return {rows, cols};
     }
     template<typename DataType, size_t rows, size_t cols, size_t depth>
-    [[nodiscard]] constexpr std::array<size_t, 3> getArraySize([[maybe_unused]] const DataType (&arr)[rows][cols][depth]) {
+    [[nodiscard]] constexpr std::array<size_t, 3> getArraySize([[maybe_unused]] const DataType (&arr)[rows][cols][depth]) noexcept{
         return {rows, cols, depth};
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
-    [[nodiscard]] size_t getCharArraySize(const DataType &data, [[maybe_unused]] bool countChars = true) {
+    [[nodiscard]] size_t getCharArraySize(const DataType &data, [[maybe_unused]] bool countChars = true) noexcept {
         static_assert(h5pp::type::sfinae::is_text_v<DataType>,
                       "Template function [h5pp::util::getCharArraySize(const DataType & data)] requires type DataType to be "
                       "a text-like type such as [std::string], [std::string_view], [char *] or have a .c_str() member function");
         // With this function we are interested in the number of chars currently in a given buffer,
         // including the null terminator.
-        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return data.size() + 1; // string and string_view have size without nullterm
+        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return data.size() + 1; // string and string_view have size without \0
         if constexpr(std::is_array_v<DataType>) return getArraySize(data, countChars); // getarraysize includes nullterm already
-        if constexpr(h5pp::type::sfinae::has_c_str_v<DataType>) return strlen(data.c_str()) + 1; // strlen does not include nullterm
-        if constexpr(std::is_pointer_v<DataType>) return strlen(data) + 1;                       // strlen does not include nullterm
+        if constexpr(h5pp::type::sfinae::has_c_str_v<DataType>) return strlen(data.c_str()) + 1; // strlen does not include \0
+        if constexpr(std::is_pointer_v<DataType>) return strlen(data) + 1;                       // strlen does not include \0
         return 1;                                                                                // Probably a char?
     }
 
@@ -566,29 +571,33 @@ namespace h5pp::util {
         } else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             if(newDims.size() != 2)
                 throw std::runtime_error(h5pp::format("Failed to resize 2-dimensional Eigen type: Dataset has dimensions {}", newDims));
-            h5pp::logger::log->debug(
-                "Resizing eigen 2d container {} -> {}", std::initializer_list<Eigen::Index>{data.rows(), data.cols()}, newDims);
+            h5pp::logger::log->debug("Resizing eigen 2d container {} -> {}",
+                                     std::initializer_list<Eigen::Index>{data.rows(), data.cols()},
+                                     newDims);
             data.resize(static_cast<Eigen::Index>(newDims[0]), static_cast<Eigen::Index>(newDims[1]));
         } else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 if(newDims.size() != DataType::NumDimensions)
-                    throw std::runtime_error(h5pp::format(
-                        "Failed to resize {}-dimensional Eigen tensor: Dataset has dimensions {}", DataType::NumDimensions, newDims));
+                    throw std::runtime_error(h5pp::format("Failed to resize {}-dimensional Eigen tensor: Dataset has dimensions {}",
+                                                          DataType::NumDimensions,
+                                                          newDims));
                 auto eigenDims = eigen::copy_dims<DataType::NumDimensions>(newDims);
                 h5pp::logger::log->debug("Resizing eigen tensor container {} -> {}", data.dimensions(), newDims);
                 data.resize(eigenDims);
             } else {
                 auto newSize = getSizeFromDimensions(newDims);
                 if(data.size() != static_cast<Eigen::Index>(newSize))
-                    h5pp::logger::log->warn(
-                        "Detected non-resizeable tensor container with wrong size: Given size {}. Required size {}", data.size(), newSize);
+                    h5pp::logger::log->warn("Detected non-resizeable tensor container with wrong size: Given size {}. Required size {}",
+                                            data.size(),
+                                            newSize);
             }
         } else
 #endif // H5PP_EIGEN3
             if constexpr(h5pp::type::sfinae::has_size_v<DataType> and h5pp::type::sfinae::has_resize_v<DataType>) {
             if(newDims.size() > 1)
                 h5pp::logger::log->debug(
-                    "Given data container is 1-dimensional but the desired dimensions are {}. Resizing to fit all the data", newDims);
+                    "Given data container is 1-dimensional but the desired dimensions are {}. Resizing to fit all the data",
+                    newDims);
             auto newSize = getSizeFromDimensions(newDims);
             h5pp::logger::log->debug("Resizing 1d container {} -> {} of type [{}]",
                                      std::initializer_list<size_t>{static_cast<size_t>(data.size())},

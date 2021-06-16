@@ -79,9 +79,9 @@ namespace h5pp {
     };
 
     enum class ResizePolicy {
-        FIT,   /* Writing over a dataset will shrink or grow existing dimensions to fit new data (default on H5D_CHUNKED) */
-        GROW,  /* Writing over a dataset will may grow existing dimensions, but never shrink, to fit new data (works only on H5D_CHUNKED) */
-        OFF,   /* Writing over a dataset will not modify existing dimensions */
+        FIT,  /* Writing over a dataset will shrink or grow existing dimensions to fit new data (default on H5D_CHUNKED) */
+        GROW, /* Writing over a dataset will may grow existing dimensions, but never shrink, to fit new data (works only on H5D_CHUNKED) */
+        OFF,  /* Writing over a dataset will not modify existing dimensions */
     };
 
     enum class LocationMode {
