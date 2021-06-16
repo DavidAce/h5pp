@@ -10,34 +10,34 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.compiler }}-shared-[${{ matrix.shared }}]-${{ matrix.manager }}
+    name: ${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
     runs-on: ubuntu-20.04
     env:
-      cache-name: cache-${{ matrix.compiler }}-shared-[${{ matrix.shared }}]-${{ matrix.manager }}
+      cache-name: cache-${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
     strategy:
       fail-fast: true # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { compiler: gcc,   shared: OFF, manager: cmake }
-          - { compiler: gcc,   shared: OFF, manager: conan }
-          - { compiler: gcc,   shared: OFF, manager: fetch }
-          - { compiler: gcc,   shared: OFF, manager: cpm }
-          - { compiler: gcc,   shared: OFF, manager: find  }
-          - { compiler: gcc,   shared: ON,  manager: cmake }
-          - { compiler: gcc,   shared: ON,  manager: conan }
-          - { compiler: gcc,   shared: ON,  manager: fetch }
-          - { compiler: gcc,   shared: ON,  manager: cpm }
-          - { compiler: gcc,   shared: ON,  manager: find  }
-          - { compiler: clang, shared: OFF, manager: cmake }
-          - { compiler: clang, shared: OFF, manager: conan }
-          - { compiler: clang, shared: OFF, manager: fetch }
-          - { compiler: clang, shared: OFF, manager: cpm }
-          - { compiler: clang, shared: OFF, manager: find }
-          - { compiler: clang, shared: ON,  manager: cmake }
-          - { compiler: clang, shared: ON,  manager: conan }
-          - { compiler: clang, shared: ON,  manager: fetch }
-          - { compiler: clang, shared: ON,  manager: cpm }
-          - { compiler: clang, shared: ON,  manager: find }
+          - { compiler: gcc,   linkage: static, manager: cmake }
+          - { compiler: gcc,   linkage: static, manager: conan }
+          - { compiler: gcc,   linkage: static, manager: fetch }
+          - { compiler: gcc,   linkage: static, manager: cpm }
+          - { compiler: gcc,   linkage: static, manager: find  }
+          - { compiler: gcc,   linkage: shared, manager: cmake }
+          - { compiler: gcc,   linkage: shared, manager: conan }
+          - { compiler: gcc,   linkage: shared, manager: fetch }
+          - { compiler: gcc,   linkage: shared, manager: cpm }
+          - { compiler: gcc,   linkage: shared, manager: find  }
+          - { compiler: clang, linkage: static, manager: cmake }
+          - { compiler: clang, linkage: static, manager: conan }
+          - { compiler: clang, linkage: static, manager: fetch }
+          - { compiler: clang, linkage: static, manager: cpm }
+          - { compiler: clang, linkage: static, manager: find }
+          - { compiler: clang, linkage: shared, manager: cmake }
+          - { compiler: clang, linkage: shared, manager: conan }
+          - { compiler: clang, linkage: shared, manager: fetch }
+          - { compiler: clang, linkage: shared, manager: cpm }
+          - { compiler: clang, linkage: shared, manager: find }
 
     steps:
       - uses: actions/checkout@v2
@@ -90,22 +90,22 @@ jobs:
         run: |
           cmake -E make_directory build/Debug
           cd build/Debug
-          cmake                                                    \
-          -DCMAKE_BUILD_TYPE=Debug                                 \
-          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared }}            \
-          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                         \
-          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install               \
-          -DCMAKE_C_COMPILER_LAUNCHER=ccache                       \
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                     \
-          -DH5PP_ENABLE_EIGEN3:BOOL=ON                             \
-          -DH5PP_ENABLE_SPDLOG:BOOL=ON                             \
-          -DH5PP_ENABLE_ASAN:BOOL=ON                               \
-          -DH5PP_ENABLE_TESTS:BOOL=ON                              \
-          -DH5PP_ENABLE_COVERAGE:BOOL=ON                           \
-          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}      \
-          -DH5PP_PRINT_INFO:BOOL=ON                                \
-          -DH5PP_BUILD_EXAMPLES:BOOL=ON                            \
-          -G "Unix Makefiles"                                      \
+          cmake                                                       \
+          -DCMAKE_BUILD_TYPE=Debug                                    \
+          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.linkage == 'shared' }}  \
+          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                            \
+          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install                  \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache                          \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                        \
+          -DH5PP_ENABLE_EIGEN3:BOOL=ON                                \
+          -DH5PP_ENABLE_SPDLOG:BOOL=ON                                \
+          -DH5PP_ENABLE_ASAN:BOOL=ON                                  \
+          -DH5PP_ENABLE_TESTS:BOOL=ON                                 \
+          -DH5PP_ENABLE_COVERAGE:BOOL=ON                              \
+          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
+          -DH5PP_PRINT_INFO:BOOL=ON                                   \
+          -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
+          -G "Unix Makefiles"                                         \
           ../../
 
       - name: Build
@@ -124,11 +124,11 @@ jobs:
           ctest -C Debug --output-on-failure -R h5pp
 
       - name: Coverage
-        if: matrix.compiler == 'gcc' && matrix.shared == 'OFF' && matrix.manager == 'find'
+        if: matrix.compiler == 'gcc' && matrix.linkage == 'static' && matrix.manager == 'find'
         run: |
           # Create lcov report
           lcov --capture --directory build/Debug --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*'  --output-file coverage.info # filter system-files
+          lcov --remove coverage.info '/usr/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info # filter system-files
           lcov --list coverage.info # debug info
           # Upload report to CodeCov
           bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"

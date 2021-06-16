@@ -10,33 +10,33 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.compiler }}-shared-[${{ matrix.shared }}]-${{ matrix.manager }}
+    name: ${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
     runs-on: ubuntu-16.04
     env:
-      cache-name: cache-${{ matrix.compiler }}-shared-[${{ matrix.shared }}]-${{ matrix.manager }}
+      cache-name: cache-${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
     strategy:
       fail-fast: true # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { compiler: gcc,   shared: OFF, manager: cmake }
-          - { compiler: gcc,   shared: OFF, manager: conan }
-          - { compiler: gcc,   shared: OFF, manager: fetch }
-          - { compiler: gcc,   shared: OFF, manager: find-or-cmake }
-          - { compiler: gcc,   shared: ON,  manager: cmake }
-          - { compiler: gcc,   shared: ON,  manager: conan }
-          - { compiler: gcc,   shared: ON,  manager: fetch }
-          - { compiler: gcc,   shared: ON,  manager: cpm }
-          - { compiler: gcc,   shared: ON,  manager: find-or-cmake }
-          - { compiler: clang, shared: OFF, manager: cmake }
-          - { compiler: clang, shared: OFF, manager: conan }
-          - { compiler: clang, shared: OFF, manager: fetch }
-          - { compiler: clang, shared: OFF, manager: cpm }
-          - { compiler: clang, shared: OFF, manager: find-or-cmake }
-          - { compiler: clang, shared: ON,  manager: cmake }
-          - { compiler: clang, shared: ON,  manager: conan }
-          - { compiler: clang, shared: ON,  manager: fetch }
-          - { compiler: clang, shared: ON,  manager: cpm }
-          - { compiler: clang, shared: ON,  manager: find-or-cmake }
+          - { compiler: gcc,   linkage: static, manager: cmake }
+          - { compiler: gcc,   linkage: static, manager: conan }
+          - { compiler: gcc,   linkage: static, manager: fetch }
+          - { compiler: gcc,   linkage: static, manager: find-or-cmake }
+          - { compiler: gcc,   linkage: shared, manager: cmake }
+          - { compiler: gcc,   linkage: shared, manager: conan }
+          - { compiler: gcc,   linkage: shared, manager: fetch }
+          - { compiler: gcc,   linkage: shared, manager: cpm }
+          - { compiler: gcc,   linkage: shared, manager: find-or-cmake }
+          - { compiler: clang, linkage: static, manager: cmake }
+          - { compiler: clang, linkage: static, manager: conan }
+          - { compiler: clang, linkage: static, manager: fetch }
+          - { compiler: clang, linkage: static, manager: cpm }
+          - { compiler: clang, linkage: static, manager: find-or-cmake }
+          - { compiler: clang, linkage: shared, manager: cmake }
+          - { compiler: clang, linkage: shared, manager: conan }
+          - { compiler: clang, linkage: shared, manager: fetch }
+          - { compiler: clang, linkage: shared, manager: cpm }
+          - { compiler: clang, linkage: shared, manager: find-or-cmake }
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
@@ -89,23 +89,23 @@ jobs:
         run: |
           cmake -E make_directory build/Debug
           cd build/Debug
-          cmake                                                    \
-          -DCMAKE_BUILD_TYPE=Debug                                 \
-          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared }}            \
-          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                         \
-          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install               \
-          -DCMAKE_C_COMPILER_LAUNCHER=ccache                       \
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                     \
-          -DH5PP_ENABLE_EIGEN3:BOOL=ON                             \
-          -DH5PP_ENABLE_FMT:BOOL=OFF                               \
-          -DH5PP_ENABLE_SPDLOG:BOOL=ON                             \
-          -DH5PP_ENABLE_ASAN:BOOL=ON                               \
-          -DH5PP_ENABLE_TESTS:BOOL=ON                              \
-          -DH5PP_ENABLE_PCH:BOOL=OFF                               \
-          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}      \
-          -DH5PP_PRINT_INFO:BOOL=ON                                \
-          -DH5PP_BUILD_EXAMPLES:BOOL=ON                            \
-          -G "Unix Makefiles"                                      \
+          cmake                                                       \
+          -DCMAKE_BUILD_TYPE=Debug                                    \
+          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.linkage == 'shared' }}  \
+          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                            \
+          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install                  \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache                          \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                        \
+          -DH5PP_ENABLE_EIGEN3:BOOL=ON                                \
+          -DH5PP_ENABLE_FMT:BOOL=OFF                                  \
+          -DH5PP_ENABLE_SPDLOG:BOOL=ON                                \
+          -DH5PP_ENABLE_ASAN:BOOL=ON                                  \
+          -DH5PP_ENABLE_TESTS:BOOL=ON                                 \
+          -DH5PP_ENABLE_PCH:BOOL=OFF                                  \
+          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
+          -DH5PP_PRINT_INFO:BOOL=ON                                   \
+          -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
+          -G "Unix Makefiles"                                         \
           ../../
 
       - name: Build

@@ -10,24 +10,24 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.compiler }}-shared-[${{ matrix.shared }}]-${{ matrix.manager }}
+    name: ${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
     runs-on: macos-10.15
     env:
-      cache-name: cache-${{ matrix.compiler }}-shared-[${{ matrix.shared }}]-${{ matrix.manager }}
+      cache-name: cache-${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
     strategy:
       fail-fast: false # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { compiler: cl, shared: OFF, manager: conan }
-          - { compiler: cl, shared: OFF, manager: cmake }
-          - { compiler: cl, shared: OFF, manager: fetch }
-          - { compiler: cl, shared: OFF, manager: cpm }
-          - { compiler: cl, shared: OFF, manager: find-or-cmake }
-          - { compiler: cl, shared: ON,  manager: conan }
-          - { compiler: cl, shared: ON,  manager: cmake }
-          - { compiler: cl, shared: ON,  manager: fetch }
-          - { compiler: cl, shared: ON,  manager: cpm }
-          - { compiler: cl, shared: ON,  manager: find-or-cmake }
+          - { compiler: cl, linkage: static, manager: conan }
+          - { compiler: cl, linkage: static, manager: cmake }
+          - { compiler: cl, linkage: static, manager: fetch }
+          - { compiler: cl, linkage: static, manager: cpm }
+          - { compiler: cl, linkage: static, manager: find-or-cmake }
+          - { compiler: cl, linkage: shared, manager: conan }
+          - { compiler: cl, linkage: shared, manager: cmake }
+          - { compiler: cl, linkage: shared, manager: fetch }
+          - { compiler: cl, linkage: shared, manager: cpm }
+          - { compiler: cl, linkage: shared, manager: find-or-cmake }
 
     steps:
       - uses: actions/checkout@v2
@@ -61,22 +61,22 @@ jobs:
         run: |
           cmake -E make_directory build/Debug
           cd build/Debug
-          cmake                                                    \
-          -DCMAKE_BUILD_TYPE=Debug                                 \
-          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared }}            \
-          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                         \
-          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install               \
-          -DCMAKE_C_COMPILER_LAUNCHER=ccache                       \
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                     \
-          -DH5PP_ENABLE_EIGEN3:BOOL=ON                             \
-          -DH5PP_ENABLE_SPDLOG:BOOL=ON                             \
-          -DH5PP_ENABLE_ASAN:BOOL=OFF                              \
-          -DH5PP_ENABLE_TESTS:BOOL=ON                              \
-          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}      \
-          -DH5PP_PRINT_INFO:BOOL=ON                                \
-          -DH5PP_BUILD_EXAMPLES:BOOL=ON                            \
-          -DCPM_SOURCE_CACHE=~/cpm-cache                           \
-           -G "Unix Makefiles"                                     \
+          cmake                                                       \
+          -DCMAKE_BUILD_TYPE=Debug                                    \
+          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.linkage == 'shared' }}  \
+          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                            \
+          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install                  \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache                          \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                        \
+          -DH5PP_ENABLE_EIGEN3:BOOL=ON                                \
+          -DH5PP_ENABLE_SPDLOG:BOOL=ON                                \
+          -DH5PP_ENABLE_ASAN:BOOL=OFF                                 \
+          -DH5PP_ENABLE_TESTS:BOOL=ON                                 \
+          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
+          -DH5PP_PRINT_INFO:BOOL=ON                                   \
+          -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
+          -DCPM_SOURCE_CACHE=~/cpm-cache                              \
+           -G "Unix Makefiles"                                        \
           ../../
 
       - name: Build
