@@ -79,17 +79,17 @@ namespace h5pp {
     };
 
     enum class ResizePolicy {
-        RESIZE_TO_FIT, // (Default)
-        INCREASE_ONLY,
-        DO_NOT_RESIZE,
+        FIT,  /* Writing over a dataset will shrink or grow existing dimensions to fit new data (default on H5D_CHUNKED) */
+        GROW, /* Writing over a dataset will may grow existing dimensions, but never shrink, to fit new data (works only on H5D_CHUNKED) */
+        OFF,  /* Writing over a dataset will not modify existing dimensions */
     };
 
     enum class LocationMode {
         /*
          * Some operations, such as h5pp::hdf5::copyLink support copying objects between files.
-         * However, detecting whether two given location id's are on the same file can become
-         * a bottleneck when batch processing a large amount of files.
-         *
+         * However, detecting whether two given location ids are on the same file can become
+         * a bottleneck when batch processing a large amount of files. If we know beforehand what it will be, setting
+         * this flag avoids a costly detection step.
          */
 
         SAME_FILE,  /*!< Interpret source and target location id's as being on the same file */

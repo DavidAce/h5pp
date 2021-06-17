@@ -1,5 +1,0 @@
-@PACKAGE_INIT@
-
-
-include(${CMAKE_CURRENT_LIST_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)

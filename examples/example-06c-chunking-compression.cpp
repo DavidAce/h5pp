@@ -43,8 +43,15 @@ int main() {
     // Write data alternative version 1
     // The compression level can also be given as the last argument in a writeDataset() call.
     // Tip: An IDE with autocomplete can be very useful to get this right...
-    file.writeDataset(
-        v_write, "myStdVectorDouble_alt1", H5D_CHUNKED, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt, 3);
+    file.writeDataset(v_write,
+                      "myStdVectorDouble_alt1",
+                      H5D_CHUNKED,
+                      std::nullopt,
+                      std::nullopt,
+                      std::nullopt,
+                      std::nullopt,
+                      std::nullopt,
+                      3);
 
     // Write data alternative version 2
     // Slighly les verbose is to use writeDataset_chunked

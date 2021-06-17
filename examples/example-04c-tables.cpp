@@ -66,8 +66,11 @@ int main() {
      */
 
     auto particle_read = file.readTableRecords<Particle>("somegroup/particleTable");
-    h5pp::print(
-        "Single record read:\n x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f}\n", particle_read.x, particle_read.y, particle_read.z, particle_read.t);
+    h5pp::print("Single record read:\n x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f}\n",
+                particle_read.x,
+                particle_read.y,
+                particle_read.z,
+                particle_read.t);
 
     // Or read multiple records into a resizeable container. Start from index 0 and read 10 records.
     auto particles_read = file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", 0, 10);

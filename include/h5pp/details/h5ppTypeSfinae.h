@@ -1,16 +1,17 @@
 #pragma once
 #include "h5ppEigen.h"
+#include "h5ppHid.h"
 #include "h5ppOptional.h"
-#include "h5ppTypeCompound.h"
 #include <array>
+#include <H5Tpublic.h>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <type_traits>
 #include <vector>
-
+#include <complex>
 /*!
- * \brief A collection of type-detection and type-analysis utilities using SFINAE
+ * \brief A collection of type-detection utilities using SFINAE
  */
 namespace h5pp::type::sfinae {
 
@@ -157,6 +158,8 @@ namespace h5pp::type::sfinae {
     struct is_specialization : std::false_type {};
     template<template<typename...> class Ref, typename... Args>
     struct is_specialization<Ref<Args...>, Ref> : std::true_type {};
+    template<typename T, template<typename...> class Ref>
+    inline constexpr bool is_specialization_v = is_specialization<T, Ref>::value;
 
     template<typename T>
     struct is_std_vector : public std::false_type {};
@@ -352,10 +355,11 @@ namespace h5pp::type::sfinae {
         private:
         static constexpr bool test() {
             if constexpr(has_x_v<T> and has_y_v<T> and not has_z_v<T>) {
-                constexpr size_t t_size = sizeof(T);
-                constexpr size_t x_size = sizeof(T::x);
-                constexpr size_t y_size = sizeof(T::y);
-                return t_size == x_size + y_size;
+                constexpr size_t t_size    = sizeof(T);
+                constexpr size_t x_size    = sizeof(T::x);
+                constexpr size_t y_size    = sizeof(T::y);
+                constexpr bool   same_type = std::is_same_v<decltype(T::x), decltype(T::y)>;
+                return same_type and t_size == x_size + y_size;
             } else {
                 return false;
             }
@@ -364,9 +368,18 @@ namespace h5pp::type::sfinae {
         public:
         static constexpr bool value = test();
     };
+
     template<typename T>
     inline constexpr bool is_Scalar2_v = is_Scalar2<T>::value;
 
+    template<typename T>
+    using get_Scalar2_t = std::conditional_t<is_Scalar2_v<T>, decltype(T::x), std::false_type>;
+
+    template<typename T1, typename T2>
+    constexpr bool is_Scalar2_of_type() {
+        if constexpr(is_Scalar2_v<T1>) return std::is_same<decltype(T1::x), T2>::value;
+        return false;
+    }
     template<typename T>
     struct is_Scalar3 {
         private:
@@ -376,7 +389,9 @@ namespace h5pp::type::sfinae {
                 constexpr size_t x_size = sizeof(T::x);
                 constexpr size_t y_size = sizeof(T::y);
                 constexpr size_t z_size = sizeof(T::z);
-                return t_size == x_size + y_size + z_size;
+                constexpr bool   same_type =
+                    std::is_same_v<decltype(T::x), decltype(T::y)> and std::is_same_v<decltype(T::x), decltype(T::z)>;
+                return same_type and t_size == x_size + y_size + z_size;
             } else {
                 return false;
             }
@@ -385,19 +400,18 @@ namespace h5pp::type::sfinae {
         public:
         static constexpr bool value = test();
     };
+
     template<typename T>
     inline constexpr bool is_Scalar3_v = is_Scalar3<T>::value;
 
-    template<typename T1, typename T2>
-    constexpr bool is_Scalar2_of_type() {
-        if constexpr(is_Scalar2_v<T1>) return std::is_same<decltype(T1::x), T2>::value;
-        return false;
-    }
+    template<typename T>
+    using get_Scalar3_t = std::conditional_t<is_Scalar3_v<T>, decltype(T::x), std::false_type>;
 
     template<typename T>
-    constexpr bool is_ScalarN() {
-        return is_Scalar2_v<T> or is_Scalar3_v<T>;
-    }
+    constexpr bool is_ScalarN_v = is_Scalar2_v<T> or is_Scalar3_v<T>;
+
+    template<typename T>
+    using get_ScalarN_t = std::conditional_t<is_ScalarN_v<T>, decltype(T::x), std::false_type>;
 
     template<typename T1, typename T2>
     constexpr bool is_Scalar3_of_type() {

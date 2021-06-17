@@ -5,6 +5,7 @@ output/
 build/
 .vscode/
 tmp/
+tmp-*/
 libs/
 doxygen_log.txt
 *__pycache__/

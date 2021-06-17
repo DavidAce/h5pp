@@ -13,7 +13,6 @@
 #include "h5ppOptional.h"
 #include "h5ppPropertyLists.h"
 #include "h5ppScan.h"
-#include "h5ppTypeCompoundCreate.h"
 #include "h5ppUtils.h"
 #include <hdf5.h>
 #include <hdf5_hl.h>
@@ -28,14 +27,13 @@ namespace h5pp {
 
     class File {
         private:
-        fs::path             filePath;                                  /*!< Full path to the file, e.g. /path/to/project/filename.h5 */
-        h5pp::FilePermission permission = h5pp::FilePermission::RENAME; /*!< Decides action on file collision and read/write permission on
-                                                                           existing files. Default RENAME avoids loss of data  */
-        mutable std::optional<h5pp::hid::h5f> fileHandle = std::nullopt;
-        size_t logLevel = 2; /*!< Console log level for new file objects. 0 [trace] has highest verbosity, and 5 [critical] the lowest.  */
-        bool   logTimestamp = false; /*!< Add a time stamp to console log output   */
-        hid::h5e     error_stack;    /*!< Holds a reference to the error stack used by HDF5   */
-        unsigned int currentCompressionLevel = 0;
+        fs::path                        filePath;                                               /*!< Full path to the file */
+        h5pp::FilePermission            permission              = h5pp::FilePermission::RENAME; /*!< File open/create policy. */
+        mutable std::optional<hid::h5f> fileHandle              = std::nullopt; /*!< Keeps a file handle alive in batch operations */
+        size_t                          logLevel                = 2;            /*!< Log verbosity from 0 [trace] to 6 [off] */
+        bool                            logTimestamp            = false;        /*!< Add a time stamp to console log output */
+        hid::h5e                        error_stack             = H5E_DEFAULT;  /*!< Holds a reference to the error stack used by HDF5 */
+        unsigned int                    currentCompressionLevel = 0;            /*!< Holds the default compression level */
 
         void init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
@@ -49,7 +47,6 @@ namespace h5pp {
             }
             // The following function can modify the resulting filePath depending on permission.
             filePath = h5pp::hdf5::createFile(filePath, permission, plists);
-            h5pp::type::compound::initTypes();
             h5pp::logger::log->debug("Successfully initialized file [{}]", filePath.string());
         }
 
@@ -116,7 +113,12 @@ namespace h5pp {
          *
          */
 
-        void setKeepFileOpened() const { fileHandle = openFileHandle(); }
+        void setKeepFileOpened() const {
+            // Check before setting onto self:
+            // otherwise repeated calls to setKeepFileOpened() would increment the reference count,
+            // without there existing a handle to decrement it --> memory leak
+            if(not fileHandle) fileHandle = openFileHandle();
+        }
         void setKeepFileClosed() const { fileHandle = std::nullopt; }
 
         [[nodiscard]] h5pp::FilePermission getFilePermission() const { return permission; }
@@ -188,7 +190,7 @@ namespace h5pp {
 
         /*
          *
-         * Functions for transfering contents between locations or files
+         * Functions for transferring contents between locations or files
          *
          */
 
@@ -200,8 +202,12 @@ namespace h5pp {
         }
 
         void copyLinkFromFile(std::string_view localLinkPath, const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath) {
-            return h5pp::hdf5::copyLink(
-                sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
+            return h5pp::hdf5::copyLink(sourceFilePath,
+                                        sourceLinkPath,
+                                        getFilePath(),
+                                        localLinkPath,
+                                        h5pp::FilePermission::READWRITE,
+                                        plists);
         }
 
         template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_tgt>>
@@ -222,8 +228,12 @@ namespace h5pp {
         }
 
         void moveLinkFromFile(std::string_view localLinkPath, const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath) {
-            return h5pp::hdf5::moveLink(
-                sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FilePermission::READWRITE, plists);
+            return h5pp::hdf5::moveLink(sourceFilePath,
+                                        sourceLinkPath,
+                                        getFilePath(),
+                                        localLinkPath,
+                                        h5pp::FilePermission::READWRITE,
+                                        plists);
         }
 
         template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_tgt>>
@@ -421,7 +431,7 @@ namespace h5pp {
             const OptDimsType &         dsetDimsChunk  = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
             const OptDimsType &         dsetDimsMax    = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
             std::optional<hid::h5t>     h5Type         = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
-            std::optional<ResizePolicy> resizePolicy   = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+            std::optional<ResizePolicy> resizePolicy   = std::nullopt, /*!< Type of resizing if needed. Choose GROW, FIT,OFF */
             std::optional<unsigned int> compression    = std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
         {
             /* clang-format on */
@@ -447,7 +457,7 @@ namespace h5pp {
             std::optional<H5D_layout_t> h5Layout      = std::nullopt, /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
             const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
             const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
-            std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+            std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose GROW, FIT, OFF */
             std::optional<unsigned int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
             /* clang-format on */
         ) {
@@ -474,7 +484,7 @@ namespace h5pp {
             const OptDimsType &         dsetDimsChunk = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
             const OptDimsType &         dsetDimsMax   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
             std::optional<hid::h5t>     h5Type        = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
-            std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose INCREASE_ONLY, RESIZE_TO_FIT,DO_NOT_RESIZE */
+            std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose GROW, FIT, OFF */
             std::optional<unsigned int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
             /* clang-format on */
         ) {
@@ -554,7 +564,7 @@ namespace h5pp {
             Options options;
             options.linkPath     = dsetPath;
             options.dsetSlab     = hyperslab;
-            options.resizePolicy = ResizePolicy::DO_NOT_RESIZE;
+            options.resizePolicy = ResizePolicy::OFF;
             auto dsetInfo        = h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value())
                 throw std::runtime_error(h5pp::format("Could not write hyperslab: dataset [{}] does not exist", dsetPath));

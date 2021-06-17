@@ -59,9 +59,9 @@ namespace h5pp::scan {
 
         if(not info.resizePolicy) info.resizePolicy = options.resizePolicy;
         if(not info.resizePolicy) {
-            if(info.h5Layout != H5D_CHUNKED) info.resizePolicy = h5pp::ResizePolicy::DO_NOT_RESIZE;
-            else if(info.dsetSlab) info.resizePolicy = h5pp::ResizePolicy::INCREASE_ONLY; // A hyperslab selection on the dataset has been made. Let's not shrink!
-            else info.resizePolicy = h5pp::ResizePolicy::RESIZE_TO_FIT;
+            if(info.h5Layout != H5D_CHUNKED) info.resizePolicy = h5pp::ResizePolicy::OFF;
+            else if(info.dsetSlab) info.resizePolicy = h5pp::ResizePolicy::GROW; // A hyperslab selection on the dataset has been made. Let's not shrink!
+            else info.resizePolicy = h5pp::ResizePolicy::FIT;
         }
         if(not info.compression) {
             hid::h5p plist   = H5Dget_create_plist(info.h5Dset.value());
@@ -166,9 +166,9 @@ namespace h5pp::scan {
         if(not info.compression) info.compression   = h5pp::hdf5::getValidCompressionLevel(info.compression);
         if(not info.resizePolicy) {
             if(info.h5Layout != H5D_CHUNKED)
-                info.resizePolicy = h5pp::ResizePolicy::DO_NOT_RESIZE;
+                info.resizePolicy = h5pp::ResizePolicy::OFF;
             else
-                info.resizePolicy = h5pp::ResizePolicy::RESIZE_TO_FIT;
+                info.resizePolicy = h5pp::ResizePolicy::FIT;
         }
         if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.dsetSize.value(), info.dsetDims.value(), info.h5Layout.value(), info.dsetDimsMax);
         // Apply hyperslab selection if there is any
@@ -278,9 +278,9 @@ namespace h5pp::scan {
         if(not info.compression) info.compression   = h5pp::hdf5::getValidCompressionLevel(info.compression);
         if(not info.resizePolicy) {
             if(info.h5Layout != H5D_CHUNKED)
-                info.resizePolicy = h5pp::ResizePolicy::DO_NOT_RESIZE;
+                info.resizePolicy = h5pp::ResizePolicy::OFF;
             else
-                info.resizePolicy = h5pp::ResizePolicy::RESIZE_TO_FIT;
+                info.resizePolicy = h5pp::ResizePolicy::FIT;
         }
 
         h5pp::hdf5::setStringSize<DataType>(data, info.h5Type.value(), info.dsetSize.value(), info.dsetByte.value(), info.dsetDims.value());       // String size will be H5T_VARIABLE unless explicitly specified
@@ -625,7 +625,7 @@ namespace h5pp::scan {
             info.tableGroupName = "";
             size_t pos          = info.tablePath.value().find_last_of('/');
             if(pos != std::string::npos)
-                info.tableGroupName.value().assign(info.tablePath.value().begin(), info.tablePath.value().begin() + static_cast<long>(pos));
+                info.tableGroupName.value().assign(info.tablePath->begin(), info.tablePath->begin() + static_cast<long>(pos));
         }
         // This is as far as we get if the table does not exist
         if(not info.tableExists.value()) return;

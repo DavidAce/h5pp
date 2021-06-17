@@ -10,49 +10,55 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
+    name: ${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
     runs-on: ubuntu-20.04
     env:
-      cache-name: ubuntu-20.04-cache-${{ matrix.compiler }}-conda-[${{ matrix.conda }}]-shared-[${{ matrix.shared }}]-${{ matrix.source }}
+      cache-name: cache-${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
     strategy:
       fail-fast: true # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { compiler: gcc,   conda : OFF, shared: OFF, source: cmake }
-          - { compiler: gcc,   conda : OFF, shared: ON , source: cmake }
-          - { compiler: gcc,   conda : OFF, shared: OFF, source: conan }
-          - { compiler: gcc,   conda : OFF, shared: ON , source: conan }
-          - { compiler: gcc,   conda : OFF, shared: OFF, source: find-or-cmake }
-          - { compiler: gcc,   conda : OFF, shared: ON , source: find-or-cmake }
-          - { compiler: gcc,   conda : ON , shared: OFF, source: find-or-cmake }
-          - { compiler: gcc,   conda : ON , shared: ON , source: find-or-cmake }
-          - { compiler: clang, conda : OFF, shared: OFF, source: cmake }
-          - { compiler: clang, conda : OFF, shared: ON , source: cmake }
-          - { compiler: clang, conda : OFF, shared: OFF, source: conan }
-          - { compiler: clang, conda : OFF, shared: ON , source: conan }
-          - { compiler: clang, conda : OFF, shared: OFF, source: find-or-cmake }
-          - { compiler: clang, conda : OFF, shared: ON , source: find-or-cmake }
-          - { compiler: clang, conda : ON , shared: OFF, source: find-or-cmake }
-          - { compiler: clang, conda : ON , shared: ON , source: find-or-cmake }
+          - { compiler: gcc,   linkage: static, manager: cmake }
+          - { compiler: gcc,   linkage: static, manager: conan }
+          - { compiler: gcc,   linkage: static, manager: fetch }
+          - { compiler: gcc,   linkage: static, manager: cpm }
+          - { compiler: gcc,   linkage: static, manager: find  }
+          - { compiler: gcc,   linkage: shared, manager: cmake }
+          - { compiler: gcc,   linkage: shared, manager: conan }
+          - { compiler: gcc,   linkage: shared, manager: fetch }
+          - { compiler: gcc,   linkage: shared, manager: cpm }
+          - { compiler: gcc,   linkage: shared, manager: find  }
+          - { compiler: clang, linkage: static, manager: cmake }
+          - { compiler: clang, linkage: static, manager: conan }
+          - { compiler: clang, linkage: static, manager: fetch }
+          - { compiler: clang, linkage: static, manager: cpm }
+          - { compiler: clang, linkage: static, manager: find }
+          - { compiler: clang, linkage: shared, manager: cmake }
+          - { compiler: clang, linkage: shared, manager: conan }
+          - { compiler: clang, linkage: shared, manager: fetch }
+          - { compiler: clang, linkage: shared, manager: cpm }
+          - { compiler: clang, linkage: shared, manager: find }
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
-        if: contains(matrix.source, 'conan')
+        if: contains(matrix.manager, 'conan')
         with:
           python-version: '3.x'
 
-      - uses: s-weigand/setup-conda@v1
-        if: contains(matrix.source,'conda')
+      - uses: actions/cache@v2
         with:
-          update-conda: false
-          conda-channels: conda-forge
+          path: |
+            ~/.conan/data
+            ~/cpm-cache
+#            ~/h5pp-install
+#            build/Debug/h5pp-deps-install
+          key: ${{ runner.os }}-${{ env.cache-name }}
 
-#      - uses: actions/cache@v2
-#        with:
-#          path: |
-#            ~/.conan/data
-#            build/Debug/install
-#          key: ${{ env.cache-name }}
+      - uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ runner.os }}-${{ env.cache-name }}
+          max-size: 500M
 
       - name: Setup gcc # compilers are already installed on the CI
         if: matrix.compiler == 'gcc'
@@ -70,37 +76,36 @@ jobs:
           echo "CXX=clang++-10" >> $GITHUB_ENV
 
       - name: Setup apt packages
-        if: contains(matrix.source,'find')
-        run: sudo apt install libhdf5-dev libspdlog-dev libeigen3-dev -y
+        if: contains(matrix.manager,'find')
+        run: sudo apt install libhdf5-dev libfmt-dev libspdlog-dev libeigen3-dev gcovr -y
 
       - name: Setup conan
-        if: matrix.source == 'conan'
+        if: matrix.manager == 'conan'
         run: |
           pip install conan
           conan user
-
-      - name: Setup conda
-        if: matrix.source == 'conda'
-        run: conda install spdlog hdf5 hdf5-static eigen
 
       - name: Configure
         shell: bash
         run: |
           cmake -E make_directory build/Debug
           cd build/Debug
-          cmake                                                    \
-          -DCMAKE_BUILD_TYPE=Debug                                 \
-          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared }}            \
-          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                         \
-          -DH5PP_ENABLE_EIGEN3:BOOL=ON                             \
-          -DH5PP_ENABLE_SPDLOG:BOOL=ON                             \
-          -DH5PP_ENABLE_ASAN:BOOL=ON                               \
-          -DH5PP_ENABLE_TESTS:BOOL=ON                              \
-          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.source }}       \
-          -DH5PP_PREFER_CONDA_LIBS:BOOL=${{ matrix.conda }}        \
-          -DH5PP_PRINT_INFO:BOOL=ON                                \
-          -DH5PP_BUILD_EXAMPLES:BOOL=ON                            \
-          -G "Unix Makefiles"                                      \
+          cmake                                                       \
+          -DCMAKE_BUILD_TYPE=Debug                                    \
+          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.linkage == 'shared' }}  \
+          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                            \
+          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install                  \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache                          \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                        \
+          -DH5PP_ENABLE_EIGEN3:BOOL=ON                                \
+          -DH5PP_ENABLE_SPDLOG:BOOL=ON                                \
+          -DH5PP_ENABLE_ASAN:BOOL=ON                                  \
+          -DH5PP_ENABLE_TESTS:BOOL=ON                                 \
+          -DH5PP_ENABLE_COVERAGE:BOOL=ON                              \
+          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
+          -DH5PP_PRINT_INFO:BOOL=ON                                   \
+          -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
+          -G "Unix Makefiles"                                         \
           ../../
 
       - name: Build
@@ -116,7 +121,17 @@ jobs:
       - name: Test
         run: |
           cd build/Debug
-          ctest -C Debug --output-on-failure
+          ctest -C Debug --output-on-failure -R h5pp
+
+      - name: Coverage
+        if: matrix.compiler == 'gcc' && matrix.linkage == 'static' && matrix.manager == 'find'
+        run: |
+          # Create lcov report
+          lcov --capture --directory build/Debug --output-file coverage.info
+          lcov --remove coverage.info '*/test-*' '/usr/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info # filter system-files
+          lcov --list coverage.info # debug info
+          # Upload report to CodeCov
+          bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
 
 
 

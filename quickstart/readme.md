@@ -1,4 +1,4 @@
-# Quick Start Examples
+# Quick Start 
 
 This section contains fully working examples for getting `h5pp` installed and ready to use in your project.
 

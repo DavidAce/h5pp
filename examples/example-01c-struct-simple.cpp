@@ -21,15 +21,15 @@ int main() {
 
     // Initialize some dummy data
     Int2    coord2dWrite = {1, 2};
-    Double3 coord3dWrite = {10, 20, 30};
+    Double3 coord3dWrite = {10., 20., 30.};
 
     // Write data
     file.writeDataset(coord2dWrite, "CoordinateInTwoDimensions");
     file.writeDataset(coord3dWrite, "CoordinateInThreeDimensions");
 
     // Allocate space for reading data
-    Int2    coord2dRead;
-    Double3 coord3dRead;
+    Int2    coord2dRead = {};
+    Double3 coord3dRead = {};
 
     // Read data
     file.readDataset(coord2dRead, "CoordinateInTwoDimensions");
@@ -40,8 +40,11 @@ int main() {
     auto coord3dRead_alt = file.readDataset<Double3>("CoordinateInThreeDimensions");
 
     h5pp::print("Wrote dataset in 2D: x: {} y: {} \n", coord2dWrite.x, coord2dWrite.y);
-    h5pp::print(
-        "Read  dataset in 2D: x: {} y: {} | alt x: {} y: {} \n", coord2dRead.x, coord2dRead.y, coord2dRead_alt.x, coord2dRead_alt.y);
+    h5pp::print("Read  dataset in 2D: x: {} y: {} | alt x: {} y: {} \n",
+                coord2dRead.x,
+                coord2dRead.y,
+                coord2dRead_alt.x,
+                coord2dRead_alt.y);
     h5pp::print("Wrote dataset in 3D: x: {} y: {} z: {} \n", coord3dWrite.x, coord3dWrite.y, coord3dWrite.z);
     h5pp::print("Read  dataset in 3D: x: {} y: {} z: {} | alt x: {} y: {} z: {} \n",
                 coord3dRead.x,

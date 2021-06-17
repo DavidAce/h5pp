@@ -1,5 +1,7 @@
 #pragma once
 #include "h5ppOptional.h"
+#include "h5ppType.h"
+#include "h5ppTypeCompound.h"
 #include "h5ppTypeSfinae.h"
 #include <cstring>
 #include <numeric>
@@ -46,13 +48,29 @@ namespace h5pp::util {
     template<typename DataType>
     [[nodiscard]] hid::h5t getH5Type() {
         //        if(h5type.has_value()) return h5type.value(); // Intercept
-        namespace tc = h5pp::type::sfinae;
+        namespace tc    = h5pp::type::sfinae;
+        using DecayType = typename std::decay<DataType>::type;
+
         /* clang-format off */
-        using DecayType    = typename std::decay<DataType>::type;
         if constexpr (std::is_pointer_v<DecayType>)                                return getH5Type<typename std::remove_pointer<DecayType>::type>();
         if constexpr (std::is_reference_v<DecayType>)                              return getH5Type<typename std::remove_reference<DecayType>::type>();
         if constexpr (std::is_array_v<DecayType>)                                  return getH5Type<typename std::remove_all_extents<DecayType>::type>();
-        if constexpr (tc::is_std_vector_v<DecayType>)                              return getH5Type<typename DecayType::value_type>();
+        if constexpr (std::is_same_v<DecayType, int8_t>)                           return H5Tcopy(H5T_NATIVE_INT8);
+        if constexpr (std::is_same_v<DecayType, int16_t>)                          return H5Tcopy(H5T_NATIVE_INT16);
+        if constexpr (std::is_same_v<DecayType, int32_t>)                          return H5Tcopy(H5T_NATIVE_INT32);
+        if constexpr (std::is_same_v<DecayType, int64_t>)                          return H5Tcopy(H5T_NATIVE_INT64);
+        if constexpr (std::is_same_v<DecayType, int_fast8_t>)                      return H5Tcopy(H5T_NATIVE_INT_FAST8);
+        if constexpr (std::is_same_v<DecayType, int_fast16_t>)                     return H5Tcopy(H5T_NATIVE_INT_FAST16);
+        if constexpr (std::is_same_v<DecayType, int_fast32_t>)                     return H5Tcopy(H5T_NATIVE_INT_FAST32);
+        if constexpr (std::is_same_v<DecayType, int_fast64_t>)                     return H5Tcopy(H5T_NATIVE_INT_FAST64);
+        if constexpr (std::is_same_v<DecayType, uint8_t>)                          return H5Tcopy(H5T_NATIVE_UINT8);
+        if constexpr (std::is_same_v<DecayType, uint16_t>)                         return H5Tcopy(H5T_NATIVE_UINT16);
+        if constexpr (std::is_same_v<DecayType, uint32_t>)                         return H5Tcopy(H5T_NATIVE_UINT32);
+        if constexpr (std::is_same_v<DecayType, uint64_t>)                         return H5Tcopy(H5T_NATIVE_UINT64);
+        if constexpr (std::is_same_v<DecayType, uint_fast8_t>)                     return H5Tcopy(H5T_NATIVE_UINT_FAST8);
+        if constexpr (std::is_same_v<DecayType, uint_fast16_t>)                    return H5Tcopy(H5T_NATIVE_UINT_FAST16);
+        if constexpr (std::is_same_v<DecayType, uint_fast32_t>)                    return H5Tcopy(H5T_NATIVE_UINT_FAST32);
+        if constexpr (std::is_same_v<DecayType, uint_fast64_t>)                    return H5Tcopy(H5T_NATIVE_UINT_FAST64);
         if constexpr (std::is_same_v<DecayType, short>)                            return H5Tcopy(H5T_NATIVE_SHORT);
         if constexpr (std::is_same_v<DecayType, int>)                              return H5Tcopy(H5T_NATIVE_INT);
         if constexpr (std::is_same_v<DecayType, long>)                             return H5Tcopy(H5T_NATIVE_LONG);
@@ -67,52 +85,26 @@ namespace h5pp::util {
         if constexpr (std::is_same_v<DecayType, bool>)                             return H5Tcopy(H5T_NATIVE_UINT8);
         if constexpr (std::is_same_v<DecayType, std::string>)                      return H5Tcopy(H5T_C_S1);
         if constexpr (std::is_same_v<DecayType, char>)                             return H5Tcopy(H5T_C_S1);
-        if constexpr (std::is_same_v<DecayType, std::complex<short>>)              return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_SHORT);
-        if constexpr (std::is_same_v<DecayType, std::complex<int>>)                return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_INT);
-        if constexpr (std::is_same_v<DecayType, std::complex<long>>)               return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_LONG);
-        if constexpr (std::is_same_v<DecayType, std::complex<long long>>)          return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_LLONG);
-        if constexpr (std::is_same_v<DecayType, std::complex<unsigned short>>)     return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_USHORT);
-        if constexpr (std::is_same_v<DecayType, std::complex<unsigned int>>)       return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_UINT);
-        if constexpr (std::is_same_v<DecayType, std::complex<unsigned long>>)      return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_ULONG);
-        if constexpr (std::is_same_v<DecayType, std::complex<unsigned long long>>) return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_ULLONG);
-        if constexpr (std::is_same_v<DecayType, std::complex<double>>)             return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_DOUBLE);
-        if constexpr (std::is_same_v<DecayType, std::complex<long double>>)        return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_LDOUBLE);
-        if constexpr (std::is_same_v<DecayType, std::complex<float>>)              return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_FLOAT);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, short>())                  return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_SHORT);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, int>())                    return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_INT);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, long>())                   return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_LONG);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, long long>())              return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_LLONG);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, unsigned short>())         return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_USHORT);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, unsigned int>())           return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_UINT);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, unsigned long>())          return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_ULONG);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, unsigned long long>())     return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_ULLONG);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, double>())                 return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_DOUBLE);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, long double>())            return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_LDOUBLE);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, float>())                  return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_FLOAT);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, short>())                  return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_SHORT);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, int>())                    return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_INT);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, long>())                   return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_LONG);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, long long>())              return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_LLONG);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, unsigned short>())         return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_USHORT);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, unsigned int>())           return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_UINT);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, unsigned long>())          return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_ULONG);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, unsigned long long>())     return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_ULLONG);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, double>())                 return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_DOUBLE);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, long double>())            return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_LDOUBLE);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, float>())                  return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_FLOAT);
+        if constexpr (tc::is_std_complex_v<DecayType>)                             return H5Tcopy(type::compound::H5T_COMPLEX<typename DecayType::value_type>::h5type());
+        if constexpr (tc::is_Scalar2_v<DecayType>)                                 return H5Tcopy(type::compound::H5T_SCALAR2<tc::get_Scalar2_t<DecayType>>::h5type());
+        if constexpr (tc::is_Scalar3_v<DecayType>)                                 return H5Tcopy(type::compound::H5T_SCALAR3<tc::get_Scalar3_t<DecayType>>::h5type());
         if constexpr (tc::has_Scalar_v <DecayType>)                                return getH5Type<typename DecayType::Scalar>();
         if constexpr (tc::has_value_type_v <DecayType>)                            return getH5Type<typename DataType::value_type>();
-        if constexpr (std::is_class_v<DataType>) return H5Tcreate(H5T_COMPOUND, sizeof(DataType)); // Last resort
+        if constexpr (std::is_class_v<DataType>)                                   return H5Tcreate(H5T_COMPOUND, sizeof(DataType)); // Last resort
 
         /* clang-format on */
-        h5pp::logger::log->critical("getH5Type could not match the type provided: {}", type::sfinae::type_name<DecayType>());
-        throw std::logic_error(h5pp::format(
-            "getH5Type could not match the type provided [{}] | size {}", type::sfinae::type_name<DecayType>(), sizeof(DecayType)));
+        throw std::runtime_error(h5pp::format("getH5Type could not match the type provided [{}] | size {}",
+                                            type::sfinae::type_name<DecayType>(),
+                                            sizeof(DecayType)));
         return hid_t(0);
     }
 
     template<typename DataType, size_t size>
-    [[nodiscard]] constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size], [[maybe_unused]] bool countChars = false) {
+    [[nodiscard]] constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size],
+                                                [[maybe_unused]] bool countChars = false) noexcept
+    /*! Returns the size of a C-style array.
+     */
+    {
         if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
             // A C-style char array is a null-terminated array, that has size = characters + 1
             // Here we want to return the number of characters that can fit in the array,
@@ -127,25 +119,25 @@ namespace h5pp::util {
             return size;
     }
     template<typename DataType, size_t rows, size_t cols>
-    [[nodiscard]] constexpr std::array<size_t, 2> getArraySize([[maybe_unused]] const DataType (&arr)[rows][cols]) {
+    [[nodiscard]] constexpr std::array<size_t, 2> getArraySize([[maybe_unused]] const DataType (&arr)[rows][cols]) noexcept {
         return {rows, cols};
     }
     template<typename DataType, size_t rows, size_t cols, size_t depth>
-    [[nodiscard]] constexpr std::array<size_t, 3> getArraySize([[maybe_unused]] const DataType (&arr)[rows][cols][depth]) {
+    [[nodiscard]] constexpr std::array<size_t, 3> getArraySize([[maybe_unused]] const DataType (&arr)[rows][cols][depth]) noexcept {
         return {rows, cols, depth};
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
-    [[nodiscard]] size_t getCharArraySize(const DataType &data, [[maybe_unused]] bool countChars = true) {
+    [[nodiscard]] size_t getCharArraySize(const DataType &data, [[maybe_unused]] bool countChars = true) noexcept {
         static_assert(h5pp::type::sfinae::is_text_v<DataType>,
                       "Template function [h5pp::util::getCharArraySize(const DataType & data)] requires type DataType to be "
                       "a text-like type such as [std::string], [std::string_view], [char *] or have a .c_str() member function");
         // With this function we are interested in the number of chars currently in a given buffer,
         // including the null terminator.
-        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return data.size() + 1; // string and string_view have size without nullterm
+        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return data.size() + 1; // string and string_view have size without \0
         if constexpr(std::is_array_v<DataType>) return getArraySize(data, countChars); // getarraysize includes nullterm already
-        if constexpr(h5pp::type::sfinae::has_c_str_v<DataType>) return strlen(data.c_str()) + 1; // strlen does not include nullterm
-        if constexpr(std::is_pointer_v<DataType>) return strlen(data) + 1;                       // strlen does not include nullterm
+        if constexpr(h5pp::type::sfinae::has_c_str_v<DataType>) return strlen(data.c_str()) + 1; // strlen does not include \0
+        if constexpr(std::is_pointer_v<DataType>) return strlen(data) + 1;                       // strlen does not include \0
         return 1;                                                                                // Probably a char?
     }
 
@@ -184,7 +176,7 @@ namespace h5pp::util {
     }
 
     [[nodiscard]] inline hsize_t getSizeFromDimensions(const std::vector<hsize_t> &dims) {
-        return std::accumulate(dims.begin(), dims.end(), static_cast<hsize_t>(1), std::multiplies<>());
+        return std::accumulate(std::begin(dims), std::end(dims), static_cast<hsize_t>(1), std::multiplies<>());
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
@@ -222,10 +214,8 @@ namespace h5pp::util {
         constexpr int rank = getRank<DataType>();
         if constexpr(rank == 0) return {};
         if constexpr(h5pp::type::sfinae::has_dimensions_v<DataType>) {
-            std::vector<hsize_t> dims(
-                data.dimensions().begin(),
-                data.dimensions()
-                    .end()); // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
+            // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
+            std::vector<hsize_t> dims(std::begin(data.dimensions()), std::end(data.dimensions()));
             if(data.dimensions().size() != rank) throw std::runtime_error("given dimensions do not match detected rank");
             if(dims.size() != rank) throw std::runtime_error("copied dimensions do not match detected rank");
             return dims;
@@ -235,19 +225,13 @@ namespace h5pp::util {
 #ifdef H5PP_EIGEN3
         else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             if(data.dimensions().size() != rank) throw std::runtime_error("given dimensions do not match detected rank");
-            std::vector<hsize_t> dims(
-                data.dimensions().begin(),
-                data.dimensions()
-                    .end()); // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
-            return dims;
+            // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
+            return std::vector<hsize_t>(std::begin(data.dimensions()), std::end(data.dimensions()));
         } else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType>) {
-            std::vector<hsize_t> dims(rank);
-            dims[0] = static_cast<hsize_t>(data.rows());
-            dims[1] = static_cast<hsize_t>(data.cols());
-            return dims;
+            return {static_cast<hsize_t>(data.rows()), static_cast<hsize_t>(data.cols())};
         }
 #endif
-        else if constexpr(h5pp::type::sfinae::is_ScalarN<DataType>())
+        else if constexpr(h5pp::type::sfinae::is_ScalarN_v<DataType>)
             return {};
         else if constexpr(std::is_array_v<DataType>)
             return {getArraySize(data)};
@@ -278,10 +262,12 @@ namespace h5pp::util {
          *  Any dataset with an unlimited dimension must also be chunked; see H5Pset_chunk.
          *  Similarly, a dataset must be chunked if current_dims does not equal maximum_dims.
          */
-        if(h5_layout and h5_layout.value() != H5D_CHUNKED) return std::nullopt;
-        std::vector<hsize_t> dimsMax = dims;
-        if(h5_layout == H5D_CHUNKED) std::fill_n(dimsMax.begin(), dims.size(), H5S_UNLIMITED);
-        return dimsMax;
+        if(h5_layout and h5_layout.value() == H5D_CHUNKED)
+            return std::vector<hsize_t>(dims.size(), H5S_UNLIMITED);
+        else if(h5_layout and h5_layout.value() != H5D_CHUNKED)
+            return std::nullopt;
+        else
+            return dims;
     }
 
     [[nodiscard]] inline hid::h5s getDsetSpace(const hsize_t                       size,
@@ -370,8 +356,8 @@ namespace h5pp::util {
         if constexpr(std::is_pointer_v<DecayType>) return getBytesPerElem<typename std::remove_pointer<DecayType>::type>();
         if constexpr(std::is_reference_v<DecayType>) return getBytesPerElem<typename std::remove_reference<DecayType>::type>();
         if constexpr(std::is_array_v<DecayType>) return getBytesPerElem<typename std::remove_all_extents<DecayType>::type>();
-        if constexpr(sfn::is_std_complex<DecayType>()) return sizeof(DecayType);
-        if constexpr(sfn::is_ScalarN<DecayType>()) return sizeof(DecayType);
+        if constexpr(sfn::is_std_complex_v<DecayType>) return sizeof(DecayType);
+        if constexpr(sfn::is_ScalarN_v<DecayType>) return sizeof(DecayType);
         if constexpr(std::is_arithmetic_v<DecayType>) return sizeof(DecayType);
         if constexpr(sfn::has_Scalar_v<DecayType>) return sizeof(typename DecayType::Scalar);
         if constexpr(sfn::has_value_type_v<DecayType>) return getBytesPerElem<typename DecayType::value_type>();
@@ -566,29 +552,33 @@ namespace h5pp::util {
         } else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             if(newDims.size() != 2)
                 throw std::runtime_error(h5pp::format("Failed to resize 2-dimensional Eigen type: Dataset has dimensions {}", newDims));
-            h5pp::logger::log->debug(
-                "Resizing eigen 2d container {} -> {}", std::initializer_list<Eigen::Index>{data.rows(), data.cols()}, newDims);
+            h5pp::logger::log->debug("Resizing eigen 2d container {} -> {}",
+                                     std::initializer_list<Eigen::Index>{data.rows(), data.cols()},
+                                     newDims);
             data.resize(static_cast<Eigen::Index>(newDims[0]), static_cast<Eigen::Index>(newDims[1]));
         } else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 if(newDims.size() != DataType::NumDimensions)
-                    throw std::runtime_error(h5pp::format(
-                        "Failed to resize {}-dimensional Eigen tensor: Dataset has dimensions {}", DataType::NumDimensions, newDims));
+                    throw std::runtime_error(h5pp::format("Failed to resize {}-dimensional Eigen tensor: Dataset has dimensions {}",
+                                                          DataType::NumDimensions,
+                                                          newDims));
                 auto eigenDims = eigen::copy_dims<DataType::NumDimensions>(newDims);
                 h5pp::logger::log->debug("Resizing eigen tensor container {} -> {}", data.dimensions(), newDims);
                 data.resize(eigenDims);
             } else {
                 auto newSize = getSizeFromDimensions(newDims);
                 if(data.size() != static_cast<Eigen::Index>(newSize))
-                    h5pp::logger::log->warn(
-                        "Detected non-resizeable tensor container with wrong size: Given size {}. Required size {}", data.size(), newSize);
+                    h5pp::logger::log->warn("Detected non-resizeable tensor container with wrong size: Given size {}. Required size {}",
+                                            data.size(),
+                                            newSize);
             }
         } else
 #endif // H5PP_EIGEN3
             if constexpr(h5pp::type::sfinae::has_size_v<DataType> and h5pp::type::sfinae::has_resize_v<DataType>) {
             if(newDims.size() > 1)
                 h5pp::logger::log->debug(
-                    "Given data container is 1-dimensional but the desired dimensions are {}. Resizing to fit all the data", newDims);
+                    "Given data container is 1-dimensional but the desired dimensions are {}. Resizing to fit all the data",
+                    newDims);
             auto newSize = getSizeFromDimensions(newDims);
             h5pp::logger::log->debug("Resizing 1d container {} -> {} of type [{}]",
                                      std::initializer_list<size_t>{static_cast<size_t>(data.size())},

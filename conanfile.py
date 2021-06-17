@@ -13,7 +13,7 @@ class h5ppConan(ConanFile):
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake", "cmake_find_package"
-    requires = "eigen/3.3.9", "spdlog/1.8.2", "hdf5/1.12.0"
+    requires = "eigen/3.3.9", "spdlog/1.8.5", "hdf5/1.12.0"
     build_policy    = "missing"
     scm = {
         "type": "git",

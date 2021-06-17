@@ -10,7 +10,7 @@ namespace h5pp {
         std::vector<size_t> data;
 
         public:
-        Indices() = default;
+        Indices()                              = default;
         explicit Indices(const char *str)      = delete;
         explicit Indices(std::string_view str) = delete;
         explicit Indices(std::string &&str)    = delete;
@@ -56,7 +56,7 @@ namespace h5pp {
                 static_assert(h5pp::type::sfinae::invalid_type_v<U>, "Unrecognized text list type");
                 throw std::runtime_error(h5pp::format("Could not identify text list type: {}", h5pp::type::sfinae::type_name<U>()));
             }
-        };
+        }
         template<typename U, typename = std::enable_if_t<h5pp::type::sfinae::is_text_v<U>>>
         Names(std::initializer_list<U> &&il) : data(il) {}
              operator std::vector<std::string> &() { return data; }

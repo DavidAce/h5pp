@@ -33,7 +33,7 @@ namespace h5pp::hid {
             } else {
                 if(not valid(other.val)) throw std::runtime_error("Given identifier must be valid");
             }
-            val = other.val;                      // Checks that we got a valid identifier through .value() (throws)
+            val = other.val;
             if(valid(other.val)) H5Iinc_ref(val); // Increment reference counter of identifier
         }
 
@@ -88,7 +88,7 @@ namespace h5pp::hid {
                 return val;
             else {
                 H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Tried to return invalid identifier " + tag() + ":" + std::to_string(val));
+                throw std::runtime_error("Tried to return an invalid identifier " + tag() + ":" + std::to_string(val));
             }
         }
 

@@ -1,22 +1,26 @@
 cmake_minimum_required(VERSION 3.12)
-project(tests CXX)
+project(h5pp-tests CXX)
 file(GLOB TESTS "*.cpp")
-add_custom_target(all-tests)
+add_custom_target(h5pp-test-all)
 foreach (test ${TESTS})
     get_filename_component(test_src ${test} NAME)
     get_filename_component(test_nwe ${test} NAME_WE)
-    add_executable(${test_nwe} ${test_src})
-    target_link_libraries(${test_nwe} PRIVATE h5pp)
-    add_test(NAME ${test_nwe} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND ${test_nwe})
+    add_executable(h5pp-${test_nwe} ${test_src})
+    target_link_libraries(h5pp-${test_nwe} PRIVATE h5pp)
+    add_test(NAME h5pp-${test_nwe} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND h5pp-${test_nwe})
     if (MSVC)
-        set_target_properties(${test_nwe} PROPERTIES LINK_FLAGS "/ignore:4099")
+        set_target_properties(h5pp-${test_nwe} PROPERTIES LINK_FLAGS "/ignore:4099")
     endif()
-    add_dependencies(all-tests ${test_nwe})
-    list(APPEND test_tgt_list ${test_nwe})
+    if(H5PP_ENABLE_COVERAGE)
+        target_compile_options(h5pp-${test_nwe} PRIVATE --coverage)
+        target_link_options(h5pp-${test_nwe} PRIVATE --coverage)
+    endif()
+    add_dependencies(h5pp-test-all h5pp-${test_nwe})
+    list(APPEND test_tgt_list h5pp-${test_nwe})
 endforeach ()
 
 add_custom_command(
-        TARGET all-tests
+        TARGET h5pp-test-all
         POST_BUILD
         COMMENT "Running Tests"
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -31,7 +35,7 @@ if(H5PP_ENABLE_PCH)
     if(COMMAND target_precompile_headers)
         foreach (tgt ${test_tgt_list})
             # Later CMake versions will only include system header paths for pch generation
-            target_include_directories(${tgt} SYSTEM INTERFACE ../h5pp/include)
+            target_include_directories(${tgt} SYSTEM INTERFACE ../include)
             if(NOT TARGET ${first_tgt})
                 target_precompile_headers(${tgt} PRIVATE <h5pp/h5pp.h>)
                 set(first_tgt ${tgt})

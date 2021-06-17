@@ -79,8 +79,7 @@ if(NOT Eigen3_FOUND)
 
     if(NOT EIGEN3_NO_CONFIG OR EIGEN3_CONFIG_ONLY)
         find_package(Eigen3 ${Eigen3_FIND_VERSION}
-                HINTS ${Eigen3_ROOT} ${CONAN_EIGEN3_ROOT} ${CMAKE_INSTALL_PREFIX}
-                PATHS ${H5PP_CONDA_CANDIDATE_PATHS}
+                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CONAN_EIGEN3_ROOT} ${CMAKE_INSTALL_PREFIX}
                 PATH_SUFFIXES share/eigen3/cmake include Eigen3 eigen3 include/Eigen3 include/eigen3 Eigen3/include/eigen3
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -106,8 +105,8 @@ if(NOT Eigen3_FOUND)
         # This way we can avoid supplying the original file and allow more flexibility for overriding
 
         find_path(EIGEN3_INCLUDE_DIR NAMES signature_of_eigen3_matrix_library
-                HINTS ${Eigen3_ROOT} ${CONAN_EIGEN3_ROOT} ${CMAKE_INSTALL_PREFIX}
-                PATHS ${H5PP_CONDA_CANDIDATE_PATHS} ${KDE4_INCLUDE_DIR}
+                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CONAN_EIGEN3_ROOT} ${CMAKE_INSTALL_PREFIX}
+                PATHS ${KDE4_INCLUDE_DIR}
                 PATH_SUFFIXES include/eigen3 Eigen3 eigen3 include/Eigen3 Eigen3/include/eigen3
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}

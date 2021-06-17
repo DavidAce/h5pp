@@ -1,24 +1,27 @@
 #pragma once
 
-#if defined(SPDLOG_FMT_EXTERNAL) &&                                                                                                        \
-    __has_include(<fmt/core.h>) &&  __has_include(<fmt/format.h>) && __has_include(<fmt/ranges.h>) &&  __has_include(<fmt/ostream.h>)
-    #include <fmt/core.h>
-    #include <fmt/format.h>
-    #include <fmt/ostream.h>
-    #include <fmt/ranges.h>
-#elif !defined(SPDLOG_FMT_EXTERNAL) &&                                                                                                     \
-    __has_include(<spdlog/fmt/fmt.h>) && __has_include(<spdlog/fmt/bundled/ranges.h>) &&  __has_include(<spdlog/fmt/bundled/ostream.h>)
-    #include <spdlog/fmt/bundled/ostream.h>
-    #include <spdlog/fmt/bundled/ranges.h>
+#if !defined(SPDLOG_COMPILED_LIB)
+    #if !defined(SPDLOG_HEADER_ONLY)
+        #define SPDLOG_HEADER_ONLY
+    #endif
+#endif
+
+#if __has_include(<spdlog/fmt/fmt.h>)
+    // Spdlog will include the bundled fmt unless SPDLOG_FMT_EXTERNAL is defined, in which case <fmt/core.h> gets included instead
+    // If SPDLOG_HEADER_ONLY is defined this will cause FMT_HEADER_ONLY to also get defined
     #include <spdlog/fmt/fmt.h>
+    #if defined(SPDLOG_FMT_EXTERNAL)
+        #include <fmt/ostream.h>
+        #include <fmt/ranges.h>
+    #else
+        #include <spdlog/fmt/bundled/ostream.h>
+        #include <spdlog/fmt/bundled/ranges.h>
+    #endif
 #elif __has_include(<fmt/core.h>) &&  __has_include(<fmt/format.h>) && __has_include(<fmt/ranges.h>) &&  __has_include(<fmt/ostream.h>)
-// Check if there are already fmt headers installed independently from Spdlog
-// Note that in this case the user hasn't enabled Spdlog for h5pp, so the build hasn't linked any compiled FMT libraries
-// To avoid undefined references we coult opt in to the header-only mode of FMT.
-// Note that this check should be skipped if using conan. Then, SPDLOG_FMT_EXTERNAL is defined
-    #ifdef FMT_HEADER_ONLY
-        #pragma message                                                                                                                    \
-            "{fmt} has been included as header-only library by defining the compile option FMT_HEADER_ONLY. This may cause a large compile-time overhead"
+    #if defined(SPDLOG_HEADER_ONLY)
+        // Since spdlog is header-only, let's assume fmt is as well
+        // We do this because we have no way of knowing if this is getting linked to libfmt
+        #define FMT_HEADER_ONLY
     #endif
     #include <fmt/core.h>
     #include <fmt/format.h>
@@ -26,8 +29,8 @@
     #include <fmt/ranges.h>
 #else
     // In this case there is no fmt so we make our own simple formatter
-    #pragma message                                                                                                                       \
-        "h5pp warning: could not find header fmt library headers <fmt/core.h> or <spdlog/fmt/fmt.h>: A hand-made formatter will be used instead. Consider using the fmt library for maximum performance"
+    #pragma message \
+        "h5pp warning: could not find fmt library headers <fmt/core.h> or <spdlog/fmt/fmt.h>: A hand-made formatter will be used instead. Consider using the fmt library for maximum performance"
 
 #endif
 
@@ -73,9 +76,7 @@ namespace h5pp {
                 sstr << std::boolalpha << "{";
                 for(const auto &elem : first) sstr << elem << ",";
                 //  Laborious casting here to avoid MSVC warnings and errors in std::min()
-                auto max_rewind = static_cast<long>(first.size());
-                auto min_rewind = static_cast<long>(1);
-                long rewind     = -1 * std::min(max_rewind, min_rewind);
+                long rewind = -1 * std::min(1l, static_cast<long>(first.size()));
                 sstr.seekp(rewind, std::ios_base::end);
                 sstr << "}";
                 result.emplace_back(sstr.str());
@@ -91,16 +92,16 @@ namespace h5pp {
 
     template<typename... Args>
     [[nodiscard]] std::string format(const std::string &fmtstring, [[maybe_unused]] Args... args) {
-        auto brackets_left  = std::count(fmtstring.begin(), fmtstring.end(), '{');
+        auto brackets_left = std::count(fmtstring.begin(), fmtstring.end(), '{');
         auto brackets_right = std::count(fmtstring.begin(), fmtstring.end(), '}');
         if(brackets_left != brackets_right) return std::string("FORMATTING ERROR: GOT STRING: " + fmtstring);
-        auto                   arglist  = formatting::convert_to_string_list(args...);
-        std::string            result   = fmtstring;
+        auto arglist = formatting::convert_to_string_list(args...);
+        std::string result = fmtstring;
         std::string::size_type curr_pos = 0;
         while(true) {
             if(arglist.empty()) break;
             std::string::size_type start_pos = result.find('{', curr_pos);
-            std::string::size_type end_pos   = result.find('}', curr_pos);
+            std::string::size_type end_pos = result.find('}', curr_pos);
             if(start_pos == std::string::npos or end_pos == std::string::npos or start_pos - end_pos == 0) break;
             result.replace(start_pos, end_pos - start_pos + 1, arglist.front());
             curr_pos = start_pos + arglist.front().size();

@@ -1,37 +1,52 @@
  
-cmake_minimum_required(VERSION 3.12)
-project(h5pp VERSION 1.8.6
+cmake_minimum_required(VERSION 3.19)
+project(h5pp VERSION 1.9.0
         DESCRIPTION "A C++17 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         LANGUAGES CXX
         )
 
-include(cmake/DeprecationWarnings.cmake)
+include(cmake/DeprecationWarnings.cmake) # Warn if user passes deprecated settings
 
-option(BUILD_SHARED_LIBS               "Builds shared libraries"                                                OFF)
-option(H5PP_BUILD_EXAMPLES             "Builds examples"                                                        OFF)
-option(H5PP_BUILD_DOCS                 "Builds documentation (Requires doxygen, sphinx and breathe)"            OFF)
-option(H5PP_ENABLE_TESTS               "Enable testing"                                                         OFF)
-option(H5PP_IS_SUBPROJECT              "Use h5pp with add_subdirectory()"                                       OFF)
-option(H5PP_DEPS_IN_SUBDIR             "Install dependencies into CMAKE_INSTALL_PREFIX/<libname>"               OFF)
-option(H5PP_PREFER_CONDA_LIBS          "Search for libraries in anaconda/miniconda first"                       OFF)
-option(H5PP_PRINT_INFO                 "Print info during cmake configuration"                                  OFF)
-option(H5PP_ENABLE_EIGEN3              "Enables Eigen3 linear algebra library"                                  OFF)
-option(H5PP_ENABLE_FMT                 "Enables the {fmt} formatting library"                                   OFF)
-option(H5PP_ENABLE_SPDLOG              "Enables Spdlog for logging h5pp internal info to stdout (implies fmt)"  OFF)
-option(H5PP_ENABLE_MPI                 "Enables use of MPI (work in progress)"                                  OFF)
-option(H5PP_ENABLE_ASAN                "Enable runtime address sanitizer -fsanitize=address"                    OFF)
-option(H5PP_ENABLE_PCH                 "Enable precompiled headers (if supported) to speed up test compilation" ON)
-option(H5PP_ENABLE_CCACHE              "Enable ccache (if available) to speed up test compilation"              OFF)
-option(CMAKE_POSITION_INDEPENDENT_CODE "Use -fPIC when compiling shared libraries"                              ON)
+# Used when h5pp is included as subproject (e.g., as Git submodule/subtree) in the source
+# tree of a project that uses it. Users may set the option H5PP_IS_SUBPROJECT
+# before add_subdirectory(h5pp)
+if (NOT DEFINED H5PP_IS_SUBPROJECT)
+    if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+        option(H5PP_IS_SUBPROJECT "Use h5pp with add_subdirectory()" OFF)
+    else ()
+        message(STATUS "Detected h5pp as subproject")
+        option(H5PP_IS_SUBPROJECT "Use h5pp with add_subdirectory()" ON)
+    endif ()
+endif ()
+
+
+
+
+option(BUILD_SHARED_LIBS                "Builds shared libraries"                                                 OFF)
+option(H5PP_ENABLE_EIGEN3               "Enables Eigen3 linear algebra library"                                   OFF)
+option(H5PP_ENABLE_FMT                  "Enables the {fmt} formatting library"                                    OFF)
+option(H5PP_ENABLE_SPDLOG               "Enables Spdlog for logging h5pp internal info to stdout (implies fmt)"   OFF)
+option(H5PP_ENABLE_MPI                  "Enables use of MPI (work in progress)"                                   OFF)
+option(H5PP_ENABLE_ASAN                 "Enable runtime address sanitizer -fsanitize=address"                     OFF)
+option(H5PP_ENABLE_PCH                  "Enable precompiled headers (if supported) to speed up test compilation"  OFF)
+option(H5PP_ENABLE_CCACHE               "Enable ccache (if available) to speed up test compilation"               OFF)
+option(H5PP_ENABLE_COVERAGE             "Enable test coverage"                                                    OFF)
+option(H5PP_BUILD_EXAMPLES              "Builds examples"                                                         OFF)
+option(H5PP_BUILD_DOCS                  "Builds documentation (Requires doxygen, sphinx and breathe)"             OFF)
+option(H5PP_ENABLE_TESTS                "Enable testing"                                                          OFF)
+option(H5PP_PRINT_INFO                  "Print info during cmake configuration"                                   OFF)
+option(H5PP_IS_SUBPROJECT               "Use h5pp with add_subdirectory()"                                        OFF)
+option(H5PP_PREFIX_ADD_PKGNAME          "Install h5pp and dependencies into <CMAKE_INSTALL_PREFIX>/<PackageName>" OFF)
+option(CMAKE_POSITION_INDEPENDENT_CODE  "Use -fPIC when compiling shared libraries"                               ON)
 
 if(H5PP_ENABLE_SPDLOG)
     set(H5PP_ENABLE_FMT ON CACHE INTERNAL "H5PP_ENABLE_SPDLOG:ON implies H5PP_ENABLE_FMT:ON)")
 endif()
 
 
-# Make an "enum" for valid package managers: find cmake find-or-cmake conan
-set(H5PP_PACKAGE_MANAGERS_VALID find cmake find-or-cmake conan)
+# Make an "enum" for valid package managers: find cmake fetch find-or-cmake conan
+set(H5PP_PACKAGE_MANAGERS_VALID none find fetch cmake cpm find-or-fetch find-or-cmake conan)
 set(H5PP_PACKAGE_MANAGER find CACHE STRING "Package manager for external dependencies")
 set_property(CACHE H5PP_PACKAGE_MANAGER PROPERTY STRINGS ${H5PP_PACKAGE_MANAGERS_VALID})
 if (NOT H5PP_PACKAGE_MANAGER IN_LIST H5PP_PACKAGE_MANAGERS_VALID)
@@ -39,33 +54,10 @@ if (NOT H5PP_PACKAGE_MANAGER IN_LIST H5PP_PACKAGE_MANAGERS_VALID)
 endif ()
 
 
-# Used when h5pp is included as subproject (e.g., as Git submodule/subtree) in the source
-# tree of a project that uses it. Users may set the option H5PP_IS_SUBPROJECT
-# before add_subdirectory(h5pp)
-if (NOT H5PP_IS_SUBPROJECT)
-    if ("^${CMAKE_SOURCE_DIR}$" STREQUAL "^${PROJECT_SOURCE_DIR}$")
-        set(H5PP_IS_SUBPROJECT OFF)
-    else ()
-        message(STATUS "Detected h5pp as subproject")
-        set(H5PP_IS_SUBPROJECT ON)
-    endif ()
-endif ()
-
-
-# Set default install directory for h5pp and its dependencies
-# Append directory <libname> to CMAKE_INSTALL_PREFIX
-# Useful if you want to have separate directories for each libs
-# and to easily delete them individually
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT H5PP_IS_SUBPROJECT)
-    message(STATUS "Setting default install location: CMAKE_INSTALL_PREFIX --> ${CMAKE_BINARY_DIR}/install")
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "..." FORCE)
-endif ()
 
 # Setup paths that find_package should search and
 # let cmake find our Find<package>.cmake modules
-include(cmake/SetupSearchPaths.cmake)
-
-
+include(cmake/SetupPaths.cmake)
 
 # Print cmake build info options and host properties
 include(cmake/PrintBuildInfo.cmake)
@@ -109,6 +101,26 @@ if (NOT TARGET Threads::Threads)
     endif ()
 endif ()
 
+
+##################################################################
+### Preempt Threads::Threads                                   ###
+### It's looked for in dependencies, so we make it right       ###
+### before it's done wrong, i.e. with pthread instead of       ###
+### -lpthread.                                                 ###
+### Otherwise, we get linker errors consuming h5pp             ###
+### Here we specify the linking twice                          ###
+### 1) As string to make sure -lpthread gets sandwiched by     ###
+###    -Wl,--whole-archive.... -Wl,--no-whole-archive          ###
+### 2) As usual to make sure that if somebody links            ###
+###    Threads::Threads, then any repeated pthread appended    ###
+###    to the end (the wrong order causes linking errors)      ###
+##################################################################
+if(NOT TARGET Threads::Threads)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads)
+endif()
+
+
 if (H5PP_ENABLE_MPI AND NOT WIN32)
     find_package(MPI)
     if (TARGET MPI::MPI_CXX)
@@ -126,7 +138,7 @@ target_compile_definitions(deps INTERFACE H5PP_PACKAGE_MANAGER=${H5PP_PACKAGE_MA
 
 
 # Check  #include<optional> or #include<experimental/optional>
-include(${PROJECT_SOURCE_DIR}/cmake/CheckCXXOptional.cmake)
+include(cmake/CheckCXXOptional.cmake)
 CheckCXXOptional()
 
 # Required compiler features
@@ -134,7 +146,7 @@ target_compile_features(flags INTERFACE cxx_std_17)
 target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) # Need this for and/or logical operators on VS
 target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/EHsc>)        # Need this for try/catch without warnings on VS
 target_compile_definitions(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX>) # Otherwise std::min and std::max will not work as expected
-target_include_directories(headers INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/h5pp/include>)
+target_include_directories(headers INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 target_include_directories(headers SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
 
 
@@ -148,8 +160,11 @@ endif()
 
 
 #Try to find or get all dependencies
+include(cmake/SetupStdFilesystem.cmake)
 include(cmake/SetupDependenciesFind.cmake)
+include(cmake/SetupDependenciesFetch.cmake)
 include(cmake/SetupDependenciesCMake.cmake)
+include(cmake/SetupDependenciesCPM.cmake)
 include(cmake/SetupDependenciesConan.cmake)
 
 
@@ -183,37 +198,29 @@ else()
 
     # Install library
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/h5pp/include/ DESTINATION include COMPONENT headers)
+    include(GNUInstallDirs)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT include)
+#    install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/ DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin)
     install(TARGETS h5pp headers deps flags EXPORT h5ppTargets)
 
     #Export the targets to a script
     install(EXPORT
             h5ppTargets
             NAMESPACE h5pp::
-            DESTINATION share/h5pp/cmake)
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp)
 
 
-    #Create a ConfigVersion.cmake file
     include(CMakePackageConfigHelpers)
-
-
     configure_package_config_file(
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
-            INSTALL_DESTINATION share/h5pp/cmake
+            INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
     )
-
     configure_package_config_file(
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-cmake.cmake.in
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-cmake.cmake
-            INSTALL_DESTINATION share/h5pp/cmake
-            PATH_VARS Eigen3_ROOT spdlog_ROOT fmt_ROOT HDF5_ROOT
-    )
-
-    configure_package_config_file(
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-conan.cmake.in
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
-            INSTALL_DESTINATION share/h5pp/cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppDeps.cmake.in
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppDeps.cmake
+            INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
+            PATH_VARS H5PP_DEPS_INSTALL_DIR
     )
 
     write_basic_package_version_file(
@@ -222,19 +229,17 @@ else()
             COMPATIBILITY AnyNewerVersion
     )
 
-
-    ##Install the config, configversion and custom find modules
+    #Install the config, configversion and custom find modules
     install(FILES
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-cmake.cmake
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppDeps.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindEigen3.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findspdlog.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findfmt.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindHDF5.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake
-            DESTINATION share/h5pp/cmake
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
             COMPONENT config
             )
 
@@ -251,20 +256,20 @@ else()
         foreach (conan_file ${CONAN_INSTALL_FILES})
             if (EXISTS "${conan_file}")
                 install(FILES ${conan_file}
-                        DESTINATION share/h5pp/cmake
+                        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
                         COMPONENT config)
             endif ()
         endforeach ()
     endif ()
 
     # Uninstall target
-    if(NOT TARGET uninstall)
+    if(NOT TARGET h5pp-uninstall)
         configure_file(
                 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppUninstall.cmake.in
                 ${CMAKE_CURRENT_BINARY_DIR}/h5ppUninstall.cmake
                 IMMEDIATE @ONLY)
 
-        add_custom_target(uninstall
+        add_custom_target(h5pp-uninstall
                 COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/h5ppUninstall.cmake)
     endif()
 
@@ -273,14 +278,14 @@ endif ()
 
 
 # Simple testing with ctest
-if (NOT H5PP_IS_SUBPROJECT AND H5PP_ENABLE_TESTS AND TARGET h5pp)
+if (H5PP_ENABLE_TESTS AND TARGET h5pp)
     enable_testing()
     add_subdirectory(tests)
 endif ()
 
 
 # Build examples
-if (NOT H5PP_IS_SUBPROJECT AND H5PP_BUILD_EXAMPLES AND TARGET h5pp)
+if (H5PP_BUILD_EXAMPLES AND TARGET h5pp)
     add_subdirectory(examples)
 endif ()
 
