@@ -2,11 +2,11 @@
 
 
 if(H5PP_PACKAGE_MANAGER MATCHES "conan")
+
     include(${CMAKE_CURRENT_LIST_DIR}/conanbuildinfo.cmake)
     conan_basic_setup(TARGETS)
-endif()
 
-if(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
+elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
 
     # Make sure find_library prefers static/shared library depending on BUILD_SHARED_LIBS
     # This is important when finding dependencies such as zlib which provides both shared and static libraries.
@@ -111,9 +111,14 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
         list(APPEND H5PP_FOUND_TARGETS  hdf5::all)
     endif()
 
-    if(NOT H5PP_FIND_QUIETLY)
-        message(STATUS "h5pp: Found dependency targets: ${H5PP_FOUND_TARGETS}")
+else() # Probably H5PP_PACKAGE_MANAGER=none
+    # h5pp requires the filesystem header (and possibly stdc++fs library)
+    find_dependency(Filesystem COMPONENTS Final Experimental REQUIRED)
+    if (Filesystem_FOUND AND TARGET std::filesystem)
+        list(APPEND H5PP_FOUND_TARGETS std::filesystem)
     endif()
-
 endif()
 
+if(NOT H5PP_FIND_QUIETLY)
+    message(STATUS "h5pp: Found dependency targets: ${H5PP_FOUND_TARGETS}")
+endif()
