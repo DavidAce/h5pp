@@ -9,7 +9,7 @@
 #include <string_view>
 #include <type_traits>
 #include <vector>
-
+#include <complex>
 /*!
  * \brief A collection of type-detection utilities using SFINAE
  */
