@@ -21,15 +21,15 @@ int main() {
 
     // Initialize some dummy data
     Int2    coord2dWrite = {1, 2};
-    Double3 coord3dWrite = {10, 20, 30};
+    Double3 coord3dWrite = {10., 20., 30.};
 
     // Write data
     file.writeDataset(coord2dWrite, "CoordinateInTwoDimensions");
     file.writeDataset(coord3dWrite, "CoordinateInThreeDimensions");
 
     // Allocate space for reading data
-    Int2    coord2dRead;
-    Double3 coord3dRead;
+    Int2    coord2dRead = {};
+    Double3 coord3dRead = {};
 
     // Read data
     file.readDataset(coord2dRead, "CoordinateInTwoDimensions");
