@@ -13,7 +13,6 @@
 #include "h5ppOptional.h"
 #include "h5ppPropertyLists.h"
 #include "h5ppScan.h"
-#include "h5ppTypeCompoundCreate.h"
 #include "h5ppUtils.h"
 #include <hdf5.h>
 #include <hdf5_hl.h>
@@ -48,7 +47,6 @@ namespace h5pp {
             }
             // The following function can modify the resulting filePath depending on permission.
             filePath = h5pp::hdf5::createFile(filePath, permission, plists);
-            h5pp::type::compound::initTypes();
             h5pp::logger::log->debug("Successfully initialized file [{}]", filePath.string());
         }
 

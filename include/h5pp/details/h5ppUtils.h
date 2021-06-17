@@ -1,5 +1,7 @@
 #pragma once
 #include "h5ppOptional.h"
+#include "h5ppType.h"
+#include "h5ppTypeCompound.h"
 #include "h5ppTypeSfinae.h"
 #include <cstring>
 #include <numeric>
@@ -46,13 +48,29 @@ namespace h5pp::util {
     template<typename DataType>
     [[nodiscard]] hid::h5t getH5Type() {
         //        if(h5type.has_value()) return h5type.value(); // Intercept
-        namespace tc = h5pp::type::sfinae;
+        namespace tc    = h5pp::type::sfinae;
+        using DecayType = typename std::decay<DataType>::type;
+
         /* clang-format off */
-        using DecayType    = typename std::decay<DataType>::type;
         if constexpr (std::is_pointer_v<DecayType>)                                return getH5Type<typename std::remove_pointer<DecayType>::type>();
         if constexpr (std::is_reference_v<DecayType>)                              return getH5Type<typename std::remove_reference<DecayType>::type>();
         if constexpr (std::is_array_v<DecayType>)                                  return getH5Type<typename std::remove_all_extents<DecayType>::type>();
-        if constexpr (tc::is_std_vector_v<DecayType>)                              return getH5Type<typename DecayType::value_type>();
+        if constexpr (std::is_same_v<DecayType, int8_t>)                           return H5Tcopy(H5T_NATIVE_INT8);
+        if constexpr (std::is_same_v<DecayType, int16_t>)                          return H5Tcopy(H5T_NATIVE_INT16);
+        if constexpr (std::is_same_v<DecayType, int32_t>)                          return H5Tcopy(H5T_NATIVE_INT32);
+        if constexpr (std::is_same_v<DecayType, int64_t>)                          return H5Tcopy(H5T_NATIVE_INT64);
+        if constexpr (std::is_same_v<DecayType, int_fast8_t>)                      return H5Tcopy(H5T_NATIVE_INT_FAST8);
+        if constexpr (std::is_same_v<DecayType, int_fast16_t>)                     return H5Tcopy(H5T_NATIVE_INT_FAST16);
+        if constexpr (std::is_same_v<DecayType, int_fast32_t>)                     return H5Tcopy(H5T_NATIVE_INT_FAST32);
+        if constexpr (std::is_same_v<DecayType, int_fast64_t>)                     return H5Tcopy(H5T_NATIVE_INT_FAST64);
+        if constexpr (std::is_same_v<DecayType, uint8_t>)                          return H5Tcopy(H5T_NATIVE_UINT8);
+        if constexpr (std::is_same_v<DecayType, uint16_t>)                         return H5Tcopy(H5T_NATIVE_UINT16);
+        if constexpr (std::is_same_v<DecayType, uint32_t>)                         return H5Tcopy(H5T_NATIVE_UINT32);
+        if constexpr (std::is_same_v<DecayType, uint64_t>)                         return H5Tcopy(H5T_NATIVE_UINT64);
+        if constexpr (std::is_same_v<DecayType, uint_fast8_t>)                     return H5Tcopy(H5T_NATIVE_UINT_FAST8);
+        if constexpr (std::is_same_v<DecayType, uint_fast16_t>)                    return H5Tcopy(H5T_NATIVE_UINT_FAST16);
+        if constexpr (std::is_same_v<DecayType, uint_fast32_t>)                    return H5Tcopy(H5T_NATIVE_UINT_FAST32);
+        if constexpr (std::is_same_v<DecayType, uint_fast64_t>)                    return H5Tcopy(H5T_NATIVE_UINT_FAST64);
         if constexpr (std::is_same_v<DecayType, short>)                            return H5Tcopy(H5T_NATIVE_SHORT);
         if constexpr (std::is_same_v<DecayType, int>)                              return H5Tcopy(H5T_NATIVE_INT);
         if constexpr (std::is_same_v<DecayType, long>)                             return H5Tcopy(H5T_NATIVE_LONG);
@@ -67,46 +85,15 @@ namespace h5pp::util {
         if constexpr (std::is_same_v<DecayType, bool>)                             return H5Tcopy(H5T_NATIVE_UINT8);
         if constexpr (std::is_same_v<DecayType, std::string>)                      return H5Tcopy(H5T_C_S1);
         if constexpr (std::is_same_v<DecayType, char>)                             return H5Tcopy(H5T_C_S1);
-        if constexpr (std::is_same_v<DecayType, std::complex<short>>)              return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_SHORT);
-        if constexpr (std::is_same_v<DecayType, std::complex<int>>)                return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_INT);
-        if constexpr (std::is_same_v<DecayType, std::complex<long>>)               return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_LONG);
-        if constexpr (std::is_same_v<DecayType, std::complex<long long>>)          return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_LLONG);
-        if constexpr (std::is_same_v<DecayType, std::complex<unsigned short>>)     return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_USHORT);
-        if constexpr (std::is_same_v<DecayType, std::complex<unsigned int>>)       return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_UINT);
-        if constexpr (std::is_same_v<DecayType, std::complex<unsigned long>>)      return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_ULONG);
-        if constexpr (std::is_same_v<DecayType, std::complex<unsigned long long>>) return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_ULLONG);
-        if constexpr (std::is_same_v<DecayType, std::complex<double>>)             return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_DOUBLE);
-        if constexpr (std::is_same_v<DecayType, std::complex<long double>>)        return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_LDOUBLE);
-        if constexpr (std::is_same_v<DecayType, std::complex<float>>)              return H5Tcopy(h5pp::type::compound::H5T_COMPLEX_FLOAT);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, short>())                  return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_SHORT);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, int>())                    return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_INT);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, long>())                   return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_LONG);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, long long>())              return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_LLONG);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, unsigned short>())         return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_USHORT);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, unsigned int>())           return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_UINT);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, unsigned long>())          return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_ULONG);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, unsigned long long>())     return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_ULLONG);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, double>())                 return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_DOUBLE);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, long double>())            return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_LDOUBLE);
-        if constexpr (tc::is_Scalar2_of_type<DecayType, float>())                  return H5Tcopy(h5pp::type::compound::H5T_SCALAR2_FLOAT);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, short>())                  return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_SHORT);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, int>())                    return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_INT);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, long>())                   return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_LONG);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, long long>())              return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_LLONG);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, unsigned short>())         return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_USHORT);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, unsigned int>())           return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_UINT);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, unsigned long>())          return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_ULONG);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, unsigned long long>())     return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_ULLONG);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, double>())                 return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_DOUBLE);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, long double>())            return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_LDOUBLE);
-        if constexpr (tc::is_Scalar3_of_type<DecayType, float>())                  return H5Tcopy(h5pp::type::compound::H5T_SCALAR3_FLOAT);
+        if constexpr (tc::is_std_complex_v<DecayType>)                             return H5Tcopy(type::compound::H5T_COMPLEX<typename DecayType::value_type>::h5type());
+        if constexpr (tc::is_Scalar2_v<DecayType>)                                 return H5Tcopy(type::compound::H5T_SCALAR2<tc::get_Scalar2_t<DecayType>>::h5type());
+        if constexpr (tc::is_Scalar3_v<DecayType>)                                 return H5Tcopy(type::compound::H5T_SCALAR3<tc::get_Scalar3_t<DecayType>>::h5type());
         if constexpr (tc::has_Scalar_v <DecayType>)                                return getH5Type<typename DecayType::Scalar>();
         if constexpr (tc::has_value_type_v <DecayType>)                            return getH5Type<typename DataType::value_type>();
-        if constexpr (std::is_class_v<DataType>) return H5Tcreate(H5T_COMPOUND, sizeof(DataType)); // Last resort
+        if constexpr (std::is_class_v<DataType>)                                   return H5Tcreate(H5T_COMPOUND, sizeof(DataType)); // Last resort
 
         /* clang-format on */
-        h5pp::logger::log->critical("getH5Type could not match the type provided: {}", type::sfinae::type_name<DecayType>());
-        throw std::logic_error(h5pp::format("getH5Type could not match the type provided [{}] | size {}",
+        throw std::runtime_error(h5pp::format("getH5Type could not match the type provided [{}] | size {}",
                                             type::sfinae::type_name<DecayType>(),
                                             sizeof(DecayType)));
         return hid_t(0);
@@ -244,7 +231,7 @@ namespace h5pp::util {
             return {static_cast<hsize_t>(data.rows()), static_cast<hsize_t>(data.cols())};
         }
 #endif
-        else if constexpr(h5pp::type::sfinae::is_ScalarN<DataType>())
+        else if constexpr(h5pp::type::sfinae::is_ScalarN_v<DataType>)
             return {};
         else if constexpr(std::is_array_v<DataType>)
             return {getArraySize(data)};
@@ -369,8 +356,8 @@ namespace h5pp::util {
         if constexpr(std::is_pointer_v<DecayType>) return getBytesPerElem<typename std::remove_pointer<DecayType>::type>();
         if constexpr(std::is_reference_v<DecayType>) return getBytesPerElem<typename std::remove_reference<DecayType>::type>();
         if constexpr(std::is_array_v<DecayType>) return getBytesPerElem<typename std::remove_all_extents<DecayType>::type>();
-        if constexpr(sfn::is_std_complex<DecayType>()) return sizeof(DecayType);
-        if constexpr(sfn::is_ScalarN<DecayType>()) return sizeof(DecayType);
+        if constexpr(sfn::is_std_complex_v<DecayType>) return sizeof(DecayType);
+        if constexpr(sfn::is_ScalarN_v<DecayType>) return sizeof(DecayType);
         if constexpr(std::is_arithmetic_v<DecayType>) return sizeof(DecayType);
         if constexpr(sfn::has_Scalar_v<DecayType>) return sizeof(typename DecayType::Scalar);
         if constexpr(sfn::has_value_type_v<DecayType>) return getBytesPerElem<typename DecayType::value_type>();

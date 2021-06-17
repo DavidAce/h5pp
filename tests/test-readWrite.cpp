@@ -81,7 +81,7 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
     file.writeDataset(writeData, dsetpath);
     h5pp::logger::log->debug("Reading {}", tag);
     auto readData = file.readDataset<ReadType>(dsetpath);
-    if constexpr(h5pp::type::sfinae::is_ScalarN<ReadType>()) {
+    if constexpr(h5pp::type::sfinae::is_ScalarN_v<ReadType>) {
         compareScalar(writeData, readData);
     } else if constexpr(has_scalarN_v<ReadType>) {
         if(writeData.size() != readData.size()) throw std::runtime_error("Size mismatch in ScalarN container");
@@ -215,7 +215,6 @@ int main() {
     Eigen::TensorMap<Eigen::Tensor<double, 2>> tensorMapDouble(matrixDouble.data(), matrixDouble.rows(), matrixDouble.cols());
     Eigen::MatrixXd                            vectorMatrix = Eigen::MatrixXd::Random(10, 1);
 #endif
-
     // Test reading and writing dummy data
     test_h5pp(file, emptyVector, "emptyVector");
     test_h5pp(file, stringDummy, "stringDummy");
