@@ -13,8 +13,12 @@ struct SpaceTimePoint {
 };
 
 void print_point(const SpaceTimePoint &p) {
-    h5pp::print(
-        "x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f} type: %s\n", p.coordinates[0], p.coordinates[1], p.coordinates[2], p.coordinates[3], p.type);
+    h5pp::print("x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f} type: %s\n",
+                p.coordinates[0],
+                p.coordinates[1],
+                p.coordinates[2],
+                p.coordinates[3],
+                p.type);
 }
 
 int main() {
