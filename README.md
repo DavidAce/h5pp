@@ -304,19 +304,25 @@ The CMake flag `H5PP_PACKAGE_MANAGER` controls the automated behavior for findin
 
 | Option | Description |
 | ---- | ---- |
-| `find` **(default)**              | Use CMake's `find_package`  to find dependencies pre-installed on your system  |
-| `cmake` **(!)**                   | Use isolated CMake instances to download and install dependencies during configure. Disregards pre-installed dependencies on your system |
-| `fetch` **(#)**                   | Use FetchContent to download and install dependencies. Disregards pre-installed dependencies on your system |
-| `cpm` **(!!)**                    | Use [https://github.com/cpm-cmake/CPM.cmake](CPM)to download and install dependencies. Disregards pre-installed dependencies on your system |
+| `none`                            | Skip handling dependencies  |
+| `find` **(default)**              | Use CMake's `find_package`  to find dependencies  |
+| `cmake` **¹**                     | Use isolated CMake instances to download and install dependencies during configure. Disregards pre-installed dependencies on your system |
+| `fetch` **²**                     | Use FetchContent to download and install dependencies. Disregards pre-installed dependencies on your system |
+| `cpm` **³**                       | Use [https://github.com/cpm-cmake/CPM.cmake](CPM)to download and install dependencies. Disregards pre-installed dependencies on your system |
 | `find-or-cmake`                   | Start with `find` and then go to `cmake` if not found |
 | `find-or-fetch`                   | Start with `find` and then go to `fetch` if not found |
-| `conan`   **(\*)**               | Use the [Conan package manager](https://conan.io/) to download and install dependencies automatically. Disregards libraries elsewhere on your system  |
+| `find-or-cpm`                     | Start with `find` and then go to `cpm` if not found   |
+| `conan` **⁴**                     | Use the [Conan package manager](https://conan.io/) to download and install dependencies automatically. Disregards libraries elsewhere on your system  |
 
 There are several variables you can pass to CMake to guide `find_package` calls and install location, see [CMake options](#cmake-options) below. 
 
-**(!)** Dependencies are installed into `${H5PP_DEPS_INSTALL_DIR}[/<PackageName>]`, where the variable defaults to `${CMAKE_INSTALL_PREFIX}`.
-**(#)** Dependencies are installed into `${CMAKE_INSTALL_PREFIX}[/<PackageName>]`.
-**(\*)** Conan is guided by `conanfile.txt` found in this project's root directory. This method requires conan to be installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
+**¹** Dependencies are installed into `${H5PP_DEPS_INSTALL_DIR}[/<PackageName>]`, where `H5PP_DEPS_INSTALL_DIR` defaults to `CMAKE_INSTALL_PREFIX` and optionally `/<PackageName>` is added if `H5PP_PREFIX_ADD_PKGNAME=TRUE`
+
+**²** Dependencies are installed into `${CMAKE_INSTALL_PREFIX}[/<PackageName>]`.
+
+**³** Dependencies are installed into `${CMAKE_INSTALL_PREFIX}`.
+
+**⁴** Conan is guided by `conanfile.txt` found in this project's root directory. This method requires conan to be installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
   * Add Conan install (or bin) directory to the environment variable `PATH`.
   * Export Conan install (or bin) directory in the environment variable `CONAN_PREFIX`, i.e. from command line: `export CONAN_PREFIX=<path-to-conan>` 
   * Give the variable `CONAN_PREFIX` directly to CMake, i.e. from command line: `cmake -DCONAN_PREFIX:PATH=<path-to-conan> ...`
