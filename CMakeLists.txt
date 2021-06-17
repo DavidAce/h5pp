@@ -46,7 +46,7 @@ endif()
 
 
 # Make an "enum" for valid package managers: find cmake fetch find-or-cmake conan
-set(H5PP_PACKAGE_MANAGERS_VALID find fetch cmake cpm find-or-fetch find-or-cmake conan)
+set(H5PP_PACKAGE_MANAGERS_VALID none find fetch cmake cpm find-or-fetch find-or-cmake conan)
 set(H5PP_PACKAGE_MANAGER find CACHE STRING "Package manager for external dependencies")
 set_property(CACHE H5PP_PACKAGE_MANAGER PROPERTY STRINGS ${H5PP_PACKAGE_MANAGERS_VALID})
 if (NOT H5PP_PACKAGE_MANAGER IN_LIST H5PP_PACKAGE_MANAGERS_VALID)
@@ -217,15 +217,10 @@ else()
             INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
     )
     configure_package_config_file(
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-cmake.cmake.in
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-cmake.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppDeps.cmake.in
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppDeps.cmake
             INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
             PATH_VARS H5PP_DEPS_INSTALL_DIR
-    )
-    configure_package_config_file(
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppConfig.deps-conan.cmake.in
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
-            INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
     )
 
     write_basic_package_version_file(
@@ -237,8 +232,7 @@ else()
     #Install the config, configversion and custom find modules
     install(FILES
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-cmake.cmake
-            ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.deps-conan.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppDeps.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindEigen3.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findspdlog.cmake
