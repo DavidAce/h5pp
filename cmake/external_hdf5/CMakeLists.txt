@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.18)
 project(external-hdf5)
 
 if(INIT_CACHE_FILE)

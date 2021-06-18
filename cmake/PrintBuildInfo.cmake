@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.18)
 if(H5PP_PRINT_INFO)
     # Print host properties
     cmake_host_system_information(RESULT _host_name QUERY HOSTNAME)

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.18)
 
 function(Fetchfmt)
     option(FMT_DOC "Generate the doc target." OFF)

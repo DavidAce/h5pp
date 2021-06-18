@@ -361,7 +361,7 @@ A minimal `CMakeLists.txt` to use `h5pp` would look like:
 
 
 ```cmake
-    cmake_minimum_required(VERSION 3.19)
+    cmake_minimum_required(VERSION 3.18)
     project(myProject)
     add_executable(myExecutable main.cpp)
     find_package(h5pp HINTS <h5pp-root-dir> REQUIRED)
@@ -385,7 +385,7 @@ From the command-line you can of course link using linker flags such as `-std=c+
 You could also use CMake's `find_package(...)` mechanism. A minimal `CMakeLists.txt` could be something like:
 
 ```cmake
-    cmake_minimum_required(VERSION 3.19)
+    cmake_minimum_required(VERSION 3.18)
     project(myProject)
     
     add_executable(myExecutable main.cpp)

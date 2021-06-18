@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.18)
 project(MyProject VERSION 0.0.1 DESCRIPTION "This example uses h5pp as a dependency")
 
 # Create an executable
