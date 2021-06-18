@@ -5,7 +5,6 @@
 
 # Run CMake configure (optionally do this with cmake-gui)
 # CMake takes care of launching conan and installing dependencies
-# Run CMake configure (optionally do this with cmake-gui)
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=OFF \
       -S MyProject \
