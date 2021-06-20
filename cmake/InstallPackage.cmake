@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.15)
 
 # Dumps cached variables to H5PP_INIT_CACHE_FILE so that we can propagate
 # the current build configuration to dependencies

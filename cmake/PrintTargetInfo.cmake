@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.15)
 function(pad_string OUT_VARIABLE DESIRED_LENGTH FILL_CHAR VALUE)
     string(LENGTH "${VALUE}" VALUE_LENGTH)
     math(EXPR REQUIRED_PADS "${DESIRED_LENGTH} - ${VALUE_LENGTH}")

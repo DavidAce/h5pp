@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.15)
 function(get_num_threads num_threads)
     cmake_host_system_information(RESULT _host_name   QUERY HOSTNAME)
 

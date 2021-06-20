@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.15)
 
 if(H5PP_PACKAGE_MANAGER MATCHES "conan")
 
