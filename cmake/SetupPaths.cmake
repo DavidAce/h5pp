@@ -13,6 +13,12 @@ else()
     set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX};${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE STRING "Prefer finding static libraries")
 endif()
 
+# Transform CMAKE_INSTALL_PREFIX to full path
+if(DEFINED CMAKE_INSTALL_PREFIX AND NOT IS_ABSOLUTE CMAKE_INSTALL_PREFIX)
+    get_filename_component(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}
+            ABSOLUTE BASE_DIR ${CMAKE_BINARY_DIR} CACHE FORCE)
+    message(STATUS "Setting absolute path CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+endif()
 
 # Setup build and install directories for dependencies
 if(NOT H5PP_DEPS_BUILD_DIR)
