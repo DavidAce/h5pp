@@ -62,7 +62,6 @@ function(spdlog_check_version_include incdir)
         set(SPDLOG_MINOR_VERSION "${CMAKE_MATCH_1}")
 
         set(SPDLOG_VERSION ${SPDLOG_WORLD_VERSION}.${SPDLOG_MAJOR_VERSION}.${SPDLOG_MINOR_VERSION})
-        message(STATUS "Found Spdlog version ${SPDLOG_VERSION}")
     endif()
 
 
