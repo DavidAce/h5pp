@@ -101,7 +101,7 @@ elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
                         PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
                         ${NO_DEFAULT_PATH})
         endif()
-        set(HDF5_NO_DEFAULT_PATH ${NO_DEFAULT_PATH}
+        set(HDF5_NO_DEFAULT_PATH ${NO_DEFAULT_PATH})
         find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
     endif()
 
