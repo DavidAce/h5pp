@@ -199,8 +199,7 @@ else()
     # Install library
     # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
     include(GNUInstallDirs)
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT include)
-#    install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/ DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin)
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT h5pp-include)
     install(TARGETS h5pp headers deps flags EXPORT h5ppTargets)
 
     #Export the targets to a script
@@ -240,7 +239,7 @@ else()
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindHDF5.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake
             DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
-            COMPONENT config
+            COMPONENT h5pp-config
             )
 
 
@@ -257,7 +256,7 @@ else()
             if (EXISTS "${conan_file}")
                 install(FILES ${conan_file}
                         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
-                        COMPONENT config)
+                        COMPONENT h5pp-config)
             endif ()
         endforeach ()
     endif ()
@@ -297,7 +296,7 @@ endif()
 
 # Use CPACK to generate .deb install file
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-set(CPACK_COMPONENTS_ALL headers config)
+set(CPACK_COMPONENTS_ALL h5pp-include h5pp-config)
 
 # Define apt dependencies that work with this library
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libhdf5-dev (>=1.10), libeigen3-dev (>=3.3.4), libspdlog-dev (>=1.3)")
