@@ -21,4 +21,13 @@ ExternalProject_Add(external_zlib
         -DCMAKE_INSTALL_MESSAGE=LAZY
         )
 
+if(NOT BUILD_SHARED_LIBS)
+    ExternalProject_Get_property(external_zlib BINARY_DIR)
+    ExternalProject_Add_Step(external_zlib
+            zlib_remove_shared_${sfx}
+            COMMENT "Remove zlib [${CMAKE_SHARED_LIBRARY_SUFFIX};.dll]"
+            DEPENDEES configure build install
+            COMMAND ${CMAKE_COMMAND} -DMANIFEST:FILEPATH=${BINARY_DIR}/install_manifest.txt -DLIBSUFFIX=.dll$<SEMICOLON>.so$<SEMICOLON>${CMAKE_SHARED_LIBRARY_SUFFIX} -P ${CMAKE_CURRENT_LIST_DIR}/zlib_remove_shared.cmake
+            )
+endif()
 
