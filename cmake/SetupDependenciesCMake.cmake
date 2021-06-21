@@ -4,26 +4,22 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
     include(cmake/InstallPackage.cmake)
 
     # Download fmt
-    if (H5PP_ENABLE_FMT AND NOT TARGET fmt::fmt)
+    if (H5PP_ENABLE_FMT AND NOT fmt_FOUND)
         # fmt is a dependency of spdlog
         # We fetch it here to get the latest version and to make sure we use the
         # compile library and avoid compile-time overhead in projects consuming h5pp.
         # Note that spdlog may already have been found in if H5PP_PACKAGE_MANAGER=find|cmake
         # then we can assume that spdlog already knows how and where to get fmt.
-        set(fmt_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for fmt installed by h5pp")
         find_package(fmt 7.1.3 CONFIG
-                NO_SYSTEM_ENVIRONMENT_PATH
-                NO_CMAKE_PACKAGE_REGISTRY
-                NO_CMAKE_SYSTEM_PATH
-                NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+                HINTS ${fmt_ROOT} ${H5PP_DEPS_INSTALL_DIR}
+                NO_DEFAULT_PATH)
         if(NOT fmt_FOUND OR NOT TARGET fmt::fmt)
             message(STATUS "fmt will be installed into ${H5PP_DEPS_INSTALL_DIR}")
-            install_package(fmt  "${H5PP_DEPS_INSTALL_DIR}" "${FMT_CMAKE_OPTIONS}")
-            find_package(fmt 7.1.3 CONFIG REQUIRED
-                    NO_SYSTEM_ENVIRONMENT_PATH
-                    NO_CMAKE_PACKAGE_REGISTRY
-                    NO_CMAKE_SYSTEM_PATH
-                    NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+            install_package(fmt "${H5PP_DEPS_INSTALL_DIR}" "${FMT_CMAKE_OPTIONS}")
+            find_package(fmt 7.1.3 CONFIG
+                    HINTS ${fmt_ROOT} ${H5PP_DEPS_INSTALL_DIR}
+                    NO_DEFAULT_PATH
+                    REQUIRED)
         endif()
         if(TARGET fmt::fmt AND fmt_FOUND)
             list(APPEND H5PP_TARGETS fmt::fmt)
@@ -36,12 +32,9 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
 
     # Download spdlog
     if (H5PP_ENABLE_SPDLOG AND NOT TARGET spdlog::spdlog)
-        set(spdlog_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for spdlog installed by h5pp")
         find_package(spdlog 1.8.5 CONFIG
-                NO_SYSTEM_ENVIRONMENT_PATH
-                NO_CMAKE_PACKAGE_REGISTRY
-                NO_CMAKE_SYSTEM_PATH
-                NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+                HINTS ${spdlog_ROOT} ${H5PP_DEPS_INSTALL_DIR}
+                NO_DEFAULT_PATH)
         if(NOT spdlog_FOUND OR NOT TARGET spdlog::spdlog)
             message(STATUS "Spdlog will be installed into ${H5PP_DEPS_INSTALL_DIR}")
             if(fmt_FOUND AND TARGET fmt::fmt)
@@ -51,11 +44,10 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
                 list(APPEND SPDLOG_CMAKE_OPTIONS  "-Dfmt_ROOT:PATH=${fmt_ROOT}")
             endif()
             install_package(spdlog  "${H5PP_DEPS_INSTALL_DIR}" "${SPDLOG_CMAKE_OPTIONS}")
-            find_package(spdlog 1.8.5 CONFIG REQUIRED
-                    NO_SYSTEM_ENVIRONMENT_PATH
-                    NO_CMAKE_PACKAGE_REGISTRY
-                    NO_CMAKE_SYSTEM_PATH
-                    NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+            find_package(spdlog 1.8.5 CONFIG
+                    HINTS ${spdlog_ROOT} ${H5PP_DEPS_INSTALL_DIR}
+                    NO_DEFAULT_PATH
+                    REQUIRED)
             message(STATUS "spdlog installed successfully")
         endif()
         if(spdlog_FOUND AND TARGET spdlog::spdlog)
@@ -71,21 +63,15 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
 
     # Download Eigen3
     if (H5PP_ENABLE_EIGEN3 AND NOT TARGET Eigen3::Eigen)
-        set(Eigen3_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for Eigen3 installed by h5pp")
         find_package(Eigen3 3.3.7
-                NO_SYSTEM_ENVIRONMENT_PATH
-                NO_CMAKE_PACKAGE_REGISTRY
-                NO_CMAKE_SYSTEM_PATH
-                NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
-                )
+                HINTS ${Eigen3_ROOT} ${H5PP_DEPS_INSTALL_DIR}
+                NO_DEFAULT_PATH)
         if(NOT TARGET Eigen3::Eigen)
             message(STATUS "Eigen3 will be installed into ${H5PP_DEPS_INSTALL_DIR}")
             install_package(Eigen3 "${H5PP_DEPS_INSTALL_DIR}" "")
             find_package(Eigen3 3.3.7
-                    NO_SYSTEM_ENVIRONMENT_PATH
-                    NO_CMAKE_PACKAGE_REGISTRY
-                    NO_CMAKE_SYSTEM_PATH
-                    NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
+                    HINTS ${Eigen3_ROOT} ${H5PP_DEPS_INSTALL_DIR}
+                    NO_DEFAULT_PATH
                     REQUIRED)
             message(STATUS "Eigen3 installed successfully")
         endif()
@@ -96,8 +82,6 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
             message(FATAL_ERROR "Eigen3 could not be downloaded and built from source")
         endif()
     endif()
-
-
     include(cmake/InstallHDF5.cmake)
     install_hdf5()
 endif()

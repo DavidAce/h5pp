@@ -220,7 +220,7 @@ else()
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppDeps.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppDeps.cmake
             INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
-            PATH_VARS H5PP_DEPS_INSTALL_DIR
+            PATH_VARS H5PP_DEPS_INSTALL_DIR CMAKE_INSTALL_PREFIX
     )
 
     write_basic_package_version_file(

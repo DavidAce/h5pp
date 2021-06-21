@@ -2,31 +2,25 @@ function(install_hdf5)
     include(cmake/InstallPackage.cmake)
     # Download HDF5 (and ZLIB and SZIP)
    if(NOT SZIP_FOUND)
-       set(SZIP_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for SZIP installed by h5pp")
        find_package(SZIP CONFIG NAMES szip sz COMPONENTS static shared
+               HINTS ${SZIP_ROOT} ${H5PP_DEPS_INSTALL_DIR}
                PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
-               NO_SYSTEM_ENVIRONMENT_PATH
-               NO_CMAKE_PACKAGE_REGISTRY
-               NO_CMAKE_SYSTEM_PATH
-               NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+               NO_DEFAULT_PATH)
        if(NOT SZIP_FOUND OR NOT TARGET szip-static)
            install_package(szip "${H5PP_DEPS_INSTALL_DIR}" "")
            find_package(SZIP CONFIG NAMES szip sz COMPONENTS static shared
+                   HINTS ${SZIP_ROOT} ${H5PP_DEPS_INSTALL_DIR}
                    PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
-                   NO_SYSTEM_ENVIRONMENT_PATH
-                   NO_CMAKE_SYSTEM_PATH
-                   NO_CMAKE_PACKAGE_REGISTRY
-                   NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
+                   NO_DEFAULT_PATH
                    REQUIRED)
        endif()
    endif()
    if(NOT ZLIB_FOUND)
-       set(ZLIB_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for ZLIB installed by h5pp")
        # Don't use the find_package module yet: it would just find system libz.a, which we are trying to avoid
        find_library(ZLIB_LIBRARY NAMES
                z zlib zdll zlib1 zlibstatic # Release names
                zd zlibd zdlld zlibd1 zlib1d zlibstaticd # Debug names
-               HINTS ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib/lib NO_DEFAULT_PATH)
+               HINTS ${ZLIB_ROOT} ${H5PP_DEPS_INSTALL_DIR} PATH_SUFFIXES zlib/lib NO_DEFAULT_PATH)
        if(NOT ZLIB_LIBRARY)
            install_package(zlib "${H5PP_DEPS_INSTALL_DIR}" "")
        endif()
@@ -36,17 +30,11 @@ function(install_hdf5)
    endif()
 
    if(NOT HDF5_FOUND OR NOT TARGET hdf5::all)
-       set(HDF5_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for HDF5 installed by h5pp")
-       set(HDF5_NO_SYSTEM_ENVIRONMENT_PATH ON)
-       set(HDF5_NO_CMAKE_PACKAGE_REGISTRY ON)
-       set(HDF5_NO_CMAKE_SYSTEM_PATH ON)
-       set(HDF5_NO_CMAKE_SYSTEM_PACKAGE_REGISTRY ON)
+       set(HDF5_ROOT ${H5PP_DEPS_INSTALL_DIR})
+       set(HDF5_NO_DEFAULT_PATH ON)
        set(HDF5_FIND_VERBOSE OFF)
        set(HDF5_FIND_DEBUG OFF)
-       mark_as_advanced(HDF5_NO_SYSTEM_ENVIRONMENT_PATH)
-       mark_as_advanced(HDF5_NO_CMAKE_PACKAGE_REGISTRY)
-       mark_as_advanced(HDF5_NO_CMAKE_SYSTEM_PATH)
-       mark_as_advanced(HDF5_NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+       mark_as_advanced(HDF5_NO_DEFAULT_PATH)
        mark_as_advanced(HDF5_FIND_VERBOSE)
        mark_as_advanced(HDF5_FIND_DEBUG)
        # This one uses our own module, but will call the config-mode internally first.
