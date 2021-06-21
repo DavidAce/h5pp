@@ -106,7 +106,7 @@ endif()
 # First try finding a config somewhere in the system
 if(NOT FMT_NO_CONFIG OR FMT_CONFIG_ONLY)
     find_package(fmt ${fmt_FIND_VERSION}
-            HINTS  ${H5PP_DEPS_INSTALL_DIR} ${CONAN_FMT_ROOT} ${CMAKE_INSTALL_PREFIX}
+            HINTS ${fmt_ROOT} ${H5PP_DEPS_INSTALL_DIR} ${CONAN_FMT_ROOT} ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES include fmt include/fmt fmt/include/fmt
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}

@@ -431,7 +431,7 @@ function(find_package_hdf5_config_wrapper)
     find_package(HDF5
             ${HDF5_FIND_VERSION}
             COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
-            HINTS ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
+            HINTS  ${HDF5_ROOT}  ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES  hdf5
             # The following flags are enabled with HDF5_NO_... before calling find_package(HDF5)
             ${NO_PACKAGE_ROOT_PATH}

@@ -79,7 +79,7 @@ if(NOT Eigen3_FOUND)
 
     if(NOT EIGEN3_NO_CONFIG OR EIGEN3_CONFIG_ONLY)
         find_package(Eigen3 ${Eigen3_FIND_VERSION}
-                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CONAN_EIGEN3_ROOT} ${CMAKE_INSTALL_PREFIX}
+                HINTS ${Eigen3_ROOT} ${H5PP_DEPS_INSTALL_DIR} ${CONAN_EIGEN3_ROOT} ${CMAKE_INSTALL_PREFIX}
                 PATH_SUFFIXES share/eigen3/cmake include Eigen3 eigen3 include/Eigen3 include/eigen3 Eigen3/include/eigen3
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}

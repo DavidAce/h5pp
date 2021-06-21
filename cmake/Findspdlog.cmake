@@ -117,7 +117,7 @@ function(find_spdlog_config)
     # First try finding a config somewhere in the system
     if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
         find_package(spdlog ${spdlog_FIND_VERSION}
-                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CONAN_SPDLOG_ROOT} ${CMAKE_INSTALL_PREFIX} ${H5PP_DEPS_INSTALL_DIR}
+                HINTS ${spdlog_ROOT} ${H5PP_DEPS_INSTALL_DIR} ${CONAN_SPDLOG_ROOT} ${CMAKE_INSTALL_PREFIX} ${H5PP_DEPS_INSTALL_DIR}
                 PATH_SUFFIXES include spdlog include/spdlog spdlog/include/spdlog
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}

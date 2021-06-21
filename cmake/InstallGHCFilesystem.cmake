@@ -13,7 +13,7 @@ function(install_ghc_filesystem)
         include(cmake/InstallPackage.cmake)
         install_package(ghc_filesystem  "${H5PP_DEPS_INSTALL_DIR}" "" "")
         find_package(ghc_filesystem HINTS
-                    ${H5PP_DEPS_INSTALL_DIR}
+                    ${ghc_filesystem_ROOT} ${H5PP_DEPS_INSTALL_DIR}
                     PATH_SUFFIXES ghc_filesystem
                     NO_DEFAULT_PATH
                     REQUIRED)
