@@ -16,6 +16,7 @@ function(install_hdf5)
        endif()
    endif()
    if(NOT ZLIB_FOUND)
+       set(ZLIB_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for ZLIB installed by h5pp")
        # Don't use the find_package module yet: it would just find system libz.a, which we are trying to avoid
        find_library(ZLIB_LIBRARY NAMES
                z zlib zdll zlib1 zlibstatic # Release names
