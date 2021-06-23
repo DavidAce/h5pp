@@ -1,28 +1,4 @@
 @PACKAGE_INIT@
-
-
-if(H5PP_PACKAGE_MANAGER MATCHES "conan")
-
-    include(${CMAKE_CURRENT_LIST_DIR}/conanbuildinfo.cmake)
-    conan_basic_setup(TARGETS)
-
-elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
-
-    if(NOT H5PP_PACKAGE_MANAGER MATCHES "find")
-        # Make sure we find the package installed by h5pp and not one in the system
-        set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
-    endif()
-
-    # Make sure find_library prefers static/shared library depending on BUILD_SHARED_LIBS
-    # This is important when finding dependencies such as zlib which provides both shared and static libraries.
-    # Note that we do not force this cache variable, so users can override it
-    if(BUILD_SHARED_LIBS)
-        # This is order is the default
-        set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX};${CMAKE_STATIC_LIBRARY_SUFFIX} CACHE STRING "Prefer finding shared libraries")
-    else()
-        set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX};${CMAKE_SHARED_LIBRARY_SUFFIX} CACHE STRING "Prefer finding static libraries")
-    endif()
-
     ####################################################################
     ### Append search paths for find_package and find_library calls  ###
     ####################################################################
@@ -31,7 +7,16 @@ elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
         list(APPEND ${pkg}_ROOT @PACKAGE_H5PP_DEPS_INSTALL_DIR@ @PACKAGE_CMAKE_INSTALL_PREFIX@)
     endforeach()
 
+if(H5PP_PACKAGE_MANAGER MATCHES "conan")
 
+    include(${CMAKE_CURRENT_LIST_DIR}/conanbuildinfo.cmake)
+    conan_basic_setup(TARGETS)
+
+elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
+
+    # Append search paths for find_package and find_library calls
+    list(APPEND CMAKE_PREFIX_PATH @PACKAGE_H5PP_DEPS_INSTALL_DIR@ @PACKAGE_CMAKE_INSTALL_PREFIX@)
+    list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
 
     # Make sure we use h5pp find modules
     list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
@@ -39,84 +24,54 @@ elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
     include(CMakeFindDependencyMacro)
 
     # h5pp requires the filesystem header (and possibly stdc++fs library)
-    find_dependency(Filesystem COMPONENTS Final Experimental)
-    if (Filesystem_FOUND AND TARGET std::filesystem)
+    if(std::filesystem IN_LIST H5PP_ENABLED_TARGETS)
+        find_package(Filesystem COMPONENTS Final Experimental REQUIRED)
         list(APPEND H5PP_FOUND_TARGETS std::filesystem)
-    else()
-        find_dependency(ghc_filesystem
-                     PATH_SUFFIXES ghc_filesystem
-                     HINTS ${ghc_filesystem_ROOT}
-                     ${NO_DEFAULT_PATH}
-                     REQUIRED)
-        list(APPEND H5PP_FOUND_TARGETS ghc::filesystem)
     endif()
 
-    if (NOT Eigen3_FOUND AND Eigen3::Eigen IN_LIST H5PP_ENABLED_TARGETS)
-        find_dependency(Eigen3 3.3
-                        HINTS ${Eigen3_ROOT}
-                        ${NO_DEFAULT_PATH}
-                        REQUIRED)
+    if(ghc::filesystem IN_LIST H5PP_ENABLED_TARGETS)
+        find_dependency(ghc_filesystem
+                PATH_SUFFIXES ghc_filesystem
+                REQUIRED)
+    endif()
+
+    if (Eigen3::Eigen IN_LIST H5PP_ENABLED_TARGETS)
+        find_dependency(Eigen3 3.3 REQUIRED)
         if(TARGET Eigen3 AND NOT TARGET Eigen3::Eigen)
-            add_library(Eigen3::Eigen ALIAS Eigen3)
+            add_library(fmt::fmt ALIAS fmt)
         endif()
     endif()
-    if(Eigen3_FOUND AND TARGET Eigen3::Eigen)
-        list(APPEND H5PP_FOUND_TARGETS Eigen3::Eigen)
-    endif()
 
-    if (NOT fmt_FOUND AND fmt::fmt IN_LIST H5PP_ENABLED_TARGETS)
-        find_dependency(fmt 6.1.2
-                        HINTS ${fmt_ROOT}
-                        ${NO_DEFAULT_PATH}
-                        REQUIRED)
+    if (fmt::fmt IN_LIST H5PP_ENABLED_TARGETS)
+        find_dependency(fmt 6.1.2 REQUIRED)
         if(TARGET fmt AND NOT TARGET fmt::fmt)
             add_library(fmt::fmt ALIAS fmt)
         endif()
     endif()
-    if(fmt_FOUND AND TARGET fmt::fmt)
-        list(APPEND H5PP_FOUND_TARGETS fmt::fmt)
-    endif()
 
-    if (NOT spdlog_FOUND AND spdlog::spdlog IN_LIST H5PP_ENABLED_TARGETS)
-        find_dependency(spdlog 1.3.1
-                        HINTS ${spdlog_ROOT}
-                        ${NO_DEFAULT_PATH}
-                        REQUIRED)
+    if (spdlog::spdlog IN_LIST H5PP_ENABLED_TARGETS)
+        find_dependency(spdlog 1.3.1 REQUIRED)
         if(TARGET spdlog AND NOT TARGET spdlog::spdlog)
             add_library(spdlog::spdlog ALIAS spdlog)
         endif()
     endif()
-    if(spdlog_FOUND AND TARGET spdlog::spdlog)
-        list(APPEND H5PP_FOUND_TARGETS spdlog::spdlog)
-    endif()
 
-    if (NOT TARGET hdf5::all AND hdf5::all IN_LIST H5PP_ENABLED_TARGETS)
+    if (hdf5::all IN_LIST H5PP_ENABLED_TARGETS)
         if(H5PP_PACKAGE_MANAGER MATCHES "cmake|fetch|cpm")
             find_dependency(ZLIB)
             find_dependency(SZIP
                         CONFIG
-                        HINTS ${SZIP_ROOT}
                         NAMES szip sz
                         COMPONENTS static shared
                         PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
-                        ${NO_DEFAULT_PATH})
+                        )
         endif()
-        set(HDF5_NO_DEFAULT_PATH ${NO_DEFAULT_PATH})
         find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
     endif()
-
-    if(HDF5_FOUND AND TARGET hdf5::all)
-        list(APPEND H5PP_FOUND_TARGETS  hdf5::all)
+    if(NOT H5PP_FIND_QUIETLY)
+        message(STATUS "h5pp: Found dependency targets: ${H5PP_ENABLED_TARGETS}")
     endif()
-
 else() # Probably H5PP_PACKAGE_MANAGER=none
     # h5pp requires the filesystem header (and possibly stdc++fs library)
-    find_dependency(Filesystem COMPONENTS Final Experimental REQUIRED)
-    if (Filesystem_FOUND AND TARGET std::filesystem)
-        list(APPEND H5PP_FOUND_TARGETS std::filesystem)
-    endif()
-endif()
-
-if(NOT H5PP_FIND_QUIETLY)
-    message(STATUS "h5pp: Found dependency targets: ${H5PP_FOUND_TARGETS}")
+    find_package(Filesystem COMPONENTS Final Experimental REQUIRED)
 endif()
