@@ -1,11 +1,4 @@
 @PACKAGE_INIT@
-    ####################################################################
-    ### Append search paths for find_package and find_library calls  ###
-    ####################################################################
-    # Search the same directories as during configure
-    foreach(pkg ghcFilesystem;Eigen3;spdlog;fmt;ZLIB;SZIP;HDF5)
-        list(APPEND ${pkg}_ROOT @PACKAGE_H5PP_DEPS_INSTALL_DIR@ @PACKAGE_CMAKE_INSTALL_PREFIX@)
-    endforeach()
 
 if(H5PP_PACKAGE_MANAGER MATCHES "conan")
 
