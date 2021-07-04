@@ -1,1 +1,3 @@
-exhale
+breathe
+myst_parser
+m2r2

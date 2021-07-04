@@ -1,21 +1,40 @@
-find_program(DOXYGEN doxygen)
-if (NOT DOXYGEN)
-    message(STATUS "Target 'docs' disabled (requires doxygen)")
-    return ()
-endif ()
 
-find_program(SPHINXBUILD sphinx-build)
-if (NOT SPHINXBUILD)
-    message(STATUS "Target 'docs' disabled (requires sphinx-build)")
-    return ()
-endif ()
+list(APPEND CONDA_ROOT
+        ${CONDA_PREFIX}
+        $ENV{HOME}/anaconda3
+        $ENV{HOME}/miniconda3
+        $ENV{HOME}/anaconda3/envs/h5pp
+        $ENV{HOME}/miniconda3/envs/h5pp
+        $ENV{HOME}/anaconda3/envs/dmrg
+        $ENV{HOME}/miniconda3/envs/dmrg)
 
-add_custom_target(docs
-        COMMAND ${CMAKE_MAKE_PROGRAM} html
-        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-        )
+list(APPEND Doxygen_ROOT ${CONDA_ROOT})
+list(APPEND Sphinx_ROOT ${CONDA_ROOT})
 
-include(GNUInstallDirs)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/h5pp OPTIONAL
-        PATTERN ".doctrees" EXCLUDE)
+set(DOXYGEN_GENERATE_XML YES)
+set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
+find_package(Doxygen REQUIRED)
+doxygen_add_docs(h5pp-doxygen
+        ${PROJECT_SOURCE_DIR}/source
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Documentation -- Doxygen XML")
+
+
+find_package(Sphinx REQUIRED)
+
+set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source)
+set(SPHINX_BUILD ${CMAKE_CURRENT_SOURCE_DIR}/sphinx)
+
+add_custom_target(h5pp-sphinx
+        COMMAND
+        ${SPHINX_EXECUTABLE} -b html
+        -Dbreathe_projects.DMRG++=${CMAKE_CURRENT_SOURCE_DIR}/xml # Tell Breathe where to find the Doxygen XML output
+        ${SPHINX_SOURCE} ${SPHINX_BUILD}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/source
+        COMMENT "Documentation -- Sphinx")
+
+add_custom_target(h5pp-docs
+        COMMAND ${CMAKE_COMMAND} --build . --config $<CONFIG> --target h5pp-doxygen h5pp-sphinx
+        COMMENT "Generating documentation Doxygen+Sphinx")
+

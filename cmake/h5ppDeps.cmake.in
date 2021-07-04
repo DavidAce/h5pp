@@ -62,7 +62,7 @@ elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
         find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
     endif()
     if(NOT H5PP_FIND_QUIETLY)
-        message(STATUS "h5pp: Found dependency targets: ${H5PP_ENABLED_TARGETS}")
+        message(STATUS "h5pp: Found: ${H5PP_ENABLED_TARGETS}")
     endif()
 else() # Probably H5PP_PACKAGE_MANAGER=none
     # h5pp requires the filesystem header (and possibly stdc++fs library)

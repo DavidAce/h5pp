@@ -16,6 +16,8 @@ In particular, `h5pp` makes it easy to read and write [**Eigen**](http://eigen.t
 
 [Latest release](https://github.com/DavidAce/h5pp/releases) 
 
+[Documentation](https://h5pp.readthedocs.io)
+
 Go to [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart) to see install examples
 
 Go to [examples](https://github.com/DavidAce/h5pp/tree/master/examples) to learn how to use `h5pp`
@@ -69,22 +71,20 @@ things could be even simpler.
  
 
 ## Features
-*  Header-only C++17 template library
-*  High-level front-end to the C API of HDF5
-*  Support for common C++ types such as:
-    *  numeric types `short`,`int`,`long`, `long long` (+ unsigned versions), `float`, `double`, `long double`
+* Header-only C++17 template library
+* High-level front-end to the C API of HDF5
+* Modern CMake installation of `h5pp` and its dependencies (optional)
+* Multi-platform: Linux, Windows, OSX. (Developed under Linux)
+* Supports:
+    *  all numeric types: `(u)int#_t`, `float`, `double`, `long double`
     *  **`std::complex<>`** with any of the types above
     *  CUDA-style POD-structs with `x,y` or `x,y,z` members as atomic type, such as `float3` or `double2`. These work with any of the types above. In `h5pp` these go by the name `Scalar2<>` and `Scalar3<>`.
     *  Contiguous containers with a `.data()` member, such as `std::vector<>`
-    *  `std::string`, `char` arrays, and `std::vector<std::string>`
-    *  C-style arrays or pointer-to-buffers
-*  Support for [**Eigen**](http://eigen.tuxfamily.org) types such as `Eigen::Matrix<>`, `Eigen::Array<>` and `Eigen::Tensor<>`, with automatic conversion to/from row-major storage
-*  Support for user-defined compound HDF5 types (see [example](https://github.com/DavidAce/h5pp/blob/master/examples/example-04a-custom-struct-easy.cpp))
-*  Support for HDF5 tables (with user-defined compound HDF5 types for entries)
-*  Modern installation of `h5pp` and its dependencies. Choose:
-    *  Installation with package managers: [conan](https://conan.io/), or apt (.deb installation file)
-    *  CMake installation providing targets for linking to your projects. (Opt-in) Automatically find or download dependencies with "CMake-only" methods.
-*  Multi-platform: Linux, Windows, OSX. (Developed under Linux)
+    *  Text types `std::string`, `char` arrays, and `std::vector<std::string>`
+    *  C-style arrays or pointer to buffer
+    *  [**Eigen**](http://eigen.tuxfamily.org) types such as `Eigen::Matrix<>`, `Eigen::Array<>` and `Eigen::Tensor<>`, with automatic conversion to/from row-major storage
+    *  Structs as compound HDF5 types (see [example](https://github.com/DavidAce/h5pp/blob/master/examples/example-04a-custom-struct-easy.cpp))
+    *  Structs as HDF5 tables (with user-defined compound HDF5 types for entries)
 
 
 ## Usage
@@ -253,7 +253,7 @@ Notice the cast to `dtype=np.complex128` which interprets each element of the ar
 a hand-crafted logger is used in its place to give identical output but without any performance
 considerations (implemented with STL lists, strings and streams).
 
-### Obtaining `h5pp`
+### Getting h5pp
 There are currently 4 ways to obtain `h5pp`:
 * `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
 * From [conan-center](https://conan.io/center/h5pp/1.9.0)
@@ -284,13 +284,13 @@ After this step, use `h5pp` like any other conan package.
 For more information refer to the [conan docs](https://docs.conan.io/en/latest/getting_started.html) or have a look at [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart).
 
 
-#### Option 3: Install with CMake
-Build the library just as any CMake project. For instance, from the project's root in command-line:
+#### Option 3: Git clone + CMake install
+After cloning this repository, build the library just as any CMake project. For example, run the following commands:
 
 ```bash
     mkdir build
     cd build
-    cmake -DCMAKE_INSTALL_PREFIX=<install-dir> ../
+    cmake -DCMAKE_INSTALL_PREFIX=<install-dir>  <source-dir>
     make
     make install
 ```
