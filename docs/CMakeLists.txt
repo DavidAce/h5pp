@@ -16,7 +16,7 @@ set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
 find_package(Doxygen REQUIRED)
 doxygen_add_docs(h5pp-doxygen
-        ${PROJECT_SOURCE_DIR}/source
+        ${PROJECT_SOURCE_DIR}/include
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "Documentation -- Doxygen XML")
 

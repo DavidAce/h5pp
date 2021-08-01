@@ -181,7 +181,7 @@ or use the shorthand member function for this task:
 
 ### Debug and logging
 [Spdlog](https://github.com/gabime/spdlog) can be used to emit debugging information efficiently. 
-The amount of console output (verbosity) can be set to any level between `0` and `5`:
+The amount of console output (verbosity) can be set to any level between `0` and `6`:
 
 * `0: trace` (highest verbosity)
 * `1: debug`
@@ -189,6 +189,7 @@ The amount of console output (verbosity) can be set to any level between `0` and
 * `3: warn`
 * `4: error`
 * `5: critical`  (lowest verbosity)
+* `6: off`
 
 Set the level when constructing a h5pp::File or by calling the function `.setLogLevel(int)`:
 
@@ -300,9 +301,9 @@ These config files allow you to use`find_package(h5pp)` in your own projects, wh
 with everything you need to link `h5pp` correctly (including dependencies, if you so choose). 
 
 ##### Opt-in automatic dependency installation with CMake
-The CMake flag `H5PP_PACKAGE_MANAGER` controls the automated behavior for finding or installing dependencies. It can take one of these strings:
+The CMake flag `H5PP_PACKAGE_MANAGER` controls the automated behavior for finding or installing dependencies. It can take one of these string values:
 
-| Option | Description |
+| Value | Description |
 | ---- | ---- |
 | `none`                            | Skip handling dependencies  |
 | `find` **(default)**              | Use CMake's `find_package`  to find dependencies  |
@@ -331,7 +332,7 @@ There are several variables you can pass to CMake to guide `find_package` calls 
 
 The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 
-| Var | Default | Description |
+| Option | Default | Description |
 | ---- | ---- | ---- |
 | `H5PP_ENABLE_EIGEN3`              | `OFF`                     | Enables `Eigen` linear algebra library support |
 | `H5PP_ENABLE_FMT`                 | `OFF`                     | Enables `{fmt}` string formatting library |

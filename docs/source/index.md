@@ -25,6 +25,7 @@ caption: Contents
 features
 installation
 usage
+api
 ```
 
 

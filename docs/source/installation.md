@@ -38,7 +38,7 @@ is a non-trivial step, see [linking](#linking) below.
 Make sure to install and configure Conan first. You may need to add the line `compiler.cppstd=17` under `[settings]` in your conan profile `~/.conan/profile/default`.
 Then run the following command:
 
-```
+```bash
 $ conan install h5pp/1.9.0@ --build=missing
 ```
 
@@ -64,9 +64,9 @@ These config files allow you to use`find_package(h5pp)` in your own projects, wh
 with everything you need to link `h5pp` correctly (including dependencies, if you so choose).
 
 #### Opt-in automatic dependency installation with CMake
-The CMake flag `H5PP_PACKAGE_MANAGER` controls the automated behavior for finding or installing dependencies. It can take one of these strings:
+The CMake flag `H5PP_PACKAGE_MANAGER` controls the automated behavior for finding or installing dependencies. It can take one of these string values:
 
-| Option | Description |
+| Value | Description |
 | ---- | ---- |
 | `none`                            | Skip handling dependencies  |
 | `find` **(default)**              | Use CMake's `find_package`  to find dependencies  |
@@ -95,7 +95,7 @@ There are several variables you can pass to CMake to guide `find_package` calls 
 
 The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 
-| Var | Default | Description |
+| Option | Default | Description |
 | ---- | ---- | ---- |
 | `H5PP_ENABLE_EIGEN3`              | `OFF`                     | Enables `Eigen` linear algebra library support |
 | `H5PP_ENABLE_FMT`                 | `OFF`                     | Enables `{fmt}` string formatting library |

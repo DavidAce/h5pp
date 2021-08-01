@@ -68,7 +68,7 @@ or use the shorthand member function for this task:
 
 ## Debug and logging
 [Spdlog](https://github.com/gabime/spdlog) can be used to emit debugging information efficiently.
-The amount of console output (verbosity) can be set to any level between `0` and `5`:
+The amount of console output (verbosity) can be set to any level between `0` and `6`:
 
 * `0: trace` (highest verbosity)
 * `1: debug`
@@ -76,6 +76,7 @@ The amount of console output (verbosity) can be set to any level between `0` and
 * `3: warn`
 * `4: error`
 * `5: critical`  (lowest verbosity)
+* `6: off`
 
 Set the level when constructing a h5pp::File or by calling the function `.setLogLevel(int)`:
 
@@ -119,4 +120,3 @@ Here is a python example which uses [h5py](https://docs.h5py.org/en/stable) to l
     myComplexArray = np.asarray(file['complex-double-array-dataset']).view(dtype=np.complex128) 
 ```
 Notice the cast to `dtype=np.complex128` which interprets each element of the array as two `doubles`, i.e. the real and imaginary parts are `2 * 64 = 128` bits.  
-
