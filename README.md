@@ -456,17 +456,21 @@ From the build directory, run the following in the command-line to uninstall:
 ```
 
 # To-do
+
+* For version 2.0.0
+   * Single header
+   * Compiled-library mode
+
+
 In no particular order
 
-* Expand documentation. Perhaps a doxygen/sphinx webpage
-* Expand testing for more edge-cases in
+* Continue adding documentation
+* Expand testing using catch2 for more edge-cases in
     * filesystem permissions
     * user-defined types
     * tables
 * Expose more of the C-API:
     * Support for packed user-defined types. Read more: [H5TPack](https://support.hdfgroup.org/HDF5/doc/RM/RM_H5T.html#Datatype-Pack)
-    * True support for parallel read/write with MPI
-* Support row-major <-> col-major transformation for types other than Eigen3 matrices and tensors. For instance,
-  when raw pointers are passed together with dimension initializer list {x,y,z..}. (Although, this can be done by wrapping 
-  the data in an Eigen Map object).
+    * More support for parallel read/write with MPI
+
   
