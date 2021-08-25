@@ -2,86 +2,78 @@ cmake_minimum_required(VERSION 3.15)
 
 if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
     include(cmake/InstallPackage.cmake)
-
-    # Download fmt
-    if (H5PP_ENABLE_FMT AND NOT fmt_FOUND)
-        # fmt is a dependency of spdlog
-        # We fetch it here to get the latest version and to make sure we use the
-        # compile library and avoid compile-time overhead in projects consuming h5pp.
-        # Note that spdlog may already have been found in if H5PP_PACKAGE_MANAGER=find|cmake
-        # then we can assume that spdlog already knows how and where to get fmt.
-        find_package(fmt 8.0.1 CONFIG
-                HINTS ${fmt_ROOT} ${H5PP_DEPS_INSTALL_DIR}
-                NO_DEFAULT_PATH)
-        if(NOT fmt_FOUND OR NOT TARGET fmt::fmt)
-            message(STATUS "fmt will be installed into ${H5PP_DEPS_INSTALL_DIR}")
-            install_package(fmt "${H5PP_DEPS_INSTALL_DIR}" "${FMT_CMAKE_OPTIONS}")
-            find_package(fmt 8.0.1 CONFIG
-                    HINTS ${fmt_ROOT} ${H5PP_DEPS_INSTALL_DIR}
-                    NO_DEFAULT_PATH
-                    REQUIRED)
-        endif()
-        if(TARGET fmt::fmt AND fmt_FOUND)
-            list(APPEND H5PP_TARGETS fmt::fmt)
-            target_link_libraries(deps INTERFACE fmt::fmt)
-        else()
-            message(FATAL_ERROR "fmt could not be downloaded and built from source")
-        endif()
+    if(H5PP_PREFIX_ADD_PKGNAME)
+        set(INSTALL_PREFIX_PKGNAME INSTALL_PREFIX_PKGNAME)
+    endif()
+    # Setup build/find options for dependencies
+    list(APPEND H5PP_spdlog_ARGS  "-DSPDLOG_FMT_EXTERNAL:BOOL=ON")
+    list(APPEND H5PP_spdlog_ARGS  "-Dfmt_ROOT:PATH=${PKG_INSTALL_DIR}")
+    list(APPEND H5PP_HDF5_ARGS    "-DHDF5_ENABLE_PARALLEL:BOOL=${H5PP_ENABLE_MPI}")
+    list(APPEND H5PP_HDF5_ARGS    "-DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON")
+    list(APPEND H5PP_HDF5_ARGS    "-DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON")
+    list(APPEND H5PP_HDF5_ARGS    "-DCMAKE_FIND_DEBUG_MODE:BOOL=ON")
+    set(HDF5_NO_DEFAULT_PATH ON)
+    if(BUILD_SHARED_LIBS)
+        set(HDF5_LINK_TYPE shared)
+    else()
+        set(HDF5_LINK_TYPE static)
+    endif()
+    if(H5PP_PREFIX_ADD_PKGNAME)
+        set(ZLIB_ROOT ${H5PP_DEPS_INSTALL_DIR}/zlib CACHE PATH "Default root path for ZLIB installed by h5pp" FORCE)
+        list(APPEND H5PP_HDF5_ARGS  "-DZLIB_ROOT:PATH=${H5PP_DEPS_INSTALL_DIR}/zlib")
+    else()
+        set(ZLIB_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for ZLIB installed by h5pp" FORCE)
+        list(APPEND H5PP_HDF5_ARGS  "-DZLIB_ROOT:PATH=${H5PP_DEPS_INSTALL_DIR}")
     endif()
 
+    mark_as_advanced(H5PP_spdlog_ARGS)
+    mark_as_advanced(H5PP_HDF5_ARGS)
+    mark_as_advanced(HDF5_NO_DEFAULT_PATH)
+    mark_as_advanced(HDF5_LINK_TYPE)
+    mark_as_advanced(ZLIB_ROOT)
 
-    # Download spdlog
-    if (H5PP_ENABLE_SPDLOG AND NOT TARGET spdlog::spdlog)
-        find_package(spdlog 1.9.2 CONFIG
-                HINTS ${spdlog_ROOT} ${H5PP_DEPS_INSTALL_DIR}
-                NO_DEFAULT_PATH)
-        if(NOT spdlog_FOUND OR NOT TARGET spdlog::spdlog)
-            message(STATUS "Spdlog will be installed into ${H5PP_DEPS_INSTALL_DIR}")
-            if(fmt_FOUND AND TARGET fmt::fmt)
-                get_target_property(FMT_INCLUDE_DIR  fmt::fmt INTERFACE_INCLUDE_DIRECTORIES)
-                get_filename_component(fmt_ROOT ${FMT_INCLUDE_DIR}/.. ABSOLUTE)
-                list(APPEND SPDLOG_CMAKE_OPTIONS  "-DSPDLOG_FMT_EXTERNAL:BOOL=ON")
-                list(APPEND SPDLOG_CMAKE_OPTIONS  "-Dfmt_ROOT:PATH=${fmt_ROOT}")
-            endif()
-            install_package(spdlog  "${H5PP_DEPS_INSTALL_DIR}" "${SPDLOG_CMAKE_OPTIONS}")
-            find_package(spdlog 1.9.2 CONFIG
-                    HINTS ${spdlog_ROOT} ${H5PP_DEPS_INSTALL_DIR}
-                    NO_DEFAULT_PATH
-                    REQUIRED)
-            message(STATUS "spdlog installed successfully")
-        endif()
-        if(spdlog_FOUND AND TARGET spdlog::spdlog)
-            list(APPEND H5PP_TARGETS spdlog::spdlog)
-            if(fmt_FOUND AND TARGET fmt::fmt)
-                target_link_libraries(spdlog::spdlog INTERFACE fmt::fmt)
-            endif()
-            target_link_libraries(deps INTERFACE spdlog::spdlog)
-        else()
-            message(FATAL_ERROR "Spdlog could not be downloaded and built from source")
-        endif()
-    endif()
 
-    # Download Eigen3
-    if (H5PP_ENABLE_EIGEN3 AND NOT TARGET Eigen3::Eigen)
-        find_package(Eigen3 3.4
-                HINTS ${Eigen3_ROOT} ${H5PP_DEPS_INSTALL_DIR}
-                NO_DEFAULT_PATH)
-        if(NOT TARGET Eigen3::Eigen)
-            message(STATUS "Eigen3 will be installed into ${H5PP_DEPS_INSTALL_DIR}")
-            install_package(Eigen3 "${H5PP_DEPS_INSTALL_DIR}" "")
-            find_package(Eigen3 3.4
-                    HINTS ${Eigen3_ROOT} ${H5PP_DEPS_INSTALL_DIR}
-                    NO_DEFAULT_PATH
-                    REQUIRED)
-            message(STATUS "Eigen3 installed successfully")
-        endif()
-        if(Eigen3_FOUND AND TARGET Eigen3::Eigen)
-            list(APPEND H5PP_TARGETS Eigen3::Eigen)
-            target_link_libraries(deps INTERFACE Eigen3::Eigen)
-        else()
-            message(FATAL_ERROR "Eigen3 could not be downloaded and built from source")
-        endif()
+    # Install all the depeendencies
+    if(H5PP_ENABLE_FMT)
+        install_package(fmt VERSION 8.0.1 ${INSTALL_PREFIX_PKGNAME})
     endif()
-    include(cmake/InstallHDF5.cmake)
-    install_hdf5()
+    if(H5PP_ENABLE_SPDLOG)
+        install_package(spdlog VERSION 1.9.2 DEPENDS fmt::fmt CMAKE_ARGS ${H5PP_spdlog_ARGS} ${INSTALL_PREFIX_PKGNAME})
+    endif()
+    if(H5PP_ENABLE_EIGEN3)
+        install_package(Eigen3 VERSION 3.4.0 TARGET_NAME Eigen3::Eigen ${INSTALL_PREFIX_PKGNAME})
+    endif()
+    install_package(szip
+            NAMES szip sz
+            FIND_NAME SZIP
+            COMPONENTS static shared
+            PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
+            ${INSTALL_PREFIX_PKGNAME}
+            )
+    install_package(zlib
+            MODULE
+            FIND_NAME ZLIB
+            LIBRARY_NAMES
+            z zlib zdll zlib1 zlibstatic # Release names
+            zd zlibd zdlld zlibd1 zlib1d zlibstaticd # Debug names
+            ${INSTALL_PREFIX_PKGNAME})
+
+    install_package(hdf5 VERSION 1.12
+            COMPONENTS C HL ${HDF5_LINK_TYPE}
+            FIND_NAME HDF5
+            TARGET_HINTS hdf5::hdf5_hl hdf5::hdf5_hl-${HDF5_LINK_TYPE} hdf5_hl hdf5_hl-${HDF5_LINK_TYPE}
+            CMAKE_ARGS ${H5PP_HDF5_ARGS}
+            ${INSTALL_PREFIX_PKGNAME})
+
+    list(APPEND H5PP_TARGETS ${fmt_TARGET} ${spdlog_TARGET} ${Eigen3_TARGET} ${hdf5_TARGET})
+
+    foreach(tgt ${H5PP_TARGETS})
+        if(NOT TARGET ${tgt})
+            message(FATAL_ERROR "Undefined target: ${tgt}")
+        endif()
+    endforeach()
+
+
+    # Link to h5pp dependencies
+    target_link_libraries(deps INTERFACE ${H5PP_TARGETS})
 endif()

@@ -28,12 +28,14 @@ if(NOT H5PP_DEPS_INSTALL_DIR)
     set(H5PP_DEPS_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}) # Install to the same location as h5pp by default
 endif()
 
+set(PKG_INSTALL_DIR_DEFAULT ${H5PP_DEPS_INSTALL_DIR} CACHE STRING "" FORCE )
+set(PKG_BUILD_DIR_DEFAULT   ${H5PP_DEPS_BUILD_DIR}   CACHE STRING "" FORCE )
+
 if(H5PP_PREFIX_ADD_PKGNAME)
     set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/h5pp CACHE STRING
             "The option H5PP_PREFIX_ADD_PKGNAME=ON sets the install directory: <CMAKE_INSTALL_PREFIX>/h5pp"
             FORCE)
 endif()
-
 
 if(WIN32)
     # On Windows it is standard practice to collect binaries into one directory.
