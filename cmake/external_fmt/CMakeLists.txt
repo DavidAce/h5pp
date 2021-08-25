@@ -6,8 +6,8 @@ endif()
 include(GNUInstallDirs)
 include(ExternalProject)
 ExternalProject_Add(external_fmt
-        URL         https://github.com/fmtlib/fmt/archive/7.1.3.tar.gz
-        URL_MD5     2522ec65070c0bda0ca288677ded2831 # 7.1.3
+        URL         https://github.com/fmtlib/fmt/archive/8.0.1.tar.gz
+        URL_MD5     7d5af964c6633ef90cd6a47be3afe6a0
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE

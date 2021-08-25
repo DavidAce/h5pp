@@ -5,8 +5,8 @@ if(INIT_CACHE_FILE)
 endif()
 include(ExternalProject)
 ExternalProject_Add(external_eigen3
-        URL      https://gitlab.com/libeigen/eigen/-/archive/3.4-rc1/eigen-3.4-rc1.tar.gz
-        URL_MD5  0839b9721e65d2328fb96eb4290d74cc
+        URL  https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
+        URL_MD5 4c527a9171d71a72a9d4186e65bea559
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE

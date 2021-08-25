@@ -10,13 +10,13 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
         # compile library and avoid compile-time overhead in projects consuming h5pp.
         # Note that spdlog may already have been found in if H5PP_PACKAGE_MANAGER=find|cmake
         # then we can assume that spdlog already knows how and where to get fmt.
-        find_package(fmt 7.1.3 CONFIG
+        find_package(fmt 8.0.1 CONFIG
                 HINTS ${fmt_ROOT} ${H5PP_DEPS_INSTALL_DIR}
                 NO_DEFAULT_PATH)
         if(NOT fmt_FOUND OR NOT TARGET fmt::fmt)
             message(STATUS "fmt will be installed into ${H5PP_DEPS_INSTALL_DIR}")
             install_package(fmt "${H5PP_DEPS_INSTALL_DIR}" "${FMT_CMAKE_OPTIONS}")
-            find_package(fmt 7.1.3 CONFIG
+            find_package(fmt 8.0.1 CONFIG
                     HINTS ${fmt_ROOT} ${H5PP_DEPS_INSTALL_DIR}
                     NO_DEFAULT_PATH
                     REQUIRED)
@@ -32,7 +32,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
 
     # Download spdlog
     if (H5PP_ENABLE_SPDLOG AND NOT TARGET spdlog::spdlog)
-        find_package(spdlog 1.8.5 CONFIG
+        find_package(spdlog 1.9.2 CONFIG
                 HINTS ${spdlog_ROOT} ${H5PP_DEPS_INSTALL_DIR}
                 NO_DEFAULT_PATH)
         if(NOT spdlog_FOUND OR NOT TARGET spdlog::spdlog)
@@ -44,7 +44,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
                 list(APPEND SPDLOG_CMAKE_OPTIONS  "-Dfmt_ROOT:PATH=${fmt_ROOT}")
             endif()
             install_package(spdlog  "${H5PP_DEPS_INSTALL_DIR}" "${SPDLOG_CMAKE_OPTIONS}")
-            find_package(spdlog 1.8.5 CONFIG
+            find_package(spdlog 1.9.2 CONFIG
                     HINTS ${spdlog_ROOT} ${H5PP_DEPS_INSTALL_DIR}
                     NO_DEFAULT_PATH
                     REQUIRED)
@@ -63,13 +63,13 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
 
     # Download Eigen3
     if (H5PP_ENABLE_EIGEN3 AND NOT TARGET Eigen3::Eigen)
-        find_package(Eigen3 3.3.7
+        find_package(Eigen3 3.4
                 HINTS ${Eigen3_ROOT} ${H5PP_DEPS_INSTALL_DIR}
                 NO_DEFAULT_PATH)
         if(NOT TARGET Eigen3::Eigen)
             message(STATUS "Eigen3 will be installed into ${H5PP_DEPS_INSTALL_DIR}")
             install_package(Eigen3 "${H5PP_DEPS_INSTALL_DIR}" "")
-            find_package(Eigen3 3.3.7
+            find_package(Eigen3 3.4
                     HINTS ${Eigen3_ROOT} ${H5PP_DEPS_INSTALL_DIR}
                     NO_DEFAULT_PATH
                     REQUIRED)
