@@ -1,0 +1,28 @@
+# Propagate options that were set when h5pp was installed
+option(H5PP_ENABLE_EIGEN3  "Enables Eigen3 linear algebra library"           @H5PP_ENABLE_EIGEN3@)
+option(H5PP_ENABLE_FMT     "Enables the {fmt} formatting library"            @H5PP_ENABLE_FMT@)
+option(H5PP_ENABLE_SPDLOG  "Enables Spdlog for logging h5pp internal info"   @H5PP_ENABLE_SPDLOG@)
+option(H5PP_ENABLE_MPI     "Enables use of MPI (work in progress)"           @H5PP_ENABLE_MPI@)
+if(H5PP_ENABLE_SPDLOG)
+    set(H5PP_ENABLE_FMT ON CACHE INTERNAL "H5PP_ENABLE_SPDLOG:ON implies H5PP_ENABLE_FMT:ON)" FORCE)
+endif()
+
+# Make an "enum" for valid package managers: find cmake fetch find-or-cmake conan
+set(H5PP_PACKAGE_MANAGERS_VALID none find fetch cmake cpm find-or-fetch find-or-cmake find-or-cpm conan)
+set(H5PP_PACKAGE_MANAGER @H5PP_PACKAGE_MANAGER@ CACHE STRING "Package manager for external dependencies")
+set_property(CACHE H5PP_PACKAGE_MANAGER PROPERTY STRINGS ${H5PP_PACKAGE_MANAGERS_VALID})
+if (NOT H5PP_PACKAGE_MANAGER IN_LIST H5PP_PACKAGE_MANAGERS_VALID)
+    message(FATAL_ERROR "H5PP_PACKAGE_MANAGER must be one of ${H5PP_PACKAGE_MANAGERS_VALID}")
+endif ()
+
+
+# Define search paths for find_dependency calls
+set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};@H5PP_DEPS_INSTALL_DIR@;@CMAKE_INSTALL_PREFIX@;@CMAKE_PREFIX_PATH@" CACHE INTERNAL "Paths for find_package lookup" FORCE)
+list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
+
+mark_as_advanced(H5PP_ENABLE_EIGEN3)
+mark_as_advanced(H5PP_ENABLE_FMT)
+mark_as_advanced(H5PP_ENABLE_SPDLOG)
+mark_as_advanced(H5PP_ENABLE_MPI)
+mark_as_advanced(H5PP_PACKAGE_MANAGER)
+mark_as_advanced(H5PP_PACKAGE_MANAGERS_VALID)

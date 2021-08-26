@@ -1,5 +1,14 @@
 @PACKAGE_INIT@
 
+
+if (H5PP_ENABLE_MPI AND NOT WIN32)
+    find_package(MPI)
+    if (TARGET MPI::MPI_CXX)
+        target_link_libraries(flags INTERFACE MPI::MPI_CXX)
+    endif ()
+endif ()
+
+
 if(H5PP_PACKAGE_MANAGER MATCHES "conan")
 
     include(${CMAKE_CURRENT_LIST_DIR}/conanbuildinfo.cmake)
@@ -7,64 +16,70 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
 
 elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
 
-    # Append search paths for find_package and find_library calls
-    list(APPEND CMAKE_PREFIX_PATH @PACKAGE_H5PP_DEPS_INSTALL_DIR@ @PACKAGE_CMAKE_INSTALL_PREFIX@)
-    list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
+    # Make sure we use the bundled find modules
+    list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_LIST_DIR}")
 
-    # Make sure we use h5pp find modules
-    list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
+    # Determine which dependencies to look for
+    get_target_property(H5PP_LINK_LIBRARIES h5pp::deps INTERFACE_LINK_LIBRARIES)
+
 
     include(CMakeFindDependencyMacro)
 
     # h5pp requires the filesystem header (and possibly stdc++fs library)
-    if(std::filesystem IN_LIST H5PP_ENABLED_TARGETS)
+    if(std::filesystem IN_LIST H5PP_LINK_LIBRARIES)
         find_package(Filesystem COMPONENTS Final Experimental REQUIRED)
         list(APPEND H5PP_FOUND_TARGETS std::filesystem)
-    endif()
-
-    if(ghc::filesystem IN_LIST H5PP_ENABLED_TARGETS)
+    elseif(ghc::filesystem IN_LIST H5PP_LINK_LIBRARIES)
         find_dependency(ghc_filesystem
                 PATH_SUFFIXES ghc_filesystem
                 REQUIRED)
     endif()
 
-    if (Eigen3::Eigen IN_LIST H5PP_ENABLED_TARGETS)
+    if (H5PP_ENABLE_MPI OR MPI::MPI_CXX IN_LIST H5PP_LINK_LIBRARIES)
+        if(NOT WIN32)
+            find_dependency(MPI REQUIRED)
+        endif()
+    endif ()
+
+    if (H5PP_ENABLE_EIGEN3 OR Eigen3::Eigen IN_LIST H5PP_LINK_LIBRARIES)
         find_dependency(Eigen3 3.3 REQUIRED)
         if(TARGET Eigen3 AND NOT TARGET Eigen3::Eigen)
-            add_library(fmt::fmt ALIAS fmt)
+            add_library(Eigen3::Eigen ALIAS Eigen3)
         endif()
     endif()
 
-    if (fmt::fmt IN_LIST H5PP_ENABLED_TARGETS)
+    if (H5PP_ENABLE_FMT OR fmt::fmt IN_LIST H5PP_LINK_LIBRARIES)
         find_dependency(fmt 6.1.2 REQUIRED)
         if(TARGET fmt AND NOT TARGET fmt::fmt)
             add_library(fmt::fmt ALIAS fmt)
         endif()
     endif()
 
-    if (spdlog::spdlog IN_LIST H5PP_ENABLED_TARGETS)
+    if (H5PP_ENABLE_SPDLOG OR spdlog::spdlog IN_LIST H5PP_LINK_LIBRARIES)
         find_dependency(spdlog 1.3.1 REQUIRED)
         if(TARGET spdlog AND NOT TARGET spdlog::spdlog)
             add_library(spdlog::spdlog ALIAS spdlog)
         endif()
     endif()
 
-    if (hdf5::all IN_LIST H5PP_ENABLED_TARGETS)
-        if(H5PP_PACKAGE_MANAGER MATCHES "cmake|fetch|cpm")
-            find_dependency(ZLIB)
-            find_dependency(SZIP
-                        CONFIG
-                        NAMES szip sz
-                        COMPONENTS static shared
-                        PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
-                        )
+    # HDF5 must be found either way
+    find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
+
+    foreach(tgt hdf5::hdf5_hl;hdf5::hdf5_hl-static;hdf5_hl;hdf5_hl-static)
+        if(TARGET ${tgt} AND ${tgt} IN_LIST H5PP_LINK_LIBRARIES)
+            set(HDF5_HL_TARGET ${tgt})
+            mark_as_advanced(HDF5_HL_TARGET)
+            break()
         endif()
-        find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
+    endforeach()
+    if(NOT HDF5_HL_TARGET)
+        message(FATAL_ERROR "HDF5 was found but the target name for the HDF5 HL component is not recognized")
     endif()
     if(NOT H5PP_FIND_QUIETLY)
-        message(STATUS "h5pp: Found: ${H5PP_ENABLED_TARGETS}")
+        message(STATUS "h5pp: Found: ${H5PP_LINK_LIBRARIES}")
     endif()
 else() # Probably H5PP_PACKAGE_MANAGER=none
     # h5pp requires the filesystem header (and possibly stdc++fs library)
     find_package(Filesystem COMPONENTS Final Experimental REQUIRED)
 endif()
+

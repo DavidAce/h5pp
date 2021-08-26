@@ -68,74 +68,31 @@ add_library(h5pp INTERFACE)
 add_library(headers INTERFACE)
 add_library(deps INTERFACE)
 add_library(flags INTERFACE)
-list(APPEND H5PP_TARGETS h5pp headers deps flags)
+
 
 
 ########################## IMPORTANT #############################
 ### Preempt Threads::Threads                                   ###
-### Threads::Threads is looked for in dependencies, so we make ###
-### it right before it's done wrong, i.e. by linking with      ###
-### "pthread" instead of "-lpthread". If this is undesirable   ###
-### you can preempt it yourself similarly.                     ###
-### The reason behind this is that downstream I often need to  ###
-### avoid a static linking segfault by using:                  ###
-###     -Wl, -whole-archive pthread -Wl, -no-whole-archive     ###
-### and cmake is unable to identify "-lpthread" as being the   ###
-### same as pthread --> multiple declaration errors. Note that ###
-### CMake changes the link flags into                          ###
-### -Wl, -whole-archive -lpthread -Wl, -no-whole-archive       ###
-### anyway. If an entire dependency tree had only "-lpthread"  ###
-### or only "pthread" this wouldn't be a problem, but          ###
-### unfortunately different dependencies do it differently.    ###
-### Since conan prefers "pthread", I'll do the same here.      ###
+### It's looked for in dependencies, so we make it right       ###
+### before it's done wrong, i.e. with pthread instead of       ###
+### -lpthread which causes link errors downstream with         ###
+###    -Wl,--whole-archive.... -Wl,--no-whole-archive          ###
 ##################################################################
 ### Read more about pthread segfault
 ### https://stackoverflow.com/questions/35116327/when-g-static-link-pthread-cause-segmentation-fault-why
-if (NOT TARGET Threads::Threads)
-    set(CMAKE_THREAD_PREFER_PTHREAD FALSE)
-    set(THREADS_PREFER_PTHREAD_FLAG FALSE)
-    find_package(Threads)
-    if (TARGET Threads::Threads AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        set_target_properties(Threads::Threads PROPERTIES INTERFACE_LINK_LIBRARIES pthread)
-        list(APPEND H5PP_TARGETS Threads::Threads)
-    endif ()
-endif ()
-
-
-##################################################################
-### Preempt Threads::Threads                                   ###
-### It's looked for in dependencies, so we make it right       ###
-### before it's done wrong, i.e. with pthread instead of       ###
-### -lpthread.                                                 ###
-### Otherwise, we get linker errors consuming h5pp             ###
-### Here we specify the linking twice                          ###
-### 1) As string to make sure -lpthread gets sandwiched by     ###
-###    -Wl,--whole-archive.... -Wl,--no-whole-archive          ###
-### 2) As usual to make sure that if somebody links            ###
-###    Threads::Threads, then any repeated pthread appended    ###
-###    to the end (the wrong order causes linking errors)      ###
-##################################################################
-if(NOT TARGET Threads::Threads)
-    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-    find_package(Threads)
-endif()
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads)
 
 
 if (H5PP_ENABLE_MPI AND NOT WIN32)
-    find_package(MPI)
-    if (TARGET MPI::MPI_CXX)
-        target_link_libraries(flags INTERFACE MPI::MPI_CXX)
-    endif ()
+    find_package(MPI REQUIRED)
+    target_link_libraries(deps INTERFACE MPI::MPI_CXX)
 endif ()
 
 # On some HPC clusters Clang needs path to gnu gcc toolchain because it's not in path
 if (GCC_TOOLCHAIN AND ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
 endif ()
-
-# Add def for package manager for use in installed h5ppConfig.cmake
-target_compile_definitions(deps INTERFACE H5PP_PACKAGE_MANAGER=${H5PP_PACKAGE_MANAGER})
-
 
 # Check  #include<optional> or #include<experimental/optional>
 include(cmake/CheckCXXOptional.cmake)
@@ -222,6 +179,11 @@ else()
             PATH_VARS H5PP_DEPS_INSTALL_DIR CMAKE_INSTALL_PREFIX
     )
 
+    configure_file(
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppVars.cmake.in
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppVars.cmake
+            @ONLY)
+
     write_basic_package_version_file(
             ${CMAKE_BINARY_DIR}/h5ppConfigVersion.cmake
             VERSION ${PROJECT_VERSION}
@@ -232,6 +194,7 @@ else()
     install(FILES
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfig.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppDeps.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/h5ppVars.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindEigen3.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findspdlog.cmake
