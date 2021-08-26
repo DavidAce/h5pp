@@ -67,9 +67,9 @@ jobs:
           -DH5PP_ENABLE_ASAN:BOOL=OFF                                 \
           -DH5PP_ENABLE_TESTS:BOOL=ON                                 \
           -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
-          -DH5PP_PRINT_INFO:BOOL=ON                                   \
           -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
            -G "Visual Studio 16 2019" -A x64                          \
+          --loglevel=DEBUG \
           ../../
 
       - name: Build

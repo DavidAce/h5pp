@@ -73,10 +73,10 @@ jobs:
           -DH5PP_ENABLE_ASAN:BOOL=OFF                                 \
           -DH5PP_ENABLE_TESTS:BOOL=ON                                 \
           -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
-          -DH5PP_PRINT_INFO:BOOL=ON                                   \
           -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
           -DCPM_SOURCE_CACHE=~/cpm-cache                              \
            -G "Unix Makefiles"                                        \
+          --loglevel=DEBUG \
           ../../
 
       - name: Build
