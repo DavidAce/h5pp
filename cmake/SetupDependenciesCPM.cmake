@@ -67,4 +67,6 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cpm")
     # hdf5 does not support add_subdirectory, so we roll or own installer
     include(cmake/InstallHDF5.cmake)
     install_hdf5()
+    target_link_libraries(deps INTERFACE ${hdf5_TARGET})
+
 endif()
