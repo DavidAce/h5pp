@@ -28,7 +28,7 @@ endfunction()
 function(install_package pkg_name)
     file(LOCK $ENV{HOME} DIRECTORY GUARD FUNCTION TIMEOUT 600)
 
-    set(options CONFIG MODULE CHECK DEBUG INSTALL_PREFIX_PKGNAME)
+    set(options CONFIG MODULE CHECK QUIET DEBUG INSTALL_PREFIX_PKGNAME)
     set(oneValueArgs VERSION INSTALL_DIR BUILD_DIR FIND_NAME TARGET_NAME)
     set(multiValueArgs HINTS PATHS PATH_SUFFIXES COMPONENTS DEPENDS CMAKE_ARGS LIBRARY_NAMES TARGET_HINTS)
     cmake_parse_arguments(PARSE_ARGV 1 PKG "${options}" "${oneValueArgs}" "${multiValueArgs}")
@@ -66,6 +66,9 @@ function(install_package pkg_name)
     endif()
     if(PKG_CONFIG)
         set(CONFIG CONFIG)
+    endif()
+    if(PKG_QUIET)
+        set(QUIET QUIET)
     endif()
     if(PKG_COMPONENTS)
         set(COMPONENTS COMPONENTS)
@@ -119,17 +122,17 @@ function(install_package pkg_name)
                 )
         if(${pkg_find_name}_LIBRARY)
             message(DEBUG "Found ${pkg_find_name}_LIBRARY: ${${pkg_find_name}_LIBRARY}")
-            find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS})
+            find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS} ${QUIET})
         endif()
     elseif(PKG_MODULE)
-        find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS})
+        find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS} ${QUIET})
     else()
         find_package(${pkg_find_name} ${PKG_VERSION}
                 HINTS ${PKG_HINTS}
                 PATHS ${PKG_PATHS}
                 PATH_SUFFIXES ${PKG_PATH_SUFFIXES}
                 ${COMPONENTS} ${PKG_COMPONENTS}
-                ${CONFIG}
+                ${CONFIG} ${QUIET}
                 # These lets us ignore system packages
                 NO_SYSTEM_ENVIRONMENT_PATH #5
                 NO_CMAKE_PACKAGE_REGISTRY #6
@@ -281,16 +284,17 @@ function(install_package pkg_name)
                 PATH_SUFFIXES ${pkg_name} ${pkg_find_name} lib ${pkg_find_name}/lib ${pkg_name}/lib
                 NO_DEFAULT_PATH REQUIRED
                 )
-        find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS} REQUIRED)
+        find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS} ${QUIET} REQUIRED)
     endif()
 
     if(PKG_MODULE)
-        find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS} REQUIRED)
+        find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS} ${QUIET} REQUIRED)
     else()
         find_package(${pkg_find_name} ${PKG_VERSION}
                 HINTS ${pkg_install_dir}
                 PATH_SUFFIXES ${PKG_PATH_SUFFIXES}
                 ${COMPONENTS} ${PKG_COMPONENTS}
+                ${CONFIG} ${QUIET}
                 NO_DEFAULT_PATH REQUIRED)
     endif()
 
