@@ -35,13 +35,12 @@ option(H5PP_ENABLE_COVERAGE             "Enable test coverage"                  
 option(H5PP_BUILD_EXAMPLES              "Builds examples"                                                         OFF)
 option(H5PP_BUILD_DOCS                  "Builds documentation (Requires doxygen, sphinx and breathe)"             OFF)
 option(H5PP_ENABLE_TESTS                "Enable testing"                                                          OFF)
-option(H5PP_PRINT_INFO                  "Print info during cmake configuration"                                   OFF)
 option(H5PP_IS_SUBPROJECT               "Use h5pp with add_subdirectory()"                                        OFF)
 option(H5PP_PREFIX_ADD_PKGNAME          "Install h5pp and dependencies into <CMAKE_INSTALL_PREFIX>/<PackageName>" OFF)
 option(CMAKE_POSITION_INDEPENDENT_CODE  "Use -fPIC when compiling shared libraries"                               ON)
 
 if(H5PP_ENABLE_SPDLOG)
-    set(H5PP_ENABLE_FMT ON CACHE INTERNAL "H5PP_ENABLE_SPDLOG:ON implies H5PP_ENABLE_FMT:ON)")
+    set(H5PP_ENABLE_FMT ON CACHE INTERNAL "H5PP_ENABLE_SPDLOG:ON implies H5PP_ENABLE_FMT:ON)" FORCE)
 endif()
 
 
@@ -125,7 +124,6 @@ include(cmake/SetupDependenciesCPM.cmake)
 include(cmake/SetupDependenciesConan.cmake)
 
 
-
 # Link all targets to one main h5pp target (the only one that users should need)
 # However, it's nice to have them separately also if need be.
 target_link_libraries(h5pp INTERFACE headers deps flags)
@@ -133,16 +131,15 @@ target_link_libraries(h5pp INTERFACE headers deps flags)
 
 
 # Print summary of CMake configuration
-if (H5PP_PRINT_INFO)
-    include(cmake/PrintTargetInfo.cmake)
-    include(cmake/getExpandedTarget.cmake)
-    expand_target_all_targets(h5pp H5PP_TARGETS_EXPANDED)
-    message(STATUS "| H5PP TARGET SUMMARY")
-    message(STATUS "|--------------------")
-    foreach(tgt ${H5PP_TARGETS_EXPANDED})
-        print_target_info(${tgt} "| ")
-    endforeach()
-endif()
+include(cmake/PrintTargetInfo.cmake)
+include(cmake/getExpandedTarget.cmake)
+expand_target_all_targets(h5pp H5PP_TARGETS_EXPANDED)
+message(DEBUG "| H5PP TARGET SUMMARY")
+message(DEBUG "|-----------------------------")
+foreach(tgt ${H5PP_TARGETS_EXPANDED})
+    print_target_info(${tgt} "| ")
+endforeach()
+mark_as_advanced(H5PP_TARGETS_EXPANDED)
 
 
 
@@ -176,7 +173,6 @@ else()
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5ppDeps.cmake.in
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppDeps.cmake
             INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
-            PATH_VARS H5PP_DEPS_INSTALL_DIR CMAKE_INSTALL_PREFIX
     )
 
     configure_file(

@@ -347,7 +347,6 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 | `H5PP_ENABLE_TESTS`               | `OFF`                     | Build tests (recommended!) |
 | `H5PP_BUILD_EXAMPLES`             | `OFF`                     | Build example programs |
 | `H5PP_IS_SUBPROJECT`              | `OFF`                     | Use `h5pp` with add_subdirectory(). Skips installation of targets if true. Automatic detection if not set |
-| `H5PP_PRINT_INFO`                 | `OFF`                     | Print extra CMake info about the host and generated targets during configure |
 | `CONAN_PREFIX`                    | None                      | conan install directory  |
 
 In addition, variables such as [`<PackageName>_ROOT`](https://cmake.org/cmake/help/latest/variable/PackageName_ROOT.html) and [`<PackageName>_DIR`](https://cmake.org/cmake/help/latest/command/find_package.html) can be set to help guide CMake's `find_package` calls:

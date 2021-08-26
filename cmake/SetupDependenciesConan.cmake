@@ -5,11 +5,10 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
     if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
         message(STATUS "Detected Conan build info: ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
         include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-        conan_basic_setup(TARGETS)
+        conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
         ##################################################################
         ### Link all the things!                                       ###
         ##################################################################
-        list(APPEND H5PP_TARGETS ${CONAN_TARGETS})
         target_link_libraries(deps INTERFACE ${CONAN_TARGETS})
     else()
 
@@ -58,11 +57,11 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
                 PROFILE_AUTO ALL
                 BUILD_TYPE ${CMAKE_BUILD_TYPE}
                 BASIC_SETUP CMAKE_TARGETS
+                NO_OUTPUT_DIRS
                 BUILD missing)
         ##################################################################
         ### Link all the things!                                       ###
         ##################################################################
-        list(APPEND H5PP_TARGETS ${CONAN_TARGETS})
         target_link_libraries(deps INTERFACE ${CONAN_TARGETS})
     endif()
 endif()
