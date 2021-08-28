@@ -378,7 +378,7 @@ namespace h5pp {
 
     /*!
      * \struct AttrInfo
-     * Struct with optional fields describing data on file, i.e. a dataset
+     * Struct with optional fields describing an attribute on file
      */
     struct AttrInfo {
         std::optional<hid::h5f>             h5File            = std::nullopt;
@@ -606,6 +606,60 @@ namespace h5pp {
             if(h5Rank) msg.append(h5pp::format(" rank [{}]", h5Rank.value()));
             if(h5Dims) msg.append(h5pp::format(" dims {}", h5Dims.value()));
             return msg;
+        }
+    };
+
+    struct LinkInfo {
+        std::optional<hid::h5f>       h5File     = std::nullopt;
+        std::optional<hid::h5o>       h5Link     = std::nullopt;
+        std::optional<std::string>    linkPath   = std::nullopt;
+        std::optional<bool>           linkExists = std::nullopt;
+        std::optional<H5O_hdr_info_t> h5HdrInfo  = std::nullopt; /*!< Information struct for object header metadata */
+        std::optional<hsize_t>        h5HdrByte  = std::nullopt; /*!< Total space for storing object header in file */
+        std::optional<H5O_type_t>     h5ObjType  = std::nullopt; /*!< Object type (dataset, group etc)              */
+        std::optional<unsigned>       refCount   = std::nullopt; /*!< Reference count of object                     */
+        std::optional<time_t>         atime      = std::nullopt; /*!< Access time                                   */
+        std::optional<time_t>         mtime      = std::nullopt; /*!< Modification time                             */
+        std::optional<time_t>         ctime      = std::nullopt; /*!< Change time                                   */
+        std::optional<time_t>         btime      = std::nullopt; /*!< Birth time                                    */
+        std::optional<hsize_t>        num_attrs  = std::nullopt; /*!< Number of attributes attached to object       */
+        [[nodiscard]] std::string     string(bool enable = true) const {
+            std::string msg;
+            if(not enable) return msg;
+            /* clang-format off */
+            if(refCount)  msg.append(h5pp::format(" | refCount {}", refCount.value()));
+            if(h5HdrByte) msg.append(h5pp::format(" | header bytes {}", h5HdrByte.value()));
+            if(linkPath)  msg.append(h5pp::format(" | link [{}]", linkPath.value()));
+            return msg;
+            /* clang-format on */
+        }
+
+        [[nodiscard]] hid::h5f getLocId() const {
+            if(h5File) return h5File.value();
+            if(h5Link) return H5Iget_file_id(h5Link.value());
+            h5pp::logger::log->debug("Header location id is not defined");
+            return static_cast<hid_t>(0);
+        }
+        [[nodiscard]] bool hasLocId() const { return h5File.has_value() or h5Link.has_value(); }
+
+        void assertReadReady() const {
+            std::string error_msg;
+            /* clang-format off */
+            if(not h5File)     error_msg.append("\t h5File\n");
+            if(not h5Link)     error_msg.append("\t h5Link\n");
+            if(not linkPath)   error_msg.append("\t linkPath\n");
+            if(not linkExists) error_msg.append("\t linkExists\n");
+            if(not h5HdrInfo)  error_msg.append("\t h5HdrInfo\n");
+            if(not h5HdrByte)  error_msg.append("\t h5HdrByte\n");
+            if(not h5ObjType)  error_msg.append("\t h5ObjType\n");
+            if(not refCount)   error_msg.append("\t refCount\n");
+            if(not atime)      error_msg.append("\t atime\n");
+            if(not mtime)      error_msg.append("\t mtime\n");
+            if(not ctime)      error_msg.append("\t ctime\n");
+            if(not btime)      error_msg.append("\t btime\n");
+            if(not num_attrs)  error_msg.append("\t num_attrs\n");
+            /* clang-format on */
+            if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot read from table: The following fields are not set:\n{}", error_msg));
         }
     };
 

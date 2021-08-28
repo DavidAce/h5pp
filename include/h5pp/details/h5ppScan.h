@@ -200,9 +200,9 @@ namespace h5pp::scan {
      * @param plists (optional) access property for the file. Used to determine link access property when searching for the dataset.
      */
     template<typename DataType, typename h5x>
-    [[nodiscard]] inline h5pp::DsetInfo inferDsetInfo(const h5x &          loc,
-                                                      const DataType &     data,
-                                                      const Options &      options = Options(),
+    [[nodiscard]] inline h5pp::DsetInfo inferDsetInfo(const h5x           &loc,
+                                                      const DataType      &data,
+                                                      const Options       &options = Options(),
                                                       const PropertyLists &plists  = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
                       "Template function [h5pp::scan::inferDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
@@ -431,10 +431,10 @@ namespace h5pp::scan {
      *  If the attribute exists properties are read from file.
      *  Otherwise properties are inferred from the given data */
     template<typename DataType, typename h5x>
-    inline void inferAttrInfo(AttrInfo &           info,
-                              const h5x &          loc,
-                              const DataType &     data,
-                              const Options &      options,
+    inline void inferAttrInfo(AttrInfo            &info,
+                              const h5x           &loc,
+                              const DataType      &data,
+                              const Options       &options,
                               const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
                       "Template function [h5pp::scan::readAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
@@ -659,7 +659,7 @@ namespace h5pp::scan {
             std::vector<size_t>      field_offsets(n_fields);
             std::vector<std::string> field_names_vec(n_fields);
             size_t                   record_bytes;
-            char **                  field_names = new char *[n_fields];
+            char                   **field_names = new char *[n_fields];
             for(size_t i = 0; i < n_fields; i++) field_names[i] = new char[255];
 
             // Read the data
@@ -710,9 +710,9 @@ namespace h5pp::scan {
     }
 
     template<typename h5x>
-    inline void makeTableInfo(h5pp::TableInfo &    info,
-                              const h5x &          loc,
-                              const Options &      options,
+    inline void makeTableInfo(h5pp::TableInfo     &info,
+                              const h5x           &loc,
+                              const Options       &options,
                               std::string_view     tableTitle,
                               const PropertyLists &plists = PropertyLists()) {
         readTableInfo(info, loc, options, plists);
@@ -803,6 +803,77 @@ namespace h5pp::scan {
         else if(not info.tableTitle)
             throw std::runtime_error(
                 h5pp::format("Could not infer table info for new table [{}]: No table title given", info.tablePath.value()));
+    }
+
+    /*! \brief Populates an AttrInfo object with properties read from file */
+    template<typename h5x>
+    inline void readLinkInfo(LinkInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+        static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
+                      "Template function [h5pp::scan::readLinkInfo(..., const h5x & loc, ...)] requires type h5x to be: "
+                      "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
+
+        if(not options.linkPath and not info.linkPath) throw std::runtime_error("Could not read attribute info: No link path was given");
+        if(not info.linkPath) info.linkPath = h5pp::util::safe_str(options.linkPath.value());
+
+        h5pp::logger::log->debug("Scanning header of object [{}]", info.linkPath.value());
+
+        // Copy the location
+        if(not info.h5File) {
+            if constexpr(std::is_same_v<h5x, hid::h5f>)
+                info.h5File = loc;
+            else
+                info.h5File = H5Iget_file_id(loc);
+        }
+
+        /* It's important to note the convention used here:
+         *      * linkPath is relative to loc.
+         *      * loc can be a file or group, but NOT a dataset.
+         *      * h5Link is the object on which the attribute is attached.
+         *      * h5Link is an h5o object which means that it can be a file, group or dataset.
+         *      * loc != h5Link.
+         *
+         */
+
+        if(not info.linkExists) info.linkExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.linkPath.value(), plists.linkAccess);
+
+        // If the link does not exist, there isn't much else to do so we return;
+        if(info.linkExists and not info.linkExists.value()) return;
+
+        // From here on the link exists
+        if(not info.h5Link) info.h5Link = h5pp::hdf5::openLink<hid::h5o>(loc, info.linkPath.value(), info.linkExists, plists.linkAccess);
+
+        H5O_hdr_info_t hInfo;
+        H5O_info_t     oInfo;
+#if defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
+        H5O_native_info_t nInfo;
+        H5Oget_native_info(info.h5Link.value(), &nInfo, H5O_INFO_ALL);
+        H5Oget_info(info.h5Link.value(), &oInfo, H5O_INFO_ALL);
+        hInfo = nInfo.hdr;
+#else
+        H5Oget_info(info.h5Link.value(), &oInfo);
+        hinfo = oInfo.hdr;
+#endif
+
+        info.h5HdrInfo = hInfo;
+        info.h5HdrByte = hInfo.space.total;
+        info.h5ObjType = oInfo.type;
+        info.refCount  = oInfo.rc;
+        info.atime     = oInfo.atime;
+        info.mtime     = oInfo.mtime;
+        info.ctime     = oInfo.ctime;
+        info.btime     = oInfo.btime;
+        info.num_attrs = oInfo.num_attrs;
+
+        h5pp::logger::log->trace("Scanned header metadata {}", info.string(h5pp::logger::logIf(0)));
+    }
+
+    /*! \brief Creates and returns a populated AttrInfo object with properties read from file */
+    template<typename h5x>
+    [[nodiscard]] inline h5pp::LinkInfo
+        readLinkInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
+        h5pp::LinkInfo info;
+        readLinkInfo(info, loc, options, plists);
+        return info;
     }
 
 }

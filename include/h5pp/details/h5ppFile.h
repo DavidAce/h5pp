@@ -1448,6 +1448,12 @@ namespace h5pp {
             return h5pp::hdf5::getTypeInfo_allAttributes(openFileHandle(), linkPath, std::nullopt, plists.linkAccess);
         }
 
+        [[nodiscard]] LinkInfo getLinkInfo(std::string_view linkPath) const {
+            Options options;
+            options.linkPath = h5pp::util::safe_str(linkPath);
+            return h5pp::scan::readLinkInfo(openFileHandle(), options, plists);
+        }
+
         template<typename InfoType>
         [[nodiscard]] InfoType getInfo(std::string_view linkPath) const {
             if constexpr(std::is_same_v<InfoType, DsetInfo>)
@@ -1456,10 +1462,13 @@ namespace h5pp {
                 return getTableInfo(linkPath);
             else if constexpr(std::is_same_v<InfoType, TypeInfo>)
                 return getTypeInfoDataset(linkPath);
+            else if constexpr(std::is_same_v<InfoType, LinkInfo>)
+                return getLinkInfo(linkPath);
             else
                 static_assert(h5pp::type::sfinae::invalid_type_v<InfoType>,
-                              "Template function [h5pp::File::getInfo<InfoType>(std::string_view linkPath)] "
-                              "requires InfoType: [h5pp::DsetInfo], [h5pp::TableInfo] or [h5pp::TypeInfo]");
+                              "Template function 'h5pp::File::getInfo<InfoType>(std::string_view linkPath)' "
+                              "requires template type 'InfoType' to be one of "
+                              "[h5pp::DsetInfo], [h5pp::TableInfo], [h5pp::TypeInfo] or [h5pp::LinkInfo]");
         }
 
         template<typename InfoType>
@@ -1470,8 +1479,9 @@ namespace h5pp {
                 return getTypeInfoAttribute(linkPath, attrName);
             else
                 static_assert(h5pp::type::sfinae::invalid_type_v<InfoType>,
-                              "Template function [h5pp::File::getInfo<InfoType>(std::string_view linkPath, std::string_view attrName)] "
-                              "requires InfoType: [h5pp::AttrInfo] or [h5pp::TypeInfo]");
+                              "Template function 'h5pp::File::getInfo<InfoType>(std::string_view linkPath, std::string_view attrName)' "
+                              "requires template type 'InfoType' to be either "
+                              "[h5pp::AttrInfo] or [h5pp::TypeInfo]");
         }
 
         [[nodiscard]] bool fileIsValid() const { return h5pp::hdf5::fileIsValid(filePath); }
