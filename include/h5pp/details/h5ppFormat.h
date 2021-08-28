@@ -13,6 +13,7 @@
     #if defined(SPDLOG_FMT_EXTERNAL)
         #include <fmt/ostream.h>
         #include <fmt/ranges.h>
+        #include <fmt/compile.h>
     #else
         #include <spdlog/fmt/bundled/ostream.h>
         #include <spdlog/fmt/bundled/ranges.h>
@@ -27,6 +28,7 @@
     #include <fmt/format.h>
     #include <fmt/ostream.h>
     #include <fmt/ranges.h>
+    #include <fmt/compile.h>
 #else
     // In this case there is no fmt so we make our own simple formatter
     #pragma message \
