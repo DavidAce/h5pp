@@ -4,7 +4,7 @@ from conans.errors import ConanInvalidConfiguration
 
 class h5ppConan(ConanFile):
     name = "h5pp"
-    version = "1.9.0"
+    version = "1.9.1"
     description = "A C++17 wrapper for HDF5 with focus on simplicity"
     homepage = "https://github.com/DavidAce/h5pp"
     author = "DavidAce <aceituno@kth.se>"
@@ -13,7 +13,7 @@ class h5ppConan(ConanFile):
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake", "cmake_find_package", "cmake_find_package_multi"
-    requires = "eigen/3.3.9", "spdlog/1.8.5", "hdf5/1.12.0"
+    requires = "eigen/3.4.0", "spdlog/1.9.2","fmt/8.0.1",  "hdf5/1.12.0"
     build_policy    = "missing"
     scm = {
         "type": "git",
@@ -26,7 +26,7 @@ class h5ppConan(ConanFile):
         'examples'  :[True,False],
         'verbose'   :[True,False],
         'pch'       :[True,False],
-        'ccache'   :[True,False],
+        'ccache'    :[True,False],
         }
 
     default_options = {
@@ -88,7 +88,7 @@ class h5ppConan(ConanFile):
         self.cpp_info.components["h5pp_headers"].names["cmake_find_package_multi"] = "headers"
         self.cpp_info.components["h5pp_deps"].names["cmake_find_package"] = "deps"
         self.cpp_info.components["h5pp_deps"].names["cmake_find_package_multi"] = "deps"
-        self.cpp_info.components["h5pp_deps"].requires = ["eigen::eigen", "spdlog::spdlog", "hdf5::hdf5"]
+        self.cpp_info.components["h5pp_deps"].requires = ["eigen::eigen", "fmt::fmt", "spdlog::spdlog", "hdf5::hdf5"]
         self.cpp_info.components["h5pp_flags"].names["cmake_find_package"] = "flags"
         self.cpp_info.components["h5pp_flags"].names["cmake_find_package_multi"] = "flags"
         if self.settings.compiler == "gcc" and tools.Version(self.settings.compiler.version) < "9":
