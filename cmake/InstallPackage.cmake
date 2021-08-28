@@ -50,10 +50,10 @@ function(install_package pkg_name)
     endif()
 
     # Further parsing / override defaults
-    set(pkg_build_dir ${PKG_BUILD_DIR}/${pkg_name})
-    set(pkg_install_dir   ${PKG_INSTALL_DIR})
+    set(pkg_build_dir   ${PKG_BUILD_DIR}/${pkg_name})
+    set(pkg_install_dir ${PKG_INSTALL_DIR})
     set(pkg_target_name ${pkg_name}::${pkg_name})
-    set(pkg_find_name ${pkg_name})
+    set(pkg_find_name   ${pkg_name})
     if(PKG_INSTALL_PREFIX_PKGNAME)
         set(pkg_install_dir ${pkg_install_dir}/${pkg_name})
     endif()
@@ -102,11 +102,11 @@ function(install_package pkg_name)
         message(FATAL_ERROR "Could not install ${pkg_name}: dependencies missing [${PKG_MISSING_TARGET}]")
     endif()
 
-    # We set variables here that allows us to find packages with CMAKE_PREFIX_PATH
-    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${pkg_install_dir}" CACHE INTERNAL "Paths for find_package lookup")
+    # Append to CMAKE_PREFIX_PATH so we can find the packages later
+    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${pkg_install_dir};${PKG_INSTALL_DIR}" CACHE INTERNAL "Paths for find_package lookup" FORCE)
     list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
 
-    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" CACHE STRING "" FORCE)
+    # Try finding config files before modules
     set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
 
     if(PKG_LIBRARY_NAMES)
