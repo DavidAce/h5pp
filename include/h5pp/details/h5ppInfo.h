@@ -659,7 +659,7 @@ namespace h5pp {
             if(not btime)      error_msg.append("\t btime\n");
             if(not num_attrs)  error_msg.append("\t num_attrs\n");
             /* clang-format on */
-            if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot read from table: The following fields are not set:\n{}", error_msg));
+            if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot read from LinkInfo: The following fields are not set:\n{}", error_msg));
         }
     };
 
