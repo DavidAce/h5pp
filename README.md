@@ -273,15 +273,29 @@ is a non-trivial step, see [linking](#linking) below.
 
 #### Option 2: Install with Conan (Recommended)
 Make sure to install and configure Conan first. You may need to add the line `compiler.cppstd=17` under `[settings]` in your conan profile `~/.conan/profile/default`.
-Then run the following command:
+Add ConanCenter to your list of conan remotes, e.g. 
+
+`> conan remote add conancenter https://center.conan.io`
+
+Then run the following command to install from ConanCenter:
 
 ```
-$ conan install h5pp/1.9.0@ --build=missing
+> conan install h5pp/1.9.0@ --build=missing
 ```
 
 The flag `--build=missing` lets conan install dependencies: `HDF5`, `Eigen` and `fmt` and `spdlog`.
 
-After this step, use `h5pp` like any other conan package. 
+Note that you can also use the file `conanfile.py` bundled with h5pp to create and install directly after cloning
+this git repo
+
+```
+> git clone https://github.com/DavidAce/h5pp.git
+> cd h5pp
+> conan create . davidace/stable --build=missing
+```
+
+
+After installation, use `h5pp` like any other conan package. 
 For more information refer to the [conan docs](https://docs.conan.io/en/latest/getting_started.html) or have a look at [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart).
 
 
