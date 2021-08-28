@@ -851,7 +851,7 @@ namespace h5pp::scan {
         hInfo = nInfo.hdr;
 #else
         H5Oget_info(info.h5Link.value(), &oInfo);
-        hinfo = oInfo.hdr;
+        hInfo = oInfo.hdr;
 #endif
 
         info.h5HdrInfo = hInfo;
