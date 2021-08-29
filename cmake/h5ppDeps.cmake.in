@@ -62,8 +62,26 @@ elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
         endif()
     endif()
 
-    # HDF5 must be found either way
-    find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
+
+
+    # HDF5 may depend on ZLIB and SZIP.
+    # If HDF5 was installed by h5pp, then ZLIB and SZIP should be found here,
+    # otherwise, if H5PP_PACKAGE_MANAGER==find, the user is ultimately responsible
+    # for finding these dependencies if needed, so we don't set a hard requirement here.
+
+    find_dependency(ZLIB)
+    find_dependency(SZIP
+                CONFIG
+                NAMES szip sz
+                COMPONENTS static shared
+                PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
+                )
+
+
+    # HDF5 must be found either way, so set it to required
+    find_dependency(HDF5 1.8
+                    COMPONENTS C HL
+                    REQUIRED)
 
     foreach(tgt hdf5::hdf5_hl;hdf5::hdf5_hl-static;hdf5_hl;hdf5_hl-static)
         if(TARGET ${tgt} AND ${tgt} IN_LIST H5PP_LINK_LIBRARIES)
