@@ -97,12 +97,17 @@ namespace h5pp {
          * - The file permission is set when initializing h5pp::File.
          * - Use `h5pp::setKeepFileOpened()` to keep a cached handle. Use `h5pp::setKeepFileClosed()` to close the cached handle.
          */
-        [[nodiscard]] hid::h5f openFileHandle() const {
+        [[nodiscard]] hid::h5f openFileHandle(std::optional<H5F_close_degree_t> closeDegree = std::nullopt) const {
             h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
             if(fileHandle) return fileHandle.value();
+            // Give the option to override the close degree
+            // When a file handle is closed, the default in h5pp is to first close all associated id's, and then close the file (H5F_CLOSE_STRONG)
+            // Setting H5F_CLOSE_WEAK keeps the file handle alive until associated id's are closed.
+            hid::h5p fileAccess = plists.fileAccess;
+            if(closeDegree) H5Pset_fclose_degree(fileAccess, closeDegree.value());
             if(permission == h5pp::FilePermission::READONLY) {
                 h5pp::logger::log->trace("Opening file in READONLY mode");
-                hid_t fid = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
+                hid_t fid = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, fileAccess);
                 if(fid < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
                     throw std::runtime_error(h5pp::format("Failed to open file in read-only mode [{}]", filePath.string()));
@@ -110,7 +115,7 @@ namespace h5pp {
                     return fid;
             } else {
                 h5pp::logger::log->trace("Opening file in READWRITE mode");
-                hid_t fid = H5Fopen(filePath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
+                hid_t fid = H5Fopen(filePath.string().c_str(), H5F_ACC_RDWR, fileAccess);
                 if(fid < 0) {
                     H5Eprint(H5E_DEFAULT, stderr);
                     throw std::runtime_error(h5pp::format("Failed to open file in read-write mode [{}]", filePath.string()));
@@ -1380,21 +1385,21 @@ namespace h5pp {
          */
 
         [[nodiscard]] int getDatasetRank(std::string_view datasetPath) const {
-            auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(), datasetPath);
+            auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(H5F_CLOSE_WEAK), datasetPath);
             return h5pp::hdf5::getRank(dataset);
         }
 
         [[nodiscard]] std::vector<hsize_t> getDatasetDimensions(std::string_view datasetPath) const {
-            auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(), datasetPath);
+            auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(H5F_CLOSE_WEAK), datasetPath);
             return h5pp::hdf5::getDimensions(dataset);
         }
         [[nodiscard]] std::optional<std::vector<hsize_t>> getDatasetMaxDimensions(std::string_view datasetPath) const {
-            auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(), datasetPath);
+            auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(H5F_CLOSE_WEAK), datasetPath);
             return h5pp::hdf5::getMaxDimensions(dataset);
         }
 
         [[nodiscard]] std::optional<std::vector<hsize_t>> getDatasetChunkDimensions(std::string_view datasetPath) const {
-            auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(), datasetPath);
+            auto dataset = h5pp::hdf5::openLink<hid::h5d>(openFileHandle(H5F_CLOSE_WEAK), datasetPath);
             return h5pp::hdf5::getChunkDimensions(dataset);
         }
 
