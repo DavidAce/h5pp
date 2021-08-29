@@ -1,4 +1,4 @@
-name: Ubuntu 16.04
+name: Ubuntu 18.04
 # INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
 
 on:
@@ -11,7 +11,7 @@ on:
 jobs:
   ci:
     name: ${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
     strategy:
