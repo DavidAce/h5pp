@@ -27,6 +27,6 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
     install_hdf5()
 
     # Link to h5pp dependencies
-    target_link_libraries(deps INTERFACE ${fmt_TARGET} ${spdlog_TARGET} ${Eigen3_TARGET} ${hdf5_TARGET})
+    target_link_libraries(deps INTERFACE ${PKG_fmt_TARGET} ${PKG_spdlog_TARGET} ${PKG_Eigen3_TARGET} ${PKG_hdf5_TARGET})
 
 endif()
