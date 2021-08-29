@@ -29,7 +29,23 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find")
     if (NOT HDF5_FOUND)
         find_package(HDF5 1.8 COMPONENTS C HL ${REQUIRED})
         if(HDF5_FOUND)
-            foreach(tgt hdf5::hdf5_hl;hdf5::hdf5_hl-static;hdf5_hl;hdf5_hl-static)
+            if(BUILD_SHARED_LIBS)
+                set(HDF5_LINK_TYPE shared)
+            else()
+                set(HDF5_LINK_TYPE static)
+            endif()
+            list(APPEND HDF5_HL_TARGET_CANDIDATES
+                    hdf5::hdf5_hl
+                    hdf5::hdf5_hl-${HDF5_LINK_TYPE}
+                    hdf5_hl
+                    hdf5_hl-${HDF5_LINK_TYPE}
+                    hdf5::hdf5_hl-static
+                    hdf5_hl-static
+                    hdf5::hdf5_hl-shared
+                    hdf5_hl-shared
+                    )
+            mark_as_advanced(HDF5_HL_TARGET_CANDIDATES)
+            foreach(tgt ${HDF5_HL_TARGET_CANDIDATES})
                 if(TARGET ${tgt})
                     set(hdf5_TARGET ${tgt})
                     mark_as_advanced(hdf5_TARGET)

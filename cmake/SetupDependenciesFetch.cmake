@@ -47,5 +47,5 @@ if(H5PP_PACKAGE_MANAGER MATCHES "fetch")
 
     include(cmake/InstallHDF5.cmake)
     install_hdf5()
-    target_link_libraries(deps INTERFACE ${hdf5_TARGET})
+    target_link_libraries(deps INTERFACE ${PKG_hdf5_TARGET})
 endif()
