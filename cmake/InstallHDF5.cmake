@@ -40,6 +40,7 @@ function(install_hdf5)
             COMPONENTS C HL ${HDF5_LINK_TYPE}
             FIND_NAME HDF5
             TARGET_HINTS hdf5::hdf5_hl hdf5::hdf5_hl-${HDF5_LINK_TYPE} hdf5_hl hdf5_hl-${HDF5_LINK_TYPE}
+            PATH_SUFFIXES cmake/hdf5 # Needed in vs2019 for some reason
             ${INSTALL_PREFIX_PKGNAME}
             CMAKE_ARGS
             -DHDF5_ENABLE_PARALLEL:BOOL=${H5PP_ENABLE_MPI}
