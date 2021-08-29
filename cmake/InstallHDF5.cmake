@@ -12,7 +12,7 @@ function(install_hdf5)
         set(HDF5_ROOT ${H5PP_DEPS_INSTALL_DIR}/hdf5 CACHE PATH "Default root path for HDF5 installed by h5pp" FORCE)
         set(ZLIB_ROOT ${H5PP_DEPS_INSTALL_DIR}/zlib CACHE PATH "Default root path for ZLIB installed by h5pp" FORCE)
     else()
-        set(HDF5_ROOT ${H5PP_DEPS_INSTALL_DIR}/hdf5 CACHE PATH "Default root path for HDF5 installed by h5pp" FORCE)
+        set(HDF5_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for HDF5 installed by h5pp" FORCE)
         set(ZLIB_ROOT ${H5PP_DEPS_INSTALL_DIR} CACHE PATH "Default root path for ZLIB installed by h5pp" FORCE)
     endif()
 

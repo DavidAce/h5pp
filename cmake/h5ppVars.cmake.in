@@ -1,8 +1,10 @@
 # Propagate options that were set when h5pp was installed
-option(H5PP_ENABLE_EIGEN3  "Enables Eigen3 linear algebra library"           @H5PP_ENABLE_EIGEN3@)
-option(H5PP_ENABLE_FMT     "Enables the {fmt} formatting library"            @H5PP_ENABLE_FMT@)
-option(H5PP_ENABLE_SPDLOG  "Enables Spdlog for logging h5pp internal info"   @H5PP_ENABLE_SPDLOG@)
-option(H5PP_ENABLE_MPI     "Enables use of MPI (work in progress)"           @H5PP_ENABLE_MPI@)
+option(H5PP_ENABLE_EIGEN3      "Enables Eigen3 linear algebra library"                                   @H5PP_ENABLE_EIGEN3@)
+option(H5PP_ENABLE_FMT         "Enables the {fmt} formatting library"                                    @H5PP_ENABLE_FMT@)
+option(H5PP_ENABLE_SPDLOG      "Enables Spdlog for logging h5pp internal info"                           @H5PP_ENABLE_SPDLOG@)
+option(H5PP_ENABLE_MPI         "Enables use of MPI (work in progress)"                                   @H5PP_ENABLE_MPI@)
+option(H5PP_PREFIX_ADD_PKGNAME "Install h5pp and dependencies into <CMAKE_INSTALL_PREFIX>/<PackageName>" @H5PP_PREFIX_ADD_PKGNAME@)
+
 if(H5PP_ENABLE_SPDLOG)
     set(H5PP_ENABLE_FMT ON CACHE INTERNAL "H5PP_ENABLE_SPDLOG:ON implies H5PP_ENABLE_FMT:ON)" FORCE)
 endif()
@@ -20,9 +22,47 @@ endif ()
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};@H5PP_DEPS_INSTALL_DIR@;@CMAKE_INSTALL_PREFIX@;@CMAKE_PREFIX_PATH@" CACHE INTERNAL "Paths for find_package lookup" FORCE)
 list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
 
+if(BUILD_SHARED_LIBS AND NOT DEFINED HDF5_LINK_TYPE)
+    set(HDF5_LINK_TYPE shared)
+else()
+    set(HDF5_LINK_TYPE static)
+endif()
+
+list(APPEND HDF5_HL_TARGET_CANDIDATES
+         hdf5::hdf5_hl
+         hdf5::hdf5_hl-${HDF5_LINK_TYPE}
+         hdf5_hl
+         hdf5_hl-${HDF5_LINK_TYPE}
+         hdf5::hdf5_hl-static
+         hdf5_hl-static
+         hdf5::hdf5_hl-shared
+         hdf5_hl-shared
+)
+
+if(H5PP_PACKAGE_MANAGER MATCHES "cmake|cpm|fetch" AND NOT DEFINED HDF5_ROOT)
+    if(H5PP_PREFIX_ADD_PKGNAME)
+        set(HDF5_ROOT ${H5PP_DEPS_INSTALL_DIR}/hdf5)
+    else()
+        set(HDF5_ROOT ${H5PP_DEPS_INSTALL_DIR})
+    endif()
+endif()
+
+if(H5PP_PACKAGE_MANAGER MATCHES "cmake|cpm|fetch" AND NOT DEFINED ZLIB_ROOT)
+    if(H5PP_PREFIX_ADD_PKGNAME)
+        set(ZLIB_ROOT ${H5PP_DEPS_INSTALL_DIR}/zlib)
+    else()
+        set(ZLIB_ROOT ${H5PP_DEPS_INSTALL_DIR})
+    endif()
+endif()
+
+
 mark_as_advanced(H5PP_ENABLE_EIGEN3)
 mark_as_advanced(H5PP_ENABLE_FMT)
 mark_as_advanced(H5PP_ENABLE_SPDLOG)
 mark_as_advanced(H5PP_ENABLE_MPI)
 mark_as_advanced(H5PP_PACKAGE_MANAGER)
 mark_as_advanced(H5PP_PACKAGE_MANAGERS_VALID)
+mark_as_advanced(HDF5_LINK_TYPE)
+mark_as_advanced(HDF5_HL_TARGET_CANDIDATES)
+mark_as_advanced(HDF5_ROOT)
+mark_as_advanced(ZLIB_ROOT)

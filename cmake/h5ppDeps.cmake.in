@@ -62,12 +62,27 @@ elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
         endif()
     endif()
 
+    # HDF5 must be found either way, so set it to required
+    find_dependency(HDF5 1.8
+                    COMPONENTS C HL
+                    REQUIRED)
 
+    foreach(tgt ${HDF5_HL_TARGET_CANDIDATES})
+        if(TARGET ${tgt} AND ${tgt} IN_LIST H5PP_LINK_LIBRARIES)
+            set(HDF5_HL_TARGET ${tgt})
+            mark_as_advanced(HDF5_HL_TARGET)
+            break()
+        endif()
+    endforeach()
+    if(NOT HDF5_HL_TARGET)
+        message(FATAL_ERROR "HDF5 was found but the target name for the HDF5 HL component is not recognized")
+    endif()
 
     # HDF5 may depend on ZLIB and SZIP.
     # If HDF5 was installed by h5pp, then ZLIB and SZIP should be found here,
     # otherwise, if H5PP_PACKAGE_MANAGER==find, the user is ultimately responsible
     # for finding these dependencies if needed, so we don't set a hard requirement here.
+
 
     find_dependency(ZLIB)
     find_dependency(SZIP
@@ -78,21 +93,7 @@ elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
                 )
 
 
-    # HDF5 must be found either way, so set it to required
-    find_dependency(HDF5 1.8
-                    COMPONENTS C HL
-                    REQUIRED)
 
-    foreach(tgt hdf5::hdf5_hl;hdf5::hdf5_hl-static;hdf5_hl;hdf5_hl-static)
-        if(TARGET ${tgt} AND ${tgt} IN_LIST H5PP_LINK_LIBRARIES)
-            set(HDF5_HL_TARGET ${tgt})
-            mark_as_advanced(HDF5_HL_TARGET)
-            break()
-        endif()
-    endforeach()
-    if(NOT HDF5_HL_TARGET)
-        message(FATAL_ERROR "HDF5 was found but the target name for the HDF5 HL component is not recognized")
-    endif()
     if(NOT H5PP_FIND_QUIETLY)
         message(STATUS "h5pp: Found: ${H5PP_LINK_LIBRARIES}")
     endif()
