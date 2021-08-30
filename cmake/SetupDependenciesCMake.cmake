@@ -16,7 +16,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
                         DEPENDS fmt::fmt
                         CMAKE_ARGS
                             -DSPDLOG_FMT_EXTERNAL:BOOL=ON
-                            -Dfmt_ROOT:PATH=${PKG_INSTALL_DIR})
+                            -Dfmt_ROOT:PATH=${H5PP_DEPS_INSTALL_DIR})
     endif()
     if(H5PP_ENABLE_EIGEN3)
         install_package(Eigen3 VERSION 3.4.0 TARGET_NAME Eigen3::Eigen ${INSTALL_PREFIX_PKGNAME})
