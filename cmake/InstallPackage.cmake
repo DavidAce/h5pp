@@ -125,22 +125,26 @@ function(install_package pkg_name)
             find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS} ${QUIET})
         endif()
     elseif(PKG_MODULE)
-        find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS} ${QUIET})
+        if(NOT ${pkg_find_name}_FOUND)
+            find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS} ${QUIET})
+        endif()
     else()
-        find_package(${pkg_find_name} ${PKG_VERSION}
-                HINTS ${PKG_HINTS}
-                PATHS ${PKG_PATHS}
-                PATH_SUFFIXES ${PKG_PATH_SUFFIXES}
-                ${COMPONENTS} ${PKG_COMPONENTS}
-                ${CONFIG} ${QUIET}
-                # These lets us ignore system packages
-                NO_SYSTEM_ENVIRONMENT_PATH #5
-                NO_CMAKE_PACKAGE_REGISTRY #6
-                NO_CMAKE_SYSTEM_PATH #7
-                NO_CMAKE_SYSTEM_PACKAGE_REGISTRY #8
-                )
+        if(NOT ${pkg_find_name}_FOUND)
+            find_package(${pkg_find_name} ${PKG_VERSION}
+                    HINTS ${PKG_HINTS}
+                    PATHS ${PKG_PATHS}
+                    PATH_SUFFIXES ${PKG_PATH_SUFFIXES}
+                    ${COMPONENTS} ${PKG_COMPONENTS}
+                    ${CONFIG} ${QUIET}
+                    # These lets us ignore system packages
+                    NO_SYSTEM_ENVIRONMENT_PATH #5
+                    NO_CMAKE_PACKAGE_REGISTRY #6
+                    NO_CMAKE_SYSTEM_PATH #7
+                    NO_CMAKE_SYSTEM_PACKAGE_REGISTRY #8
+                    )
+        endif()
     endif()
-    # Check if the package was found
+    # Set _FOUND variables for alternate names and components
     if(NOT ${pkg_name}_FOUND)
         if(${pkg_find_name}_FOUND)
             set(${pkg_name}_FOUND TRUE)
@@ -154,7 +158,7 @@ function(install_package pkg_name)
             endforeach()
         endif()
     endif()
-
+    # Check if the package was found
     if(${pkg_name}_FOUND)
         if(PKG_DEPENDS)
             target_link_libraries(${pkg_target_name} INTERFACE ${PKG_DEPENDS})
