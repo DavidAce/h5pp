@@ -1,6 +1,19 @@
 cmake_minimum_required(VERSION 3.15)
 
+macro(unset_NOT_FOUND pkg)
+    if(NOT ${pkg}_FOUND)
+        unset(${pkg}_FOUND)
+        unset(${pkg}_FOUND CACHE)
+    endif()
+endmacro()
+
+
 if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
+    unset_NOT_FOUND(fmt)
+    unset_NOT_FOUND(spdlog)
+    unset_NOT_FOUND(Eigen3)
+    unset_NOT_FOUND(HDF5)
+
     include(cmake/InstallPackage.cmake)
     if(H5PP_PREFIX_ADD_PKGNAME)
         set(INSTALL_PREFIX_PKGNAME INSTALL_PREFIX_PKGNAME)

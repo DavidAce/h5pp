@@ -17,8 +17,8 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find")
             target_link_libraries(deps INTERFACE fmt::fmt)
         endif()
     endif()
-    if(H5PP_ENABLE_SPDLOG AND spdlog_FOUND)
-        find_package(spdlog 1.3.1 ${REQUIRED})
+    if(H5PP_ENABLE_SPDLOG AND NOT spdlog_FOUND)
+        find_package(spdlog 1.5.0 ${REQUIRED})
         if(spdlog_FOUND AND TARGET spdlog AND NOT TARGET spdlog::spdlog)
             add_library(spdlog::spdlog ALIAS spdlog)
         endif()
@@ -43,6 +43,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find")
                     hdf5_hl-static
                     hdf5::hdf5_hl-shared
                     hdf5_hl-shared
+                    HDF5::HDF5
                     )
             mark_as_advanced(HDF5_HL_TARGET_CANDIDATES)
             foreach(tgt ${HDF5_HL_TARGET_CANDIDATES})
@@ -58,5 +59,4 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find")
             target_link_libraries(deps INTERFACE ${hdf5_TARGET})
         endif()
     endif()
-
 endif()

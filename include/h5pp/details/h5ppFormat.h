@@ -17,6 +17,7 @@
     #else
         #include <spdlog/fmt/bundled/ostream.h>
         #include <spdlog/fmt/bundled/ranges.h>
+        #include <spdlog/fmt/bundled/compile.h>
     #endif
 #elif __has_include(<fmt/core.h>) &&  __has_include(<fmt/format.h>) && __has_include(<fmt/ranges.h>) &&  __has_include(<fmt/ostream.h>)
     #if defined(SPDLOG_HEADER_ONLY)

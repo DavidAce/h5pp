@@ -606,18 +606,23 @@ function(find_hdf5)
     set(HDF5_INCLUDE_DIR        ${HDF5_INCLUDE_DIR}         PARENT_SCOPE)
     set(HDF5_TARGETS            ${HDF5_TARGETS}             PARENT_SCOPE)
     set(HDF5_VERSION            ${HDF5_VERSION}             PARENT_SCOPE)
+
+    include(FindPackageHandleStandardArgs)
+    find_package_handle_standard_args(HDF5
+            FOUND_VAR HDF5_FOUND
+            REQUIRED_VARS HDF5_INCLUDE_DIR HDF5_TARGETS
+            VERSION_VAR HDF5_VERSION
+            HANDLE_COMPONENTS
+            FAIL_MESSAGE "Failed to find HDF5"
+            )
 endfunction()
 
-cmake_policy(SET CMP0074 NEW)
+
+#if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+#    set(CMAKE_MODULE_PATH "") # Modify this variable locally to make sure we use CMake's inbuilt FindHDF5.cmake module
+#    enable_language(C)
+#    find_package(HDF5) # Other arguments have already been parsed and are forwarded to this find_package call
+#else()
+#endif()
+
 find_hdf5()
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(HDF5
-        FOUND_VAR HDF5_FOUND
-        REQUIRED_VARS HDF5_INCLUDE_DIR HDF5_TARGETS
-        VERSION_VAR HDF5_VERSION
-        HANDLE_COMPONENTS
-        FAIL_MESSAGE "Failed to find HDF5"
-        )
-if(HDF5_FIND_REQUIRED AND NOT HDF5_FOUND)
-    message(FATAL_ERROR "Could not find HDF5")
-endif()

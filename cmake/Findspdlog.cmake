@@ -37,20 +37,21 @@ if(NOT spdlog_FIND_VERSION)
         set(spdlog_FIND_VERSION_MAJOR 1)
     endif()
     if(NOT spdlog_FIND_VERSION_MINOR)
-        set(spdlog_FIND_VERSION_MINOR 1)
+        set(spdlog_FIND_VERSION_MINOR 3)
     endif()
     if(NOT spdlog_FIND_VERSION_PATCH)
-        set(spdlog_FIND_VERSION_PATCH 0)
+        set(spdlog_FIND_VERSION_PATCH 1)
     endif()
     set(spdlog_FIND_VERSION "${spdlog_FIND_VERSION_MAJOR}.${spdlog_FIND_VERSION_MINOR}.${spdlog_FIND_VERSION_PATCH}")
 endif()
-
 
 function(spdlog_check_version_include incdir)
     if (IS_DIRECTORY "${incdir}")
         set(include ${incdir})
     elseif(IS_DIRECTORY "${${incdir}}")
         set(include ${${incdir}})
+    else()
+        return()
     endif()
     if(EXISTS ${include}/spdlog/version.h)
         file(READ "${include}/spdlog/version.h" _spdlog_version_header)
@@ -64,12 +65,15 @@ function(spdlog_check_version_include incdir)
         set(SPDLOG_VERSION ${SPDLOG_WORLD_VERSION}.${SPDLOG_MAJOR_VERSION}.${SPDLOG_MINOR_VERSION})
     endif()
 
-
-    if(SPDLOG_VERSION VERSION_GREATER_EQUAL spdlog_FIND_VERSION)
-        set(SPDLOG_VERSION ${SPDLOG_VERSION} PARENT_SCOPE)
-        set(SPDLOG_VERSION_OK TRUE PARENT_SCOPE)
+    if(DEFINED spdlog_FIND_VERSION)
+        if(SPDLOG_VERSION VERSION_GREATER_EQUAL spdlog_FIND_VERSION)
+            set(SPDLOG_VERSION ${SPDLOG_VERSION} PARENT_SCOPE)
+            set(SPDLOG_VERSION_OK TRUE PARENT_SCOPE)
+        else()
+            set(SPDLOG_VERSION_OK FALSE PARENT_SCOPE)
+        endif()
     else()
-        set(SPDLOG_VERSION_OK FALSE PARENT_SCOPE)
+        set(SPDLOG_VERSION_OK TRUE PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -117,8 +121,8 @@ function(find_spdlog_config)
     # First try finding a config somewhere in the system
     if(NOT SPDLOG_NO_CONFIG OR SPDLOG_CONFIG_ONLY)
         find_package(spdlog ${spdlog_FIND_VERSION}
-                HINTS ${spdlog_ROOT} ${H5PP_DEPS_INSTALL_DIR} ${CONAN_SPDLOG_ROOT} ${CMAKE_INSTALL_PREFIX} ${H5PP_DEPS_INSTALL_DIR}
-                PATH_SUFFIXES include spdlog include/spdlog spdlog/include/spdlog
+                HINTS ${spdlog_FIND_HINTS} ${H5PP_DEPS_INSTALL_DIR}
+                PATH_SUFFIXES ${spdlog_FIND_PATH_SUFFIXES} include spdlog include/spdlog spdlog/include/spdlog
                 ${NO_DEFAULT_PATH}
                 ${NO_CMAKE_PACKAGE_REGISTRY}
                 ${NO_CMAKE_SYSTEM_PATH}
@@ -129,10 +133,11 @@ function(find_spdlog_config)
             spdlog_check_version_target(spdlog::spdlog)
             if(NOT SPDLOG_VERSION_OK OR NOT SPDLOG_VERSION)
                 message(WARNING "Could not determine the spdlog version.\n"
-                        "However, the target spdlog::spdlog has already been defined, so it will be used:\n"
-                        "SPDLOG_INCLUDE_DIR: ${SPDLOG_INCLUDE_DIR}\n"
-                        "SPDLOG_VERSION:     ${SPDLOG_VERSION}\n"
+                        "However, the target spdlog::spdlog has already been defined, so it will be used:"
+                        "SPDLOG_VERSION:     ${SPDLOG_VERSION}"
+                        "SPDLOG_INCLUDE_DIR: ${SPDLOG_INCLUDE_DIR}"
                         "Something is wrong with your installation of spdlog")
+                set(SPDLOG_VERSION_OK TRUE)
             endif()
             if(SPDLOG_INCLUDE_DIR MATCHES "conda")
                 # Use the header-only mode to avoid weird linking errors
@@ -146,58 +151,52 @@ function(find_spdlog_config)
 endfunction()
 
 function(find_spdlog_manual)
-
     if(NOT TARGET spdlog::spdlog AND NOT SPDLOG_CONFIG_ONLY)
+        if(NOT BUILD_SHARED_LIBS)
+            # Spdlog from ubuntu apt injects shared library into static builds.
+            # Can't take any chances here.
+            set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH})
+            set(NO_SYSTEM_ENVIRONMENT_PATH  NO_SYSTEM_ENVIRONMENT_PATH)
+            set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+        endif()
         find_path(SPDLOG_INCLUDE_DIR
                 NAMES spdlog/spdlog.h
-                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CONAN_SPDLOG_ROOT} ${CMAKE_INSTALL_PREFIX}
+                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
                 PATH_SUFFIXES spdlog/include include spdlog include/spdlog spdlog/include/spdlog
                 ${NO_DEFAULT_PATH}
-                ${NO_CMAKE_PACKAGE_REGISTRY}
                 ${NO_CMAKE_SYSTEM_PATH}
                 ${NO_SYSTEM_ENVIRONMENT_PATH}
                 QUIET
                 )
-        if(SPDLOG_INCLUDE_DIR)
-            spdlog_check_version_include(SPDLOG_INCLUDE_DIR)
-            if(SPDLOG_VERSION_OK)
-                set(spdlog_FOUND TRUE)
-                add_library(spdlog::spdlog INTERFACE IMPORTED)
-                target_include_directories(spdlog::spdlog SYSTEM INTERFACE ${SPDLOG_INCLUDE_DIR})
-                if(SPDLOG_INCLUDE_DIR MATCHES "conda")
-                    # Choose header-only because conda libraries sometimes give linking errors, such as:
-                    # /usr/bin/ld:
-                    #       /home/user/miniconda/lib/libspdlog.a(spdlog.cpp.o): TLS transition from R_X86_64_TLSLD
-                    #       to R_X86_64_TPOFF32 against `_ZGVZN6spdlog7details2os9thread_idEvE3tid'
-                    #       at 0x4 in section `.text._ZN6spdlog7details2os9thread_idEv' failed
-                    # /home/user/miniconda/lib/libspdlog.a: error adding symbols: Bad value
-                    target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_HEADER_ONLY)
-                else()
-                    if(NOT BUILD_SHARED_LIBS)
-                        # Spdlog from ubuntu apt injects shared library into static builds.
-                        # Can't take any chances here.
-                        set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH})
-                        set(NO_SYSTEM_ENVIRONMENT_PATH  NO_SYSTEM_ENVIRONMENT_PATH)
-                        set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
-                    endif()
-                    # There may or may not be a compiled library to go with the headers
-                    include(GNUInstallDirs)
-                    find_library(SPDLOG_LIBRARY
-                            NAMES spdlog
-                            HINTS ${SPDLOG_INCLUDE_DIR}
-                            PATH_SUFFIXES spdlog/${CMAKE_INSTALL_LIBDIR}  ${CMAKE_INSTALL_LIBDIR}
-                            ${NO_DEFAULT_PATH}
-                            ${NO_CMAKE_PACKAGE_REGISTRY}
-                            ${NO_CMAKE_SYSTEM_PATH}
-                            ${NO_SYSTEM_ENVIRONMENT_PATH}
-                            )
-                    if(SPDLOG_LIBRARY AND NOT SPDLOG_LIBRARY MATCHES "conda")
-                        target_link_libraries(spdlog::spdlog INTERFACE ${SPDLOG_LIBRARY} )
-                        target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_COMPILED_LIB )
-                    else()
-                        target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_HEADER_ONLY)
-                    endif()
-                endif()
+        # There may o compiled library to go with the headers
+        find_library(SPDLOG_LIBRARY
+                NAMES spdlog
+                HINTS ${SPDLOG_INCLUDE_DIR}
+                PATH_SUFFIXES spdlog/lib
+                ${NO_DEFAULT_PATH}
+                ${NO_CMAKE_PACKAGE_REGISTRY}
+                ${NO_CMAKE_SYSTEM_PATH}
+                ${NO_SYSTEM_ENVIRONMENT_PATH}
+                )
+
+        spdlog_check_version_include(SPDLOG_INCLUDE_DIR)
+        if(SPDLOG_VERSION_OK AND SPDLOG_INCLUDE_DIR)
+            add_library(spdlog::spdlog INTERFACE IMPORTED)
+            add_library(spdlog::spdlog_header_only INTERFACE IMPORTED)
+            target_include_directories(spdlog::spdlog SYSTEM INTERFACE ${SPDLOG_INCLUDE_DIR})
+            target_include_directories(spdlog::spdlog_header_only SYSTEM INTERFACE ${SPDLOG_INCLUDE_DIR})
+
+            if(SPDLOG_LIBRARY AND NOT SPDLOG_LIBRARY MATCHES "conda")
+                target_link_libraries(spdlog::spdlog INTERFACE ${SPDLOG_LIBRARY} )
+                target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_COMPILED_LIB )
+            else()
+                # Choose header-only because conda libraries sometimes give linking errors, such as:
+                # /usr/bin/ld:
+                #       /home/user/miniconda/lib/libspdlog.a(spdlog.cpp.o): TLS transition from R_X86_64_TLSLD
+                #       to R_X86_64_TPOFF32 against `_ZGVZN6spdlog7details2os9thread_idEvE3tid'
+                #       at 0x4 in section `.text._ZN6spdlog7details2os9thread_idEv' failed
+                # /home/user/miniconda/lib/libspdlog.a: error adding symbols: Bad value
+                target_compile_definitions(spdlog::spdlog INTERFACE SPDLOG_HEADER_ONLY)
             endif()
         endif()
     endif()
@@ -206,37 +205,34 @@ function(find_spdlog_manual)
     set(SPDLOG_VERSION_OK ${SPDLOG_VERSION_OK} PARENT_SCOPE)
 endfunction()
 
-function(target_set_version tgt vers)
-    if(TARGET ${tgt})
-        get_target_property(tgt_alias ${tgt} ALIASED_TARGET )
+function(set_spdlog_version vers)
+    if(CMAKE_VERSION VERSION_LESS 3.19)
+        return()
+    endif()
+    if(TARGET spdlog::spdlog)
+        get_target_property(tgt_alias spdlog::spdlog ALIASED_TARGET )
         if(tgt_alias)
-            set_target_properties(${tgt_alias} PROPERTIES VERSION ${vers})
+            set_target_properties(${tgt_alias} PROPERTIES VERSION ${${vers}})
         else()
-            set_target_properties(${tgt} PROPERTIES VERSION ${vers})
+            set_target_properties(spdlog::spdlog PROPERTIES VERSION ${${vers}})
         endif()
     endif()
 endfunction()
 
-function(target_link_fmt tgt)
-    if(TARGET ${tgt})
-        find_package(fmt 6.1.2 QUIET)
+function(spdlog_link_fmt)
+    if(TARGET spdlog::spdlog)
+        find_package(fmt QUIET)
         if(fmt_FOUND AND TARGET fmt::fmt)
-            get_target_property(tgt_alias ${tgt} ALIASED_TARGET )
+            get_target_property(tgt_alias spdlog::spdlog ALIASED_TARGET )
+            get_target_property(FMT_INCLUDE_DIR fmt::fmt INTERFACE_INCLUDE_DIRECTORIES)
             if(tgt_alias)
-                target_link_libraries(${tgt_alias} INTERFACE fmt::fmt)
+                set(tgt ${tgt_alias})
             else()
-                target_link_libraries(${tgt} INTERFACE fmt::fmt)
+                set(tgt spdlog::spdlog)
             endif()
-
-            if(NOT FMT_INCLUDE_DIR)
-                get_target_property(FMT_INCLUDE_DIR fmt::fmt INTERFACE_INCLUDE_DIRECTORIES)
-            endif()
+            target_link_libraries(${tgt} INTERFACE fmt::fmt)
             if(NOT FMT_INCLUDE_DIR MATCHES "bundled")
-                if(tgt_alias)
-                    target_compile_definitions(${tgt_alias} INTERFACE SPDLOG_FMT_EXTERNAL)
-                else()
                     target_compile_definitions(${tgt} INTERFACE SPDLOG_FMT_EXTERNAL)
-                endif()
             endif()
         endif()
     endif()
@@ -245,19 +241,14 @@ endfunction()
 find_spdlog_config()
 find_spdlog_manual()
 
-if(TARGET spdlog::spdlog AND SPDLOG_VERSION AND SPDLOG_VERSION_OK)
-    set(spdlog_FOUND TRUE)
-    target_set_version(spdlog::spdlog SPDLOG_VERSION)
-    target_link_fmt(spdlog::spdlog)
-endif()
-
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(spdlog
-        FOUND_VAR spdlog_FOUND
         REQUIRED_VARS SPDLOG_INCLUDE_DIR SPDLOG_VERSION_OK
         VERSION_VAR SPDLOG_VERSION
         FAIL_MESSAGE "Failed to find spdlog"
         )
 
-mark_as_advanced(SPDLOG_INCLUDE_DIR)
-mark_as_advanced(spdlog_FOUND)
+if(spdlog_FOUND)
+    set_spdlog_version(SPDLOG_VERSION)
+    spdlog_link_fmt()
+endif()

@@ -84,7 +84,7 @@ find_package(Threads)
 
 
 if (H5PP_ENABLE_MPI AND NOT WIN32)
-    find_package(MPI REQUIRED)
+    find_package(MPI COMPONENTS CXX REQUIRED)
     target_link_libraries(deps INTERFACE MPI::MPI_CXX)
 endif ()
 

@@ -63,9 +63,7 @@ elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
     endif()
 
     # HDF5 must be found either way, so set it to required
-    find_dependency(HDF5 1.8
-                    COMPONENTS C HL
-                    REQUIRED)
+    find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
 
     foreach(tgt ${HDF5_HL_TARGET_CANDIDATES})
         if(TARGET ${tgt} AND ${tgt} IN_LIST H5PP_LINK_LIBRARIES)

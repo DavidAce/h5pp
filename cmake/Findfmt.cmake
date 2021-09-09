@@ -16,6 +16,21 @@
 # The user can set search directory hints from CMake or environment, such as
 # fmt_DIR, fmt_ROOT, etc.
 
+if(FMT_NO_DEFAULT_PATH)
+    set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
+endif()
+
+if(FMT_NO_CMAKE_PACKAGE_REGISTRY)
+    set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
+endif()
+
+if(FMT_NO_CMAKE_SYSTEM_PATH)
+    set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH)
+endif()
+if(FMT_NO_SYSTEM_ENVIRONMENT_PATH)
+    set(NO_SYSTEM_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH)
+endif()
+
 if(NOT fmt_FIND_VERSION)
     if(NOT fmt_FIND_VERSION_MAJOR)
         set(fmt_FIND_VERSION_MAJOR 5)
@@ -34,6 +49,8 @@ function(fmt_check_version_include incdir)
         set(include ${incdir})
     elseif(IS_DIRECTORY "${${incdir}}")
         set(include ${${incdir}})
+    else()
+        return()
     endif()
     if(EXISTS ${include}/fmt/core.h)
         set(_fmt_version_file "${include}/fmt/core.h")
@@ -42,10 +59,8 @@ function(fmt_check_version_include incdir)
     endif()
     if(EXISTS ${_fmt_version_file})
         # parse "#define FMT_VERSION 40100" to 4.1.0
-        file(STRINGS "${_fmt_version_file}" FMT_VERSION_LINE
-                REGEX "^#define[ \t]+FMT_VERSION[ \t]+[0-9]+$")
-        string(REGEX REPLACE "^#define[ \t]+FMT_VERSION[ \t]+([0-9]+)$"
-                "\\1" FMT_VERSION "${FMT_VERSION_LINE}")
+        file(STRINGS "${_fmt_version_file}" FMT_VERSION_LINE REGEX "^#define[ \t]+FMT_VERSION[ \t]+[0-9]+$")
+        string(REGEX REPLACE "^#define[ \t]+FMT_VERSION[ \t]+([0-9]+)$" "\\1" FMT_VERSION "${FMT_VERSION_LINE}")
         foreach(ver "FMT_VERSION_PATCH" "FMT_VERSION_MINOR" "FMT_VERSION_MAJOR")
             math(EXPR ${ver} "${FMT_VERSION} % 100")
             math(EXPR FMT_VERSION "(${FMT_VERSION} - ${${ver}}) / 100")
@@ -94,19 +109,10 @@ function(fmt_check_version_target tgt)
 endfunction()
 
 
-if(FMT_NO_DEFAULT_PATH)
-    set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
-endif()
-
-if(FMT_NO_CMAKE_PACKAGE_REGISTRY)
-    set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
-endif()
-
-
-# First try finding a config somewhere in the system
-if(NOT FMT_NO_CONFIG OR FMT_CONFIG_ONLY)
+function(find_fmt_config)
+    # Try to find a config somewhere in the system
     find_package(fmt ${fmt_FIND_VERSION}
-            HINTS ${fmt_ROOT} ${H5PP_DEPS_INSTALL_DIR} ${CONAN_FMT_ROOT} ${CMAKE_INSTALL_PREFIX}
+            HINTS ${fmt_FIND_HINTS} ${H5PP_DEPS_INSTALL_DIR}
             PATH_SUFFIXES include fmt include/fmt fmt/include/fmt
             ${NO_DEFAULT_PATH}
             ${NO_CMAKE_PACKAGE_REGISTRY}
@@ -122,6 +128,7 @@ if(NOT FMT_NO_CONFIG OR FMT_CONFIG_ONLY)
                     "FMT_INCLUDE_DIR: ${FMT_INCLUDE_DIR}\n"
                     "FMT_VERSION:     ${FMT_VERSION}\n"
                     "Something is wrong with your installation of fmt")
+            set(FMT_VERSION_OK TRUE)
         endif()
 
         if(FMT_INCLUDE_DIR MATCHES "conda")
@@ -129,83 +136,84 @@ if(NOT FMT_NO_CONFIG OR FMT_CONFIG_ONLY)
             target_compile_definitions(fmt::fmt INTERFACE FMT_HEADER_ONLY)
         endif()
     endif()
-endif()
+    set(FMT_INCLUDE_DIR ${FMT_INCLUDE_DIR} PARENT_SCOPE)
+    set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
+    set(FMT_VERSION_OK ${FMT_VERSION_OK} PARENT_SCOPE)
+endfunction()
 
-if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
-    find_path(FMT_INCLUDE_DIR
-            fmt/core.h
-            HINTS ${H5PP_DEPS_INSTALL_DIR} ${CONAN_FMT_ROOT} ${CMAKE_INSTALL_PREFIX}
-            PATH_SUFFIXES fmt fmt/include include include/fmt
-            ${NO_DEFAULT_PATH}
-            ${NO_CMAKE_SYSTEM_PATH}
-            ${NO_SYSTEM_ENVIRONMENT_PATH}
-            )
-    if(FMT_INCLUDE_DIR)
-        fmt_check_version_include(FMT_INCLUDE_DIR)
-        if(FMT_VERSION_OK)
-            # Check if there is a compiled library to go with the headers
-            include(GNUInstallDirs)
-            find_library(FMT_LIBRARY
-                    NAMES fmt
-                    HINTS ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
-                    PATH_SUFFIXES fmt fmt/lib
-                    ${NO_DEFAULT_PATH}
-                    ${NO_CMAKE_SYSTEM_PATH}
-                    ${NO_SYSTEM_ENVIRONMENT_PATH}
-                    )
-        endif()
-    else()
-        # Check if fmt has been bundled with spdlog, in which case we use it as header-only
-        find_path(SPDLOG_FMT_BUNDLED
-                spdlog/fmt/fmt.h
-                HINTS ${SPDLOG_INCLUDE_DIR} ${spdlog_ROOT} ${CONAN_SPDLOG_ROOT} ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
-                PATH_SUFFIXES spdlog/include include spdlog include/spdlog spdlog/include/spdlog
+function(find_fmt_manual)
+    if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
+        find_path(FMT_INCLUDE_DIR
+                fmt/core.h
+                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
+                PATH_SUFFIXES fmt fmt/include include include/fmt
                 ${NO_DEFAULT_PATH}
-                ${NO_CMAKE_PACKAGE_REGISTRY}
+                ${NO_CMAKE_SYSTEM_PATH}
                 ${NO_SYSTEM_ENVIRONMENT_PATH}
                 )
-        fmt_check_version_include(SPDLOG_FMT_BUNDLED)
-    endif()
+        find_library(FMT_LIBRARY
+                NAMES fmt
+                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
+                PATH_SUFFIXES fmt fmt/lib
+                ${NO_DEFAULT_PATH}
+                ${NO_CMAKE_SYSTEM_PATH}
+                ${NO_SYSTEM_ENVIRONMENT_PATH}
+                )
 
-    if(FMT_VERSION_OK)
-        if(FMT_INCLUDE_DIR)
+        fmt_check_version_include(FMT_INCLUDE_DIR)
+
+        if(FMT_VERSION_OK AND FMT_INCLUDE_DIR)
             add_library(fmt::fmt INTERFACE IMPORTED)
+            add_library(fmt::fmt-header-only INTERFACE IMPORTED)
             target_include_directories(fmt::fmt SYSTEM INTERFACE ${FMT_INCLUDE_DIR})
+            target_include_directories(fmt::fmt-header-only SYSTEM INTERFACE ${FMT_INCLUDE_DIR})
+
+            target_compile_definitions(fmt::fmt-header-only INTERFACE FMT_HEADER_ONLY=1)
+            target_compile_features(fmt::fmt INTERFACE cxx_variadic_templates)
+            target_compile_features(fmt::fmt-header-only INTERFACE cxx_variadic_templates)
+
             if(FMT_LIBRARY AND NOT FMT_LIBRARY MATCHES "conda")
                 set_target_properties(fmt::fmt PROPERTIES IMPORTED_LOCATION ${FMT_LIBRARY})
             else()
-                target_compile_definitions(fmt::fmt INTERFACE FMT_HEADER_ONLY)
+                # Choose header-only because conda libraries sometimes give linking errors
+                target_compile_definitions(fmt::fmt INTERFACE FMT_HEADER_ONLY=1)
             endif()
-        elseif(SPDLOG_FMT_BUNDLED)
-            add_library(fmt::fmt INTERFACE IMPORTED)
-            target_include_directories(fmt::fmt SYSTEM INTERFACE ${SPDLOG_FMT_BUNDLED})
-            target_compile_definitions(fmt::fmt INTERFACE FMT_HEADER_ONLY)
         endif()
     endif()
-endif()
+endfunction()
 
-if(TARGET fmt::fmt AND FMT_VERSION AND FMT_VERSION_OK)
-    set(fmt_FOUND TRUE)
-    get_target_property(fmt_aliased fmt::fmt ALIASED_TARGET )
-    if(fmt_aliased)
-        set_target_properties(${fmt_aliased} PROPERTIES VERSION ${FMT_VERSION})
-    else()
-        set_target_properties(fmt::fmt PROPERTIES VERSION ${FMT_VERSION})
+function(set_fmt_version tgt_name vers)
+    if(CMAKE_VERSION VERSION_LESS 3.19)
+        return()
     endif()
-endif()
 
+    if(TARGET ${tgt_name})
+        get_target_property(tgt_alias ${tgt_name} ALIASED_TARGET)
+        if(tgt_alias)
+            set(tgt ${tgt_alias})
+        else()
+            set(tgt ${tgt_name})
+        endif()
+        set_target_properties(${tgt} PROPERTIES VERSION ${${vers}})
+        message(WARNING "Setting fmt version ${${vers}}")
+        if(${${vers}} VERSION_LESS 7.0.0)
+            # Fix bug with ambiguous resolution of fmt::format_to which is used in spdlog 1.5.0
+            target_compile_definitions(${tgt} INTERFACE FMT_USE_CONSTEXPR=0)
+        endif()
+    endif()
+endfunction()
+
+find_fmt_config()
+find_fmt_manual()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(fmt
-        FOUND_VAR fmt_FOUND
         REQUIRED_VARS FMT_INCLUDE_DIR FMT_VERSION_OK
         VERSION_VAR FMT_VERSION
         FAIL_MESSAGE "Failed to find fmt"
         )
 
-mark_as_advanced(FMT_INCLUDE_DIR)
-mark_as_advanced(FMT_LIBRARY)
-mark_as_advanced(FMT_VERSION)
-mark_as_advanced(FMT_VERSION_OK)
-mark_as_advanced(fmt_FOUND)
-mark_as_advanced(_fmt_version_file)
+if(fmt_FOUND)
+    set_fmt_version(fmt::fmt FMT_VERSION)
+    set_fmt_version(fmt::fmt-header-only FMT_VERSION)
+endif()

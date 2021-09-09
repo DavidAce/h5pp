@@ -37,6 +37,7 @@ list(APPEND HDF5_HL_TARGET_CANDIDATES
          hdf5_hl-static
          hdf5::hdf5_hl-shared
          hdf5_hl-shared
+         HDF5::HDF5
 )
 
 if(H5PP_PACKAGE_MANAGER MATCHES "cmake|cpm|fetch" AND NOT DEFINED HDF5_ROOT)

@@ -6,8 +6,14 @@ endif()
 include(GNUInstallDirs)
 include(ExternalProject)
 ExternalProject_Add(external_spdlog
+#        URL         https://github.com/gabime/spdlog/archive/refs/tags/v1.3.1.tar.gz
+#        URL         https://github.com/gabime/spdlog/archive/refs/tags/v1.5.0.tar.gz
+#        URL         https://github.com/gabime/spdlog/archive/refs/tags/v1.8.0.tar.gz
         URL         https://github.com/gabime/spdlog/archive/refs/tags/v1.9.2.tar.gz
-        URL_MD5     cee7f3d31178a00791d7a22c6738df6d
+#        URL_MD5     3c17dd6983de2a66eca8b5a0b213d29f #1.3.1
+#        URL_MD5     a966eea01f81551527853d282896cb4d #1.5.0
+#        URL_MD5     cbd179161d1ed185bd9f3f242c424fd7 #1.8.0
+        URL_MD5     cee7f3d31178a00791d7a22c6738df6d #1.9.2
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE
@@ -22,6 +28,7 @@ ExternalProject_Add(external_spdlog
         -DCMAKE_INSTALL_MESSAGE=LAZY
         -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
         -DSPDLOG_BUILD_TESTS:BOOL=OFF
+        -DSPDLOG_BUILD_BENCH:BOOL=OFF
         -DSPDLOG_FMT_EXTERNAL:BOOL=${SPDLOG_FMT_EXTERNAL}
         -Dfmt_ROOT:PATH=${fmt_ROOT}
         )
