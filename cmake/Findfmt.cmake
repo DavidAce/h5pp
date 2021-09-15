@@ -195,7 +195,6 @@ function(set_fmt_version tgt_name vers)
             set(tgt ${tgt_name})
         endif()
         set_target_properties(${tgt} PROPERTIES VERSION ${${vers}})
-        message(WARNING "Setting fmt version ${${vers}}")
         if(${${vers}} VERSION_LESS 7.0.0)
             # Fix bug with ambiguous resolution of fmt::format_to which is used in spdlog 1.5.0
             target_compile_definitions(${tgt} INTERFACE FMT_USE_CONSTEXPR=0)
