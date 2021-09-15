@@ -524,10 +524,10 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x, typename h5x_loc>
-    [[nodiscard]] h5x openLink(const h5x_loc &     loc,
+    [[nodiscard]] h5x openLink(const h5x_loc      &loc,
                                std::string_view    linkPath,
                                std::optional<bool> linkExists = std::nullopt,
-                               const hid::h5p &    linkAccess = H5P_DEFAULT) {
+                               const hid::h5p     &linkAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_h5_link_v<h5x>,
                       "Template function [h5pp::hdf5::openLink<h5x>(...)] requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
@@ -569,11 +569,11 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    [[nodiscard]] inline bool checkIfAttrExists(const h5x &         loc,
+    [[nodiscard]] inline bool checkIfAttrExists(const h5x          &loc,
                                                 std::string_view    linkPath,
                                                 std::string_view    attrName,
                                                 std::optional<bool> linkExists = std::nullopt,
-                                                const hid::h5p &    linkAccess = H5P_DEFAULT) {
+                                                const hid::h5p     &linkAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
                       "Template function [h5pp::hdf5::checkIfAttrExists<h5x>(const h5x & loc, ..., ...)] requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -602,8 +602,8 @@ namespace h5pp::hdf5 {
             for(auto idx = 0; idx < nMembers1; idx++) {
                 hid::h5t         t1    = H5Tget_member_type(type1, static_cast<unsigned int>(idx));
                 hid::h5t         t2    = H5Tget_member_type(type2, static_cast<unsigned int>(idx));
-                char *           mem1  = H5Tget_member_name(type1, static_cast<unsigned int>(idx));
-                char *           mem2  = H5Tget_member_name(type2, static_cast<unsigned int>(idx));
+                char            *mem1  = H5Tget_member_name(type1, static_cast<unsigned int>(idx));
+                char            *mem2  = H5Tget_member_name(type2, static_cast<unsigned int>(idx));
                 std::string_view n1    = mem1;
                 std::string_view n2    = mem2;
                 bool             equal = n1 == n2;
@@ -687,10 +687,10 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    [[nodiscard]] inline std::vector<std::string> getAttributeNames(const h5x &         loc,
+    [[nodiscard]] inline std::vector<std::string> getAttributeNames(const h5x          &loc,
                                                                     std::string_view    linkPath,
                                                                     std::optional<bool> linkExists = std::nullopt,
-                                                                    const hid::h5p &    linkAccess = H5P_DEFAULT) {
+                                                                    const hid::h5p     &linkAccess = H5P_DEFAULT) {
         static_assert(
             h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
             "Template function [h5pp::hdf5::getAttributeNames(const h5x & link, std::string_view linkPath)] requires type h5x to be: "
@@ -858,8 +858,8 @@ namespace h5pp::hdf5 {
 
     [[nodiscard]] inline TypeInfo getTypeInfo(std::optional<std::string> objectPath,
                                               std::optional<std::string> objectName,
-                                              const hid::h5s &           h5Space,
-                                              const hid::h5t &           h5Type) {
+                                              const hid::h5s            &h5Space,
+                                              const hid::h5t            &h5Type) {
         TypeInfo typeInfo;
         typeInfo.h5Name = std::move(objectName);
         typeInfo.h5Path = std::move(objectPath);
@@ -880,10 +880,10 @@ namespace h5pp::hdf5 {
 
     template<typename h5x, typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5x>>
     // enable_if so the compiler doesn't think it can use overload with std::string on first argument
-    [[nodiscard]] inline TypeInfo getTypeInfo(const h5x &         loc,
+    [[nodiscard]] inline TypeInfo getTypeInfo(const h5x          &loc,
                                               std::string_view    dsetName,
                                               std::optional<bool> dsetExists = std::nullopt,
-                                              const hid::h5p &    dsetAccess = H5P_DEFAULT) {
+                                              const hid::h5p     &dsetAccess = H5P_DEFAULT) {
         auto dataset = openLink<hid::h5d>(loc, dsetName, dsetExists, dsetAccess);
         return getTypeInfo(dataset);
     }
@@ -896,12 +896,12 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    [[nodiscard]] inline TypeInfo getTypeInfo(const h5x &         loc,
+    [[nodiscard]] inline TypeInfo getTypeInfo(const h5x          &loc,
                                               std::string_view    linkPath,
                                               std::string_view    attrName,
                                               std::optional<bool> linkExists = std::nullopt,
                                               std::optional<bool> attrExists = std::nullopt,
-                                              const hid::h5p &    linkAccess = H5P_DEFAULT) {
+                                              const hid::h5p     &linkAccess = H5P_DEFAULT) {
         if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
         if(not linkExists.value())
             throw std::runtime_error(
@@ -936,10 +936,10 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    [[nodiscard]] inline std::vector<TypeInfo> getTypeInfo_allAttributes(const h5x &         loc,
+    [[nodiscard]] inline std::vector<TypeInfo> getTypeInfo_allAttributes(const h5x          &loc,
                                                                          std::string_view    linkPath,
                                                                          std::optional<bool> linkExists = std::nullopt,
-                                                                         const hid::h5p &    linkAccess = H5P_DEFAULT) {
+                                                                         const hid::h5p     &linkAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
                       "Template function [h5pp::hdf5::getTypeInfo_allAttributes(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -948,7 +948,7 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    inline void createGroup(const h5x &          loc,
+    inline void createGroup(const h5x           &loc,
                             std::string_view     groupName,
                             std::optional<bool>  linkExists = std::nullopt,
                             const PropertyLists &plists     = PropertyLists()) {
@@ -970,7 +970,7 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    inline void writeSymbolicLink(const h5x &          loc,
+    inline void writeSymbolicLink(const h5x           &loc,
                                   std::string_view     srcPath,
                                   std::string_view     tgtPath,
                                   std::optional<bool>  linkExists = std::nullopt,
@@ -1168,8 +1168,8 @@ namespace h5pp::hdf5 {
         }
     }
 
-    inline void selectHyperslabs(hid::h5s &                                space,
-                                 const std::vector<Hyperslab> &            hyperSlabs,
+    inline void selectHyperslabs(hid::h5s                                 &space,
+                                 const std::vector<Hyperslab>             &hyperSlabs,
                                  std::optional<std::vector<H5S_seloper_t>> hyperSlabSelectOps = std::nullopt) {
         if(hyperSlabSelectOps and not hyperSlabSelectOps->empty()) {
             if(hyperSlabs.size() != hyperSlabSelectOps->size())
@@ -1181,8 +1181,8 @@ namespace h5pp::hdf5 {
             for(const auto &slab : hyperSlabs) selectHyperslab(space, slab, H5S_seloper_t::H5S_SELECT_OR);
     }
 
-    inline void setSpaceExtent(const hid::h5s &                    h5Space,
-                               const std::vector<hsize_t> &        dims,
+    inline void setSpaceExtent(const hid::h5s                     &h5Space,
+                               const std::vector<hsize_t>         &dims,
                                std::optional<std::vector<hsize_t>> dimsMax = std::nullopt) {
         if(H5Sget_simple_extent_type(h5Space) == H5S_SCALAR) return;
         if(dims.empty()) return;
@@ -1265,12 +1265,12 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    inline void extendDataset(const h5x &         loc,
+    inline void extendDataset(const h5x          &loc,
                               std::string_view    datasetRelativeName,
                               const int           dim,
                               const hsize_t       extent,
                               std::optional<bool> linkExists = std::nullopt,
-                              const hid::h5p &    dsetAccess = H5P_DEFAULT) {
+                              const hid::h5p     &dsetAccess = H5P_DEFAULT) {
         auto dataset = openLink<hid::h5d>(loc, datasetRelativeName, linkExists, dsetAccess);
         extendDataset(dataset, dim, extent);
     }
@@ -1643,13 +1643,22 @@ namespace h5pp::hdf5 {
             // If the search depth is passed the depth specified, return immediately
             // Return 0 to continue searching
             // Return 1 to finish the search. Normally when we've reached max search hits.
-            std::string_view nameView(name);
-            if(maxDepth >= 0 and std::count(nameView.begin(), nameView.end(), '/') > maxDepth) return 0;
+
+            std::string_view linkPath(name); // <-- This is the full path to the object that we are currently visiting.
+
+            // If this group is deeper than maxDepth, just return
+            if(maxDepth >= 0 and std::count(linkPath.begin(), linkPath.end(), '/') > maxDepth) return 0;
+
+            // Get the name of the object without the full path, to match the searchKey
+            auto slashpos = linkPath.rfind('/');
+            if(slashpos == std::string_view::npos) slashpos = 0;
+            std::string_view linkName = linkPath.substr(slashpos);
+
             auto matchList = reinterpret_cast<std::vector<std::string> *>(opdata);
             try {
                 if constexpr(std::is_same_v<InfoType, H5O_info_t>) {
                     if(info->type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
-                        if(searchKey.empty() or nameView.find(searchKey) != std::string::npos) matchList->push_back(name);
+                        if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) matchList->push_back(name);
                     }
                 }
 
@@ -1665,10 +1674,10 @@ namespace h5pp::hdf5 {
                     #endif
                     /* clang-format on */
                     if(oInfo.type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
-                        if(searchKey.empty() or nameView.find(searchKey) != std::string::npos) matchList->push_back(name);
+                        if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) matchList->push_back(name);
                     }
                 } else {
-                    if(searchKey.empty() or nameView.find(searchKey) != std::string::npos) { matchList->push_back(name); }
+                    if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) { matchList->push_back(name); }
                 }
 
                 if(maxHits > 0 and static_cast<long>(matchList->size()) >= maxHits)
@@ -1695,10 +1704,10 @@ namespace h5pp::hdf5 {
         }
 
         template<H5O_type_t ObjType, typename h5x>
-        herr_t H5L_custom_iterate_by_name(const h5x &               loc,
+        herr_t H5L_custom_iterate_by_name(const h5x                &loc,
                                           std::string_view          root,
                                           std::vector<std::string> &matchList,
-                                          const hid::h5p &          linkAccess = H5P_DEFAULT) {
+                                          const hid::h5p           &linkAccess = H5P_DEFAULT) {
             H5Eset_auto(H5E_DEFAULT, nullptr, nullptr); // Silence the error we get from using index directly
             constexpr size_t maxsize           = 512;
             char             linkname[maxsize] = {};
@@ -1711,10 +1720,21 @@ namespace h5pp::hdf5 {
                     H5Eclear(H5E_DEFAULT);
                     break;
                 }
-                std::string_view nameView(linkname, static_cast<size_t>(namesize));
+                std::string_view linkPath(linkname, static_cast<size_t>(namesize)); // <-- This is the full path to the object that we are currently visiting.
+
+                // If this group is deeper than maxDepth, just return
+                if(maxDepth >= 0 and std::count(linkPath.begin(), linkPath.end(), '/') > maxDepth) return 0;
+
+                // Get the name of the object without the full path, to match the searchKey
+                auto slashpos = linkPath.rfind('/');
+                if(slashpos == std::string_view::npos) slashpos = 0;
+                std::string_view linkName = linkPath.substr(slashpos);
+
+
+
                 if(ObjType == H5O_TYPE_UNKNOWN) {
                     // Accept based on name
-                    if(searchKey.empty() or nameView.find(searchKey) != std::string::npos) matchList.emplace_back(linkname);
+                    if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) matchList.emplace_back(linkname);
                     if(maxHits > 0 and static_cast<long>(matchList.size()) >= maxHits) return 0;
                 } else {
                     // Name is not enough to establish a match. Check type.
@@ -1731,7 +1751,7 @@ namespace h5pp::hdf5 {
                         H5Eclear(H5E_DEFAULT);
                         break;
                     }
-                    if(oInfo.type == ObjType and (searchKey.empty() or nameView.find(searchKey) != std::string::npos))
+                    if(oInfo.type == ObjType and (searchKey.empty() or linkName.find(searchKey) != std::string::npos))
                         matchList.emplace_back(linkname);
                     if(maxHits > 0 and static_cast<long>(matchList.size()) >= maxHits) return 0;
                 }
@@ -1741,24 +1761,17 @@ namespace h5pp::hdf5 {
         }
 
         template<H5O_type_t ObjType, typename h5x>
-        inline herr_t visit_by_name(const h5x &               loc,
+        inline herr_t visit_by_name(const h5x                &loc,
                                     std::string_view          root,
                                     std::vector<std::string> &matchList,
-                                    const hid::h5p &          linkAccess = H5P_DEFAULT) {
+                                    const hid::h5p           &linkAccess = H5P_DEFAULT) {
             static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
                           "Template function [h5pp::hdf5::visit_by_name(const h5x & loc, ...)] requires type h5x to be: "
                           "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
             if(internal::maxDepth == 0)
                 // Faster when we don't need to iterate recursively
                 return H5L_custom_iterate_by_name<ObjType>(loc, root, matchList, linkAccess);
-//                return H5Literate_by_name(loc,
-//                                          util::safe_str(root).c_str(),
-//                                          H5_index_t::H5_INDEX_NAME,
-//                                          H5_iter_order_t::H5_ITER_NATIVE,
-//                                          nullptr,
-//                                          internal::matcher<ObjType>,
-//                                          &matchList,
-//                                          linkAccess);
+
 #if defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers >= 2
             return H5Ovisit_by_name(loc,
                                     util::safe_str(root).c_str(),
@@ -1782,17 +1795,18 @@ namespace h5pp::hdf5 {
     }
 
     template<H5O_type_t ObjType, typename h5x>
-    [[nodiscard]] inline std::vector<std::string> findLinks(const h5x &      loc,
+    [[nodiscard]] inline std::vector<std::string> findLinks(const h5x       &loc,
                                                             std::string_view searchKey  = "",
                                                             std::string_view searchRoot = "/",
                                                             long             maxHits    = -1,
                                                             long             maxDepth   = -1,
-                                                            const hid::h5p & linkAccess = H5P_DEFAULT) {
-        h5pp::logger::log->trace("Search key: {} | target type: {} | search root: {} | max search hits {}",
+                                                            const hid::h5p  &linkAccess = H5P_DEFAULT) {
+        h5pp::logger::log->trace("search key: {} | root: {} | type: {} | max hits {} | max depth {}",
                                  searchKey,
-                                 internal::getObjTypeName<ObjType>(),
                                  searchRoot,
-                                 maxHits);
+                                 internal::getObjTypeName<ObjType>(),
+                                 maxHits,
+                                 maxDepth);
         std::vector<std::string> matchList;
         internal::maxHits   = maxHits;
         internal::maxDepth  = maxDepth;
@@ -1895,9 +1909,9 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType>
-    void writeDataset(const DataType &     data,
-                      const DataInfo &     dataInfo,
-                      const DsetInfo &     dsetInfo,
+    void writeDataset(const DataType      &data,
+                      const DataInfo      &dataInfo,
+                      const DsetInfo      &dsetInfo,
                       const PropertyLists &plists = PropertyLists()) {
 #ifdef H5PP_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_colmajor_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
@@ -2378,8 +2392,8 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-    inline void readTableRecords(DataType &            data,
-                                 const TableInfo &     info,
+    inline void readTableRecords(DataType             &data,
+                                 const TableInfo      &info,
                                  std::optional<size_t> startIdx       = std::nullopt,
                                  std::optional<size_t> numReadRecords = std::nullopt) {
         /*
@@ -2568,8 +2582,8 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType>
-    inline void writeTableRecords(const DataType &      data,
-                                  TableInfo &           info,
+    inline void writeTableRecords(const DataType       &data,
+                                  TableInfo            &info,
                                   size_t                startIdx          = 0,
                                   std::optional<size_t> numRecordsToWrite = std::nullopt) {
         /*
@@ -2655,7 +2669,7 @@ namespace h5pp::hdf5 {
     inline void copyTableRecords(const h5pp::TableInfo &srcInfo,
                                  hsize_t                srcStartIdx,
                                  hsize_t                numRecordsToCopy,
-                                 h5pp::TableInfo &      tgtInfo,
+                                 h5pp::TableInfo       &tgtInfo,
                                  hsize_t                tgtStartIdx) {
         srcInfo.assertReadReady();
         tgtInfo.assertWriteReady();
@@ -2705,8 +2719,8 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-    inline void readTableField(DataType &                 data,
-                               const TableInfo &          info,
+    inline void readTableField(DataType                  &data,
+                               const TableInfo           &info,
                                const std::vector<size_t> &srcFieldIndices, // Field indices for the table on file
                                std::optional<size_t>      startIdx       = std::nullopt,
                                std::optional<size_t>      numReadRecords = std::nullopt) {
@@ -2865,8 +2879,8 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-    inline void readTableField(DataType &                      data,
-                               const TableInfo &               info,
+    inline void readTableField(DataType                       &data,
+                               const TableInfo                &info,
                                const std::vector<std::string> &fieldNames,
                                std::optional<size_t>           startIdx       = std::nullopt,
                                std::optional<size_t>           numReadRecords = std::nullopt) {
@@ -2891,9 +2905,9 @@ namespace h5pp::hdf5 {
              // enable_if so the compiler doesn't think it can use overload with std::string those arguments
              typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5x_src>,
              typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5x_tgt>>
-    inline void copyLink(const h5x_src &      srcLocId,
+    inline void copyLink(const h5x_src       &srcLocId,
                          std::string_view     srcLinkPath,
-                         const h5x_tgt &      tgtLocId,
+                         const h5x_tgt       &tgtLocId,
                          std::string_view     tgtLinkPath,
                          const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x_src>,
@@ -2923,9 +2937,9 @@ namespace h5pp::hdf5 {
              // enable_if so the compiler doesn't think it can use overload with fs::path those arguments
              typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5x_src>,
              typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5x_tgt>>
-    inline void moveLink(const h5x_src &      srcLocId,
+    inline void moveLink(const h5x_src       &srcLocId,
                          std::string_view     srcLinkPath,
-                         const h5x_tgt &      tgtLocId,
+                         const h5x_tgt       &tgtLocId,
                          std::string_view     tgtLinkPath,
                          LocationMode         locationMode = LocationMode::DETECT,
                          const PropertyLists &plists       = PropertyLists()) {
@@ -2978,7 +2992,7 @@ namespace h5pp::hdf5 {
                          const h5pp::fs::path &tgtFilePath,
                          std::string_view      tgtLinkPath,
                          FilePermission        targetFileCreatePermission = FilePermission::READWRITE,
-                         const PropertyLists & plists                     = PropertyLists()) {
+                         const PropertyLists  &plists                     = PropertyLists()) {
         h5pp::logger::log->trace("Copying link: source link [{}] | source file [{}]  -->  target link [{}] | target file [{}]",
                                  srcLinkPath,
                                  srcFilePath.string(),
@@ -3017,7 +3031,7 @@ namespace h5pp::hdf5 {
     inline fs::path copyFile(const h5pp::fs::path &srcFilePath,
                              const h5pp::fs::path &tgtFilePath,
                              FilePermission        permission = FilePermission::COLLISION_FAIL,
-                             const PropertyLists & plists     = PropertyLists()) {
+                             const PropertyLists  &plists     = PropertyLists()) {
         h5pp::logger::log->trace("Copying file [{}] --> [{}]", srcFilePath.string(), tgtFilePath.string());
         auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, permission, plists);
         auto srcPath = fs::absolute(srcFilePath);
@@ -3072,7 +3086,7 @@ namespace h5pp::hdf5 {
                          const h5pp::fs::path &tgtFilePath,
                          std::string_view      tgtLinkPath,
                          FilePermission        targetFileCreatePermission = FilePermission::READWRITE,
-                         const PropertyLists & plists                     = PropertyLists()) {
+                         const PropertyLists  &plists                     = PropertyLists()) {
         h5pp::logger::log->trace("Moving link: source link [{}] | source file [{}]  -->  target link [{}] | target file [{}]",
                                  srcLinkPath,
                                  srcFilePath.string(),
@@ -3114,7 +3128,7 @@ namespace h5pp::hdf5 {
     inline fs::path moveFile(const h5pp::fs::path &src,
                              const h5pp::fs::path &tgt,
                              FilePermission        permission = FilePermission::COLLISION_FAIL,
-                             const PropertyLists & plists     = PropertyLists()) {
+                             const PropertyLists  &plists     = PropertyLists()) {
         h5pp::logger::log->trace("Moving file by copy+remove: [{}] --> [{}]", src.string(), tgt.string());
         auto tgtPath = copyFile(src, tgt, permission, plists); // Returns the path to the newly created file
         auto srcPath = fs::absolute(src);
