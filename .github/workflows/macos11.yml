@@ -1,0 +1,98 @@
+name: macOS 11
+# INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+
+jobs:
+  ci:
+    name: ${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
+    runs-on: macos-11
+    env:
+      cache-name: cache-${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
+    strategy:
+      fail-fast: false # True stops all on first error. Stick to false when debugging
+      matrix:
+        include:
+          - { compiler: cl, linkage: static, manager: conan }
+          - { compiler: cl, linkage: static, manager: cmake }
+          - { compiler: cl, linkage: static, manager: fetch }
+          - { compiler: cl, linkage: static, manager: cpm }
+          - { compiler: cl, linkage: static, manager: find-or-cmake }
+          - { compiler: cl, linkage: shared, manager: conan }
+          - { compiler: cl, linkage: shared, manager: cmake }
+          - { compiler: cl, linkage: shared, manager: fetch }
+          - { compiler: cl, linkage: shared, manager: cpm }
+          - { compiler: cl, linkage: shared, manager: find-or-cmake }
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        if: contains(matrix.manager, 'conan')
+        with:
+          python-version: '3.x'
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.conan/data
+            ~/cpm-cache
+          #            ~/h5pp-install
+          #            build/Debug/h5pp-deps-install
+          key: ${{ runner.os }}-${{ env.cache-name }}
+
+      - uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ runner.os }}-${{ env.cache-name }}
+          max-size: 500M
+
+      - name: Setup conan
+        if: matrix.manager == 'conan'
+        run: |
+          pip install conan
+          conan user
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake -E make_directory build/Debug
+          cd build/Debug
+          cmake                                                       \
+          -DCMAKE_BUILD_TYPE=Debug                                    \
+          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.linkage == 'shared' }}  \
+          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                            \
+          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install                  \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache                          \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                        \
+          -DH5PP_ENABLE_EIGEN3:BOOL=ON                                \
+          -DH5PP_ENABLE_SPDLOG:BOOL=ON                                \
+          -DH5PP_ENABLE_ASAN:BOOL=OFF                                 \
+          -DH5PP_ENABLE_TESTS:BOOL=ON                                 \
+          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
+          -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
+          -DCPM_SOURCE_CACHE=~/cpm-cache                              \
+           -G "Unix Makefiles"                                        \
+          --loglevel=DEBUG \
+          ../../
+
+      - name: Build
+        run: |
+          cd build/Debug
+          cmake --build . --parallel 2
+
+      - name: Install
+        run: |
+          cd build/Debug
+          cmake --build . --target install
+
+      - name: Test
+        run: |
+          cd build/Debug
+          ctest -C Debug --output-on-failure -R h5pp
+
+
+
