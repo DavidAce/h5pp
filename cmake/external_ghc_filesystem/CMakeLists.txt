@@ -5,8 +5,8 @@ if(INIT_CACHE_FILE)
 endif()
 include(ExternalProject)
 ExternalProject_Add(external_ghc_filesystem
-        URL         https://github.com/gulrak/filesystem/archive/refs/tags/v1.5.6.tar.gz
-        URL_MD5     95b3b55c4f5e29f5915a1b21111e043f
+        URL         https://github.com/gulrak/filesystem/archive/refs/tags/v1.5.8.tar.gz
+        URL_MD5     a6dacafb1e89480518470802255bffae
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE

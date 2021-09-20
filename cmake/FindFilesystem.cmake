@@ -1,15 +1,10 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
 
-# This is copied from:
+# This is copied and slightly modified from:
 #   https://github.com/vector-of-bool/CMakeCM/blob/master/modules/FindFilesystem.cmake
 
 #[=======================================================================[.rst:
-
-# ... and modified lines 149 to 162 just in case
-# ... and modified lines 199 to 226 inspired by:
-#   https://gitlab.kitware.com/cmake/cmake/issues/17834
-
 
 FindFilesystem
 ##############
@@ -110,6 +105,13 @@ if(TARGET std::filesystem)
     return()
 endif()
 
+cmake_policy(PUSH)
+if(POLICY CMP0067)
+    # pass CMAKE_CXX_STANDARD to check_cxx_source_compiles()
+    # has to appear before including CheckCXXSourceCompiles module
+    cmake_policy(SET CMP0067 NEW)
+endif()
+
 include(CMakePushCheckState)
 include(CheckIncludeFileCXX)
 include(CheckCXXSourceCompiles)
@@ -182,7 +184,7 @@ set(_found FALSE)
 
 if(CXX_FILESYSTEM_HAVE_FS)
     # We have some filesystem library available. Do link checks
-    ## HERE STARTS MODIFICATION 2
+    ## HERE STARTS MODIFICATION 1
     string(CONFIGURE [[
         #include <@CXX_FILESYSTEM_HEADER@>
 
@@ -194,29 +196,26 @@ if(CXX_FILESYSTEM_HAVE_FS)
         }
     ]] code @ONLY)
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-        # ON MSVC we shouldn't need a linker flag
+    if (NOT can_link)
+        # Try to compile a simple filesystem program without any linker flags
         check_cxx_source_compiles("${code}" CXX_FILESYSTEM_NO_LINK_NEEDED)
         set(can_link ${CXX_FILESYSTEM_NO_LINK_NEEDED})
-    else()
+    endif()
+
+    if(NOT can_link)
         # Try to compile a simple filesystem program with the libstdc++ flag
-        # If the linker flag exists it's preferrable to use it to avoid spurious undefined references
-        set(CMAKE_REQUIRED_LIBRARIES  -lstdc++fs)
+        set(CMAKE_REQUIRED_LIBRARIES  stdc++fs)
         check_cxx_source_compiles("${code}" CXX_FILESYSTEM_STDCPPFS_NEEDED)
         set(can_link ${CXX_FILESYSTEM_STDCPPFS_NEEDED})
-        if(NOT CXX_FILESYSTEM_STDCPPFS_NEEDED)
-            # Try to compile a simple filesystem program with the libc++ flag
-            set(CMAKE_REQUIRED_LIBRARIES -lc++fs)
-            check_cxx_source_compiles("${code}" CXX_FILESYSTEM_CPPFS_NEEDED)
-            set(can_link ${CXX_FILESYSTEM_CPPFS_NEEDED})
-            if(NOT CXX_FILESYSTEM_CPPFS_NEEDED)
-                # Try to compile a simple filesystem program without any linker flags
-                check_cxx_source_compiles("${code}" CXX_FILESYSTEM_NO_LINK_NEEDED)
-                set(can_link ${CXX_FILESYSTEM_NO_LINK_NEEDED})
-            endif()
-        endif()
     endif()
-    ## HERE ENDS MODIFICATION 2
+
+    if(NOT can_link)
+        # Try to compile a simple filesystem program with the libc++ flag
+        set(CMAKE_REQUIRED_LIBRARIES -lc++fs)
+        check_cxx_source_compiles("${code}" CXX_FILESYSTEM_CPPFS_NEEDED)
+        set(can_link ${CXX_FILESYSTEM_CPPFS_NEEDED})
+    endif()
+    ## HERE ENDS MODIFICATION 1
 
     if(can_link)
         add_library(std::filesystem INTERFACE IMPORTED)
@@ -224,11 +223,17 @@ if(CXX_FILESYSTEM_HAVE_FS)
         set(_found TRUE)
 
         if(CXX_FILESYSTEM_NO_LINK_NEEDED)
-            # Nothing to add...
+            # on certain linux distros we have a version of libstdc++ which has the final code for c++17 fs in the
+            # libstdc++.so.*. BUT when compiling with g++ < 9, we MUST still link with libstdc++fs.a
+            # libc++ should not suffer from this issue, so, in theory we should be fine with only checking for
+            # GCC's libstdc++
+            if((CMAKE_CXX_COMPILER_ID MATCHES "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0.0"))
+                target_link_libraries(std::filesystem INTERFACE stdc++fs)
+            endif()
         elseif(CXX_FILESYSTEM_STDCPPFS_NEEDED)
-            target_link_libraries(std::filesystem INTERFACE -lstdc++fs)
+            target_link_libraries(std::filesystem INTERFACE stdc++fs)
         elseif(CXX_FILESYSTEM_CPPFS_NEEDED)
-            target_link_libraries(std::filesystem INTERFACE -lc++fs)
+            target_link_libraries(std::filesystem INTERFACE c++fs)
         endif()
     endif()
 endif()
@@ -240,3 +245,5 @@ set(Filesystem_FOUND ${_found} CACHE BOOL "TRUE if we can compile and link a pro
 if(Filesystem_FIND_REQUIRED AND NOT Filesystem_FOUND)
     message(FATAL_ERROR "Cannot Compile simple program using std::filesystem")
 endif()
+
+cmake_policy(POP)
