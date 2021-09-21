@@ -1,13 +1,15 @@
 @PACKAGE_INIT@
 
+include(CMakeFindDependencyMacro)
 
-if (H5PP_ENABLE_MPI AND NOT WIN32)
-    find_package(MPI)
-    if (TARGET MPI::MPI_CXX)
-        target_link_libraries(flags INTERFACE MPI::MPI_CXX)
-    endif ()
+# Determine which dependencies to look for
+get_target_property(H5PP_LINK_LIBRARIES h5pp::deps INTERFACE_LINK_LIBRARIES)
+
+if (H5PP_ENABLE_MPI OR MPI::MPI_CXX IN_LIST H5PP_LINK_LIBRARIES)
+    if(NOT WIN32)
+        find_dependency(MPI REQUIRED)
+    endif()
 endif ()
-
 
 if(H5PP_PACKAGE_MANAGER MATCHES "conan")
 
@@ -19,27 +21,12 @@ elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
     # Make sure we use the bundled find modules
     list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_LIST_DIR}")
 
-    # Determine which dependencies to look for
-    get_target_property(H5PP_LINK_LIBRARIES h5pp::deps INTERFACE_LINK_LIBRARIES)
-
-
-    include(CMakeFindDependencyMacro)
-
     # h5pp requires the filesystem header (and possibly stdc++fs library)
     if(std::filesystem IN_LIST H5PP_LINK_LIBRARIES)
         find_package(Filesystem COMPONENTS Final Experimental REQUIRED)
-        list(APPEND H5PP_FOUND_TARGETS std::filesystem)
-    elseif(ghc::filesystem IN_LIST H5PP_LINK_LIBRARIES)
-        find_dependency(ghc_filesystem
-                PATH_SUFFIXES ghc_filesystem
-                REQUIRED)
+    elseif(ghcFilesystem::ghc_filesystem IN_LIST H5PP_LINK_LIBRARIES)
+        find_dependency(ghc_filesystem REQUIRED)
     endif()
-
-    if (H5PP_ENABLE_MPI OR MPI::MPI_CXX IN_LIST H5PP_LINK_LIBRARIES)
-        if(NOT WIN32)
-            find_dependency(MPI REQUIRED)
-        endif()
-    endif ()
 
     if (H5PP_ENABLE_EIGEN3 OR Eigen3::Eigen IN_LIST H5PP_LINK_LIBRARIES)
         find_dependency(Eigen3 3.3 REQUIRED)
