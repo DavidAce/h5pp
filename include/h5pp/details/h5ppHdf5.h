@@ -1807,6 +1807,12 @@ namespace h5pp::hdf5 {
                                  internal::getObjTypeName<ObjType>(),
                                  maxHits,
                                  maxDepth);
+
+        if (not checkIfLinkExists(loc,searchRoot,linkAccess)){
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Cannot find links inside group [{}]: it does not exist", searchRoot));
+        }
+
         std::vector<std::string> matchList;
         internal::maxHits   = maxHits;
         internal::maxDepth  = maxDepth;
@@ -1814,8 +1820,9 @@ namespace h5pp::hdf5 {
         herr_t err          = internal::visit_by_name<ObjType>(loc, searchRoot, matchList, linkAccess);
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Failed to find links of type [{}] while iterating from root [{}]",
+            throw std::runtime_error(h5pp::format("Error occurred when trying to find links of type [{}] containing [{}] while iterating from root [{}]",
                                                   internal::getObjTypeName<ObjType>(),
+                                                  searchKey,
                                                   searchRoot));
         }
         return matchList;
