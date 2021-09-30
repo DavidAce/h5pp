@@ -12,3 +12,8 @@ if(H5PP_DEPS_IN_SUBDIR)
             "\t H5PP_PREFIX_ADD_PKGNAME:BOOL=[TRUE|FALSE]")
     set(H5PP_PREFIX_ADD_PKGNAME ${H5PP_DEPS_IN_SUBDIR})
 endif()
+
+if(H5PP_PRINT_INFO)
+    message(WARNING "The option [H5PP_PRINT_INFO] has been deprecated\n"
+            "Use the built-in CMake CLI option --loglevel=[TRACE|DEBUG|VERBOSE|STATUS...] instead")
+endif()
