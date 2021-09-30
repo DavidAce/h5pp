@@ -159,7 +159,7 @@ HDF5 offers three [storage layouts](https://support.hdfgroup.org/HDF5/Tutor/layo
 
 
 ### Compression
-Extendable (or chunked) datasets can also be compressed if HDF5 was built with zlib support. Use these
+Chunked datasets can be compressed if HDF5 was built with zlib support. Use these
 functions to set or check the compression level:
 
 ```c++
@@ -173,7 +173,7 @@ or pass a temporary compression level as the fifth argument when writing a datas
     file.writeDataset(myData, "science/myCompressedData", H5D_CHUNKED, std::nullopt, 3); // Creates a chunked dataset with compression level 3.
 ```
 
-or use the shorthand member function for this task:
+or use the special member function for this task:
 
 ```c++
    file.writeDataset_compressed(myData, "science/myCompressedData", 3) // // Creates a chunked dataset with compression level 3 (default).
