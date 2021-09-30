@@ -1,0 +1,14 @@
+name: Mirror at KTH-condmat
+on: push
+jobs:
+  repo-sync:
+    runs-on: ubuntu-latest
+    environment: h5pp-mirror
+    steps:
+      - name: Sync to KTH-condmat/h5pp
+        uses: wei/git-sync@v3.0.0
+        with:
+          source_repo: "DavidAce/h5pp"
+          source_branch: "master"
+          destination_repo: "https://DavidAce:${{ secrets.H5PP_ACCESS_TOKEN }}@github.com/KTH-condmat/h5pp.git"
+          destination_branch: "main"
