@@ -103,8 +103,10 @@ function(install_package pkg_name)
     endif()
 
     # Append to CMAKE_PREFIX_PATH so we can find the packages later
-    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${pkg_install_dir};${PKG_INSTALL_DIR}" CACHE INTERNAL "Paths for find_package lookup" FORCE)
+    list(APPEND CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${pkg_install_dir} ${PKG_INSTALL_DIR})
     list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
+    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" CACHE INTERNAL "Paths for find_package lookup" FORCE)
+
 
     # Try finding config files before modules
     set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
