@@ -535,26 +535,29 @@ namespace h5pp::hdf5 {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x_loc>,
                       "Template function [h5pp::hdf5::openLink<h5x>(const h5x_loc & loc, ...)] requires type h5x_loc to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
-        if(linkExists.value()) {
-            if constexpr(std::is_same_v<h5x, hid::h5d>) h5pp::logger::log->trace("Opening dataset [{}]", linkPath);
-            if constexpr(std::is_same_v<h5x, hid::h5g>) h5pp::logger::log->trace("Opening group [{}]", linkPath);
-            if constexpr(std::is_same_v<h5x, hid::h5o>) h5pp::logger::log->trace("Opening object [{}]", linkPath);
-            hid_t link;
-            if constexpr(std::is_same_v<h5x, hid::h5d>) link = H5Dopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
-            if constexpr(std::is_same_v<h5x, hid::h5g>) link = H5Gopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
-            if constexpr(std::is_same_v<h5x, hid::h5o>) link = H5Oopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
-            if(link < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                if constexpr(std::is_same_v<h5x, hid::h5d>) throw std::runtime_error(h5pp::format("Failed to open dataset [{}]", linkPath));
-                if constexpr(std::is_same_v<h5x, hid::h5g>) throw std::runtime_error(h5pp::format("Failed to open group [{}]", linkPath));
-                if constexpr(std::is_same_v<h5x, hid::h5o>) throw std::runtime_error(h5pp::format("Failed to open object [{}]", linkPath));
-            } else {
-                return link;
-            }
-        } else {
-            throw std::runtime_error(h5pp::format("Link does not exist [{}]", linkPath));
+        if constexpr(not h5pp::ndebug){
+            if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
+            if(not linkExists.value())
+                throw std::runtime_error(h5pp::format("Cannot open link [{}]: it does not exist [{}]", linkPath));
         }
+        if constexpr(std::is_same_v<h5x, hid::h5d>) h5pp::logger::log->trace("Opening dataset [{}]", linkPath);
+        if constexpr(std::is_same_v<h5x, hid::h5g>) h5pp::logger::log->trace("Opening group [{}]", linkPath);
+        if constexpr(std::is_same_v<h5x, hid::h5o>) h5pp::logger::log->trace("Opening object [{}]", linkPath);
+
+        hid_t link;
+        if constexpr(std::is_same_v<h5x, hid::h5d>) link = H5Dopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
+        if constexpr(std::is_same_v<h5x, hid::h5g>) link = H5Gopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
+        if constexpr(std::is_same_v<h5x, hid::h5o>) link = H5Oopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
+
+        if(link < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            if constexpr(std::is_same_v<h5x, hid::h5d>) throw std::runtime_error(h5pp::format("Failed to open dataset [{}]", linkPath));
+            if constexpr(std::is_same_v<h5x, hid::h5g>) throw std::runtime_error(h5pp::format("Failed to open group [{}]", linkPath));
+            if constexpr(std::is_same_v<h5x, hid::h5o>) throw std::runtime_error(h5pp::format("Failed to open object [{}]", linkPath));
+        }
+
+        return link;
+
     }
 
     template<typename h5x>
