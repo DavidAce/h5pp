@@ -1,4 +1,5 @@
 #pragma once
+#include "h5ppDebug.h"
 #include "h5ppEigen.h"
 #include "h5ppEnums.h"
 #include "h5ppFilesystem.h"
@@ -28,7 +29,7 @@ namespace h5pp::hdf5 {
         // [3]: this/is/a/long
         // [4]: this/is/a/long/path
 
-        // It is very important to note that the resulting views are not null terminate. Therefore, these vector elements
+        // It is very important to note that the resulting views are not null terminated. Therefore, these vector elements
         // **must not** be used as c-style arrays using their .data() member functions.
         std::vector<std::string_view> output;
         size_t                        currentPosition = 0;
@@ -970,25 +971,78 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    inline void writeSymbolicLink(const h5x           &loc,
-                                  std::string_view     srcPath,
-                                  std::string_view     tgtPath,
-                                  std::optional<bool>  linkExists = std::nullopt,
-                                  const PropertyLists &plists     = PropertyLists()) {
+    inline void createSoftLink(std::string_view     targetLinkPath,
+                               const h5x           &loc,
+                               std::string_view     softLinkPath,
+                               const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
-                      "Template function [h5pp::hdf5::writeSymbolicLink(const h5x & loc, ...)] requires type h5x to be: "
+                      "Template function [h5pp::hdf5::createSoftLink(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        if(not linkExists) linkExists = checkIfLinkExists(loc, srcPath, plists.linkAccess);
-        if(not linkExists.value()) {
-            h5pp::logger::log->trace("Creating symbolic link [{}] --> [{}]", srcPath, tgtPath);
-            herr_t retval =
-                H5Lcreate_soft(util::safe_str(srcPath).c_str(), loc, util::safe_str(tgtPath).c_str(), plists.linkCreate, plists.linkAccess);
-            if(retval < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error(h5pp::format("Failed to write symbolic link [{}]  ", srcPath));
-            }
-        } else {
-            throw std::runtime_error(h5pp::format("Tried to write soft link to non-existing path [{}]", srcPath));
+        if constexpr(not h5pp::ndebug) {
+            if(not checkIfLinkExists(loc, targetLinkPath, plists.linkAccess))
+                throw std::runtime_error(h5pp::format("Tried to create soft link to a path that does not exist [{}]", targetLinkPath));
+        }
+
+        h5pp::logger::log->trace("Creating soft link [{}] --> [{}]", targetLinkPath, softLinkPath);
+        herr_t retval = H5Lcreate_soft(util::safe_str(targetLinkPath).c_str(),
+                                       loc,
+                                       util::safe_str(softLinkPath).c_str(),
+                                       plists.linkCreate,
+                                       plists.linkAccess);
+        if(retval < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Failed to create soft link [{}]  ", targetLinkPath));
+        }
+    }
+
+    template<typename h5x>
+    inline void createHardLink(
+        const h5x           &targetLinkLoc,
+        std::string_view     targetLinkPath,
+                               const h5x           &hardLinkLoc,
+                               std::string_view     hardLinkPath,
+                               const PropertyLists &plists = PropertyLists()) {
+        static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
+                      "Template function [h5pp::hdf5::createHardLink(const h5x & loc, ...)] requires type h5x to be: "
+                      "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
+        if constexpr(not h5pp::ndebug) {
+            if(not checkIfLinkExists(targetLinkLoc, targetLinkPath, plists.linkAccess))
+                throw std::runtime_error(h5pp::format("Tried to create a hard link to a path that does not exist [{}]", targetLinkPath));
+        }
+        h5pp::logger::log->trace("Creating hard link [{}] --> [{}]", targetLinkPath, hardLinkPath);
+        herr_t retval = H5Lcreate_hard(targetLinkLoc,
+                                       util::safe_str(targetLinkPath).c_str(),
+                                       hardLinkLoc,
+                                       util::safe_str(hardLinkPath).c_str(),
+                                       plists.linkCreate,
+                                       plists.linkAccess);
+        if(retval < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Failed to create hard link [{}] -> [{}] ", targetLinkPath, hardLinkPath));
+        }
+    }
+
+    template<typename h5x>
+    void createExternalLink(std::string_view     targetFilePath,
+                            std::string_view     targetLinkPath,
+                            const h5x           &loc,
+                            std::string_view     softLinkPath,
+                            const PropertyLists &plists = PropertyLists()) {
+        static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x>,
+                      "Template function [h5pp::hdf5::createExternalLink(const h5x & loc, ...)] requires type h5x to be: "
+                      "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
+        h5pp::logger::log->trace("Creating external link [{}] from file [{}] : [{}]", softLinkPath, targetFilePath, targetLinkPath);
+
+        herr_t retval = H5Lcreate_external(util::safe_str(targetFilePath).c_str(),
+                                           util::safe_str(targetLinkPath).c_str(),
+                                           loc,
+                                           util::safe_str(softLinkPath).c_str(),
+                                           plists.linkCreate,
+                                           plists.linkAccess);
+
+        if(retval < 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            throw std::runtime_error(h5pp::format("Failed to create external link [{}] --> [{}]", targetLinkPath, softLinkPath));
         }
     }
 
@@ -1808,7 +1862,7 @@ namespace h5pp::hdf5 {
                                  maxHits,
                                  maxDepth);
 
-        if (not checkIfLinkExists(loc,searchRoot,linkAccess)){
+        if(not checkIfLinkExists(loc, searchRoot, linkAccess)) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Cannot find links inside group [{}]: it does not exist", searchRoot));
         }
@@ -1820,10 +1874,11 @@ namespace h5pp::hdf5 {
         herr_t err          = internal::visit_by_name<ObjType>(loc, searchRoot, matchList, linkAccess);
         if(err < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Error occurred when trying to find links of type [{}] containing [{}] while iterating from root [{}]",
-                                                  internal::getObjTypeName<ObjType>(),
-                                                  searchKey,
-                                                  searchRoot));
+            throw std::runtime_error(
+                h5pp::format("Error occurred when trying to find links of type [{}] containing [{}] while iterating from root [{}]",
+                             internal::getObjTypeName<ObjType>(),
+                             searchKey,
+                             searchRoot));
         }
         return matchList;
     }

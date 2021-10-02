@@ -730,10 +730,6 @@ namespace h5pp {
             return dsetInfo;
         }
 
-        void writeSymbolicLink(std::string_view src_path, std::string_view tgt_path) {
-            h5pp::hdf5::writeSymbolicLink(openFileHandle(), src_path, tgt_path, std::nullopt, plists);
-        }
-
         template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
         void readDataset(DataType &data, DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
             h5pp::hdf5::resizeData(data, dataInfo, dsetInfo);
@@ -1371,6 +1367,39 @@ namespace h5pp {
             readTableField(data, tablePath, std::forward<NamesOrIndices>(fieldNamesOrIndices), tableSelection);
             return data;
         }
+
+        /*
+         *
+         *
+         * Functions for creating hard/soft/external links
+         *
+         *
+         */
+
+        void createSoftLink(std::string_view targetLinkPath, std::string_view softLinkPath) {
+            h5pp::hdf5::createSoftLink(targetLinkPath, openFileHandle(), softLinkPath, plists);
+        }
+
+        void createHardLink(std::string_view targetLinkPath, std::string_view hardLinkPath) {
+            h5pp::hdf5::createHardLink(openFileHandle(), targetLinkPath, openFileHandle(), hardLinkPath, plists);
+        }
+
+        void createExternalLink(std::string_view targetFilePath, /*!< Path to an external hdf5 file with the desired link. If relative, it is relative to the current file */
+                                std::string_view targetLinkPath, /*!< Full path to link within the external file */
+                                std::string_view softLinkPath    /*!< Full path to the new soft link created within this file  */
+        ) {
+            // The given targetFilePath is written as-is into the TARGETFILE property of the new esternal link.
+            // Therefore it is important that it is written either as:
+            //      1: a path relative to the current file, and not relative to the current process, or
+            //      2: a full path
+            if(fs::path(targetFilePath).is_relative()){
+                auto prox = fs::proximate(targetFilePath, filePath);
+                if(prox != targetFilePath) h5pp::logger::log->debug("External link [{}] is not relative to the current file [{}]."
+                                                                    "This can cause a dangling soft link");
+            }
+            h5pp::hdf5::createExternalLink(targetFilePath, targetLinkPath, openFileHandle(), softLinkPath, plists);
+        }
+
 
         /*
          *
