@@ -13,7 +13,9 @@ namespace h5pp::util {
 
     [[nodiscard]] inline std::string safe_str(std::string_view str) {
         // This function removes null-terminating characters inside of strings. For instance
-        //      "This is \0 a string with\0 embedded null characters"
+        //      "This is \0 a string with\0 embedded null characters\0"
+        // becomes
+        //      "This is a string with embedded null characters\0"
         // This happens sometimes for instance when concatenating strings that are "non-standard", i.e.
         // strings where .size() returns the "number of characters + 1", where "+1" accounts for '\0'.
         // This can easily happen by accident when mixing C-style arrays and std::string.
@@ -23,7 +25,7 @@ namespace h5pp::util {
         // characters in the strings that we pass to the HDF5 C-API.
         // Note that this function leaves alone any null terminator that is technically in the buffer
         // but outside of .size() (where it is allowed to be!)
-        if(str.empty()) return std::string(str);
+        if(str.empty()) return {};
         std::string tmp(str);
         size_t      start_pos = 0;
         while((start_pos = tmp.find('\0', start_pos)) != std::string::npos) {
