@@ -272,6 +272,39 @@ namespace h5pp::util {
             return dims;
     }
 
+
+    template<typename T = hsize_t>
+    std::vector<T> ind2sub(const std::vector<T> &dims, size_t idx) {
+        static_assert(std::is_integral_v<T>);
+        auto rank    = dims.size();
+        auto dimprod = std::accumulate(dims.begin(), dims.end(), 1ul, std::multiplies<>());
+        if(idx >= dimprod) throw std::runtime_error(h5pp::format("linearIndex {} out of range for dims with size {}", idx, dimprod));
+        std::vector<T> coord(rank, 0);
+        for(size_t i = rank - 1; i < rank; --i) {
+            coord[i] = idx % dims[i];
+            idx -= coord[i];
+            idx /= dims[i];
+        }
+
+        return coord;
+    }
+
+    size_t sub2ind(const std::vector<hsize_t> &dims, const std::vector<hsize_t> &coords) {
+        if(dims.size() != coords.size())
+            throw std::runtime_error(h5pp::format("dims and coords do not have the same rank: {} != {}", dims.size(), coords.size()));
+        auto   rank  = dims.size();
+        size_t index = 0;
+        long   j     = 1; // current
+        for(size_t i = 0; i < rank; i++) {
+            if(coords[i] >= dims[i]) throw std::runtime_error(h5pp::format("coords out of bounds: coords {} |  dims {}", coords, dims));
+            auto dimprod = std::accumulate(dims.begin() + j++, dims.end(), 1ul, std::multiplies<>());
+            index += dimprod * coords[i];
+        }
+        return index;
+    }
+
+
+
     [[nodiscard]] inline hid::h5s getDsetSpace(const hsize_t                       size,
                                                const std::vector<hsize_t> &        dims,
                                                const H5D_layout_t &                h5Layout,
@@ -352,7 +385,7 @@ namespace h5pp::util {
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
-    [[nodiscard]] size_t getBytesPerElem() {
+    [[nodiscard]] constexpr size_t getBytesPerElem() {
         namespace sfn   = h5pp::type::sfinae;
         using DecayType = typename std::decay<DataType>::type;
         if constexpr(std::is_pointer_v<DecayType>) return getBytesPerElem<typename std::remove_pointer<DecayType>::type>();

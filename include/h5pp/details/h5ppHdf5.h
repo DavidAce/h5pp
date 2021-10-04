@@ -14,6 +14,8 @@
 #include <map>
 #include <typeindex>
 #include <utility>
+#include <zlib.h>
+
 /*!
  * \brief A collection of functions to create (or get information about) datasets and attributes in HDF5 files
  */
@@ -535,10 +537,9 @@ namespace h5pp::hdf5 {
         static_assert(h5pp::type::sfinae::is_h5_loc_or_hid_v<h5x_loc>,
                       "Template function [h5pp::hdf5::openLink<h5x>(const h5x_loc & loc, ...)] requires type h5x_loc to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        if constexpr(not h5pp::ndebug){
+        if constexpr(not h5pp::ndebug) {
             if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
-            if(not linkExists.value())
-                throw std::runtime_error(h5pp::format("Cannot open link [{}]: it does not exist [{}]", linkPath));
+            if(not linkExists.value()) throw std::runtime_error(h5pp::format("Cannot open link [{}]: it does not exist [{}]", linkPath));
         }
         if constexpr(std::is_same_v<h5x, hid::h5d>) h5pp::logger::log->trace("Opening dataset [{}]", linkPath);
         if constexpr(std::is_same_v<h5x, hid::h5g>) h5pp::logger::log->trace("Opening group [{}]", linkPath);
@@ -557,7 +558,6 @@ namespace h5pp::hdf5 {
         }
 
         return link;
-
     }
 
     template<typename h5x>
@@ -999,9 +999,8 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    inline void createHardLink(
-        const h5x           &targetLinkLoc,
-        std::string_view     targetLinkPath,
+    inline void createHardLink(const h5x           &targetLinkLoc,
+                               std::string_view     targetLinkPath,
                                const h5x           &hardLinkLoc,
                                std::string_view     hardLinkPath,
                                const PropertyLists &plists = PropertyLists()) {
@@ -1236,6 +1235,29 @@ namespace h5pp::hdf5 {
 
         } else
             for(const auto &slab : hyperSlabs) selectHyperslab(space, slab, H5S_seloper_t::H5S_SELECT_OR);
+    }
+
+    h5pp::Hyperslab getSlabOverlap(const h5pp::Hyperslab &slab1, const h5pp::Hyperslab &slab2) {
+        if(not slab1.offset or not slab1.extent) throw std::runtime_error("slab1 is not fully defined");
+        if(not slab2.offset or not slab2.extent) throw std::runtime_error("slab2 is not fully defined");
+        if(slab1.offset->size() != slab2.offset->size())
+            throw std::runtime_error(
+                h5pp::format("Hyperslab offsets are not equal size: slab1: {} | slab2: {}", slab1.offset.value(), slab2.offset.value()));
+        if(slab1.extent->size() != slab2.extent->size())
+            throw std::runtime_error(
+                h5pp::format("Hyperslab extents are not equal size: slab1: {} | slab2: {}", slab1.extent.value(), slab2.extent.value()));
+        auto            rank = slab1.offset->size();
+        h5pp::Hyperslab olap;
+        olap.offset = std::vector<hsize_t>(rank, 0);
+        olap.extent = std::vector<hsize_t>(rank, 0);
+        for(size_t i = 0; i < rank; i++) {
+            olap.offset.value()[i] = std::max(slab1.offset.value()[i], slab2.offset.value()[i]);
+            hsize_t pos1           = slab1.offset.value()[i] + slab1.extent.value()[i];
+            hsize_t pos2           = slab2.offset.value()[i] + slab2.extent.value()[i];
+            auto    pos            = static_cast<long long>(std::min(pos1, pos2));
+            olap.extent.value()[i] = std::max(0ll, pos - static_cast<long long>(olap.offset.value()[i]));
+        }
+        return olap;
     }
 
     inline void setSpaceExtent(const hid::h5s                     &h5Space,
@@ -1917,6 +1939,7 @@ namespace h5pp::hdf5 {
                                  plists.linkCreate,
                                  dsetInfo.h5PlistDsetCreate.value(),
                                  dsetInfo.h5PlistDsetAccess.value());
+
         if(dsetId <= 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to create dataset {}", dsetInfo.string()));
@@ -1972,6 +1995,292 @@ namespace h5pp::hdf5 {
                 h5pp::format("Failed to get char pointer of datatype [{}]", h5pp::type::sfinae::type_name<DataType>()));
         return sv;
     }
+
+    template<typename DataType>
+    void H5Dwrite_single_chunk(const h5pp::hid::h5d       &dataset,
+                               const std::vector<hsize_t> &chunkOffset,
+                               const DataType             &chunkBuffer,
+                               int                         compression,
+                               const h5pp::PropertyLists  &plists) {
+        size_t chunkByte = h5pp::util::getBytesTotal(chunkBuffer);
+
+        //#define DEFLATE_SIZE_ADJUST(s) (ceil(((double) (s)) * 1.001) + 12)
+        auto deflate_size_adjust = [](auto &s) {
+            return std::ceil(static_cast<double>(s) * 1.001) + 12;
+        };
+
+        auto z_dst_nbytes = static_cast<uLongf>(deflate_size_adjust(chunkByte));
+        auto z_src_nbytes = static_cast<uLong>(chunkByte);
+
+        // Allocate space for the compressed buffer
+        std::vector<std::byte> chunkZBuffer(z_dst_nbytes);
+        auto                   z_dst = (Bytef *) (chunkZBuffer.data());
+
+        // Get a pointer to the source buffer for compression
+        auto z_src = static_cast<const Bytef *>(h5pp::util::getVoidPointer<const void *>(chunkBuffer));
+
+        // Perform compression of the data into the destination chunkZbuffer
+        int z_erw = compress2(z_dst, &z_dst_nbytes, z_src, z_src_nbytes, compression);
+        /* Check for various zlib errors */
+        if(Z_BUF_ERROR == z_erw)
+            throw std::runtime_error("overflow");
+        else if(Z_MEM_ERROR == z_erw)
+            throw std::runtime_error("deflate memory error");
+        else if(Z_OK != z_erw)
+            throw std::runtime_error("other deflate error");
+        uint32_t filter_mask = 0;
+
+        /* Write the compressed chunk data */
+        herr_t erw = H5Dwrite_chunk(dataset, plists.dsetXfer, filter_mask, chunkOffset.data(), z_dst_nbytes, chunkZBuffer.data());
+        if(erw < 0) throw std::runtime_error(h5pp::format("Failed to write chunk at offset {}", chunkOffset));
+    }
+
+    template<typename DataType>
+    void H5Dread_single_chunk(const h5pp::hid::h5d       &dataset,
+                              const std::vector<hsize_t> &chunkOffset,
+                              DataType                   &chunkBuffer,
+                              const h5pp::PropertyLists  &plists = h5pp::PropertyLists()) {
+        size_t chunkByte = h5pp::util::getBytesTotal(chunkBuffer);
+        uint32_t read_filter_mask = 0;
+        hsize_t  read_chunk_nbytes; // Size of the chunk on disk
+        herr_t   erc = H5Dget_chunk_storage_size(dataset, chunkOffset.data(), &read_chunk_nbytes);
+        if(read_chunk_nbytes == 0) return; // There is probably no chunk yet
+        if(erc < 0) throw std::runtime_error("error: failed to get chunk storage size");
+
+        h5pp::logger::log->debug("H5Dread_single_chunk: chunkByte {} | chunkOffset {} | chunkBuffer size {} | chunk storage size {}",
+                                 chunkByte,
+                                 chunkOffset,
+                                 chunkBuffer.size(),
+                                 read_chunk_nbytes);
+
+        std::vector<std::byte> chunkZBuffer(read_chunk_nbytes);
+        herr_t                 err = H5Dread_chunk(dataset, plists.dsetXfer, chunkOffset.data(), &read_filter_mask, chunkZBuffer.data());
+        if(err < 0) throw std::runtime_error(h5pp::format("Failed to read chunk at offset {}", chunkOffset));
+
+        int z_err =
+            uncompress((Bytef *) chunkBuffer.data(), (uLongf *) &chunkByte, (const Bytef *) chunkZBuffer.data(), (uLong) read_chunk_nbytes);
+        /* Check for various zlib errors */
+        if(Z_BUF_ERROR == z_err)
+            throw std::runtime_error("error: not enough room in output buffer");
+        else if(Z_MEM_ERROR == z_err)
+            throw std::runtime_error("error: not enough memory");
+        else if(Z_OK != z_err)
+            throw std::runtime_error("error: corrupted input data");
+    }
+
+    template<typename DataType>
+    void H5Dwrite_chunkwise(const DataType            &data,
+                            const h5pp::hid::h5d      &dataset,
+                            const h5pp::Hyperslab     &dsetSlab,
+                            const h5pp::Hyperslab     &dataSlab,
+                            const h5pp::PropertyLists &plists = h5pp::PropertyLists()) {
+        const auto &dims      = h5pp::hdf5::getDimensions(dataset);
+        const auto &chunkDims = h5pp::hdf5::getChunkDimensions(dataset);
+        if(not chunkDims) throw std::runtime_error("H5Dwrite_chunkwise: dataset [{}] is not chunked");
+        const auto     rank        = dims.size();
+        h5pp::hid::h5p pcrt        = H5Dget_create_plist(dataset);
+        int            compression = h5pp::hdf5::getCompressionLevel(pcrt);
+        size_t         chunkSize   = h5pp::util::getSizeFromDimensions(chunkDims.value());
+        size_t         chunkByte   = chunkSize * h5pp::util::getBytesPerElem<DataType>();
+
+        h5pp::logger::log->debug("H5Dwrite_chunkwise: chunkDims {} | chunkByte {} | chunkSize {}", chunkDims.value(), chunkByte, chunkSize);
+        // Create a vector that counts how many chunks fit in each direction
+        std::vector<hsize_t> chunkNums(chunkDims->size());
+        for(size_t i = 0; i < chunkNums.size(); i++) chunkNums[i] = std::max(1ull, dims[i] / chunkDims.value()[i]);
+
+        size_t chunkCount = h5pp::util::getSizeFromDimensions(chunkNums); // The total number of chunks
+
+        /* Allocate a reusable chunk buffer */
+        std::vector<std::byte> chunkBuffer(chunkByte);
+
+        h5pp::Hyperslab chunkSlab;
+        chunkSlab.offset = std::vector<hsize_t>(rank, 0);
+        chunkSlab.extent = chunkDims;
+
+        // Allocate coordinate vectors
+        auto chunkCoord = std::vector<hsize_t>(rank, 0);
+        auto dsetCoord  = std::vector<hsize_t>(rank, 0);
+        auto dataCoord  = std::vector<hsize_t>(rank, 0);
+        // We iterate through all the chunks in the dataset
+        for(size_t c = 0; c < chunkCount; c++) {
+            // Calculate the offset of this chunk
+            // Step 1, convert c to indices in the chunk basis and create define a slab.
+            auto chunkOffset = h5pp::util::ind2sub(chunkNums, c);
+            // Step 2, convert chunkOffset to offset in the dataset basis.
+            for(size_t i = 0; i < rank; i++) chunkSlab.offset.value()[i] = chunkOffset[i] * chunkDims.value()[i];
+
+            // Step 3 Check if the current chunk would receive any data. If not, go to the next iteration
+            auto olapSlab = h5pp::hdf5::getSlabOverlap(chunkSlab, dsetSlab);
+            auto olapSize = h5pp::util::getSizeFromDimensions(olapSlab.extent.value());
+
+            if(olapSize == 0) continue;
+
+            // Now we know there is some overlapping region. This region is copied into the chunk buffer
+
+            // Load a chunk buffer from file so that we may modify it later
+            h5pp::hdf5::H5Dread_single_chunk(dataset, chunkSlab.offset.value(), chunkBuffer, plists);
+
+            // Step 4 Copy the part of the given data that belongs to this chunk into the buffer
+            for(size_t i = 0; i < olapSize; i++) {
+                // i is the linear index of the overlap slab.
+                auto olapCoord = h5pp::util::ind2sub(olapSlab.extent.value(), i);
+                // olapCoord are the coordinates in the overlap basis
+                // but we need them in chunk basis, so we transform.
+                // First to the dataset basis, and then to chunk basis
+                for(size_t j = 0; j < rank; j++) {
+                    dsetCoord[j]  = olapSlab.offset.value()[j] + olapCoord[j];
+                    chunkCoord[j] = dsetCoord[j] - chunkSlab.offset.value()[j];
+                    dataCoord[j]  = dsetCoord[j] - dsetSlab.offset.value()[j];
+                }
+
+//                h5pp::logger::log->trace("dset  slab {} | coord {}", dsetSlab.string(), dsetCoord);
+//                h5pp::logger::log->trace("olap  slab {} | coord {}", olapSlab.string(), olapCoord);
+//                h5pp::logger::log->trace("data  slab {} | coord {}", dataSlab.string(), dataCoord);
+//                h5pp::logger::log->trace("chunk  slab {} | coord {}", chunkSlab.string(), chunkCoord);
+
+                // Copy the value
+                auto dataIdx  = h5pp::util::sub2ind(dataSlab.extent.value(), dataCoord);
+                auto chunkIdx = h5pp::util::sub2ind(chunkSlab.extent.value(), chunkCoord);
+//                h5pp::logger::log->info("copying data {}:{} to chunk {}:{}", dataIdx, dataCoord, chunkIdx, chunkCoord);
+                std::memcpy(chunkBuffer.data() + chunkIdx * h5pp::util::getBytesPerElem<DataType>(),
+                            &data[dataIdx],
+                            h5pp::util::getBytesPerElem<DataType>());
+            }
+            // Step 5 Now all the data is in the chunk buffer. Write to file
+            h5pp::hdf5::H5Dwrite_single_chunk(dataset, chunkSlab.offset.value(), chunkBuffer, compression, plists);
+        }
+    }
+
+    template<typename DataType>
+    void H5Dwrite_chunkwise(const DataType            &data,
+                            h5pp::DataInfo            &dataInfo,
+                            h5pp::DsetInfo            &dsetInfo,
+                            const h5pp::PropertyLists &plists = h5pp::PropertyLists()) {
+        dsetInfo.assertWriteReady();
+        const auto rank = dsetInfo.dsetDims->size();
+
+        // Define a hyperslab with the shape of the given data
+        h5pp::Hyperslab dataSlab;
+        if(dataInfo.dataSlab)
+            dataSlab = dataInfo.dataSlab.value();
+        else {
+            dataSlab.offset = std::vector<hsize_t>(rank, 0);
+            if(rank == dataInfo.dataDims->size())
+                dataSlab.extent = dataInfo.dataDims.value();
+            else {
+                dataSlab.extent = std::vector<hsize_t>(rank, 1);
+                std::copy(dataInfo.dataDims->begin(), dataInfo.dataDims->end(), dataSlab.extent->rbegin());
+            }
+        }
+        //  Define a hyperslab which selects the points in the dataset that will be written into.
+        h5pp::Hyperslab dsetSlab;
+        if(dsetInfo.dsetSlab)
+            dsetSlab = dsetInfo.dsetSlab.value();
+        else {
+            dsetSlab.offset = std::vector<hsize_t>(rank, 0);
+            dsetSlab.extent = dataSlab.extent;
+        }
+        H5Dwrite_chunkwise(data, dsetInfo.h5Dset.value(), dsetSlab, dataSlab, plists);
+    }
+
+    //    template<typename DataType>
+    //    void H5Dwrite_chunkwise(const DataType            &data,
+    //                            h5pp::DataInfo            &dataInfo,
+    //                            h5pp::DsetInfo            &dsetInfo,
+    //                            const h5pp::PropertyLists &plists = h5pp::PropertyLists()) {
+    //        if(not dsetInfo.dsetChunk.has_value()) throw std::runtime_error("Dataset is not chunked");
+    //        const auto &dims      = dsetInfo.dsetDims.value();
+    //        const auto &chunkDims = h5pp::hdf5::getChunkDimensions(dsetInfo.h5Dset.value());
+    //        if(not chunkDims)
+    //            throw std::runtime_error(h5pp::format("H5Dwrite_chunkwise: dataset [{}] has no chunk dimensions",
+    //            dsetInfo.dsetPath.value()));
+    //        const auto rank        = dims.size();
+    //        int        compression = h5pp::hdf5::getCompressionLevel(dsetInfo.h5PlistDsetCreate.value());
+    //        size_t     chunkSize   = h5pp::util::getSizeFromDimensions(chunkDims.value());
+    //        size_t     chunkByte   = chunkSize * h5pp::util::getBytesPerElem<DataType>();
+    //
+    //        // Create a vector that counts how many chunks fit in each direction
+    //        std::vector<hsize_t> chunkNums(chunkDims->size());
+    //        for(size_t i = 0; i < chunkNums.size(); i++) chunkNums[i] = dims[i] / chunkDims.value()[i];
+    //
+    //        size_t chunkCount = h5pp::util::getSizeFromDimensions(chunkNums); // The total number of chunks
+    //
+    //        // Define a hyperslab with the shape of the given data
+    //        h5pp::Hyperslab dataSlab;
+    //        if(dataInfo.dataSlab)
+    //            dataSlab = dataInfo.dataSlab.value();
+    //        else {
+    //            dataSlab.offset = std::vector<hsize_t>(rank, 0);
+    //            if(rank == dataInfo.dataDims->size())
+    //                dataSlab.extent = dataInfo.dataDims.value();
+    //            else {
+    //                dataSlab.extent = std::vector<hsize_t>(rank, 1);
+    //                std::copy(dataInfo.dataDims->begin(), dataInfo.dataDims->end(), dataSlab.extent->rbegin());
+    //            }
+    //        }
+    //        //  Define a hyperslab which selects the points in the dataset that will be written into.
+    //        h5pp::Hyperslab dsetSlab;
+    //        if(dsetInfo.dsetSlab)
+    //            dsetSlab = dsetInfo.dsetSlab.value();
+    //        else {
+    //            dsetSlab.offset = std::vector<hsize_t>(rank, 0);
+    //            dsetSlab.extent = dataSlab.extent;
+    //        }
+    //
+    //        /* Allocate a reusable chunk buffer */
+    //        std::vector<std::byte> chunkBuffer(chunkByte);
+    //
+    //        h5pp::Hyperslab chunkSlab;
+    //        chunkSlab.offset = std::vector<hsize_t>(rank, 0);
+    //        chunkSlab.extent = chunkDims;
+    //
+    //        // Allocate coordinate vectors
+    //        auto chunkCoord = std::vector<hsize_t>(rank, 0);
+    //        auto dsetCoord  = std::vector<hsize_t>(rank, 0);
+    //        auto dataCoord  = std::vector<hsize_t>(rank, 0);
+    //        // We iterate through all the chunks in the dataset
+    //        for(size_t c = 0; c < chunkCount; c++) {
+    //            // Calculate the offset of this chunk
+    //            // Step 1, convert c to indices in the chunk basis and create define a slab.
+    //            auto chunkOffset = h5pp::util::ind2sub(chunkNums, c);
+    //            // Step 2, convert chunkOffset to offset in the dataset basis.
+    //            for(size_t i = 0; i < rank; i++) chunkSlab.offset.value()[i] = chunkOffset[i] * chunkDims.value()[i];
+    //
+    //            // Step 3 Check if the current chunk would receive any data. If not, go to the next iteration
+    //            auto olapSlab = getSlabOverlap(chunkSlab, dsetSlab);
+    //            auto olapSize = h5pp::util::getSizeFromDimensions(olapSlab.extent.value());
+    //            if(olapSize == 0) continue;
+    //
+    //            // Now we know there is some overlapping region. This region is copied into the chunk buffer
+    //
+    //            // Load a chunk buffer from file so that we may modify it later
+    //            h5pp::hdf5::H5Dread_single_chunk(dsetInfo.h5Dset.value(), chunkSlab.offset.value(), chunkBuffer, plists);
+    //
+    //            // Step 4 Copy the part of the given data that belongs to this chunk into the buffer
+    //            for(size_t i = 0; i < olapSize; i++) {
+    //                // i is the linear index of the overlap slab.
+    //                auto olapCoord = h5pp::util::ind2sub(olapSlab.extent.value(), i);
+    //                // olapCoord are the coordinates in the overlap basis
+    //                // but we need them in chunk basis, so we transform.
+    //                // First to the dataset basis, and then to chunk basis
+    //                for(size_t j = 0; j < rank; j++) {
+    //                    dsetCoord[j]  = olapSlab.offset.value()[j] + olapCoord[j];
+    //                    chunkCoord[j] = dsetCoord[j] - chunkSlab.offset.value()[j];
+    //                    dataCoord[j]  = dsetCoord[j] - dsetSlab.offset.value()[j];
+    //                }
+    //
+    //                // Copy the value
+    //                auto dataIdx  = h5pp::util::sub2ind(dataSlab.extent.value(), dataCoord);
+    //                auto chunkIdx = h5pp::util::sub2ind(chunkSlab.extent.value(), chunkCoord);
+    //                h5pp::logger::log->info("copying data {}:{} to chunk {}:{}", dataIdx, dataCoord, chunkIdx, chunkCoord);
+    //                std::memcpy(chunkBuffer.data() + chunkIdx * h5pp::util::getBytesPerElem<DataType>(),
+    //                            &data[dataIdx],
+    //                            h5pp::util::getBytesPerElem<DataType>());
+    //            }
+    //            // Step 5 Now all the data is in the chunk buffer. Write to file
+    //            H5Dwrite_single_chunk(dsetInfo.h5Dset.value(), chunkSlab.offset.value(), chunkBuffer, compression, plists);
+    //        }
+    //    }
 
     template<typename DataType>
     void writeDataset(const DataType      &data,
@@ -2434,20 +2743,21 @@ namespace h5pp::hdf5 {
         // Copy member name data to a vector of const char * for compatibility
         std::vector<const char *> fieldNames;
         for(auto &name : info.fieldNames.value()) fieldNames.push_back(name.c_str());
-        int    compression = info.compressionLevel.value() == 0 ? 0 : 1; // Only true/false (1/0). Is set to level 6 in HDF5 sources
-        herr_t retval      = H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
-                                            info.getLocId(),
-                                            util::safe_str(info.tablePath.value()).c_str(),
-                                            info.numFields.value(),
-                                            info.numRecords.value(),
-                                            info.recordBytes.value(),
-                                            fieldNames.data(),
-                                            info.fieldOffsets.value().data(),
-                                            fieldTypesHidT.data(),
-                                            info.chunkSize.value(),
-                                            nullptr,
-                                            compression,
-                                            nullptr);
+        int compression       = info.compressionLevel.value() == 0 ? 0 : 1; // Only true/false (1/0). Is set to level 6 in HDF5 sources
+        info.compressionLevel = compression;                                // Set to 1/0 so that users can read this field later
+        herr_t retval         = H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
+                                               info.getLocId(),
+                                               util::safe_str(info.tablePath.value()).c_str(),
+                                               info.numFields.value(),
+                                               info.numRecords.value(),
+                                               info.recordBytes.value(),
+                                               fieldNames.data(),
+                                               info.fieldOffsets.value().data(),
+                                               fieldTypesHidT.data(),
+                                               info.chunkSize.value(),
+                                               nullptr,
+                                               compression,
+                                               nullptr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Could not create table [{}]", info.tablePath.value()));
@@ -2628,20 +2938,24 @@ namespace h5pp::hdf5 {
         hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
         hid::h5s dataSpace = util::getMemSpace(numNewRecords.value(), {numNewRecords.value()}); /* create a simple memory data space */
 
-        /* Step 3: draw a hyperslab in the dataset */
-        h5pp::Hyperslab slab;
-        slab.offset = {info.numRecords.value()};
-        slab.extent = {numNewRecords.value()};
-        selectHyperslab(dsetSpace, slab, H5S_SELECT_SET);
+        /* Step 3: draw a hyperslab describing the data and dataset */
+        h5pp::Hyperslab dsetSlab;
+        dsetSlab.offset = {info.numRecords.value()};
+        dsetSlab.extent = {numNewRecords.value()};
+        selectHyperslab(dsetSpace, dsetSlab, H5S_SELECT_SET);
+
+        h5pp::Hyperslab dataSlab(dataSpace);
 
         /* Step 4: write the records */
         // Get the memory address to the data buffer
-        auto   dataPtr = h5pp::util::getVoidPointer<const void *>(data);
-        herr_t retval  = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
-        if(retval < 0) {
-            H5Eprint(H5E_DEFAULT, stderr);
-            throw std::runtime_error(h5pp::format("Failed to append data to table [{}]", info.tablePath.value()));
-        }
+        //        auto   dataPtr = h5pp::util::getVoidPointer<const void *>(data);
+        //        herr_t retval  = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
+        H5Dwrite_chunkwise(data, info.h5Dset.value(), dsetSlab, dataSlab);
+
+        //        if(retval < 0) {
+        //            H5Eprint(H5E_DEFAULT, stderr);
+        //            throw std::runtime_error(h5pp::format("Failed to append data to table [{}]", info.tablePath.value()));
+        //        }
         /* Step 5: increment the number of records in the table */
         info.numRecords.value() += numNewRecords.value();
     }

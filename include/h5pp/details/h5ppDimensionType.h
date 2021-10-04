@@ -49,6 +49,8 @@ namespace h5pp {
                     dims = dims_.value();
             else if constexpr(std::is_assignable_v<UnknownType, DimsType>)
                 dims = dims_;
+            else if constexpr(std::is_array_v<UnknownType> and std::is_integral_v<std::remove_all_extents_t<UnknownType>>)
+                dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
             else {
                 static_assert(h5pp::type::sfinae::invalid_type_v<UnknownType>, "Could not identify dimension type");
                 throw std::runtime_error(
@@ -89,6 +91,8 @@ namespace h5pp {
                 dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
             else if constexpr(std::is_assignable_v<UnknownType, OptDimsType> or std::is_assignable_v<UnknownType, DimsType>)
                 dims = dims_;
+            else if constexpr(std::is_array_v<UnknownType> and std::is_integral_v<std::remove_all_extents_t<UnknownType>>)
+                dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
             else {
                 static_assert(h5pp::type::sfinae::invalid_type_v<UnknownType>, "Could not identify dimension type");
                 throw std::runtime_error(

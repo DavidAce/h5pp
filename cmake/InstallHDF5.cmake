@@ -47,5 +47,7 @@ function(install_hdf5)
             -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON
             -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON
             )
-    set(PKG_hdf5_TARGET ${PKG_hdf5_TARGET} PARENT_SCOPE)
+    set(PKG_hdf5_TARGET ${PKG_hdf5_TARGET} ${PKG_zlib_TARGET} ${PKG_szip_TARGET} PARENT_SCOPE)
+    set(PKG_zlib_TARGET ${PKG_zlib_TARGET} PARENT_SCOPE)
+    set(PKG_szip_TARGET ${PKG_szip_TARGET} PARENT_SCOPE)
 endfunction()

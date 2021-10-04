@@ -19,6 +19,11 @@ foreach (test ${TESTS})
     list(APPEND test_tgt_list h5pp-${test_nwe})
 endforeach ()
 
+
+find_package(ZLIB REQUIRED)
+target_link_libraries(h5pp-test-directWrite PRIVATE ZLIB::ZLIB)
+
+
 add_custom_command(
         TARGET h5pp-test-all
         POST_BUILD
