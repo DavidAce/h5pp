@@ -165,7 +165,7 @@ functions to set or check the compression level:
 ```c++
     file.setCompressionLevel(3);            // 0 to 9: 0 to disable compression, 9 for maximum compression. Recommended 2 to 5
     file.getCompressionLevel();             // Gets the current compression level
-    h5pp::checkIfCompressionIsAvailable();  // True if your installation of HDF5 has zlib support 
+    h5pp::hdf5::isCompressionAvaliable();   // True if your installation of HDF5 has zlib support 
 ```
 
 or pass a temporary compression level as the fifth argument when writing a dataset:

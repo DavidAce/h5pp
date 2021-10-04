@@ -93,7 +93,7 @@ namespace h5pp {
         std::optional<Hyperslab>        dataSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from memory  */
         std::optional<hid::h5t>         h5Type        = std::nullopt; /*!< (On create) Type of dataset. Override automatic type detection. */
         std::optional<H5D_layout_t>     h5Layout      = std::nullopt; /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
-        std::optional<unsigned int>     compression   = std::nullopt; /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+        std::optional<int>              compression   = std::nullopt; /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
         std::optional<h5pp::ResizePolicy> resizePolicy    = std::nullopt; /*!< Type of resizing if needed. Choose GROW, TO_FIT,OFF */
         /* clang-format on */
         [[nodiscard]] std::string string(bool enable = true) const {
@@ -229,7 +229,7 @@ namespace h5pp {
         OptDimsType                       dsetChunk         = std::nullopt;
         std::optional<Hyperslab>          dsetSlab          = std::nullopt;
         std::optional<h5pp::ResizePolicy> resizePolicy      = std::nullopt;
-        std::optional<unsigned int>       compression       = std::nullopt;
+        std::optional<int>                compression       = std::nullopt;
         std::optional<std::string>        cppTypeName       = std::nullopt;
         std::optional<size_t>             cppTypeSize       = std::nullopt;
         std::optional<std::type_index>    cppTypeIndex      = std::nullopt;
@@ -502,7 +502,7 @@ namespace h5pp {
         std::optional<std::vector<size_t>>          fieldOffsets     = std::nullopt;
         std::optional<std::vector<hid::h5t>>        fieldTypes       = std::nullopt;
         std::optional<bool>                         tableExists      = std::nullopt;
-        std::optional<size_t>                       compressionLevel = std::nullopt;
+        std::optional<int>                          compression      = std::nullopt;
         std::optional<hsize_t>                      chunkSize        = std::nullopt;
         std::optional<std::vector<std::string>>     cppTypeName      = std::nullopt;
         std::optional<std::vector<size_t>>          cppTypeSize      = std::nullopt;
@@ -530,7 +530,7 @@ namespace h5pp {
             if(not fieldSizes)          error_msg.append("\t fieldSizes\n");
             if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
             if(not fieldTypes)          error_msg.append("\t fieldTypes\n");
-            if(not compressionLevel)    error_msg.append("\t compressionLevel\n");
+            if(not compression)         error_msg.append("\t compression\n");
             if(not chunkSize)           error_msg.append("\t chunkSize\n");
             if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot create new table: The following fields are not set:\n{}", error_msg));
             if(not hasLocId())        throw std::runtime_error(h5pp::format("Cannot create new table [{}]: The location ID is not set", tablePath.value()));

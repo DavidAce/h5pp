@@ -62,11 +62,11 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
         H5Tinsert(MY_HDF5_PARTICLE_TYPE, "rho", HOFFSET(Particle, rho), MY_HDF5_RHO_TYPE);
         H5Tinsert(MY_HDF5_PARTICLE_TYPE, "name", HOFFSET(Particle, name), MY_HDF5_NAME_TYPE);
 
-        file.createTable(MY_HDF5_PARTICLE_TYPE, "somegroup/particleTable", "particleTable");
+        REQUIRE_NOTHROW(file.createTable(MY_HDF5_PARTICLE_TYPE, "somegroup/particleTable", "particleTable", {5}, true));
 
         // Write table entries
         std::vector<Particle> particles(10);
-        file.appendTableRecords(particles, "somegroup/particleTable");
+        REQUIRE_NOTHROW(file.appendTableRecords(particles, "somegroup/particleTable"));
     }
 
     SECTION("Single field by name and index") {
@@ -144,7 +144,8 @@ int main(int argc, char *argv[]) {
     if(returnCode != 0) // Indicates a command line error
         return returnCode;
 
-    //    session.configData().showSuccessfulTests = true;
-    //    session.configData().reporterName = "compact";
+//    session.configData().showSuccessfulTests = true;
+//    session.configData().reporterName = "compact";
+//    session.configData().shouldDebugBreak = true;
     return session.run();
 }

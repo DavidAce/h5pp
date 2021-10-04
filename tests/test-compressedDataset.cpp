@@ -14,7 +14,7 @@ int main() {
 
 #ifdef H5PP_EIGEN3
     // Test compressed writes
-    if(h5pp::hdf5::checkIfCompressionIsAvailable()) {
+    if(h5pp::hdf5::isCompressionAvaliable()) {
         file.setCompressionLevel(9);
         Eigen::Tensor<double, 4> bigTensor(40, 180, 40, 5);
         bigTensor.setConstant(1.0);

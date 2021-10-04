@@ -1,4 +1,5 @@
 #pragma once
+#include "h5ppConstants.h"
 #include "h5ppOptional.h"
 #include "h5ppType.h"
 #include "h5ppTypeCompound.h"
@@ -36,15 +37,24 @@ namespace h5pp::util {
     }
 
     template<typename PtrType, typename DataType>
-    [[nodiscard]] inline PtrType getVoidPointer(DataType &data) {
+    [[nodiscard]] inline PtrType getVoidPointer(DataType &data, size_t offset = 0) {
         // Get the memory address to a data buffer
 
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
-            return static_cast<PtrType>(data.data());
+            return static_cast<PtrType>(data.data() + offset);
         else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
-            return static_cast<PtrType>(data);
+            return static_cast<PtrType>(data + offset);
         else
-            return static_cast<PtrType>(&data);
+            return static_cast<PtrType>(&data + offset);
+    }
+
+    /*! \brief Checks if multiple values are equal to each other
+     *   \param args any number of values
+     *   \return bool, true if all args are equal
+     */
+    template<typename First, typename... T>
+    bool all_equal(First &&first, T &&...t) noexcept {
+        return ((first == t) && ...);
     }
 
     template<typename DataType>
@@ -96,8 +106,8 @@ namespace h5pp::util {
 
         /* clang-format on */
         throw std::runtime_error(h5pp::format("getH5Type could not match the type provided [{}] | size {}",
-                                            type::sfinae::type_name<DecayType>(),
-                                            sizeof(DecayType)));
+                                              type::sfinae::type_name<DecayType>(),
+                                              sizeof(DecayType)));
         return hid_t(0);
     }
 
@@ -272,24 +282,30 @@ namespace h5pp::util {
             return dims;
     }
 
-
     template<typename T = hsize_t>
-    std::vector<T> ind2sub(const std::vector<T> &dims, size_t idx) {
+    void ind2sub(const std::vector<T> &dims, size_t idx, std::vector<T> &coord) {
         static_assert(std::is_integral_v<T>);
+        if(dims.size() != coord.size())
+            throw std::runtime_error(h5pp::format("dims.size [{}] != coord.size [{}]", dims.size(), coord.size()));
         auto rank    = dims.size();
         auto dimprod = std::accumulate(dims.begin(), dims.end(), 1ul, std::multiplies<>());
         if(idx >= dimprod) throw std::runtime_error(h5pp::format("linearIndex {} out of range for dims with size {}", idx, dimprod));
-        std::vector<T> coord(rank, 0);
         for(size_t i = rank - 1; i < rank; --i) {
             coord[i] = idx % dims[i];
             idx -= coord[i];
             idx /= dims[i];
         }
+    }
 
+    template<typename T = hsize_t>
+    [[nodiscard]] std::vector<T> ind2sub(const std::vector<T> &dims, size_t idx) {
+        static_assert(std::is_integral_v<T>);
+        std::vector<T> coord(dims.size(), 0);
+        ind2sub(dims, idx, coord);
         return coord;
     }
 
-    size_t sub2ind(const std::vector<hsize_t> &dims, const std::vector<hsize_t> &coords) {
+    [[nodiscard]] inline size_t sub2ind(const std::vector<hsize_t> &dims, const std::vector<hsize_t> &coords) {
         if(dims.size() != coords.size())
             throw std::runtime_error(h5pp::format("dims and coords do not have the same rank: {} != {}", dims.size(), coords.size()));
         auto   rank  = dims.size();
@@ -303,11 +319,9 @@ namespace h5pp::util {
         return index;
     }
 
-
-
     [[nodiscard]] inline hid::h5s getDsetSpace(const hsize_t                       size,
-                                               const std::vector<hsize_t> &        dims,
-                                               const H5D_layout_t &                h5Layout,
+                                               const std::vector<hsize_t>         &dims,
+                                               const H5D_layout_t                 &h5Layout,
                                                std::optional<std::vector<hsize_t>> dimsMax = std::nullopt) {
         if(dims.empty() and size > 0)
             return H5Screate(H5S_SCALAR);
@@ -487,7 +501,7 @@ namespace h5pp::util {
     }
 
     inline std::optional<std::vector<hsize_t>> getChunkDimensions(size_t                              bytesPerElem,
-                                                                  const std::vector<hsize_t> &        dims,
+                                                                  const std::vector<hsize_t>         &dims,
                                                                   std::optional<std::vector<hsize_t>> dimsMax,
                                                                   std::optional<H5D_layout_t>         layout) {
         // Here we make a naive guess for chunk dimensions

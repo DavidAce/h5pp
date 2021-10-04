@@ -683,9 +683,9 @@ namespace h5pp::scan {
             if(chunkVec and not chunkVec->empty()) info.chunkSize = chunkVec.value()[0];
         }
 
-        if(not info.compressionLevel) {
-            hid::h5p plist        = H5Dget_create_plist(info.h5Dset.value());
-            info.compressionLevel = h5pp::hdf5::getCompressionLevel(plist);
+        if(not info.compression) {
+            hid::h5p plist   = H5Dget_create_plist(info.h5Dset.value());
+            info.compression = h5pp::hdf5::getCompressionLevel(plist);
         }
 
         // Get c++ properties
@@ -729,14 +729,14 @@ namespace h5pp::scan {
         if(not info.numFields        ) info.numFields        = H5Tget_nmembers(info.h5Type.value());
         if(not info.numRecords       ) info.numRecords       = 0;
         if(not info.recordBytes      ) info.recordBytes      = H5Tget_size(info.h5Type.value());
-        if(not info.compressionLevel ) info.compressionLevel = options.compression;
+        if(not info.compression ) info.compression = options.compression;
         if(not info.chunkSize and (options.dsetDimsChunk and not options.dsetDimsChunk->empty()))
             info.chunkSize = options.dsetDimsChunk.value()[0];
 
         if(not info.chunkSize)
             info.chunkSize =
                 h5pp::util::getChunkDimensions(info.recordBytes.value(), {1}, std::nullopt, H5D_layout_t::H5D_CHUNKED).value()[0];
-        if(not info.compressionLevel) info.compressionLevel = h5pp::hdf5::getValidCompressionLevel();
+        if(not info.compression) info.compression = h5pp::hdf5::getValidCompressionLevel();
 
         if(not info.fieldTypes){
             info.fieldTypes   = std::vector<h5pp::hid::h5t>(info.numFields.value());
@@ -846,17 +846,18 @@ namespace h5pp::scan {
         H5O_info_t     oInfo;
 #if defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
         H5O_native_info_t nInfo;
-        herr_t nerr = H5Oget_native_info(info.h5Link.value(), &nInfo, H5O_NATIVE_INFO_HDR);
-        herr_t oerr = H5Oget_info(info.h5Link.value(), &oInfo, H5O_INFO_BASIC|H5O_INFO_TIME|H5O_INFO_NUM_ATTRS);
-        hInfo = nInfo.hdr;
+        herr_t            nerr = H5Oget_native_info(info.h5Link.value(), &nInfo, H5O_NATIVE_INFO_HDR);
+        herr_t            oerr = H5Oget_info(info.h5Link.value(), &oInfo, H5O_INFO_BASIC | H5O_INFO_TIME | H5O_INFO_NUM_ATTRS);
+        hInfo                  = nInfo.hdr;
         if(nerr != 0)
-            throw std::runtime_error(h5pp::format("H5Oget_native_info returned error code {} when reading link {}",nerr, info.linkPath.value()));
+            throw std::runtime_error(
+                h5pp::format("H5Oget_native_info returned error code {} when reading link {}", nerr, info.linkPath.value()));
 #else
         herr_t oerr = H5Oget_info(info.h5Link.value(), &oInfo);
-        hInfo = oInfo.hdr;
+        hInfo       = oInfo.hdr;
 #endif
         if(oerr != 0)
-            throw std::runtime_error(h5pp::format("H5Oget_info returned error code {} when reading link {}",oerr, info.linkPath.value()));
+            throw std::runtime_error(h5pp::format("H5Oget_info returned error code {} when reading link {}", oerr, info.linkPath.value()));
 
         info.h5HdrInfo = hInfo;
         info.h5HdrByte = hInfo.space.total;
@@ -867,7 +868,6 @@ namespace h5pp::scan {
         info.ctime     = oInfo.ctime;
         info.btime     = oInfo.btime;
         info.num_attrs = oInfo.num_attrs;
-
 
         h5pp::logger::log->trace("Scanned header metadata {}", info.string(h5pp::logger::logIf(0)));
     }

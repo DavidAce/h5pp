@@ -1,9 +1,6 @@
-#include <cmath>
-#include <cstdint>
 #include <h5pp/h5pp.h>
 #include <iostream>
 #include <vector>
-#include <zlib.h>
 
 
 struct Table {
@@ -63,7 +60,7 @@ int main() {
     MY_HDF5_TABLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Table));
     H5Tinsert(MY_HDF5_TABLE_TYPE, "x", HOFFSET(Table, x), H5T_NATIVE_DOUBLE);
     H5Tinsert(MY_HDF5_TABLE_TYPE, "y", HOFFSET(Table, y), H5T_NATIVE_DOUBLE);
-    auto tableInfo = file.createTable(MY_HDF5_TABLE_TYPE, "somegroup/someTable", "someTable", {4}, 6);
+    auto tableInfo = file.createTable(MY_HDF5_TABLE_TYPE, "somegroup/someTable", "someTable", std::nullopt, true);
 
     std::vector<Table> elems = {{1,1}, {2,2}};
     tableInfo = file.appendTableRecords(elems, "somegroup/someTable");
@@ -76,6 +73,4 @@ int main() {
     table = file.readTableRecords<std::vector<Table>>("somegroup/someTable", 0);
 
     for(auto & t : table) h5pp::logger::log->info("table: {} {}", t.x, t.y);
-
-
 }
