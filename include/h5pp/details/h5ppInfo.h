@@ -1,4 +1,5 @@
 #pragma once
+#include "h5ppDebug.h"
 #include "h5ppDimensionType.h"
 #include "h5ppEnums.h"
 #include "h5ppHid.h"
@@ -234,7 +235,6 @@ namespace h5pp {
         std::optional<std::string>        cppTypeName  = std::nullopt;
         std::optional<size_t>             cppTypeSize  = std::nullopt;
         std::optional<std::type_index>    cppTypeIndex = std::nullopt;
-
 
         [[nodiscard]] hid::h5f getLocId() const {
             if(h5File) return h5File.value();
