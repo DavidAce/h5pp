@@ -3,13 +3,13 @@
 #include "h5ppHid.h"
 #include "h5ppOptional.h"
 #include <array>
+#include <complex>
 #include <H5Tpublic.h>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <type_traits>
 #include <vector>
-#include <complex>
 /*!
  * \brief A collection of type-detection utilities using SFINAE
  */
@@ -47,6 +47,11 @@ namespace h5pp::type::sfinae {
     inline constexpr bool unrecognized_type_v = false;
     template<class>
     inline constexpr bool invalid_type_v = false;
+
+    template<class T, class... Ts>
+    struct is_any : std::disjunction<std::is_same<T, Ts>...> {};
+    template<class T, class... Ts>
+    inline constexpr bool is_any_v = is_any<T, Ts...>::value;
 
     template<typename T, typename = std::void_t<>>
     struct has_size : public std::false_type {};
@@ -242,10 +247,10 @@ namespace h5pp::type::sfinae {
     using enable_if_is_iterable_or_nullopt = std::enable_if_t<is_iterable_v<T> or std::is_same_v<T, std::nullopt_t>>;
 
     template<typename T>
-    inline constexpr bool is_h5_loc_v = std::is_same_v<T, hid::h5f> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o>;
+    inline constexpr bool is_h5_loc_v = is_any_v<T, hid::h5f, hid::h5g, hid::h5o>;
 
     template<typename T>
-    inline constexpr bool is_h5_loc_or_hid_v = is_h5_loc_v<T> or std::is_same_v<T, hid_t>;
+    inline constexpr bool is_h5_loc_or_hid_v = is_any_v<T, hid::h5f, hid::h5g, hid::h5o, hid_t>;
 
     template<typename T>
     inline constexpr bool is_h5_link_v = std::is_same_v<T, hid::h5d> or std::is_same_v<T, hid::h5g> or std::is_same_v<T, hid::h5o>;
@@ -254,7 +259,11 @@ namespace h5pp::type::sfinae {
     inline constexpr bool is_h5_link_or_hid_v = is_h5_link_v<T> or std::is_same_v<T, hid_t>;
 
     template<typename T>
-    inline constexpr bool is_h5_type_v = std::is_same_v<T, hid::h5t> or std::is_same_v<T, hid_t>;
+    inline constexpr bool is_h5_type_v = is_any_v<T, hid::h5t, hid_t>;
+
+    template<typename T>
+    inline constexpr bool is_h5_hid_v =
+        is_any_v<T, hid::h5d, hid::h5g, hid::h5o, hid::h5a, hid::h5s, hid::h5t, hid::h5f, hid::h5p, hid::h5e>;
 
     template<typename T>
     using enable_if_is_h5_loc_t = std::enable_if_t<is_h5_loc_v<T>>;

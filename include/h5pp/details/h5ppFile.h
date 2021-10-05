@@ -481,13 +481,13 @@ namespace h5pp {
             return dsetInfo;
         }
 
-        DsetInfo createDataset(std::string_view            dsetPath,
-                               hid_t                       h5Type,
-                               H5D_layout_t                h5Layout,
-                               const DimsType             &dsetDims,
-                               const OptDimsType          &dsetDimsChunk = std::nullopt,
-                               const OptDimsType          &dsetDimsMax   = std::nullopt,
-                               const std::optional<int>    compression   = std::nullopt) {
+        DsetInfo createDataset(std::string_view         dsetPath,
+                               const hid::h5t          &h5Type,
+                               H5D_layout_t             h5Layout,
+                               const DimsType          &dsetDims,
+                               const OptDimsType       &dsetDimsChunk = std::nullopt,
+                               const OptDimsType       &dsetDimsMax   = std::nullopt,
+                               const std::optional<int> compression   = std::nullopt) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
             Options options;
@@ -503,6 +503,7 @@ namespace h5pp {
 
         template<typename DataType>
         DsetInfo createDataset(const DataType &data, const Options &options) {
+            static_assert(not type::sfinae::is_h5_hid_v<DataType>);
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
             auto dsetInfo = h5pp::scan::inferDsetInfo(openFileHandle(), data, options, plists);
@@ -510,7 +511,7 @@ namespace h5pp {
             return dsetInfo;
         }
 
-        template<typename DataType, typename = h5pp::type::sfinae::enable_if_not_h5_type<DataType>>
+        template<typename DataType>
         DsetInfo createDataset(const DataType             &data,
                                std::string_view            dsetPath,
                                const OptDimsType          &dataDims      = std::nullopt,
@@ -567,6 +568,7 @@ namespace h5pp {
 
         template<typename DataType>
         DsetInfo writeDataset(const DataType &data, const Options &options) {
+            static_assert(not type::sfinae::is_h5_hid_v<DataType>);
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             options.assertWellDefined();
@@ -588,8 +590,8 @@ namespace h5pp {
             std::optional<hid::h5t>     h5Type         = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
             std::optional<ResizePolicy> resizePolicy   = std::nullopt, /*!< Type of resizing if needed. Choose GROW, FIT,OFF */
             const std::optional<int> compression    = std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+        /* clang-format on */
         {
-            /* clang-format on */
             Options options;
             options.linkPath      = dsetPath;
             options.dataDims      = dataDims;
@@ -616,7 +618,6 @@ namespace h5pp {
             const std::optional<int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
             /* clang-format on */
         ) {
-            //            hid::h5t test {4};
             Options options;
             options.linkPath      = dsetPath;
             options.dataDims      = dataDims;

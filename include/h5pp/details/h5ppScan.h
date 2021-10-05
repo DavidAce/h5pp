@@ -204,6 +204,7 @@ namespace h5pp::scan {
                                                       const DataType      &data,
                                                       const Options       &options = Options(),
                                                       const PropertyLists &plists  = PropertyLists()) {
+        static_assert(not type::sfinae::is_h5_hid_v<DataType>);
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
                       "Template function [h5pp::scan::inferDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
@@ -309,6 +310,7 @@ namespace h5pp::scan {
     /*! \brief Populates a DataInfo object by scanning the given data type.*/
     template<typename DataType>
     inline void scanDataInfo(DataInfo &info, const DataType &data, const Options &options = Options()) {
+        static_assert(not type::sfinae::is_h5_hid_v<DataType>);
         h5pp::logger::log->debug("Scanning metadata of datatype [{}]", h5pp::type::sfinae::type_name<DataType>());
         // The point of passing options is to reinterpret the shape of the data and not to resize!
         // The data container should already be resized before entering this function.
@@ -436,6 +438,7 @@ namespace h5pp::scan {
                               const DataType      &data,
                               const Options       &options,
                               const PropertyLists &plists = PropertyLists()) {
+        static_assert(not type::sfinae::is_h5_hid_v<DataType>);
         static_assert(h5pp::type::sfinae::is_h5_loc_v<h5x>,
                       "Template function [h5pp::scan::readAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");

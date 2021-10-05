@@ -2337,6 +2337,7 @@ namespace h5pp::hdf5 {
                       const DataInfo      &dataInfo,
                       const DsetInfo      &dsetInfo,
                       const PropertyLists &plists = defaultPlists) {
+        static_assert(not type::sfinae::is_h5_hid_v<DataType>);
 #ifdef H5PP_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_colmajor_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting data to row-major storage order");
@@ -2423,6 +2424,7 @@ namespace h5pp::hdf5 {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
     void readDataset(DataType &data, const DataInfo &dataInfo, const DsetInfo &dsetInfo, const PropertyLists &plists = defaultPlists) {
+        static_assert(not type::sfinae::is_h5_hid_v<DataType>);
         // Transpose the data container before reading
 #ifdef H5PP_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_colmajor_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
@@ -2542,6 +2544,7 @@ namespace h5pp::hdf5 {
 
     template<typename DataType>
     void writeAttribute(const DataType &data, const DataInfo &dataInfo, const AttrInfo &attrInfo) {
+        static_assert(not type::sfinae::is_h5_hid_v<DataType>);
 #ifdef H5PP_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_colmajor_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting attribute data to row-major storage order");

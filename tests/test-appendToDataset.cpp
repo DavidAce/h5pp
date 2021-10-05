@@ -42,8 +42,7 @@ int main() {
 
     data      = {1, 2, 3, 4};
     auto info = file.getDatasetInfo("group/VectorDouble5");
-    file.createDataset(info.h5Type, "group/VectorDouble8", {data.size(), 0}, H5D_CHUNKED);
+    file.createDataset("group/VectorDouble8",info.h5Type.value(), H5D_CHUNKED, {data.size(), 0});
     file.appendToDataset(data, "group/VectorDouble8", 1, {data.size(), 1});
-
     return 0;
 }
