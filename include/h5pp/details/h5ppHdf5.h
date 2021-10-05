@@ -1148,10 +1148,11 @@ namespace h5pp::hdf5 {
     inline void
         selectHyperslab(hid::h5s &space, const Hyperslab &hyperSlab, std::optional<H5S_seloper_t> select_op_override = std::nullopt) {
         if(hyperSlab.empty()) return;
-        int rank = H5Sget_simple_extent_ndims(space);
+        hid_t h5space = space.value(); // We will be using this identifier a lot here
+        int   rank    = H5Sget_simple_extent_ndims(h5space);
         if(rank < 0) throw std::runtime_error("Failed to read space rank");
         std::vector<hsize_t> dims(static_cast<size_t>(rank));
-        H5Sget_simple_extent_dims(space, dims.data(), nullptr);
+        H5Sget_simple_extent_dims(h5space, dims.data(), nullptr);
         // If one of slabOffset or slabExtent is given, then the other must also be given
         if(hyperSlab.offset and not hyperSlab.extent)
             throw std::logic_error("Could not setup hyperslab metadata: Given hyperslab offset but not extent");
@@ -1189,26 +1190,26 @@ namespace h5pp::hdf5 {
                              dims));
 
         if(not select_op_override) select_op_override = hyperSlab.select_oper;
-        if(H5Sget_select_type(space) != H5S_SEL_HYPERSLABS and select_op_override != H5S_SELECT_SET)
+        if(H5Sget_select_type(h5space) != H5S_SEL_HYPERSLABS and select_op_override != H5S_SELECT_SET)
             select_op_override = H5S_SELECT_SET; // First hyperslab selection must be H5S_SELECT_SET
 
         herr_t retval = 0;
         /* clang-format off */
         if(hyperSlab.offset and hyperSlab.extent and hyperSlab.stride and hyperSlab.blocks)
-            retval = H5Sselect_hyperslab(space, select_op_override.value(), hyperSlab.offset.value().data(), hyperSlab.stride.value().data(), hyperSlab.extent.value().data(), hyperSlab.blocks.value().data());
+            retval = H5Sselect_hyperslab(h5space, select_op_override.value(), hyperSlab.offset.value().data(), hyperSlab.stride.value().data(), hyperSlab.extent.value().data(), hyperSlab.blocks.value().data());
         else if (hyperSlab.offset and hyperSlab.extent and hyperSlab.stride)
-            retval = H5Sselect_hyperslab(space, select_op_override.value(), hyperSlab.offset.value().data(), hyperSlab.stride.value().data(), hyperSlab.extent.value().data(), nullptr);
+            retval = H5Sselect_hyperslab(h5space, select_op_override.value(), hyperSlab.offset.value().data(), hyperSlab.stride.value().data(), hyperSlab.extent.value().data(), nullptr);
         else if (hyperSlab.offset and hyperSlab.extent and hyperSlab.blocks)
-            retval = H5Sselect_hyperslab(space, select_op_override.value(), hyperSlab.offset.value().data(), nullptr, hyperSlab.extent.value().data(), hyperSlab.blocks.value().data());
+            retval = H5Sselect_hyperslab(h5space, select_op_override.value(), hyperSlab.offset.value().data(), nullptr, hyperSlab.extent.value().data(), hyperSlab.blocks.value().data());
         else if (hyperSlab.offset and hyperSlab.extent)
-            retval = H5Sselect_hyperslab(space, select_op_override.value(), hyperSlab.offset.value().data(), nullptr, hyperSlab.extent.value().data(), nullptr);
+            retval = H5Sselect_hyperslab(h5space, select_op_override.value(), hyperSlab.offset.value().data(), nullptr, hyperSlab.extent.value().data(), nullptr);
         /* clang-format on */
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to select hyperslab"));
         }
 #if H5_VERSION_GE(1, 10, 0)
-        htri_t is_regular = H5Sis_regular_hyperslab(space);
+        htri_t is_regular = H5Sis_regular_hyperslab(h5space);
         if(is_regular < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Failed to check if Hyperslab selection is regular (non-rectangular)"));
@@ -1218,18 +1219,16 @@ namespace h5pp::hdf5 {
                                                   "This is not yet supported by h5pp"));
         }
 #endif
-        htri_t valid = H5Sselect_valid(space);
+        htri_t valid = H5Sselect_valid(h5space);
         if(valid < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             Hyperslab slab(space);
-            throw std::runtime_error(
-                h5pp::format("Hyperslab selection is invalid. {} | space dims {}", getDimensions(space), slab.string()));
+            throw std::runtime_error(h5pp::format("Hyperslab selection is invalid. space: {} | hyperslab: {}", dims, slab.string()));
         } else if(valid == 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             Hyperslab slab(space);
-            throw std::runtime_error(h5pp::format("Hyperslab selection is not contained in the given space. {} | space dims {}",
-                                                  getDimensions(space),
-                                                  slab.string()));
+            throw std::runtime_error(
+                h5pp::format("Hyperslab selection is not contained in the given space. space: {} | hyperslab: {}", dims, slab.string()));
         }
     }
 
@@ -2013,7 +2012,7 @@ namespace h5pp::hdf5 {
 
 #if H5PP_HAVE_DIRECT_CHUNK
 
-    inline void H5Dwrite_single_chunk(const hid_t & h5dset,
+    inline void H5Dwrite_single_chunk(const hid_t                  &h5dset,
                                       const std::vector<hsize_t>   &chunkOffset,
                                       const std::vector<std::byte> &chunkBuffer,
                                       uint32_t                     &filter_mask,
@@ -2161,9 +2160,9 @@ namespace h5pp::hdf5 {
         }
 
         // Compute the total number of chunks currently in the dataset
-        hsize_t  chunkCount = 0; // The total number of chunks currently in the dataset
-        hid_t h5space      = H5Dget_space(h5dset);
-        herr_t ers = H5Sselect_all(h5space);
+        hsize_t chunkCount = 0; // The total number of chunks currently in the dataset
+        hid_t   h5space    = H5Dget_space(h5dset);
+        herr_t  ers        = H5Sselect_all(h5space);
         if(ers < 0) throw std::runtime_error("H5Dwrite_chunkwise: failed to select all elements in space");
         herr_t ern = H5Dget_num_chunks(h5dset, h5space, &chunkCount);
         if(ern < 0) throw std::runtime_error("H5Dwrite_chunkwise: failed to get number of chunks in dataset");
@@ -2898,14 +2897,15 @@ namespace h5pp::hdf5 {
         if(info.numRecords.value() == 0) return;
 
         /* Step 1: Get the dataset and memory spaces */
+        std::array<hsize_t,1> dataDims = {numReadRecords.value()}; /* create a simple memory data space */
         hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
-        hid::h5s dataSpace = util::getMemSpace(numReadRecords.value(), {numReadRecords.value()}); /* create a simple memory data space */
+        hid::h5s dataSpace = H5Screate_simple(dataDims.size(), dataDims.data(), nullptr);
 
-        /* Step 2: draw a hyperslab in the dataset */
-        h5pp::Hyperslab slab;
-        slab.offset = {startIdx.value()};
-        slab.extent = {numReadRecords.value()};
-        selectHyperslab(dsetSpace, slab, H5S_SELECT_SET);
+        /* Step 2: draw a region in the dataset */
+        std::array<hsize_t,1> offset = {startIdx.value()};
+        std::array<hsize_t,1> extent = dataDims;
+        // Select the region in the dataset space
+        H5Sselect_hyperslab(dsetSpace, H5S_SELECT_SET, offset.data(), nullptr, extent.data(), nullptr);
 
         /* Step 3: read the records */
         // Get the memory address to the data buffer
@@ -2977,6 +2977,10 @@ namespace h5pp::hdf5 {
         /* Step 1: set the new table size */
         setTableSize(info, numRecordsNew);
 
+
+#if H5PP_HAVE_DIRECT_CHUNK
+
+
         /* Step 2: draw a hyperslab describing the data and dataset spaces */
         h5pp::Hyperslab dsetSlab;
         dsetSlab.offset = {numRecordsOld};
@@ -2986,7 +2990,7 @@ namespace h5pp::hdf5 {
         dataSlab.offset = {0};
         dataSlab.extent = {numRecordsApp};
 
-#if H5PP_HAVE_DIRECT_CHUNK
+
         /* Step 3: write the records */
         H5Dwrite_chunkwise(data,
                            info.h5Dset.value(),
@@ -2997,10 +3001,17 @@ namespace h5pp::hdf5 {
                            dataSlab,
                            info.compression.value());
 #else
-        /* Step 3: Get the dataset and memory spaces */
-        hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value());                 /* get a copy of the new file data space for writing */
-        hid::h5s dataSpace = util::getMemSpace(numRecordsApp, {numRecordsApp}); /* create a simple memory data space */
-        selectHyperslab(dsetSpace, dsetSlab, H5S_SELECT_SET);
+
+        /* Step 2: Get the dataset and memory spaces */
+        std::array<hsize_t,1> dataDims = {numRecordsApp}; /* create a simple memory data space */
+        hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
+        hid::h5s dataSpace = H5Screate_simple(dataDims.size(), dataDims.data(), nullptr);
+
+        /* Step 3: draw a region in the dataset */
+        std::array<hsize_t,1> offset = {numRecordsOld};
+        std::array<hsize_t,1> extent = dataDims;
+        // Select the region in the dataset space
+        H5Sselect_hyperslab(dsetSpace, H5S_SELECT_SET, offset.data(), nullptr, extent.data(), nullptr);
 
         /* Step 4: Get the memory address to the data buffer */
         auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
@@ -3080,12 +3091,14 @@ namespace h5pp::hdf5 {
         /* Step 1: set the new table size if necessary */
         if(numRecordsNew > numRecordsOld) setTableSize(info, numRecordsNew);
 
+
+#if H5PP_HAVE_DIRECT_CHUNK
+
         /* Step 2: draw a hyperslab in the dataset */
         h5pp::Hyperslab dsetSlab;
         dsetSlab.offset = {startIdx};
         dsetSlab.extent = {numRecordsWrt};
 
-#if H5PP_HAVE_DIRECT_CHUNK
         /* and a hyperslab for the data */
         h5pp::Hyperslab dataSlab;
         dataSlab.offset = {0};
@@ -3101,11 +3114,17 @@ namespace h5pp::hdf5 {
                            dataSlab,
                            info.compression.value());
 #else
-        /* Step 3: Get the dataset and memory spaces */
-        hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value());                 /* get a copy of the new file data space for writing */
-        hid::h5s dataSpace = util::getMemSpace(numRecordsWrt, {numRecordsWrt}); /* create a simple memory data space */
+        /* Step 2: Get the dataset and memory spaces */
+        std::array<hsize_t,1> dataDims = {numRecordsWrt}; /* create a simple memory data space */
+        hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
+        hid::h5s dataSpace = H5Screate_simple(dataDims.size(), dataDims.data(), nullptr);
 
-        selectHyperslab(dsetSpace, dsetSlab, H5S_SELECT_SET);
+        /* Step 3: draw a region in the dataset */
+        std::array<hsize_t,1> offset = {startIdx};
+        std::array<hsize_t,1> extent = dataDims;
+        // Select the region in the dataset space
+        H5Sselect_hyperslab(dsetSpace, H5S_SELECT_SET, offset.data(), nullptr, extent.data(), nullptr);
+
 
         /* Step 4: write the records */
         // Get the memory address to the data buffer
