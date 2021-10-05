@@ -51,11 +51,14 @@ namespace h5pp::scan {
 
         // We read the layout from file. Note that it is not possible to change the layout on existing datasets! Read more here
         // https://support.hdfgroup.org/HDF5/Tutor/layout.html
-        if(not info.h5PlistDsetCreate) info.h5PlistDsetCreate = H5Dget_create_plist(info.h5Dset.value());
-        if(not info.h5PlistDsetAccess) info.h5PlistDsetAccess = H5Dget_access_plist(info.h5Dset.value());
-        if(not info.h5Layout)          info.h5Layout          = H5Pget_layout(info.h5PlistDsetCreate.value());
-        if(not info.dsetChunk)         info.dsetChunk         = h5pp::hdf5::getChunkDimensions(info.h5PlistDsetCreate.value());
-        if(not info.dsetDimsMax)       info.dsetDimsMax       = h5pp::hdf5::getMaxDimensions(info.h5Space.value(), info.h5Layout.value());
+        if(not info.h5DsetCreate) info.h5DsetCreate      = H5Dget_create_plist(info.h5Dset.value());
+        if(not info.h5DsetAccess) info.h5DsetAccess      = H5Dget_access_plist(info.h5Dset.value());
+        if(not info.h5Layout)     info.h5Layout          = H5Pget_layout(info.h5DsetCreate.value());
+        if(not info.dsetChunk)    info.dsetChunk         = h5pp::hdf5::getChunkDimensions(info.h5DsetCreate.value());
+        if(not info.dsetDimsMax)  info.dsetDimsMax       = h5pp::hdf5::getMaxDimensions(info.h5Space.value(), info.h5Layout.value());
+        if(not info.h5Filters)    info.h5Filters         = h5pp::hdf5::getFilters(info.h5DsetCreate.value());
+        if(not info.compression)  info.compression       = h5pp::hdf5::getDeflateLevel(info.h5DsetCreate.value());
+
 
         if(not info.resizePolicy) info.resizePolicy = options.resizePolicy;
         if(not info.resizePolicy) {
@@ -63,10 +66,7 @@ namespace h5pp::scan {
             else if(info.dsetSlab) info.resizePolicy = h5pp::ResizePolicy::GROW; // A hyperslab selection on the dataset has been made. Let's not shrink!
             else info.resizePolicy = h5pp::ResizePolicy::FIT;
         }
-        if(not info.compression) {
-            hid::h5p plist   = H5Dget_create_plist(info.h5Dset.value());
-            info.compression = h5pp::hdf5::getCompressionLevel(plist);
-        }
+
         // Apply hyperslab selection if there is any
         if(info.dsetSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.dsetSlab.value());
         /* clang-format on */
@@ -173,8 +173,8 @@ namespace h5pp::scan {
         if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.dsetSize.value(), info.dsetDims.value(), info.h5Layout.value(), info.dsetDimsMax);
         // Apply hyperslab selection if there is any
         if(info.dsetSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.dsetSlab.value());
-        if(not info.h5PlistDsetCreate) info.h5PlistDsetCreate = H5Pcreate(H5P_DATASET_CREATE);
-        if(not info.h5PlistDsetAccess) info.h5PlistDsetAccess = H5Pcreate(H5P_DATASET_ACCESS);
+        if(not info.h5DsetCreate) info.h5DsetCreate = H5Pcreate(H5P_DATASET_CREATE);
+        if(not info.h5DsetAccess) info.h5DsetAccess = H5Pcreate(H5P_DATASET_ACCESS);
         /* clang-format on */
         h5pp::hdf5::setProperty_layout(info);    // Must go before setting chunk dims
         h5pp::hdf5::setProperty_chunkDims(info); // Will nullify chunkdims if not H5D_CHUNKED
@@ -288,8 +288,8 @@ namespace h5pp::scan {
         // Apply hyperslab selection if there is any
         if(info.dsetSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.dsetSlab.value());
 
-        if(not info.h5PlistDsetCreate) info.h5PlistDsetCreate = H5Pcreate(H5P_DATASET_CREATE);
-        if(not info.h5PlistDsetAccess) info.h5PlistDsetAccess = H5Pcreate(H5P_DATASET_ACCESS);
+        if(not info.h5DsetCreate) info.h5DsetCreate = H5Pcreate(H5P_DATASET_CREATE);
+        if(not info.h5DsetAccess) info.h5DsetAccess = H5Pcreate(H5P_DATASET_ACCESS);
         h5pp::hdf5::setProperty_layout(info);    // Must go before setting chunk dims
         h5pp::hdf5::setProperty_chunkDims(info); // Will nullify chunkdims if not H5D_CHUNKED
         h5pp::hdf5::setProperty_compression(info);
@@ -676,17 +676,11 @@ namespace h5pp::scan {
             info.fieldOffsets = field_offsets;
             info.fieldNames   = field_names_vec;
         }
-
-        if(not info.chunkSize) {
-            hid::h5p plist    = H5Dget_create_plist(info.h5Dset.value());
-            auto     chunkVec = h5pp::hdf5::getChunkDimensions(plist);
-            if(chunkVec and not chunkVec->empty()) info.chunkSize = chunkVec.value()[0];
-        }
-
-        if(not info.compression) {
-            hid::h5p plist   = H5Dget_create_plist(info.h5Dset.value());
-            info.compression = h5pp::hdf5::getCompressionLevel(plist);
-        }
+        if(not info.h5DsetCreate) info.h5DsetCreate = H5Dget_create_plist(info.h5Dset.value());
+        if(not info.h5DsetAccess) info.h5DsetAccess = H5Dget_access_plist(info.h5Dset.value());
+        if(not info.chunkDims) info.chunkDims = h5pp::hdf5::getChunkDimensions(info.h5DsetCreate.value());
+        if(not info.h5Filters) info.h5Filters = h5pp::hdf5::getFilters(info.h5DsetCreate.value());
+        if(not info.compression) info.compression = h5pp::hdf5::getDeflateLevel(info.h5DsetCreate.value());
 
         // Get c++ properties
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize) {
@@ -729,13 +723,10 @@ namespace h5pp::scan {
         if(not info.numFields        ) info.numFields        = H5Tget_nmembers(info.h5Type.value());
         if(not info.numRecords       ) info.numRecords       = 0;
         if(not info.recordBytes      ) info.recordBytes      = H5Tget_size(info.h5Type.value());
-        if(not info.compression ) info.compression = options.compression;
-        if(not info.chunkSize and (options.dsetDimsChunk and not options.dsetDimsChunk->empty()))
-            info.chunkSize = options.dsetDimsChunk.value()[0];
+        if(not info.compression      ) info.compression      = options.compression;
+        if(not info.chunkDims        ) info.chunkDims        = options.dsetDimsChunk;
 
-        if(not info.chunkSize)
-            info.chunkSize =
-                h5pp::util::getChunkDimensions(info.recordBytes.value(), {1}, std::nullopt, H5D_layout_t::H5D_CHUNKED).value()[0];
+        if(not info.chunkDims)   info.chunkDims = h5pp::util::getChunkDimensions(info.recordBytes.value(), {1}, std::nullopt, H5D_layout_t::H5D_CHUNKED);
         if(not info.compression) info.compression = h5pp::hdf5::getValidCompressionLevel();
 
         if(not info.fieldTypes){

@@ -16,7 +16,7 @@ namespace h5pp {
         OptDimsType                 extent      = std::nullopt;   /*!< The extent (or "count") of a hyperslab */
         OptDimsType                 stride      = std::nullopt;   /*!< The stride of a hyperslab. Empty means contiguous */
         OptDimsType                 blocks      = std::nullopt;   /*!< The blocks size of each element in  the hyperslab. Empty means 1x1 */
-        std::optional<H5S_sel_type> select_type = std::nullopt;   /*!< Use to select hyperslab (i.e. subset), all or none */
+        std::optional<H5S_sel_type> select_type = std::nullopt;   /*!< Use to select hyperslab (i.e. subset), none, all, hyperslabs */
         H5S_seloper_t               select_oper = H5S_SELECT_SET; /*!< Default clears previous selection.  */
 
         Hyperslab() = default;
@@ -76,6 +76,23 @@ namespace h5pp {
             if(blocks) msg.append(h5pp::format(" | blocks {}", blocks.value()));
             return msg;
         }
+
+        void applySelection(const h5pp::hid::h5s & space) const {
+            H5S_seloper_t sel = select_oper;
+            if(H5Sget_select_type(space) != H5S_SEL_HYPERSLABS and sel != H5S_SELECT_SET)
+                sel = H5S_SELECT_SET; // First hyperslab selection must be H5S_SELECT_SET
+
+            const hsize_t * offptr = offset ? offset->data() : nullptr;
+            const hsize_t * extptr = extent ? extent->data() : nullptr;
+            const hsize_t * strptr = stride ? stride->data() : nullptr;
+            const hsize_t * blkptr = blocks ? blocks->data() : nullptr;
+            herr_t retval = H5Sselect_hyperslab(space, sel, offptr, strptr,extptr,blkptr);
+            if(retval < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                throw std::runtime_error(h5pp::format("Failed to select hyperslab"));
+            }
+        }
+
     };
 
 }

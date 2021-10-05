@@ -481,10 +481,10 @@ namespace h5pp {
             return dsetInfo;
         }
 
-        DsetInfo createDataset(std::optional<hid::h5t>     h5Type,
-                               std::string_view            dsetPath,
+        DsetInfo createDataset(std::string_view            dsetPath,
+                               hid_t                       h5Type,
+                               H5D_layout_t                h5Layout,
                                const DimsType             &dsetDims,
-                               std::optional<H5D_layout_t> h5Layout      = std::nullopt,
                                const OptDimsType          &dsetDimsChunk = std::nullopt,
                                const OptDimsType          &dsetDimsMax   = std::nullopt,
                                const std::optional<int>    compression   = std::nullopt) {
@@ -495,7 +495,7 @@ namespace h5pp {
             options.dataDims      = dsetDims;
             options.dsetDimsChunk = dsetDimsChunk;
             options.dsetDimsMax   = dsetDimsMax;
-            options.h5Type        = std::move(h5Type);
+            options.h5Type        = H5Tcopy(h5Type);
             options.h5Layout      = h5Layout;
             options.compression   = getCompressionLevel(compression);
             return createDataset(options);

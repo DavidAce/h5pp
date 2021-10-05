@@ -212,27 +212,29 @@ namespace h5pp {
      * Struct with optional fields describing data on file, i.e. a dataset
      */
     struct DsetInfo {
-        std::optional<hid::h5f>           h5File            = std::nullopt;
-        std::optional<hid::h5d>           h5Dset            = std::nullopt;
-        std::optional<hid::h5t>           h5Type            = std::nullopt;
-        std::optional<H5D_layout_t>       h5Layout          = std::nullopt;
-        std::optional<hid::h5s>           h5Space           = std::nullopt;
-        std::optional<hid::h5p>           h5PlistDsetCreate = std::nullopt;
-        std::optional<hid::h5p>           h5PlistDsetAccess = std::nullopt;
-        std::optional<std::string>        dsetPath          = std::nullopt;
-        std::optional<bool>               dsetExists        = std::nullopt;
-        std::optional<hsize_t>            dsetSize          = std::nullopt;
-        std::optional<size_t>             dsetByte          = std::nullopt;
-        std::optional<int>                dsetRank          = std::nullopt;
-        OptDimsType                       dsetDims          = std::nullopt;
-        OptDimsType                       dsetDimsMax       = std::nullopt;
-        OptDimsType                       dsetChunk         = std::nullopt;
-        std::optional<Hyperslab>          dsetSlab          = std::nullopt;
-        std::optional<h5pp::ResizePolicy> resizePolicy      = std::nullopt;
-        std::optional<int>                compression       = std::nullopt;
-        std::optional<std::string>        cppTypeName       = std::nullopt;
-        std::optional<size_t>             cppTypeSize       = std::nullopt;
-        std::optional<std::type_index>    cppTypeIndex      = std::nullopt;
+        std::optional<hid::h5f>           h5File       = std::nullopt;
+        std::optional<hid::h5d>           h5Dset       = std::nullopt;
+        std::optional<hid::h5t>           h5Type       = std::nullopt;
+        std::optional<H5D_layout_t>       h5Layout     = std::nullopt;
+        std::optional<hid::h5s>           h5Space      = std::nullopt;
+        std::optional<hid::h5p>           h5DsetCreate = std::nullopt; // dataset creation property list
+        std::optional<hid::h5p>           h5DsetAccess = std::nullopt; // dataset access property list
+        std::optional<H5Z_filter_t>       h5Filters    = std::nullopt;
+        std::optional<std::string>        dsetPath     = std::nullopt;
+        std::optional<bool>               dsetExists   = std::nullopt;
+        std::optional<hsize_t>            dsetSize     = std::nullopt;
+        std::optional<size_t>             dsetByte     = std::nullopt;
+        std::optional<int>                dsetRank     = std::nullopt;
+        OptDimsType                       dsetDims     = std::nullopt;
+        OptDimsType                       dsetDimsMax  = std::nullopt;
+        OptDimsType                       dsetChunk    = std::nullopt;
+        std::optional<Hyperslab>          dsetSlab     = std::nullopt;
+        std::optional<h5pp::ResizePolicy> resizePolicy = std::nullopt;
+        std::optional<int>                compression  = std::nullopt;
+        std::optional<std::string>        cppTypeName  = std::nullopt;
+        std::optional<size_t>             cppTypeSize  = std::nullopt;
+        std::optional<std::type_index>    cppTypeIndex = std::nullopt;
+
 
         [[nodiscard]] hid::h5f getLocId() const {
             if(h5File) return h5File.value();
@@ -248,14 +250,14 @@ namespace h5pp {
             if(not dsetExists         ) error_msg.append("\t dsetExists\n");
             if(not h5Type             ) error_msg.append("\t h5Type\n");
             if(not h5Space            ) error_msg.append("\t h5Space\n");
-            if(not h5PlistDsetCreate  ) error_msg.append("\t h5PlistDsetCreate\n");
-            if(not h5PlistDsetAccess  ) error_msg.append("\t h5PlistDsetAccess\n");
+            if(not h5DsetCreate  ) error_msg.append("\t h5PlistDsetCreate\n");
+            if(not h5DsetAccess  ) error_msg.append("\t h5PlistDsetAccess\n");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot create dataset. The following fields are undefined:\n{}",error_msg));
             if(not h5Type->valid()             ) error_msg.append("\t h5Type\n");
             if(not h5Space->valid()            ) error_msg.append("\t h5Space\n");
-            if(not h5PlistDsetCreate->valid()  ) error_msg.append("\t h5PlistDsetCreate\n");
-            if(not h5PlistDsetAccess->valid()  ) error_msg.append("\t h5PlistDsetAccess\n");
+            if(not h5DsetCreate->valid()  ) error_msg.append("\t h5PlistDsetCreate\n");
+            if(not h5DsetAccess->valid()  ) error_msg.append("\t h5PlistDsetAccess\n");
             if(not error_msg.empty())
                 throw std::runtime_error("Cannot create dataset. The following fields are not valid\n\t" + error_msg);
             if(not hasLocId()) throw std::runtime_error(h5pp::format("Cannot create dataset [{}]: The location ID is not set", dsetPath.value()));
@@ -297,13 +299,18 @@ namespace h5pp {
             if(not h5Dset             ) error_msg.append("\t h5Dset\n");
             if(not h5Type             ) error_msg.append("\t h5Type\n");
             if(not h5Space            ) error_msg.append("\t h5Space\n");
+            if(not h5DsetCreate)        error_msg.append("\t h5DsetCreate\n");
+            if(not h5DsetAccess)        error_msg.append("\t h5DsetAccess\n");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot write into dataset. The following fields are undefined:\n{}", error_msg));
-            if(not h5Dset->valid() ) error_msg.append("\t h5Dset\n");
-            if(not h5Type->valid() ) error_msg.append("\t h5Type\n");
-            if(not h5Space->valid() ) error_msg.append("\t h5Space\n");
-            if(not error_msg.empty())
-                throw std::runtime_error(h5pp::format("Cannot write into dataset [{}]. The following fields are not valid:\n",dsetPath.value(), error_msg));
+            if constexpr(not h5pp::ndebug){
+                if(not h5Dset->valid() ) error_msg.append("\t h5Dset\n");
+                if(not h5Type->valid() ) error_msg.append("\t h5Type\n");
+                if(not h5Space->valid() ) error_msg.append("\t h5Space\n");
+                if(not error_msg.empty())
+                    throw std::runtime_error(h5pp::format("Cannot write into dataset [{}]. The following fields are not valid:\n",dsetPath.value(), error_msg));
+            }
+
             /* clang-format on */
         }
         void assertReadReady() const {
@@ -488,25 +495,28 @@ namespace h5pp {
      * \brief Information about tables
      */
     struct TableInfo {
-        std::optional<hid::h5f>                     h5File           = std::nullopt;
-        std::optional<hid::h5d>                     h5Dset           = std::nullopt;
-        std::optional<hid::h5t>                     h5Type           = std::nullopt;
-        std::optional<std::string>                  tableTitle       = std::nullopt;
-        std::optional<std::string>                  tablePath        = std::nullopt;
-        std::optional<std::string>                  tableGroupName   = std::nullopt;
-        std::optional<size_t>                       numFields        = std::nullopt;
-        std::optional<size_t>                       numRecords       = std::nullopt;
-        std::optional<size_t>                       recordBytes      = std::nullopt;
-        std::optional<std::vector<std::string>>     fieldNames       = std::nullopt;
-        std::optional<std::vector<size_t>>          fieldSizes       = std::nullopt;
-        std::optional<std::vector<size_t>>          fieldOffsets     = std::nullopt;
-        std::optional<std::vector<hid::h5t>>        fieldTypes       = std::nullopt;
-        std::optional<bool>                         tableExists      = std::nullopt;
-        std::optional<int>                          compression      = std::nullopt;
-        std::optional<hsize_t>                      chunkSize        = std::nullopt;
-        std::optional<std::vector<std::string>>     cppTypeName      = std::nullopt;
-        std::optional<std::vector<size_t>>          cppTypeSize      = std::nullopt;
-        std::optional<std::vector<std::type_index>> cppTypeIndex     = std::nullopt;
+        std::optional<hid::h5f>                     h5File         = std::nullopt;
+        std::optional<hid::h5d>                     h5Dset         = std::nullopt;
+        std::optional<hid::h5t>                     h5Type         = std::nullopt;
+        std::optional<hid::h5p>                     h5DsetCreate   = std::nullopt; // dataset creation property list
+        std::optional<hid::h5p>                     h5DsetAccess   = std::nullopt; // dataset access property list
+        std::optional<H5Z_filter_t>                 h5Filters      = std::nullopt;
+        std::optional<std::string>                  tableTitle     = std::nullopt;
+        std::optional<std::string>                  tablePath      = std::nullopt;
+        std::optional<std::string>                  tableGroupName = std::nullopt;
+        std::optional<size_t>                       numFields      = std::nullopt;
+        std::optional<size_t>                       numRecords     = std::nullopt;
+        std::optional<size_t>                       recordBytes    = std::nullopt;
+        OptDimsType                                 chunkDims      = std::nullopt;
+        std::optional<std::vector<std::string>>     fieldNames     = std::nullopt;
+        std::optional<std::vector<size_t>>          fieldSizes     = std::nullopt;
+        std::optional<std::vector<size_t>>          fieldOffsets   = std::nullopt;
+        std::optional<std::vector<hid::h5t>>        fieldTypes     = std::nullopt;
+        std::optional<bool>                         tableExists    = std::nullopt;
+        std::optional<int>                          compression    = std::nullopt;
+        std::optional<std::vector<std::string>>     cppTypeName    = std::nullopt;
+        std::optional<std::vector<size_t>>          cppTypeSize    = std::nullopt;
+        std::optional<std::vector<std::type_index>> cppTypeIndex   = std::nullopt;
 
         [[nodiscard]] hid::h5f getLocId() const {
             if(h5File) return h5File.value();
@@ -531,7 +541,7 @@ namespace h5pp {
             if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
             if(not fieldTypes)          error_msg.append("\t fieldTypes\n");
             if(not compression)         error_msg.append("\t compression\n");
-            if(not chunkSize)           error_msg.append("\t chunkSize\n");
+            if(not chunkDims)           error_msg.append("\t chunkDims\n");
             if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot create new table: The following fields are not set:\n{}", error_msg));
             if(not hasLocId())        throw std::runtime_error(h5pp::format("Cannot create new table [{}]: The location ID is not set", tablePath.value()));
         }
@@ -556,6 +566,8 @@ namespace h5pp {
             if(not tablePath)           error_msg.append("\t tablePath\n");
             if(not h5Dset)              error_msg.append("\t h5Dset\n");
             if(not h5Type)              error_msg.append("\t h5Type\n");
+            if(not h5DsetCreate)        error_msg.append("\t h5DsetCreate\n");
+            if(not h5DsetAccess)        error_msg.append("\t h5DsetAccess\n");
             if(not tableExists)         error_msg.append("\t tableExists\n");
             if(not numFields)           error_msg.append("\t numFields\n");
             if(not numRecords)          error_msg.append("\t numRecords\n");
@@ -572,7 +584,7 @@ namespace h5pp {
             if(tableTitle) msg.append(h5pp::format("Table title [{}]", tableTitle.value()));
             if(numFields)  msg.append(h5pp::format(" | num fields [{}]", numFields.value()));
             if(numRecords) msg.append(h5pp::format(" | num records [{}]", numRecords.value()));
-            if(chunkSize)  msg.append(h5pp::format(" | chunk size [{}]", chunkSize.value()));
+            if(chunkDims)  msg.append(h5pp::format(" | chunk dims [{}]", chunkDims.value()));
             if(tablePath)  msg.append(h5pp::format(" | path [{}]",tablePath.value()));
             return msg;
         }
@@ -659,7 +671,8 @@ namespace h5pp {
             if(not btime)      error_msg.append("\t btime\n");
             if(not num_attrs)  error_msg.append("\t num_attrs\n");
             /* clang-format on */
-            if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot read from LinkInfo: The following fields are not set:\n{}", error_msg));
+            if(not error_msg.empty())
+                throw std::runtime_error(h5pp::format("Cannot read from LinkInfo: The following fields are not set:\n{}", error_msg));
         }
     };
 
