@@ -37,7 +37,7 @@ namespace h5pp::util {
     }
 
     template<typename PtrType, typename DataType>
-    [[nodiscard]] inline PtrType getVoidPointer(DataType &data, size_t offset = 0) {
+    [[nodiscard]] inline PtrType getVoidPointer(DataType &data, size_t offset = 0) noexcept {
         // Get the memory address to a data buffer
 
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>)

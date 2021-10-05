@@ -2180,14 +2180,16 @@ namespace h5pp::hdf5 {
                             const std::vector<hsize_t> &chunkDims,
                             const h5pp::Hyperslab      &dsetSlab,
                             const h5pp::Hyperslab      &dataSlab) {
+        size_t     typeSize = h5pp::hdf5::getBytesPerElem(datatype);
         size_t     chunkSize = h5pp::util::getSizeFromDimensions(chunkDims);
-        hsize_t    chunkByte = chunkSize * h5pp::hdf5::getBytesPerElem(datatype);
+        hsize_t    chunkByte = chunkSize * typeSize;
         hid_t      h5dset    = dataset.value();    // Repeated calls to .value() takes time because validity is always checked
         hid_t      h5dcpl    = dsetCreate.value(); // Repeated calls to .value() takes time because validity is always checked
         hid_t      h5dxpl    = dsetXfer.value();   // Repeated calls to .value() takes time because validity is always checked
         auto       filters   = getFilters(h5dcpl);
         auto       deflate   = getDeflateLevel(h5dcpl);
         const auto rank      = dims.size();
+
 
         // Compute the total number of chunks currently in the dataset
         hsize_t chunkCount = 0;                    // The total number of chunks currently in the dataset
@@ -2199,30 +2201,31 @@ namespace h5pp::hdf5 {
 
         // Compute the total number of chunks that this dataset has room for
         std::vector<hsize_t> chunkRoom(rank); // counts how many chunks fit in each direction
-        for(size_t i = 0; i < chunkRoom.size(); i++) chunkRoom[i] = std::max(1ull, dims[i] / chunkDims[i]);
+        for(size_t i = 0; i < chunkRoom.size(); i++) chunkRoom[i] = (dims[i] + chunkDims[i] - 1) / chunkDims[i]; // Integral ceil on division
         size_t chunkCapacity = h5pp::util::getSizeFromDimensions(chunkRoom); // The total number of chunks that can fit
 
         if constexpr(not h5pp::ndebug)
             if(h5pp::logger::log->level() == 0)
-                h5pp::logger::log->trace("writeDataset_chunkwise: data [type {} | size {} | {} bytes/item | {} bytes{}] dset [size {} | {} "
-                                         "bytes/item | storage {} bytes | deflate {} | dims {}{}]  "
-                                         "chunk [size {} | {} bytes | dims {} | count {} | capacity {}]",
-                                         h5pp::type::sfinae::type_name<DataType>(),
-                                         h5pp::util::getSize(data),
-                                         h5pp::util::getBytesPerElem<DataType>(),
-                                         h5pp::util::getBytesTotal(data),
-                                         dataSlab.string(),
-                                         h5pp::hdf5::getSize(dataset),
-                                         h5pp::hdf5::getBytesPerElem(datatype),
-                                         H5Dget_storage_size(dataset),
-                                         deflate,
-                                         dims,
-                                         dsetSlab.string(),
-                                         chunkSize,
-                                         chunkByte,
-                                         chunkDims,
-                                         chunkCount,
-                                         chunkCapacity);
+                h5pp::logger::log->info("writeDataset_chunkwise: data [type {} | size {} | {} bytes/item | {} bytes{}] dset [size {} | {} "
+                                        "bytes/item | storage {} bytes | deflate {} | dims {}{}]  "
+                                        "chunk [size {} | {} bytes | dims {} | count {} | capacity {} | room {}]",
+                                        h5pp::type::sfinae::type_name<DataType>(),
+                                        h5pp::util::getSize(data),
+                                        h5pp::util::getBytesPerElem<DataType>(),
+                                        h5pp::util::getBytesTotal(data),
+                                        dataSlab.string(),
+                                        h5pp::hdf5::getSize(dataset),
+                                        typeSize,
+                                        H5Dget_storage_size(dataset),
+                                        deflate,
+                                        dims,
+                                        dsetSlab.string(),
+                                        chunkSize,
+                                        chunkByte,
+                                        chunkDims,
+                                        chunkCount,
+                                        chunkCapacity,
+                                        chunkRoom);
 
         uint32_t read_mask  = 0; // Tells which filters to skip on read
         uint32_t write_mask = 0; // Tells which filters to skip on write
@@ -2279,16 +2282,15 @@ namespace h5pp::hdf5 {
                 // Copy the value
                 auto dataIdx  = h5pp::util::sub2ind(dataSlab.extent.value(), dataCoord);
                 auto chunkIdx = h5pp::util::sub2ind(chunkSlab.extent.value(), chunkCoord);
-                //                h5pp::logger::log->info("copying data {}:{} to chunk {}:{}", dataIdx, dataCoord, chunkIdx, chunkCoord);
-                std::memcpy(util::getVoidPointer<void *>(chunkBuffer, chunkIdx * h5pp::util::getBytesPerElem<DataType>()),
-                            util::getVoidPointer<const void *>(data, dataIdx),
-                            h5pp::util::getBytesPerElem<DataType>());
+                std::memcpy(util::getVoidPointer<void *>(chunkBuffer, chunkIdx * typeSize),
+                            util::getVoidPointer<const void *>(data, dataIdx), typeSize);
             }
             // Step 5 Now all the data is in the chunk buffer. Write to file
             if(deflate < 0) write_mask = 1;
             h5pp::hdf5::H5Dwrite_single_chunk(h5dset, h5dxpl, filters, write_mask, deflate, chunkSlab.offset.value(), chunkBuffer);
         }
     }
+
 
     template<typename DataType>
     void writeDataset_chunkwise(const DataType            &data,
