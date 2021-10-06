@@ -296,20 +296,22 @@ namespace h5pp {
         }
 
         /*! Copy a link (dataset/table/group) from this file to any hid::h5x location (group or file). */
-        template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_tgt>>
+        template<typename h5x_tgt>
         void copyLinkToLocation(std::string_view localLinkPath,    /*!< Path to link in this file */
                                 const h5x_tgt   &targetLocationId, /*!< Target hid::h5x location handle (group or file) */
                                 std::string_view targetLinkPath    /*!< Path to link in the target file */
         ) const {
+            static_assert(type::sfinae::is_h5pp_loc_id<h5x_tgt>);
             return h5pp::hdf5::copyLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath, plists);
         }
 
         /*! Copy a link (dataset/table/group) from any hid::h5x location (group or file) into this file */
-        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_src>>
+        template<typename h5x_src>
         void copyLinkFromLocation(std::string_view localLinkPath,    /*!< Path to link in this file */
-                                  const h5x_src   &sourceLocationId, /*!< Source hid::h5x location handle (group or file) */
+                                  const h5x_src   &sourceLocationId, /*!< Source hid::h5x location handle*/
                                   std::string_view sourceLinkPath    /*!< Path to link in the source file */
         ) {
+            static_assert(type::sfinae::is_h5pp_loc_id<h5x_src>);
             return h5pp::hdf5::copyLink(sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, plists);
         }
 
@@ -349,7 +351,7 @@ namespace h5pp {
          *  **NOTE:** The link is deleted from the target location, but the storage space is not recovered.
          *  This is a fundamental limitation of HDF5.
          */
-        template<typename h5x_tgt, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_tgt>>
+        template<typename h5x_tgt>
         void moveLinkToLocation(
             std::string_view localLinkPath,                 /*!< Path to link in this file */
             const h5x_tgt   &targetLocationId,              /*!< Target hid::h5x location handle (group or file) */
@@ -357,6 +359,7 @@ namespace h5pp {
             LocationMode     locMode = LocationMode::DETECT /*!< Specify whether targetLocationId is in this file or another */
 
         ) const {
+            static_assert(type::sfinae::is_h5pp_loc_id<h5x_tgt>);
             return h5pp::hdf5::moveLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath, locMode, plists);
         }
 
@@ -365,13 +368,14 @@ namespace h5pp {
          *  **NOTE:** The link is deleted from the target location, but the storage space is not recovered.
          *  This is a fundamental limitation of HDF5.
          */
-        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_src>>
+        template<typename h5x_src>
         void moveLinkFromLocation(
             std::string_view localLinkPath,                 /*!< Path to link in this file */
             const h5x_src   &sourceLocationId,              /*!< Source hid::h5x location handle (group or file) */
             std::string_view sourceLinkPath,                /*!< Path to link in the source file */
             LocationMode     locMode = LocationMode::DETECT /*!< Specify whether targetLocationId is in this file or another */
         ) {
+            static_assert(type::sfinae::is_h5pp_loc_id<h5x_src>);
             return h5pp::hdf5::moveLink(sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, locMode, plists);
         }
 
@@ -503,7 +507,7 @@ namespace h5pp {
 
         template<typename DataType>
         DsetInfo createDataset(const DataType &data, const Options &options) {
-            static_assert(not type::sfinae::is_h5_hid_v<DataType>);
+            static_assert(not type::sfinae::is_h5pp_id<DataType>);
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to create dataset on read-only file [{}]", filePath.string()));
             auto dsetInfo = h5pp::scan::inferDsetInfo(openFileHandle(), data, options, plists);
@@ -568,7 +572,7 @@ namespace h5pp {
 
         template<typename DataType>
         DsetInfo writeDataset(const DataType &data, const Options &options) {
-            static_assert(not type::sfinae::is_h5_hid_v<DataType>);
+            static_assert(not type::sfinae::is_h5pp_id<DataType>);
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             options.assertWellDefined();
@@ -731,34 +735,39 @@ namespace h5pp {
             return dsetInfo;
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         void readDataset(DataType &data, DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
+            static_assert(not std::is_const_v<DataType>);
             h5pp::hdf5::resizeData(data, dataInfo, dsetInfo);
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         [[nodiscard]] DataType readDataset(DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
+            static_assert(not std::is_const_v<DataType>);
             DataType data;
             readDataset(data, dataInfo, dsetInfo);
             return data;
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         void readDataset(DataType &data, const DsetInfo &dsetInfo, const Options &options = Options()) const {
+            static_assert(not std::is_const_v<DataType>);
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             readDataset(data, dataInfo, dsetInfo);
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         [[nodiscard]] DataType readDataset(const DsetInfo &dsetInfo, const Options &options = Options()) const {
+            static_assert(not std::is_const_v<DataType>);
             DataType data;
             readDataset(data, dsetInfo, options);
             return data;
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         [[nodiscard]] DataType readDataset(const DsetInfo &dsetInfo, const DimsType &dataDims) const {
+            static_assert(not std::is_const_v<DataType>);
             DataType data;
             Options  options;
             options.dataDims = dataDims;
@@ -766,8 +775,9 @@ namespace h5pp {
             return data;
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         void readDataset(DataType &data, const Options &options) const {
+            static_assert(not std::is_const_v<DataType>);
             options.assertWellDefined();
             // Generate the metadata for the dataset on file
             auto dsetInfo = h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
@@ -780,8 +790,9 @@ namespace h5pp {
             // Read
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
         }
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         [[nodiscard]] DataType readDataset(std::string_view dsetPath, const Options &options) const {
+            static_assert(not std::is_const_v<DataType>);
             Options options_internal  = options;
             options_internal.linkPath = dsetPath;
             DataType data;
@@ -794,6 +805,7 @@ namespace h5pp {
                          std::string_view        dsetPath,
                          const OptDimsType      &dataDims = std::nullopt,
                          std::optional<hid::h5t> h5Type   = std::nullopt) const {
+            static_assert(not std::is_const_v<DataType>);
             Options options;
             options.linkPath = dsetPath;
             options.dataDims = dataDims;
@@ -801,17 +813,18 @@ namespace h5pp {
             readDataset(data, options);
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         [[nodiscard]] DataType readDataset(std::string_view        datasetPath,
                                            const OptDimsType      &dataDims = std::nullopt,
                                            std::optional<hid::h5t> h5Type   = std::nullopt) const {
+            static_assert(not std::is_const_v<DataType>);
             DataType data;
             readDataset(data, datasetPath, dataDims, std::move(h5Type));
             return data;
         }
 
         template<typename DataType>
-        void appendToDataset(DataType &data, const DataInfo &dataInfo, DsetInfo &dsetInfo, size_t axis) {
+        void appendToDataset(const DataType &data, const DataInfo &dataInfo, DsetInfo &dsetInfo, size_t axis) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             h5pp::hdf5::extendDataset(dsetInfo, dataInfo, axis);
@@ -819,7 +832,7 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        void appendToDataset(DataType &data, DsetInfo &dsetInfo, size_t axis, const OptDimsType &dataDims = std::nullopt) {
+        void appendToDataset(const DataType &data, DsetInfo &dsetInfo, size_t axis, const OptDimsType &dataDims = std::nullopt) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             Options options;
@@ -829,7 +842,7 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        DsetInfo appendToDataset(DataType &data, size_t axis, const Options &options = Options()) {
+        DsetInfo appendToDataset(const DataType &data, size_t axis, const Options &options = Options()) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             options.assertWellDefined();
@@ -840,7 +853,7 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        DsetInfo appendToDataset(DataType &data, std::string_view dsetPath, size_t axis, const OptDimsType &dataDims = std::nullopt) {
+        DsetInfo appendToDataset(const DataType &data, std::string_view dsetPath, size_t axis, const OptDimsType &dataDims = std::nullopt) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             Options options;
@@ -849,16 +862,18 @@ namespace h5pp {
             return appendToDataset(data, axis, options);
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         void readHyperslab(DataType &data, std::string_view dsetPath, const Hyperslab &hyperslab) const {
+            static_assert(not std::is_const_v<DataType>);
             Options options;
             options.linkPath = dsetPath;
             options.dsetSlab = hyperslab;
             readDataset(data, options);
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         [[nodiscard]] DataType readHyperslab(std::string_view dsetPath, const Hyperslab &hyperslab) const {
+            static_assert(not std::is_const_v<DataType>);
             DataType data;
             readHyperslab(data, dsetPath, hyperslab);
             return data;
@@ -949,8 +964,9 @@ namespace h5pp {
             return writeAttribute(data, options);
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         void readAttribute(DataType &data, const h5pp::AttrInfo &attrInfo, const Options &options = Options()) const {
+            static_assert(not std::is_const_v<DataType>);
             if(attrInfo.linkExists and not attrInfo.linkExists.value())
                 throw std::runtime_error(h5pp::format("Could not read attribute [{}] in link [{}]: "
                                                       "Link does not exist",
@@ -967,18 +983,20 @@ namespace h5pp {
             h5pp::hdf5::readAttribute(data, dataInfo, attrInfo);
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         void readAttribute(DataType &data, const Options &options) const {
+            static_assert(not std::is_const_v<DataType>);
             options.assertWellDefined();
             auto attrInfo = h5pp::scan::readAttrInfo(openFileHandle(), options, plists);
             readAttribute(data, attrInfo, options);
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         void readAttribute(DataType          &data,
                            std::string_view   attrName,
                            std::string_view   linkPath,
                            const OptDimsType &dataDims = std::nullopt) const {
+            static_assert(not std::is_const_v<DataType>);
             Options options;
             options.linkPath = linkPath;
             options.attrName = attrName;
@@ -986,9 +1004,10 @@ namespace h5pp {
             readAttribute(data, options);
         }
 
-        template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
+        template<typename DataType>
         [[nodiscard]] DataType
             readAttribute(std::string_view attrName, std::string_view linkPath, const OptDimsType &dataDims = std::nullopt) const {
+            static_assert(not std::is_const_v<DataType>);
             DataType data;
             readAttribute(data, attrName, linkPath, dataDims);
             return data;
@@ -1037,7 +1056,7 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        TableInfo writeTableRecords(const DataType &data, std::string_view tablePath, hsize_t startIdx = 0) {
+        TableInfo writeTableRecords(const DataType &data, std::string_view tablePath, hsize_t offset = 0) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             Options options;
@@ -1045,7 +1064,7 @@ namespace h5pp {
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not info.tableExists.value())
                 throw std::runtime_error(h5pp::format("Cannot write to table [{}]: it does not exist", tablePath));
-            h5pp::hdf5::writeTableRecords(data, info, startIdx);
+            h5pp::hdf5::writeTableRecords(data, info, offset);
             return info;
         }
 
@@ -1058,18 +1077,18 @@ namespace h5pp {
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not info.tableExists.value())
                 throw std::runtime_error(h5pp::format("Cannot append to table [{}]: it does not exist", tablePath));
-            h5pp::hdf5::appendTableRecords(data, info);
+            h5pp::hdf5::writeTableRecords(data, info, info.numRecords.value());
             return info;
         }
 
-        void appendTableRecords(const h5pp::TableInfo &srcInfo, hsize_t srcStartIdx, hsize_t numRecordsToAppend, h5pp::TableInfo &tgtInfo) {
+        void appendTableRecords(const h5pp::TableInfo &srcInfo, hsize_t srcOffset, hsize_t srcExtent, h5pp::TableInfo &tgtInfo) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             if(not tgtInfo.numRecords)
                 throw std::runtime_error(h5pp::format("Cannot append records to table: Target TableInfo has undefined field [numRecords]"));
-            hsize_t tgtStartIdx = tgtInfo.numRecords.value();
-            numRecordsToAppend  = std::min(srcInfo.numRecords.value() - srcStartIdx, numRecordsToAppend);
-            h5pp::hdf5::copyTableRecords(srcInfo, srcStartIdx, numRecordsToAppend, tgtInfo, tgtStartIdx);
+            hsize_t tgtOffset = tgtInfo.numRecords.value();
+            srcExtent         = std::min(srcInfo.numRecords.value() - srcOffset, srcExtent);
+            h5pp::hdf5::copyTableRecords(srcInfo, srcOffset, srcExtent, tgtInfo, tgtOffset);
         }
 
         void appendTableRecords(const h5pp::TableInfo &srcInfo, TableSelection srcTableSelection, h5pp::TableInfo &tgtInfo) {
@@ -1096,13 +1115,14 @@ namespace h5pp {
             return tgtInfo;
         }
 
-        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_src>>
+        template<typename h5x_src>
         TableInfo appendTableRecords(const h5x_src      &srcLocation,
                                      std::string_view    srcTablePath,
                                      TableSelection      srcTableSelection,
                                      std::string_view    tgtTablePath,
                                      const OptDimsType  &chunkDims   = std::nullopt,
                                      std::optional<bool> compression = std::nullopt) {
+            static_assert(type::sfinae::is_h5pp_loc_id<h5x_src>);
             Options options;
             options.linkPath = h5pp::util::safe_str(srcTablePath);
             auto srcInfo     = h5pp::scan::readTableInfo(srcLocation, options, plists);
@@ -1110,21 +1130,21 @@ namespace h5pp {
         }
 
         void copyTableRecords(const h5pp::TableInfo &srcInfo,
-                              hsize_t                srcStartIdx,
+                              hsize_t                srcOffset,
                               hsize_t                numRecordsToCopy,
                               h5pp::TableInfo       &tgtInfo,
-                              hsize_t                tgtStartIdx) {
+                              hsize_t                tgtOffset) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             if(not srcInfo.numRecords) throw std::runtime_error("Source TableInfo has undefined field [numRecords]");
-            numRecordsToCopy = std::min(srcInfo.numRecords.value() - srcStartIdx, numRecordsToCopy);
-            h5pp::hdf5::copyTableRecords(srcInfo, srcStartIdx, numRecordsToCopy, tgtInfo, tgtStartIdx);
+            numRecordsToCopy = std::min(srcInfo.numRecords.value() - srcOffset, numRecordsToCopy);
+            h5pp::hdf5::copyTableRecords(srcInfo, srcOffset, numRecordsToCopy, tgtInfo, tgtOffset);
         }
 
         void copyTableRecords(const h5pp::TableInfo &srcInfo,
                               TableSelection         srcTableSelection,
                               h5pp::TableInfo       &tgtInfo,
-                              hsize_t                tgtStartIdx) {
+                              hsize_t                tgtOffset) {
             if(permission == h5pp::FilePermission::READONLY)
                 throw std::runtime_error(h5pp::format("Attempted to write on read-only file [{}]", filePath.string()));
             if(not srcInfo.numRecords)
@@ -1132,23 +1152,23 @@ namespace h5pp {
             if(not tgtInfo.numRecords)
                 throw std::runtime_error("Cannot append records to table: Target TableInfo has undefined field [numRecords]");
             if(srcInfo.numRecords.value() == 0) throw std::runtime_error("Cannot append records from table: Source table is empty");
-            hsize_t srcStartIdx        = 0;
+            hsize_t srcOffset          = 0;
             hsize_t numRecordsToAppend = 0;
             switch(srcTableSelection) {
                 case h5pp::TableSelection::ALL: numRecordsToAppend = srcInfo.numRecords.value(); break;
                 case h5pp::TableSelection::FIRST: numRecordsToAppend = 1; break;
                 case h5pp::TableSelection::LAST:
                     numRecordsToAppend = 1;
-                    srcStartIdx        = srcInfo.numRecords.value() - 1;
+                    srcOffset          = srcInfo.numRecords.value() - 1;
                     break;
             }
-            h5pp::hdf5::copyTableRecords(srcInfo, srcStartIdx, numRecordsToAppend, tgtInfo, tgtStartIdx);
+            h5pp::hdf5::copyTableRecords(srcInfo, srcOffset, numRecordsToAppend, tgtInfo, tgtOffset);
         }
 
         TableInfo copyTableRecords(const h5pp::TableInfo &srcInfo,
                                    TableSelection         tableSelection,
                                    std::string_view       tgtTablePath,
-                                   hsize_t                tgtStartIdx,
+                                   hsize_t                tgtOffset,
                                    const OptDimsType     &chunkDims   = std::nullopt,
                                    std::optional<bool>    compression = std::nullopt) {
             Options options;
@@ -1160,15 +1180,15 @@ namespace h5pp {
                 tgtInfo =
                     createTable(srcInfo.h5Type.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compression);
 
-            copyTableRecords(srcInfo, tableSelection, tgtInfo, tgtStartIdx);
+            copyTableRecords(srcInfo, tableSelection, tgtInfo, tgtOffset);
             return tgtInfo;
         }
 
         TableInfo copyTableRecords(const h5pp::TableInfo &srcInfo,
-                                   hsize_t                srcStartIdx,
+                                   hsize_t                srcOffset,
                                    hsize_t                numRecordsToCopy,
                                    std::string_view       tgtTablePath,
-                                   hsize_t                tgtStartIdx,
+                                   hsize_t                tgtOffset,
                                    const OptDimsType     &chunkDims   = std::nullopt,
                                    std::optional<bool>    compression = std::nullopt) {
             Options options;
@@ -1180,44 +1200,46 @@ namespace h5pp {
                 tgtInfo =
                     createTable(srcInfo.h5Type.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compression);
 
-            copyTableRecords(srcInfo, srcStartIdx, numRecordsToCopy, tgtInfo, tgtStartIdx);
+            copyTableRecords(srcInfo, srcOffset, numRecordsToCopy, tgtInfo, tgtOffset);
             return tgtInfo;
         }
 
-        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_src>>
+        template<typename h5x_src>
         TableInfo copyTableRecords(const h5x_src               &srcLocation,
                                    std::string_view             srcTablePath,
                                    TableSelection               srcTableSelection,
                                    std::string_view             tgtTablePath,
-                                   hsize_t                      tgtStartIdx,
+                                   hsize_t                      tgtOffset,
                                    const std::optional<hsize_t> chunkDims   = std::nullopt,
                                    const std::optional<int>     compression = std::nullopt) {
+            static_assert(type::sfinae::is_h5pp_loc_id<h5x_src>);
             Options options;
             options.linkPath = h5pp::util::safe_str(srcTablePath);
             auto srcInfo     = h5pp::scan::readTableInfo(srcLocation, options, plists);
-            return copyTableRecords(srcInfo, srcTableSelection, tgtTablePath, tgtStartIdx, chunkDims, compression);
+            return copyTableRecords(srcInfo, srcTableSelection, tgtTablePath, tgtOffset, chunkDims, compression);
         }
 
-        template<typename h5x_src, typename = h5pp::type::sfinae::enable_if_is_h5_loc_t<h5x_src>>
+        template<typename h5x_src>
         TableInfo copyTableRecords(const h5x_src               &srcLocation,
                                    std::string_view             srcTablePath,
-                                   hsize_t                      srcStartIdx,
-                                   hsize_t                      numRecordsToCopy,
+                                   hsize_t                      srcOffset,
+                                   hsize_t                      srcExtent,
                                    std::string_view             tgtTablePath,
-                                   hsize_t                      tgtStartIdx,
+                                   hsize_t                      tgtOffset,
                                    const std::optional<hsize_t> chunkDims   = std::nullopt,
                                    const std::optional<bool>    compression = std::nullopt) {
+            static_assert(type::sfinae::is_h5pp_loc_id<h5x_src>);
             Options options;
             options.linkPath = h5pp::util::safe_str(srcTablePath);
             auto srcInfo     = h5pp::scan::readTableInfo(srcLocation, options, plists);
-            return copyTableRecords(srcInfo, srcStartIdx, numRecordsToCopy, tgtTablePath, tgtStartIdx, chunkDims, compression);
+            return copyTableRecords(srcInfo, srcOffset, srcExtent, tgtTablePath, tgtOffset, chunkDims, compression);
         }
 
         TableInfo copyTableRecords(std::string_view    srcTablePath,
-                                   hsize_t             srcStartIdx,
+                                   hsize_t             srcOffset,
                                    hsize_t             numRecords,
                                    std::string_view    tgtTablePath,
-                                   hsize_t             tgtStartIdx,
+                                   hsize_t             tgtOffset,
                                    const OptDimsType  &chunkDims   = std::nullopt,
                                    std::optional<bool> compression = std::nullopt) {
             Options tgt_options, src_options;
@@ -1230,22 +1252,22 @@ namespace h5pp {
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
                 tgtInfo =
                     createTable(srcInfo.h5Type.value(), tgtInfo.tablePath.value(), srcInfo.tableTitle.value(), chunkDims, compression);
-            copyTableRecords(srcInfo, srcStartIdx, numRecords, tgtInfo, tgtStartIdx);
+            copyTableRecords(srcInfo, srcOffset, numRecords, tgtInfo, tgtOffset);
             return tgtInfo;
         }
 
         template<typename DataType>
         void readTableRecords(DataType             &data,
                               std::string_view      tablePath,
-                              std::optional<size_t> startIdx   = std::nullopt,
-                              std::optional<size_t> numRecords = std::nullopt) const {
+                              std::optional<size_t> offset = std::nullopt,
+                              std::optional<size_t> extent = std::nullopt) const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath);
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(info.tableExists and not info.tableExists.value())
                 throw std::runtime_error(
                     h5pp::format("Could not read records from table [{}]: it does not exist", util::safe_str(tablePath)));
-            h5pp::hdf5::readTableRecords(data, info, startIdx, numRecords);
+            h5pp::hdf5::readTableRecords(data, info, offset, extent);
         }
 
         template<typename DataType>
@@ -1257,32 +1279,32 @@ namespace h5pp {
                 throw std::runtime_error(
                     h5pp::format("Could not read records from table [{}]: it does not exist", util::safe_str(tablePath)));
 
-            hsize_t startIdx   = 0;
+            hsize_t offset     = 0;
             hsize_t numRecords = 0;
 
             switch(tableSelection) {
                 case h5pp::TableSelection::ALL:
-                    startIdx   = 0;
+                    offset     = 0;
                     numRecords = info.numRecords.value();
                     break;
                 case h5pp::TableSelection::FIRST:
-                    startIdx   = 0;
+                    offset     = 0;
                     numRecords = 1;
                     break;
                 case h5pp::TableSelection::LAST:
-                    startIdx   = info.numRecords.value() - 1;
+                    offset     = info.numRecords.value() - 1;
                     numRecords = 1;
                     break;
             }
-            h5pp::hdf5::readTableRecords(data, info, startIdx, numRecords);
+            h5pp::hdf5::readTableRecords(data, info, offset, numRecords);
         }
 
         template<typename DataType>
         [[nodiscard]] DataType readTableRecords(std::string_view      tablePath,
-                                                std::optional<size_t> startIdx   = std::nullopt,
-                                                std::optional<size_t> numRecords = std::nullopt) const {
+                                                std::optional<size_t> offset = std::nullopt,
+                                                std::optional<size_t> extent = std::nullopt) const {
             DataType data;
-            readTableRecords(data, tablePath, startIdx, numRecords);
+            readTableRecords(data, tablePath, offset, extent);
             return data;
         }
 
@@ -1297,13 +1319,13 @@ namespace h5pp {
         void readTableField(DataType             &data,
                             const TableInfo      &info,
                             NamesOrIndices      &&fieldNamesOrIndices,
-                            std::optional<size_t> startIdx   = std::nullopt,
-                            std::optional<size_t> numRecords = std::nullopt) const {
+                            std::optional<size_t> offset = std::nullopt,
+                            std::optional<size_t> extent = std::nullopt) const {
             auto variant_index = fieldNamesOrIndices.index();
             if(variant_index == 0)
-                return h5pp::hdf5::readTableField(data, info, fieldNamesOrIndices.get_value<0>(), startIdx, numRecords);
+                return h5pp::hdf5::readTableField(data, info, fieldNamesOrIndices.get_value<0>(), offset, extent);
             else if(variant_index == 1)
-                return h5pp::hdf5::readTableField(data, info, fieldNamesOrIndices.get_value<1>(), startIdx, numRecords);
+                return h5pp::hdf5::readTableField(data, info, fieldNamesOrIndices.get_value<1>(), offset, extent);
             else
                 throw std::runtime_error("No field names or indices have been specified");
         }
@@ -1312,21 +1334,21 @@ namespace h5pp {
         void readTableField(DataType             &data,
                             std::string_view      tablePath,
                             NamesOrIndices      &&fieldNamesOrIndices,
-                            std::optional<size_t> startIdx   = std::nullopt,
-                            std::optional<size_t> numRecords = std::nullopt) const {
+                            std::optional<size_t> offset = std::nullopt,
+                            std::optional<size_t> extent = std::nullopt) const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath);
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
-            readTableField(data, info, std::forward<NamesOrIndices>(fieldNamesOrIndices), startIdx, numRecords);
+            readTableField(data, info, std::forward<NamesOrIndices>(fieldNamesOrIndices), offset, extent);
         }
 
         template<typename DataType>
         [[nodiscard]] DataType readTableField(std::string_view      tablePath,
                                               NamesOrIndices      &&fieldNamesOrIndices,
-                                              std::optional<size_t> startIdx   = std::nullopt,
-                                              std::optional<size_t> numRecords = std::nullopt) const {
+                                              std::optional<size_t> offset = std::nullopt,
+                                              std::optional<size_t> extent = std::nullopt) const {
             DataType data;
-            readTableField(data, tablePath, std::forward<NamesOrIndices>(fieldNamesOrIndices), startIdx, numRecords);
+            readTableField(data, tablePath, std::forward<NamesOrIndices>(fieldNamesOrIndices), offset, extent);
             return data;
         }
 
@@ -1342,23 +1364,23 @@ namespace h5pp {
                 throw std::runtime_error(
                     h5pp::format("Could not read records from table [{}]: it does not exist", util::safe_str(tablePath)));
 
-            hsize_t startIdx   = 0;
-            hsize_t numRecords = 0;
+            hsize_t offset = 0;
+            hsize_t extent = 0;
             switch(tableSelection) {
                 case h5pp::TableSelection::ALL:
-                    startIdx   = 0;
-                    numRecords = info.numRecords.value();
+                    offset = 0;
+                    extent = info.numRecords.value();
                     break;
                 case h5pp::TableSelection::FIRST:
-                    startIdx   = 0;
-                    numRecords = 1;
+                    offset = 0;
+                    extent = 1;
                     break;
                 case h5pp::TableSelection::LAST:
-                    startIdx   = info.numRecords.value() - 1;
-                    numRecords = 1;
+                    offset = info.numRecords.value() - 1;
+                    extent = 1;
                     break;
             }
-            readTableField(data, info, std::forward<NamesOrIndices>(fieldNamesOrIndices), startIdx, numRecords);
+            readTableField(data, info, std::forward<NamesOrIndices>(fieldNamesOrIndices), offset, extent);
         }
 
         template<typename DataType>
@@ -1501,7 +1523,7 @@ namespace h5pp {
             else if constexpr(std::is_same_v<InfoType, LinkInfo>)
                 return getLinkInfo(linkPath);
             else
-                static_assert(h5pp::type::sfinae::invalid_type_v<InfoType>,
+                static_assert(type::sfinae::invalid_type_v<InfoType>,
                               "Template function 'h5pp::File::getInfo<InfoType>(std::string_view linkPath)' "
                               "requires template type 'InfoType' to be one of "
                               "[h5pp::DsetInfo], [h5pp::TableInfo], [h5pp::TypeInfo] or [h5pp::LinkInfo]");
@@ -1514,7 +1536,7 @@ namespace h5pp {
             else if constexpr(std::is_same_v<InfoType, TypeInfo>)
                 return getTypeInfoAttribute(linkPath, attrName);
             else
-                static_assert(h5pp::type::sfinae::invalid_type_v<InfoType>,
+                static_assert(type::sfinae::invalid_type_v<InfoType>,
                               "Template function 'h5pp::File::getInfo<InfoType>(std::string_view linkPath, std::string_view attrName)' "
                               "requires template type 'InfoType' to be either "
                               "[h5pp::AttrInfo] or [h5pp::TypeInfo]");

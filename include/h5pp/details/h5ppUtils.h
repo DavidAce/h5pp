@@ -398,8 +398,9 @@ namespace h5pp::util {
         }
     }
 
-    template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
+    template<typename DataType>
     [[nodiscard]] constexpr size_t getBytesPerElem() {
+        static_assert(not type::sfinae::is_h5pp_id<DataType>);
         namespace sfn   = h5pp::type::sfinae;
         using DecayType = typename std::decay<DataType>::type;
         if constexpr(std::is_pointer_v<DecayType>) return getBytesPerElem<typename std::remove_pointer<DecayType>::type>();
@@ -644,8 +645,8 @@ namespace h5pp::util {
     template<typename h5xa,
              typename h5xb,
              // enable_if so the compiler doesn't think it can use overload with fs::path those arguments
-             typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5xa>,
-             typename = h5pp::type::sfinae::enable_if_is_h5_loc_or_hid_t<h5xb>>
+             typename = std::enable_if_t<type::sfinae::is_hdf5_loc_id<h5xa>>,
+             typename = std::enable_if_t<type::sfinae::is_hdf5_loc_id<h5xb>>>
     [[nodiscard]] inline bool onSameFile(const h5xa &loca, const h5xb &locb, LocationMode locMode = LocationMode::DETECT) {
         switch(locMode) {
             case LocationMode::SAME_FILE: return true;
