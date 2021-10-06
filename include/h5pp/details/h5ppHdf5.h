@@ -30,7 +30,7 @@ namespace h5pp {
     inline constexpr bool has_zlib_h       = false;
 #endif
 
-#if H5_VERSION_GE(1, 10, 0)
+#if H5_VERSION_GE(1, 10, 5)
     #define H5PP_HAS_DIRECT_CHUNK 1
     inline constexpr bool has_direct_chunk = true;
 #else
