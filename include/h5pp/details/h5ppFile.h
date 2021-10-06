@@ -414,7 +414,7 @@ namespace h5pp {
         }
 
         /*! Get current default compression level */
-        [[nodiscard]] unsigned int getcompression() const { return currentCompression; }
+        [[nodiscard]] unsigned int getCompressionLevel() const { return currentCompression; }
 
         /*! Get a *valid* compression level given an optionally suggested level.
          *
@@ -1029,7 +1029,7 @@ namespace h5pp {
             options.linkPath      = h5pp::util::safe_str(tablePath);
             options.h5Type        = h5Type;
             options.dsetDimsChunk = chunkDims;
-            options.compression   = compression;
+            options.compression   = getCompressionLevel(compression);
             auto info             = h5pp::scan::makeTableInfo(openFileHandle(), options, tableTitle, plists);
             h5pp::hdf5::createTable(info, plists);
             h5pp::scan::readTableInfo(info, info.getLocId(), options, plists);
@@ -1086,7 +1086,7 @@ namespace h5pp {
             Options options;
             options.linkPath      = h5pp::util::safe_str(tgtTablePath);
             options.dsetDimsChunk = chunkDims;
-            options.compression   = compression;
+            options.compression   = getCompressionLevel(compression);
             auto tgtInfo          = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
                 tgtInfo =
@@ -1154,7 +1154,7 @@ namespace h5pp {
             Options options;
             options.linkPath      = h5pp::util::safe_str(tgtTablePath);
             options.dsetDimsChunk = chunkDims;
-            options.compression   = compression;
+            options.compression   = getCompressionLevel(compression);
             auto tgtInfo          = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
                 tgtInfo =
@@ -1224,7 +1224,7 @@ namespace h5pp {
             src_options.linkPath      = h5pp::util::safe_str(srcTablePath);
             tgt_options.linkPath      = h5pp::util::safe_str(tgtTablePath);
             tgt_options.dsetDimsChunk = chunkDims;
-            tgt_options.compression   = compression;
+            tgt_options.compression   = getCompressionLevel(compression);
             auto srcInfo              = h5pp::scan::readTableInfo(openFileHandle(), src_options, plists);
             auto tgtInfo              = h5pp::scan::readTableInfo(openFileHandle(), tgt_options, plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value())
