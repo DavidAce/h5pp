@@ -2137,7 +2137,8 @@ namespace h5pp::hdf5 {
             h5pp::logger::log->warn("Failed to get chunk info for offset {}", chunkOffset);
         }
         if(chsize == 0 or chaddr == HADDR_UNDEF) {
-            h5pp::logger::log->trace(h5pp::format("H5Dread_single_chunk: no action: chunk at offset {} is not yet allocated", chunkOffset));
+            h5pp::logger::log->trace(h5pp::format("H5Dread_single_chunk: chunk at offset {} is not yet allocated. Clearing", chunkOffset));
+            std::fill(chunkBuffer.begin(), chunkBuffer.end(), static_cast<std::byte>(0));
             return;
         }
 
@@ -2318,10 +2319,13 @@ namespace h5pp::hdf5 {
                 //                h5pp::logger::log->trace("chunk  slab {} | coord {}", chunkSlab.string(), chunkCoord);
 
                 // Copy the value
-                auto dataIdx  = h5pp::util::sub2ind(dataSlab.extent.value(), dataCoord);
-                auto chunkIdx = h5pp::util::sub2ind(chunkSlab.extent.value(), chunkCoord);
-                std::memcpy(util::getVoidPointer<void *>(chunkBuffer, chunkIdx * typeSize),
-                            util::getVoidPointer<const void *>(data, dataIdx),
+                auto   dataIdx         = h5pp::util::sub2ind(dataSlab.extent.value(), dataCoord);
+                auto   chunkIdx        = h5pp::util::sub2ind(chunkSlab.extent.value(), chunkCoord);
+                size_t dataByteOffset  = dataIdx;
+                size_t chunkByteOffset = chunkIdx * typeSize;
+                if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) dataByteOffset *= typeSize;
+                std::memcpy(util::getVoidPointer<void *>(chunkBuffer, chunkByteOffset),
+                            util::getVoidPointer<const void *>(data, dataByteOffset),
                             typeSize);
             }
             // Step 5 Now all the data is in the chunk buffer. Write to file
@@ -3145,7 +3149,6 @@ namespace h5pp::hdf5 {
             tgtFieldSizeSum += tgtFieldSizes.back();
         }
 
-
         /* Create a special tgtTypeId for reading a subset of a table record with the following properties:
          *      - tgtTypeId has the size of the given field selection i.e. ieldSizeSum.
          *      - only the fields to read are defined in it
@@ -3289,7 +3292,7 @@ namespace h5pp::hdf5 {
                                std::optional<size_t>      extent = std::nullopt) {
         static_assert(not std::is_const_v<DataType>);
         hid::h5t tgtTypeId = getFieldTypeId(info, srcFieldIndices);
-        readTableField(data,info, tgtTypeId, offset,extent);
+        readTableField(data, info, tgtTypeId, offset, extent);
     }
 
     template<typename DataType>
