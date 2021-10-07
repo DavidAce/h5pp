@@ -4,6 +4,15 @@
 #include <string>
 
 namespace h5pp::hid {
+    class h5d;
+    class h5a;
+    class h5o;
+    class h5t;
+    class h5s;
+    class h5f;
+    class h5e;
+    class h5g;
+    class h5p;
 
     // Base class for all the safe "hid_t" wrapper classes. Zero value is the default for H5P and H5E so it's ok for them to return it zero
     template<typename hid_h5x, bool zeroValueIsOK = false>
@@ -26,6 +35,7 @@ namespace h5pp::hid {
             // Why do we not increment the counter here?
             // The destructor will decrement the reference counter and possibly close this id.
             // Should this object manage
+            close(); // Drop current
             val = other;
         }
 
@@ -36,14 +46,16 @@ namespace h5pp::hid {
             } else {
                 if(not valid(other.val)) throw std::runtime_error("Given identifier must be valid");
             }
+            close(); // Drop current
             val = other.val;
-            if(valid(other.val)) H5Iinc_ref(val); // Increment reference counter of identifier
+            if(val > 0)  H5Iinc_ref(val); // Increment reference counter of identifier
         }
 
         hid_base(hid_base &&other) noexcept {
             // Move constructor
-            val = other.val; // Checks that we got a valid identifier through .value() (throws)
-            H5Iinc_ref(val); // Increment reference counter of identifier
+            close(); // Drop current
+            val = other.val;
+            if(val > 0) H5Iinc_ref(val); // Increment reference counter of identifier
         }
 
         hid_base &operator=(const hid_base &rhs) {
@@ -54,18 +66,18 @@ namespace h5pp::hid {
             } else {
                 if(not valid(rhs.val)) throw std::runtime_error("Given identifier must be valid");
             }
-            if(not equal(rhs.val)) close(); // Drop current
+            close(); // Drop current
             val = rhs.val;
-            if(valid(val)) H5Iinc_ref(val); // Increment reference counter of identifier
+            if(val > 0) H5Iinc_ref(val); // Increment reference counter of identifier
             return *this;
         }
 
         hid_base &operator=(hid_base &&rhs) noexcept {
             if(this == &rhs) return *this;
             // Move assignment
-            if(not equal(rhs.val)) close(); // Drop current
+            close(); // Drop current
             val = rhs.val;
-            H5Iinc_ref(val); // Increment reference counter of identifier
+            if(val > 0) H5Iinc_ref(val); // Increment reference counter of identifier
             return *this;
         }
 
@@ -78,17 +90,35 @@ namespace h5pp::hid {
                 if(not valid(rhs)) throw std::runtime_error("Given identifier must be valid");
             }
 
-            if(not equal(rhs)) close(); // Drop current
+            close(); // Drop current
             val = rhs;
-            //TODO: think about this increment below. This would mean that we never close hid_t id's given to this object
-            H5Iinc_ref(val); // Increment reference counter of identifier
             return *this;
         }
 
-        virtual void                      close()     = 0;
+        void close() {
+            if(val == 0 or not valid()) return;
+            if(H5Iget_ref(val) > 1)
+                H5Idec_ref(val);
+            else {
+                /* clang-format off */
+                if constexpr(std::is_same_v<hid_h5x,h5d> )if(H5Dclose(val) < 0)       {H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to close h5d id " + std::to_string(val));}
+                if constexpr(std::is_same_v<hid_h5x,h5a> )if(H5Aclose(val) < 0)       {H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to close h5a id " + std::to_string(val));}
+                if constexpr(std::is_same_v<hid_h5x,h5o> )if(H5Oclose(val) < 0)       {H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to close h5o id " + std::to_string(val));}
+                if constexpr(std::is_same_v<hid_h5x,h5t> )if(H5Tclose(val) < 0)       {H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to close h5t id " + std::to_string(val));}
+                if constexpr(std::is_same_v<hid_h5x,h5s> )if(H5Sclose(val) < 0)       {H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to close h5s id " + std::to_string(val));}
+                if constexpr(std::is_same_v<hid_h5x,h5f> )if(H5Fclose(val) < 0)       {H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to close h5f id " + std::to_string(val));}
+                if constexpr(std::is_same_v<hid_h5x,h5g> )if(H5Gclose(val) < 0)       {H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to close h5g id " + std::to_string(val));}
+                if constexpr(std::is_same_v<hid_h5x,h5p> )if(H5Pclose(val) < 0)       {H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to close h5p id " + std::to_string(val));}
+                if constexpr(std::is_same_v<hid_h5x,h5e> )if(H5Eclose_stack(val) < 0) {H5Eprint(H5E_DEFAULT, stderr); throw std::runtime_error("Failed to close h5e id " + std::to_string(val));}
+                /* clang-format on */
+            }
+        }
+
         [[nodiscard]] virtual std::string tag() const = 0;
-        [[nodiscard]] const hid_t &       value() const {
-            if(valid() or (val == 0 and zeroValueIsOK))
+        [[nodiscard]] const hid_t        &value() const {
+            if constexpr(zeroValueIsOK)
+                if(val == 0) return val;
+            if(valid())
                 return val;
             else {
                 H5Eprint(H5E_DEFAULT, stderr);
@@ -97,7 +127,8 @@ namespace h5pp::hid {
         }
 
         [[nodiscard]] auto refcount() const {
-            if(zeroValueIsOK and val == 0) return 0;
+            if constexpr(zeroValueIsOK)
+                if(val == 0) return 0;
             if(valid()) {
                 auto refc = H5Iget_ref(val);
                 if(refc >= 0)
@@ -177,14 +208,6 @@ namespace h5pp::hid {
         ~h5p() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5p"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return (val > 0 and rhs > 0 and H5Pequal(val, rhs)) or val == rhs; }
-        void                      close() final {
-            if(valid()) {
-                if(H5Iget_ref(val) > 1)
-                    H5Idec_ref(val);
-                else if(H5Pclose(val) < 0)
-                    H5Eprint(H5E_DEFAULT, stderr);
-            }
-        }
     };
 
     class h5s final : public hid_base<h5s> {
@@ -193,14 +216,6 @@ namespace h5pp::hid {
         ~h5s() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5s"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
-        void                      close() final {
-            if(valid()) {
-                if(H5Iget_ref(val) > 1)
-                    H5Idec_ref(val);
-                else if(H5Sclose(val) < 0)
-                    H5Eprint(H5E_DEFAULT, stderr);
-            }
-        }
     };
 
     class h5t final : public hid_base<h5t> {
@@ -209,14 +224,6 @@ namespace h5pp::hid {
         ~h5t() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5t"; }
         [[nodiscard]] bool equal(const hid_t &rhs) const final { return (valid(val) and valid(rhs) and H5Tequal(val, rhs)) or val == rhs; }
-        void               close() final {
-            if(valid()) {
-                if(H5Iget_ref(val) > 1)
-                    H5Idec_ref(val);
-                else if(H5Tclose(val) < 0)
-                    H5Eprint(H5E_DEFAULT, stderr);
-            }
-        }
     };
 
     class h5d final : public hid_base<h5d> {
@@ -225,14 +232,6 @@ namespace h5pp::hid {
         ~h5d() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5d"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
-        void                      close() final {
-            if(valid()) {
-                if(H5Iget_ref(val) > 1)
-                    H5Idec_ref(val);
-                else if(H5Dclose(val) < 0)
-                    H5Eprint(H5E_DEFAULT, stderr);
-            }
-        }
     };
 
     class h5g final : public hid_base<h5g> {
@@ -241,14 +240,6 @@ namespace h5pp::hid {
         ~h5g() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5g"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
-        void                      close() final {
-            if(valid()) {
-                if(H5Iget_ref(val) > 1)
-                    H5Idec_ref(val);
-                else if(H5Gclose(val) < 0)
-                    H5Eprint(H5E_DEFAULT, stderr);
-            }
-        }
     };
 
     class h5a final : public hid_base<h5a> {
@@ -257,14 +248,6 @@ namespace h5pp::hid {
         ~h5a() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5a"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
-        void                      close() final {
-            if(valid()) {
-                if(H5Iget_ref(val) > 1)
-                    H5Idec_ref(val);
-                else if(H5Aclose(val) < 0)
-                    H5Eprint(H5E_DEFAULT, stderr);
-            }
-        }
     };
 
     class h5o final : public hid_base<h5o> {
@@ -273,14 +256,6 @@ namespace h5pp::hid {
         ~h5o() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5o"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
-        void                      close() final {
-            if(valid()) {
-                if(H5Iget_ref(val) > 1)
-                    H5Idec_ref(val);
-                else if(H5Oclose(val) < 0)
-                    H5Eprint(H5E_DEFAULT, stderr);
-            }
-        }
     };
 
     class h5f final : public hid_base<h5f> {
@@ -289,12 +264,6 @@ namespace h5pp::hid {
         ~h5f() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5f"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
-        void                      close() final {
-            if(H5Iget_ref(val) > 1)
-                H5Idec_ref(val);
-            else if(H5Fclose(val) < 0)
-                H5Eprint(H5E_DEFAULT, stderr);
-        }
     };
 
     class h5e final : public hid_base<h5e, true> {
@@ -303,13 +272,5 @@ namespace h5pp::hid {
         ~h5e() final { close(); }
         [[nodiscard]] std::string tag() const final { return "h5e"; }
         [[nodiscard]] bool        equal(const hid_t &rhs) const final { return val == rhs; }
-        void                      close() final {
-            if(valid()) {
-                if(H5Iget_ref(val) > 1)
-                    H5Idec_ref(val);
-                else
-                    H5Eclose_stack(val);
-            }
-        }
     };
 }
