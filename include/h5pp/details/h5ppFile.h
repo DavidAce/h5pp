@@ -133,17 +133,15 @@ namespace h5pp {
          * This is useful for quick batch operations where opening and closing the file handle would introduce a large performance penalty.
          */
 
-        struct FileHandleToken{
-            const h5pp::File & file_;
-            FileHandleToken(const h5pp::File & file): file_(file){
+        struct FileHandleToken {
+            const h5pp::File &file_;
+            FileHandleToken(const h5pp::File &file) : file_(file) {
                 hid::h5f temphandle = file_.openFileHandle();
-                file_.fileHandle = temphandle;
+                file_.fileHandle    = temphandle;
             }
-            ~FileHandleToken(){
-                file_.fileHandle = std::nullopt;
-            }
+            ~FileHandleToken() { file_.fileHandle = std::nullopt; }
         };
-        FileHandleToken getFileHandleToken(){return FileHandleToken(*this);}
+        FileHandleToken getFileHandleToken() { return FileHandleToken(*this); }
 
         void setKeepFileOpened() const {
             // Check before setting onto self:
@@ -1429,12 +1427,15 @@ namespace h5pp {
             // Therefore it is important that it is written either as:
             //      1: a path relative to the current file, and not relative to the current process, or
             //      2: a full path
+#if __cplusplus > 201703L
             if(fs::path(targetFilePath).is_relative()) {
                 auto prox = fs::proximate(targetFilePath, filePath);
                 if(prox != targetFilePath)
                     h5pp::logger::log->debug("External link [{}] is not relative to the current file [{}]."
                                              "This can cause a dangling soft link");
             }
+#endif
+
             h5pp::hdf5::createExternalLink(targetFilePath, targetLinkPath, openFileHandle(), softLinkPath, plists);
         }
 

@@ -3182,7 +3182,7 @@ namespace h5pp::hdf5 {
         return typeId;
     }
 
-    inline hid::h5t getFieldTypeId(const TableInfo &info, const std::vector<std::string> &fieldNames){
+    inline hid::h5t getFieldTypeId(const TableInfo &info, const std::vector<std::string> &fieldNames) {
         // Compute the field indices
         std::vector<size_t> fieldIndices;
         for(const auto &fieldName : fieldNames) {
@@ -3198,7 +3198,6 @@ namespace h5pp::hdf5 {
         }
         return getFieldTypeId(info, fieldIndices);
     }
-
 
     template<typename DataType>
     inline void readTableField(DataType             &data,

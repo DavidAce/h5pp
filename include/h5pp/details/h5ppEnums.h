@@ -1,12 +1,12 @@
 #pragma once
 
 /*! \namespace h5pp
-* \brief A simple C++17 wrapper for the HDF5 library
-*/
+ * \brief A simple C++17 wrapper for the HDF5 library
+ */
 
 namespace h5pp {
 
-     /* clang-format off */
+    /* clang-format off */
 
      /*! \brief %File access permissions
       *
@@ -44,17 +44,16 @@ namespace h5pp {
 
     /* clang-format on */
 
-
     /*! \brief Choose which row to read/write/copy/move on table operations
      */
     enum class TableSelection {
-        FIRST,  /*!< Selects the first element in a table */
-        LAST,   /*!< Selects the last element in a table */
-        ALL,    /*!< Selects the all elements in a table */
+        FIRST, /*!< Selects the first element in a table */
+        LAST,  /*!< Selects the last element in a table */
+        ALL,   /*!< Selects the all elements in a table */
     };
 
     /*! \brief Set policy for modifying dataset dimensions when overwriting
-   */
+     */
     enum class ResizePolicy {
         FIT,  /*!< Overwriting a dataset will shrink or grow existing dimensions to fit new data (default on H5D_CHUNKED) */
         GROW, /*!< Overwriting a dataset will may grow existing dimensions, but never shrink, to fit new data (works only on H5D_CHUNKED) */
@@ -62,7 +61,8 @@ namespace h5pp {
     };
 
     /*! \brief Specify whether the target location is on the same file or a different one when copying objects
-*/    enum class LocationMode {
+     */
+    enum class LocationMode {
         /*
          * Some operations, such as h5pp::hdf5::copyLink support copying objects between files.
          * However, detecting whether two given location ids are on the same file can become
