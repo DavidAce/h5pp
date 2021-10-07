@@ -132,6 +132,19 @@ namespace h5pp {
          *
          * This is useful for quick batch operations where opening and closing the file handle would introduce a large performance penalty.
          */
+
+        struct FileHandleToken{
+            const h5pp::File & file_;
+            FileHandleToken(const h5pp::File & file): file_(file){
+                hid::h5f temphandle = file_.openFileHandle();
+                file_.fileHandle = temphandle;
+            }
+            ~FileHandleToken(){
+                file_.fileHandle = std::nullopt;
+            }
+        };
+        FileHandleToken getFileHandleToken(){return FileHandleToken(*this);}
+
         void setKeepFileOpened() const {
             // Check before setting onto self:
             // otherwise repeated calls to setKeepFileOpened() would increment the reference count,
