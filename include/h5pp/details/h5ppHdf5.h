@@ -37,6 +37,16 @@ namespace h5pp {
     inline constexpr bool has_direct_chunk = false;
 #endif
 
+# if defined(H5PP_HAS_DIRECT_CHUNK) && defined(H5PP_USE_DIRECT_CHUNK)
+    inline constexpr bool use_direct_chunk = true;
+#elif !defined(H5PP_HAS_DIRECT_CHUNK) && defined(H5PP_USE_DIRECT_CHUNK)
+#pragma error "H5PP_USE_DIRECT_CHUNK detected, but this version of HDF5 does not support direct chunk io (H5Dwrite_chunk)"
+#else
+    inline constexpr bool use_direct_chunk = false;
+#endif
+
+
+
 }
 
 /*!
@@ -2065,7 +2075,7 @@ namespace h5pp::hdf5 {
         return sv;
     }
 
-#if H5PP_HAS_DIRECT_CHUNK
+#if defined(H5PP_HAS_DIRECT_CHUNK)
 
     inline void H5Dwrite_single_chunk(const hid_t                  &h5dset,
                                       const hid_t                  &h5dxpl, // Dataset transfer property list
@@ -3026,7 +3036,7 @@ namespace h5pp::hdf5 {
         if(numRecordsNew > numRecordsOld) setTableSize(info, numRecordsNew);
 
         //#if H5PP_HAVE_DIRECT_CHUNK
-        if constexpr(has_direct_chunk) {
+        if constexpr(use_direct_chunk) {
             /* Step 2: draw a hyperslab in the dataset */
             h5pp::Hyperslab dsetSlab;
             dsetSlab.offset = {offset};
