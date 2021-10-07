@@ -1,5 +1,10 @@
 name: Mirror at KTH-condmat
-on: push
+
+on:
+  push:
+    branches:
+      - master
+
 jobs:
   repo-sync:
     runs-on: ubuntu-latest
