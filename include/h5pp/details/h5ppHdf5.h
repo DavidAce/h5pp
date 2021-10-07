@@ -32,21 +32,12 @@ namespace h5pp {
 
 #if H5_VERSION_GE(1, 10, 5)
     #define H5PP_HAS_DIRECT_CHUNK 1
+    inline bool           use_direct_chunk = true;
     inline constexpr bool has_direct_chunk = true;
 #else
+    inline constexpr bool use_direct_chunk = false;
     inline constexpr bool has_direct_chunk = false;
 #endif
-
-# if defined(H5PP_HAS_DIRECT_CHUNK) && defined(H5PP_USE_DIRECT_CHUNK)
-    inline constexpr bool use_direct_chunk = true;
-#elif !defined(H5PP_HAS_DIRECT_CHUNK) && defined(H5PP_USE_DIRECT_CHUNK)
-#pragma error "H5PP_USE_DIRECT_CHUNK detected, but this version of HDF5 does not support direct chunk io (H5Dwrite_chunk)"
-#else
-    inline constexpr bool use_direct_chunk = false;
-#endif
-
-
-
 }
 
 /*!
@@ -3034,41 +3025,55 @@ namespace h5pp::hdf5 {
 
         /* Step 1: set the new table size if necessary */
         if(numRecordsNew > numRecordsOld) setTableSize(info, numRecordsNew);
+        /* Step 2: draw a hyperslab in the dataset */
+        h5pp::Hyperslab dsetSlab;
+        dsetSlab.offset = {offset};
+        dsetSlab.extent = {numRecordsWrt};
 
-        //#if H5PP_HAVE_DIRECT_CHUNK
-        if constexpr(use_direct_chunk) {
-            /* Step 2: draw a hyperslab in the dataset */
-            h5pp::Hyperslab dsetSlab;
-            dsetSlab.offset = {offset};
-            dsetSlab.extent = {numRecordsWrt};
+        /* and a hyperslab for the data */
+        h5pp::Hyperslab dataSlab;
+        dataSlab.offset = {0};
+        dataSlab.extent = {numRecordsWrt};
 
-            /* and a hyperslab for the data */
-            h5pp::Hyperslab dataSlab;
-            dataSlab.offset = {0};
-            dataSlab.extent = {numRecordsWrt};
+        if constexpr(has_direct_chunk) {
+            if(use_direct_chunk) {
+                /* Step 3: write the records */
+                H5Dwrite_chunkwise(data,
+                                   info.h5Dset.value(),
+                                   info.h5Type.value(),
+                                   info.h5DsetCreate.value(),
+                                   H5P_DEFAULT,
+                                   {numRecordsNew},
+                                   info.chunkDims.value(),
+                                   dsetSlab,
+                                   dataSlab);
+            } else {
+                /* Step 2: Get the dataset and memory spaces */
+                hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
+                hid::h5s dataSpace =
+                    H5Screate_simple(dataSlab.extent->size(), dataSlab.extent->data(), nullptr); /* create a simple memory data space */
+                //
+                /* Step 3: Select the region in the dataset space*/
+                H5Sselect_hyperslab(dsetSpace, H5S_SELECT_SET, dsetSlab.offset->data(), nullptr, dsetSlab.extent->data(), nullptr);
 
-            /* Step 3: write the records */
-            H5Dwrite_chunkwise(data,
-                               info.h5Dset.value(),
-                               info.h5Type.value(),
-                               info.h5DsetCreate.value(),
-                               H5P_DEFAULT,
-                               {numRecordsNew},
-                               info.chunkDims.value(),
-                               dsetSlab,
-                               dataSlab);
+                /* Step 4: write the records */
+                // Get the memory address to the data buffer
+                auto   dataPtr = h5pp::util::getVoidPointer<const void *>(data);
+                herr_t retval  = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
+                if(retval < 0) {
+                    H5Eprint(H5E_DEFAULT, stderr);
+                    throw std::runtime_error(h5pp::format("Failed to append data to table [{}]", info.tablePath.value()));
+                }
+            }
+
         } else {
             /* Step 2: Get the dataset and memory spaces */
-            std::array<hsize_t, 1> dataExtent = {numRecordsWrt};
-            std::array<hsize_t, 1> dsetOffset = {offset};
-            std::array<hsize_t, 1> dsetExtent = {numRecordsWrt};
-
             hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
-            hid::h5s dataSpace = H5Screate_simple(dataExtent.size(), dataExtent.data(), nullptr); /* create a simple memory data space */
-
+            hid::h5s dataSpace =
+                H5Screate_simple(dataSlab.extent->size(), dataSlab.extent->data(), nullptr); /* create a simple memory data space */
             //
             /* Step 3: Select the region in the dataset space*/
-            H5Sselect_hyperslab(dsetSpace, H5S_SELECT_SET, dsetOffset.data(), nullptr, dsetExtent.data(), nullptr);
+            H5Sselect_hyperslab(dsetSpace, H5S_SELECT_SET, dsetSlab.offset->data(), nullptr, dsetSlab.extent->data(), nullptr);
 
             /* Step 4: write the records */
             // Get the memory address to the data buffer
