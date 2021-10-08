@@ -173,7 +173,7 @@ int main() {
     std::vector<double> vectorDouble      = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
                                         1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
     std::vector<cplx>   vectorComplex     = {{-0.191154, 0.326211}, {0.964728, -0.712335}, {-0.0351791, -0.10264}, {0.177544, 0.99999}};
-    auto *              cStyleDoubleArray = new double[10];
+    auto               *cStyleDoubleArray = new double[10];
     for(size_t i = 0; i < 10; i++) cStyleDoubleArray[i] = static_cast<double>(i);
 
     struct Field2 {
@@ -189,14 +189,16 @@ int main() {
     Field3              field3{0.54, 0.56, 0.58};
     std::vector<Field2> field2vector(10);
     for(size_t i = 0; i < field2vector.size(); i++) {
-        field2vector[i].x = 2.3 * i;
-        field2vector[i].y = 20.5 * i;
+        auto d          = static_cast<double>(i);
+        field2vector[i].x = 2.3 * d;
+        field2vector[i].y = 20.5 * d;
     }
     std::vector<Field3> field3vector(10);
     for(size_t i = 0; i < field3vector.size(); i++) {
-        field3vector[i].x = 2.3 * i;
-        field3vector[i].y = 20.5 * i;
-        field3vector[i].z = 200.9 * i;
+        auto d          = static_cast<double>(i);
+        field3vector[i].x = 2.3 * d;
+        field3vector[i].y = 20.5 * d;
+        field3vector[i].z = 200.9 * d;
     }
 #ifdef H5PP_EIGEN3
     Eigen::MatrixXd                              matrixDouble        = Eigen::MatrixXd::Random(3, 2);

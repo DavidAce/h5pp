@@ -436,7 +436,7 @@ namespace h5pp::util {
             } else if constexpr(h5pp::type::sfinae::has_size_v<DataType>) { // E.g. std::string or std::vector<double>
                 size_t num      = 0;
                 size_t nullterm = h5pp::type::sfinae::is_text_v<DataType> ? 1 : 0;
-                num             = data.size() + nullterm;
+                num             = static_cast<size_t>(data.size()) + nullterm; // Static cast because Eigen uses long
                 return num * h5pp::util::getBytesPerElem<value_type>();
             }
         }

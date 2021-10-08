@@ -148,7 +148,7 @@ TEST_CASE("Single particles are compatible", "[single-particles]") {
 TEST_CASE("Vector of versioned structs is compatible") {
     auto layout = GENERATE(values({H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED}));
 
-    std::string layout_str = std::array<std::string, 3>{"H5D_COMPACT", "H5D_CONTIGUOUS", "H5D_CHUNKED"}[layout];
+    std::string layout_str = std::array<std::string, 3>{"H5D_COMPACT", "H5D_CONTIGUOUS", "H5D_CHUNKED"}[static_cast<size_t>(layout)];
 
     h5pp::File file("output/userTypeVers.h5", h5pp::FilePermission::REPLACE, 2);
 

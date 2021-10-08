@@ -737,7 +737,7 @@ namespace h5pp::hdf5 {
         std::string buf;
         ssize_t     bufSize = H5Aget_name(attribute, 0ul, nullptr); // Returns number of chars excluding \0
         if(bufSize >= 0) {
-            buf.resize(bufSize);
+            buf.resize(static_cast<size_t>(bufSize));
             H5Aget_name(attribute, static_cast<size_t>(bufSize) + 1, buf.data()); // buf is guaranteed to have \0 at the end
         } else {
             H5Eprint(H5E_DEFAULT, stderr);
@@ -847,7 +847,7 @@ namespace h5pp::hdf5 {
                 if (H5T_SCALAR3<uint_fast8_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar3<uint_fast8_t>>();
 
             }
-            else if(h5size == 16ul*h5nmemb){
+            else if(h5size == 16ul*nmembers_ul){
                 if (H5T_COMPLEX<int16_t>::equal(type))          return getCppType<std::complex<int16_t>>();
                 if (H5T_COMPLEX<uint16_t>::equal(type))         return getCppType<std::complex<uint16_t>>();
                 if (H5T_COMPLEX<int_fast16_t>::equal(type))     return getCppType<std::complex<int_fast16_t>>();
@@ -864,7 +864,7 @@ namespace h5pp::hdf5 {
                 if (H5T_SCALAR3<uint_fast16_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar3<uint_fast16_t>>();
 
             }
-            else if(h5size == 32ul*h5nmemb){
+            else if(h5size == 32ul*nmembers_ul){
                 if (H5T_COMPLEX<int32_t>::equal(type))          return getCppType<std::complex<int32_t>>();
                 if (H5T_COMPLEX<uint32_t>::equal(type))         return getCppType<std::complex<uint32_t>>();
                 if (H5T_COMPLEX<int_fast32_t>::equal(type))     return getCppType<std::complex<int_fast32_t>>();
@@ -881,7 +881,7 @@ namespace h5pp::hdf5 {
                 if (H5T_SCALAR3<uint_fast32_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar3<uint_fast32_t>>();
 
             }
-            else if(h5size == 64ul*h5nmemb){
+            else if(h5size == 64ul*nmembers_ul){
                 if (H5T_COMPLEX<int64_t>::equal(type))          return getCppType<std::complex<int64_t>>();
                 if (H5T_COMPLEX<uint64_t>::equal(type))         return getCppType<std::complex<uint64_t>>();
                 if (H5T_COMPLEX<int_fast64_t>::equal(type))     return getCppType<std::complex<int_fast64_t>>();
@@ -910,9 +910,10 @@ namespace h5pp::hdf5 {
         if(H5Tequal(type, H5T_NATIVE_HBOOL))            return getCppType<hbool_t>();
         if(H5Tcommitted(type) > 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            h5pp::logger::log->debug("No C++ type match for HDF5 type [{}]", getName(type));
+            if(h5pp::logger::log->level() == 0)
+                h5pp::logger::log->trace("No C++ type match for HDF5 type [{}]", getName(type));
         } else {
-            h5pp::logger::log->debug("No C++ type match for non-committed HDF5 type");
+            h5pp::logger::log->trace("No C++ type match for non-committed HDF5 type. This is usually not a problem");
         }
         std::string name;
         switch(h5class){
@@ -1328,8 +1329,8 @@ namespace h5pp::hdf5 {
             olap.offset.value()[i] = std::max(slab1.offset.value()[i], slab2.offset.value()[i]);
             hsize_t pos1           = slab1.offset.value()[i] + slab1.extent.value()[i];
             hsize_t pos2           = slab2.offset.value()[i] + slab2.extent.value()[i];
-            auto    pos            = static_cast<long long>(std::min(pos1, pos2));
-            olap.extent.value()[i] = std::max(0ll, pos - static_cast<long long>(olap.offset.value()[i]));
+            auto    pos            = std::min<hsize_t>(pos1, pos2);
+            olap.extent.value()[i] = std::max<hsize_t>(0ull, pos - olap.offset.value()[i]);
         }
     }
 
@@ -3056,8 +3057,9 @@ namespace h5pp::hdf5 {
             } else {
                 /* Step 2: Get the dataset and memory spaces */
                 hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
-                hid::h5s dataSpace =
-                    H5Screate_simple(dataSlab.extent->size(), dataSlab.extent->data(), nullptr); /* create a simple memory data space */
+                hid::h5s dataSpace = H5Screate_simple(static_cast<int>(dataSlab.extent->size()),
+                                                      dataSlab.extent->data(),
+                                                      nullptr); /* create a simple memory data space */
                 //
                 /* Step 3: Select the region in the dataset space*/
                 H5Sselect_hyperslab(dsetSpace, H5S_SELECT_SET, dsetSlab.offset->data(), nullptr, dsetSlab.extent->data(), nullptr);
