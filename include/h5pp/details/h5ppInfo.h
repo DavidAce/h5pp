@@ -677,16 +677,16 @@ namespace h5pp {
         }
     };
 
-    struct H5TInfo{
-        std::optional<hid::h5t> h5Type = std::nullopt;
-        std::optional<H5T_class_t> h5Class;
-        std::optional<int> typeSize;
-        std::optional<int> numMembers;
-        std::optional<std::vector<std::string>>     memberNames     = std::nullopt;
-        std::optional<std::vector<hid::h5t>>        memberTypes     = std::nullopt;
-        std::optional<std::vector<size_t>>          memberSizes     = std::nullopt;
-        std::optional<std::vector<size_t>>          memberOffset    = std::nullopt;
-        std::optional<std::vector<int>>             memberIndex     = std::nullopt;
+    struct H5TInfo {
+        std::optional<hid::h5t>                 h5Type = std::nullopt;
+        std::optional<H5T_class_t>              h5Class;
+        std::optional<int>                      typeSize;
+        std::optional<int>                      numMembers;
+        std::optional<std::vector<std::string>> memberNames  = std::nullopt;
+        std::optional<std::vector<hid::h5t>>    memberTypes  = std::nullopt;
+        std::optional<std::vector<size_t>>      memberSizes  = std::nullopt;
+        std::optional<std::vector<size_t>>      memberOffset = std::nullopt;
+        std::optional<std::vector<int>>         memberIndex  = std::nullopt;
     };
 
 }
