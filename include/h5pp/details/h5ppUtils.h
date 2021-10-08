@@ -36,6 +36,15 @@ namespace h5pp::util {
         return tmp;
     }
 
+    /*! \brief Calculates the python-style negative index. For instance, if num == -1ul and piv == 5ul, this returns 4ul */
+    template<typename T1, typename T2>
+    T1 wrapUnsigned(T1 num, T2 piv) noexcept {
+        static_assert(std::is_unsigned_v<T1>);
+        static_assert(std::is_unsigned_v<T2>);
+        if(num >= piv and num >= std::numeric_limits<T1>::max() - piv) num = piv - ~num - 1;
+        return num;
+    }
+
     template<typename PtrType, typename DataType>
     [[nodiscard]] inline PtrType getVoidPointer(DataType &data, size_t offset = 0) noexcept {
         // Get the memory address to a data buffer

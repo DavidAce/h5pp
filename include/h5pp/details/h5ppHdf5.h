@@ -3093,6 +3093,8 @@ namespace h5pp::hdf5 {
                                  hsize_t                tgtOffset) {
         srcInfo.assertReadReady();
         tgtInfo.assertWriteReady();
+        srcOffset = util::wrapUnsigned(srcOffset, srcInfo.numRecords.value()); // Allows python style negative indexing
+        tgtOffset = util::wrapUnsigned(tgtOffset, tgtInfo.numRecords.value()); // Allows python style negative indexing
 
         if(h5pp::logger::log->level() <= 1) {
             std::string fileLogInfo;
@@ -3214,6 +3216,7 @@ namespace h5pp::hdf5 {
         //          If data not resizeable -> read a single record starting from offset
         // If extent given but offset is not -> read the last extent records
         info.assertReadReady();
+        if(offset) offset = util::wrapUnsigned(offset.value(), info.numRecords.value()); // Allows python style negative indexing
         hsize_t totalRecords = info.numRecords.value();
         if(not offset and not extent) {
             if constexpr(type::sfinae::has_resize_v<DataType>) {
