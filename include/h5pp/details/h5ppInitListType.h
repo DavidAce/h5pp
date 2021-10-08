@@ -32,7 +32,10 @@ namespace h5pp {
         }
         template<typename U, typename = std::enable_if_t<std::is_integral_v<U>>>
         Indices(std::initializer_list<U> &&il) : data(il) {}
-             operator std::vector<size_t> &() { return data; }
+
+        operator std::vector<size_t> &() { return data; }
+        operator const std::vector<size_t> &() const { return data; }
+
         auto empty() const { return data.empty(); }
     };
 
@@ -43,7 +46,8 @@ namespace h5pp {
         public:
         Names() = default;
         template<typename U, typename = std::enable_if_t<h5pp::type::sfinae::is_text_v<U> or h5pp::type::sfinae::has_text_v<U>>>
-        Names(U &&str) {
+        Names(const U &str) {
+            static_assert(h5pp::type::sfinae::is_text_v<U> or h5pp::type::sfinae::has_text_v<U>);
             if constexpr(h5pp::type::sfinae::is_text_v<U>)
                 data = {std::string(str)};
             else if constexpr(std::is_assignable_v<std::vector<std::string>, U>)
@@ -58,8 +62,12 @@ namespace h5pp {
             }
         }
         template<typename U, typename = std::enable_if_t<h5pp::type::sfinae::is_text_v<U>>>
-        Names(std::initializer_list<U> &&il) : data(il) {}
+        Names(const std::initializer_list<U> &il) {
+            data = std::vector<std::string>(std::begin(il), std::end(il));
+        }
+
              operator std::vector<std::string> &() { return data; }
+             operator const std::vector<std::string> &() const { return data; }
         auto empty() const { return data.empty(); }
     };
 
@@ -70,7 +78,7 @@ namespace h5pp {
 
         public:
         template<typename T>
-        NamesOrIndices(T &&data_) {
+        NamesOrIndices(const T &data_) {
             if constexpr(std::is_constructible_v<Names, T>)
                 names = Names(data_);
             else if constexpr(std::is_constructible_v<Indices, T>)
@@ -80,7 +88,7 @@ namespace h5pp {
         }
 
         template<typename T>
-        NamesOrIndices(std::initializer_list<T> &&data_) {
+        NamesOrIndices(const std::initializer_list<T> &data_) {
             if constexpr(std::is_constructible_v<Names, std::initializer_list<T>>)
                 names = Names(data_);
             else if constexpr(std::is_constructible_v<Indices, std::initializer_list<T>>)
@@ -89,14 +97,14 @@ namespace h5pp {
                 static_assert(h5pp::type::sfinae::invalid_type_v<std::initializer_list<T>>, "Unrecognized type for indices or names");
         }
 
-        auto index() {
+        [[nodiscard]] auto index() const {
             if(not names.empty()) return 0;
             if(not indices.empty()) return 1;
             return -1;
         }
 
         template<auto N>
-        auto &get_value() {
+        [[nodiscard]] const auto &get_value() const {
             if constexpr(N == 0)
                 return names;
             else if constexpr(N == 1)
