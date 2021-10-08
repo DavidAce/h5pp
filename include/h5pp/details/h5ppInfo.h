@@ -327,7 +327,7 @@ namespace h5pp {
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot read from dataset [{}]. The following fields are not valid:\n{}",dsetPath.value(), error_msg));
             if(not dsetExists.value())
-                throw std::runtime_error(h5pp::format("Cannot read from dataset [{}]: It does not exist", dsetPath.value()));
+                throw std::runtime_error(h5pp::format("Cannot read from dataset [{}]: It may not exist", dsetPath.value()));
 
             /* clang-format on */
         }
@@ -558,6 +558,8 @@ namespace h5pp {
             if(not fieldTypes)          error_msg.append("\t fieldTypes\n");
             if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
             if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot read from table: The following fields are not set:\n{}", error_msg));
+            if(not tableExists.value()) throw std::runtime_error(h5pp::format("Cannot read from table [{}]: it may not exist", tablePath.value()));
+
 //            if(not hasLocId()) throw std::runtime_error(h5pp::format("Cannot read from table [{}]: The location ID is not set", tablePath.value()));
         }
         void assertWriteReady() const {
@@ -574,7 +576,7 @@ namespace h5pp {
             if(not fieldSizes)          error_msg.append("\t fieldSizes\n");
             if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
             if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Cannot write to table: The following fields are not set:\n{}", error_msg));
-//            if(not hasLocId()) throw std::runtime_error(h5pp::format("Cannot write to table [{}]: The location ID is not set", tablePath.value()));
+            if(not tableExists.value()) throw std::runtime_error(h5pp::format("Cannot write to table [{}]: it may not exist", tablePath.value()));
         }
 
         [[nodiscard]] std::string string(bool enable = true) const {
