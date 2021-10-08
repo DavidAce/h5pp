@@ -1331,7 +1331,22 @@ namespace h5pp::hdf5 {
             hsize_t pos1           = slab1.offset.value()[i] + slab1.extent.value()[i];
             hsize_t pos2           = slab2.offset.value()[i] + slab2.extent.value()[i];
             auto    pos            = std::min<hsize_t>(pos1, pos2);
-            olap.extent.value()[i] = std::max<hsize_t>(0ull, pos - olap.offset.value()[i]);
+            if(pos >= olap.offset.value()[i])
+                olap.extent.value()[i] = pos - olap.offset.value()[i];
+            else
+                olap.extent.value()[i] = 0;
+
+            if constexpr(not h5pp::ndebug)
+                if(olap.extent.value()[i] > (std::numeric_limits<hsize_t>::max() - (1ull << 32))) {
+                    h5pp::logger::log->warn("olap extent in dim {} is {}: this is likely error to do with overflow/unsigned wrap",
+                                            i,
+                                            olap.extent.value()[i]);
+
+                    if(olap.offset.value()[i] > (std::numeric_limits<hsize_t>::max() - (1ull << 32)))
+                        h5pp::logger::log->warn("olap offset in dim {} is {}: this is likely error to do with overflow/unsigned wrap",
+                                                i,
+                                                olap.offset.value()[i]);
+                }
         }
     }
 
