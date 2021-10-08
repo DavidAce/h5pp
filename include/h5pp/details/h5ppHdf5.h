@@ -2865,9 +2865,15 @@ namespace h5pp::hdf5 {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(h5pp::format("Could not create table [{}]", info.tablePath.value()));
         }
+        // Setup fields so that this TableInfo can be reused for read/write after
         info.compression = compression == 0 ? 0 : 6; // Set to 0/6 so that users can read this field later
-        h5pp::logger::log->trace("Successfully created table [{}]", info.tablePath.value());
         info.tableExists = true;
+        info.h5Dset = hdf5::openLink<hid::h5d>(info.getLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess);
+        info.h5DsetCreate = H5Dget_create_plist(info.h5Dset.value());
+        info.h5DsetAccess = H5Dget_access_plist(info.h5Dset.value());
+        info.assertReadReady();
+        info.assertWriteReady();
+        h5pp::logger::log->trace("Successfully created table [{}]", info.tablePath.value());
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
