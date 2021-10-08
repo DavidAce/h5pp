@@ -1050,7 +1050,7 @@ namespace h5pp {
                               std::string_view    tablePath,
                               std::string_view    tableTitle,
                               const OptDimsType  &chunkDims   = std::nullopt,
-                              std::optional<bool> compression = std::nullopt
+                              std::optional<int>  compression = std::nullopt
 
         ) {
             if(permission == h5pp::FilePermission::READONLY)
