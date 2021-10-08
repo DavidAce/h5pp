@@ -697,6 +697,7 @@ namespace h5pp::util {
 
     inline std::vector<size_t> getFieldIndices(const TableInfo &info, const std::vector<std::string> &fieldNames) {
         // Compute the field indices
+        info.assertReadReady();
         std::vector<size_t> fieldIndices;
         for(const auto &fieldName : fieldNames) {
             auto it = std::find(info.fieldNames->begin(), info.fieldNames->end(), fieldName);
@@ -714,6 +715,7 @@ namespace h5pp::util {
 
     inline hid::h5t getFieldTypeId(const TableInfo &info, const std::vector<size_t> &fieldIndices) {
         // Build the field sizes and offsets of the given read buffer based on the corresponding quantities on file
+        info.assertReadReady();
         size_t                   tgtFieldSizeSum = 0;
         std::vector<size_t>      srcFieldOffsets; // Offsets on file
         std::vector<size_t>      tgtFieldOffsets; // Offsets on new subset h5type
@@ -774,9 +776,9 @@ namespace h5pp::util {
      */
     template<typename DataType>
     inline std::pair<size_t, size_t> parseTableSelection(DataType             &data,
-                                                  TableSelection       &selection,
-                                                  std::optional<size_t> numRecords,
-                                                  std::optional<size_t> recordBytes) {
+                                                         TableSelection       &selection,
+                                                         std::optional<size_t> numRecords,
+                                                         std::optional<size_t> recordBytes) {
         if(not numRecords) throw std::runtime_error("parseTableSelection: undefined table field [numRecords]");
         if(not recordBytes) throw std::runtime_error("parseTableSelection: undefined table field [recordBytes]");
         // Used when reading from file into data
