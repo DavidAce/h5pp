@@ -773,7 +773,7 @@ namespace h5pp::util {
     /*! \brief Use to parse the table selection into offset,extent pair
      */
     template<typename DataType>
-    std::pair<size_t, size_t> parseTableSelection(DataType             &data,
+    inline std::pair<size_t, size_t> parseTableSelection(DataType             &data,
                                                   TableSelection       &selection,
                                                   std::optional<size_t> numRecords,
                                                   std::optional<size_t> recordBytes) {
@@ -829,7 +829,7 @@ namespace h5pp::util {
     }
 
     template<typename DataType>
-    std::pair<size_t, size_t>
+    inline std::pair<size_t, size_t>
         parseTableSelection(DataType &data, TableSelection &selection, const std::vector<size_t> &fieldIndices, const TableInfo &info) {
         info.assertReadReady();
         // Used when reading from file into data
@@ -896,18 +896,18 @@ namespace h5pp::util {
     }
 
     template<typename DataType>
-    std::pair<size_t, size_t>
+    inline std::pair<size_t, size_t>
         parseTableSelection(DataType &data, TableSelection &selection, const std::vector<std::string> &fieldNames, const TableInfo &info) {
         return parseTableSelection(data, selection, getFieldIndices(info, fieldNames), info);
     }
 
     template<typename DataType>
-    std::pair<size_t, size_t>
+    inline std::pair<size_t, size_t>
         parseTableSelection(DataType &data, TableSelection &selection, const hid::h5t &fieldId, const TableInfo &info) {
         return parseTableSelection(data, selection, getFieldNames(fieldId), info);
     }
 
-    std::pair<size_t, size_t> parseTableSelection(TableSelection &selection, std::optional<size_t> numRecords) {
+    inline std::pair<size_t, size_t> parseTableSelection(TableSelection &selection, std::optional<size_t> numRecords) {
         if(not numRecords) throw std::runtime_error("parseTableSelection: undefined table field [numRecords]");
         // Used when reading from file into data
         size_t offset = 0;
