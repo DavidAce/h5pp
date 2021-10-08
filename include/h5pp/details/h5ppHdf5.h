@@ -68,8 +68,9 @@ namespace h5pp::hdf5 {
         return output;
     }
 
-    template<typename h5x, typename = std::enable_if_t<type::sfinae::is_hdf5_id<h5x>>>
+    template<typename h5x>
     [[nodiscard]] std::string getName(const h5x &object) {
+        static_assert(type::sfinae::is_hdf5_id<h5x>);
         // Read about the buffer size inconsistency here
         // http://hdf-forum.184993.n3.nabble.com/H5Iget-name-inconsistency-td193143.html
         std::string buf;
@@ -2866,9 +2867,9 @@ namespace h5pp::hdf5 {
             throw std::runtime_error(h5pp::format("Could not create table [{}]", info.tablePath.value()));
         }
         // Setup fields so that this TableInfo can be reused for read/write after
-        info.compression = compression == 0 ? 0 : 6; // Set to 0/6 so that users can read this field later
-        info.tableExists = true;
-        info.h5Dset = hdf5::openLink<hid::h5d>(info.getLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess);
+        info.compression  = compression == 0 ? 0 : 6; // Set to 0/6 so that users can read this field later
+        info.tableExists  = true;
+        info.h5Dset       = hdf5::openLink<hid::h5d>(info.getLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess);
         info.h5DsetCreate = H5Dget_create_plist(info.h5Dset.value());
         info.h5DsetAccess = H5Dget_access_plist(info.h5Dset.value());
         info.assertReadReady();
@@ -3160,8 +3161,6 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::writeTableRecords(data, tgtInfo, tgtOffset, srcExtent);
     }
 
-
-
     template<typename DataType>
     inline void readTableField(DataType              &data,
                                const TableInfo       &info,
@@ -3169,7 +3168,7 @@ namespace h5pp::hdf5 {
                                std::optional<hsize_t> offset = std::nullopt,
                                std::optional<hsize_t> extent = std::nullopt) {
         static_assert(not std::is_const_v<DataType>);
-        static_assert(not type::sfinae::is_hdf5_id<DataType>);
+        static_assert(not type::sfinae::is_h5pp_id<DataType>);
         // If none of offset or extent are given:
         //          If data resizeable: offset = 0, extent = totalRecords
         //          If data not resizeable: offset = last record index, extent = 1.
