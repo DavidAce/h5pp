@@ -826,8 +826,11 @@ namespace h5pp::hdf5 {
             if(H5Tequal(type, H5T_NATIVE_SCHAR))            return getCppType<signed char>();
             if(H5Tequal(type, H5T_NATIVE_UCHAR))            return getCppType<unsigned char>();
         }else if (h5class == H5T_COMPOUND){
-            auto h5nmemb = H5Tget_nmembers(type);
-            if(h5size == 8ul*h5nmemb){
+            auto nmembers = H5Tget_nmembers(type);
+            if(nmembers < 0)
+                throw std::runtime_error(h5pp::format("Failed to read nmembers for type"));
+            auto nmembers_ul = static_cast<size_t>(nmembers);
+            if(h5size == 8ul*nmembers_ul){
                 if (H5T_COMPLEX<int8_t>::equal(type))           return getCppType<std::complex<int8_t>>();
                 if (H5T_COMPLEX<uint8_t>::equal(type))          return getCppType<std::complex<uint8_t>>();
                 if (H5T_COMPLEX<int_fast8_t>::equal(type))      return getCppType<std::complex<int_fast8_t>>();

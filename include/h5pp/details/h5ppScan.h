@@ -642,10 +642,16 @@ namespace h5pp::scan {
             if(dims.size() != 1) throw std::logic_error("Tables can only have rank 1");
             info.numRecords = dims[0];
         }
-        if(not info.numFields) info.numFields = static_cast<size_t>(H5Tget_nmembers(info.h5Type.value()));
+        if(not info.numFields) {
+            auto nmembers = H5Tget_nmembers(info.h5Type.value());
+            if(nmembers < 0)
+                throw std::runtime_error(h5pp::format("Failed to read nmembers for h5Type on table [{}]", info.tablePath.value()));
+            info.numFields = static_cast<hsize_t>(nmembers);
+        }
         if(not info.tableTitle) {
-            char table_title[255];
-            H5TBAget_title(info.h5Dset.value(), table_title);
+            char   table_title[255];
+            herr_t err = H5TBAget_title(info.h5Dset.value(), table_title);
+            if(err < 0) throw std::runtime_error(h5pp::format("Failed to read title for table [{}]", info.tablePath.value()));
             info.tableTitle = table_title;
         }
 
