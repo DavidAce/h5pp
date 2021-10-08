@@ -25,56 +25,60 @@ namespace h5pp::logger {
     }
 
     template<typename levelType>
-    inline bool logIf(levelType levelZeroToFive) {
+    inline bool logIf(levelType levelZeroToSix) {
         if constexpr(std::is_integral_v<levelType>)
-            return getLogLevel() <= static_cast<size_t>(levelZeroToFive);
+            return getLogLevel() <= static_cast<size_t>(levelZeroToSix);
         else if constexpr(std::is_same_v<levelType, spdlog::level::level_enum>)
-            return static_cast<spdlog::level::level_enum>(getLogLevel()) <= levelZeroToFive;
+            return static_cast<spdlog::level::level_enum>(getLogLevel()) <= levelZeroToSix;
         else
             static_assert(h5pp::type::sfinae::invalid_type_v<levelType>,
                           "Log level type must be an integral type or spdlog::level::level_enum");
     }
 
-    template<typename levelType>
-    inline void setLogLevel(levelType levelZeroToFive) {
-        if constexpr(std::is_same_v<levelType, spdlog::level::level_enum>)
-            log->set_level(levelZeroToFive);
-        else if constexpr(std::is_integral_v<levelType>) {
-            if(levelZeroToFive > 5) {
-                throw std::runtime_error("Expected verbosity level integer in [0-5]. Got: " + std::to_string(levelZeroToFive));
-            }
-            return setLogLevel(static_cast<spdlog::level::level_enum>(levelZeroToFive));
-        } else if constexpr(std::is_same_v<levelType, std::optional<spdlog::level::level_enum>> or
-                            std::is_same_v<levelType, std::optional<size_t>>) {
-            if(levelZeroToFive)
-                return setLogLevel(levelZeroToFive.value());
+    template<typename LogLevelType>
+    inline void setLogLevel(LogLevelType levelZeroToSix) {
+        static_assert(type::sfinae::is_any_v<LogLevelType,
+                                             spdlog::level::level_enum,
+                                             h5pp::LogLevel,
+                                             std::optional<spdlog::level::level_enum>,
+                                             std::optional<h5pp::LogLevel>,
+                                             std::optional<size_t>,
+                                             std::optional<int>> or
+                      std::is_integral_v<LogLevelType>);
+
+        if constexpr(std::is_same_v<LogLevelType, spdlog::level::level_enum>) log->set_level(levelZeroToSix);
+        if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or std::is_integral_v<LogLevelType>)
+            log->set_level(static_cast<spdlog::level::level_enum>(Level2Num(levelZeroToSix)));
+        if constexpr(type::sfinae::is_any_v<LogLevelType,
+                                            std::optional<spdlog::level::level_enum>,
+                                            std::optional<h5pp::LogLevel>,
+                                            std::optional<size_t>,
+                                            std::optional<int>>) {
+            if(levelZeroToSix)
+                return setLogLevel(levelZeroToSix.value());
             else
                 return;
-        } else {
-            static_assert(h5pp::type::sfinae::invalid_type_v<levelType>,
-                          "Log level type must be an integral type or spdlog::level::level_enum");
         }
     }
-
-    inline void setLogger(const std::string &   name,
-                          std::optional<size_t> levelZeroToFive = std::nullopt,
-                          std::optional<bool>   timestamp       = std::nullopt) {
+    template<typename LogLevelType>
+    inline void setLogger(const std::string &name, LogLevelType levelZeroToSix = LogLevel::info, bool timestamp = false) {
         if(spdlog::get(name) == nullptr)
             log = spdlog::stdout_color_mt(name, spdlog::color_mode::automatic);
         else
             log = spdlog::get(name);
         log->set_pattern("[%n]%^[%=8l]%$ %v"); // Disabled timestamp is the default
-        setLogLevel(levelZeroToFive);
-        if(timestamp and timestamp.value()) enableTimestamp();
+        setLogLevel(levelZeroToSix);
+        if(timestamp) enableTimestamp();
     }
 
 #else
 
     class ManualLogger {
         private:
+        h5pp::LogLevel logLevel = h5pp::LogLevel::info;
+
         public:
         std::string logName;
-        size_t      logLevel = 2;
         template<typename... Args>
         void trace(const std::string &fmtstring, Args... args) const {
             if(logLevel <= 0) std::cout << h5pp::format("[{}][{}] " + fmtstring, logName, " trace  ", args...) << '\n';
@@ -100,54 +104,48 @@ namespace h5pp::logger {
             if(logLevel <= 5) std::cout << h5pp::format("[{}][{}] " + fmtstring, logName, "critical", args...) << '\n';
         }
         [[nodiscard]] std::string name() const { return logName; }
+        h5pp::LogLevel            level() { return logLevel; }
+        void                      set_level(h5pp::LogLevel lvl) { logLevel = lvl; }
     };
     inline std::shared_ptr<ManualLogger> log;
 
-    inline void   enableTimestamp() {}
-    inline void   disableTimestamp() {}
-    inline size_t getLogLevel() {
+    inline void     enableTimestamp() {}
+    inline void     disableTimestamp() {}
+    inline LogLevel getLogLevel() {
         if(log != nullptr)
-            return log->logLevel;
+            return log->level();
         else
-            return 2;
+            return LogLevel::info;
     }
 
-    template<typename levelType>
-    inline bool logIf(levelType levelZeroToFive) {
-        if constexpr(std::is_integral_v<levelType>)
-            return getLogLevel() <= static_cast<size_t>(levelZeroToFive);
-        else
-            static_assert(h5pp::type::sfinae::invalid_type_v<levelType>, "Log level type must be an integral type");
+    template<typename LogLevelType>
+    inline bool logIf(LogLevelType levelZeroToSix) {
+        static_assert(std::is_same_v<LogLevelType, h5pp::LogLevel> or std::is_integral_v<LogLevelType>);
+        return getLogLevel() <= levelZeroToSix;
     }
+    template<typename LogLevelType>
+    inline void setLogLevel(LogLevelType levelZeroToSix) {
+        static_assert(
+            type::sfinae::
+                is_any_v<LogLevelType, h5pp::LogLevel, std::optional<h5pp::LogLevel>, std::optional<size_t>, std::optional<int>> or
+            std::is_integral_v<LogLevelType>);
 
-    template<typename levelType>
-    inline void setLogLevel([[maybe_unused]] levelType levelZeroToFive) {
-        if constexpr(std::is_integral_v<levelType>) {
-            if(levelZeroToFive > 5) {
-                throw std::runtime_error("Expected verbosity level integer in [0-5]. Got: " + std::to_string(levelZeroToFive));
-            }
-            //            log->info("Log verbosity level: {}   | trace:0 | debug:1 | info:2 | warn:3 | error:4 | critical:5 |",
-            //            levelZeroToFive);
-            log->debug("Log verbosity level: {}");
-            if(log != nullptr) log->logLevel = levelZeroToFive;
-        } else if constexpr(std::is_same_v<levelType, std::optional<size_t>>) {
-            if(levelZeroToFive)
-                return setLogLevel(levelZeroToFive.value());
+        if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or std::is_integral_v<LogLevelType>)
+            if(log != nullptr) log->set_level(Num2Level(levelZeroToSix));
+        if constexpr(type::sfinae::is_any_v<LogLevelType, std::optional<h5pp::LogLevel>, std::optional<size_t>, std::optional<int>>) {
+            if(levelZeroToSix)
+                return setLogLevel(levelZeroToSix.value());
             else
                 return;
-        } else {
-            static_assert(h5pp::type::sfinae::invalid_type_v<levelType>,
-                          "Log level type must be an integral type or spdlog::level::level_enum");
-            throw std::runtime_error("Given wrong type for spdlog verbosity level");
         }
     }
-
-    inline void setLogger([[maybe_unused]] const std::string &   name_,
-                          [[maybe_unused]] std::optional<size_t> levelZeroToFive = std::nullopt,
-                          [[maybe_unused]] std::optional<bool>   timestamp       = std::nullopt) {
+    template<typename LogLevelType>
+    inline void setLogger([[maybe_unused]] const std::string &name_,
+                          [[maybe_unused]] LogLevelType       levelZeroToSix = LogLevel::info,
+                          [[maybe_unused]] bool               timestamp      = false) {
         log          = std::make_shared<ManualLogger>();
         log->logName = name_;
-        setLogLevel(levelZeroToFive);
+        setLogLevel(levelZeroToSix);
     }
 #endif
 

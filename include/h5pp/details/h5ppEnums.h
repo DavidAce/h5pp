@@ -74,4 +74,44 @@ namespace h5pp {
         OTHER_FILE, /*!< Interpret source and target location id's as being on different files */
         DETECT,     /*!< Use H5Iget_file_id() to check. This is the default, but avoid when known. */
     };
+
+    /*! \brief Mimic the log levels in spdlog
+     */
+    enum class LogLevel : size_t {
+        trace    = 0ul,
+        debug    = 1ul,
+        info     = 2ul,
+        warn     = 3ul,
+        err      = 4ul,
+        critical = 5ul,
+        off      = 6ul,
+    };
+
+    template<typename T = typename std::underlying_type<LogLevel>::type>
+    constexpr T Level2Num(LogLevel l) noexcept {
+        return static_cast<T>(l);
+    }
+
+    template<typename T>
+    constexpr LogLevel Num2Level(T l) {
+        static_assert(std::is_same_v<T, LogLevel> or std::is_integral_v<T>);
+        if constexpr(std::is_same_v<T, LogLevel>)
+            return l;
+        else {
+            return static_cast<LogLevel>(std::min(l, static_cast<T>(6)));
+        }
+    }
+
+    template<typename T>
+    constexpr bool operator<=(LogLevel level, T num) {
+        static_assert(std::is_integral_v<T> or std::is_same_v<T, LogLevel>);
+        return Level2Num<T>(level) <= num;
+    }
+
+    template<typename T>
+    constexpr bool operator ==(LogLevel level, T num) {
+        static_assert(std::is_integral_v<T> or std::is_same_v<T, LogLevel>);
+        return Level2Num<T>(level) == num;
+    }
+
 }

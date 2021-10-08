@@ -30,13 +30,13 @@ namespace h5pp {
 
     class File {
         private:
-        fs::path                        filePath;                                          /*!< Full path to the file */
-        h5pp::FilePermission            permission         = h5pp::FilePermission::RENAME; /*!< File open/create policy. */
-        mutable std::optional<hid::h5f> fileHandle         = std::nullopt; /*!< Keeps a file handle alive in batch operations */
-        size_t                          logLevel           = 2;            /*!< Log verbosity from 0 [trace] to 6 [off] */
-        bool                            logTimestamp       = false;        /*!< Add a time stamp to console log output */
-        hid::h5e                        error_stack        = H5E_DEFAULT;  /*!< Holds a reference to the error stack used by HDF5 */
-        unsigned int                    currentCompression = 0;            /*!< Holds the default compression level */
+        fs::path                        filePath;                                    /*!< Full path to the file */
+        h5pp::FilePermission            permission   = h5pp::FilePermission::RENAME; /*!< File open/create policy. */
+        mutable std::optional<hid::h5f> fileHandle   = std::nullopt;                 /*!< Keeps a file handle alive in batch operations */
+        LogLevel                        logLevel     = LogLevel::info;               /*!< Log verbosity from 0 [trace] to 6 [off] */
+        bool                            logTimestamp = false;                        /*!< Add a time stamp to console log output */
+        hid::h5e                        error_stack  = H5E_DEFAULT; /*!< Holds a reference to the error stack used by HDF5 */
+        int currentCompression                       = -1; /*!< Holds the default compression level (-1 is off, 0 is none, 9 is max) */
 
         void init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
@@ -64,22 +64,22 @@ namespace h5pp {
 
         /*! Default constructor */
         File() = default;
-
+        template<typename LogLevelType>
         explicit File(h5pp::fs::path       filePath_,                                    /*!< Path a new file */
                       h5pp::FilePermission permission_   = h5pp::FilePermission::RENAME, /*!< Set permission in case of file collision */
-                      size_t               logLevel_     = 2,     /*!< Logging verbosity level 0 (most) to 6 (least). */
+                      LogLevelType         logLevel_     = LogLevel::info,               /*!< Logging verbosity level 0 (most) to 6 (least). */
                       bool                 logTimestamp_ = false, /*!< True prepends a timestamp to log output */
                       const PropertyLists &plists_       = defaultPlists)
-            : filePath(std::move(filePath_)), permission(permission_), logLevel(logLevel_), logTimestamp(logTimestamp_), plists(plists_) {
+            : filePath(std::move(filePath_)), permission(permission_), logLevel(Num2Level(logLevel_)), logTimestamp(logTimestamp_), plists(plists_) {
             init();
         }
-
-        explicit File(h5pp::fs::path       filePath_,             /*!< Path a new file */
-                      unsigned int         H5F_ACC_FLAGS,         /*!< Set HDF5 access flag for new files */
-                      size_t               logLevel_     = 2,     /*!< Logging verbosity level 0 (most) to 6 (least). */
+        template<typename LogLevelType>
+        explicit File(h5pp::fs::path       filePath_,                         /*!< Path a new file */
+                      unsigned int         H5F_ACC_FLAGS,                     /*!< Set HDF5 access flag for new files */
+                      LogLevelType         logLevel_     = LogLevel::info,    /*!< Logging verbosity level 0 (most) to 6 (least). */
                       bool                 logTimestamp_ = false, /*!< True prepends a timestamp to log output */
                       const PropertyLists &plists_       = defaultPlists)
-            : filePath(std::move(filePath_)), logLevel(logLevel_), logTimestamp(logTimestamp_), plists(plists_) {
+            : filePath(std::move(filePath_)), logLevel(Num2Level(logLevel_)), logTimestamp(logTimestamp_), plists(plists_) {
             permission = h5pp::hdf5::convertFileAccessFlags(H5F_ACC_FLAGS);
             init();
         }
@@ -400,15 +400,16 @@ namespace h5pp {
          *
          * From 0 (highest) to 6 (off)
          * */
-        [[nodiscard]] size_t getLogLevel() const { return logLevel; }
+        [[nodiscard]] LogLevel getLogLevel() const { return logLevel; }
 
         /*! Set console log level
          *
          * From 0 (highest) to 6 (off)
          */
-        void setLogLevel(size_t logLevelZeroToSix /*!< Log level */
+        template<typename LogLevelType>
+        void setLogLevel(LogLevelType logLevelZeroToSix /*!< Log level */
         ) {
-            logLevel = logLevelZeroToSix;
+            logLevel = Num2Level(logLevelZeroToSix);
             h5pp::logger::setLogLevel(logLevelZeroToSix);
         }
 
