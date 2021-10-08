@@ -64,7 +64,7 @@ namespace h5pp {
 
         /*! Default constructor */
         File() = default;
-        template<typename LogLevelType>
+        template<typename LogLevelType = LogLevel>
         explicit File(h5pp::fs::path       filePath_,                                    /*!< Path a new file */
                       h5pp::FilePermission permission_   = h5pp::FilePermission::RENAME, /*!< Set permission in case of file collision */
                       LogLevelType         logLevel_     = LogLevel::info,               /*!< Logging verbosity level 0 (most) to 6 (least). */
@@ -73,7 +73,7 @@ namespace h5pp {
             : filePath(std::move(filePath_)), permission(permission_), logLevel(Num2Level(logLevel_)), logTimestamp(logTimestamp_), plists(plists_) {
             init();
         }
-        template<typename LogLevelType>
+        template<typename LogLevelType = LogLevel>
         explicit File(h5pp::fs::path       filePath_,                         /*!< Path a new file */
                       unsigned int         H5F_ACC_FLAGS,                     /*!< Set HDF5 access flag for new files */
                       LogLevelType         logLevel_     = LogLevel::info,    /*!< Logging verbosity level 0 (most) to 6 (least). */
