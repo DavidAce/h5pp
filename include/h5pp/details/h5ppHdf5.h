@@ -1196,7 +1196,10 @@ namespace h5pp::hdf5 {
             dsetInfo.compression = std::nullopt;
             return;
         }
-        if(dsetInfo.compression and dsetInfo.compression.value() > 9) {
+        // Negative value means to skip zlib altogether, even though it could be enabled.
+        // This is different from 0, which means "no compression".
+        if(dsetInfo.compression.value() < 0) return;
+        if(dsetInfo.compression.value() > 9) {
             h5pp::logger::log->warn("Compression level too high: [{}]. Reducing to [9]", dsetInfo.compression.value());
             dsetInfo.compression = 9;
         }

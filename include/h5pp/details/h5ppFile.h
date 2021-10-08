@@ -430,7 +430,7 @@ namespace h5pp {
         }
 
         /*! Get current default compression level */
-        [[nodiscard]] unsigned int getCompressionLevel() const { return currentCompression; }
+        [[nodiscard]] int getCompressionLevel() const { return currentCompression; }
 
         /*! Get a *valid* compression level given an optionally suggested level.
          *
@@ -438,7 +438,7 @@ namespace h5pp {
          *
          * Example 2: If compression == std::nullopt, the current compression level is returned.
          */
-        [[nodiscard]] unsigned int getCompressionLevel(const std::optional<int> compression /*!< Suggested compression level */
+        [[nodiscard]] int getCompressionLevel(const std::optional<int> compression /*!< Suggested compression level */
         ) const {
             if(compression)
                 return h5pp::hdf5::getValidCompressionLevel(compression.value());
