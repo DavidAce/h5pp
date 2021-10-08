@@ -3208,12 +3208,13 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType>
-    inline void readTableField(DataType             &data,
-                               const TableInfo      &info,
-                               const hid::h5t       &h5t_fields,
-                               std::optional<size_t> offset = std::nullopt,
-                               std::optional<size_t> extent = std::nullopt) {
+    inline void readTableField(DataType              &data,
+                               const TableInfo       &info,
+                               const hid::h5t        &h5t_fields,
+                               std::optional<hsize_t> offset = std::nullopt,
+                               std::optional<hsize_t> extent = std::nullopt) {
         static_assert(not std::is_const_v<DataType>);
+        static_assert(not type::sfinae::is_hdf5_id<DataType>);
         // If none of offset or extent are given:
         //          If data resizeable: offset = 0, extent = totalRecords
         //          If data not resizeable: offset = last record index, extent = 1.
@@ -3329,10 +3330,10 @@ namespace h5pp::hdf5 {
     inline void readTableField(DataType                  &data,
                                const TableInfo           &info,
                                const std::vector<size_t> &srcFieldIndices, // Field indices for the table on file
-                               std::optional<size_t>      offset = std::nullopt,
-                               std::optional<size_t>      extent = std::nullopt) {
+                               std::optional<hsize_t>     offset = std::nullopt,
+                               std::optional<hsize_t>     extent = std::nullopt) {
         static_assert(not std::is_const_v<DataType>);
-        hid::h5t tgtTypeId = getFieldTypeId(info, srcFieldIndices);
+        hid::h5t tgtTypeId = util::getFieldTypeId(info, srcFieldIndices);
         readTableField(data, info, tgtTypeId, offset, extent);
     }
 
@@ -3340,10 +3341,10 @@ namespace h5pp::hdf5 {
     inline void readTableField(DataType                       &data,
                                const TableInfo                &info,
                                const std::vector<std::string> &fieldNames,
-                               std::optional<size_t>           offset = std::nullopt,
-                               std::optional<size_t>           extent = std::nullopt) {
+                               std::optional<hsize_t>          offset = std::nullopt,
+                               std::optional<hsize_t>          extent = std::nullopt) {
         static_assert(not std::is_const_v<DataType>);
-        hid::h5t tgtTypeId = getFieldTypeId(info, fieldNames);
+        hid::h5t tgtTypeId = util::getFieldTypeId(info, fieldNames);
         readTableField(data, info, tgtTypeId, offset, extent);
     }
 

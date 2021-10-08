@@ -504,8 +504,8 @@ namespace h5pp {
         std::optional<std::string>                  tableTitle     = std::nullopt;
         std::optional<std::string>                  tablePath      = std::nullopt;
         std::optional<std::string>                  tableGroupName = std::nullopt;
-        std::optional<size_t>                       numFields      = std::nullopt;
-        std::optional<size_t>                       numRecords     = std::nullopt;
+        std::optional<hsize_t>                      numFields      = std::nullopt;
+        std::optional<hsize_t>                      numRecords     = std::nullopt;
         std::optional<size_t>                       recordBytes    = std::nullopt;
         OptDimsType                                 chunkDims      = std::nullopt;
         std::optional<std::vector<std::string>>     fieldNames     = std::nullopt;

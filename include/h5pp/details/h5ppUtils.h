@@ -695,4 +695,241 @@ namespace h5pp::util {
             return LocationMode::OTHER_FILE;
     }
 
+    inline std::vector<size_t> getFieldIndices(const TableInfo &info, const std::vector<std::string> &fieldNames) {
+        // Compute the field indices
+        std::vector<size_t> fieldIndices;
+        for(const auto &fieldName : fieldNames) {
+            auto it = std::find(info.fieldNames->begin(), info.fieldNames->end(), fieldName);
+            if(it == info.fieldNames->end())
+                throw std::runtime_error(h5pp::format("getFieldIndices: could not find field [{}] in table [{}]: \n"
+                                                      "Available field names are \n{}",
+                                                      fieldName,
+                                                      info.tablePath.value(),
+                                                      info.fieldNames.value()));
+            else
+                fieldIndices.emplace_back(static_cast<size_t>(std::distance(info.fieldNames->begin(), it)));
+        }
+        return fieldIndices;
+    }
+
+    inline hid::h5t getFieldTypeId(const TableInfo &info, const std::vector<size_t> &fieldIndices) {
+        // Build the field sizes and offsets of the given read buffer based on the corresponding quantities on file
+        size_t                   tgtFieldSizeSum = 0;
+        std::vector<size_t>      srcFieldOffsets; // Offsets on file
+        std::vector<size_t>      tgtFieldOffsets; // Offsets on new subset h5type
+        std::vector<size_t>      tgtFieldSizes;
+        std::vector<std::string> tgtFieldNames;
+        srcFieldOffsets.reserve(fieldIndices.size());
+        tgtFieldOffsets.reserve(fieldIndices.size());
+        tgtFieldSizes.reserve(fieldIndices.size());
+        tgtFieldNames.reserve(fieldIndices.size());
+
+        for(const auto &idx : fieldIndices) {
+            srcFieldOffsets.emplace_back(info.fieldOffsets.value()[idx]);
+            tgtFieldOffsets.emplace_back(tgtFieldSizeSum);
+            tgtFieldSizes.emplace_back(info.fieldSizes.value()[idx]);
+            tgtFieldNames.emplace_back(info.fieldNames.value()[idx]);
+            tgtFieldSizeSum += tgtFieldSizes.back();
+        }
+
+        /* Create a special tgtTypeId for reading a subset of a table record with the following properties:
+         *      - tgtTypeId has the size of the given field selection i.e. ieldSizeSum.
+         *      - only the fields to read are defined in it
+         *      - the defined fields are converted to native types
+         *      Then H5Dread will take care of only reading the relevant components of the record
+         */
+
+        hid::h5t typeId = H5Tcreate(H5T_COMPOUND, tgtFieldSizeSum);
+        for(size_t tgtIdx = 0; tgtIdx < fieldIndices.size(); tgtIdx++) {
+            size_t   srcIdx           = fieldIndices.at(tgtIdx);
+            hid::h5t temp_member_id   = H5Tget_native_type(info.fieldTypes->at(srcIdx), H5T_DIR_DEFAULT);
+            size_t   temp_member_size = H5Tget_size(temp_member_id);
+            if(tgtFieldSizes.at(tgtIdx) != temp_member_size) H5Tset_size(temp_member_id, tgtFieldSizes[tgtIdx]);
+            H5Tinsert(typeId, tgtFieldNames.at(tgtIdx).c_str(), tgtFieldOffsets.at(tgtIdx), temp_member_id);
+        }
+        return typeId;
+    }
+
+    inline hid::h5t getFieldTypeId(const TableInfo &info, const std::vector<std::string> &fieldNames) {
+        return getFieldTypeId(info, getFieldIndices(info, fieldNames));
+    }
+
+    inline std::vector<std::string> getFieldNames(const hid::h5t &fieldId) {
+        H5T_class_t h5tclass = H5Tget_class(fieldId);
+        if(h5tclass != H5T_COMPOUND) throw std::logic_error("fieldId for reading table fields must be H5T_COMPOUND");
+        int nmembers = H5Tget_nmembers(fieldId);
+        if(nmembers < 0) throw std::runtime_error("Failed to read nmembers for fieldId");
+        auto                     nmembers_ul = static_cast<size_t>(nmembers);
+        std::vector<std::string> fieldNames;
+        fieldNames.reserve(nmembers_ul);
+        for(size_t idx = 0; idx < nmembers_ul; idx++) {
+            char *name = H5Tget_member_name(fieldId, static_cast<unsigned int>(idx));
+            fieldNames.emplace_back(name);
+            H5free_memory(name);
+        }
+        return fieldNames;
+    }
+
+    /*! \brief Use to parse the table selection into offset,extent pair
+     */
+    template<typename DataType>
+    std::pair<size_t, size_t> parseTableSelection(DataType             &data,
+                                                  TableSelection       &selection,
+                                                  std::optional<size_t> numRecords,
+                                                  std::optional<size_t> recordBytes) {
+        if(not numRecords) throw std::runtime_error("parseTableSelection: undefined table field [numRecords]");
+        if(not recordBytes) throw std::runtime_error("parseTableSelection: undefined table field [recordBytes]");
+        // Used when reading from file into data
+        size_t      offset = 0;
+        size_t      extent = 1;
+        std::string select;
+        switch(selection) {
+            case h5pp::TableSelection::ALL: {
+                offset = 0;
+                extent = numRecords.value();
+                select = "ALL";
+                break;
+            }
+
+            case h5pp::TableSelection::FIRST: {
+                offset = 0;
+                extent = 1;
+                select = "FIRST";
+                break;
+            }
+            case h5pp::TableSelection::LAST: {
+                offset = numRecords.value() - 1;
+                extent = 1;
+                select = "LAST";
+                break;
+            }
+        }
+
+        if constexpr(not type::sfinae::has_resize_v<DataType>) {
+            // The given buffer is not resizeable. Make sure it can handle extent
+            auto dataSize = util::getBytesTotal(data);
+            if(dataSize < extent * recordBytes.value())
+                throw std::runtime_error(h5pp::format("Given buffer [{}] can't fit table selection {}:\n"
+                                                      " offset               : {}\n"
+                                                      " extent               : {}\n"
+                                                      " bytes per record     : {}\n"
+                                                      " bytes to read        : {}\n"
+                                                      " size of buffer       : {}\n"
+                                                      " buffer has .resize() : {}",
+                                                      type::sfinae::type_name<DataType>(),
+                                                      select,
+                                                      offset,
+                                                      extent,
+                                                      recordBytes.value(),
+                                                      extent * recordBytes.value(),
+                                                      dataSize,
+                                                      type::sfinae::has_resize_v<DataType>));
+        }
+        return {offset, extent};
+    }
+
+    template<typename DataType>
+    std::pair<size_t, size_t>
+        parseTableSelection(DataType &data, TableSelection &selection, const std::vector<size_t> &fieldIndices, const TableInfo &info) {
+        info.assertReadReady();
+        // Used when reading from file into data
+        size_t      offset = 0;
+        size_t      extent = 1;
+        std::string select;
+        switch(selection) {
+            case h5pp::TableSelection::ALL: {
+                offset = 0;
+                extent = info.numRecords.value();
+                select = "ALL";
+                break;
+            }
+
+            case h5pp::TableSelection::FIRST: {
+                offset = 0;
+                extent = 1;
+                select = "FIRST";
+                break;
+            }
+            case h5pp::TableSelection::LAST: {
+                offset = info.numRecords.value() - 1;
+                extent = 1;
+                select = "LAST";
+                break;
+            }
+        }
+
+        std::vector<size_t> fieldSizes;
+        fieldSizes.reserve(fieldIndices.size());
+        for(const auto &idx : fieldIndices) fieldSizes.emplace_back(info.fieldSizes.value().at(idx));
+        size_t fieldSizeTotal = std::accumulate(fieldSizes.begin(), fieldSizes.end(), 0ul);
+
+        if constexpr(not type::sfinae::has_resize_v<DataType>) {
+            // The given buffer is not resizeable. Make sure it can handle extent
+            std::vector<std::string> fieldNames;
+            fieldNames.reserve(fieldIndices.size());
+            for(const auto &idx : fieldIndices) fieldNames.emplace_back(info.fieldNames.value().at(idx));
+
+            auto dataSize = util::getBytesTotal(data);
+            if(dataSize < extent * fieldSizeTotal) {
+                throw std::runtime_error(h5pp::format("Given buffer [{}] can't fit table selection {}:\n"
+                                                      " offset               : {}\n"
+                                                      " extent               : {}\n"
+                                                      " field names          : {}\n"
+                                                      " field sizes          : {}\n"
+                                                      " bytes per record     : {}\n"
+                                                      " bytes to read        : {}\n"
+                                                      " size of buffer       : {}\n"
+                                                      " buffer has .resize() : {}",
+                                                      type::sfinae::type_name<DataType>(),
+                                                      select,
+                                                      offset,
+                                                      extent,
+                                                      fieldNames,
+                                                      fieldSizes,
+                                                      fieldSizeTotal,
+                                                      extent * fieldSizeTotal,
+                                                      dataSize,
+                                                      type::sfinae::has_resize_v<DataType>));
+            }
+        }
+        return {offset, extent};
+    }
+
+    template<typename DataType>
+    std::pair<size_t, size_t>
+        parseTableSelection(DataType &data, TableSelection &selection, const std::vector<std::string> &fieldNames, const TableInfo &info) {
+        return parseTableSelection(data, selection, getFieldIndices(info, fieldNames), info);
+    }
+
+    template<typename DataType>
+    std::pair<size_t, size_t>
+        parseTableSelection(DataType &data, TableSelection &selection, const hid::h5t &fieldId, const TableInfo &info) {
+        return parseTableSelection(data, selection, getFieldNames(fieldId), info);
+    }
+
+    std::pair<size_t, size_t> parseTableSelection(TableSelection &selection, std::optional<size_t> numRecords) {
+        if(not numRecords) throw std::runtime_error("parseTableSelection: undefined table field [numRecords]");
+        // Used when reading from file into data
+        size_t offset = 0;
+        size_t extent = 1;
+        switch(selection) {
+            case h5pp::TableSelection::ALL: {
+                offset = 0;
+                extent = numRecords.value();
+                break;
+            }
+
+            case h5pp::TableSelection::FIRST: {
+                offset = 0;
+                extent = 1;
+                break;
+            }
+            case h5pp::TableSelection::LAST: {
+                offset = numRecords.value() - 1;
+                extent = 1;
+                break;
+            }
+        }
+        return {offset, extent};
+    }
 }
