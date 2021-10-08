@@ -246,21 +246,19 @@ namespace h5pp {
         void               assertCreateReady() const {
             std::string error_msg;
             /* clang-format off */
-            if(not dsetPath           ) error_msg.append("\t dsetPath\n");
-            if(not dsetExists         ) error_msg.append("\t dsetExists\n");
-            if(not h5Type             ) error_msg.append("\t h5Type\n");
-            if(not h5Space            ) error_msg.append("\t h5Space\n");
-            if(not h5DsetCreate  ) error_msg.append("\t h5PlistDsetCreate\n");
-            if(not h5DsetAccess  ) error_msg.append("\t h5PlistDsetAccess\n");
-            if(not error_msg.empty())
-                throw std::runtime_error(h5pp::format("Cannot create dataset. The following fields are undefined:\n{}",error_msg));
-            if(not h5Type->valid()             ) error_msg.append("\t h5Type\n");
-            if(not h5Space->valid()            ) error_msg.append("\t h5Space\n");
+            if(not dsetPath               ) error_msg.append("\t dsetPath\n");
+            if(not dsetExists             ) error_msg.append("\t dsetExists\n");
+            if(not h5Type                 ) error_msg.append("\t h5Type\n");
+            if(not h5Space                ) error_msg.append("\t h5Space\n");
+            if(not h5DsetCreate           ) error_msg.append("\t h5PlistDsetCreate\n");
+            if(not h5DsetAccess           ) error_msg.append("\t h5PlistDsetAccess\n");
+            if(not error_msg.empty())     throw std::runtime_error(h5pp::format("Cannot create dataset. The following fields are undefined:\n{}",error_msg));
+            if(not h5Type->valid()        ) error_msg.append("\t h5Type\n");
+            if(not h5Space->valid()       ) error_msg.append("\t h5Space\n");
             if(not h5DsetCreate->valid()  ) error_msg.append("\t h5PlistDsetCreate\n");
             if(not h5DsetAccess->valid()  ) error_msg.append("\t h5PlistDsetAccess\n");
-            if(not error_msg.empty())
-                throw std::runtime_error("Cannot create dataset. The following fields are not valid\n\t" + error_msg);
-            if(not hasLocId()) throw std::runtime_error(h5pp::format("Cannot create dataset [{}]: The location ID is not set", dsetPath.value()));
+            if(not error_msg.empty())     throw std::runtime_error("Cannot create dataset. The following fields are not valid\n\t" + error_msg);
+            if(not hasLocId())            throw std::runtime_error(h5pp::format("Cannot create dataset [{}]: The location ID is not set", dsetPath.value()));
             error_msg.append(debug::reportCompatibility(h5Layout,dsetDims,dsetChunk,dsetDimsMax));
             if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Dataset dimensions are not well defined:\n{}", error_msg));
             /* clang-format on */
@@ -299,19 +297,20 @@ namespace h5pp {
             if(not h5Dset             ) error_msg.append("\t h5Dset\n");
             if(not h5Type             ) error_msg.append("\t h5Type\n");
             if(not h5Space            ) error_msg.append("\t h5Space\n");
-            if(not h5DsetCreate)        error_msg.append("\t h5DsetCreate\n");
-            if(not h5DsetAccess)        error_msg.append("\t h5DsetAccess\n");
+            if(not h5DsetCreate       ) error_msg.append("\t h5DsetCreate\n");
+            if(not h5DsetAccess       ) error_msg.append("\t h5DsetAccess\n");
             if(not error_msg.empty())
                 throw std::runtime_error(h5pp::format("Cannot write into dataset. The following fields are undefined:\n{}", error_msg));
+            if(not dsetExists.value() ) error_msg.append("\t dsetExists == false\n");
             if constexpr(not h5pp::ndebug){
-                if(not h5Dset->valid() ) error_msg.append("\t h5Dset\n");
-                if(not h5Type->valid() ) error_msg.append("\t h5Type\n");
+                if(not h5Dset->valid()  ) error_msg.append("\t h5Dset\n");
+                if(not h5Type->valid()  ) error_msg.append("\t h5Type\n");
                 if(not h5Space->valid() ) error_msg.append("\t h5Space\n");
-                if(not error_msg.empty())
-                    throw std::runtime_error(h5pp::format("Cannot write into dataset [{}]. The following fields are not valid:\n",dsetPath.value(), error_msg));
             }
-
             /* clang-format on */
+            if(not error_msg.empty())
+                throw std::runtime_error(
+                    h5pp::format("Cannot write into dataset [{}]. The following fields are not valid:\n", dsetPath.value(), error_msg));
         }
         void assertReadReady() const {
             std::string error_msg;
@@ -687,6 +686,5 @@ namespace h5pp {
         std::optional<std::vector<size_t>>          memberOffset    = std::nullopt;
         std::optional<std::vector<int>>             memberIndex     = std::nullopt;
     };
-
 
 }

@@ -95,8 +95,10 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
     SECTION("Copy a table entry to another file") {
         auto       info1 = file.getTableInfo("somegroup/particleTable");
         h5pp::File file2("output/readWriteTablesCopy.h5", h5pp::FilePermission::REPLACE, 2);
-        auto       info2 = file2.appendTableRecords(
-            file.openFileHandle(), "somegroup/particleTable", h5pp::TableSelection::LAST, "somegroup/particleTable");
+        auto       info2 = file2.appendTableRecords(file.openFileHandle(),
+                                                    "somegroup/particleTable",
+                                                    "somegroup/particleTable",
+                                                    h5pp::TableSelection::LAST);
         CHECK(info2.tableTitle.value() == info1.tableTitle.value());
         CHECK(info2.numRecords.value() == 1);
         CHECK(info2.recordBytes.value() == info1.recordBytes.value());
@@ -112,5 +114,7 @@ int main(int argc, char *argv[]) {
 
     //    session.configData().showSuccessfulTests = true;
     //    session.configData().reporterName = "compact";
+    session.configData().shouldDebugBreak = true;
+
     return session.run();
 }
