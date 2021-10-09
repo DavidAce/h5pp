@@ -2013,13 +2013,13 @@ namespace h5pp::hdf5 {
     }
 
     template<bool compile = h5pp::has_direct_chunk>
-    inline void H5Dwrite_single_chunk(const hid_t                  &h5dset,
-                                      const hid_t                  &h5dxpl, // Dataset transfer property list
-                                      H5Z_filter_t                 &filters,
-                                      uint32_t                     &mask,
-                                      int                          &deflate,
-                                      const std::vector<hsize_t>   &chunkOffset,
-                                      const std::vector<std::byte> &chunkBuffer) {
+    inline void H5Dwrite_single_chunk([[maybe_unused]] const hid_t                  &h5dset,
+                                      [[maybe_unused]] const hid_t                  &h5dxpl, // Dataset transfer property list
+                                      [[maybe_unused]] H5Z_filter_t                 &filters,
+                                      [[maybe_unused]] uint32_t                     &mask,
+                                      [[maybe_unused]] int                          &deflate,
+                                      [[maybe_unused]] const std::vector<hsize_t>   &chunkOffset,
+                                      [[maybe_unused]] const std::vector<std::byte> &chunkBuffer) {
         if constexpr(compile) {
             size_t chunkByte   = chunkBuffer.size();
             bool   skipDeflate = (mask & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
@@ -2073,13 +2073,14 @@ namespace h5pp::hdf5 {
     }
 
     template<bool compile = h5pp::has_direct_chunk>
-    inline void H5Dread_single_chunk(const hid_t                &h5dset,
-                                     const hid_t                &h5dxpl, // Dataset transfer property list
-                                     H5Z_filter_t               &filters,
-                                     uint32_t                   &mask,
-                                     const std::vector<hsize_t> &chunkOffset,
-                                     std::vector<std::byte>     &chunkBuffer) {
+    inline void H5Dread_single_chunk([[maybe_unused]] const hid_t                &h5dset,
+                                     [[maybe_unused]] const hid_t                &h5dxpl, // Dataset transfer property list
+                                     [[maybe_unused]] H5Z_filter_t               &filters,
+                                     [[maybe_unused]] uint32_t                   &mask,
+                                     [[maybe_unused]] const std::vector<hsize_t> &chunkOffset,
+                                     [[maybe_unused]] std::vector<std::byte>     &chunkBuffer) {
         if constexpr(compile) {
+#if defined(H5PP_HAS_DIRECT_CHUNK)
             haddr_t chaddr = 0;
             hsize_t chsize = 0;
             herr_t  eci    = H5Dget_chunk_info_by_coord(h5dset, chunkOffset.data(), &mask, &chaddr, &chsize);
@@ -2124,7 +2125,7 @@ namespace h5pp::hdf5 {
                         "with enabled filter H5Z_FILTER_DEFLATE");
             }
 
-#if H5PP_HAS_FILTER_DEFLATE && H5PP_HAS_ZLIB_H
+    #if H5PP_HAS_FILTER_DEFLATE && H5PP_HAS_ZLIB_H
             if(isOnDeflate and not skipDeflate) {
                 std::vector<std::byte> chunkZBuffer(chunkByteStorage);
                 herr_t                 err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, chunkZBuffer.data());
@@ -2142,7 +2143,7 @@ namespace h5pp::hdf5 {
                 else if(Z_OK != z_err)
                     throw h5pp::runtime_error("error: corrupted input data");
             } else
-#endif
+    #endif
             {
                 if(chunkByte != chunkByteStorage) {
                     h5pp::logger::log->warn("H5Dread_single_chunk: Size mismatch: "
@@ -2157,20 +2158,25 @@ namespace h5pp::hdf5 {
                 herr_t err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, chunkBuffer.data());
                 if(err < 0) throw h5pp::runtime_error("Failed to read uncompressed chunk at offset {}", chunkOffset);
             }
+#endif
+        } else {
+            static_assert(compile, "This " H5_VERS_INFO " does not direct chunk writes");
         }
     }
 
     template<typename DataType, bool compile = h5pp::has_direct_chunk>
-    void H5Dwrite_chunkwise(const DataType             &data,
-                            const h5pp::hid::h5d       &dataset,
-                            const h5pp::hid::h5t       &datatype,
-                            const h5pp::hid::h5p       &dsetCreate, // Dataset creation property list
-                            const h5pp::hid::h5p       &dsetXfer,   // Dataset transfer property list
-                            const std::vector<hsize_t> &dims,
-                            const std::vector<hsize_t> &chunkDims,
-                            const h5pp::Hyperslab      &dsetSlab,
-                            const h5pp::Hyperslab      &dataSlab) {
+    void H5Dwrite_chunkwise([[maybe_unused]] const DataType             &data,
+                            [[maybe_unused]] const h5pp::hid::h5d       &dataset,
+                            [[maybe_unused]] const h5pp::hid::h5t       &datatype,
+                            [[maybe_unused]] const h5pp::hid::h5p       &dsetCreate, // Dataset creation property list
+                            [[maybe_unused]] const h5pp::hid::h5p       &dsetXfer,   // Dataset transfer property list
+                            [[maybe_unused]] const std::vector<hsize_t> &dims,
+                            [[maybe_unused]] const std::vector<hsize_t> &chunkDims,
+                            [[maybe_unused]] const h5pp::Hyperslab      &dsetSlab,
+                            [[maybe_unused]] const h5pp::Hyperslab      &dataSlab) {
         if constexpr(compile) {
+#if defined(H5PP_HAS_DIRECT_CHUNK)
+
             size_t     typeSize  = h5pp::hdf5::getBytesPerElem(datatype);
             size_t     chunkSize = h5pp::util::getSizeFromDimensions(chunkDims);
             hsize_t    chunkByte = chunkSize * typeSize;
@@ -2285,6 +2291,9 @@ namespace h5pp::hdf5 {
                 if(deflate < 0) write_mask = 1;
                 h5pp::hdf5::H5Dwrite_single_chunk(h5dset, h5dxpl, filters, write_mask, deflate, chunkSlab.offset.value(), chunkBuffer);
             }
+#endif
+        } else {
+            static_assert(compile, "This " H5_VERS_INFO " does not direct chunk writes");
         }
     }
 
@@ -2373,16 +2382,16 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType, bool compile = h5pp::has_direct_chunk>
-    void writeDataset_chunkwise(const DataType            &data,
-                                h5pp::DataInfo            &dataInfo,
-                                h5pp::DsetInfo            &dsetInfo,
-                                const h5pp::PropertyLists &plists = defaultPlists) {
+    void writeDataset_chunkwise([[maybe_unused]] const DataType            &data,
+                                [[maybe_unused]] h5pp::DataInfo            &dataInfo,
+                                [[maybe_unused]] h5pp::DsetInfo            &dsetInfo,
+                                [[maybe_unused]] const h5pp::PropertyLists &plists = defaultPlists) {
         if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
             h5pp::logger::log->warn("writeDataset_chunkwise: text data is not supported, defaulting to normal writeDataset");
             writeDataset(data, dataInfo, dsetInfo, plists);
             return;
         } else if constexpr(not compile) {
-            h5pp::logger::log->warn("writeDataset_chunkwise is not available: defaulting to writeDataset");
+            h5pp::logger::log->warn("writeDataset_chunkwise is not available in " H5_VERS_INFO ": defaulting to writeDataset");
             writeDataset(data, dataInfo, dsetInfo, plists);
             return;
         } else {
