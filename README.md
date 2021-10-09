@@ -246,7 +246,7 @@ Notice the cast to `dtype=np.complex128` which interprets each element of the ar
 * CMake version >= 3.15
 * [**HDF5**](https://support.hdfgroup.org/HDF5/)  library, version >= 1.8
 
-#### Optional dependencies:
+#### Optional dependencies
 * [**Eigen**](http://eigen.tuxfamily.org): Write Eigen matrices and tensors directly. Tested with version >= 3.3.4
 * [**spdlog**](https://github.com/gabime/spdlog): Enables logging for debug purposes. Tested with version >= 1.3.1
 * [**fmt**](https://github.com/fmtlib/fmt): String formatting library (used in `spdlog`).
@@ -256,6 +256,16 @@ Notice the cast to `dtype=np.complex128` which interprets each element of the ar
 **NOTE:** Logging works the same with or without [Spdlog](https://github.com/gabime/spdlog) enabled. When Spdlog is *not* found, 
 a hand-crafted logger is used in its place to give identical output but without any performance
 considerations (implemented with STL lists, strings and streams).
+
+#### Compiler flags for Windows / MSVC
+To get h5pp working in MSVC the following compiler flags and definitions are recommended
+
+* `/permissive-` 
+* `/EHsc` 
+* `/D NOMINMAX`
+
+If you use CMake to install/find`h5pp`, then no action is required since these are added automatically to the CMake target `h5pp::h5pp`. 
+
 
 ### Getting h5pp
 There are currently 4 ways to obtain `h5pp`:
