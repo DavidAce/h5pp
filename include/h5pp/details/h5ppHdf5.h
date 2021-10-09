@@ -27,7 +27,7 @@ namespace h5pp {
     inline constexpr bool has_zlib_h = true;
     #include <zlib.h>
 #else
-    inline constexpr bool has_zlib_h       = false;
+    inline constexpr bool has_zlib_h         = false;
 #endif
 
 #if H5_VERSION_GE(1, 10, 5)
@@ -35,8 +35,8 @@ namespace h5pp {
     inline bool           use_direct_chunk = true;
     inline constexpr bool has_direct_chunk = true;
 #else
-    inline constexpr bool use_direct_chunk = false;
-    inline constexpr bool has_direct_chunk = false;
+    inline constexpr bool use_direct_chunk   = false;
+    inline constexpr bool has_direct_chunk   = false;
 #endif
 }
 
@@ -2093,8 +2093,7 @@ namespace h5pp::hdf5 {
         return sv;
     }
 
-#if defined(H5PP_HAS_DIRECT_CHUNK)
-
+    template<bool compile = h5pp::has_direct_chunk>
     inline void H5Dwrite_single_chunk(const hid_t                  &h5dset,
                                       const hid_t                  &h5dxpl, // Dataset transfer property list
                                       H5Z_filter_t                 &filters,
@@ -2102,142 +2101,151 @@ namespace h5pp::hdf5 {
                                       int                          &deflate,
                                       const std::vector<hsize_t>   &chunkOffset,
                                       const std::vector<std::byte> &chunkBuffer) {
-        size_t chunkByte   = chunkBuffer.size();
-        bool   skipDeflate = (mask & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
-        bool   isOnDeflate = (filters & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
+        if constexpr(compile) {
+            size_t chunkByte   = chunkBuffer.size();
+            bool   skipDeflate = (mask & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
+            bool   isOnDeflate = (filters & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
 
-        if constexpr(not has_deflate) {
-            if(isOnDeflate and not skipDeflate) {
-                throw std::runtime_error("H5Dread_single_chunk: deflate filter is not available in this HDF5 library. Failed to read chunk "
-                                         "with enabled filter H5Z_FILTER_DEFLATE");
+            if constexpr(not has_filter_deflate) {
+                if(isOnDeflate and not skipDeflate) {
+                    throw std::runtime_error(
+                        "H5Dread_single_chunk: deflate filter is not available in this HDF5 library. Failed to read chunk "
+                        "with enabled filter H5Z_FILTER_DEFLATE");
+                }
             }
-        }
 
-    #if defined(H5PP_HAS_FILTER_DEFLATE) && defined(H5PP_HAS_ZLIB_H)
-        if(deflate >= 0 and isOnDeflate and not skipDeflate) {
-            auto deflate_size_adjust = [](auto &s) { // This is in the documentation, but I have no idea why it's needed
-                return std::ceil(static_cast<double>(s) * 1.001) + 12;
-            };
+#if defined(H5PP_HAS_FILTER_DEFLATE) && defined(H5PP_HAS_ZLIB_H)
+            if(deflate >= 0 and isOnDeflate and not skipDeflate) {
+                auto deflate_size_adjust = [](auto &s) { // This is in the documentation, but I have no idea why it's needed
+                    return std::ceil(static_cast<double>(s) * 1.001) + 12;
+                };
 
-            auto z_dst_nbytes = static_cast<uLongf>(deflate_size_adjust(chunkByte));
-            auto z_src_nbytes = static_cast<uLong>(chunkByte);
+                auto z_dst_nbytes = static_cast<uLongf>(deflate_size_adjust(chunkByte));
+                auto z_src_nbytes = static_cast<uLong>(chunkByte);
 
-            // Allocate space for the compressed buffer
-            std::vector<std::byte> chunkZBuffer(z_dst_nbytes);
-            auto                   z_dst = (Bytef *) (chunkZBuffer.data());
+                // Allocate space for the compressed buffer
+                std::vector<std::byte> chunkZBuffer(z_dst_nbytes);
+                auto                   z_dst = (Bytef *) (chunkZBuffer.data());
 
-            // Get a pointer to the source buffer for compression
-            auto z_src = static_cast<const Bytef *>(h5pp::util::getVoidPointer<const void *>(chunkBuffer));
+                // Get a pointer to the source buffer for compression
+                auto z_src = static_cast<const Bytef *>(h5pp::util::getVoidPointer<const void *>(chunkBuffer));
 
-            // Perform compression of the data into the destination chunkZbuffer
-            int z_erw = compress2(z_dst, &z_dst_nbytes, z_src, z_src_nbytes, deflate);
-            /* Check for various zlib errors */
-            if(Z_BUF_ERROR == z_erw)
-                throw std::runtime_error("overflow");
-            else if(Z_MEM_ERROR == z_erw)
-                throw std::runtime_error("deflate memory error");
-            else if(Z_OK != z_erw)
-                throw std::runtime_error("other deflate error");
+                // Perform compression of the data into the destination chunkZbuffer
+                int z_erw = compress2(z_dst, &z_dst_nbytes, z_src, z_src_nbytes, deflate);
+                /* Check for various zlib errors */
+                if(Z_BUF_ERROR == z_erw)
+                    throw std::runtime_error("overflow");
+                else if(Z_MEM_ERROR == z_erw)
+                    throw std::runtime_error("deflate memory error");
+                else if(Z_OK != z_erw)
+                    throw std::runtime_error("other deflate error");
 
-            /* Write the compressed chunk data */
-            herr_t erw = H5Dwrite_chunk(h5dset, h5dxpl, mask, chunkOffset.data(), z_dst_nbytes, z_dst);
-            if(erw < 0) throw std::runtime_error(h5pp::format("Failed to write compressed chunk at offset {}", chunkOffset));
-        } else
-    #endif
-        {
-            /* Write the raw chunk data */
-            herr_t erw = H5Dwrite_chunk(h5dset, h5dxpl, mask, chunkOffset.data(), chunkByte, chunkBuffer.data());
-            if(erw < 0) throw std::runtime_error(h5pp::format("Failed to write raw chunk at offset {}", chunkOffset));
+                /* Write the compressed chunk data */
+                herr_t erw = H5Dwrite_chunk(h5dset, h5dxpl, mask, chunkOffset.data(), z_dst_nbytes, z_dst);
+                if(erw < 0) throw std::runtime_error(h5pp::format("Failed to write compressed chunk at offset {}", chunkOffset));
+            } else
+#endif
+            {
+                /* Write the raw chunk data */
+                herr_t erw = H5Dwrite_chunk(h5dset, h5dxpl, mask, chunkOffset.data(), chunkByte, chunkBuffer.data());
+                if(erw < 0) throw std::runtime_error(h5pp::format("Failed to write raw chunk at offset {}", chunkOffset));
+            }
         }
     }
 
+    template<bool compile = h5pp::has_direct_chunk>
     inline void H5Dread_single_chunk(const hid_t                &h5dset,
                                      const hid_t                &h5dxpl, // Dataset transfer property list
                                      H5Z_filter_t               &filters,
                                      uint32_t                   &mask,
                                      const std::vector<hsize_t> &chunkOffset,
                                      std::vector<std::byte>     &chunkBuffer) {
-        haddr_t chaddr = 0;
-        hsize_t chsize = 0;
-        herr_t  eci    = H5Dget_chunk_info_by_coord(h5dset, chunkOffset.data(), &mask, &chaddr, &chsize);
-        if(eci < 0) {
-            H5Eprint(H5E_DEFAULT, stderr);
-            h5pp::logger::log->warn("Failed to get chunk info for offset {}", chunkOffset);
-        }
-        if(chsize == 0 or chaddr == HADDR_UNDEF) {
-            h5pp::logger::log->trace(h5pp::format("H5Dread_single_chunk: chunk at offset {} is not yet allocated. Clearing", chunkOffset));
-            std::fill(chunkBuffer.begin(), chunkBuffer.end(), static_cast<std::byte>(0));
-            return;
-        }
+        if constexpr(compile) {
+            haddr_t chaddr = 0;
+            hsize_t chsize = 0;
+            herr_t  eci    = H5Dget_chunk_info_by_coord(h5dset, chunkOffset.data(), &mask, &chaddr, &chsize);
+            if(eci < 0) {
+                H5Eprint(H5E_DEFAULT, stderr);
+                h5pp::logger::log->warn("Failed to get chunk info for offset {}", chunkOffset);
+            }
+            if(chsize == 0 or chaddr == HADDR_UNDEF) {
+                h5pp::logger::log->trace(
+                    h5pp::format("H5Dread_single_chunk: chunk at offset {} is not yet allocated. Clearing", chunkOffset));
+                std::fill(chunkBuffer.begin(), chunkBuffer.end(), static_cast<std::byte>(0));
+                return;
+            }
 
-        size_t chunkByte = h5pp::util::getBytesTotal(chunkBuffer);
-        h5pp::logger::log->trace("H5Dread_single_chunk: offset {}", chunkOffset);
+            size_t chunkByte = h5pp::util::getBytesTotal(chunkBuffer);
+            h5pp::logger::log->trace("H5Dread_single_chunk: offset {}", chunkOffset);
 
-        hsize_t chunkByteStorage = 0; // Size of the chunk on disk
-        herr_t  erc              = H5Dget_chunk_storage_size(h5dset, chunkOffset.data(), &chunkByteStorage);
-        if(erc < 0)
-            throw std::runtime_error(
-                h5pp::format("H5Dread_single_chunk: failed to get chunk storage size for chunk offset {}", chunkOffset));
-        if(chunkByteStorage == 0) return; // There is probably no chunk yet
+            hsize_t chunkByteStorage = 0; // Size of the chunk on disk
+            herr_t  erc              = H5Dget_chunk_storage_size(h5dset, chunkOffset.data(), &chunkByteStorage);
+            if(erc < 0)
+                throw std::runtime_error(
+                    h5pp::format("H5Dread_single_chunk: failed to get chunk storage size for chunk offset {}", chunkOffset));
+            if(chunkByteStorage == 0) return; // There is probably no chunk yet
 
-        bool skipDeflate = (mask & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
-        bool isOnDeflate = (filters & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
+            bool skipDeflate = (mask & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
+            bool isOnDeflate = (filters & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
 
-        if constexpr(not h5pp::ndebug)
-            h5pp::logger::log->trace("H5Dread_single_chunk: chunk buffer size {} | {} bytes | offset {} | storage {} bytes | chaddr {} | "
-                                     "chsize {} | mask {:b} | skipDeflate {} | isOnDeflate {}",
-                                     chunkBuffer.size(),
-                                     chunkByte,
-                                     chunkOffset,
-                                     chunkByteStorage,
-                                     chaddr,
-                                     chsize,
-                                     mask,
-                                     skipDeflate,
-                                     isOnDeflate);
-        if constexpr(not has_deflate) {
+            if constexpr(not h5pp::ndebug)
+                h5pp::logger::log->trace(
+                    "H5Dread_single_chunk: chunk buffer size {} | {} bytes | offset {} | storage {} bytes | chaddr {} | "
+                    "chsize {} | mask {:b} | skipDeflate {} | isOnDeflate {}",
+                    chunkBuffer.size(),
+                    chunkByte,
+                    chunkOffset,
+                    chunkByteStorage,
+                    chaddr,
+                    chsize,
+                    mask,
+                    skipDeflate,
+                    isOnDeflate);
+            if constexpr(not has_filter_deflate) {
+                if(isOnDeflate and not skipDeflate) {
+                    throw std::runtime_error(
+                        "H5Dread_single_chunk: deflate filter is not available in this HDF5 library. Failed to read chunk "
+                        "with enabled filter H5Z_FILTER_DEFLATE");
+                }
+            }
+
+#if H5PP_HAS_FILTER_DEFLATE && H5PP_HAS_ZLIB_H
             if(isOnDeflate and not skipDeflate) {
-                throw std::runtime_error("H5Dread_single_chunk: deflate filter is not available in this HDF5 library. Failed to read chunk "
-                                         "with enabled filter H5Z_FILTER_DEFLATE");
+                std::vector<std::byte> chunkZBuffer(chunkByteStorage);
+                herr_t                 err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, chunkZBuffer.data());
+                if(err < 0) throw std::runtime_error(h5pp::format("Failed to read compressed chunk at offset {}", chunkOffset));
+
+                int z_err = uncompress((Bytef *) chunkBuffer.data(),
+                                       (uLongf *) &chunkByte,
+                                       (const Bytef *) chunkZBuffer.data(),
+                                       (uLong) chunkByteStorage);
+                /* Check for various zlib errors */
+                if(Z_BUF_ERROR == z_err)
+                    throw std::runtime_error("error: not enough room in output buffer");
+                else if(Z_MEM_ERROR == z_err)
+                    throw std::runtime_error("error: not enough memory");
+                else if(Z_OK != z_err)
+                    throw std::runtime_error("error: corrupted input data");
+            } else
+#endif
+            {
+                if(chunkByte != chunkByteStorage) {
+                    h5pp::logger::log->warn("H5Dread_single_chunk: Size mismatch: "
+                                            "given chunk buffer and chunk on file have different sizes: "
+                                            "buffer {} bytes | disk {} bytes | mask {:b}",
+                                            chunkByte,
+                                            chunkByteStorage,
+                                            mask);
+                    //                chunkBuffer.resize(read_chunk_nbytes);
+                }
+
+                herr_t err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, chunkBuffer.data());
+                if(err < 0) throw std::runtime_error(h5pp::format("Failed to read uncompressed chunk at offset {}", chunkOffset));
             }
-        }
-
-    #if H5PP_HAS_FILTER_DEFLATE && H5PP_HAS_ZLIB_H
-        if(isOnDeflate and not skipDeflate) {
-            std::vector<std::byte> chunkZBuffer(chunkByteStorage);
-            herr_t                 err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, chunkZBuffer.data());
-            if(err < 0) throw std::runtime_error(h5pp::format("Failed to read compressed chunk at offset {}", chunkOffset));
-
-            int z_err = uncompress((Bytef *) chunkBuffer.data(),
-                                   (uLongf *) &chunkByte,
-                                   (const Bytef *) chunkZBuffer.data(),
-                                   (uLong) chunkByteStorage);
-            /* Check for various zlib errors */
-            if(Z_BUF_ERROR == z_err)
-                throw std::runtime_error("error: not enough room in output buffer");
-            else if(Z_MEM_ERROR == z_err)
-                throw std::runtime_error("error: not enough memory");
-            else if(Z_OK != z_err)
-                throw std::runtime_error("error: corrupted input data");
-        } else
-    #endif
-        {
-            if(chunkByte != chunkByteStorage) {
-                h5pp::logger::log->warn("H5Dread_single_chunk: Size mismatch: "
-                                        "given chunk buffer and chunk on file have different sizes: "
-                                        "buffer {} bytes | disk {} bytes | mask {:b}",
-                                        chunkByte,
-                                        chunkByteStorage,
-                                        mask);
-                //                chunkBuffer.resize(read_chunk_nbytes);
-            }
-
-            herr_t err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, chunkBuffer.data());
-            if(err < 0) throw std::runtime_error(h5pp::format("Failed to read uncompressed chunk at offset {}", chunkOffset));
         }
     }
 
-    template<typename DataType>
+    template<typename DataType, bool compile = h5pp::has_direct_chunk>
     void H5Dwrite_chunkwise(const DataType             &data,
                             const h5pp::hid::h5d       &dataset,
                             const h5pp::hid::h5t       &datatype,
@@ -2247,118 +2255,121 @@ namespace h5pp::hdf5 {
                             const std::vector<hsize_t> &chunkDims,
                             const h5pp::Hyperslab      &dsetSlab,
                             const h5pp::Hyperslab      &dataSlab) {
-        size_t     typeSize  = h5pp::hdf5::getBytesPerElem(datatype);
-        size_t     chunkSize = h5pp::util::getSizeFromDimensions(chunkDims);
-        hsize_t    chunkByte = chunkSize * typeSize;
-        hid_t      h5dset    = dataset.value();    // Repeated calls to .value() takes time because validity is always checked
-        hid_t      h5dcpl    = dsetCreate.value(); // Repeated calls to .value() takes time because validity is always checked
-        hid_t      h5dxpl    = dsetXfer.value();   // Repeated calls to .value() takes time because validity is always checked
-        auto       filters   = getFilters(h5dcpl);
-        auto       deflate   = getDeflateLevel(h5dcpl);
-        const auto rank      = dims.size();
+        if constexpr(compile) {
+            size_t     typeSize  = h5pp::hdf5::getBytesPerElem(datatype);
+            size_t     chunkSize = h5pp::util::getSizeFromDimensions(chunkDims);
+            hsize_t    chunkByte = chunkSize * typeSize;
+            hid_t      h5dset    = dataset.value();    // Repeated calls to .value() takes time because validity is always checked
+            hid_t      h5dcpl    = dsetCreate.value(); // Repeated calls to .value() takes time because validity is always checked
+            hid_t      h5dxpl    = dsetXfer.value();   // Repeated calls to .value() takes time because validity is always checked
+            auto       filters   = getFilters(h5dcpl);
+            auto       deflate   = getDeflateLevel(h5dcpl);
+            const auto rank      = dims.size();
 
-        // Compute the total number of chunks currently in the dataset
-        hsize_t chunkCount = 0;                    // The total number of chunks currently in the dataset
-        hid_t   h5space    = H5Dget_space(h5dset); // Must be created because H5Dget_num_chunks cant take H5S_SPACE_ALL yet
-        herr_t  ers        = H5Sselect_all(h5space);
-        if(ers < 0) throw std::runtime_error("writeDataset_chunkwise: failed to select all elements in space");
-        herr_t ern = H5Dget_num_chunks(h5dset, h5space, &chunkCount);
-        if(ern < 0) throw std::runtime_error("writeDataset_chunkwise: failed to get number of chunks in dataset");
+            // Compute the total number of chunks currently in the dataset
+            hsize_t chunkCount = 0;                    // The total number of chunks currently in the dataset
+            hid_t   h5space    = H5Dget_space(h5dset); // Must be created because H5Dget_num_chunks cant take H5S_SPACE_ALL yet
+            herr_t  ers        = H5Sselect_all(h5space);
+            if(ers < 0) throw std::runtime_error("writeDataset_chunkwise: failed to select all elements in space");
+            herr_t ern = H5Dget_num_chunks(h5dset, h5space, &chunkCount);
+            if(ern < 0) throw std::runtime_error("writeDataset_chunkwise: failed to get number of chunks in dataset");
 
-        // Compute the total number of chunks that this dataset has room for
-        std::vector<hsize_t> chunkRoom(rank); // counts how many chunks fit in each direction
-        for(size_t i = 0; i < chunkRoom.size(); i++)
-            chunkRoom[i] = (dims[i] + chunkDims[i] - 1) / chunkDims[i];      // Integral ceil on division
-        size_t chunkCapacity = h5pp::util::getSizeFromDimensions(chunkRoom); // The total number of chunks that can fit
+            // Compute the total number of chunks that this dataset has room for
+            std::vector<hsize_t> chunkRoom(rank); // counts how many chunks fit in each direction
+            for(size_t i = 0; i < chunkRoom.size(); i++)
+                chunkRoom[i] = (dims[i] + chunkDims[i] - 1) / chunkDims[i];      // Integral ceil on division
+            size_t chunkCapacity = h5pp::util::getSizeFromDimensions(chunkRoom); // The total number of chunks that can fit
 
-        if constexpr(not h5pp::ndebug)
-            if(h5pp::logger::log->level() == 0)
-                h5pp::logger::log->info("writeDataset_chunkwise: data [type {} | size {} | {} bytes/item | {} bytes{}] dset [size {} | {} "
-                                        "bytes/item | storage {} bytes | deflate {} | dims {}{}]  "
-                                        "chunk [size {} | {} bytes | dims {} | count {} | capacity {} | room {}]",
-                                        type::sfinae::type_name<DataType>(),
-                                        h5pp::util::getSize(data),
-                                        h5pp::util::getBytesPerElem<DataType>(),
-                                        h5pp::util::getBytesTotal(data),
-                                        dataSlab.string(),
-                                        h5pp::hdf5::getSize(dataset),
-                                        typeSize,
-                                        H5Dget_storage_size(dataset),
-                                        deflate,
-                                        dims,
-                                        dsetSlab.string(),
-                                        chunkSize,
-                                        chunkByte,
-                                        chunkDims,
-                                        chunkCount,
-                                        chunkCapacity,
-                                        chunkRoom);
+            if constexpr(not h5pp::ndebug)
+                if(h5pp::logger::log->level() == 0)
+                    h5pp::logger::log->info(
+                        "writeDataset_chunkwise: data [type {} | size {} | {} bytes/item | {} bytes{}] dset [size {} | {} "
+                        "bytes/item | storage {} bytes | deflate {} | dims {}{}]  "
+                        "chunk [size {} | {} bytes | dims {} | count {} | capacity {} | room {}]",
+                        type::sfinae::type_name<DataType>(),
+                        h5pp::util::getSize(data),
+                        h5pp::util::getBytesPerElem<DataType>(),
+                        h5pp::util::getBytesTotal(data),
+                        dataSlab.string(),
+                        h5pp::hdf5::getSize(dataset),
+                        typeSize,
+                        H5Dget_storage_size(dataset),
+                        deflate,
+                        dims,
+                        dsetSlab.string(),
+                        chunkSize,
+                        chunkByte,
+                        chunkDims,
+                        chunkCount,
+                        chunkCapacity,
+                        chunkRoom);
 
-        uint32_t read_mask  = 0; // Tells which filters to skip on read
-        uint32_t write_mask = 0; // Tells which filters to skip on write
+            uint32_t read_mask  = 0; // Tells which filters to skip on read
+            uint32_t write_mask = 0; // Tells which filters to skip on write
 
-        /* Allocate a reusable chunk buffers */
-        std::vector<std::byte> chunkBuffer(chunkByte); // Takes existing chunks and modifies
+            /* Allocate a reusable chunk buffers */
+            std::vector<std::byte> chunkBuffer(chunkByte); // Takes existing chunks and modifies
 
-        /* Allocate a reusable hyperslabs */
-        h5pp::Hyperslab chunkSlab, olapSlab;
-        chunkSlab.offset = std::vector<hsize_t>(rank);
-        chunkSlab.extent = chunkDims;
-        olapSlab.offset  = std::vector<hsize_t>(rank);
-        olapSlab.extent  = std::vector<hsize_t>(rank);
+            /* Allocate a reusable hyperslabs */
+            h5pp::Hyperslab chunkSlab, olapSlab;
+            chunkSlab.offset = std::vector<hsize_t>(rank);
+            chunkSlab.extent = chunkDims;
+            olapSlab.offset  = std::vector<hsize_t>(rank);
+            olapSlab.extent  = std::vector<hsize_t>(rank);
 
-        // Allocate coordinate vectors
-        auto chunkCoord = std::vector<hsize_t>(rank);
-        auto dsetCoord  = std::vector<hsize_t>(rank);
-        auto dataCoord  = std::vector<hsize_t>(rank);
-        auto olapCoord  = std::vector<hsize_t>(rank);
-        // We iterate through all the chunks in the dataset
-        for(size_t chunkIndex = 0; chunkIndex < chunkCapacity; chunkIndex++) {
-            // Step 1, convert chunkIndex to coordinates
-            h5pp::util::ind2sub(chunkRoom, chunkIndex, chunkCoord);
-            for(size_t i = 0; i < rank; i++) chunkSlab.offset.value()[i] = chunkCoord[i] * chunkDims[i];
+            // Allocate coordinate vectors
+            auto chunkCoord = std::vector<hsize_t>(rank);
+            auto dsetCoord  = std::vector<hsize_t>(rank);
+            auto dataCoord  = std::vector<hsize_t>(rank);
+            auto olapCoord  = std::vector<hsize_t>(rank);
+            // We iterate through all the chunks in the dataset
+            for(size_t chunkIndex = 0; chunkIndex < chunkCapacity; chunkIndex++) {
+                // Step 1, convert chunkIndex to coordinates
+                h5pp::util::ind2sub(chunkRoom, chunkIndex, chunkCoord);
+                for(size_t i = 0; i < rank; i++) chunkSlab.offset.value()[i] = chunkCoord[i] * chunkDims[i];
 
-            // Step 3 Check if the current chunk would receive any data. If not, go to the next iteration
-            h5pp::hdf5::setSlabOverlap(chunkSlab, dsetSlab, olapSlab);
-            auto olapSize = h5pp::util::getSizeFromDimensions(olapSlab.extent.value());
+                // Step 3 Check if the current chunk would receive any data. If not, go to the next iteration
+                h5pp::hdf5::setSlabOverlap(chunkSlab, dsetSlab, olapSlab);
+                auto olapSize = h5pp::util::getSizeFromDimensions(olapSlab.extent.value());
 
-            if(olapSize == 0) continue;
-            // Now we know there are some overlapping points. These points are copied into the chunk buffer
+                if(olapSize == 0) continue;
+                // Now we know there are some overlapping points. These points are copied into the chunk buffer
 
-            // Load a chunk buffer from file so that we can modify it later
-            h5pp::hdf5::H5Dread_single_chunk(h5dset, h5dxpl, filters, read_mask, chunkSlab.offset.value(), chunkBuffer);
+                // Load a chunk buffer from file so that we can modify it later
+                h5pp::hdf5::H5Dread_single_chunk(h5dset, h5dxpl, filters, read_mask, chunkSlab.offset.value(), chunkBuffer);
 
-            // Step 4 Copy the part of the given data that overlaps with this chunk
-            for(size_t i = 0; i < olapSize; i++) {
-                // i is the linear index of the overlap slab.
-                h5pp::util::ind2sub(olapSlab.extent.value(), i, olapCoord);
-                // olapCoord are the coordinates in the overlap basis
-                // but we need them in chunk basis, so we transform.
-                // First to the dataset basis, and then to chunk basis
-                for(size_t j = 0; j < rank; j++) {
-                    dsetCoord[j]  = olapSlab.offset.value()[j] + olapCoord[j];
-                    chunkCoord[j] = dsetCoord[j] - chunkSlab.offset.value()[j];
-                    dataCoord[j]  = dsetCoord[j] - dsetSlab.offset.value()[j];
+                // Step 4 Copy the part of the given data that overlaps with this chunk
+                for(size_t i = 0; i < olapSize; i++) {
+                    // i is the linear index of the overlap slab.
+                    h5pp::util::ind2sub(olapSlab.extent.value(), i, olapCoord);
+                    // olapCoord are the coordinates in the overlap basis
+                    // but we need them in chunk basis, so we transform.
+                    // First to the dataset basis, and then to chunk basis
+                    for(size_t j = 0; j < rank; j++) {
+                        dsetCoord[j]  = olapSlab.offset.value()[j] + olapCoord[j];
+                        chunkCoord[j] = dsetCoord[j] - chunkSlab.offset.value()[j];
+                        dataCoord[j]  = dsetCoord[j] - dsetSlab.offset.value()[j];
+                    }
+
+                    //                h5pp::logger::log->trace("dset  slab {} | coord {}", dsetSlab.string(), dsetCoord);
+                    //                h5pp::logger::log->trace("olap  slab {} | coord {}", olapSlab.string(), olapCoord);
+                    //                h5pp::logger::log->trace("data  slab {} | coord {}", dataSlab.string(), dataCoord);
+                    //                h5pp::logger::log->trace("chunk  slab {} | coord {}", chunkSlab.string(), chunkCoord);
+
+                    // Copy the value
+                    auto   dataIdx         = h5pp::util::sub2ind(dataSlab.extent.value(), dataCoord);
+                    auto   chunkIdx        = h5pp::util::sub2ind(chunkSlab.extent.value(), chunkCoord);
+                    size_t dataByteOffset  = dataIdx;
+                    size_t chunkByteOffset = chunkIdx * typeSize;
+                    if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) dataByteOffset *= typeSize;
+                    std::memcpy(util::getVoidPointer<void *>(chunkBuffer, chunkByteOffset),
+                                util::getVoidPointer<const void *>(data, dataByteOffset),
+                                typeSize);
                 }
-
-                //                h5pp::logger::log->trace("dset  slab {} | coord {}", dsetSlab.string(), dsetCoord);
-                //                h5pp::logger::log->trace("olap  slab {} | coord {}", olapSlab.string(), olapCoord);
-                //                h5pp::logger::log->trace("data  slab {} | coord {}", dataSlab.string(), dataCoord);
-                //                h5pp::logger::log->trace("chunk  slab {} | coord {}", chunkSlab.string(), chunkCoord);
-
-                // Copy the value
-                auto   dataIdx         = h5pp::util::sub2ind(dataSlab.extent.value(), dataCoord);
-                auto   chunkIdx        = h5pp::util::sub2ind(chunkSlab.extent.value(), chunkCoord);
-                size_t dataByteOffset  = dataIdx;
-                size_t chunkByteOffset = chunkIdx * typeSize;
-                if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) dataByteOffset *= typeSize;
-                std::memcpy(util::getVoidPointer<void *>(chunkBuffer, chunkByteOffset),
-                            util::getVoidPointer<const void *>(data, dataByteOffset),
-                            typeSize);
+                // Step 5 Now all the data is in the chunk buffer. Write to file
+                if(deflate < 0) write_mask = 1;
+                h5pp::hdf5::H5Dwrite_single_chunk(h5dset, h5dxpl, filters, write_mask, deflate, chunkSlab.offset.value(), chunkBuffer);
             }
-            // Step 5 Now all the data is in the chunk buffer. Write to file
-            if(deflate < 0) write_mask = 1;
-            h5pp::hdf5::H5Dwrite_single_chunk(h5dset, h5dxpl, filters, write_mask, deflate, chunkSlab.offset.value(), chunkBuffer);
         }
     }
 
