@@ -3,7 +3,7 @@
 #include "h5ppFormat.h"
 #include "h5ppOptional.h"
 #include "h5ppTypeSfinae.h"
-#include <hdf5/H5Spublic.h>
+#include <H5Spublic.h>
 #include <type_traits>
 #include <utility>
 #include <vector>

@@ -1,6 +1,6 @@
 #pragma once
 #include "h5ppHid.h"
-#include <hdf5/hdf5.h>
+#include <hdf5.h>
 
 namespace h5pp {
     /*!

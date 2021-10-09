@@ -3,7 +3,7 @@
 #include "h5ppType.h"
 #include "h5ppTypeSfinae.h"
 #include <complex>
-#include <hdf5/hdf5.h>
+#include <hdf5.h>
 namespace h5pp::type::compound {
 
     template<typename T>

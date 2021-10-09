@@ -2,8 +2,8 @@
 
 #include "h5ppFormat.h"
 #include <cstdio>
-#include <hdf5/H5version.h>
-#include <hdf5/H5Epublic.h>
+#include <H5version.h>
+#include <H5Epublic.h>
 #include <stdexcept>
 namespace h5pp {
     template<typename... Args>

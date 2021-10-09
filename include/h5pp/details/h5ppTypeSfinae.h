@@ -4,7 +4,7 @@
 #include "h5ppOptional.h"
 #include <array>
 #include <complex>
-#include <hdf5/H5Tpublic.h>
+#include <H5Tpublic.h>
 #include <string>
 #include <string_view>
 #include <type_traits>

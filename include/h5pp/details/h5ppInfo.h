@@ -6,7 +6,7 @@
 #include "h5ppHyperslab.h"
 #include "h5ppLogger.h"
 #include "h5ppOptional.h"
-#include <hdf5/hdf5.h>
+#include <hdf5.h>
 #include <numeric>
 #include <string>
 #include <typeindex>

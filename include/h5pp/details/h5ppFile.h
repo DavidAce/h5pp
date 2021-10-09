@@ -15,8 +15,8 @@
 #include "h5ppPropertyLists.h"
 #include "h5ppScan.h"
 #include "h5ppUtils.h"
-#include <hdf5/hdf5.h>
-#include <hdf5/hdf5_hl.h>
+#include <hdf5.h>
+#include <hdf5_hl.h>
 #include <string>
 #include <utility>
 

@@ -1,5 +1,5 @@
 #pragma once
-#include <hdf5/H5Tpublic.h>
+#include <H5Tpublic.h>
 #include "h5ppTypeSfinae.h"
 #include "h5ppError.h"
 namespace tc = h5pp::type::sfinae;

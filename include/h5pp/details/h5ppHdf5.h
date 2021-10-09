@@ -11,8 +11,8 @@
 #include "h5ppTypeSfinae.h"
 #include "h5ppUtils.h"
 #include <cstddef>
-#include <hdf5/hdf5.h>
-#include <hdf5/hdf5_hl.h>
+#include <hdf5.h>
+#include <hdf5_hl.h>
 #include <typeindex>
 #include <utility>
 
