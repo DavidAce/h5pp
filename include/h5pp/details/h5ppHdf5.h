@@ -1960,12 +1960,12 @@ namespace h5pp::hdf5 {
                                     linkAccess);
 #else
             return H5Ovisit_by_name(loc,
-                                    util::safe_str(root).c_str(),
-                                    H5_INDEX_NAME,
-                                    H5_ITER_NATIVE,
-                                    internal::matcher<ObjType>,
-                                    &matchList,
-                                    linkAccess);
+                                      util::safe_str(root).c_str(),
+                                      H5_INDEX_NAME,
+                                      H5_ITER_NATIVE,
+                                      internal::matcher<ObjType>,
+                                      &matchList,
+                                      linkAccess);
 #endif
         }
 
@@ -2430,7 +2430,6 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
         h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
         h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
-        herr_t retval = 0;
 
         // Get the memory address to the data buffer
         [[maybe_unused]] auto                      dataPtr = h5pp::util::getVoidPointer<const void *>(data);
@@ -3138,8 +3137,9 @@ namespace h5pp::hdf5 {
         } else {
             /* Step 2: Get the dataset and memory spaces */
             hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
-            hid::h5s dataSpace =
-                H5Screate_simple(dataSlab.extent->size(), dataSlab.extent->data(), nullptr); /* create a simple memory data space */
+            hid::h5s dataSpace = H5Screate_simple(static_cast<int>(dataSlab.extent->size()),
+                                                  dataSlab.extent->data(),
+                                                  nullptr); /* create a simple memory data space */
             //
             /* Step 3: Select the region in the dataset space*/
             H5Sselect_hyperslab(dsetSpace, H5S_SELECT_SET, dsetSlab.offset->data(), nullptr, dsetSlab.extent->data(), nullptr);
