@@ -852,8 +852,7 @@ namespace h5pp::scan {
 #elif defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
         herr_t oerr = H5Oget_info(info.h5Link.value(), &oInfo, H5O_INFO_HDR);
         hInfo       = oInfo.hdr;
-
-#elif
+#else
         herr_t oerr = H5Oget_info(info.h5Link.value(), &oInfo);
         hInfo       = oInfo.hdr;
 #endif
