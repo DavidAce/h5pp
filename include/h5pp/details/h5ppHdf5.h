@@ -2461,6 +2461,74 @@ namespace h5pp::hdf5 {
         }
     }
 
+    template<typename DataType, bool compile = h5pp::has_direct_chunk>
+    void writeDataset_chunkwise(const DataType            &data,
+                                h5pp::DataInfo            &dataInfo,
+                                h5pp::DsetInfo            &dsetInfo,
+                                const h5pp::PropertyLists &plists = defaultPlists) {
+        if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
+            h5pp::logger::log->warn("writeDataset_chunkwise: text data is not supported, defaulting to normal writeDataset");
+            writeDataset(data, dataInfo, dsetInfo, plists);
+            return;
+        } else if constexpr(not compile) {
+            h5pp::logger::log->warn("writeDataset_chunkwise is not available: defaulting to writeDataset");
+            writeDataset(data, dataInfo, dsetInfo, plists);
+            return;
+        } else {
+#ifdef H5PP_EIGEN3
+            if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
+                h5pp::logger::log->debug("Converting data to row-major storage order");
+                const auto tempRowm = eigen::to_RowMajor(data); // Convert to Row Major first;
+                h5pp::hdf5::writeDataset_chunkwise(tempRowm, dataInfo, dsetInfo, plists);
+                return;
+            }
+#endif
+
+            dsetInfo.assertWriteReady();
+            dsetInfo.assertWriteReady();
+            dataInfo.assertWriteReady();
+
+            h5pp::logger::log->trace("Writing from memory  {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            h5pp::logger::log->trace("Writing into dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
+            h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
+            h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
+
+            const auto rank = dsetInfo.dsetDims->size();
+
+            // Define a hyperslab with the shape of the given data
+            h5pp::Hyperslab dataSlab;
+            if(dataInfo.dataSlab)
+                dataSlab = dataInfo.dataSlab.value();
+            else {
+                dataSlab.offset = std::vector<hsize_t>(rank, 0);
+                if(rank == dataInfo.dataDims->size())
+                    dataSlab.extent = dataInfo.dataDims.value();
+                else {
+                    dataSlab.extent = std::vector<hsize_t>(rank, 1);
+                    std::copy(dataInfo.dataDims->begin(), dataInfo.dataDims->end(), dataSlab.extent->rbegin());
+                }
+            }
+            //  Define a hyperslab which selects the points in the dataset that will be written into.
+            h5pp::Hyperslab dsetSlab;
+            if(dsetInfo.dsetSlab)
+                dsetSlab = dsetInfo.dsetSlab.value();
+            else {
+                dsetSlab.offset = std::vector<hsize_t>(rank, 0);
+                dsetSlab.extent = dataSlab.extent;
+            }
+            H5Dwrite_chunkwise(data,
+                               dsetInfo.h5Dset.value(),
+                               dsetInfo.h5Type.value(),
+                               dsetInfo.h5DsetCreate.value(),
+                               plists.dsetXfer,
+                               dsetInfo.dsetDims.value(),
+                               dsetInfo.dsetChunk.value(),
+                               dsetSlab,
+                               dataSlab);
+        }
+    }
+
     template<typename DataType>
     void readDataset(DataType &data, const DataInfo &dataInfo, const DsetInfo &dsetInfo, const PropertyLists &plists = defaultPlists) {
         static_assert(not std::is_const_v<DataType>);
