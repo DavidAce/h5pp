@@ -842,14 +842,18 @@ namespace h5pp::scan {
 
         H5O_hdr_info_t hInfo;
         H5O_info_t     oInfo;
-#if defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
+#if defined(H5Oget_info_vers) && H5Oget_info_vers >= 3
         H5O_native_info_t nInfo;
         herr_t            nerr = H5Oget_native_info(info.h5Link.value(), &nInfo, H5O_NATIVE_INFO_HDR);
         herr_t            oerr = H5Oget_info(info.h5Link.value(), &oInfo, H5O_INFO_BASIC | H5O_INFO_TIME | H5O_INFO_NUM_ATTRS);
         hInfo                  = nInfo.hdr;
         if(nerr != 0)
             throw h5pp::runtime_error("H5Oget_native_info returned error code {} when reading link {}", nerr, info.linkPath.value());
-#else
+#elif defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
+        herr_t oerr = H5Oget_info(info.h5Link.value(), &oInfo, H5O_INFO_HDR);
+        hInfo       = oInfo.hdr;
+
+#elif
         herr_t oerr = H5Oget_info(info.h5Link.value(), &oInfo);
         hInfo       = oInfo.hdr;
 #endif
