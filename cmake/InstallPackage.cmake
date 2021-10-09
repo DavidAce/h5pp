@@ -26,8 +26,11 @@ endfunction()
 # by running cmake in a subprocess. The current CMake configuration is transmitted
 # by setting the flags manually.
 function(install_package pkg_name)
-    file(LOCK $ENV{HOME}/cmake.${PROJECT_NAME}.lock GUARD FUNCTION TIMEOUT 600)
-
+    if(DEFINED ENV{HOME})
+        file(LOCK $ENV{HOME}/cmake.${PROJECT_NAME}.lock GUARD FUNCTION TIMEOUT 600)
+    elseif(DEFINED ENV{USERPROFILE})
+        file(LOCK $ENV{USERPROFILE}/cmake.${PROJECT_NAME}.lock GUARD FUNCTION TIMEOUT 600)
+    endif()
     set(options CONFIG MODULE CHECK QUIET DEBUG INSTALL_PREFIX_PKGNAME)
     set(oneValueArgs VERSION INSTALL_DIR BUILD_DIR FIND_NAME TARGET_NAME)
     set(multiValueArgs HINTS PATHS PATH_SUFFIXES COMPONENTS DEPENDS CMAKE_ARGS LIBRARY_NAMES TARGET_HINTS)
