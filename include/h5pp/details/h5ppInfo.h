@@ -87,8 +87,8 @@ namespace h5pp {
         std::optional<std::string>      linkPath      = std::nullopt; /*!< Path to HDF5 dataset relative to the file root */
         std::optional<std::string>      attrName      = std::nullopt; /*!< Name of attribute on group or dataset */
         OptDimsType                     dataDims      = std::nullopt; /*!< Data dimensions hint. Required for pointer data */
-        OptDimsType                     dsetDimsChunk = std::nullopt; /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
-        OptDimsType                     dsetDimsMax   = std::nullopt; /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
+        OptDimsType                     dsetChunkDims = std::nullopt; /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
+        OptDimsType                     dsetMaxDims   = std::nullopt; /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
         std::optional<Hyperslab>        dsetSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from the dataset  */
         std::optional<Hyperslab>        attrSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from the attribute  */
         std::optional<Hyperslab>        dataSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from memory  */
@@ -102,7 +102,7 @@ namespace h5pp {
             if(not enable) return msg;
             /* clang-format off */
             if(dataDims) msg.append(h5pp::format(" | data dims {}", dataDims.value()));
-            if(dsetDimsMax) msg.append(h5pp::format(" | max dims {}", dsetDimsMax.value()));
+            if(dsetMaxDims) msg.append(h5pp::format(" | max dims {}", dsetMaxDims.value()));
             if(h5Layout){
                 switch(h5Layout.value()){
                     case H5D_CHUNKED: msg.append(h5pp::format(" | H5D_CHUNKED")); break;
@@ -111,7 +111,7 @@ namespace h5pp {
                     default: break;
                 }
             }
-            if(dsetDimsChunk) msg.append(h5pp::format(" | chunk dims {}", dsetDimsChunk.value()));
+            if(dsetChunkDims) msg.append(h5pp::format(" | chunk dims {}", dsetChunkDims.value()));
             if (dataSlab) msg.append(h5pp::format(" | memory hyperslab {}", dataSlab->string()));
             if (dsetSlab) msg.append(h5pp::format(" | file hyperslab {}", dsetSlab->string()));
             return msg;
@@ -121,7 +121,7 @@ namespace h5pp {
         void assertWellDefined() const {
             std::string error_msg;
             if(not linkPath) error_msg.append("\tMissing field: linkPath\n");
-            error_msg.append(debug::reportCompatibility(h5Layout, dataDims, dsetDimsChunk, dsetDimsMax));
+            error_msg.append(debug::reportCompatibility(h5Layout, dataDims, dsetChunkDims, dsetMaxDims));
             if(not error_msg.empty()) throw std::runtime_error(h5pp::format("Options are not well defined: \n{}", error_msg));
         }
     };

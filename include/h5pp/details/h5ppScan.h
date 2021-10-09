@@ -111,8 +111,8 @@ namespace h5pp::scan {
         h5pp::logger::log->debug("Creating metadata for new dataset [{}]", options.linkPath.value());
         // First copy the parameters given in options
         info.dsetDims     = options.dataDims;
-        info.dsetDimsMax  = options.dsetDimsMax;
-        info.dsetChunk    = options.dsetDimsChunk;
+        info.dsetDimsMax  = options.dsetMaxDims;
+        info.dsetChunk    = options.dsetChunkDims;
         info.dsetSlab     = options.dsetSlab;
         info.h5Type       = options.h5Type;
         info.h5Layout     = options.h5Layout;
@@ -218,8 +218,8 @@ namespace h5pp::scan {
         // First copy the parameters given in options
         /* clang-format off */
         if(not info.dsetDims    ) info.dsetDims     = options.dataDims;
-        if(not info.dsetDimsMax ) info.dsetDimsMax  = options.dsetDimsMax;
-        if(not info.dsetChunk   ) info.dsetChunk    = options.dsetDimsChunk;
+        if(not info.dsetDimsMax ) info.dsetDimsMax  = options.dsetMaxDims;
+        if(not info.dsetChunk   ) info.dsetChunk    = options.dsetChunkDims;
         if(not info.dsetSlab    ) info.dsetSlab     = options.dsetSlab;
         if(not info.h5Type      ) info.h5Type       = options.h5Type;
         if(not info.h5Layout    ) info.h5Layout     = options.h5Layout;
@@ -733,7 +733,7 @@ namespace h5pp::scan {
         if(not info.numRecords       ) info.numRecords       = 0;
         if(not info.recordBytes      ) info.recordBytes      = H5Tget_size(info.h5Type.value());
         if(not info.compression      ) info.compression      = options.compression;
-        if(not info.chunkDims        ) info.chunkDims        = options.dsetDimsChunk;
+        if(not info.chunkDims        ) info.chunkDims        = options.dsetChunkDims;
 
         if(not info.chunkDims)   info.chunkDims = h5pp::util::getChunkDimensions(info.recordBytes.value(), {1}, std::nullopt, H5D_layout_t::H5D_CHUNKED);
         if(not info.compression) info.compression = h5pp::hdf5::getValidCompressionLevel();
