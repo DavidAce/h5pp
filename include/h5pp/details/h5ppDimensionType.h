@@ -1,4 +1,5 @@
 #pragma once
+#include "h5ppError.h"
 #include "h5ppFormat.h"
 #include "h5ppTypeSfinae.h"
 #include <optional>
@@ -26,14 +27,14 @@ namespace h5pp {
         DimsType(h5pp::DataInfo)            = delete;
         DimsType(h5pp::TableInfo)           = delete;
         DimsType(h5pp::Hyperslab)           = delete;
-        DimsType(const std::nullopt_t &) { throw std::runtime_error("nullopt is not a valid dimension for this argument"); }
+        DimsType(const std::nullopt_t &) { throw h5pp::runtime_error("nullopt is not a valid dimension for this argument"); }
         DimsType(std::initializer_list<hsize_t> &&list) { dims = std::vector<hsize_t>(std::begin(list), std::end(list)); }
         template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
         DimsType(std::initializer_list<T> &&list) {
             dims = std::vector<hsize_t>(std::begin(list), std::end(list));
         }
         DimsType(std::optional<std::vector<hsize_t>> otherDims) {
-            if(not otherDims) throw std::runtime_error("Cannot initialize DimsType with nullopt");
+            if(not otherDims) throw h5pp::runtime_error("Cannot initialize DimsType with nullopt");
             dims = otherDims.value();
         }
         template<typename UnknownType>
@@ -44,7 +45,7 @@ namespace h5pp {
                 dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
             else if constexpr(std::is_same_v<UnknownType, OptDimsType>)
                 if(not dims_)
-                    throw std::runtime_error("Cannot initialize DimsType with nullopt");
+                    throw h5pp::runtime_error("Cannot initialize DimsType with nullopt");
                 else
                     dims = dims_.value();
             else if constexpr(std::is_assignable_v<UnknownType, DimsType>)
@@ -53,8 +54,8 @@ namespace h5pp {
                 dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
             else {
                 static_assert(h5pp::type::sfinae::invalid_type_v<UnknownType>, "Could not identify dimension type");
-                throw std::runtime_error(
-                    h5pp::format("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>()));
+                throw h5pp::runtime_error(
+                    "Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>());
             }
         }
         [[nodiscard]] operator const std::vector<hsize_t> &() const { return dims; }
@@ -95,8 +96,8 @@ namespace h5pp {
                 dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
             else {
                 static_assert(h5pp::type::sfinae::invalid_type_v<UnknownType>, "Could not identify dimension type");
-                throw std::runtime_error(
-                    h5pp::format("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>()));
+                throw h5pp::runtime_error(
+                    "Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>());
             }
         }
         [[nodiscard]] bool                        has_value() const { return dims.has_value(); }

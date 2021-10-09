@@ -48,7 +48,7 @@ namespace h5pp {
             if constexpr(std::is_array_v<Container>) {
                 std::copy_n(std::begin(container), rank, dsizes.begin());
             } else {
-                if(container.size() != rank) throw std::runtime_error("copy_dims: Wrong container size, can't copy dimensions.");
+                if(container.size() != rank) throw h5pp::runtime_error("copy_dims: Wrong container size, can't copy dimensions.");
                 std::copy(std::begin(container), std::end(container), dsizes.begin());
             }
         }
@@ -58,7 +58,7 @@ namespace h5pp {
             if constexpr(std::is_array_v<Container>) {
                 std::copy_n(std::begin(container), rank, dsizes.begin());
             } else {
-                if(container.size() != rank) throw std::runtime_error("copy_dims: Wrong container size, can't copy dimensions.");
+                if(container.size() != rank) throw h5pp::runtime_error("copy_dims: Wrong container size, can't copy dimensions.");
                 std::copy(std::begin(container), std::end(container), dsizes.begin());
             }
             return dsizes;
@@ -120,7 +120,7 @@ namespace h5pp {
         constexpr Eigen::Tensor<Scalar, 1> extractDiagonal(const Eigen::Tensor<Scalar, 2> &tensor) {
             auto rows = tensor.dimension(0);
             auto cols = tensor.dimension(1);
-            if(tensor.dimension(0) != tensor.dimension(1)) throw std::runtime_error("extractDiagonal expects a square tensor");
+            if(tensor.dimension(0) != tensor.dimension(1)) throw h5pp::runtime_error("extractDiagonal expects a square tensor");
 
             Eigen::Tensor<Scalar, 1> diagonals(rows);
             for(auto i = 0; i < rows; i++) { diagonals(i) = tensor(i, i); }
@@ -144,7 +144,7 @@ namespace h5pp {
 
         template<typename Scalar>
         constexpr auto asDiagonalInversed(const Eigen::Tensor<Scalar, 2> &tensor) {
-            if(tensor.dimension(0) != tensor.dimension(1)) throw std::runtime_error("Textra::asDiagonalInversed expects a square tensor");
+            if(tensor.dimension(0) != tensor.dimension(1)) throw h5pp::runtime_error("Textra::asDiagonalInversed expects a square tensor");
             Eigen::Tensor<Scalar, 2> inversed = asDiagonalInversed(extractDiagonal(tensor));
             return inversed;
         }
@@ -263,7 +263,7 @@ namespace h5pp {
                 return Eigen::Array<typename Derived::Scalar, Derived::RowsAtCompileTime, Derived::ColsAtCompileTime, Eigen::RowMajor>(
                     dense);
             }
-            throw std::runtime_error("Wrong dense type?? Report this bug!");
+            throw h5pp::runtime_error("Wrong dense type?? Report this bug!");
         }
 
         template<typename Derived>
@@ -276,7 +276,7 @@ namespace h5pp {
                 return Eigen::Array<typename Derived::Scalar, Derived::RowsAtCompileTime, Derived::ColsAtCompileTime, Eigen::ColMajor>(
                     dense);
             }
-            throw std::runtime_error("Wrong dense type?? Report this bug!");
+            throw h5pp::runtime_error("Wrong dense type?? Report this bug!");
         }
     }
 

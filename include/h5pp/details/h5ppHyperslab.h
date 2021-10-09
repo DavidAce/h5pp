@@ -3,7 +3,7 @@
 #include "h5ppFormat.h"
 #include "h5ppOptional.h"
 #include "h5ppTypeSfinae.h"
-#include <hdf5.h>
+#include <hdf5/H5Spublic.h>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -31,19 +31,16 @@ namespace h5pp {
 
         explicit Hyperslab(const hid::h5s &space) {
             int rank = H5Sget_simple_extent_ndims(space);
-            if(rank < 0) throw std::runtime_error("Could not read ndims on given space");
+            if(rank < 0) throw h5pp::runtime_error("Could not read ndims on given space");
             if(rank == 0) return;
             select_type = H5Sget_select_type(space);
             if(select_type.value() == H5S_SEL_HYPERSLABS) {
 #if H5_VERSION_GE(1, 10, 0)
                 htri_t is_regular = H5Sis_regular_hyperslab(space);
-                if(is_regular < 0) {
-                    H5Eprint(H5E_DEFAULT, stderr);
-                    throw std::runtime_error("Failed to query hyperslab type in space");
-                }
+                if(is_regular < 0) throw h5pp::runtime_error("Failed to query hyperslab type in space");
                 if(not is_regular)
-                    throw std::runtime_error("The space has irregular (non-rectangular) hyperslab selection.\n"
-                                             "This is not yet supported by h5pp");
+                    throw h5pp::runtime_error("The space has irregular (non-rectangular) hyperslab selection.\n"
+                                              "This is not yet supported by h5pp");
 #endif
                 offset = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
                 extent = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
@@ -61,9 +58,9 @@ namespace h5pp {
             } else if(select_type.value() == H5S_SEL_NONE)
                 return;
             else if(select_type.value() == H5S_SEL_ERROR)
-                throw std::runtime_error("Invalid hyperslab selection");
+                throw h5pp::runtime_error("Invalid hyperslab selection");
             else
-                throw std::runtime_error("Unsupported selection type. Choose space selection type NONE, ALL or HYPERSLABS");
+                throw h5pp::runtime_error("Unsupported selection type. Choose space selection type NONE, ALL or HYPERSLABS");
         }
         [[nodiscard]] bool empty() const { return not offset and not extent and not stride and not blocks; }
 
@@ -78,23 +75,19 @@ namespace h5pp {
         }
 
         template<typename h5x>
-        void applySelection(const h5x & space) const {
+        void applySelection(const h5x &space) const {
             static_assert(type::sfinae::is_hdf5_space_id<h5x>);
             H5S_seloper_t sel = select_oper;
             if(H5Sget_select_type(space) != H5S_SEL_HYPERSLABS and sel != H5S_SELECT_SET)
                 sel = H5S_SELECT_SET; // First hyperslab selection must be H5S_SELECT_SET
 
-            const hsize_t * offptr = offset ? offset->data() : nullptr;
-            const hsize_t * extptr = extent ? extent->data() : nullptr;
-            const hsize_t * strptr = stride ? stride->data() : nullptr;
-            const hsize_t * blkptr = blocks ? blocks->data() : nullptr;
-            herr_t retval = H5Sselect_hyperslab(space, sel, offptr, strptr,extptr,blkptr);
-            if(retval < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error(h5pp::format("Failed to select hyperslab"));
-            }
+            const hsize_t *offptr = offset ? offset->data() : nullptr;
+            const hsize_t *extptr = extent ? extent->data() : nullptr;
+            const hsize_t *strptr = stride ? stride->data() : nullptr;
+            const hsize_t *blkptr = blocks ? blocks->data() : nullptr;
+            herr_t         retval = H5Sselect_hyperslab(space, sel, offptr, strptr, extptr, blkptr);
+            if(retval < 0) throw h5pp::runtime_error("Failed to select hyperslab");
         }
-
     };
 
 }

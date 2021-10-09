@@ -3,7 +3,7 @@
 #include "h5ppType.h"
 #include "h5ppTypeSfinae.h"
 #include <complex>
-#include <hdf5.h>
+#include <hdf5/hdf5.h>
 namespace h5pp::type::compound {
 
     template<typename T>
@@ -86,23 +86,17 @@ namespace h5pp::type::compound {
             native_id   = h5pp::type::getH5NativeType<T>();
             herr_t errr = H5Tinsert(complex_id, fieldR, HOFFSET(Complex<T>, real), native_id);
             herr_t erri = H5Tinsert(complex_id, fieldI, HOFFSET(Complex<T>, imag), native_id);
-            if(errr < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to insert real field to complex type");
-            }
-            if(erri < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to insert imag field to complex type");
-            }
+            if(errr < 0) throw h5pp::runtime_error("Failed to insert real field to complex type");
+            if(erri < 0) throw h5pp::runtime_error("Failed to insert imag field to complex type");
         }
 
         public:
         static hid::h5t &h5type() {
             if(not complex_id.valid()) init();
             if constexpr(std::is_same_v<T, float>) {
-                if(H5Tget_size(complex_id) != 8) throw std::runtime_error("");
+                if(H5Tget_size(complex_id) != 8) throw h5pp::runtime_error("");
             }
-            if constexpr(std::is_same_v<T, std::complex<float>>) { throw std::runtime_error(""); }
+            if constexpr(std::is_same_v<T, std::complex<float>>) { throw h5pp::runtime_error(""); }
             return complex_id;
         }
         static bool equal(const hid::h5t &other) {
@@ -140,14 +134,8 @@ namespace h5pp::type::compound {
             native_id   = h5pp::type::getH5NativeType<T>();
             herr_t errx = H5Tinsert(scalar2_id, "x", HOFFSET(Scalar2<T>, x), native_id);
             herr_t erry = H5Tinsert(scalar2_id, "y", HOFFSET(Scalar2<T>, y), native_id);
-            if(errx < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to insert x field to Scalar2 type");
-            }
-            if(erry < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to insert y field to Scalar2 type");
-            }
+            if(errx < 0) throw h5pp::runtime_error("Failed to insert x field to Scalar2 type");
+            if(erry < 0) throw h5pp::runtime_error("Failed to insert y field to Scalar2 type");
         }
 
         public:
@@ -192,18 +180,9 @@ namespace h5pp::type::compound {
             herr_t errx = H5Tinsert(scalar3_id, "x", HOFFSET(Scalar3<T>, x), native_id);
             herr_t erry = H5Tinsert(scalar3_id, "y", HOFFSET(Scalar3<T>, y), native_id);
             herr_t errz = H5Tinsert(scalar3_id, "z", HOFFSET(Scalar3<T>, z), native_id);
-            if(errx < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to insert x field to Scalar3 type");
-            }
-            if(erry < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to insert y field to Scalar3 type");
-            }
-            if(errz < 0) {
-                H5Eprint(H5E_DEFAULT, stderr);
-                throw std::runtime_error("Failed to insert z field to Scalar3 type");
-            }
+            if(errx < 0) throw h5pp::runtime_error("Failed to insert x field to Scalar3 type");
+            if(erry < 0) throw h5pp::runtime_error("Failed to insert y field to Scalar3 type");
+            if(errz < 0) throw h5pp::runtime_error("Failed to insert z field to Scalar3 type");
         }
 
         public:

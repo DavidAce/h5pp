@@ -1,5 +1,5 @@
 #pragma once
-#include <hdf5.h>
+#include <hdf5/hdf5.h>
 #include <stdexcept>
 #include <string>
 
@@ -48,7 +48,7 @@ namespace h5pp::hid {
             }
             close(); // Drop current
             val = other.val;
-            if(val > 0)  H5Iinc_ref(val); // Increment reference counter of identifier
+            if(val > 0) H5Iinc_ref(val); // Increment reference counter of identifier
         }
 
         hid_base(hid_base &&other) noexcept {

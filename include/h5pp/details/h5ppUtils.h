@@ -8,7 +8,7 @@
 #include <numeric>
 
 /*!
- * \brief A collection of functions to get information about C++ types passed by the user
+ * \brief A collection of functions to get information about HDF5 and C++ types passed by the user
  */
 namespace h5pp::util {
 
@@ -114,9 +114,9 @@ namespace h5pp::util {
         if constexpr (std::is_class_v<DataType>)                                   return H5Tcreate(H5T_COMPOUND, sizeof(DataType)); // Last resort
 
         /* clang-format on */
-        throw std::runtime_error(h5pp::format("getH5Type could not match the type provided [{}] | size {}",
-                                              type::sfinae::type_name<DecayType>(),
-                                              sizeof(DecayType)));
+        throw h5pp::runtime_error("getH5Type could not match the type provided [{}] | size {}",
+                                  type::sfinae::type_name<DecayType>(),
+                                  sizeof(DecayType));
         return hid_t(0);
     }
 
@@ -207,7 +207,7 @@ namespace h5pp::util {
         if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return static_cast<hsize_t>(data.size());
         if constexpr(std::is_array_v<DataType>) return static_cast<hsize_t>(getArraySize(data));
         if constexpr(std::is_pointer_v<DataType>)
-            throw std::runtime_error("Failed to read data size: Pointer data has no specified dimensions");
+            throw h5pp::runtime_error("Failed to read data size: Pointer data has no specified dimensions");
         // Add more checks here. As it is, these two checks above handle all cases I have encountered.
         return 1; // All others should be "H5S_SCALAR" of size 1.
     }
@@ -237,15 +237,15 @@ namespace h5pp::util {
         if constexpr(h5pp::type::sfinae::has_dimensions_v<DataType>) {
             // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
             std::vector<hsize_t> dims(std::begin(data.dimensions()), std::end(data.dimensions()));
-            if(data.dimensions().size() != rank) throw std::runtime_error("given dimensions do not match detected rank");
-            if(dims.size() != rank) throw std::runtime_error("copied dimensions do not match detected rank");
+            if(data.dimensions().size() != rank) throw h5pp::runtime_error("given dimensions do not match detected rank");
+            if(dims.size() != rank) throw h5pp::runtime_error("copied dimensions do not match detected rank");
             return dims;
         } else if constexpr(h5pp::type::sfinae::has_size_v<DataType> and rank == 1)
             return {static_cast<hsize_t>(data.size())};
 
 #ifdef H5PP_EIGEN3
         else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
-            if(data.dimensions().size() != rank) throw std::runtime_error("given dimensions do not match detected rank");
+            if(data.dimensions().size() != rank) throw h5pp::runtime_error("given dimensions do not match detected rank");
             // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
             return std::vector<hsize_t>(std::begin(data.dimensions()), std::end(data.dimensions()));
         } else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType>) {
@@ -266,8 +266,7 @@ namespace h5pp::util {
             h5pp::logger::log->warn("Detected possible unsupported non-POD class. h5pp may fail.");
             return {};
         } else {
-            throw std::logic_error(
-                h5pp::format("getDimensions can't match the type provided [{}]", h5pp::type::sfinae::type_name<DataType>()));
+            throw h5pp::runtime_error("getDimensions can't match the type provided [{}]", h5pp::type::sfinae::type_name<DataType>());
         }
     }
 
@@ -294,11 +293,10 @@ namespace h5pp::util {
     template<typename T = hsize_t>
     void ind2sub(const std::vector<T> &dims, size_t idx, std::vector<T> &coord) {
         static_assert(std::is_integral_v<T>);
-        if(dims.size() != coord.size())
-            throw std::runtime_error(h5pp::format("dims.size [{}] != coord.size [{}]", dims.size(), coord.size()));
+        if(dims.size() != coord.size()) throw h5pp::runtime_error("dims.size [{}] != coord.size [{}]", dims.size(), coord.size());
         auto rank    = dims.size();
         auto dimprod = std::accumulate(dims.begin(), dims.end(), 1ul, std::multiplies<>());
-        if(idx >= dimprod) throw std::runtime_error(h5pp::format("linearIndex {} out of range for dims with size {}", idx, dimprod));
+        if(idx >= dimprod) throw h5pp::runtime_error("linearIndex {} out of range for dims with size {}", idx, dimprod);
         for(size_t i = rank - 1; i < rank; --i) {
             coord[i] = idx % dims[i];
             idx -= coord[i];
@@ -316,12 +314,12 @@ namespace h5pp::util {
 
     [[nodiscard]] inline size_t sub2ind(const std::vector<hsize_t> &dims, const std::vector<hsize_t> &coords) {
         if(dims.size() != coords.size())
-            throw std::runtime_error(h5pp::format("dims and coords do not have the same rank: {} != {}", dims.size(), coords.size()));
+            throw h5pp::runtime_error("dims and coords do not have the same rank: {} != {}", dims.size(), coords.size());
         auto   rank  = dims.size();
         size_t index = 0;
         long   j     = 1; // current
         for(size_t i = 0; i < rank; i++) {
-            if(coords[i] >= dims[i]) throw std::runtime_error(h5pp::format("coords out of bounds: coords {} |  dims {}", coords, dims));
+            if(coords[i] >= dims[i]) throw h5pp::runtime_error("coords out of bounds: coords {} |  dims {}", coords, dims);
             auto dimprod = std::accumulate(dims.begin() + j++, dims.end(), 1ul, std::multiplies<>());
             index += dimprod * coords[i];
         }
@@ -338,8 +336,7 @@ namespace h5pp::util {
             return H5Screate(H5S_NULL);
         else {
             auto num_elements = h5pp::util::getSizeFromDimensions(dims);
-            if(size != num_elements)
-                throw std::runtime_error(h5pp::format("Number of elements mismatch: size {} | dimensions {}", size, dims));
+            if(size != num_elements) throw h5pp::runtime_error("Number of elements mismatch: size {} | dimensions {}", size, dims);
 
             // Only and chunked and datasets can be extended. The extension can happen up to the max dimension specified.
             // If the max dimension is H5S_UNLIMITED, then the dataset can grow to any dimension.
@@ -349,31 +346,30 @@ namespace h5pp::util {
                 // Here dimsMax was given by the user and we have to do some sanity checks
                 // Check that the ranks match
                 if(dimsMax and dimsMax->size() != dims.size())
-                    throw std::runtime_error(h5pp::format("Number of dimensions (rank) mismatch: dims {} | max dims {}\n"
-                                                          "\t Hint: Dimension lists must have the same number of elements",
-                                                          dims,
-                                                          dimsMax.value()));
+                    throw h5pp::runtime_error("Number of dimensions (rank) mismatch: dims {} | max dims {}\n"
+                                              "\t Hint: Dimension lists must have the same number of elements",
+                                              dims,
+                                              dimsMax.value());
                 // Check that H5S_UNLIMITED is only given to H5D_CHUNKED datasets
                 for(size_t idx = 0; idx < dimsMax->size(); idx++)
                     if(dimsMax.value()[idx] == H5S_UNLIMITED and h5Layout != H5D_CHUNKED)
-                        throw std::runtime_error(
-                            h5pp::format("Max dimensions {} has an H5S_UNLIMITED dimension at index {}. This requires H5D_CHUNKED layout",
-                                         dimsMax.value(),
-                                         idx));
+                        throw h5pp::runtime_error(
+                            "Max dimensions {} has an H5S_UNLIMITED dimension at index {}. This requires H5D_CHUNKED layout",
+                            dimsMax.value(),
+                            idx);
 
                 if(dimsMax.value() != dims) {
                     // Only H5D_CHUNKED layout can have since dimsMax != dims.
                     // Therefore give an informative error if not H5D_CHUNKED
                     if(h5Layout == H5D_COMPACT)
-                        throw std::runtime_error(
-                            h5pp::format("Dimension mismatch: dims {} != max dims {}. Equality is required for H5D_COMPACT layout",
-                                         dims,
-                                         dimsMax.value()));
+                        throw h5pp::runtime_error("Dimension mismatch: dims {} != max dims {}. Equality is required for H5D_COMPACT layout",
+                                                  dims,
+                                                  dimsMax.value());
                     if(h5Layout == H5D_CONTIGUOUS)
-                        throw std::runtime_error(
-                            h5pp::format("Dimension mismatch: dims {} != max dims {}. Equality is required for H5D_CONTIGUOUS layout",
-                                         dims,
-                                         dimsMax.value()));
+                        throw h5pp::runtime_error(
+                            "Dimension mismatch: dims {} != max dims {}. Equality is required for H5D_CONTIGUOUS layout",
+                            dims,
+                            dimsMax.value());
                 }
 
             } else if(h5Layout == H5D_CHUNKED) {
@@ -401,8 +397,7 @@ namespace h5pp::util {
             return H5Screate(H5S_NULL);
         else {
             auto num_elements = getSizeFromDimensions(dims);
-            if(size != num_elements)
-                throw std::runtime_error(h5pp::format("Number of elements mismatch: size {} | dimensions {}", size, dims));
+            if(size != num_elements) throw h5pp::runtime_error("Number of elements mismatch: size {} | dimensions {}", size, dims);
             return H5Screate_simple(static_cast<int>(dims.size()), dims.data(), nullptr);
         }
     }
@@ -451,7 +446,7 @@ namespace h5pp::util {
         }
         if constexpr(std::is_pointer_v<DataType>) {
             if(not size)
-                throw std::runtime_error("Could not determine total amount of bytes in buffer: Pointer data has no specified size");
+                throw h5pp::runtime_error("Could not determine total amount of bytes in buffer: Pointer data has no specified size");
             return size.value() * bytesperelem;
         }
 
@@ -533,17 +528,17 @@ namespace h5pp::util {
             // If max dims are given, dims that are not H5S_UNLIMITED are used as an upper bound
             // for that dimension
             if(dimsMax->size() != dims.size())
-                throw std::runtime_error(h5pp::format("Could not get chunk dimensions: "
+                throw h5pp::runtime_error("Could not get chunk dimensions: "
                                                       "dims {} and max dims {} have different number of elements",
                                                       dims,
-                                                      dimsMax.value()));
+                                                      dimsMax.value());
             for(size_t idx = 0; idx < dims.size(); idx++) {
                 if(dimsMax.value()[idx] < dims[idx])
-                    throw std::runtime_error(h5pp::format("Could not get chunk dimensions: "
+                    throw h5pp::runtime_error("Could not get chunk dimensions: "
                                                           "Some elements in dims exceed max dims: "
                                                           "dims {} | max dims {}",
                                                           dims,
-                                                          dimsMax.value()));
+                                                          dimsMax.value());
                 if(dimsMax.value()[idx] != H5S_UNLIMITED) dims_effective[idx] = std::max(dims_effective[idx], dimsMax.value()[idx]);
             }
         }
@@ -610,7 +605,7 @@ namespace h5pp::util {
             data.resize(static_cast<Eigen::Index>(newSize));
         } else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             if(newDims.size() != 2)
-                throw std::runtime_error(h5pp::format("Failed to resize 2-dimensional Eigen type: Dataset has dimensions {}", newDims));
+                throw h5pp::runtime_error("Failed to resize 2-dimensional Eigen type: Dataset has dimensions {}", newDims);
             h5pp::logger::log->debug("Resizing eigen 2d container {} -> {}",
                                      std::initializer_list<Eigen::Index>{data.rows(), data.cols()},
                                      newDims);
@@ -618,9 +613,9 @@ namespace h5pp::util {
         } else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 if(newDims.size() != DataType::NumDimensions)
-                    throw std::runtime_error(h5pp::format("Failed to resize {}-dimensional Eigen tensor: Dataset has dimensions {}",
+                    throw h5pp::runtime_error("Failed to resize {}-dimensional Eigen tensor: Dataset has dimensions {}",
                                                           DataType::NumDimensions,
-                                                          newDims));
+                                                          newDims);
                 auto eigenDims = eigen::copy_dims<DataType::NumDimensions>(newDims);
                 h5pp::logger::log->debug("Resizing eigen tensor container {} -> {}", data.dimensions(), newDims);
                 data.resize(eigenDims);
@@ -673,7 +668,7 @@ namespace h5pp::util {
                     fileb = H5Iget_file_id(locb);
                 return filea == fileb;
             }
-            default: throw std::runtime_error("Unhandled switch case for locMode");
+            default: throw h5pp::runtime_error("Unhandled switch case for locMode");
         }
     }
 
@@ -702,11 +697,11 @@ namespace h5pp::util {
         for(const auto &fieldName : fieldNames) {
             auto it = std::find(info.fieldNames->begin(), info.fieldNames->end(), fieldName);
             if(it == info.fieldNames->end())
-                throw std::runtime_error(h5pp::format("getFieldIndices: could not find field [{}] in table [{}]: \n"
+                throw h5pp::runtime_error("getFieldIndices: could not find field [{}] in table [{}]: \n"
                                                       "Available field names are \n{}",
                                                       fieldName,
                                                       info.tablePath.value(),
-                                                      info.fieldNames.value()));
+                                                      info.fieldNames.value());
             else
                 fieldIndices.emplace_back(static_cast<size_t>(std::distance(info.fieldNames->begin(), it)));
         }
@@ -758,9 +753,9 @@ namespace h5pp::util {
 
     inline std::vector<std::string> getFieldNames(const hid::h5t &fieldId) {
         H5T_class_t h5tclass = H5Tget_class(fieldId);
-        if(h5tclass != H5T_COMPOUND) throw std::logic_error("fieldId for reading table fields must be H5T_COMPOUND");
+        if(h5tclass != H5T_COMPOUND) throw h5pp::runtime_error("fieldId for reading table fields must be H5T_COMPOUND");
         int nmembers = H5Tget_nmembers(fieldId);
-        if(nmembers < 0) throw std::runtime_error("Failed to read nmembers for fieldId");
+        if(nmembers < 0) throw h5pp::runtime_error("Failed to read nmembers for fieldId");
         auto                     nmembers_ul = static_cast<size_t>(nmembers);
         std::vector<std::string> fieldNames;
         fieldNames.reserve(nmembers_ul);
@@ -779,8 +774,8 @@ namespace h5pp::util {
                                                          TableSelection       &selection,
                                                          std::optional<size_t> numRecords,
                                                          std::optional<size_t> recordBytes) {
-        if(not numRecords) throw std::runtime_error("parseTableSelection: undefined table field [numRecords]");
-        if(not recordBytes) throw std::runtime_error("parseTableSelection: undefined table field [recordBytes]");
+        if(not numRecords) throw h5pp::runtime_error("parseTableSelection: undefined table field [numRecords]");
+        if(not recordBytes) throw h5pp::runtime_error("parseTableSelection: undefined table field [recordBytes]");
         // Used when reading from file into data
         size_t      offset = 0;
         size_t      extent = 1;
@@ -811,7 +806,7 @@ namespace h5pp::util {
             // The given buffer is not resizeable. Make sure it can handle extent
             auto dataSize = util::getBytesTotal(data);
             if(dataSize < extent * recordBytes.value())
-                throw std::runtime_error(h5pp::format("Given buffer [{}] can't fit table selection {}:\n"
+                throw h5pp::runtime_error("Given buffer [{}] can't fit table selection {}:\n"
                                                       " offset               : {}\n"
                                                       " extent               : {}\n"
                                                       " bytes per record     : {}\n"
@@ -825,7 +820,7 @@ namespace h5pp::util {
                                                       recordBytes.value(),
                                                       extent * recordBytes.value(),
                                                       dataSize,
-                                                      type::sfinae::has_resize_v<DataType>));
+                                                      type::sfinae::has_resize_v<DataType>);
         }
         return {offset, extent};
     }
@@ -873,7 +868,7 @@ namespace h5pp::util {
 
             auto dataSize = util::getBytesTotal(data);
             if(dataSize < extent * fieldSizeTotal) {
-                throw std::runtime_error(h5pp::format("Given buffer [{}] can't fit table selection {}:\n"
+                throw h5pp::runtime_error("Given buffer [{}] can't fit table selection {}:\n"
                                                       " offset               : {}\n"
                                                       " extent               : {}\n"
                                                       " field names          : {}\n"
@@ -891,7 +886,7 @@ namespace h5pp::util {
                                                       fieldSizeTotal,
                                                       extent * fieldSizeTotal,
                                                       dataSize,
-                                                      type::sfinae::has_resize_v<DataType>));
+                                                      type::sfinae::has_resize_v<DataType>);
             }
         }
         return {offset, extent};
@@ -910,7 +905,7 @@ namespace h5pp::util {
     }
 
     inline std::pair<size_t, size_t> parseTableSelection(TableSelection &selection, std::optional<size_t> numRecords) {
-        if(not numRecords) throw std::runtime_error("parseTableSelection: undefined table field [numRecords]");
+        if(not numRecords) throw h5pp::runtime_error("parseTableSelection: undefined table field [numRecords]");
         // Used when reading from file into data
         size_t offset = 0;
         size_t extent = 1;

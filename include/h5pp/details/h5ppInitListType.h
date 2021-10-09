@@ -27,7 +27,7 @@ namespace h5pp {
                 data = {static_cast<size_t>(num)};
             else {
                 static_assert(h5pp::type::sfinae::invalid_type_v<U>, "Unrecognized index type");
-                throw std::runtime_error(h5pp::format("Could not identify index type: {}", h5pp::type::sfinae::type_name<U>()));
+                throw h5pp::runtime_error("Could not identify index type: {}", h5pp::type::sfinae::type_name<U>());
             }
         }
         template<typename U, typename = std::enable_if_t<std::is_integral_v<U>>>
@@ -58,7 +58,7 @@ namespace h5pp {
                 data = std::vector<std::string>(std::begin(str), std::end(str));
             else {
                 static_assert(h5pp::type::sfinae::invalid_type_v<U>, "Unrecognized text list type");
-                throw std::runtime_error(h5pp::format("Could not identify text list type: {}", h5pp::type::sfinae::type_name<U>()));
+                throw h5pp::runtime_error("Could not identify text list type: {}", h5pp::type::sfinae::type_name<U>());
             }
         }
         template<typename U, typename = std::enable_if_t<h5pp::type::sfinae::is_text_v<U>>>

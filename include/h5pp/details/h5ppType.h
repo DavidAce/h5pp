@@ -1,7 +1,7 @@
 #pragma once
-#include <H5Tpublic.h>
+#include <hdf5/H5Tpublic.h>
 #include "h5ppTypeSfinae.h"
-
+#include "h5ppError.h"
 namespace tc = h5pp::type::sfinae;
 namespace h5pp::type {
     template<typename DataType>
@@ -45,7 +45,7 @@ namespace h5pp::type {
         if constexpr (tc::has_Scalar_v <DecayType>)                      return getH5NativeType<typename DecayType::Scalar>();
         if constexpr (tc::has_value_type_v <DecayType>)                  return getH5NativeType<typename DataType::value_type>();
         /* clang-format on */
-        throw std::logic_error(h5pp::format("getH5ValueType could not match the type provided [{}] | size {}",
+        throw h5pp::runtime_error(h5pp::format("getH5ValueType could not match the type provided [{}] | size {}",
                                             type::sfinae::type_name<DecayType>(),
                                             sizeof(DecayType)));
         return hid_t(0);

@@ -62,6 +62,13 @@ namespace h5pp {
 
 namespace h5pp {
     namespace formatting {
+        template<typename T, typename = std::void_t<>>
+        struct is_streamable : std::false_type {};
+        template<typename T>
+        struct is_streamable<T, std::void_t<decltype(std::declval<std::stringstream &> << std::declval<T>())>> : public std::true_type {};
+        template<typename T>
+        inline constexpr bool is_streamable_v = is_streamable<T>::value;
+
 
         template<class T, class... Ts>
         std::list<std::string> convert_to_string_list(const T &first, const Ts &...rest) {
@@ -70,7 +77,7 @@ namespace h5pp {
                 result.emplace_back(first);
             else if constexpr(std::is_arithmetic_v<T>)
                 result.emplace_back(std::to_string(first));
-            else if constexpr(h5pp::type::sfinae::is_streamable_v<T>) {
+            else if constexpr(is_streamable_v<T>) {
                 std::stringstream sstr;
                 sstr << std::boolalpha << first;
                 result.emplace_back(sstr.str());

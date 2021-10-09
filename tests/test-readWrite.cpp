@@ -121,11 +121,12 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
 #endif
     else {
         if(writeData != readData) {
-            if constexpr(h5pp::type::sfinae::is_streamable_v<WriteType> and h5pp::type::sfinae::is_streamable_v<ReadType>)
-                std::cerr << "Wrote: \n"
-                          << writeData << "\n"
-                          << "Read: \n"
-                          << readData << std::endl;
+            std::cerr << "Wrote: \n"
+                      << writeData << "\n"
+                      << "Read: \n"
+                      << readData << std::endl;
+//            if constexpr(h5pp::type::sfinae::is_streamable_v<WriteType> and h5pp::type::sfinae::is_streamable_v<ReadType>)
+
             throw std::runtime_error("Data mismatch: Write != Read");
         }
     }
@@ -144,8 +145,7 @@ void test_h5pp(h5pp::File &file, const WriteType *writeData, const DimsType &dim
     for(size_t i = 0; i < size; i++) {
         if(writeData[i] != readData[i]) {
             for(size_t j = 0; j < size; j++) {
-                if constexpr(h5pp::type::sfinae::is_streamable_v<WriteType> and h5pp::type::sfinae::is_streamable_v<ReadType>)
-                    std::cerr << "Wrote [" << j << "]: " << writeData[j] << " | Read [" << j << "]: " << readData[j] << std::endl;
+                std::cerr << "Wrote [" << j << "]: " << writeData[j] << " | Read [" << j << "]: " << readData[j] << std::endl;
             }
             throw std::runtime_error("Data mismatch: Write != Read");
         }
