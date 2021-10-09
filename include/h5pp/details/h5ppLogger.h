@@ -17,22 +17,22 @@ namespace h5pp::logger {
         log->set_pattern("[%n]%^[%=8l]%$ %v");
     }
 
-    inline size_t getLogLevel() {
+    inline h5pp::LogLevel getLogLevel() {
         if(log != nullptr)
-            return static_cast<size_t>(log->level());
+            return Num2Level(static_cast<int>(log->level()));
         else
-            return 2;
+            return h5pp::LogLevel::info;
     }
 
-    template<typename levelType>
-    inline bool logIf(levelType levelZeroToSix) {
-        if constexpr(std::is_integral_v<levelType>)
-            return getLogLevel() <= static_cast<size_t>(levelZeroToSix);
-        else if constexpr(std::is_same_v<levelType, spdlog::level::level_enum>)
-            return static_cast<spdlog::level::level_enum>(getLogLevel()) <= levelZeroToSix;
-        else
-            static_assert(h5pp::type::sfinae::invalid_type_v<levelType>,
-                          "Log level type must be an integral type or spdlog::level::level_enum");
+    template<typename LogLevelType>
+    inline bool logIf(LogLevelType levelZeroToSix) {
+        static_assert(type::sfinae::is_any_v<LogLevelType,
+                                             spdlog::level::level_enum,
+                                             h5pp::LogLevel> or std::is_integral_v<LogLevelType>);
+        if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or  std::is_integral_v<LogLevelType>)
+            return getLogLevel() <= levelZeroToSix;
+        else if constexpr(std::is_same_v<LogLevelType, spdlog::level::level_enum>)
+            return getLogLevel() <= static_cast<int>(levelZeroToSix);
     }
 
     template<typename LogLevelType>
