@@ -2021,6 +2021,7 @@ namespace h5pp::hdf5 {
                                       [[maybe_unused]] const std::vector<hsize_t>   &chunkOffset,
                                       [[maybe_unused]] const std::vector<std::byte> &chunkBuffer) {
         if constexpr(compile) {
+#if defined(H5PP_HAS_DIRECT_CHUNK)
             size_t chunkByte   = chunkBuffer.size();
             bool   skipDeflate = (mask & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
             bool   isOnDeflate = (filters & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
@@ -2069,6 +2070,9 @@ namespace h5pp::hdf5 {
                 herr_t erw = H5Dwrite_chunk(h5dset, h5dxpl, mask, chunkOffset.data(), chunkByte, chunkBuffer.data());
                 if(erw < 0) throw h5pp::runtime_error("Failed to write raw chunk at offset {}", chunkOffset);
             }
+#endif
+        }else {
+            static_assert(compile, "This " H5_VERS_INFO " does not support direct chunk writes");
         }
     }
 
@@ -2160,7 +2164,7 @@ namespace h5pp::hdf5 {
             }
 #endif
         } else {
-            static_assert(compile, "This " H5_VERS_INFO " does not direct chunk writes");
+            static_assert(compile, "This " H5_VERS_INFO " does not support direct chunk writes");
         }
     }
 
@@ -2293,7 +2297,7 @@ namespace h5pp::hdf5 {
             }
 #endif
         } else {
-            static_assert(compile, "This " H5_VERS_INFO " does not direct chunk writes");
+            static_assert(compile, "This " H5_VERS_INFO " does not support direct chunk writes");
         }
     }
 
