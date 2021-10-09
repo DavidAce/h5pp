@@ -41,10 +41,10 @@ namespace h5pp::util {
     [[nodiscard]] T wrapUnsigned(T num, T piv) noexcept {
         static_assert(std::is_unsigned_v<T>);
         if(num >= piv) {
-            if(num >= piv and num >= std::numeric_limits<T>::max() - piv) return piv - ~num - 1; // Rotate around the pivot
-            if(num >= piv and num >= std::numeric_limits<unsigned long long>::max() - piv) return wrapUnsigned<unsigned long long>(num, piv);
-            if(num >= piv and num >= std::numeric_limits<unsigned long>::max() - piv) return wrapUnsigned<unsigned long>(num, piv);
-            if(num >= piv and num >= std::numeric_limits<unsigned int>::max() - piv) return wrapUnsigned<unsigned int>(num, piv);
+            if(num >= std::numeric_limits<T>::max() - piv) return piv - ~num - 1; // Rotate around the pivot
+            if(num >= std::numeric_limits<unsigned long long>::max() - piv) return wrapUnsigned<unsigned long long>(num, piv);
+            if(num >= std::numeric_limits<unsigned long>::max() - piv) return wrapUnsigned<unsigned long>(num, piv);
+            if(num >= std::numeric_limits<unsigned int>::max() - piv) return wrapUnsigned<unsigned int>(num, piv);
         }
         return num;
     }
