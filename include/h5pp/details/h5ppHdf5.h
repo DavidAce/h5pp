@@ -2374,46 +2374,39 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType>
-    void writeDataset_chunkwise(const DataType            &data,
-                                h5pp::DataInfo            &dataInfo,
-                                h5pp::DsetInfo            &dsetInfo,
-                                const h5pp::PropertyLists &plists = defaultPlists) {
-        dsetInfo.assertWriteReady();
-        const auto rank = dsetInfo.dsetDims->size();
+    const void *
+        getTextPtrForH5Dwrite(const DataType &data, const hid::h5t &h5Type, std::string &tempBuf, std::vector<const char *> &vlenBuf) {
+        static_assert(not type::sfinae::is_h5pp_id<DataType>);
+        auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
+        if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
+            vlenBuf = getCharPtrVector(data);
 
-        // Define a hyperslab with the shape of the given data
-        h5pp::Hyperslab dataSlab;
-        if(dataInfo.dataSlab)
-            dataSlab = dataInfo.dataSlab.value();
-        else {
-            dataSlab.offset = std::vector<hsize_t>(rank, 0);
-            if(rank == dataInfo.dataDims->size())
-                dataSlab.extent = dataInfo.dataDims.value();
-            else {
-                dataSlab.extent = std::vector<hsize_t>(rank, 1);
-                std::copy(dataInfo.dataDims->begin(), dataInfo.dataDims->end(), dataSlab.extent->rbegin());
+            if(H5Tis_variable_str(h5Type) > 0) {
+                // When H5T_VARIABLE, H5Dwrite function expects [const char **], which is what we get from vlenBuf.data()
+                dataPtr = reinterpret_cast<const void **>(vlenBuf.data());
+            } else {
+                if(vlenBuf.size() == 1) {
+                    dataPtr = static_cast<const void *>(*vlenBuf.data());
+                } else {
+                    if constexpr(type::sfinae::has_text_v<DataType> and type::sfinae::is_iterable_v<DataType>) {
+                        // We have a fixed-size string array now. We have to copy the strings to a contiguous array.
+                        // vlenBuf already contains the pointer to each string, and bytesPerStr should be the size of each string
+                        // including null terminators
+                        size_t bytesPerStr = H5Tget_size(h5Type); // This is the fixed-size of a string, not a char! Includes null term
+                        tempBuf.resize(bytesPerStr * vlenBuf.size());
+                        for(size_t i = 0; i < vlenBuf.size(); i++) {
+                            auto offset = tempBuf.data() + static_cast<long>(i * bytesPerStr);
+                            // Construct a view of the null-terminated character string, not including the null character.
+                            auto view   = std::string_view(vlenBuf[i]); // view.size() will not include null term here!
+                            std::copy_n(std::begin(view), std::min(view.size(), bytesPerStr - 1), offset); // Do not copy null character
+                        }
+                        dataPtr = static_cast<const void *>(tempBuf.data());
+                    }
+                }
             }
         }
-        //  Define a hyperslab which selects the points in the dataset that will be written into.
-        h5pp::Hyperslab dsetSlab;
-        if(dsetInfo.dsetSlab)
-            dsetSlab = dsetInfo.dsetSlab.value();
-        else {
-            dsetSlab.offset = std::vector<hsize_t>(rank, 0);
-            dsetSlab.extent = dataSlab.extent;
-        }
-        H5Dwrite_chunkwise(data,
-                           dsetInfo.h5Dset.value(),
-                           dsetInfo.h5Type.value(),
-                           dsetInfo.h5DsetCreate.value(),
-                           plists.dsetXfer,
-                           dsetInfo.dsetDims.value(),
-                           dsetInfo.dsetChunk.value(),
-                           dsetSlab,
-                           dataSlab);
+        return dataPtr;
     }
-
-#endif
 
     template<typename DataType>
     void writeDataset(const DataType      &data,
@@ -2440,64 +2433,27 @@ namespace h5pp::hdf5 {
         herr_t retval = 0;
 
         // Get the memory address to the data buffer
-        [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
-
+        [[maybe_unused]] auto                      dataPtr = h5pp::util::getVoidPointer<const void *>(data);
+        [[maybe_unused]] std::string               tempBuf; // A buffer in case we need to make text data contiguous
+        [[maybe_unused]] std::vector<const char *> vlenBuf;
         if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
-            auto vec = getCharPtrVector(data);
-            // When H5T_VARIABLE, this function expects [const char **], which is what we get from vec.data()
-            if(H5Tis_variable_str(dsetInfo.h5Type->value()) > 0)
-                retval = H5Dwrite(dsetInfo.h5Dset.value(),
-                                  dsetInfo.h5Type.value(),
-                                  dataInfo.h5Space.value(),
-                                  dsetInfo.h5Space.value(),
-                                  plists.dsetXfer,
-                                  vec.data());
-            else {
-                if(vec.size() == 1) {
-                    retval = H5Dwrite(dsetInfo.h5Dset.value(),
-                                      dsetInfo.h5Type.value(),
-                                      dataInfo.h5Space.value(),
-                                      dsetInfo.h5Space.value(),
-                                      plists.dsetXfer,
-                                      *vec.data());
-                } else {
-                    if constexpr(type::sfinae::has_text_v<DataType> and type::sfinae::is_iterable_v<DataType>) {
-                        // We have a fixed-size string array now. We have to copy the strings to a contiguous array.
-                        // vdata already contains the pointer to each string, and bytes should be the size of the whole array
-                        // including null terminators. so
-                        std::string strContiguous;
-                        size_t      bytesPerStr = H5Tget_size(dsetInfo.h5Type.value()); // Includes null term
-                        strContiguous.resize(bytesPerStr * vec.size());
-                        for(size_t i = 0; i < vec.size(); i++) {
-                            auto start_src = strContiguous.data() + static_cast<long>(i * bytesPerStr);
-                            // Construct a view of the null-terminated character string, not including the null character.
-                            auto view      = std::string_view(vec[i]); // view.size() will not include null term here!
-                            std::copy_n(std::begin(view), std::min(view.size(), bytesPerStr - 1), start_src); // Do not copy null character
-                        }
-                        retval = H5Dwrite(dsetInfo.h5Dset.value(),
-                                          dsetInfo.h5Type.value(),
-                                          dataInfo.h5Space.value(),
-                                          dsetInfo.h5Space.value(),
-                                          plists.dsetXfer,
-                                          strContiguous.data());
-                    } else {
-                        // Assume contigous array and hope for the best
-                        retval = H5Dwrite(dsetInfo.h5Dset.value(),
-                                          dsetInfo.h5Type.value(),
-                                          dataInfo.h5Space.value(),
-                                          dsetInfo.h5Space.value(),
-                                          plists.dsetXfer,
-                                          dataPtr);
-                    }
-                }
-            }
-        } else
-            retval = H5Dwrite(dsetInfo.h5Dset.value(),
-                              dsetInfo.h5Type.value(),
-                              dataInfo.h5Space.value(),
-                              dsetInfo.h5Space.value(),
-                              plists.dsetXfer,
-                              dataPtr);
+            /* This will reseat dataPtr automatically, for the different ways that text data can be represented
+             *    tempBuf: if H5Tis_variable_str == false:
+             *             Holds a contiguous block of memory, into which we copy each fixed-length string in the given data.
+             *             dataPtr points to tempBuf.data() gives a const char *
+             *    vlenBuf: if H5Tis_variable_str == true:
+             *             Holds pointers to each const char* when data is a container of strings.
+             *             dataPtr points to vlenBuf.data() which is const char **,
+             */
+            dataPtr = getTextPtrForH5Dwrite(data, dsetInfo.h5Type.value(), tempBuf, vlenBuf);
+        }
+
+        herr_t retval = H5Dwrite(dsetInfo.h5Dset.value(),
+                                 dsetInfo.h5Type.value(),
+                                 dataInfo.h5Space.value(),
+                                 dsetInfo.h5Space.value(),
+                                 plists.dsetXfer,
+                                 dataPtr);
         if(retval < 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             throw std::runtime_error(
