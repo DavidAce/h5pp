@@ -18,9 +18,9 @@
 namespace h5pp {
 #if defined(H5_HAVE_FILTER_DEFLATE)
     #define H5PP_HAS_FILTER_DEFLATE 1
-    inline constexpr bool has_deflate = true;
+    inline constexpr bool has_filter_deflate = true;
 #else
-    inline constexpr bool has_deflate      = false;
+    inline constexpr bool has_filter_deflate = false;
 #endif
 #if defined(H5_HAVE_ZLIB_H)
     #define H5PP_HAS_ZLIB_H 1
