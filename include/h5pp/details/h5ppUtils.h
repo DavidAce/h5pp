@@ -37,11 +37,15 @@ namespace h5pp::util {
     }
 
     /*! \brief Calculates the python-style negative index. For instance, if num == -1ul and piv == 5ul, this returns 4ul */
-    template<typename T1, typename T2>
-    T1 wrapUnsigned(T1 num, T2 piv) noexcept {
-        static_assert(std::is_unsigned_v<T1>);
-        static_assert(std::is_unsigned_v<T2>);
-        if(num >= piv and num >= std::numeric_limits<T1>::max() - piv) num = piv - ~num - 1;
+    template<typename T>
+    T wrapUnsigned(T num, T piv) noexcept {
+        static_assert(std::is_unsigned_v<T>);
+        if(num >= piv) {
+            if(num >= piv and num >= std::numeric_limits<T>::max() - piv) return piv - ~num - 1; // Rotate around the pivot
+            if(num >= piv and num >= std::numeric_limits<unsigned long long>::max() - piv) wrapUnsigned<unsigned long long>(num, piv);
+            if(num >= piv and num >= std::numeric_limits<unsigned long>::max() - piv) wrapUnsigned<unsigned long>(num, piv);
+            if(num >= piv and num >= std::numeric_limits<unsigned int>::max() - piv) wrapUnsigned<unsigned int>(num, piv);
+        }
         return num;
     }
 
@@ -529,16 +533,16 @@ namespace h5pp::util {
             // for that dimension
             if(dimsMax->size() != dims.size())
                 throw h5pp::runtime_error("Could not get chunk dimensions: "
-                                                      "dims {} and max dims {} have different number of elements",
-                                                      dims,
-                                                      dimsMax.value());
+                                          "dims {} and max dims {} have different number of elements",
+                                          dims,
+                                          dimsMax.value());
             for(size_t idx = 0; idx < dims.size(); idx++) {
                 if(dimsMax.value()[idx] < dims[idx])
                     throw h5pp::runtime_error("Could not get chunk dimensions: "
-                                                          "Some elements in dims exceed max dims: "
-                                                          "dims {} | max dims {}",
-                                                          dims,
-                                                          dimsMax.value());
+                                              "Some elements in dims exceed max dims: "
+                                              "dims {} | max dims {}",
+                                              dims,
+                                              dimsMax.value());
                 if(dimsMax.value()[idx] != H5S_UNLIMITED) dims_effective[idx] = std::max(dims_effective[idx], dimsMax.value()[idx]);
             }
         }
@@ -614,8 +618,8 @@ namespace h5pp::util {
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 if(newDims.size() != DataType::NumDimensions)
                     throw h5pp::runtime_error("Failed to resize {}-dimensional Eigen tensor: Dataset has dimensions {}",
-                                                          DataType::NumDimensions,
-                                                          newDims);
+                                              DataType::NumDimensions,
+                                              newDims);
                 auto eigenDims = eigen::copy_dims<DataType::NumDimensions>(newDims);
                 h5pp::logger::log->debug("Resizing eigen tensor container {} -> {}", data.dimensions(), newDims);
                 data.resize(eigenDims);
@@ -698,10 +702,10 @@ namespace h5pp::util {
             auto it = std::find(info.fieldNames->begin(), info.fieldNames->end(), fieldName);
             if(it == info.fieldNames->end())
                 throw h5pp::runtime_error("getFieldIndices: could not find field [{}] in table [{}]: \n"
-                                                      "Available field names are \n{}",
-                                                      fieldName,
-                                                      info.tablePath.value(),
-                                                      info.fieldNames.value());
+                                          "Available field names are \n{}",
+                                          fieldName,
+                                          info.tablePath.value(),
+                                          info.fieldNames.value());
             else
                 fieldIndices.emplace_back(static_cast<size_t>(std::distance(info.fieldNames->begin(), it)));
         }
@@ -807,20 +811,20 @@ namespace h5pp::util {
             auto dataSize = util::getBytesTotal(data);
             if(dataSize < extent * recordBytes.value())
                 throw h5pp::runtime_error("Given buffer [{}] can't fit table selection {}:\n"
-                                                      " offset               : {}\n"
-                                                      " extent               : {}\n"
-                                                      " bytes per record     : {}\n"
-                                                      " bytes to read        : {}\n"
-                                                      " size of buffer       : {}\n"
-                                                      " buffer has .resize() : {}",
-                                                      type::sfinae::type_name<DataType>(),
-                                                      select,
-                                                      offset,
-                                                      extent,
-                                                      recordBytes.value(),
-                                                      extent * recordBytes.value(),
-                                                      dataSize,
-                                                      type::sfinae::has_resize_v<DataType>);
+                                          " offset               : {}\n"
+                                          " extent               : {}\n"
+                                          " bytes per record     : {}\n"
+                                          " bytes to read        : {}\n"
+                                          " size of buffer       : {}\n"
+                                          " buffer has .resize() : {}",
+                                          type::sfinae::type_name<DataType>(),
+                                          select,
+                                          offset,
+                                          extent,
+                                          recordBytes.value(),
+                                          extent * recordBytes.value(),
+                                          dataSize,
+                                          type::sfinae::has_resize_v<DataType>);
         }
         return {offset, extent};
     }
@@ -869,24 +873,24 @@ namespace h5pp::util {
             auto dataSize = util::getBytesTotal(data);
             if(dataSize < extent * fieldSizeTotal) {
                 throw h5pp::runtime_error("Given buffer [{}] can't fit table selection {}:\n"
-                                                      " offset               : {}\n"
-                                                      " extent               : {}\n"
-                                                      " field names          : {}\n"
-                                                      " field sizes          : {}\n"
-                                                      " bytes per record     : {}\n"
-                                                      " bytes to read        : {}\n"
-                                                      " size of buffer       : {}\n"
-                                                      " buffer has .resize() : {}",
-                                                      type::sfinae::type_name<DataType>(),
-                                                      select,
-                                                      offset,
-                                                      extent,
-                                                      fieldNames,
-                                                      fieldSizes,
-                                                      fieldSizeTotal,
-                                                      extent * fieldSizeTotal,
-                                                      dataSize,
-                                                      type::sfinae::has_resize_v<DataType>);
+                                          " offset               : {}\n"
+                                          " extent               : {}\n"
+                                          " field names          : {}\n"
+                                          " field sizes          : {}\n"
+                                          " bytes per record     : {}\n"
+                                          " bytes to read        : {}\n"
+                                          " size of buffer       : {}\n"
+                                          " buffer has .resize() : {}",
+                                          type::sfinae::type_name<DataType>(),
+                                          select,
+                                          offset,
+                                          extent,
+                                          fieldNames,
+                                          fieldSizes,
+                                          fieldSizeTotal,
+                                          extent * fieldSizeTotal,
+                                          dataSize,
+                                          type::sfinae::has_resize_v<DataType>);
             }
         }
         return {offset, extent};
