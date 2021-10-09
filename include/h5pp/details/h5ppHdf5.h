@@ -523,7 +523,7 @@ namespace h5pp::hdf5 {
                     // HDF5 seems to do this automatically. From the manual:
                     // "If the short string is H5T_STR_NULLTERM, it is truncated
                     // and a null terminator is appended."
-                    // Furthermore
+                    // Furthermore,
                     // "The size set for a string datatype should include space for
                     // the null-terminator character, otherwise it will not be
                     // stored on (or retrieved from) disk"
@@ -624,7 +624,7 @@ namespace h5pp::hdf5 {
         if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
         // If the link does not exist the attribute doesn't exist either
         if(not linkExists.value()) return false;
-        // Otherwise we open the link and check
+        // Otherwise, we open the link and check
         auto link = openLink<hid::h5o>(loc, linkPath, linkExists, linkAccess);
         h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}] ...", attrName, linkPath);
         bool exists = H5Aexists_by_name(link, std::string(".").c_str(), util::safe_str(attrName).c_str(), linkAccess) > 0;
@@ -1309,7 +1309,7 @@ namespace h5pp::hdf5 {
         if(dims.empty()) return;
         herr_t err;
         if(dimsMax) {
-            // Here dimsMax was given by the user and we have to do some sanity checks
+            // Here dimsMax was given by the user, and we have to do some sanity checks
             // Check that the ranks match
             if(dims.size() != dimsMax->size())
                 throw h5pp::runtime_error("Number of dimensions (rank) mismatch: dims {} | max dims {}\n"
@@ -1428,7 +1428,7 @@ namespace h5pp::hdf5 {
                                           info.dsetRank.value(),
                                           appRank);
 
-            // If we have a dataset with dimensions ijkl and we want to append along j, say, then the remaining
+            // If we have a dataset with dimensions ijkl, and we want to append along j, say, then the remaining
             // ikl should be at least as large as the corresponding dimensions on the given data.
             for(size_t idx = 0; idx < dims.size(); idx++)
                 if(idx != axis and dims[idx] > info.dsetDims.value()[idx])
@@ -1442,7 +1442,7 @@ namespace h5pp::hdf5 {
 
             // Compute the new dset dimension. Note that dataRank <= dsetRank,
             // For instance when we add a column to a matrix, the column may be an nx1 vector.
-            // Therefore we embed the data dimensions in a (possibly) higher-dimensional space
+            // Therefore, we embed the data dimensions in a (possibly) higher-dimensional space
             auto embeddedDims = std::vector<hsize_t>(static_cast<size_t>(info.dsetRank.value()), 1);
             std::copy(dims.begin(), dims.end(), embeddedDims.begin()); // In the example above, we get nx1
             auto oldAxisSize  = info.dsetDims.value()[axis];           // Will need this later when drawing the hyperspace
@@ -1697,7 +1697,7 @@ namespace h5pp::hdf5 {
     inline void assertSpacesEqual(const hid::h5s &dataSpace, const hid::h5s &dsetSpace, const hid::h5t &h5Type) {
         if(H5Tis_variable_str(h5Type) or H5Tget_class(h5Type) == H5T_STRING) {
             // Strings are a special case, e.g. we can write multiple string elements into just one.
-            // Also space is allocated on the fly during read by HDF5.. so size comparisons are useless here.
+            // Also space is allocated on the fly during read by HDF5. so size comparisons are useless here.
             return;
         }
         //        if(h5_layout == H5D_CHUNKED) return; // Chunked layouts are allowed to differ
@@ -2193,7 +2193,7 @@ namespace h5pp::hdf5 {
 
             // Compute the total number of chunks currently in the dataset
             hsize_t chunkCount = 0;                    // The total number of chunks currently in the dataset
-            hid_t   h5space    = H5Dget_space(h5dset); // Must be created because H5Dget_num_chunks cant take H5S_SPACE_ALL yet
+            hid_t   h5space    = H5Dget_space(h5dset); // Must be created because H5Dget_num_chunks can't take H5S_SPACE_ALL yet
             herr_t  ers        = H5Sselect_all(h5space);
             if(ers < 0) throw h5pp::runtime_error("writeDataset_chunkwise: failed to select all elements in space");
             herr_t ern = H5Dget_num_chunks(h5dset, h5space, &chunkCount);
@@ -2265,9 +2265,9 @@ namespace h5pp::hdf5 {
 
                 // Step 4 Copy the part of the given data that overlaps with this chunk
                 for(size_t i = 0; i < olapSize; i++) {
-                    // i is the linear index of the overlap slab.
+                    // 'i' is the linear index of the overlap slab.
                     h5pp::util::ind2sub(olapSlab.extent.value(), i, olapCoord);
-                    // olapCoord are the coordinates in the overlap basis
+                    // olapCoord are the coordinates in the overlap basis,
                     // but we need them in chunk basis, so we transform.
                     // First to the dataset basis, and then to chunk basis
                     for(size_t j = 0; j < rank; j++) {
@@ -2500,7 +2500,7 @@ namespace h5pp::hdf5 {
                                  dsetInfo.h5Space.value(),
                                  plists.dsetXfer,
                                  vdata.data());
-                // Now vdata contains the whole dataset and we need to put the data into the user-given container.
+                // Now vdata contains the whole dataset, and we need to put the data into the user-given container.
                 if constexpr(std::is_same_v<DataType, std::string>) {
                     // A vector of strings (vdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
@@ -2531,7 +2531,7 @@ namespace h5pp::hdf5 {
                                  dsetInfo.h5Space.value(),
                                  plists.dsetXfer,
                                  fdata.data());
-                // Now fdata contains the whole dataset and we need to put the data into the user-given container.
+                // Now fdata contains the whole dataset, and we need to put the data into the user-given container.
                 if constexpr(std::is_same_v<DataType, std::string>) {
                     // A vector of strings (fdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
@@ -2642,7 +2642,7 @@ namespace h5pp::hdf5 {
                 std::vector<char *> vdata(static_cast<size_t>(size)); // Allocate pointers for "size" number of strings
                 // HDF5 allocates space for each string
                 retval = H5Aread(attrInfo.h5Attr.value(), attrInfo.h5Type.value(), vdata.data());
-                // Now vdata contains the whole dataset and we need to put the data into the user-given container.
+                // Now vdata contains the whole dataset, and we need to put the data into the user-given container.
                 if constexpr(std::is_same_v<DataType, std::string>) {
                     // A vector of strings (vdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
@@ -2668,7 +2668,7 @@ namespace h5pp::hdf5 {
                 std::string fdata;
                 fdata.resize(static_cast<size_t>(size) * bytesPerString);
                 retval = H5Aread(attrInfo.h5Attr.value(), attrInfo.h5Type.value(), fdata.data());
-                // Now fdata contains the whole dataset and we need to put the data into the user-given container.
+                // Now fdata contains the whole dataset, and we need to put the data into the user-given container.
                 if constexpr(std::is_same_v<DataType, std::string>) {
                     // A vector of strings (fdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
@@ -3393,7 +3393,7 @@ namespace h5pp::hdf5 {
             hid::h5f tgtFile = hidTgt;
 
             // Copy all the groups in the file root recursively. Note that H5Ocopy does this recursively, so we don't need
-            // to iterate links recursively here. Therefore maxDepth = 0
+            // to iterate links recursively here. Therefore, maxDepth = 0
             long maxDepth = 0;
             for(const auto &link : getContentsOfLink<H5O_TYPE_UNKNOWN>(srcFile, "/", maxDepth, plists.linkAccess)) {
                 if(link == ".") continue;

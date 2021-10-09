@@ -17,12 +17,12 @@ namespace h5pp::util {
         //      "This is \0 a string with\0 embedded null characters\0"
         // becomes
         //      "This is a string with embedded null characters\0"
-        // This happens sometimes for instance when concatenating strings that are "non-standard", i.e.
+        // This sometimes happens for instance when concatenating strings that are "non-standard", i.e.
         // strings where .size() returns the "number of characters + 1", where "+1" accounts for '\0'.
         // This can easily happen by accident when mixing C-style arrays and std::string.
         // Since std::string supports embedded null characters '\0' this is normally not a problem.
         // However, when interfacing with the C-API of HDF5, all C-style strings are terminated
-        // at the first occurence of '\0'. Therefore we have to make sure that there are no embedded '\0'
+        // at the first occurence of '\0'. Therefore, we have to make sure that there are no embedded '\0'
         // characters in the strings that we pass to the HDF5 C-API.
         // Note that this function leaves alone any null terminator that is technically in the buffer
         // but outside of .size() (where it is allowed to be!)
@@ -347,7 +347,7 @@ namespace h5pp::util {
             // Conversely, if the dataset is not H5D_CHUNKED, then dims == max dims must hold always
 
             if(dimsMax) {
-                // Here dimsMax was given by the user and we have to do some sanity checks
+                // Here dimsMax was given by the user, and we have to do some sanity checks
                 // Check that the ranks match
                 if(dimsMax and dimsMax->size() != dims.size())
                     throw h5pp::runtime_error("Number of dimensions (rank) mismatch: dims {} | max dims {}\n"
@@ -364,7 +364,7 @@ namespace h5pp::util {
 
                 if(dimsMax.value() != dims) {
                     // Only H5D_CHUNKED layout can have since dimsMax != dims.
-                    // Therefore give an informative error if not H5D_CHUNKED
+                    // Therefore, give an informative error if not H5D_CHUNKED
                     if(h5Layout == H5D_COMPACT)
                         throw h5pp::runtime_error("Dimension mismatch: dims {} != max dims {}. Equality is required for H5D_COMPACT layout",
                                                   dims,
@@ -390,9 +390,9 @@ namespace h5pp::util {
     /*
      * memspace is a description of the buffer in memory (i.e. where read elements will go).
      * If there is no data conversion, then data is read directly into the user supplied buffer.
-     * If there is data conversion, HDF5 uses a 1MB buffer to do the conversions,
+     * If there is data conversion, HDF5 uses a 1 MB buffer to do the conversions,
      * but we still use the user's buffer for reading data in the first place.
-     * Also, you can adjust the 1MB default conversion buffer size. (see H5Pset_buffer)
+     * Also, you can adjust the 1 MB default conversion buffer size. (see H5Pset_buffer)
      */
     [[nodiscard]] inline hid::h5s getMemSpace(const hsize_t size, const std::vector<hsize_t> &dims) {
         if(dims.empty() and size > 0)
@@ -482,7 +482,7 @@ namespace h5pp::util {
             will always be allocated for a dataset. However, the object header is 64 KB in size,
             so this layout can only be used for very small datasets.
          */
-        // Otherwise we decide based on size
+        // Otherwise, we decide based on size
         if(totalBytes < h5pp::constants::maxSizeCompact)
             return H5D_COMPACT;
         else if(totalBytes < h5pp::constants::maxSizeContiguous)
@@ -514,7 +514,7 @@ namespace h5pp::util {
                                                                   std::optional<std::vector<hsize_t>> dimsMax,
                                                                   std::optional<H5D_layout_t>         layout) {
         // Here we make a naive guess for chunk dimensions
-        // We try to make a square in N dimensions with a target byte size of 10kb - 1MB.
+        // We try to make a square in N dimensions with a target byte size of 10 kb - 1 MB.
         // Here is a great read for chunking considerations https://www.oreilly.com/library/view/python-and-hdf5/9781491944981/ch04.html
         // Hard rules for chunk dimensions:
         //  * A chunk dimension cannot be larger than the corresponding max dimension

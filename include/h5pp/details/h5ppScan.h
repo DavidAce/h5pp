@@ -637,7 +637,7 @@ namespace h5pp::scan {
         if(not info.h5Type) info.h5Type = H5Dget_type(info.h5Dset.value());
         if(not info.numRecords) {
             // We could use H5TBget_table_info here but internally that would create a temporary
-            // dataset id and type id, but we already have them so we can use these directly instead
+            // dataset id and type id, but we already have them, so we can use these directly instead
             auto dims = h5pp::hdf5::getDimensions(info.h5Dset.value());
             if(dims.size() != 1) throw h5pp::logic_error("Tables can only have rank 1");
             info.numRecords = dims[0];

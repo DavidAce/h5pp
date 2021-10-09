@@ -1,19 +1,4 @@
-#include <complex>
 #include <h5pp/h5pp.h>
-#include <iostream>
-
-/*! \brief Prints the content of a vector nicely */
-template<typename T>
-std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
-    if(!v.empty()) {
-        out << "[ ";
-        std::copy(v.begin(), v.end(), std::ostream_iterator<T>(out, " "));
-        out << "]";
-    }
-    return out;
-}
-
-using namespace std::complex_literals;
 
 // Store some dummy data to an hdf5 file
 

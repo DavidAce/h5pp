@@ -36,7 +36,7 @@ namespace h5pp {
         operator std::vector<size_t> &() { return data; }
         operator const std::vector<size_t> &() const { return data; }
 
-        auto empty() const { return data.empty(); }
+        [[nodiscard]] auto empty() const { return data.empty(); }
     };
 
     struct Names {
@@ -68,7 +68,7 @@ namespace h5pp {
 
              operator std::vector<std::string> &() { return data; }
              operator const std::vector<std::string> &() const { return data; }
-        auto empty() const { return data.empty(); }
+        [[nodiscard]] auto empty() const { return data.empty(); }
     };
 
     struct NamesOrIndices {

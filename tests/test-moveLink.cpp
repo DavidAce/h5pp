@@ -1,5 +1,4 @@
 #include <h5pp/h5pp.h>
-#include <iostream>
 
 // Store some dummy data to an hdf5 file
 
