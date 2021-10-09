@@ -98,8 +98,8 @@ namespace h5pp {
         std::optional<h5pp::ResizePolicy> resizePolicy    = std::nullopt; /*!< Type of resizing if needed. Choose GROW, TO_FIT,OFF */
         /* clang-format on */
         [[nodiscard]] std::string string(bool enable = true) const {
+            if(not enable) return {};
             std::string msg;
-            if(not enable) return msg;
             /* clang-format off */
             if(dataDims) msg.append(h5pp::format(" | data dims {}", dataDims.value()));
             if(dsetMaxDims) msg.append(h5pp::format(" | max dims {}", dsetMaxDims.value()));
@@ -191,8 +191,8 @@ namespace h5pp {
                 throw std::runtime_error(h5pp::format("Data size mismatch: dataSize [{}] | size check [{}]", dataSize.value(), size_check));
         }
         [[nodiscard]] std::string string(bool enable = true) const {
+            if(not enable) return {};
             std::string msg;
-            if(not enable) return msg;
             /* clang-format off */
             if(dataSize) msg.append(h5pp::format(" | size {}", dataSize.value()));
             if(dataByte) msg.append(h5pp::format(" | bytes {}", dataByte.value()));
@@ -332,9 +332,8 @@ namespace h5pp {
             /* clang-format on */
         }
         [[nodiscard]] std::string string(bool enable = true) const {
+            if(not enable) return {};
             std::string msg;
-            if(not enable) return msg;
-
             /* clang-format off */
             if(dsetSize)    msg.append(h5pp::format(" | size {}", dsetSize.value()));
             if(dsetByte)    msg.append(h5pp::format(" | bytes {}", dsetByte.value()));
@@ -475,8 +474,8 @@ namespace h5pp {
         }
 
         [[nodiscard]] std::string string(bool enable = true) const {
+            if(not enable) return {};
             std::string msg;
-            if(not enable) return msg;
             /* clang-format off */
             if(attrSize) msg.append(h5pp::format(" | size {}", attrSize.value()));
             if(attrByte) msg.append(h5pp::format(" | bytes {}", attrByte.value()));
@@ -580,8 +579,8 @@ namespace h5pp {
         }
 
         [[nodiscard]] std::string string(bool enable = true) const {
+            if(not enable) return {};
             std::string msg;
-            if(not enable) return msg;
             if(tableTitle) msg.append(h5pp::format("Table title [{}]", tableTitle.value()));
             if(numFields)  msg.append(h5pp::format(" | num fields [{}]", numFields.value()));
             if(numRecords) msg.append(h5pp::format(" | num records [{}]", numRecords.value()));
@@ -608,8 +607,8 @@ namespace h5pp {
         std::optional<hid::h5o>             h5Link;
 
         [[nodiscard]] std::string string(bool enable = true) const {
+            if(not enable) return {};
             std::string msg;
-            if(not enable) return msg;
             if(cppTypeName) msg.append(h5pp::format("C++: type [{}]", cppTypeName.value()));
             if(cppTypeBytes) msg.append(h5pp::format(" bytes [{}]", cppTypeBytes.value()));
             if(not msg.empty()) msg.append(" | HDF5:");
@@ -637,8 +636,8 @@ namespace h5pp {
         std::optional<time_t>         btime      = std::nullopt; /*!< Birth time                                    */
         std::optional<hsize_t>        num_attrs  = std::nullopt; /*!< Number of attributes attached to object       */
         [[nodiscard]] std::string     string(bool enable = true) const {
+            if(not enable) return {};
             std::string msg;
-            if(not enable) return msg;
             /* clang-format off */
             if(refCount)  msg.append(h5pp::format(" | refCount {}", refCount.value()));
             if(h5HdrByte) msg.append(h5pp::format(" | header bytes {}", h5HdrByte.value()));

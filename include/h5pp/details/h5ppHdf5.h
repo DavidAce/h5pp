@@ -1747,8 +1747,8 @@ namespace h5pp::hdf5 {
     }
 
     inline std::string getSpaceString(const hid::h5s &space, bool enable = true) {
+        if(not enable) return {};
         std::string msg;
-        if(not enable) return msg;
         msg.append(h5pp::format(" | size {}", H5Sget_simple_extent_npoints(space)));
         int                  rank = H5Sget_simple_extent_ndims(space);
         std::vector<hsize_t> dims(static_cast<size_t>(rank), 0);
