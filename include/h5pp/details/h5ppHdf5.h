@@ -2941,13 +2941,14 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType>
-    inline void writeTableRecords(const DataType &data, TableInfo &info, size_t offset = 0, std::optional<size_t> extent = std::nullopt) {
+    inline void writeTableRecords(const DataType &data, TableInfo &info, hsize_t offset = 0, std::optional<hsize_t> extent = std::nullopt) {
         /*
          *  This function replaces H5TBwrite_records() and avoids creating expensive temporaries for the dataset id and type id for the
          * compound table type. In addition, it has the ability to extend the existing the dataset if the incoming data larger than the
          * current bound
          */
         info.assertWriteReady();
+        offset = util::wrapUnsigned(offset, info.numRecords.value()); // Allows python style negative indexing
 
         if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
             if(not extent) extent = data.size() / info.recordBytes.value();
