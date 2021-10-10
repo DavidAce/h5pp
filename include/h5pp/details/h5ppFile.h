@@ -1080,11 +1080,22 @@ namespace h5pp {
 
         template<typename DataType>
         TableInfo appendTableRecords(const DataType &data, std::string_view tablePath, std::optional<hsize_t> extent = std::nullopt) {
+            static_assert(not type::sfinae::is_h5pp_id<DataType>);
             if(permission == h5pp::FilePermission::READONLY)
                 throw h5pp::runtime_error("Attempted to write on read-only file [{}]", filePath.string());
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath);
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
+            info.assertWriteReady(); // Check to avoid bad access on numRecords below, in case of error.
+            h5pp::hdf5::writeTableRecords(data, info, info.numRecords.value(), extent);
+            return info;
+        }
+
+        template<typename DataType>
+        TableInfo appendTableRecords(const DataType &data, TableInfo & info, std::optional<hsize_t> extent = std::nullopt) {
+            static_assert(not type::sfinae::is_h5pp_id<DataType>);
+            if(permission == h5pp::FilePermission::READONLY)
+                throw h5pp::runtime_error("Attempted to write on read-only file [{}]", filePath.string());
             info.assertWriteReady(); // Check to avoid bad access on numRecords below, in case of error.
             h5pp::hdf5::writeTableRecords(data, info, info.numRecords.value(), extent);
             return info;
