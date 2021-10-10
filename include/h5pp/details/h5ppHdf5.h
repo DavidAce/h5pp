@@ -16,29 +16,35 @@
 #include <typeindex>
 #include <utility>
 
-namespace h5pp {
 #if defined(H5_HAVE_FILTER_DEFLATE)
     #define H5PP_HAS_FILTER_DEFLATE 1
-    inline constexpr bool has_filter_deflate = true;
 #else
-    inline constexpr bool has_filter_deflate = false;
+    #define H5PP_HAS_FILTER_DEFLATE 0
 #endif
+
 #if defined(H5_HAVE_ZLIB_H)
     #define H5PP_HAS_ZLIB_H 1
-    inline constexpr bool has_zlib_h = true;
     #include <zlib.h>
 #else
-    inline constexpr bool has_zlib_h         = false;
+    #define H5PP_HAS_ZLIB_H 0
 #endif
 
 #if H5_VERSION_GE(1, 10, 5)
     #define H5PP_HAS_DIRECT_CHUNK 1
-    inline bool           use_direct_chunk = true;
-    inline constexpr bool has_direct_chunk = true;
+#else
+    #define H5PP_HAS_DIRECT_CHUNK 0
+#endif
+
+namespace h5pp{
+    inline constexpr bool has_filter_deflate = H5PP_HAS_FILTER_DEFLATE;
+    inline constexpr bool has_zlib_h = H5PP_HAS_ZLIB_H;
+    inline constexpr bool has_direct_chunk = H5PP_HAS_DIRECT_CHUNK;
+#if H5PP_HAS_DIRECT_CHUNK
+    inline bool           use_direct_chunk = false;
 #else
     inline constexpr bool use_direct_chunk   = false;
-    inline constexpr bool has_direct_chunk   = false;
 #endif
+
 }
 
 /*!

@@ -4,6 +4,7 @@
 #include "h5ppType.h"
 #include "h5ppTypeCompound.h"
 #include "h5ppTypeSfinae.h"
+#include "h5ppInfo.h"
 #include <cstring>
 #include <numeric>
 
