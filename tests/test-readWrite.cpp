@@ -165,7 +165,7 @@ int main() {
     std::string outputFilename = "output/readWrite.h5";
     size_t      logLevel       = 2;
     h5pp::File  file(outputFilename, H5F_ACC_TRUNC | H5F_ACC_RDWR, logLevel);
-
+    file.setLogLevel(0);
     // Generate dummy data
     std::vector<int>    emptyVector;
     std::string         stringDummy = "Dummy string with spaces";
