@@ -41,7 +41,8 @@ namespace h5pp {
 
         void init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
-            h5pp::logger::log->debug("Initializing HDF5 file: [{}]", filePath.string());
+            h5pp::logger::log->debug("Accessing file: [{}]", filePath.string());
+
             /* Set default error print output */
             error_stack                          = H5Eget_current_stack();
             herr_t turnOffAutomaticErrorPrinting = H5Eset_auto2(error_stack, nullptr, nullptr);
@@ -49,7 +50,6 @@ namespace h5pp {
 
             // The following function can modify the resulting filePath depending on permission.
             filePath = h5pp::hdf5::createFile(filePath, permission, plists);
-            h5pp::logger::log->debug("Successfully initialized file [{}]", filePath.string());
         }
 
         public:
