@@ -42,7 +42,7 @@ namespace h5pp::util {
     [[nodiscard]] T wrapUnsigned(T num, T piv) noexcept {
         static_assert(std::is_unsigned_v<T>);
         if(num >= piv) {
-            if(piv == std::numeric_limits<T>::min()) return ~num; // Gives (-1,0) --> 0 and (-2,0) --> 1 and so on
+            if(num == std::numeric_limits<T>::max() and piv == std::numeric_limits<T>::min()) return ~num; // The last element would be 0 if piv == 0
             if(num >= std::numeric_limits<T>::max() - piv) return piv - ~num - 1; // Rotate around the pivot
             if(num >= std::numeric_limits<unsigned long long>::max() - piv) return wrapUnsigned<unsigned long long>(num, piv);
             if(num >= std::numeric_limits<unsigned long>::max() - piv) return wrapUnsigned<unsigned long>(num, piv);
@@ -50,6 +50,7 @@ namespace h5pp::util {
         }
         return num;
     }
+
 
     template<typename PtrType, typename DataType>
     [[nodiscard]] inline PtrType getVoidPointer(DataType &data, size_t offset = 0) noexcept {
