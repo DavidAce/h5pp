@@ -35,14 +35,14 @@
     #define H5PP_HAS_DIRECT_CHUNK 0
 #endif
 
-namespace h5pp{
+namespace h5pp {
     inline constexpr bool has_filter_deflate = H5PP_HAS_FILTER_DEFLATE;
-    inline constexpr bool has_zlib_h = H5PP_HAS_ZLIB_H;
-    inline constexpr bool has_direct_chunk = H5PP_HAS_DIRECT_CHUNK;
+    inline constexpr bool has_zlib_h         = H5PP_HAS_ZLIB_H;
+    inline constexpr bool has_direct_chunk   = H5PP_HAS_DIRECT_CHUNK;
 #if H5PP_HAS_DIRECT_CHUNK
-    inline bool           use_direct_chunk = false;
+    inline bool use_direct_chunk = false;
 #else
-    inline constexpr bool use_direct_chunk   = false;
+    inline constexpr bool use_direct_chunk = false;
 #endif
 
 }
@@ -1893,12 +1893,12 @@ namespace h5pp::hdf5 {
                                     linkAccess);
 #else
             return H5Ovisit_by_name(loc,
-                                      util::safe_str(root).c_str(),
-                                      H5_INDEX_NAME,
-                                      H5_ITER_NATIVE,
-                                      internal::matcher<ObjType>,
-                                      &matchList,
-                                      linkAccess);
+                                    util::safe_str(root).c_str(),
+                                    H5_INDEX_NAME,
+                                    H5_ITER_NATIVE,
+                                    internal::matcher<ObjType>,
+                                    &matchList,
+                                    linkAccess);
 #endif
         }
 
@@ -2040,7 +2040,7 @@ namespace h5pp::hdf5 {
                 }
             }
 
-#if defined(H5PP_HAS_FILTER_DEFLATE) && defined(H5PP_HAS_ZLIB_H)
+    #if defined(H5PP_HAS_FILTER_DEFLATE) && defined(H5PP_HAS_ZLIB_H)
             if(deflate >= 0 and isOnDeflate and not skipDeflate) {
                 auto deflate_size_adjust = [](auto &s) { // This is in the documentation, but I have no idea why it's needed
                     return std::ceil(static_cast<double>(s) * 1.001) + 12;
@@ -2070,14 +2070,14 @@ namespace h5pp::hdf5 {
                 herr_t erw = H5Dwrite_chunk(h5dset, h5dxpl, mask, chunkOffset.data(), z_dst_nbytes, z_dst);
                 if(erw < 0) throw h5pp::runtime_error("Failed to write compressed chunk at offset {}", chunkOffset);
             } else
-#endif
+    #endif
             {
                 /* Write the raw chunk data */
                 herr_t erw = H5Dwrite_chunk(h5dset, h5dxpl, mask, chunkOffset.data(), chunkByte, chunkBuffer.data());
                 if(erw < 0) throw h5pp::runtime_error("Failed to write raw chunk at offset {}", chunkOffset);
             }
 #endif
-        }else {
+        } else {
             static_assert(compile, "This " H5_VERS_INFO " does not support direct chunk writes");
         }
     }
@@ -2955,7 +2955,6 @@ namespace h5pp::hdf5 {
          */
         info.assertWriteReady();
         offset = util::wrapUnsigned(offset, info.numRecords.value()); // Allows python style negative indexing
-
         if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
             if(not extent) extent = data.size() / info.recordBytes.value();
         } else {
@@ -2973,14 +2972,16 @@ namespace h5pp::hdf5 {
             size_t bufferRecords = data.size() / info.recordBytes.value();
             if(bufferRecords != extent.value())
                 throw h5pp::runtime_error("writeTableRecords: Buffer size mismatch:\n"
-                                          "Buffer type [{}]\n"
-                                          "Buffer size [{}]\n"
-                                          "Record size {} bytes/record\n"
-                                          "Buffer has {} records\n"
-                                          "Extent has {} records",
+                                          "    table         : [{}]\n"
+                                          "    table record  : {} bytes\n"
+                                          "    buffer type   : {}\n"
+                                          "    buffer size   : {}\n"
+                                          "    buffer has    : {} records\n"
+                                          "    write extent  : {} records",
+                                          info.tablePath.value(),
+                                          info.recordBytes.value(),
                                           type::sfinae::type_name<DataType>(),
                                           data.size(),
-                                          info.recordBytes.value(),
                                           bufferRecords,
                                           extent.value());
 
@@ -3018,7 +3019,9 @@ namespace h5pp::hdf5 {
         h5pp::Hyperslab dataSlab;
         dataSlab.offset = {0};
         dataSlab.extent = {numRecordsWrt};
-
+        herr_t   retval = 0;
+        hid::h5s dsetSpace;
+        hid::h5s dataSpace;
         if constexpr(has_direct_chunk) {
             if(use_direct_chunk) {
                 /* Step 3: write the records */
@@ -3033,37 +3036,60 @@ namespace h5pp::hdf5 {
                                    dataSlab);
             } else {
                 /* Step 2: Get the dataset and memory spaces */
-                hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
-                hid::h5s dataSpace = H5Screate_simple(static_cast<int>(dataSlab.extent->size()),
-                                                      dataSlab.extent->data(),
-                                                      nullptr); /* create a simple memory data space */
+                dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
+                dataSpace = H5Screate_simple(static_cast<int>(dataSlab.extent->size()),
+                                             dataSlab.extent->data(),
+                                             nullptr); /* create a simple memory data space */
                 //
                 /* Step 3: Select the region in the dataset space*/
                 H5Sselect_hyperslab(dsetSpace, H5S_SELECT_SET, dsetSlab.offset->data(), nullptr, dsetSlab.extent->data(), nullptr);
 
                 /* Step 4: write the records */
                 // Get the memory address to the data buffer
-                auto   dataPtr = h5pp::util::getVoidPointer<const void *>(data);
-                herr_t retval  = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
-                if(retval < 0) throw h5pp::runtime_error("Failed to append data to table [{}]", info.tablePath.value());
+                auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
+                retval       = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
             }
 
         } else {
             /* Step 2: Get the dataset and memory spaces */
-            hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
-            hid::h5s dataSpace = H5Screate_simple(static_cast<int>(dataSlab.extent->size()),
-                                                  dataSlab.extent->data(),
-                                                  nullptr); /* create a simple memory data space */
+            dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
+            dataSpace = H5Screate_simple(static_cast<int>(dataSlab.extent->size()),
+                                         dataSlab.extent->data(),
+                                         nullptr); /* create a simple memory data space */
             //
             /* Step 3: Select the region in the dataset space*/
             H5Sselect_hyperslab(dsetSpace, H5S_SELECT_SET, dsetSlab.offset->data(), nullptr, dsetSlab.extent->data(), nullptr);
 
             /* Step 4: write the records */
             // Get the memory address to the data buffer
-            auto   dataPtr = h5pp::util::getVoidPointer<const void *>(data);
-            herr_t retval  = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
-            if(retval < 0) throw h5pp::runtime_error("Failed to append data to table [{}]", info.tablePath.value());
+            auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
+            retval       = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         }
+
+        if(retval < 0)
+            throw h5pp::runtime_error("writeTableRecords : Failed to write data to table\n"
+                                      "    table         : [{}]\n"
+                                      "    table size    : {} records (write would add {})\n"
+                                      "    table record  : {} bytes\n"
+                                      "    buffer type   : {}\n"
+                                      "    buffer size   : {}\n"
+                                      "    buffer items  : {} bytes per [{}]\n"
+                                      "    write offset  : {}\n"
+                                      "    write extent  : {}\n"
+                                      "    dataspace     {}\n"
+                                      "    dsetspace     {}",
+                                      info.tablePath.value(),
+                                      numRecordsOld,numRecordsNew-numRecordsOld,
+                                      info.recordBytes.value(),
+                                      type::sfinae::type_name<DataType>(),
+                                      util::getSize(data),
+                                      util::getBytesPerElem<DataType>(),
+                                      type::sfinae::value_type_name<DataType>(),
+                                      offset,
+                                      extent.value(),
+                                      Hyperslab(dataSpace).string(),
+                                      Hyperslab(dsetSpace).string()
+                                      );
     }
 
     inline void copyTableRecords(const h5pp::TableInfo &srcInfo,
