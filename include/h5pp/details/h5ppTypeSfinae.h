@@ -18,27 +18,6 @@ namespace h5pp::type::sfinae {
     template<typename...>
     struct print_type_and_exit_compile_time;
 
-    template<typename T>
-    constexpr auto type_name() {
-        std::string_view name, prefix, suffix;
-#ifdef __clang__
-        name   = __PRETTY_FUNCTION__;
-        prefix = "auto h5pp::type::sfinae::type_name() [T = ";
-        suffix = "]";
-#elif defined(__GNUC__)
-        name   = __PRETTY_FUNCTION__;
-        prefix = "constexpr auto h5pp::type::sfinae::type_name() [with T = ";
-        suffix = "]";
-#elif defined(_MSC_VER)
-        name   = __FUNCSIG__;
-        prefix = "auto __cdecl h5pp::type::sfinae::type_name<";
-        suffix = ">(void)";
-#endif
-        name.remove_prefix(prefix.size());
-        name.remove_suffix(suffix.size());
-        return name;
-    }
-
     // helper constant for static asserts
     template<class>
     inline constexpr bool always_false_v = false;
@@ -422,6 +401,37 @@ namespace h5pp::type::sfinae {
             return std::is_same<decltype(T1::x), T2>::value;
         else
             return false;
+    }
+
+    template<typename T>
+    constexpr auto type_name() {
+        std::string_view name, prefix, suffix;
+#ifdef __clang__
+        name   = __PRETTY_FUNCTION__;
+        prefix = "auto h5pp::type::sfinae::type_name() [T = ";
+        suffix = "]";
+#elif defined(__GNUC__)
+        name   = __PRETTY_FUNCTION__;
+        prefix = "constexpr auto h5pp::type::sfinae::type_name() [with T = ";
+        suffix = "]";
+#elif defined(_MSC_VER)
+        name   = __FUNCSIG__;
+        prefix = "auto __cdecl h5pp::type::sfinae::type_name<";
+        suffix = ">(void)";
+#endif
+        name.remove_prefix(prefix.size());
+        name.remove_suffix(suffix.size());
+        return name;
+    }
+
+    template<typename T>
+    constexpr auto value_type_name() {
+        if constexpr(has_value_type_v<T>)
+            return type_name<typename T::value_type>();
+        else if constexpr(has_Scalar_v<T>)
+            return type_name<typename T::Scalar>();
+        else
+            return type_name<T>();
     }
 
 #ifdef H5PP_EIGEN3
