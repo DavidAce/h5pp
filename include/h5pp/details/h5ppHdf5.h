@@ -1011,7 +1011,7 @@ namespace h5pp::hdf5 {
     inline void createGroup(const h5x           &loc,
                             std::string_view     groupName,
                             std::optional<bool>  linkExists = std::nullopt,
-                            const PropertyLists &plists     = defaultPlists) {
+                            const PropertyLists &plists     = PropertyLists()) {
         static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::createGroup(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -1031,7 +1031,7 @@ namespace h5pp::hdf5 {
     inline void createSoftLink(std::string_view     targetLinkPath,
                                const h5x           &loc,
                                std::string_view     softLinkPath,
-                               const PropertyLists &plists = defaultPlists) {
+                               const PropertyLists &plists = PropertyLists()) {
         static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::createSoftLink(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -1054,7 +1054,7 @@ namespace h5pp::hdf5 {
                                std::string_view     targetLinkPath,
                                const h5x           &hardLinkLoc,
                                std::string_view     hardLinkPath,
-                               const PropertyLists &plists = defaultPlists) {
+                               const PropertyLists &plists = PropertyLists()) {
         static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::createHardLink(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -1077,7 +1077,7 @@ namespace h5pp::hdf5 {
                             std::string_view     targetLinkPath,
                             const h5x           &loc,
                             std::string_view     softLinkPath,
-                            const PropertyLists &plists = defaultPlists) {
+                            const PropertyLists &plists = PropertyLists()) {
         static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::createExternalLink(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -1949,7 +1949,7 @@ namespace h5pp::hdf5 {
         return contents;
     }
 
-    inline void createDataset(h5pp::DsetInfo &dsetInfo, const PropertyLists &plists = defaultPlists) {
+    inline void createDataset(h5pp::DsetInfo &dsetInfo, const PropertyLists &plists = PropertyLists()) {
         // Here we create, the dataset id and set its properties before writing data to it.
         dsetInfo.assertCreateReady();
         if(dsetInfo.dsetExists and dsetInfo.dsetExists.value()) {
@@ -2346,7 +2346,7 @@ namespace h5pp::hdf5 {
     void writeDataset(const DataType      &data,
                       const DataInfo      &dataInfo,
                       const DsetInfo      &dsetInfo,
-                      const PropertyLists &plists = defaultPlists) {
+                      const PropertyLists &plists = PropertyLists()) {
         static_assert(not type::sfinae::is_h5pp_id<DataType>);
 #ifdef H5PP_EIGEN3
         if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
@@ -2395,7 +2395,7 @@ namespace h5pp::hdf5 {
     void writeDataset_chunkwise([[maybe_unused]] const DataType            &data,
                                 [[maybe_unused]] h5pp::DataInfo            &dataInfo,
                                 [[maybe_unused]] h5pp::DsetInfo            &dsetInfo,
-                                [[maybe_unused]] const h5pp::PropertyLists &plists = defaultPlists) {
+                                [[maybe_unused]] const h5pp::PropertyLists &plists = PropertyLists()) {
         if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
             h5pp::logger::log->warn("writeDataset_chunkwise: text data is not supported, defaulting to normal writeDataset");
             writeDataset(data, dataInfo, dsetInfo, plists);
@@ -2460,7 +2460,7 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType>
-    void readDataset(DataType &data, const DataInfo &dataInfo, const DsetInfo &dsetInfo, const PropertyLists &plists = defaultPlists) {
+    void readDataset(DataType &data, const DataInfo &dataInfo, const DsetInfo &dsetInfo, const PropertyLists &plists = PropertyLists()) {
         static_assert(not std::is_const_v<DataType>);
         static_assert(not type::sfinae::is_h5pp_id<DataType>);
         // Transpose the data container before reading
@@ -2742,7 +2742,7 @@ namespace h5pp::hdf5 {
     }
 
     [[nodiscard]] inline fs::path
-        createFile(const h5pp::fs::path &filePath_, const h5pp::FilePermission &permission, const PropertyLists &plists = defaultPlists) {
+        createFile(const h5pp::fs::path &filePath_, const h5pp::FilePermission &permission, const PropertyLists &plists = PropertyLists()) {
         fs::path filePath = fs::absolute(filePath_);
         fs::path fileName = filePath_.filename();
         if(fs::exists(filePath)) {
@@ -2798,7 +2798,7 @@ namespace h5pp::hdf5 {
         return fs::canonical(filePath);
     }
 
-    inline void createTable(TableInfo &info, const PropertyLists &plists = defaultPlists) {
+    inline void createTable(TableInfo &info, const PropertyLists &plists = PropertyLists()) {
         info.assertCreateReady();
         h5pp::logger::log->debug("Creating table [{}] | num fields {} | record size {} bytes | compression {}",
                                  info.tablePath.value(),
@@ -3079,7 +3079,8 @@ namespace h5pp::hdf5 {
                                       "    dataspace     {}\n"
                                       "    dsetspace     {}",
                                       info.tablePath.value(),
-                                      numRecordsOld,numRecordsNew-numRecordsOld,
+                                      numRecordsOld,
+                                      numRecordsNew - numRecordsOld,
                                       info.recordBytes.value(),
                                       type::sfinae::type_name<DataType>(),
                                       util::getSize(data),
@@ -3088,8 +3089,7 @@ namespace h5pp::hdf5 {
                                       offset,
                                       extent.value(),
                                       Hyperslab(dataSpace).string(),
-                                      Hyperslab(dsetSpace).string()
-                                      );
+                                      Hyperslab(dsetSpace).string());
     }
 
     inline void copyTableRecords(const h5pp::TableInfo &srcInfo,
@@ -3297,7 +3297,7 @@ namespace h5pp::hdf5 {
                          std::string_view     srcLinkPath,
                          const h5x_tgt       &tgtLocId,
                          std::string_view     tgtLinkPath,
-                         const PropertyLists &plists = defaultPlists) {
+                         const PropertyLists &plists = PropertyLists()) {
         static_assert(type::sfinae::is_hdf5_loc_id<h5x_src>,
                       "Template function [h5pp::hdf5::copyLink(const h5x_src & srcLocId, ...)] requires type h5x_src to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -3327,7 +3327,7 @@ namespace h5pp::hdf5 {
                          const h5x_tgt       &tgtLocId,
                          std::string_view     tgtLinkPath,
                          LocationMode         locationMode = LocationMode::DETECT,
-                         const PropertyLists &plists       = defaultPlists) {
+                         const PropertyLists &plists       = PropertyLists()) {
         static_assert(type::sfinae::is_hdf5_loc_id<h5x_src>,
                       "Template function [h5pp::hdf5::moveLink(const h5x_src & srcLocId, ...)] requires type h5x_src to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -3370,7 +3370,7 @@ namespace h5pp::hdf5 {
                          const h5pp::fs::path &tgtFilePath,
                          std::string_view      tgtLinkPath,
                          FilePermission        targetFileCreatePermission = FilePermission::READWRITE,
-                         const PropertyLists  &plists                     = defaultPlists) {
+                         const PropertyLists  &plists                     = PropertyLists()) {
         h5pp::logger::log->trace("Copying link: source link [{}] | source file [{}]  -->  target link [{}] | target file [{}]",
                                  srcLinkPath,
                                  srcFilePath.string(),
@@ -3403,7 +3403,7 @@ namespace h5pp::hdf5 {
     inline fs::path copyFile(const h5pp::fs::path &srcFilePath,
                              const h5pp::fs::path &tgtFilePath,
                              FilePermission        permission = FilePermission::COLLISION_FAIL,
-                             const PropertyLists  &plists     = defaultPlists) {
+                             const PropertyLists  &plists     = PropertyLists()) {
         h5pp::logger::log->trace("Copying file [{}] --> [{}]", srcFilePath.string(), tgtFilePath.string());
         auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, permission, plists);
         auto srcPath = fs::absolute(srcFilePath);
@@ -3450,7 +3450,7 @@ namespace h5pp::hdf5 {
                          const h5pp::fs::path &tgtFilePath,
                          std::string_view      tgtLinkPath,
                          FilePermission        targetFileCreatePermission = FilePermission::READWRITE,
-                         const PropertyLists  &plists                     = defaultPlists) {
+                         const PropertyLists  &plists                     = PropertyLists()) {
         h5pp::logger::log->trace("Moving link: source link [{}] | source file [{}]  -->  target link [{}] | target file [{}]",
                                  srcLinkPath,
                                  srcFilePath.string(),
@@ -3484,7 +3484,7 @@ namespace h5pp::hdf5 {
     inline fs::path moveFile(const h5pp::fs::path &src,
                              const h5pp::fs::path &tgt,
                              FilePermission        permission = FilePermission::COLLISION_FAIL,
-                             const PropertyLists  &plists     = defaultPlists) {
+                             const PropertyLists  &plists     = PropertyLists()) {
         h5pp::logger::log->trace("Moving file by copy+remove: [{}] --> [{}]", src.string(), tgt.string());
         auto tgtPath = copyFile(src, tgt, permission, plists); // Returns the path to the newly created file
         auto srcPath = fs::absolute(src);

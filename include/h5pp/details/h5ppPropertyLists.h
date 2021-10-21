@@ -29,7 +29,4 @@ namespace h5pp {
             H5Pset_fclose_degree(fileAccess, H5F_CLOSE_STRONG);
         }
     };
-
-    inline PropertyLists defaultPlists = PropertyLists();
-
 }

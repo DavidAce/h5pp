@@ -59,7 +59,7 @@ namespace h5pp {
         // We expose these property lists here so the user may set them as needed.
         // To enable MPI, the user can call H5Pset_fapl_mpio(hid_t file_access_plist, MPI_Comm comm, MPI_Info info)
         // The user is responsible for linking to MPI and learning how to set properties for MPI usage
-        PropertyLists plists;
+        PropertyLists plists = PropertyLists();
 
         /*! Default constructor */
         File() = default;
@@ -68,7 +68,7 @@ namespace h5pp {
                       h5pp::FilePermission permission_   = h5pp::FilePermission::RENAME, /*!< Set permission in case of file collision */
                       LogLevelType         logLevel_     = LogLevel::info, /*!< Logging verbosity level 0 (most) to 6 (least). */
                       bool                 logTimestamp_ = false,          /*!< True prepends a timestamp to log output */
-                      const PropertyLists &plists_       = defaultPlists)
+                      const PropertyLists &plists_       = PropertyLists())
             : filePath(std::move(filePath_)), permission(permission_), logLevel(Num2Level(logLevel_)), logTimestamp(logTimestamp_),
               plists(plists_) {
             init();
@@ -78,7 +78,7 @@ namespace h5pp {
                       unsigned int         H5F_ACC_FLAGS,                  /*!< Set HDF5 access flag for new files */
                       LogLevelType         logLevel_     = LogLevel::info, /*!< Logging verbosity level 0 (most) to 6 (least). */
                       bool                 logTimestamp_ = false,          /*!< True prepends a timestamp to log output */
-                      const PropertyLists &plists_       = defaultPlists)
+                      const PropertyLists &plists_       = PropertyLists())
             : filePath(std::move(filePath_)), logLevel(Num2Level(logLevel_)), logTimestamp(logTimestamp_), plists(plists_) {
             permission = h5pp::hdf5::convertFileAccessFlags(H5F_ACC_FLAGS);
             init();
@@ -1092,7 +1092,7 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        TableInfo appendTableRecords(const DataType &data, TableInfo & info, std::optional<hsize_t> extent = std::nullopt) {
+        TableInfo appendTableRecords(const DataType &data, TableInfo &info, std::optional<hsize_t> extent = std::nullopt) {
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
             if(permission == h5pp::FilePermission::READONLY)
                 throw h5pp::runtime_error("Attempted to write on read-only file [{}]", filePath.string());
