@@ -1,11 +1,9 @@
-
 #include <h5pp/h5pp.h>
 
-// This example writes and reads a custom struct to file.
+// In this example we want to treat a whole struct as a single writeable unit, a so-called compound data type.
 // To achieve this, the memory layout of the struct has to be registered with HDF5 in advance.
 
-// The struct can only contain fixed-size members,
-// i.e., struct byte layout has to be known at compile-time.
+// This time we consider the case where the struct data members are fixed size arrays.
 struct SpaceTimePoint {
     std::array<double, 4> coordinates = {0, 0, 0, 0}; // Specify the array "coordinates" as rank-1 array of length 4
     char                  type[32]    = "spacetime";

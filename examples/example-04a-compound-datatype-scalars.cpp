@@ -1,7 +1,7 @@
 
 #include <h5pp/h5pp.h>
 
-// In this example we want to treat a whole struct as a single writeable unit, a so-called compound type.
+// In this example we want to treat a whole struct as a single writeable unit, a so-called compound data type.
 // To achieve this, the memory layout of the struct has to be registered with HDF5 in advance.
 
 // First define a trivial "POD" struct.
