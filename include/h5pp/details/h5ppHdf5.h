@@ -2358,12 +2358,15 @@ namespace h5pp::hdf5 {
 #endif
         dsetInfo.assertWriteReady();
         dataInfo.assertWriteReady();
-
-        h5pp::logger::log->trace("Writing from memory  {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
-        h5pp::logger::log->trace("Writing into dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::trace)));
-        h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
-        h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
-        h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
+        try {
+            h5pp::logger::log->trace("Writing from memory  {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            h5pp::logger::log->trace("Writing into dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
+            h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
+            h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
+        } catch(const std::exception &ex) {
+            throw h5pp::runtime_error("Error writing to dataset [{}]:\n{}", dsetInfo.dsetPath.value(), ex.what());
+        }
 
         // Get the memory address to the data buffer
         [[maybe_unused]] auto                      dataPtr = h5pp::util::getVoidPointer<const void *>(data);
@@ -2415,14 +2418,16 @@ namespace h5pp::hdf5 {
 #endif
 
             dsetInfo.assertWriteReady();
-            dsetInfo.assertWriteReady();
             dataInfo.assertWriteReady();
-
-            h5pp::logger::log->trace("Writing from memory  {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
-            h5pp::logger::log->trace("Writing into dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::trace)));
-            h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
-            h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
-            h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
+            try {
+                h5pp::logger::log->trace("Writing from memory  {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+                h5pp::logger::log->trace("Writing into dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+                h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
+                h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
+                h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
+            } catch(const std::exception &ex) {
+                throw h5pp::runtime_error("Error writing to dataset [{}]:\n{}", dsetInfo.dsetPath.value(), ex.what());
+            }
 
             const auto rank = dsetInfo.dsetDims->size();
 
@@ -2478,9 +2483,15 @@ namespace h5pp::hdf5 {
         dataInfo.assertReadReady();
         h5pp::logger::log->trace("Reading into memory  {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
         h5pp::logger::log->trace("Reading from dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::trace)));
-        h5pp::hdf5::assertReadTypeIsLargeEnough<DataType>(dsetInfo.h5Type.value());
-        h5pp::hdf5::assertReadSpaceIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
-        h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
+        try {
+            h5pp::hdf5::assertReadTypeIsLargeEnough<DataType>(dsetInfo.h5Type.value());
+            h5pp::hdf5::assertReadSpaceIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
+            h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
+        }
+
+        catch(const std::exception &ex) {
+            throw h5pp::runtime_error("Error reading dataset [{}]:\n{}", dsetInfo.dsetPath.value(), ex.what());
+        }
         //        h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
         herr_t retval = 0;
 
@@ -2587,11 +2598,19 @@ namespace h5pp::hdf5 {
 #endif
         dataInfo.assertWriteReady();
         attrInfo.assertWriteReady();
-        h5pp::logger::log->trace("Writing from memory    {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
-        h5pp::logger::log->trace("Writing into attribute {}", attrInfo.string(h5pp::logger::logIf(LogLevel::trace)));
-        h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
-        h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
-        h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
+        try {
+            h5pp::logger::log->trace("Writing from memory    {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            h5pp::logger::log->trace("Writing into attribute {}", attrInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
+            h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
+            h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
+        } catch(const std::exception &ex) {
+            throw h5pp::runtime_error("Error writing to attribute [{}] in link [{}]:\n{}",
+                                      attrInfo.attrName.value(),
+                                      attrInfo.linkPath.value(),
+                                      ex.what());
+        }
+
         herr_t retval = 0;
 
         // Get the memory address to the data buffer
@@ -2626,11 +2645,19 @@ namespace h5pp::hdf5 {
 #endif
         dataInfo.assertReadReady();
         attrInfo.assertReadReady();
-        h5pp::logger::log->trace("Reading into memory {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
-        h5pp::logger::log->trace("Reading from file   {}", attrInfo.string(h5pp::logger::logIf(LogLevel::trace)));
-        h5pp::hdf5::assertReadSpaceIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
-        h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
-        h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
+        try {
+            h5pp::logger::log->trace("Reading into memory {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            h5pp::logger::log->trace("Reading from file   {}", attrInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            h5pp::hdf5::assertReadSpaceIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
+            h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
+            h5pp::hdf5::assertSpacesEqual(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
+        } catch(const std::exception &ex) {
+            throw h5pp::runtime_error("Error reading attribute [{}] from link [{}]:\n{}",
+                                      attrInfo.attrName.value(),
+                                      attrInfo.linkPath.value(),
+                                      ex.what());
+        }
+
         herr_t                retval  = 0;
         // Get the memory address to the data buffer
         [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<void *>(data);
