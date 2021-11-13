@@ -39,7 +39,7 @@ namespace h5pp {
     inline constexpr bool has_filter_deflate = H5PP_HAS_FILTER_DEFLATE;
     inline constexpr bool has_zlib_h         = H5PP_HAS_ZLIB_H;
     inline constexpr bool has_direct_chunk   = H5PP_HAS_DIRECT_CHUNK;
-#if H5PP_HAS_DIRECT_CHUNK
+#if H5PP_HAS_DIRECT_CHUNK == 1
     inline bool use_direct_chunk = false;
 #else
     inline constexpr bool use_direct_chunk = false;
@@ -2027,7 +2027,7 @@ namespace h5pp::hdf5 {
                                       [[maybe_unused]] const std::vector<hsize_t>   &chunkOffset,
                                       [[maybe_unused]] const std::vector<std::byte> &chunkBuffer) {
         if constexpr(compile) {
-#if defined(H5PP_HAS_DIRECT_CHUNK)
+#if H5PP_HAS_DIRECT_CHUNK == 1
             size_t chunkByte   = chunkBuffer.size();
             bool   skipDeflate = (mask & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
             bool   isOnDeflate = (filters & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
@@ -2040,7 +2040,7 @@ namespace h5pp::hdf5 {
                 }
             }
 
-    #if defined(H5PP_HAS_FILTER_DEFLATE) && defined(H5PP_HAS_ZLIB_H)
+    #if H5PP_HAS_FILTER_DEFLATE == 1 && H5PP_HAS_ZLIB_H == 1
             if(deflate >= 0 and isOnDeflate and not skipDeflate) {
                 auto deflate_size_adjust = [](auto &s) { // This is in the documentation, but I have no idea why it's needed
                     return std::ceil(static_cast<double>(s) * 1.001) + 12;
@@ -2090,7 +2090,7 @@ namespace h5pp::hdf5 {
                                      [[maybe_unused]] const std::vector<hsize_t> &chunkOffset,
                                      [[maybe_unused]] std::vector<std::byte>     &chunkBuffer) {
         if constexpr(compile) {
-#if defined(H5PP_HAS_DIRECT_CHUNK)
+#if H5PP_HAS_DIRECT_CHUNK == 1
             haddr_t chaddr = 0;
             hsize_t chsize = 0;
             herr_t  eci    = H5Dget_chunk_info_by_coord(h5dset, chunkOffset.data(), &mask, &chaddr, &chsize);
@@ -2185,7 +2185,7 @@ namespace h5pp::hdf5 {
                             [[maybe_unused]] const h5pp::Hyperslab      &dsetSlab,
                             [[maybe_unused]] const h5pp::Hyperslab      &dataSlab) {
         if constexpr(compile) {
-#if defined(H5PP_HAS_DIRECT_CHUNK)
+#if H5PP_HAS_DIRECT_CHUNK == 1
 
             size_t     typeSize  = h5pp::hdf5::getBytesPerElem(datatype);
             size_t     chunkSize = h5pp::util::getSizeFromDimensions(chunkDims);
