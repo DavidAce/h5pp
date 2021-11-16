@@ -25,7 +25,7 @@ int main() {
     // 0  0  0  0  0
     file.writeDataset(data5x5, "data5x5", {5, 5});
 
-    // In this example we would like write a 2x2 matrix
+    // In this example we would like to write a 2x2 matrix
     //
     // 1 2
     // 3 4
@@ -43,8 +43,8 @@ int main() {
 
     // Now we need to select a 2x2 hyperslab in data5x5. There are three ways of doing this:
     // 1) Define a hyperslab and give it to .writeHyperslab(...). (simplest)
-    // 2) Define a hyperslab in an instance of "h5pp::DsetInfo" corresponding to data5x5, and pass to .writeDataset(...) (see example 08e)
-    // 3) Define a hyperslab in an instance of "h5pp::Options" and pass that to .writeDataset(...). (see example 08d)
+    // 2) Define a hyperslab in an instance of "h5pp::DsetInfo" corresponding to data5x5, and pass to .writeDataset(...) (see example 08d)
+    // 3) Define a hyperslab in an instance of "h5pp::Options" and pass that to .writeDataset(...). (see example 08e)
 
     // Let's try 3) here:
     // NOTE: Internally h5pp populates instances of type h5pp::DsetInfo and h5pp::DataInfo with metadata about
