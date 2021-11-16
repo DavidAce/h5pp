@@ -20,8 +20,8 @@ int main() {
     file.writeAttribute(3.14, "myInt_doubleAttribute", "intGroup/myInt");
     file.writeAttribute(std::vector<int>{1, 2, 3, 4}, "myInt_vectorAttribute", "intGroup/myInt");
 
-    // Now we imagine wanting iterate through all the attributes of "intGroup/myInt" and print the contents.
-    // The most pressing concern is that we may not now beforehand what type we should read data into.
+    // Now we imagine wanting to iterate through all attributes of "intGroup/myInt" and print their contents.
+    // The most pressing concern is that we may not know beforehand what type we should read data into.
     // This has no simple solution, since c++ is statically typed. We have to check a list of types during runtime.
 
     // In this case we will use h5pp to obtain type metadata, so that we can use the correct type when calling
