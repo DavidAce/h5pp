@@ -24,7 +24,7 @@ int main() {
     // 0  0  0  0  0
     h5pp::DsetInfo dsetInfo = file.writeDataset(data5x5, "data5x5", {5, 5}); // Store the generated metadata about data5x5 in dsetInfo
 
-    // In this example we would like write a 2x2 matrix
+    // In this example we would like to write a 2x2 matrix
     //
     // 1 2
     // 3 4
