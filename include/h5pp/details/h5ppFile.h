@@ -1390,11 +1390,14 @@ namespace h5pp {
          */
 
         void createSoftLink(std::string_view targetLinkPath, std::string_view softLinkPath) {
-            h5pp::hdf5::createSoftLink(targetLinkPath, openFileHandle(), softLinkPath, plists);
+            // It's important that targetLinkPath is a full path
+            std::string targetLinkFullPath = targetLinkPath.front() == '/' ? std::string(targetLinkPath) : h5pp::format("/{}", targetLinkPath);
+            h5pp::hdf5::createSoftLink(targetLinkFullPath, openFileHandle(), softLinkPath, plists);
         }
 
         void createHardLink(std::string_view targetLinkPath, std::string_view hardLinkPath) {
-            h5pp::hdf5::createHardLink(openFileHandle(), targetLinkPath, openFileHandle(), hardLinkPath, plists);
+            std::string targetLinkFullPath = targetLinkPath.front() == '/' ? std::string(targetLinkPath) : h5pp::format("/{}", targetLinkPath);
+            h5pp::hdf5::createHardLink(openFileHandle(), targetLinkFullPath, openFileHandle(), hardLinkPath, plists);
         }
 
         void createExternalLink(std::string_view targetFilePath, /*!< Path to an external hdf5 file with the desired link. If relative, it
