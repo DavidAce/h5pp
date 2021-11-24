@@ -31,12 +31,12 @@ namespace h5pp {
 
     class File {
         private:
-        fs::path                        filePath;                                    /*!< Full path to the file */
-        h5pp::FileAccess                fileAccess   = h5pp::FileAccess::RENAME;     /*!< File open/create policy. */
-        mutable std::optional<hid::h5f> fileHandle   = std::nullopt;                 /*!< Keeps a file handle alive in batch operations */
-        LogLevel                        logLevel     = LogLevel::info;               /*!< Log verbosity from 0 [trace] to 6 [off] */
-        bool                            logTimestamp = false;                        /*!< Add a time stamp to console log output */
-        hid::h5e                        error_stack  = H5E_DEFAULT; /*!< Holds a reference to the error stack used by HDF5 */
+        fs::path                        filePath;                                /*!< Full path to the file */
+        h5pp::FileAccess                fileAccess   = h5pp::FileAccess::RENAME; /*!< File open/create policy. */
+        mutable std::optional<hid::h5f> fileHandle   = std::nullopt;             /*!< Keeps a file handle alive in batch operations */
+        LogLevel                        logLevel     = LogLevel::info;           /*!< Log verbosity from 0 [trace] to 6 [off] */
+        bool                            logTimestamp = false;                    /*!< Add a time stamp to console log output */
+        hid::h5e                        error_stack  = H5E_DEFAULT;              /*!< Holds a reference to the error stack used by HDF5 */
         int currentCompression                       = -1; /*!< Holds the default compression level (-1 is off, 0 is none, 9 is max) */
 
         void init() {
@@ -64,10 +64,10 @@ namespace h5pp {
         /*! Default constructor */
         File() = default;
         template<typename LogLevelType = LogLevel>
-        explicit File(h5pp::fs::path       filePath_,                                    /*!< Path a new file */
-                      h5pp::FileAccess fileAccess_   = h5pp::FileAccess::RENAME, /*!< Set file access permission in case of collision */
-                      LogLevelType         logLevel_     = LogLevel::info, /*!< Logging verbosity level 0 (most) to 6 (least). */
-                      bool                 logTimestamp_ = false,          /*!< True prepends a timestamp to log output */
+        explicit File(h5pp::fs::path       filePath_,                                /*!< Path a new file */
+                      h5pp::FileAccess     fileAccess_   = h5pp::FileAccess::RENAME, /*!< Set file access permission in case of collision */
+                      LogLevelType         logLevel_     = LogLevel::info,           /*!< Logging verbosity level 0 (most) to 6 (least). */
+                      bool                 logTimestamp_ = false,                    /*!< True prepends a timestamp to log output */
                       const PropertyLists &plists_       = PropertyLists())
             : filePath(std::move(filePath_)), fileAccess(fileAccess_), logLevel(Num2Level(logLevel_)), logTimestamp(logTimestamp_),
               plists(plists_) {
@@ -166,10 +166,8 @@ namespace h5pp {
         [[nodiscard]] std::string getFilePath() const { return filePath.string(); }
 
         /*! Sets the default file access permission */
-        void setFileAccess(h5pp::FileAccess fileAccess_) {
-            fileAccess = fileAccess_;
-        }
-        void setFilePermission(h5pp::FileAccess fileAccess_ ) {
+        void setFileAccess(h5pp::FileAccess fileAccess_) { fileAccess = fileAccess_; }
+        void setFilePermission(h5pp::FileAccess fileAccess_) {
             h5pp::logger::log->info("Deprecation notice: FilePermission has been renamed to FileAccess in h5pp version 1.10. "
                                     "FilePermission will be removed in a future version.");
             fileAccess = fileAccess_;
@@ -265,8 +263,8 @@ namespace h5pp {
          * No change to the current file.
          */
         [[maybe_unused]] fs::path
-            copyFileTo(const h5pp::fs::path &targetFilePath,                       /*!< Copy to this path */
-                       const FileAccess &perm = FileAccess::COLLISION_FAIL /*!< File access permission at the new path */
+            copyFileTo(const h5pp::fs::path &targetFilePath,                   /*!< Copy to this path */
+                       const FileAccess     &perm = FileAccess::COLLISION_FAIL /*!< File access permission at the new path */
 
             ) const {
             return h5pp::hdf5::copyFile(getFilePath(), targetFilePath, perm, plists);
@@ -277,8 +275,8 @@ namespace h5pp {
          * The current file is re-opened at the new path.
          */
         [[maybe_unused]] fs::path
-            moveFileTo(const h5pp::fs::path &targetFilePath,                       /*!< The new path */
-                       const FileAccess &perm = FileAccess::COLLISION_FAIL /*!< File access permission at the new path */
+            moveFileTo(const h5pp::fs::path &targetFilePath,                   /*!< The new path */
+                       const FileAccess     &perm = FileAccess::COLLISION_FAIL /*!< File access permission at the new path */
             ) {
             auto newPath = h5pp::hdf5::moveFile(getFilePath(), targetFilePath, perm, plists);
             if(fs::exists(newPath)) { filePath = newPath; }
@@ -292,10 +290,10 @@ namespace h5pp {
          */
 
         /*! Copy a link (dataset/table/group) into another file. */
-        void copyLinkToFile(std::string_view      localLinkPath,                   /*!< Path to link in this file */
-                            const h5pp::fs::path &targetFilePath,                  /*!< Path to file to copy into */
-                            std::string_view      targetLinkPath,                  /*!< Path to link in the target file  */
-                            const FileAccess &perm = FileAccess::READWRITE /*!< File access permission at the target path */
+        void copyLinkToFile(std::string_view      localLinkPath,               /*!< Path to link in this file */
+                            const h5pp::fs::path &targetFilePath,              /*!< Path to file to copy into */
+                            std::string_view      targetLinkPath,              /*!< Path to link in the target file  */
+                            const FileAccess     &perm = FileAccess::READWRITE /*!< File access permission at the target path */
         ) const {
             return h5pp::hdf5::copyLink(getFilePath(), localLinkPath, targetFilePath, targetLinkPath, perm, plists);
         }
@@ -305,12 +303,7 @@ namespace h5pp {
                               const h5pp::fs::path &sourceFilePath, /*!< Path to file to copy from */
                               std::string_view      sourceLinkPath  /*!< Path to link in the source file */
         ) {
-            return h5pp::hdf5::copyLink(sourceFilePath,
-                                        sourceLinkPath,
-                                        getFilePath(),
-                                        localLinkPath,
-                                        h5pp::FileAccess::READWRITE,
-                                        plists);
+            return h5pp::hdf5::copyLink(sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FileAccess::READWRITE, plists);
         }
 
         /*! Copy a link (dataset/table/group) from this file to any hid::h5x location (group or file). */
@@ -338,10 +331,10 @@ namespace h5pp {
          *  **NOTE:** The link is deleted from this file, but the storage space is not recovered.
          *  This is a fundamental limitation of HDF5.
          */
-        void moveLinkToFile(std::string_view      localLinkPath,                   /*!< Path to link in this file */
-                            const h5pp::fs::path &targetFilePath,                  /*!< Path to file to move into */
-                            std::string_view      targetLinkPath,                  /*!< Path to link in the target file  */
-                            const FileAccess &perm = FileAccess::READWRITE /*!< File access permission at the target path */
+        void moveLinkToFile(std::string_view      localLinkPath,               /*!< Path to link in this file */
+                            const h5pp::fs::path &targetFilePath,              /*!< Path to file to move into */
+                            std::string_view      targetLinkPath,              /*!< Path to link in the target file  */
+                            const FileAccess     &perm = FileAccess::READWRITE /*!< File access permission at the target path */
 
         ) const {
             return h5pp::hdf5::moveLink(getFilePath(), localLinkPath, targetFilePath, targetLinkPath, perm, plists);
@@ -356,12 +349,7 @@ namespace h5pp {
                               const h5pp::fs::path &sourceFilePath, /*!< Path to file to copy from */
                               std::string_view      sourceLinkPath  /*!< Path to link in the source file */
         ) {
-            return h5pp::hdf5::moveLink(sourceFilePath,
-                                        sourceLinkPath,
-                                        getFilePath(),
-                                        localLinkPath,
-                                        h5pp::FileAccess::READWRITE,
-                                        plists);
+            return h5pp::hdf5::moveLink(sourceFilePath, sourceLinkPath, getFilePath(), localLinkPath, h5pp::FileAccess::READWRITE, plists);
         }
 
         /*! Move a link (dataset/table/group) from this file to any hid::h5x location (group or file).

@@ -12,9 +12,8 @@ int main() {
     // Write a dummy dataset to fileB
     fileB.writeDataset("Data on file B", "data/in/fileB/datasetB");
 
-
     // Copy the dataset to fileB
-    fileA.copyLinkToFile("data/in/fileB/datasetA",fileB.getFilePath(),  "data/from/fileA/datasetA");
+    fileA.copyLinkToFile("data/in/fileB/datasetA", fileB.getFilePath(), "data/from/fileA/datasetA");
 
     // Alternatively, copy a dataset on fileB to fileA
     fileA.copyLinkFromFile("data/from/fileB/datasetB", fileB.getFilePath(), "data/in/fileB/datasetB");

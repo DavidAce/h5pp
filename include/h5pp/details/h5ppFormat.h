@@ -11,13 +11,13 @@
     // If SPDLOG_HEADER_ONLY is defined this will cause FMT_HEADER_ONLY to also get defined
     #include <spdlog/fmt/fmt.h>
     #if defined(SPDLOG_FMT_EXTERNAL)
+        #include <fmt/compile.h>
         #include <fmt/ostream.h>
         #include <fmt/ranges.h>
-        #include <fmt/compile.h>
     #else
+        #include <spdlog/fmt/bundled/compile.h>
         #include <spdlog/fmt/bundled/ostream.h>
         #include <spdlog/fmt/bundled/ranges.h>
-        #include <spdlog/fmt/bundled/compile.h>
     #endif
 #elif __has_include(<fmt/core.h>) &&  __has_include(<fmt/format.h>) && __has_include(<fmt/ranges.h>) &&  __has_include(<fmt/ostream.h>)
     #if defined(SPDLOG_HEADER_ONLY)
@@ -25,11 +25,11 @@
         // We do this because we have no way of knowing if this is getting linked to libfmt
         #define FMT_HEADER_ONLY
     #endif
+    #include <fmt/compile.h>
     #include <fmt/core.h>
     #include <fmt/format.h>
     #include <fmt/ostream.h>
     #include <fmt/ranges.h>
-    #include <fmt/compile.h>
 #else
     // In this case there is no fmt so we make our own simple formatter
     #pragma message \
@@ -62,13 +62,12 @@ namespace h5pp {
 
 namespace h5pp {
     namespace formatting {
-        template<typename T, typename = std::void_t<>>
+        template<typename T, typename = std::void_t<> >
         struct is_streamable : std::false_type {};
         template<typename T>
-        struct is_streamable<T, std::void_t<decltype(std::declval<std::stringstream &> << std::declval<T>())>> : public std::true_type {};
+        struct is_streamable<T, std::void_t<decltype(std::declval<std::stringstream &> << std::declval<T>())> > : public std::true_type {};
         template<typename T>
         inline constexpr bool is_streamable_v = is_streamable<T>::value;
-
 
         template<class T, class... Ts>
         std::list<std::string> convert_to_string_list(const T &first, const Ts &...rest) {

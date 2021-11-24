@@ -125,7 +125,7 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
                       << writeData << "\n"
                       << "Read: \n"
                       << readData << std::endl;
-//            if constexpr(h5pp::type::sfinae::is_streamable_v<WriteType> and h5pp::type::sfinae::is_streamable_v<ReadType>)
+            //            if constexpr(h5pp::type::sfinae::is_streamable_v<WriteType> and h5pp::type::sfinae::is_streamable_v<ReadType>)
 
             throw std::runtime_error("Data mismatch: Write != Read");
         }
@@ -189,13 +189,13 @@ int main() {
     Field3              field3{0.54, 0.56, 0.58};
     std::vector<Field2> field2vector(10);
     for(size_t i = 0; i < field2vector.size(); i++) {
-        auto d          = static_cast<double>(i);
+        auto d            = static_cast<double>(i);
         field2vector[i].x = 2.3 * d;
         field2vector[i].y = 20.5 * d;
     }
     std::vector<Field3> field3vector(10);
     for(size_t i = 0; i < field3vector.size(); i++) {
-        auto d          = static_cast<double>(i);
+        auto d            = static_cast<double>(i);
         field3vector[i].x = 2.3 * d;
         field3vector[i].y = 20.5 * d;
         field3vector[i].z = 200.9 * d;

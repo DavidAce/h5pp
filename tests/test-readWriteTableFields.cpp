@@ -95,7 +95,7 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
     SECTION("Single struct field by name") {
         h5pp::File file("output/readWriteTableFields.h5", h5pp::FileAccess::READWRITE, 2);
         auto       rho_field_first = file.readTableField<Rho>("somegroup/particleTable", "rho", 0, 1);
-        auto       rho_field_last = file.readTableField<Rho>("somegroup/particleTable", "rho", -1ul, 1);
+        auto       rho_field_last  = file.readTableField<Rho>("somegroup/particleTable", "rho", -1ul, 1);
         CHECK(rho_field_first.rho[0] == 20);
         CHECK(rho_field_first.rho[1] == 3.13);
         CHECK(rho_field_first.rho[2] == 102.4);

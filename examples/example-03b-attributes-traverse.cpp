@@ -55,7 +55,6 @@ int main() {
                 h5pp::print("{} = {}\n", msg, file.readAttribute<std::vector<double>>(typeInfo.h5Name.value(), typeInfo.h5Path.value()));
 
             // ... and so on. In practice, it is simpler to create templated helper functions to avoid code duplication here.
-
         }
     }
 

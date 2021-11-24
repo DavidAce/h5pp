@@ -23,6 +23,7 @@ struct ParticleV2 {
     int    id       = 0;
     char   name[22] = ""; // Can't be replaced by std::string, or anything resizeable?
                           // size of name can be safely increased and decreased
+
     bool operator==(const ParticleV2 &p) const {
         return x == p.x and y == p.y and z == p.z and t == p.t and strncmp(name, p.name, sizeof(name)) == 0 and id == p.id;
     }

@@ -107,8 +107,9 @@ int main() {
     Eigen::MatrixXd              matrixDouble        = Eigen::MatrixXd::Random(100, 100);
     Eigen::MatrixXcd             matrixComplexDouble = Eigen::MatrixXcd::Random(100, 100);
     Eigen::Map<Eigen::MatrixXcd> matrixMapComplexDouble(matrixComplexDouble.data(), matrixComplexDouble.rows(), matrixComplexDouble.cols());
-    Eigen::TensorMap<Eigen::Tensor<std::complex<double>, 2>> tensorMapComplexDouble(
-        matrixComplexDouble.data(), matrixComplexDouble.rows(), matrixComplexDouble.cols());
+    Eigen::TensorMap<Eigen::Tensor<std::complex<double>, 2>> tensorMapComplexDouble(matrixComplexDouble.data(),
+                                                                                    matrixComplexDouble.rows(),
+                                                                                    matrixComplexDouble.cols());
 
     // Now write
     file.writeDataset(matrixInt, "overWriteGroup_chunked/matrixInt", std::nullopt, H5D_CHUNKED);

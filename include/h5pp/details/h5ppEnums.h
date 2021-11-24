@@ -115,7 +115,7 @@ namespace h5pp {
     }
 
     template<typename T>
-    constexpr bool operator ==(LogLevel level, T num) {
+    constexpr bool operator==(LogLevel level, T num) {
         static_assert(std::is_integral_v<T> or std::is_same_v<T, LogLevel>);
         using utype = typename std::underlying_type<LogLevel>::type;
         return Level2Num(level) == static_cast<utype>(num);

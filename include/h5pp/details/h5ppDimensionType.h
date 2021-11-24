@@ -54,8 +54,7 @@ namespace h5pp {
                 dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
             else {
                 static_assert(h5pp::type::sfinae::invalid_type_v<UnknownType>, "Could not identify dimension type");
-                throw h5pp::runtime_error(
-                    "Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>());
+                throw h5pp::runtime_error("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>());
             }
         }
         [[nodiscard]] operator const std::vector<hsize_t> &() const { return dims; }
@@ -96,14 +95,13 @@ namespace h5pp {
                 dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
             else {
                 static_assert(h5pp::type::sfinae::invalid_type_v<UnknownType>, "Could not identify dimension type");
-                throw h5pp::runtime_error(
-                    "Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>());
+                throw h5pp::runtime_error("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>());
             }
         }
         [[nodiscard]] bool                        has_value() const { return dims.has_value(); }
                                                   operator bool() const { return dims.has_value(); }
         [[nodiscard]] const std::vector<hsize_t> &value() const { return dims.value(); }
-        [[nodiscard]] std::vector<hsize_t> &      value() { return dims.value(); }
+        [[nodiscard]] std::vector<hsize_t>       &value() { return dims.value(); }
         [[nodiscard]]                             operator const std::optional<std::vector<hsize_t>> &() const { return dims; }
         [[nodiscard]]                             operator std::optional<std::vector<hsize_t>> &() { return dims; }
         auto                                      operator->() { return dims.operator->(); }

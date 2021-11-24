@@ -170,7 +170,7 @@ namespace h5pp {
 
         template<typename Derived, auto rank>
         constexpr Eigen::Tensor<typename Derived::Scalar, rank> Matrix_to_Tensor(const Eigen::EigenBase<Derived> &matrix,
-                                                                                 const array<rank> &              dims) {
+                                                                                 const array<rank>               &dims) {
             if constexpr(is_plainObject<Derived>::value) {
                 // Return map from raw input.
                 return Eigen::TensorMap<const Eigen::Tensor<const typename Derived::Scalar, rank>>(matrix.derived().eval().data(), dims);
@@ -190,7 +190,7 @@ namespace h5pp {
         // Helpful overload
         template<typename Derived, auto rank>
         constexpr Eigen::Tensor<typename Derived::Scalar, rank> Matrix_to_Tensor(const Eigen::EigenBase<Derived> &matrix,
-                                                                                 const DSizes<rank> &             dims) {
+                                                                                 const DSizes<rank>              &dims) {
             array<rank> dim_array = dims;
             std::copy(std::begin(dims), std::end(dims), std::begin(dim_array));
             return Matrix_to_Tensor(matrix, dim_array);

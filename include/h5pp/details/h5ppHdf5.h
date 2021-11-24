@@ -2748,36 +2748,36 @@ namespace h5pp::hdf5 {
     }
 
     [[nodiscard]] inline h5pp::FileAccess convertFileAccessFlags(unsigned int H5F_ACC_FLAGS) {
-        h5pp::FileAccess permission = h5pp::FileAccess::RENAME;
+        h5pp::FileAccess access = h5pp::FileAccess::RENAME;
         if((H5F_ACC_FLAGS & (H5F_ACC_TRUNC | H5F_ACC_EXCL)) == (H5F_ACC_TRUNC | H5F_ACC_EXCL))
             throw h5pp::runtime_error("File access modes H5F_ACC_EXCL and H5F_ACC_TRUNC are mutually exclusive");
-        if((H5F_ACC_FLAGS & H5F_ACC_RDONLY) == H5F_ACC_RDONLY) permission = h5pp::FileAccess::READONLY;
-        if((H5F_ACC_FLAGS & H5F_ACC_RDWR) == H5F_ACC_RDWR) permission = h5pp::FileAccess::READWRITE;
-        if((H5F_ACC_FLAGS & H5F_ACC_EXCL) == H5F_ACC_EXCL) permission = h5pp::FileAccess::COLLISION_FAIL;
-        if((H5F_ACC_FLAGS & H5F_ACC_TRUNC) == H5F_ACC_TRUNC) permission = h5pp::FileAccess::REPLACE;
-        return permission;
+        if((H5F_ACC_FLAGS & H5F_ACC_RDONLY) == H5F_ACC_RDONLY) access = h5pp::FileAccess::READONLY;
+        if((H5F_ACC_FLAGS & H5F_ACC_RDWR) == H5F_ACC_RDWR) access = h5pp::FileAccess::READWRITE;
+        if((H5F_ACC_FLAGS & H5F_ACC_EXCL) == H5F_ACC_EXCL) access = h5pp::FileAccess::COLLISION_FAIL;
+        if((H5F_ACC_FLAGS & H5F_ACC_TRUNC) == H5F_ACC_TRUNC) access = h5pp::FileAccess::REPLACE;
+        return access;
     }
 
-    [[nodiscard]] inline unsigned int convertFileAccessFlags(h5pp::FileAccess permission) {
+    [[nodiscard]] inline unsigned int convertFileAccessFlags(h5pp::FileAccess access) {
         unsigned int H5F_ACC_MODE = H5F_ACC_RDONLY;
-        if(permission == h5pp::FileAccess::COLLISION_FAIL) H5F_ACC_MODE |= H5F_ACC_EXCL;
-        if(permission == h5pp::FileAccess::REPLACE) H5F_ACC_MODE |= H5F_ACC_TRUNC;
-        if(permission == h5pp::FileAccess::RENAME) H5F_ACC_MODE |= H5F_ACC_TRUNC;
-        if(permission == h5pp::FileAccess::READONLY) H5F_ACC_MODE |= H5F_ACC_RDONLY;
-        if(permission == h5pp::FileAccess::READWRITE) H5F_ACC_MODE |= H5F_ACC_RDWR;
+        if(access == h5pp::FileAccess::COLLISION_FAIL) H5F_ACC_MODE |= H5F_ACC_EXCL;
+        if(access == h5pp::FileAccess::REPLACE) H5F_ACC_MODE |= H5F_ACC_TRUNC;
+        if(access == h5pp::FileAccess::RENAME) H5F_ACC_MODE |= H5F_ACC_TRUNC;
+        if(access == h5pp::FileAccess::READONLY) H5F_ACC_MODE |= H5F_ACC_RDONLY;
+        if(access == h5pp::FileAccess::READWRITE) H5F_ACC_MODE |= H5F_ACC_RDWR;
         return H5F_ACC_MODE;
     }
 
     [[nodiscard]] inline fs::path
-        createFile(const h5pp::fs::path &filePath_, const h5pp::FileAccess &permission, const PropertyLists &plists = PropertyLists()) {
+        createFile(const h5pp::fs::path &filePath_, const h5pp::FileAccess &access, const PropertyLists &plists = PropertyLists()) {
         fs::path filePath = fs::absolute(filePath_);
         fs::path fileName = filePath_.filename();
         if(fs::exists(filePath)) {
             if(not fileIsValid(filePath)) h5pp::logger::log->debug("Pre-existing file may be corrupted [{}]", filePath.string());
-            if(permission == h5pp::FileAccess::READONLY) return filePath;
-            if(permission == h5pp::FileAccess::COLLISION_FAIL)
+            if(access == h5pp::FileAccess::READONLY) return filePath;
+            if(access == h5pp::FileAccess::COLLISION_FAIL)
                 throw h5pp::runtime_error("[COLLISION_FAIL]: Previous file exists with the same name [{}]", filePath.string());
-            if(permission == h5pp::FileAccess::RENAME) {
+            if(access == h5pp::FileAccess::RENAME) {
                 auto newFilePath = getAvailableFileName(filePath);
                 h5pp::logger::log->info("[RENAME]: Previous file exists. Choosing a new file name [{}] --> [{}]",
                                         filePath.filename().string(),
@@ -2785,23 +2785,22 @@ namespace h5pp::hdf5 {
                 filePath = newFilePath;
                 fileName = filePath.filename();
             }
-            if(permission == h5pp::FileAccess::READWRITE) return filePath;
-            if(permission == h5pp::FileAccess::BACKUP) {
+            if(access == h5pp::FileAccess::READWRITE) return filePath;
+            if(access == h5pp::FileAccess::BACKUP) {
                 auto backupPath = getBackupFileName(filePath);
                 h5pp::logger::log->info("[BACKUP]: Backing up existing file [{}] --> [{}]",
                                         filePath.filename().string(),
                                         backupPath.filename().string());
                 fs::rename(filePath, backupPath);
             }
-            if(permission == h5pp::FileAccess::REPLACE) {} // Do nothing
+            if(access == h5pp::FileAccess::REPLACE) {} // Do nothing
         } else {
-            if(permission == h5pp::FileAccess::READONLY)
-                throw h5pp::runtime_error("[READONLY]: File does not exist [{}]", filePath.string());
-            if(permission == h5pp::FileAccess::COLLISION_FAIL) {} // Do nothing
-            if(permission == h5pp::FileAccess::RENAME) {}         // Do nothing
-            if(permission == h5pp::FileAccess::READWRITE) {}      // Do nothing;
-            if(permission == h5pp::FileAccess::BACKUP) {}         // Do nothing
-            if(permission == h5pp::FileAccess::REPLACE) {}        // Do nothing
+            if(access == h5pp::FileAccess::READONLY) throw h5pp::runtime_error("[READONLY]: File does not exist [{}]", filePath.string());
+            if(access == h5pp::FileAccess::COLLISION_FAIL) {} // Do nothing
+            if(access == h5pp::FileAccess::RENAME) {}         // Do nothing
+            if(access == h5pp::FileAccess::READWRITE) {}      // Do nothing;
+            if(access == h5pp::FileAccess::BACKUP) {}         // Do nothing
+            if(access == h5pp::FileAccess::REPLACE) {}        // Do nothing
             try {
                 if(fs::create_directories(filePath.parent_path()))
                     h5pp::logger::log->trace("Created directory: {}", filePath.parent_path().string());
@@ -2811,13 +2810,13 @@ namespace h5pp::hdf5 {
         }
 
         // One last sanity check
-        if(permission == h5pp::FileAccess::READONLY)
+        if(access == h5pp::FileAccess::READONLY)
             throw h5pp::logic_error("About to create/truncate a file even though READONLY was specified. This is a programming error!");
 
         // Go ahead
         hid_t file = H5Fcreate(filePath.string().c_str(), H5F_ACC_TRUNC, plists.fileCreate, plists.fileAccess);
         if(file < 0)
-            throw h5pp::runtime_error("Failed to create file [{}]\n\t\t Check that you have the right permissions and that the "
+            throw h5pp::runtime_error("Failed to create file [{}]\n\t\t Check that you have the right file access permissions and that the "
                                       "file is not locked by another program",
                                       filePath.string());
 
@@ -3396,8 +3395,8 @@ namespace h5pp::hdf5 {
                          std::string_view      srcLinkPath,
                          const h5pp::fs::path &tgtFilePath,
                          std::string_view      tgtLinkPath,
-                         FileAccess        targetFileCreatePermission = FileAccess::READWRITE,
-                         const PropertyLists  &plists                     = PropertyLists()) {
+                         FileAccess            tgtFileAccess = FileAccess::READWRITE,
+                         const PropertyLists  &plists        = PropertyLists()) {
         h5pp::logger::log->trace("Copying link: source link [{}] | source file [{}]  -->  target link [{}] | target file [{}]",
                                  srcLinkPath,
                                  srcFilePath.string(),
@@ -3411,7 +3410,7 @@ namespace h5pp::hdf5 {
                                           srcLinkPath,
                                           srcFilePath.string(),
                                           srcPath.string());
-            auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, targetFileCreatePermission, plists);
+            auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, tgtFileAccess, plists);
 
             hid_t hidSrc = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
             hid_t hidTgt = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
@@ -3429,10 +3428,10 @@ namespace h5pp::hdf5 {
 
     inline fs::path copyFile(const h5pp::fs::path &srcFilePath,
                              const h5pp::fs::path &tgtFilePath,
-                             FileAccess        permission = FileAccess::COLLISION_FAIL,
-                             const PropertyLists  &plists     = PropertyLists()) {
+                             FileAccess            tgtFileAccess = FileAccess::COLLISION_FAIL,
+                             const PropertyLists  &plists        = PropertyLists()) {
         h5pp::logger::log->trace("Copying file [{}] --> [{}]", srcFilePath.string(), tgtFilePath.string());
-        auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, permission, plists);
+        auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, tgtFileAccess, plists);
         auto srcPath = fs::absolute(srcFilePath);
         try {
             if(not fs::exists(srcPath))
@@ -3476,8 +3475,8 @@ namespace h5pp::hdf5 {
                          std::string_view      srcLinkPath,
                          const h5pp::fs::path &tgtFilePath,
                          std::string_view      tgtLinkPath,
-                         FileAccess        targetFileCreatePermission = FileAccess::READWRITE,
-                         const PropertyLists  &plists                     = PropertyLists()) {
+                         FileAccess            tgtFileAccess = FileAccess::READWRITE,
+                         const PropertyLists  &plists        = PropertyLists()) {
         h5pp::logger::log->trace("Moving link: source link [{}] | source file [{}]  -->  target link [{}] | target file [{}]",
                                  srcLinkPath,
                                  srcFilePath.string(),
@@ -3491,7 +3490,7 @@ namespace h5pp::hdf5 {
                                           srcLinkPath,
                                           srcFilePath.string(),
                                           srcPath.string());
-            auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, targetFileCreatePermission, plists);
+            auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, tgtFileAccess, plists);
 
             hid_t hidSrc = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
             hid_t hidTgt = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
@@ -3510,10 +3509,10 @@ namespace h5pp::hdf5 {
 
     inline fs::path moveFile(const h5pp::fs::path &src,
                              const h5pp::fs::path &tgt,
-                             FileAccess        permission = FileAccess::COLLISION_FAIL,
-                             const PropertyLists  &plists     = PropertyLists()) {
+                             FileAccess            tgtFileAccess = FileAccess::COLLISION_FAIL,
+                             const PropertyLists  &plists        = PropertyLists()) {
         h5pp::logger::log->trace("Moving file by copy+remove: [{}] --> [{}]", src.string(), tgt.string());
-        auto tgtPath = copyFile(src, tgt, permission, plists); // Returns the path to the newly created file
+        auto tgtPath = copyFile(src, tgt, tgtFileAccess, plists); // Returns the path to the newly created file
         auto srcPath = fs::absolute(src);
         if(fs::exists(tgtPath)) {
             h5pp::logger::log->trace("Removing file [{}]", srcPath.string());

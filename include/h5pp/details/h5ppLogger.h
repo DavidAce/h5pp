@@ -26,10 +26,8 @@ namespace h5pp::logger {
 
     template<typename LogLevelType>
     inline bool logIf(LogLevelType levelZeroToSix) {
-        static_assert(type::sfinae::is_any_v<LogLevelType,
-                                             spdlog::level::level_enum,
-                                             h5pp::LogLevel> or std::is_integral_v<LogLevelType>);
-        if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or  std::is_integral_v<LogLevelType>)
+        static_assert(type::sfinae::is_any_v<LogLevelType, spdlog::level::level_enum, h5pp::LogLevel> or std::is_integral_v<LogLevelType>);
+        if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or std::is_integral_v<LogLevelType>)
             return getLogLevel() <= levelZeroToSix;
         else if constexpr(std::is_same_v<LogLevelType, spdlog::level::level_enum>)
             return getLogLevel() <= static_cast<int>(levelZeroToSix);

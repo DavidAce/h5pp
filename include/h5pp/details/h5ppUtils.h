@@ -1,10 +1,10 @@
 #pragma once
 #include "h5ppConstants.h"
+#include "h5ppInfo.h"
 #include "h5ppOptional.h"
 #include "h5ppType.h"
 #include "h5ppTypeCompound.h"
 #include "h5ppTypeSfinae.h"
-#include "h5ppInfo.h"
 #include <cstring>
 #include <numeric>
 
@@ -42,7 +42,8 @@ namespace h5pp::util {
     [[nodiscard]] T wrapUnsigned(T num, T piv) noexcept {
         static_assert(std::is_unsigned_v<T>);
         if(num >= piv) {
-            if(num == std::numeric_limits<T>::max() and piv == std::numeric_limits<T>::min()) return ~num; // The last element would be 0 if piv == 0
+            if(num == std::numeric_limits<T>::max() and piv == std::numeric_limits<T>::min())
+                return ~num;                                                      // The last element would be 0 if piv == 0
             if(num >= std::numeric_limits<T>::max() - piv) return piv - ~num - 1; // Rotate around the pivot
             if(num >= std::numeric_limits<unsigned long long>::max() - piv) return wrapUnsigned<unsigned long long>(num, piv);
             if(num >= std::numeric_limits<unsigned long>::max() - piv) return wrapUnsigned<unsigned long>(num, piv);
@@ -50,7 +51,6 @@ namespace h5pp::util {
         }
         return num;
     }
-
 
     template<typename PtrType, typename DataType>
     [[nodiscard]] inline PtrType getVoidPointer(DataType &data, size_t offset = 0) noexcept {
