@@ -108,7 +108,7 @@ most of the work can be achieved using just two member functions `.writeDataset(
 ```c++
     #include <h5pp/h5pp.h>
     int main() {
-        h5pp::File file("somePath/someFile.h5", h5pp::FilePermission::READWRITE);    // Open (or create) a file
+        h5pp::File file("somePath/someFile.h5", h5pp::FileAccess::READWRITE);    // Open (or create) a file
         auto v = file.readDataset<std::vector<double>>("myStdVector");               // Read the dataset from file
     }
 ```
@@ -125,16 +125,16 @@ The flags are listed in the order of increasing "danger" that they pose to previ
 
 | Flag | File exists | No file exists | Comment |
 | ---- | ---- | ---- | ---- |
-| `READONLY`                | Open with read-only permission       | Throw error     | Never writes to disk, fails if the file is not found |
+| `READONLY`                | Open with read-only fileAccess       | Throw error     | Never writes to disk, fails if the file is not found |
 | `COLLISION_FAIL`          | Throw error                          | Create new file | Never deletes existing files and fails if it already exists |
 | `RENAME` **(default)**    | Create renamed file                  | Create new file | Never deletes existing files. Invents a new filename to avoid collision by appending "-#" (#=1,2,3...) to the stem of the filename |
-| `READWRITE`               | Open with read-write permission      | Create new file | Never deletes existing files, but is allowed to open/modify |
+| `READWRITE`               | Open with read-write fileAccess      | Create new file | Never deletes existing files, but is allowed to open/modify |
 | `BACKUP`                  | Rename existing file and create new  | Create new file | Avoids collision by backing up the existing file, appending ".bak_#" (#=1,2,3...) to the filename |
 | `REPLACE`                 | Truncate (overwrite)                 | Create new file | Deletes the existing file and creates a new one in place |
 
 
 * When a new file is created, the intermediate directories are always created automatically.
-* When a new file is created, `READWRITE` permission to it is implied.
+* When a new file is created, `READWRITE` fileAccess to it is implied.
 
 To give a concrete example, the syntax works as follows
 
@@ -199,7 +199,7 @@ Set the level when constructing a h5pp::File or by calling the function `.setLog
 ```c++
     int logLevel = 0; // Highest verbosity
     // This way...
-    h5pp::File file("myDir/someFile.h5", h5pp::FilePermission::REPLACE, logLevel); 
+    h5pp::File file("myDir/someFile.h5", h5pp::FileAccess::REPLACE, logLevel); 
     // or this way
     file.setLogLevel(logLevel);                                                                       
 ```

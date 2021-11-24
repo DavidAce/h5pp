@@ -39,7 +39,7 @@ void writeThenRead(h5pp::File &file, const std::vector<ScalarN> &dset, std::stri
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-02d-stdvector-struct.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-02d-stdvector-struct.h5", h5pp::FileAccess::REPLACE);
 
     // Initialize vectors with struct-type dummy data
     std::vector<Int2>    coord2d = {{1, 2}, {3, 4}, {5, 6}};

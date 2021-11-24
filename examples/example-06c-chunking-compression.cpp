@@ -13,7 +13,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-06c-chunking-compression.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-06c-chunking-compression.h5", h5pp::FileAccess::REPLACE);
 
     /*
      * Note: h5pp uses the "deflate" compression filter which is available

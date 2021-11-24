@@ -7,7 +7,7 @@ int main() {
     // Define dummy data
     std::string outputFilename = "output/overWrite.h5";
     size_t      logLevel       = 0;
-    h5pp::File  file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File  file(outputFilename, h5pp::FileAccess::REPLACE, logLevel);
 
     std::string somestring = "this is a teststring";
 

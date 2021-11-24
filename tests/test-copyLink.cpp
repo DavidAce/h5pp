@@ -8,9 +8,9 @@ int main() {
         "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     size_t     logLevel = 0;
-    h5pp::File fileA("output/copyLinkA.h5", h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File fileA("output/copyLinkA.h5", h5pp::FileAccess::REPLACE, logLevel);
 
     fileA.writeDataset("A", "groupA/A");
-    fileA.copyLinkToFile("groupA/A", "output/copyLinkB.h5", "groupA_from_file_A/A", h5pp::FilePermission::REPLACE);
+    fileA.copyLinkToFile("groupA/A", "output/copyLinkB.h5", "groupA_from_file_A/A", h5pp::FileAccess::REPLACE);
     fileA.copyLinkFromFile("groupA_from_file_B/A", "output/copyLinkB.h5", "groupA_from_file_A/A");
 }

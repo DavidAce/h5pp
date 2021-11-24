@@ -6,7 +6,7 @@
 int main() {
     std::string outputFilename = "output/compressedDataset.h5";
     size_t      logLevel       = 0;
-    h5pp::File  file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File  file(outputFilename, h5pp::FileAccess::REPLACE, logLevel);
 
     file.setCompressionLevel(9);
     std::vector<double> bigVector(10000 * 1024, 2.3);

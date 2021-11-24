@@ -9,7 +9,7 @@ struct Table {
 int main() {
     if constexpr(h5pp::has_direct_chunk) {
         /* Create the data space */
-        auto file = h5pp::File("output/directWrite.h5", h5pp::FilePermission::REPLACE, 0);
+        auto file = h5pp::File("output/directWrite.h5", h5pp::FileAccess::REPLACE, 0);
 
         auto coord5 = h5pp::util::ind2sub({3, 4}, 5);
         auto coord7 = h5pp::util::ind2sub({3, 4}, 7);

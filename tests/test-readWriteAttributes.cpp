@@ -31,7 +31,7 @@ int main() {
     // define the file
     std::string outputFilename = "output/readWriteAttributes.h5";
     size_t      logLevel       = 0;
-    h5pp::File  file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File  file(outputFilename, h5pp::FileAccess::REPLACE, logLevel);
 
     // Write dataset
     file.writeDataset(std::vector<double>(10, 5), "testGroup/vectorDouble");

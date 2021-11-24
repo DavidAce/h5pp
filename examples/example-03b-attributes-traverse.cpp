@@ -10,7 +10,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-03b-attributes-traverse.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-03b-attributes-traverse.h5", h5pp::FileAccess::REPLACE);
 
     // Write a dummy integer to file
     file.writeDataset(42, "intGroup/myInt");

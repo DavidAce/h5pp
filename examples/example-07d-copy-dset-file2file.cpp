@@ -4,8 +4,8 @@ int main() {
     size_t logLevel = 2; // Set log level (default is 2: "info")
 
     // Initialize two files
-    h5pp::File fileA("exampledir/example-07d-copy-dset-file2file-A.h5", h5pp::FilePermission::REPLACE, logLevel);
-    h5pp::File fileB("exampledir/example-07d-copy-dset-file2file-B.h5", h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File fileA("exampledir/example-07d-copy-dset-file2file-A.h5", h5pp::FileAccess::REPLACE, logLevel);
+    h5pp::File fileB("exampledir/example-07d-copy-dset-file2file-B.h5", h5pp::FileAccess::REPLACE, logLevel);
 
     // Write a dummy dataset to fileA
     fileA.writeDataset("Data on file A", "data/in/fileB/datasetA");

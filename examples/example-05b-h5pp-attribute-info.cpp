@@ -21,7 +21,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-05b-attribute-info.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-05b-attribute-info.h5", h5pp::FileAccess::REPLACE);
 
     // Write a dataset to file
     file.writeDataset(42, "group/dataset");

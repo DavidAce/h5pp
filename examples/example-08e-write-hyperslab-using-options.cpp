@@ -12,7 +12,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-08d-write-hyperslab-using-options.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-08d-write-hyperslab-using-options.h5", h5pp::FileAccess::REPLACE);
 
     // Initialize a vector with size 25 filled with zeros
     std::vector<double> data5x5(25, 0);

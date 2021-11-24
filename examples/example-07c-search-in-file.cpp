@@ -4,7 +4,7 @@ int main() {
     size_t logLevel = 2; // Set log level (default is 2: "info")
 
     // Initialize a file
-    h5pp::File file("exampledir/example-07c-search-in-file.h5", h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File file("exampledir/example-07c-search-in-file.h5", h5pp::FileAccess::REPLACE, logLevel);
 
     // Write many dummy datasets
     file.writeDataset("0", "dataset0");

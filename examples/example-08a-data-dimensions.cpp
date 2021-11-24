@@ -10,7 +10,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-08a-data-dimensions.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-08a-data-dimensions.h5", h5pp::FileAccess::REPLACE);
 
     // Initialize a vector with size 12, i.e. a 1-dimensional layout "{12}"
     std::vector<double> vec(12);

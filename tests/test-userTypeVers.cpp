@@ -84,7 +84,7 @@ void register_types() {
 }
 
 TEST_CASE("Single particles are compatible", "[single-particles]") {
-    h5pp::File file("output/userTypeVers.h5", h5pp::FilePermission::REPLACE, 2);
+    h5pp::File file("output/userTypeVers.h5", h5pp::FileAccess::REPLACE, 2);
 
     // Create a single particle version 1
     ParticleV1 p1 = create_unique_v1(5);
@@ -150,7 +150,7 @@ TEST_CASE("Vector of versioned structs is compatible") {
 
     std::string layout_str = std::array<std::string, 3>{"H5D_COMPACT", "H5D_CONTIGUOUS", "H5D_CHUNKED"}[static_cast<size_t>(layout)];
 
-    h5pp::File file("output/userTypeVers.h5", h5pp::FilePermission::REPLACE, 2);
+    h5pp::File file("output/userTypeVers.h5", h5pp::FileAccess::REPLACE, 2);
 
     // Create vectors of version 1 and 2 particles.
     std::vector<ParticleV1> vp1;

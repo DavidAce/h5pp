@@ -6,7 +6,7 @@
 int main() {
     std::string outputFilename = "output/appendToDataset.h5";
     size_t      logLevel       = 0;
-    h5pp::File  file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File  file(outputFilename, h5pp::FileAccess::REPLACE, logLevel);
 
     std::vector<double> data = {1, 2, 3, 4};
     file.writeDataset(data, "group/VectorDoubletemp", {4, 1}, H5D_CHUNKED, {4, 100});

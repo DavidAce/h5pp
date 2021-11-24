@@ -17,7 +17,7 @@ struct Double3 {
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-01c-struct-simple.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-01c-struct-simple.h5", h5pp::FileAccess::REPLACE);
 
     // Initialize some dummy data
     Int2    coord2dWrite = {1, 2};
