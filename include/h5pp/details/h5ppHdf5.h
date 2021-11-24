@@ -1746,6 +1746,7 @@ namespace h5pp::hdf5 {
     namespace internal {
         inline long        maxHits  = -1;
         inline long        maxDepth = -1;
+        inline bool        symlinks = false;
         inline std::string searchKey;
         template<H5O_type_t ObjType, typename InfoType>
         inline herr_t matcher([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const InfoType *info, void *opdata) {
@@ -1819,18 +1820,21 @@ namespace h5pp::hdf5 {
                                           std::vector<std::string> &matchList,
                                           const hid::h5p           &linkAccess = H5P_DEFAULT) {
             H5Eset_auto(H5E_DEFAULT, nullptr, nullptr); // Silence the error we get from using index directly
-            constexpr size_t maxsize           = 512;
-            char             linkname[maxsize] = {};
             H5O_info_t       oInfo;
+            H5L_info_t       lInfo;
+            auto safe_root = util::safe_str(root);
             /* clang-format off */
-            for(hsize_t idx = 0; idx < 100000000; idx++) {
-                ssize_t namesize = H5Lget_name_by_idx(loc, util::safe_str(root).c_str(), H5_index_t::H5_INDEX_NAME,
-                                                      H5_iter_order_t::H5_ITER_NATIVE, idx,linkname,maxsize,linkAccess);
+            for(hsize_t idx = 0; idx < std::numeric_limits<hsize_t>::max(); idx++) {
+                std::string linkPath; // <-- This is the path to the object that we are currently visiting, relative to root
+                ssize_t namesize = H5Lget_name_by_idx(loc, safe_root.c_str(), H5_index_t::H5_INDEX_NAME,
+                                                      H5_iter_order_t::H5_ITER_NATIVE, idx,nullptr, linkPath.size(),linkAccess);
                 if(namesize <= 0) {
                     H5Eclear(H5E_DEFAULT);
                     break;
                 }
-                std::string_view linkPath(linkname, static_cast<size_t>(namesize)); // <-- This is the full path to the object that we are currently visiting.
+                linkPath.resize(static_cast<size_t>(namesize));
+                namesize = H5Lget_name_by_idx(loc, safe_root.c_str(), H5_index_t::H5_INDEX_NAME,
+                                                      H5_iter_order_t::H5_ITER_NATIVE, idx,linkPath.data(),linkPath.size()+1,linkAccess);
 
                 // If this group is deeper than maxDepth, just return
                 if(maxDepth >= 0 and std::count(linkPath.begin(), linkPath.end(), '/') > maxDepth) return 0;
@@ -1838,18 +1842,28 @@ namespace h5pp::hdf5 {
                 // Get the name of the object without the full path, to match the searchKey
                 auto slashpos = linkPath.rfind('/');
                 if(slashpos == std::string_view::npos) slashpos = 0;
-                std::string_view linkName = linkPath.substr(slashpos);
-
-
+                auto linkName = linkPath.substr(slashpos);
 
                 if(ObjType == H5O_TYPE_UNKNOWN) {
                     // Accept based on name
-                    if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) matchList.emplace_back(linkname);
+                    if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) matchList.emplace_back(linkPath);
                     if(maxHits > 0 and static_cast<long>(matchList.size()) >= maxHits) return 0;
                 } else {
-                    // Name is not enough to establish a match. Check type.
+                    // Check link type
+                    herr_t lres = H5Lget_info(loc, safe_root.c_str(), &lInfo, linkAccess);
+                    if (lres < 0) {
+                       H5Eclear(H5E_DEFAULT);
+                       break;
+                    }
+                    switch(lInfo.type){
+                      case H5L_type_t::H5L_TYPE_EXTERNAL:
+                      case H5L_type_t::H5L_TYPE_SOFT: if(not symlinks) break;
+                      default:;
+                    }
+
+                    // Name is not enough to establish a match. Check object type.
                     #if defined(H5Oget_info_by_idx_vers) && H5Oget_info_by_idx_vers >= 2
-                    herr_t res = H5Oget_info_by_idx(loc, util::safe_str(root).c_str(),
+                    herr_t res = H5Oget_info_by_idx(loc, safe_root.c_str(),
                                                     H5_index_t::H5_INDEX_NAME, H5_iter_order_t::H5_ITER_NATIVE,
                                                     idx, &oInfo, H5O_INFO_BASIC,linkAccess );
                     #else
@@ -1862,7 +1876,7 @@ namespace h5pp::hdf5 {
                         break;
                     }
                     if(oInfo.type == ObjType and (searchKey.empty() or linkName.find(searchKey) != std::string::npos))
-                        matchList.emplace_back(linkname);
+                        matchList.emplace_back(linkPath);
                     if(maxHits > 0 and static_cast<long>(matchList.size()) >= maxHits) return 0;
                 }
             }
@@ -1910,6 +1924,7 @@ namespace h5pp::hdf5 {
                                                             std::string_view searchRoot = "/",
                                                             long             maxHits    = -1,
                                                             long             maxDepth   = -1,
+                                                            bool             followSymlinks = false,
                                                             const hid::h5p  &linkAccess = H5P_DEFAULT) {
         h5pp::logger::log->trace("search key: {} | root: {} | type: {} | max hits {} | max depth {}",
                                  searchKey,
@@ -1924,6 +1939,7 @@ namespace h5pp::hdf5 {
         std::vector<std::string> matchList;
         internal::maxHits   = maxHits;
         internal::maxDepth  = maxDepth;
+        internal::symlinks  = followSymlinks;
         internal::searchKey = searchKey;
         herr_t err          = internal::visit_by_name<ObjType>(loc, searchRoot, matchList, linkAccess);
         if(err < 0)

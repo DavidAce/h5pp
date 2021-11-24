@@ -1391,12 +1391,14 @@ namespace h5pp {
 
         void createSoftLink(std::string_view targetLinkPath, std::string_view softLinkPath) {
             // It's important that targetLinkPath is a full path
-            std::string targetLinkFullPath = targetLinkPath.front() == '/' ? std::string(targetLinkPath) : h5pp::format("/{}", targetLinkPath);
+            std::string targetLinkFullPath =
+                targetLinkPath.front() == '/' ? std::string(targetLinkPath) : h5pp::format("/{}", targetLinkPath);
             h5pp::hdf5::createSoftLink(targetLinkFullPath, openFileHandle(), softLinkPath, plists);
         }
 
         void createHardLink(std::string_view targetLinkPath, std::string_view hardLinkPath) {
-            std::string targetLinkFullPath = targetLinkPath.front() == '/' ? std::string(targetLinkPath) : h5pp::format("/{}", targetLinkPath);
+            std::string targetLinkFullPath =
+                targetLinkPath.front() == '/' ? std::string(targetLinkPath) : h5pp::format("/{}", targetLinkPath);
             h5pp::hdf5::createHardLink(openFileHandle(), targetLinkFullPath, openFileHandle(), hardLinkPath, plists);
         }
 
@@ -1456,19 +1458,46 @@ namespace h5pp {
             return h5pp::hdf5::checkIfLinkExists(openFileHandle(), linkPath, plists.linkAccess);
         }
 
-        [[nodiscard]] std::vector<std::string>
-            findLinks(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
-            return h5pp::hdf5::findLinks<H5O_TYPE_UNKNOWN>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.linkAccess);
+        [[nodiscard]] std::vector<std::string> findLinks(std::string_view searchKey      = "",
+                                                         std::string_view searchRoot     = "/",
+                                                         long             maxHits        = -1,
+                                                         long             maxDepth       = -1,
+                                                         bool             followSymlinks = false) const {
+            return h5pp::hdf5::findLinks<H5O_TYPE_UNKNOWN>(openFileHandle(),
+                                                           searchKey,
+                                                           searchRoot,
+                                                           maxHits,
+                                                           maxDepth,
+                                                           followSymlinks,
+                                                           plists.linkAccess);
         }
 
-        [[nodiscard]] std::vector<std::string>
-            findDatasets(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
-            return h5pp::hdf5::findLinks<H5O_TYPE_DATASET>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.linkAccess);
+        [[nodiscard]] std::vector<std::string> findDatasets(std::string_view searchKey      = "",
+                                                            std::string_view searchRoot     = "/",
+                                                            long             maxHits        = -1,
+                                                            long             maxDepth       = -1,
+                                                            bool             followSymlinks = false) const {
+            return h5pp::hdf5::findLinks<H5O_TYPE_DATASET>(openFileHandle(),
+                                                           searchKey,
+                                                           searchRoot,
+                                                           maxHits,
+                                                           maxDepth,
+                                                           followSymlinks,
+                                                           plists.linkAccess);
         }
 
-        [[nodiscard]] std::vector<std::string>
-            findGroups(std::string_view searchKey = "", std::string_view searchRoot = "/", long maxHits = -1, long maxDepth = -1) const {
-            return h5pp::hdf5::findLinks<H5O_TYPE_GROUP>(openFileHandle(), searchKey, searchRoot, maxHits, maxDepth, plists.linkAccess);
+        [[nodiscard]] std::vector<std::string> findGroups(std::string_view searchKey      = "",
+                                                          std::string_view searchRoot     = "/",
+                                                          long             maxHits        = -1,
+                                                          long             maxDepth       = -1,
+                                                          bool             followSymlinks = false) const {
+            return h5pp::hdf5::findLinks<H5O_TYPE_GROUP>(openFileHandle(),
+                                                         searchKey,
+                                                         searchRoot,
+                                                         maxHits,
+                                                         maxDepth,
+                                                         followSymlinks,
+                                                         plists.linkAccess);
         }
 
         [[nodiscard]] DsetInfo getDatasetInfo(std::string_view dsetPath) const {
