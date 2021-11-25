@@ -1822,18 +1822,17 @@ namespace h5pp::hdf5 {
             H5Eset_auto(H5E_DEFAULT, nullptr, nullptr); // Silence the error we get from using index directly
             H5O_info_t       oInfo;
             H5L_info_t       lInfo;
-            auto safe_root = util::safe_str(root);
             /* clang-format off */
             for(hsize_t idx = 0; idx < std::numeric_limits<hsize_t>::max(); idx++) {
                 std::string linkPath; // <-- This is the path to the object that we are currently visiting, relative to root
-                ssize_t namesize = H5Lget_name_by_idx(loc, safe_root.c_str(), H5_index_t::H5_INDEX_NAME,
+                ssize_t namesize = H5Lget_name_by_idx(loc, root.data(), H5_index_t::H5_INDEX_NAME,
                                                       H5_iter_order_t::H5_ITER_NATIVE, idx,nullptr, linkPath.size(),linkAccess);
                 if(namesize <= 0) {
                     H5Eclear(H5E_DEFAULT);
                     break;
                 }
                 linkPath.resize(static_cast<size_t>(namesize));
-                namesize = H5Lget_name_by_idx(loc, safe_root.c_str(), H5_index_t::H5_INDEX_NAME,
+                namesize = H5Lget_name_by_idx(loc, root.data(), H5_index_t::H5_INDEX_NAME,
                                                       H5_iter_order_t::H5_ITER_NATIVE, idx,linkPath.data(),linkPath.size()+1,linkAccess);
 
                 // If this group is deeper than maxDepth, just return
@@ -1850,7 +1849,7 @@ namespace h5pp::hdf5 {
                     if(maxHits > 0 and static_cast<long>(matchList.size()) >= maxHits) return 0;
                 } else {
                     // Check link type
-                    herr_t lres = H5Lget_info(loc, safe_root.c_str(), &lInfo, linkAccess);
+                    herr_t lres = H5Lget_info_by_idx(loc, root.data(), H5_index_t::H5_INDEX_NAME, H5_iter_order_t::H5_ITER_NATIVE,idx,  &lInfo, linkAccess);
                     if (lres < 0) {
                        H5Eclear(H5E_DEFAULT);
                        break;
@@ -1863,11 +1862,11 @@ namespace h5pp::hdf5 {
 
                     // Name is not enough to establish a match. Check object type.
                     #if defined(H5Oget_info_by_idx_vers) && H5Oget_info_by_idx_vers >= 2
-                    herr_t res = H5Oget_info_by_idx(loc, safe_root.c_str(),
+                    herr_t res = H5Oget_info_by_idx(loc, root.data(),
                                                     H5_index_t::H5_INDEX_NAME, H5_iter_order_t::H5_ITER_NATIVE,
                                                     idx, &oInfo, H5O_INFO_BASIC,linkAccess );
                     #else
-                    herr_t res = H5Oget_info_by_idx(loc, util::safe_str(root).c_str(),
+                    herr_t res = H5Oget_info_by_idx(loc, root.data(),
                                                     H5_index_t::H5_INDEX_NAME, H5_iter_order_t::H5_ITER_NATIVE,
                                                     idx, &oInfo, linkAccess );
                     #endif
@@ -1892,13 +1891,15 @@ namespace h5pp::hdf5 {
             static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
                           "Template function [h5pp::hdf5::visit_by_name(const h5x & loc, ...)] requires type h5x to be: "
                           "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
+            auto safe_root = util::safe_str(root);
+
             if(internal::maxDepth == 0)
                 // Faster when we don't need to iterate recursively
-                return H5L_custom_iterate_by_name<ObjType>(loc, root, matchList, linkAccess);
+                return H5L_custom_iterate_by_name<ObjType>(loc, safe_root, matchList, linkAccess);
 
 #if defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers >= 2
             return H5Ovisit_by_name(loc,
-                                    util::safe_str(root).c_str(),
+                                    safe_root.c_str(),
                                     H5_INDEX_NAME,
                                     H5_ITER_NATIVE,
                                     internal::matcher<ObjType>,
@@ -1907,7 +1908,7 @@ namespace h5pp::hdf5 {
                                     linkAccess);
 #else
             return H5Ovisit_by_name(loc,
-                                    util::safe_str(root).c_str(),
+                                    safe_root.c_str(),
                                     H5_INDEX_NAME,
                                     H5_ITER_NATIVE,
                                     internal::matcher<ObjType>,
