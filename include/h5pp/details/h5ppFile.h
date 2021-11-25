@@ -34,7 +34,7 @@ namespace h5pp {
         fs::path                        filePath;                                /*!< Full path to the file */
         h5pp::FileAccess                fileAccess   = h5pp::FileAccess::RENAME; /*!< File open/create policy. */
         mutable std::optional<hid::h5f> fileHandle   = std::nullopt;             /*!< Keeps a file handle alive in batch operations */
-        LogLevel                        logLevel     = LogLevel::info;           /*!< Log verbosity from 0 [trace] to 6 [off] */
+        mutable LogLevel                logLevel     = LogLevel::info;           /*!< Log verbosity from 0 [trace] to 6 [off] */
         bool                            logTimestamp = false;                    /*!< Add a time stamp to console log output */
         hid::h5e                        error_stack  = H5E_DEFAULT;              /*!< Holds a reference to the error stack used by HDF5 */
         int currentCompression                       = -1; /*!< Holds the default compression level (-1 is off, 0 is none, 9 is max) */
@@ -402,8 +402,7 @@ namespace h5pp {
          * From 0 (highest) to 6 (off)
          */
         template<typename LogLevelType>
-        void setLogLevel(LogLevelType logLevelZeroToSix /*!< Log level */
-        ) {
+        void setLogLevel(LogLevelType logLevelZeroToSix) const {
             logLevel = Num2Level(logLevelZeroToSix);
             h5pp::logger::setLogLevel(logLevelZeroToSix);
         }
