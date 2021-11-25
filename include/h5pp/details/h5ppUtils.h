@@ -113,6 +113,7 @@ namespace h5pp::util {
         if constexpr (std::is_same_v<DecayType, bool>)                             return H5Tcopy(H5T_NATIVE_UINT8);
         if constexpr (std::is_same_v<DecayType, std::string>)                      return H5Tcopy(H5T_C_S1);
         if constexpr (std::is_same_v<DecayType, char>)                             return H5Tcopy(H5T_C_S1);
+        if constexpr (std::is_same_v<DecayType, std::byte>)                        return H5Tcopy(H5T_NATIVE_B8);
         if constexpr (tc::is_std_complex_v<DecayType>)                             return H5Tcopy(type::compound::H5T_COMPLEX<typename DecayType::value_type>::h5type());
         if constexpr (tc::is_Scalar2_v<DecayType>)                                 return H5Tcopy(type::compound::H5T_SCALAR2<tc::get_Scalar2_t<DecayType>>::h5type());
         if constexpr (tc::is_Scalar3_v<DecayType>)                                 return H5Tcopy(type::compound::H5T_SCALAR3<tc::get_Scalar3_t<DecayType>>::h5type());

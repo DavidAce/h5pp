@@ -200,6 +200,7 @@ int main() {
         field3vector[i].y = 20.5 * d;
         field3vector[i].z = 200.9 * d;
     }
+
 #ifdef H5PP_EIGEN3
     Eigen::MatrixXd                              matrixDouble        = Eigen::MatrixXd::Random(3, 2);
     Eigen::Matrix<size_t, 3, 2, Eigen::RowMajor> matrixSizeTRowMajor = Eigen::Matrix<size_t, 3, 2, Eigen::RowMajor>::Random(3, 2);
@@ -229,6 +230,11 @@ int main() {
     test_h5pp(file, field3, "field3");
     test_h5pp(file, field2vector, "field2vector");
     test_h5pp(file, field3vector, "field3vector");
+
+    // Read data as std::vector<std::byte>
+    auto vectorReadBytes = file.readDataset<std::vector<std::byte>>("vectorDouble");
+
+
 
 #ifdef H5PP_EIGEN3
     test_h5pp(file, matrixDouble, "matrixDouble");

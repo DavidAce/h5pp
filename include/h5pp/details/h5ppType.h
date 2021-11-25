@@ -42,6 +42,7 @@ namespace h5pp::type {
         if constexpr (std::is_same_v<DecayType, bool>)                   return H5Tcopy(H5T_NATIVE_UINT8);
         if constexpr (std::is_same_v<DecayType, std::string>)            return H5Tcopy(H5T_C_S1);
         if constexpr (std::is_same_v<DecayType, char>)                   return H5Tcopy(H5T_C_S1);
+        if constexpr (std::is_same_v<DecayType, std::byte>)              return H5Tcopy(H5T_NATIVE_B8);
         if constexpr (tc::has_Scalar_v <DecayType>)                      return getH5NativeType<typename DecayType::Scalar>();
         if constexpr (tc::has_value_type_v <DecayType>)                  return getH5NativeType<typename DataType::value_type>();
         /* clang-format on */
