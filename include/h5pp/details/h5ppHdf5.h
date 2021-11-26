@@ -767,25 +767,26 @@ namespace h5pp::hdf5 {
         using namespace h5pp::type::compound;
         auto h5class = H5Tget_class(type);
         auto h5size  = H5Tget_size(type);
+        auto h5bits  = h5size * 8;
         /* clang-format off */
         if(h5class == H5T_class_t::H5T_INTEGER){
-            if(h5size == 8){
+            if(h5bits == 8){
                 if(H5Tequal(type, H5T_NATIVE_INT8))          return getCppType<int8_t>();
                 if(H5Tequal(type, H5T_NATIVE_UINT8))         return getCppType<uint8_t>();
                 if(H5Tequal(type, H5T_NATIVE_INT_FAST8))     return getCppType<int_fast8_t>();
                 if(H5Tequal(type, H5T_NATIVE_UINT_FAST8))    return getCppType<uint_fast8_t>();
-            }else if(h5size == 16){
+            }else if(h5bits == 16){
                 if(H5Tequal(type, H5T_NATIVE_INT16))         return getCppType<int16_t>();
                 if(H5Tequal(type, H5T_NATIVE_UINT16))        return getCppType<uint16_t>();
                 if(H5Tequal(type, H5T_NATIVE_INT_FAST16))    return getCppType<int_fast16_t>();
                 if(H5Tequal(type, H5T_NATIVE_UINT_FAST16))   return getCppType<uint_fast16_t>();
-            }else if(h5size == 32){
+            }else if(h5bits == 32){
                 if(H5Tequal(type, H5T_NATIVE_INT32))         return getCppType<int32_t>();
                 if(H5Tequal(type, H5T_NATIVE_UINT32))        return getCppType<uint32_t>();
                 if(H5Tequal(type, H5T_NATIVE_INT_FAST32))    return getCppType<int_fast32_t>();
                 if(H5Tequal(type, H5T_NATIVE_UINT_FAST32))   return getCppType<uint_fast32_t>();
             }
-            else if(h5size == 64){
+            else if(h5bits == 64){
                 if(H5Tequal(type, H5T_NATIVE_INT64))         return getCppType<int64_t>();
                 if(H5Tequal(type, H5T_NATIVE_UINT64))        return getCppType<uint64_t>();
                 if(H5Tequal(type, H5T_NATIVE_INT_FAST64))    return getCppType<int_fast64_t>();
@@ -814,7 +815,7 @@ namespace h5pp::hdf5 {
             if(nmembers < 0)
                 throw h5pp::runtime_error("Failed to read nmembers for type");
             auto nmembers_ul = static_cast<size_t>(nmembers);
-            if(h5size == 8ul*nmembers_ul){
+            if(h5bits == 8ul*nmembers_ul){
                 if (H5T_COMPLEX<int8_t>::equal(type))           return getCppType<std::complex<int8_t>>();
                 if (H5T_COMPLEX<uint8_t>::equal(type))          return getCppType<std::complex<uint8_t>>();
                 if (H5T_COMPLEX<int_fast8_t>::equal(type))      return getCppType<std::complex<int_fast8_t>>();
@@ -831,7 +832,7 @@ namespace h5pp::hdf5 {
                 if (H5T_SCALAR3<uint_fast8_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar3<uint_fast8_t>>();
 
             }
-            else if(h5size == 16ul*nmembers_ul){
+            else if(h5bits == 16ul*nmembers_ul){
                 if (H5T_COMPLEX<int16_t>::equal(type))          return getCppType<std::complex<int16_t>>();
                 if (H5T_COMPLEX<uint16_t>::equal(type))         return getCppType<std::complex<uint16_t>>();
                 if (H5T_COMPLEX<int_fast16_t>::equal(type))     return getCppType<std::complex<int_fast16_t>>();
@@ -848,7 +849,7 @@ namespace h5pp::hdf5 {
                 if (H5T_SCALAR3<uint_fast16_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar3<uint_fast16_t>>();
 
             }
-            else if(h5size == 32ul*nmembers_ul){
+            else if(h5bits == 32ul*nmembers_ul){
                 if (H5T_COMPLEX<int32_t>::equal(type))          return getCppType<std::complex<int32_t>>();
                 if (H5T_COMPLEX<uint32_t>::equal(type))         return getCppType<std::complex<uint32_t>>();
                 if (H5T_COMPLEX<int_fast32_t>::equal(type))     return getCppType<std::complex<int_fast32_t>>();
@@ -865,7 +866,7 @@ namespace h5pp::hdf5 {
                 if (H5T_SCALAR3<uint_fast32_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar3<uint_fast32_t>>();
 
             }
-            else if(h5size == 64ul*nmembers_ul){
+            else if(h5bits == 64ul*nmembers_ul){
                 if (H5T_COMPLEX<int64_t>::equal(type))          return getCppType<std::complex<int64_t>>();
                 if (H5T_COMPLEX<uint64_t>::equal(type))         return getCppType<std::complex<uint64_t>>();
                 if (H5T_COMPLEX<int_fast64_t>::equal(type))     return getCppType<std::complex<int_fast64_t>>();
@@ -890,16 +891,10 @@ namespace h5pp::hdf5 {
                 if (H5T_SCALAR3<long double>::equal(type))      return getCppType<h5pp::type::compound::Scalar3<long double>>();
                 if (H5T_SCALAR3<float>::equal(type))            return getCppType<h5pp::type::compound::Scalar3<float>>();
             }
+            return {typeid(std::vector<std::byte>), "H5T_COMPOUND", h5size};
         }
         if(H5Tequal(type, H5T_NATIVE_HBOOL))            return getCppType<hbool_t>();
         if(H5Tequal(type, H5T_NATIVE_B8))               return getCppType<std::byte>();
-        if(H5Tcommitted(type) > 0) {
-            H5Eprint(H5E_DEFAULT, stderr);
-            if(h5pp::logger::log->level() == 0)
-                h5pp::logger::log->trace("No C++ type match for HDF5 type [{}]", getName(type));
-        } else {
-            h5pp::logger::log->trace("No C++ type match for non-committed HDF5 type. This is usually not a problem");
-        }
         std::string name;
         switch(h5class){
             case H5T_class_t::H5T_INTEGER:      name = "H5T_INTEGER"; break;
@@ -916,8 +911,14 @@ namespace h5pp::hdf5 {
             default: name = "UNKNOWN TYPE";
         }
         /* clang-format on */
-
-        return {typeid(nullptr), name, getBytesPerElem(type)};
+        if(H5Tcommitted(type) > 0) {
+            H5Eprint(H5E_DEFAULT, stderr);
+            if(h5pp::logger::log->level() == 0)
+                h5pp::logger::log->trace("No C++ type match for HDF5 type [{}]", getName(type));
+        } else {
+            h5pp::logger::log->trace("No known C++ type matches HDF5 type of class [ {} | {} bytes ]. This is usually not a problem", name, h5size);
+        }
+        return {typeid(nullptr), name, h5size};
     }
 
     [[nodiscard]] inline TypeInfo getTypeInfo(std::optional<std::string> objectPath,
