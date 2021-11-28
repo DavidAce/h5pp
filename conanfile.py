@@ -63,9 +63,12 @@ class h5ppConan(ConanFile):
             self._cmake = CMake(self)
             self._cmake.definitions["H5PP_ENABLE_TESTS"]         = self.options.tests
             self._cmake.definitions["H5PP_BUILD_EXAMPLES"]       = self.options.examples
-            self._cmake.definitions["H5PP_PACKAGE_MANAGER"]      = "conan"
+            self._cmake.definitions["H5PP_PACKAGE_MANAGER"]      = "find"
             self._cmake.definitions["H5PP_ENABLE_PCH"]           = self.options.pch
             self._cmake.definitions["H5PP_ENABLE_CCACHE"]        = self.options.ccache
+            self._cmake.definitions["H5PP_ENABLE_EIGEN3"]        = True
+            self._cmake.definitions["H5PP_ENABLE_SPDLOG"]        = True
+            self._cmake.definitions["H5PP_ENABLE_FMT"]           = True
             args = None
             if self.options.verbose:
                 args = '--loglevel=DEBUG'
@@ -94,6 +97,9 @@ class h5ppConan(ConanFile):
         self.cpp_info.components["h5pp_deps"].requires = ["eigen::eigen", "fmt::fmt", "spdlog::spdlog", "hdf5::hdf5"]
         self.cpp_info.components["h5pp_flags"].names["cmake_find_package"] = "flags"
         self.cpp_info.components["h5pp_flags"].names["cmake_find_package_multi"] = "flags"
+        self.cpp_info.components["h5pp_flags"].defines = ["H5PP_USE_EIGEN3"]
+        self.cpp_info.components["h5pp_flags"].defines = ["H5PP_USE_SPDLOG"]
+        self.cpp_info.components["h5pp_flags"].defines = ["H5PP_USE_FMT"]
         if self.settings.compiler == "gcc" and tools.Version(self.settings.compiler.version) < "9":
             self.cpp_info.components["h5pp_flags"].system_libs = ["stdc++fs"]
         if self.settings.compiler == "Visual Studio":
