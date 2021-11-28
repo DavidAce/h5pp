@@ -78,7 +78,7 @@ int main() {
     if(ReadAttributeString != AttributeString) throw std::runtime_error("ReadAttributeString != AttributeString");
     if(ReadAttributeCharArray != AttributeCharArray) throw std::runtime_error("ReadAttributeCharArray != AttributeCharArray");
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     static_assert(h5pp::type::sfinae::has_Scalar<Eigen::MatrixXd>() and
                   "Compile time type-checker failed. Could not properly detect class member Scalar. Scan that you are "
                   "using a supported compiler!");

@@ -98,7 +98,7 @@ int main() {
         throw std::runtime_error("Automatic change from contiguous to chunked when size is large failed: " + std::string(ex.what()));
     }
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     // Do the same for Eigen types
     // Write chunked datasets that can be resized
 

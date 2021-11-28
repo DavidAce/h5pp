@@ -1,7 +1,6 @@
 #pragma once
 #include "h5ppError.h"
-#if __has_include(<Eigen/Core>) && __has_include(<unsupported/Eigen/CXX11/Tensor>)
-    #define H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     #include <Eigen/Core>
     #include <unsupported/Eigen/CXX11/Tensor>
 #endif
@@ -23,7 +22,7 @@ namespace h5pp {
  *  to interface between `Eigen::Tensor` and `Eigen::Matrix` objects.
  *  The contents of this namespace is co clear it is self-documenting ;)
  */
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     namespace eigen {
         template<typename Scalar>
         using MatrixType = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;

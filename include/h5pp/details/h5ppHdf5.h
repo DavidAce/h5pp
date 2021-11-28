@@ -2372,7 +2372,7 @@ namespace h5pp::hdf5 {
                       const DsetInfo      &dsetInfo,
                       const PropertyLists &plists = PropertyLists()) {
         static_assert(not type::sfinae::is_h5pp_id<DataType>);
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
         if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting data to row-major storage order");
             const auto tempRowm = eigen::to_RowMajor(data); // Convert to Row Major first;
@@ -2432,7 +2432,7 @@ namespace h5pp::hdf5 {
             writeDataset(data, dataInfo, dsetInfo, plists);
             return;
         } else {
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
             if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
                 h5pp::logger::log->debug("Converting data to row-major storage order");
                 const auto tempRowm = eigen::to_RowMajor(data); // Convert to Row Major first;
@@ -2493,7 +2493,7 @@ namespace h5pp::hdf5 {
         static_assert(not std::is_const_v<DataType>);
         static_assert(not type::sfinae::is_h5pp_id<DataType>);
         // Transpose the data container before reading
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
         if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting data to row-major storage order");
             auto tempRowMajor = eigen::to_RowMajor(data); // Convert to Row Major first;
@@ -2612,7 +2612,7 @@ namespace h5pp::hdf5 {
     template<typename DataType>
     void writeAttribute(const DataType &data, const DataInfo &dataInfo, const AttrInfo &attrInfo) {
         static_assert(not type::sfinae::is_h5pp_id<DataType>);
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
         if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting attribute data to row-major storage order");
             const auto tempRowm = eigen::to_RowMajor(data); // Convert to Row Major first;
@@ -2658,7 +2658,7 @@ namespace h5pp::hdf5 {
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
     void readAttribute(DataType &data, const DataInfo &dataInfo, const AttrInfo &attrInfo) {
         // Transpose the data container before reading
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
         if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting data to row-major storage order");
             auto tempRowMajor = eigen::to_RowMajor(data); // Convert to Row Major first;

@@ -55,9 +55,10 @@ int main() {
 
         h5pp::hdf5::writeDataset_chunkwise(data, dataInfo, dsetInfo, file.plists);
         //    h5pp::hdf5::writeDataset(data,dataInfo,dsetInfo, file.plists);
-
+#ifdef H5PP_USE_EIGEN3
         auto matrix = file.readDataset<Eigen::MatrixXi>("dset_direct");
         std::cout << matrix << std::endl;
+#endif
         // Register the compound type
         h5pp::hid::h5t MY_HDF5_TABLE_TYPE;
         MY_HDF5_TABLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Table));

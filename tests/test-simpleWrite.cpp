@@ -64,7 +64,7 @@ int main() {
     file.writeDataset(vectorDouble.data(), "simpleWriteGroup/vectorDouble", vectorDouble.size());
     file.writeDataset(vectorInt.data(), "simpleWriteGroup/vectorInt", vectorInt.size());
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     Eigen::MatrixXi  matrixInt(2, 2);
     Eigen::MatrixXd  matrixDouble(2, 2);
     Eigen::MatrixXcd matrixComplexDouble(2, 2);

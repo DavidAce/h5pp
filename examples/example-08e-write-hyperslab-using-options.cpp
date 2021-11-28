@@ -76,7 +76,7 @@ int main() {
         h5pp::print("\n");
     }
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     // Eigen comes in handy when dealing with matrices
     // Note 1: h5pp resizes the Eigen container as indicated by the dataset dimensions
     // Note 2: The rank (number of dimensions) of the Eigen container must agree with the rank of the dataset

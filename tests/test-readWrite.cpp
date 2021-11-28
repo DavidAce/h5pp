@@ -85,7 +85,7 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
         compareScalar(writeData, readData);
     } else if constexpr(has_scalarN_v<ReadType>) {
         if(writeData.size() != readData.size()) throw std::runtime_error("Size mismatch in ScalarN container");
-#if defined(H5PP_EIGEN3)
+#ifdef H5PP_USE_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_matrix_v<ReadType>)
             for(Eigen::Index j = 0; j < writeData.cols(); j++)
                 for(Eigen::Index i = 0; i < writeData.rows(); i++) compareScalar(writeData(i, j), readData(i, j));
@@ -93,7 +93,7 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
 #endif
             for(size_t i = 0; i < static_cast<size_t>(writeData.size()); i++) compareScalar(writeData[i], readData[i]);
     }
-#if defined(H5PP_EIGEN3)
+#ifdef H5PP_USE_EIGEN3
     else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<WriteType> and h5pp::type::sfinae::is_eigen_tensor_v<ReadType>) {
         Eigen::Map<const Eigen::Matrix<typename WriteType::Scalar, Eigen::Dynamic, 1>> tensorMap(writeData.data(), writeData.size());
         Eigen::Map<const Eigen::Matrix<typename ReadType::Scalar, Eigen::Dynamic, 1>>  tensorMapRead(readData.data(), readData.size());
@@ -201,7 +201,7 @@ int main() {
         field3vector[i].z = 200.9 * d;
     }
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     Eigen::MatrixXd                              matrixDouble        = Eigen::MatrixXd::Random(3, 2);
     Eigen::Matrix<size_t, 3, 2, Eigen::RowMajor> matrixSizeTRowMajor = Eigen::Matrix<size_t, 3, 2, Eigen::RowMajor>::Random(3, 2);
     Eigen::Tensor<cplx, 4>                       tensorComplex(2, 3, 2, 3);
@@ -236,7 +236,7 @@ int main() {
 
 
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     test_h5pp(file, matrixDouble, "matrixDouble");
     test_h5pp(file, matrixSizeTRowMajor, "matrixSizeTRowMajor");
     test_h5pp(file, tensorComplex, "tensorComplex");

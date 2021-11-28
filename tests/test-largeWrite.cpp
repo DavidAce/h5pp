@@ -11,7 +11,7 @@ int main() {
     std::vector<std::complex<double>> vectorComplexDouble(10000, {10.0, 5.0});
     file.writeDataset(vectorComplexDouble, "largeWriteGroup/vectorComplexDouble");
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     Eigen::MatrixXi  matrixInt           = Eigen::MatrixXi::Random(500, 500);
     Eigen::MatrixXd  matrixDouble        = Eigen::MatrixXd::Random(500, 500);
     Eigen::MatrixXcd matrixComplexDouble = Eigen::MatrixXcd::Random(500, 500);
