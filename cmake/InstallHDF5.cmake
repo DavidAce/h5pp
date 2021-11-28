@@ -1,4 +1,7 @@
 function(install_hdf5)
+    if(HDF5_FOUND)
+        return()
+    endif()
     include(cmake/InstallPackage.cmake)
     if(H5PP_PREFIX_ADD_PKGNAME)
         set(INSTALL_PREFIX_PKGNAME INSTALL_PREFIX_PKGNAME)
@@ -39,7 +42,7 @@ function(install_hdf5)
     install_package(hdf5 VERSION 1.12
             COMPONENTS C HL ${HDF5_LINK_TYPE}
             FIND_NAME HDF5
-            TARGET_HINTS hdf5::hdf5_hl hdf5::hdf5_hl-${HDF5_LINK_TYPE} hdf5_hl hdf5_hl-${HDF5_LINK_TYPE}
+            TARGET_HINTS HDF5::HDF5 hdf5::hdf5_hl hdf5::hdf5_hl-${HDF5_LINK_TYPE} hdf5_hl hdf5_hl-${HDF5_LINK_TYPE}
             PATH_SUFFIXES cmake/hdf5 # Needed in vs2019 for some reason
             ${INSTALL_PREFIX_PKGNAME}
             CMAKE_ARGS
