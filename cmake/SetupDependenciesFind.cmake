@@ -3,6 +3,12 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find")
     if(H5PP_PACKAGE_MANAGER STREQUAL "find")
         set(REQUIRED REQUIRED)
     endif()
+
+    if(NOT "${CMAKE_BINARY_DIR}" IN_LIST CMAKE_MODULE_PATH)
+        list(PREPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+        list(PREPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/conan)
+    endif()
+
     # Start finding the dependencies
     if(H5PP_ENABLE_EIGEN3 AND NOT Eigen3_FOUND )
         find_package(Eigen3 3.3 ${REQUIRED})
@@ -26,37 +32,12 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find")
             target_link_libraries(deps INTERFACE spdlog::spdlog)
         endif()
     endif()
+
     if (NOT HDF5_FOUND)
+        # h5pp bundles FindHDF5.cmake which defines an HDF5::HDF5 target
         find_package(HDF5 1.8 COMPONENTS C HL ${REQUIRED})
         if(HDF5_FOUND)
-            if(BUILD_SHARED_LIBS)
-                set(HDF5_LINK_TYPE shared)
-            else()
-                set(HDF5_LINK_TYPE static)
-            endif()
-            list(APPEND HDF5_HL_TARGET_CANDIDATES
-                    hdf5::hdf5_hl
-                    hdf5::hdf5_hl-${HDF5_LINK_TYPE}
-                    hdf5_hl
-                    hdf5_hl-${HDF5_LINK_TYPE}
-                    hdf5::hdf5_hl-static
-                    hdf5_hl-static
-                    hdf5::hdf5_hl-shared
-                    hdf5_hl-shared
-                    HDF5::HDF5
-                    )
-            mark_as_advanced(HDF5_HL_TARGET_CANDIDATES)
-            foreach(tgt ${HDF5_HL_TARGET_CANDIDATES})
-                if(TARGET ${tgt})
-                    set(hdf5_TARGET ${tgt})
-                    mark_as_advanced(hdf5_TARGET)
-                    break()
-                endif()
-            endforeach()
-            if(NOT hdf5_TARGET)
-                message(FATAL_ERROR "HDF5 was found but the target name for HL component is not recognized")
-            endif()
-            target_link_libraries(deps INTERFACE ${hdf5_TARGET})
+            target_link_libraries(deps INTERFACE HDF5::HDF5)
         endif()
     endif()
 endif()
