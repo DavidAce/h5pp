@@ -20,10 +20,6 @@ foreach (test ${TESTS})
 endforeach ()
 
 
-find_package(ZLIB REQUIRED)
-target_link_libraries(h5pp-test-directWrite PRIVATE ZLIB::ZLIB)
-
-
 add_custom_command(
         TARGET h5pp-test-all
         POST_BUILD
@@ -31,8 +27,6 @@ add_custom_command(
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         DEPENDS h5pp deps flags
         COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure)
-
-
 
 
 # Speed up compilation with precompiled headers
