@@ -45,9 +45,10 @@ namespace h5pp::util {
             if(num == std::numeric_limits<T>::max() and piv == std::numeric_limits<T>::min())
                 return ~num;                                                      // The last element would be 0 if piv == 0
             if(num >= std::numeric_limits<T>::max() - piv) return piv - ~num - 1; // Rotate around the pivot
-            if(num >= std::numeric_limits<unsigned long long>::max() - piv) return wrapUnsigned<unsigned long long>(num, piv);
-            if(num >= std::numeric_limits<unsigned long>::max() - piv) return wrapUnsigned<unsigned long>(num, piv);
-            if(num >= std::numeric_limits<unsigned int>::max() - piv) return wrapUnsigned<unsigned int>(num, piv);
+            if(num >= std::numeric_limits<std::uint64_t>::max() - piv)
+                return static_cast<T>(wrapUnsigned(static_cast<std::uint64_t>(num), static_cast<std::uint64_t>(piv)));
+            if(num >= std::numeric_limits<std::uint32_t>::max() - piv)
+                return static_cast<T>(wrapUnsigned(static_cast<std::uint32_t>(num), static_cast<std::uint32_t>(piv)));
         }
         return num;
     }
@@ -222,7 +223,7 @@ namespace h5pp::util {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] constexpr int getRank() {
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) return static_cast<int>(DataType::NumIndices);
         if constexpr(h5pp::type::sfinae::is_eigen_1d_v<DataType>) return 1;
         if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType>) return 2;
@@ -251,7 +252,7 @@ namespace h5pp::util {
         } else if constexpr(h5pp::type::sfinae::has_size_v<DataType> and rank == 1)
             return {static_cast<hsize_t>(data.size())};
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
         else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             if(data.dimensions().size() != rank) throw h5pp::runtime_error("given dimensions do not match detected rank");
             // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
@@ -600,7 +601,7 @@ namespace h5pp::util {
     template<typename DataType>
     inline void resizeData(DataType &data, const std::vector<hsize_t> &newDims) {
         // This function may shrink a container!
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             auto newSize = getSizeFromDimensions(newDims);
             if(newDims.size() != 1)
@@ -635,7 +636,7 @@ namespace h5pp::util {
                                             newSize);
             }
         } else
-#endif // H5PP_EIGEN3
+#endif // H5PP_USE_EIGEN3
             if constexpr(h5pp::type::sfinae::has_size_v<DataType> and h5pp::type::sfinae::has_resize_v<DataType>) {
             if(newDims.size() > 1)
                 h5pp::logger::log->debug(
