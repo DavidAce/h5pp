@@ -1,6 +1,4 @@
-# Here you can specify desired software packages to be downloaded by conan.
-# To activate reading this file from CMakeLists.txt, enable the setting -DH5PP_DOWNLOAD_METHOD=conan
-
+# Here you can specify dependencies of h5pp to be downloaded by conan.
 
 [requires]
 eigen/3.4.0@
@@ -9,8 +7,6 @@ spdlog/1.9.2@
 hdf5/1.12.0@
 
 [generators]
-cmake
+cmake_find_package_multi
 
-[options]
-*:shared=False
 

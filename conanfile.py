@@ -12,8 +12,8 @@ class h5ppConan(ConanFile):
     url = "https://github.com/DavidAce/h5pp"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake", "cmake_find_package", "cmake_find_package_multi"
-    requires = "eigen/3.4.0", "spdlog/1.9.2","fmt/8.0.1",  "hdf5/1.12.0"
+    generators = "cmake_find_package_multi"
+    requires = "eigen/3.4.0", "spdlog/1.9.2", "fmt/8.0.1",  "hdf5/1.12.0"
     build_policy    = "missing"
     scm = {
         "type": "git",
