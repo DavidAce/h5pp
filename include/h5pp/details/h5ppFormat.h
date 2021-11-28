@@ -38,7 +38,18 @@
         #pragma message \
             "h5pp warning: could not find fmt library headers <fmt/core.h> or <spdlog/fmt/fmt.h>: A hand-made formatter will be used instead. Consider using the fmt library for maximum performance"
 
+    #endif
+
+    #if !defined(H5PP_NAME_VAL)
+        #define H5PP_VAL_TO_STR(x) #x
+        #define H5PP_VAL(x) H5PP_VAL_TO_STR(x)
+        #define H5PP_NAME_VAL(var) #var "="  H5PP_VAL(var)
+    #endif
+    #if defined(FMT_VERSION) && FMT_VERSION < 60000
+        #pragma message("h5pp: fmt version unsupported: " H5PP_NAME_VAL(FMT_VERSION) ". Compilation may fail.")
+    #endif
 #endif
+
 
 #if defined(FMT_FORMAT_H_)
 
