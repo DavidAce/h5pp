@@ -2,6 +2,8 @@
 #include "h5ppError.h"
 #include "h5ppTypeSfinae.h"
 #include <H5Tpublic.h>
+#include <cstddef>
+
 namespace tc = h5pp::type::sfinae;
 namespace h5pp::type {
     template<typename DataType>
