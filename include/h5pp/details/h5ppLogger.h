@@ -5,7 +5,7 @@
 #include "h5ppTypeSfinae.h"
 
 namespace h5pp::logger {
-#ifdef SPDLOG_H
+#if defined(SPDLOG_H) && defined(H5PP_USE_SPDLOG)
     inline std::shared_ptr<spdlog::logger> log;
 
     inline void enableTimestamp() {

@@ -6,7 +6,7 @@
     #endif
 #endif
 
-#if defined(H5PP_USE_FMT)
+#if defined(H5PP_USE_FMT) || defined(H5PP_USE_SPDLOG)
     #if __has_include(<spdlog/fmt/fmt.h>)
         // Spdlog will include the bundled fmt unless SPDLOG_FMT_EXTERNAL is defined, in which case <fmt/core.h> gets included instead
         // If SPDLOG_HEADER_ONLY is defined this will cause FMT_HEADER_ONLY to also get defined
@@ -51,7 +51,7 @@
 #endif
 
 
-#if defined(FMT_FORMAT_H_)
+#if defined(FMT_FORMAT_H_) && (defined(H5PP_USE_FMT) || defined(H5PP_USE_SPDLOG))
 
 namespace h5pp {
     template<typename... Args>

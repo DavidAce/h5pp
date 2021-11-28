@@ -35,5 +35,3 @@
     #include <memory>
     #include <string>
 #endif
-
-
