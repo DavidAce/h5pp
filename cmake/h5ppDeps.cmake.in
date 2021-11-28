@@ -2,6 +2,10 @@
 
 include(CMakeFindDependencyMacro)
 
+
+# Make sure we use the bundled find modules
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+
 # Determine which dependencies to look for
 get_target_property(H5PP_LINK_LIBRARIES h5pp::deps INTERFACE_LINK_LIBRARIES)
 
@@ -11,79 +15,46 @@ if (H5PP_ENABLE_MPI OR MPI::MPI_CXX IN_LIST H5PP_LINK_LIBRARIES)
     endif()
 endif ()
 
-if(H5PP_PACKAGE_MANAGER MATCHES "conan")
-
-    include(${CMAKE_CURRENT_LIST_DIR}/conanbuildinfo.cmake)
-    conan_basic_setup(TARGETS)
-
-elseif(H5PP_PACKAGE_MANAGER MATCHES "find|fetch|cpm|cmake")
-
-    # Make sure we use the bundled find modules
-    list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_LIST_DIR}")
-
-    # h5pp requires the filesystem header (and possibly stdc++fs library)
-    if(std::filesystem IN_LIST H5PP_LINK_LIBRARIES)
-        find_package(Filesystem COMPONENTS Final Experimental REQUIRED)
-    elseif(ghcFilesystem::ghc_filesystem IN_LIST H5PP_LINK_LIBRARIES)
-        find_dependency(ghc_filesystem REQUIRED)
-    endif()
-
-    if (H5PP_ENABLE_EIGEN3 OR Eigen3::Eigen IN_LIST H5PP_LINK_LIBRARIES)
-        find_dependency(Eigen3 3.3 REQUIRED)
-        if(TARGET Eigen3 AND NOT TARGET Eigen3::Eigen)
-            add_library(Eigen3::Eigen ALIAS Eigen3)
-        endif()
-    endif()
-
-    if (H5PP_ENABLE_FMT OR fmt::fmt IN_LIST H5PP_LINK_LIBRARIES)
-        find_dependency(fmt 6.1.2 REQUIRED)
-        if(TARGET fmt AND NOT TARGET fmt::fmt)
-            add_library(fmt::fmt ALIAS fmt)
-        endif()
-    endif()
-
-    if (H5PP_ENABLE_SPDLOG OR spdlog::spdlog IN_LIST H5PP_LINK_LIBRARIES)
-        find_dependency(spdlog 1.3.1 REQUIRED)
-        if(TARGET spdlog AND NOT TARGET spdlog::spdlog)
-            add_library(spdlog::spdlog ALIAS spdlog)
-        endif()
-    endif()
-
-    # HDF5 must be found either way, so set it to required
-    find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
-
-    foreach(tgt ${HDF5_HL_TARGET_CANDIDATES})
-        if(TARGET ${tgt} AND ${tgt} IN_LIST H5PP_LINK_LIBRARIES)
-            set(HDF5_HL_TARGET ${tgt})
-            mark_as_advanced(HDF5_HL_TARGET)
-            break()
-        endif()
-    endforeach()
-    if(NOT HDF5_HL_TARGET)
-        message(FATAL_ERROR "HDF5 was found but the target name for the HDF5 HL component is not recognized")
-    endif()
-
-    # HDF5 may depend on ZLIB and SZIP.
-    # If HDF5 was installed by h5pp, then ZLIB and SZIP should be found here,
-    # otherwise, if H5PP_PACKAGE_MANAGER==find, the user is ultimately responsible
-    # for finding these dependencies if needed, so we don't set a hard requirement here.
-
-
-    find_dependency(ZLIB)
-    find_dependency(SZIP
-                CONFIG
-                NAMES szip sz
-                COMPONENTS static shared
-                PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
-                )
-
-
-
-    if(NOT H5PP_FIND_QUIETLY)
-        message(STATUS "h5pp: Found: ${H5PP_LINK_LIBRARIES}")
-    endif()
-else() # Probably H5PP_PACKAGE_MANAGER=none
-    # h5pp requires the filesystem header (and possibly stdc++fs library)
+# h5pp requires the filesystem header (and possibly stdc++fs library)
+if(std::filesystem IN_LIST H5PP_LINK_LIBRARIES)
     find_package(Filesystem COMPONENTS Final Experimental REQUIRED)
 endif()
+
+if (H5PP_ENABLE_EIGEN3 OR Eigen3::Eigen IN_LIST H5PP_LINK_LIBRARIES)
+    find_dependency(Eigen3 3.3 REQUIRED)
+    if(TARGET Eigen3 AND NOT TARGET Eigen3::Eigen)
+        add_library(Eigen3::Eigen ALIAS Eigen3)
+    endif()
+    if(NOT Eigen3::Eigen IN_LIST H5PP_LINK_LIBRARIES)
+        target_link_libraries(h5pp::deps INTERFACE Eigen3::Eigen)
+    endif()
+    target_compile_definitions(h5pp::deps INTERFACE H5PP_USE_EIGEN3)
+endif()
+
+if (H5PP_ENABLE_FMT OR fmt::fmt IN_LIST H5PP_LINK_LIBRARIES)
+    find_dependency(fmt 6.1.2 REQUIRED)
+    if(TARGET fmt AND NOT TARGET fmt::fmt)
+        add_library(fmt::fmt ALIAS fmt)
+    endif()
+    if(NOT fmt::fmt IN_LIST H5PP_LINK_LIBRARIES)
+        target_link_libraries(h5pp::deps INTERFACE fmt::fmt)
+    endif()
+    target_compile_definitions(h5pp::deps INTERFACE H5PP_USE_FMT)
+endif()
+
+if (H5PP_ENABLE_SPDLOG OR spdlog::spdlog IN_LIST H5PP_LINK_LIBRARIES)
+    find_dependency(spdlog 1.5.0 REQUIRED)
+    if(TARGET spdlog AND NOT TARGET spdlog::spdlog)
+        add_library(spdlog::spdlog ALIAS spdlog)
+    endif()
+    if(NOT spdlog::spdlog IN_LIST H5PP_LINK_LIBRARIES)
+        target_link_libraries(h5pp::deps INTERFACE spdlog::spdlog)
+    endif()
+    target_compile_definitions(h5pp::deps INTERFACE H5PP_USE_SPDLOG)
+endif()
+
+# HDF5 must be found either way, so set it to required
+find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
+
+
 
