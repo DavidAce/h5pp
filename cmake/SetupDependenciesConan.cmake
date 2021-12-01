@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 if(H5PP_PACKAGE_MANAGER MATCHES "conan")
     ##################################################################
-    ### Install dependencies from conanfile.py                    ###
+    ### Install dependencies from conanfile.py                     ###
     ##################################################################
 
     find_program (CONAN_COMMAND conan HINTS ${H5PP_CONAN_CANDIDATE_PATHS} PATH_SUFFIXES bin envs/dmrg/bin)
@@ -12,7 +12,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
         message(STATUS "Found conan: ${CONAN_COMMAND}")
     endif()
 
-    # Download cmake-conan integrator automatically, you can also just copy the conan.cmake file
+    # Download cmake-conan integrator
     if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan/conan.cmake")
         message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
         file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/release/0.17/conan.cmake"
@@ -34,7 +34,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
 
 
     ##################################################################
-    ### Link all the things!                                       ###
+    ### Find all the things!                                       ###
     ##################################################################
     if(NOT CONAN_CMAKE_SILENT_OUTPUT)
         set(CONAN_CMAKE_SILENT_OUTPUT OFF) # Default is off
