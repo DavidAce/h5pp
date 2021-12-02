@@ -28,8 +28,8 @@ int main() {
     h5pp::File file0;
     std::cout << "file0: " << file0.getFilePath() << std::endl;
 
-    h5pp::File fileA("output/copySwapA.h5", h5pp::FilePermission::REPLACE, logLevel);
-    h5pp::File fileB("output/copySwapB.h5", h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File fileA("output/copySwapA.h5", h5pp::FileAccess::REPLACE, logLevel);
+    h5pp::File fileB("output/copySwapB.h5", h5pp::FileAccess::REPLACE, logLevel);
 
     fileA.writeDataset("A", "groupA/A");
     fileB.writeDataset("B", "groupB/B");
@@ -42,7 +42,7 @@ int main() {
     h5pp::File fileD(fileC);
     fileD.writeDataset("D", "groupD/D");
 
-    h5pp::File fileE(h5pp::File("output/copySwapE.h5", h5pp::FilePermission::REPLACE, logLevel));
+    h5pp::File fileE(h5pp::File("output/copySwapE.h5", h5pp::FileAccess::REPLACE, logLevel));
     fileE.writeDataset("E", "groupE/E");
 
     fileD = fileB;

@@ -10,7 +10,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-01b-text.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-01b-text.h5", h5pp::FileAccess::REPLACE);
 
     // Initialize some text
     std::string writeText = "Hello world";

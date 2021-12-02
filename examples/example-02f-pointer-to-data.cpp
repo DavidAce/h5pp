@@ -24,7 +24,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-02f-pointer-to-data.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-02f-pointer-to-data.h5", h5pp::FileAccess::REPLACE);
 
     // Initialize a dummy array buffer for writing
     auto *w_array = new double[10];

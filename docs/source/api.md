@@ -11,10 +11,10 @@
    :members:
 ```
 
-## enum h5pp::FilePermission
+## enum h5pp::FileAccess
 
 ```{eval-rst}
-.. doxygenenum:: h5pp::FilePermission
+.. doxygenenum:: h5pp::FileAccess
    :project: h5pp
    :path: h5pp/details/h5ppEnums.h
 ```

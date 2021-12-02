@@ -4,7 +4,7 @@ int main() {
     size_t logLevel = 2; // Set log level (default is 2: "info")
 
     // Initialize a file
-    h5pp::File file("exampledir/example-07c-search-in-file.h5", h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File file("exampledir/example-07c-search-in-file.h5", h5pp::FileAccess::REPLACE, logLevel);
 
     // Write many dummy datasets
     file.writeDataset("0", "dataset0");
@@ -22,8 +22,8 @@ int main() {
     std::string key  = "A";
     std::string root = "/"; // Search root path
     long        hits = -1;  // A negative value returns all matches. Positive stops searching after finding "hits" number of results
-    long depth       = 1;   // A negative value searches the whole file recursively. Positive searches no further than "depth" number of groups
-                            // below root.
+    long depth = 1; // A negative value searches the whole file recursively. Positive searches no further than "depth" number of groups
+                    // below root.
     h5pp::print("Searching for datasets with key [{}] in their name. Search root [{}] | Hits [{}] | Depth [{}] \n", key, root, hits, depth);
     for(auto &res : file.findDatasets(key, root, hits, depth)) h5pp::print(" -- found: [{}]\n", res);
 

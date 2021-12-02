@@ -10,7 +10,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-08a-data-dimensions.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-08a-data-dimensions.h5", h5pp::FileAccess::REPLACE);
 
     // Initialize a vector with size 12, i.e. a 1-dimensional layout "{12}"
     std::vector<double> vec(12);
@@ -38,7 +38,7 @@ int main() {
     h5pp::print("std::vector mat {}\n", std_mat);
     h5pp::print("std::vector ten {}\n", std_ten);
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     // Eigen comes in handy when reading multidimensional data
     // Note 1: h5pp resizes the Eigen container as indicated by the dataset dimensions
     // Note 2: The rank (number of dimensions) of the Eigen container must agree with the rank of the dataset

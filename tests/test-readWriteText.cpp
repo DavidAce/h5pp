@@ -235,8 +235,9 @@ int main() {
     for(auto &elem : multiStringAttributeRead) std::cout << elem << std::endl;
 
     if(multiStringAttributeRead.size() != multiStringAttribute.size())
-        throw std::runtime_error(h5pp::format(
-            "multiStringAttribute read size mismatch: [{}] != [{}]", multiStringAttribute.size(), multiStringAttributeRead.size()));
+        throw std::runtime_error(h5pp::format("multiStringAttribute read size mismatch: [{}] != [{}]",
+                                              multiStringAttribute.size(),
+                                              multiStringAttributeRead.size()));
     for(size_t i = 0; i < multiStringAttribute.size(); i++)
         if(multiStringAttribute[i] != multiStringAttributeRead[i])
             throw std::runtime_error(

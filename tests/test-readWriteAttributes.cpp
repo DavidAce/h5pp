@@ -31,7 +31,7 @@ int main() {
     // define the file
     std::string outputFilename = "output/readWriteAttributes.h5";
     size_t      logLevel       = 0;
-    h5pp::File  file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File  file(outputFilename, h5pp::FileAccess::REPLACE, logLevel);
 
     // Write dataset
     file.writeDataset(std::vector<double>(10, 5), "testGroup/vectorDouble");
@@ -78,7 +78,7 @@ int main() {
     if(ReadAttributeString != AttributeString) throw std::runtime_error("ReadAttributeString != AttributeString");
     if(ReadAttributeCharArray != AttributeCharArray) throw std::runtime_error("ReadAttributeCharArray != AttributeCharArray");
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     static_assert(h5pp::type::sfinae::has_Scalar<Eigen::MatrixXd>() and
                   "Compile time type-checker failed. Could not properly detect class member Scalar. Scan that you are "
                   "using a supported compiler!");

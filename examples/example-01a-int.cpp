@@ -1,8 +1,7 @@
 #include <h5pp/h5pp.h>
 
 int main() {
-
-    h5pp::File file("exampledir/example-01a-int.h5", h5pp::FilePermission::REPLACE); // Initialize a file
+    h5pp::File file("exampledir/example-01a-int.h5", h5pp::FileAccess::REPLACE); // Initialize a file
 
     int writeInt = 42;                          // Initialize an int
     file.writeDataset(writeInt, "integerData"); // Write data to file in dataset named "integerData"

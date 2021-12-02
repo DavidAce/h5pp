@@ -8,7 +8,7 @@ void print_complex(const std::string &msg, const std::vector<std::complex<double
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-02c-stdvector-complex.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-02c-stdvector-complex.h5", h5pp::FileAccess::REPLACE);
 
     // Initialize  a vector of complex doubles.
     std::vector<std::complex<double>> v_write(10, {3.14, -2.71});

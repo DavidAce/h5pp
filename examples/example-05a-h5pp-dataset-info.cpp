@@ -22,7 +22,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-05a-dataset-info.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-05a-dataset-info.h5", h5pp::FileAccess::REPLACE);
 
     // Write some datasets to file. Note the H5D_CHUNKED parameter on the third dataset.
     file.writeDataset(std::vector<int>{1, 2, 3, 4}, "group/intVector");

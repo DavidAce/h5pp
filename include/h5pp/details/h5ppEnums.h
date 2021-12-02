@@ -21,19 +21,19 @@ namespace h5pp {
       *
       * | Enumerator | %File exists | No file exists | Comment |
       * | ----  | ---- | ---- | ---- |
-      * | `READONLY`                | Open with read-only permission       | Throw error     | Never writes to disk, fails if the file is not found |
+      * | `READONLY`                | Open with read-only access           | Throw error     | Never writes to disk, fails if the file is not found |
       * | `COLLISION_FAIL`          | Throw error                          | Create new file | Never deletes existing files and fails if it already exists |
       * | `RENAME` **default**      | Create renamed file                  | Create new file | Never deletes existing files. Invents a new filename to avoid collision by appending "-#" (#=1,2,3...) to the stem of the filename |
-      * | `READWRITE`               | Open with read-write permission      | Create new file | Never deletes existing files, but is allowed to open/modify |
+      * | `READWRITE`               | Open with read-write access          | Create new file | Never deletes existing files, but is allowed to open/modify |
       * | `BACKUP`                  | Rename existing file and create new  | Create new file | Avoids collision by backing up the existing file, appending `.bak_#` (`#`=1,2,3...) to the filename |
       * | `REPLACE`                 | Truncate (overwrite)                 | Create new file | Deletes the existing file and create a new one in place |
       *
       *
       * - When a new file is created, the intermediate directories are always created automatically.
-      * - When a new file is created, `READWRITE` permission to it is implied.
+      * - When a new file is created, `READWRITE` access to it is implied.
       *
       */
-    enum class FilePermission {
+    enum class FileAccess {
         READONLY,           /* Never writes to disk, fails if the file is not found */
         COLLISION_FAIL,     /* Never deletes existing files and fails if it already exists */
         RENAME,             /* Never deletes existing files. Invents a new filename to avoid collision by appending "-#" (#=1,2,3...) to the stem of the filename */
@@ -41,7 +41,7 @@ namespace h5pp {
         BACKUP,             /* Avoids collision by backing up the existing file, appending ".bak_#" (#=1,2,3...) to the filename */
         REPLACE             /* Deletes the existing file and create a new one in place */
     };
-
+    using FilePermission = FileAccess;
     /* clang-format on */
 
     /*! \brief Choose which row to read/write/copy/move on table operations
@@ -115,7 +115,7 @@ namespace h5pp {
     }
 
     template<typename T>
-    constexpr bool operator ==(LogLevel level, T num) {
+    constexpr bool operator==(LogLevel level, T num) {
         static_assert(std::is_integral_v<T> or std::is_same_v<T, LogLevel>);
         using utype = typename std::underlying_type<LogLevel>::type;
         return Level2Num(level) == static_cast<utype>(num);

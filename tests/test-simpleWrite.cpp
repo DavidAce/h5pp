@@ -6,7 +6,7 @@
 int main() {
     std::string                       outputFilename = "output/simpleWrite.h5";
     size_t                            logLevel       = 0;
-    h5pp::File                        file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File                        file(outputFilename, h5pp::FileAccess::REPLACE, logLevel);
     bool                              Boolean   = true;
     std::string                       String    = "This is a string";
     char                              Char[100] = "This is a char array";
@@ -64,7 +64,7 @@ int main() {
     file.writeDataset(vectorDouble.data(), "simpleWriteGroup/vectorDouble", vectorDouble.size());
     file.writeDataset(vectorInt.data(), "simpleWriteGroup/vectorInt", vectorInt.size());
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     Eigen::MatrixXi  matrixInt(2, 2);
     Eigen::MatrixXd  matrixDouble(2, 2);
     Eigen::MatrixXcd matrixComplexDouble(2, 2);

@@ -21,7 +21,7 @@ void print_point(const SpaceTimePoint &p) {
 
 int main() {
     size_t     logLevel = 2; // Default log level is 2: "info"
-    h5pp::File file("exampledir/example-04b-custom-struct-advanced.h5", h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File file("exampledir/example-04b-custom-struct-advanced.h5", h5pp::FileAccess::REPLACE, logLevel);
 
     // We can create a custom HDF5 type for multi-dimensional arrays using H5Tarray_create. It takes the
     // rank (i.e. number of indices) and the size of each dimension in a c-style array pointer.

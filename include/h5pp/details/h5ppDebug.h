@@ -1,5 +1,5 @@
 #pragma once
-namespace h5pp{
+namespace h5pp {
 #ifdef NDEBUG
     inline constexpr bool ndebug = true;
 #else

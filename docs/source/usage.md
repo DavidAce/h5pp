@@ -23,7 +23,7 @@ The flags are listed in the order of increasing "danger" that they pose to previ
 To give a concrete example, the syntax works as follows
 
 ```c++
-    h5pp::File file("somePath/someFile.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("somePath/someFile.h5", h5pp::FileAccess::REPLACE);
 ```
 
 ## Storage Layout
@@ -83,7 +83,7 @@ Set the level when constructing a h5pp::File or by calling the function `.setLog
 ```c++
     int logLevel = 0; // Highest verbosity
     // This way...
-    h5pp::File file("myDir/someFile.h5", h5pp::FilePermission::REPLACE, logLevel); 
+    h5pp::File file("myDir/someFile.h5", h5pp::FileAccess::REPLACE, logLevel); 
     // or this way
     file.setLogLevel(logLevel);                                                                       
 ```

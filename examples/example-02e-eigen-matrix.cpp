@@ -2,9 +2,9 @@
 #include <iostream>
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-02e-eigen.h5", h5pp::FilePermission::REPLACE, 0);
+    h5pp::File file("exampledir/example-02e-eigen.h5", h5pp::FileAccess::REPLACE, 0);
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     // Initialize a 10x10 Eigen matrix with random complex entries
     Eigen::MatrixXcd m1 = Eigen::MatrixXcd::Random(5, 5);
 

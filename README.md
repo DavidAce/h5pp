@@ -108,7 +108,7 @@ most of the work can be achieved using just two member functions `.writeDataset(
 ```c++
     #include <h5pp/h5pp.h>
     int main() {
-        h5pp::File file("somePath/someFile.h5", h5pp::FilePermission::READWRITE);    // Open (or create) a file
+        h5pp::File file("somePath/someFile.h5", h5pp::FileAccess::READWRITE);    // Open (or create) a file
         auto v = file.readDataset<std::vector<double>>("myStdVector");               // Read the dataset from file
     }
 ```
@@ -116,7 +116,7 @@ most of the work can be achieved using just two member functions `.writeDataset(
 Find more code examples in the [examples directory](https://github.com/DavidAce/h5pp/tree/master/examples).
 
 
-### File permissions
+### File Access
 `h5pp` offers more flags for file access permissions than HDF5. The new flags are primarily intended to
 prevent accidental loss of data, but also to clarify intent and avoid mutually exclusive options. 
 
@@ -125,21 +125,21 @@ The flags are listed in the order of increasing "danger" that they pose to previ
 
 | Flag | File exists | No file exists | Comment |
 | ---- | ---- | ---- | ---- |
-| `READONLY`                | Open with read-only permission       | Throw error     | Never writes to disk, fails if the file is not found |
+| `READONLY`                | Open with read-only access           | Throw error     | Never writes to disk, fails if the file is not found |
 | `COLLISION_FAIL`          | Throw error                          | Create new file | Never deletes existing files and fails if it already exists |
 | `RENAME` **(default)**    | Create renamed file                  | Create new file | Never deletes existing files. Invents a new filename to avoid collision by appending "-#" (#=1,2,3...) to the stem of the filename |
-| `READWRITE`               | Open with read-write permission      | Create new file | Never deletes existing files, but is allowed to open/modify |
+| `READWRITE`               | Open with read-write access          | Create new file | Never deletes existing files, but is allowed to open/modify |
 | `BACKUP`                  | Rename existing file and create new  | Create new file | Avoids collision by backing up the existing file, appending ".bak_#" (#=1,2,3...) to the filename |
 | `REPLACE`                 | Truncate (overwrite)                 | Create new file | Deletes the existing file and creates a new one in place |
 
 
 * When a new file is created, the intermediate directories are always created automatically.
-* When a new file is created, `READWRITE` permission to it is implied.
+* When a new file is created, `READWRITE` access to it is implied.
 
 To give a concrete example, the syntax works as follows
 
 ```c++
-    h5pp::File file("somePath/someFile.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("somePath/someFile.h5", h5pp::FileAccess::REPLACE);
 ```
 
 ### Storage Layout
@@ -183,15 +183,15 @@ or use the special member function for this task:
 
 
 ### Debug and logging
-[Spdlog](https://github.com/gabime/spdlog) can be used to emit debugging information efficiently. 
-The amount of console output (verbosity) can be set to any level between `0` and `6`:
+`h5pp` emits details of about its internal state during read/write operatios.
+The level of console output (verbosity) can be set to any level between `0` and `6`:
 
-* `0: trace` (highest verbosity)
+* `0: trace` (highest)
 * `1: debug`
 * `2: info`  (default)
 * `3: warn`
 * `4: error`
-* `5: critical`  (lowest verbosity)
+* `5: critical`  (lowest)
 * `6: off`
 
 Set the level when constructing a h5pp::File or by calling the function `.setLogLevel(int)`:
@@ -199,14 +199,17 @@ Set the level when constructing a h5pp::File or by calling the function `.setLog
 ```c++
     int logLevel = 0; // Highest verbosity
     // This way...
-    h5pp::File file("myDir/someFile.h5", h5pp::FilePermission::REPLACE, logLevel); 
+    h5pp::File file("myDir/someFile.h5", h5pp::FileAccess::REPLACE, logLevel); 
     // or this way
     file.setLogLevel(logLevel);                                                                       
 ```
 
-**NOTE:** Logging works the same with or without [Spdlog](https://github.com/gabime/spdlog) enabled. When Spdlog is *not* found, 
+Internally, all logging is handled efficiently by [spdlog](https://github.com/gabime/spdlog).
+
+**NOTE:** Logging works the same with or without [spdlog](https://github.com/gabime/spdlog) enabled. When spdlog is *not* found, 
 a hand-crafted logger is used in its place to give identical output but without any performance
 considerations (implemented with STL lists, strings and streams).
+
 
 ### Tips
 #### **NEW:** [h5du](https://github.com/DavidAce/h5du)

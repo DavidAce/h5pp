@@ -1,10 +1,10 @@
 #pragma once
 #include "h5ppConstants.h"
+#include "h5ppInfo.h"
 #include "h5ppOptional.h"
 #include "h5ppType.h"
 #include "h5ppTypeCompound.h"
 #include "h5ppTypeSfinae.h"
-#include "h5ppInfo.h"
 #include <cstring>
 #include <numeric>
 
@@ -42,15 +42,16 @@ namespace h5pp::util {
     [[nodiscard]] T wrapUnsigned(T num, T piv) noexcept {
         static_assert(std::is_unsigned_v<T>);
         if(num >= piv) {
-            if(num == std::numeric_limits<T>::max() and piv == std::numeric_limits<T>::min()) return ~num; // The last element would be 0 if piv == 0
+            if(num == std::numeric_limits<T>::max() and piv == std::numeric_limits<T>::min())
+                return ~num;                                                      // The last element would be 0 if piv == 0
             if(num >= std::numeric_limits<T>::max() - piv) return piv - ~num - 1; // Rotate around the pivot
-            if(num >= std::numeric_limits<unsigned long long>::max() - piv) return wrapUnsigned<unsigned long long>(num, piv);
-            if(num >= std::numeric_limits<unsigned long>::max() - piv) return wrapUnsigned<unsigned long>(num, piv);
-            if(num >= std::numeric_limits<unsigned int>::max() - piv) return wrapUnsigned<unsigned int>(num, piv);
+            if(num >= std::numeric_limits<std::uint64_t>::max() - piv)
+                return static_cast<T>(wrapUnsigned(static_cast<std::uint64_t>(num), static_cast<std::uint64_t>(piv)));
+            if(num >= std::numeric_limits<std::uint32_t>::max() - piv)
+                return static_cast<T>(wrapUnsigned(static_cast<std::uint32_t>(num), static_cast<std::uint32_t>(piv)));
         }
         return num;
     }
-
 
     template<typename PtrType, typename DataType>
     [[nodiscard]] inline PtrType getVoidPointer(DataType &data, size_t offset = 0) noexcept {
@@ -113,6 +114,7 @@ namespace h5pp::util {
         if constexpr (std::is_same_v<DecayType, bool>)                             return H5Tcopy(H5T_NATIVE_UINT8);
         if constexpr (std::is_same_v<DecayType, std::string>)                      return H5Tcopy(H5T_C_S1);
         if constexpr (std::is_same_v<DecayType, char>)                             return H5Tcopy(H5T_C_S1);
+        if constexpr (std::is_same_v<DecayType, std::byte>)                        return H5Tcopy(H5T_NATIVE_B8);
         if constexpr (tc::is_std_complex_v<DecayType>)                             return H5Tcopy(type::compound::H5T_COMPLEX<typename DecayType::value_type>::h5type());
         if constexpr (tc::is_Scalar2_v<DecayType>)                                 return H5Tcopy(type::compound::H5T_SCALAR2<tc::get_Scalar2_t<DecayType>>::h5type());
         if constexpr (tc::is_Scalar3_v<DecayType>)                                 return H5Tcopy(type::compound::H5T_SCALAR3<tc::get_Scalar3_t<DecayType>>::h5type());
@@ -221,7 +223,7 @@ namespace h5pp::util {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] constexpr int getRank() {
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) return static_cast<int>(DataType::NumIndices);
         if constexpr(h5pp::type::sfinae::is_eigen_1d_v<DataType>) return 1;
         if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType>) return 2;
@@ -250,7 +252,7 @@ namespace h5pp::util {
         } else if constexpr(h5pp::type::sfinae::has_size_v<DataType> and rank == 1)
             return {static_cast<hsize_t>(data.size())};
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
         else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             if(data.dimensions().size() != rank) throw h5pp::runtime_error("given dimensions do not match detected rank");
             // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
@@ -599,7 +601,7 @@ namespace h5pp::util {
     template<typename DataType>
     inline void resizeData(DataType &data, const std::vector<hsize_t> &newDims) {
         // This function may shrink a container!
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             auto newSize = getSizeFromDimensions(newDims);
             if(newDims.size() != 1)
@@ -634,7 +636,7 @@ namespace h5pp::util {
                                             newSize);
             }
         } else
-#endif // H5PP_EIGEN3
+#endif // H5PP_USE_EIGEN3
             if constexpr(h5pp::type::sfinae::has_size_v<DataType> and h5pp::type::sfinae::has_resize_v<DataType>) {
             if(newDims.size() > 1)
                 h5pp::logger::log->debug(

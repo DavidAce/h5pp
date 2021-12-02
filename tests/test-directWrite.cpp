@@ -9,7 +9,7 @@ struct Table {
 int main() {
     if constexpr(h5pp::has_direct_chunk) {
         /* Create the data space */
-        auto file = h5pp::File("output/directWrite.h5", h5pp::FilePermission::REPLACE, 0);
+        auto file = h5pp::File("output/directWrite.h5", h5pp::FileAccess::REPLACE, 0);
 
         auto coord5 = h5pp::util::ind2sub({3, 4}, 5);
         auto coord7 = h5pp::util::ind2sub({3, 4}, 7);
@@ -55,9 +55,10 @@ int main() {
 
         h5pp::hdf5::writeDataset_chunkwise(data, dataInfo, dsetInfo, file.plists);
         //    h5pp::hdf5::writeDataset(data,dataInfo,dsetInfo, file.plists);
-
+#ifdef H5PP_USE_EIGEN3
         auto matrix = file.readDataset<Eigen::MatrixXi>("dset_direct");
         std::cout << matrix << std::endl;
+#endif
         // Register the compound type
         h5pp::hid::h5t MY_HDF5_TABLE_TYPE;
         MY_HDF5_TABLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Table));

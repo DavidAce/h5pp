@@ -434,7 +434,7 @@ namespace h5pp::type::sfinae {
             return type_name<T>();
     }
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
 
     template<typename T>
     using is_eigen_matrix = std::is_base_of<Eigen::MatrixBase<std::decay_t<T>>, std::decay_t<T>>;

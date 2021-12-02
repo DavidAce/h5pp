@@ -1,9 +1,9 @@
  
 cmake_minimum_required(VERSION 3.15)
-project(h5pp VERSION 1.9.1
+project(h5pp VERSION 1.10.0
         DESCRIPTION "A C++17 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
-        LANGUAGES CXX
+        LANGUAGES C CXX
         )
 
 include(cmake/DeprecationWarnings.cmake) # Warn if user passes deprecated settings
@@ -62,7 +62,6 @@ include(cmake/SetupPaths.cmake)
 # Print cmake build info options and host properties
 include(cmake/PrintBuildInfo.cmake)
 
-
 # Define main target and auxiliary for partial consumption
 add_library(h5pp INTERFACE)
 add_library(headers INTERFACE)
@@ -117,23 +116,16 @@ endif()
 
 
 #Try to find or get all dependencies
-include(cmake/SetupStdFilesystem.cmake)
-include(cmake/SetupDependenciesFind.cmake)
-include(cmake/SetupDependenciesFetch.cmake)
-include(cmake/SetupDependenciesCMake.cmake)
-include(cmake/SetupDependenciesCPM.cmake)
-include(cmake/SetupDependenciesConan.cmake)
-
+include(cmake/SetupDependencies.cmake)
 
 # Link all targets to one main h5pp target (the only one that users should need)
 # However, it's nice to have them separately also if need be.
 target_link_libraries(h5pp INTERFACE headers deps flags)
 
 
-
 # Print summary of CMake configuration
 include(cmake/PrintTargetInfo.cmake)
-print_project_summary(h5pp)
+print_target_summary(h5pp)
 
 
 if(H5PP_IS_SUBPROJECT)
@@ -154,7 +146,6 @@ else()
             h5ppTargets
             NAMESPACE h5pp::
             DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp)
-
 
     include(CMakePackageConfigHelpers)
     configure_package_config_file(
@@ -185,33 +176,15 @@ else()
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppDeps.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppVars.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindEigen3.cmake
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findspdlog.cmake
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findfmt.cmake
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindHDF5.cmake
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/FindEigen3.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/FindFilesystem.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/Findfmt.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/Findspdlog.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/FindHDF5.cmake
             DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
             COMPONENT h5pp-config
             )
 
-
-    if (H5PP_PACKAGE_MANAGER MATCHES "conan")
-        # Install conan related files to define dependency targets the same way
-        # we've already done here.
-        set(CONAN_INSTALL_FILES
-                ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt
-                ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake
-                ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.txt
-                ${CMAKE_CURRENT_BINARY_DIR}/conaninfo.txt
-                )
-        foreach (conan_file ${CONAN_INSTALL_FILES})
-            if (EXISTS "${conan_file}")
-                install(FILES ${conan_file}
-                        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp
-                        COMPONENT h5pp-config)
-            endif ()
-        endforeach ()
-    endif ()
 
     # Uninstall target
     if(NOT TARGET h5pp-uninstall)

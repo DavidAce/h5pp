@@ -6,7 +6,7 @@
 int main() {
     std::string outputFilename = "output/appendToDataset.h5";
     size_t      logLevel       = 0;
-    h5pp::File  file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File  file(outputFilename, h5pp::FileAccess::REPLACE, logLevel);
 
     std::vector<double> data = {1, 2, 3, 4};
     file.writeDataset(data, "group/VectorDoubletemp", {4, 1}, H5D_CHUNKED, {4, 100});
@@ -42,7 +42,7 @@ int main() {
 
     data      = {1, 2, 3, 4};
     auto info = file.getDatasetInfo("group/VectorDouble5");
-    file.createDataset("group/VectorDouble8",info.h5Type.value(), H5D_CHUNKED, {data.size(), 0});
+    file.createDataset("group/VectorDouble8", info.h5Type.value(), H5D_CHUNKED, {data.size(), 0});
     file.appendToDataset(data, "group/VectorDouble8", 1, {data.size(), 1});
     return 0;
 }

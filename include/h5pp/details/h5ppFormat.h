@@ -6,38 +6,52 @@
     #endif
 #endif
 
-#if __has_include(<spdlog/fmt/fmt.h>)
-    // Spdlog will include the bundled fmt unless SPDLOG_FMT_EXTERNAL is defined, in which case <fmt/core.h> gets included instead
-    // If SPDLOG_HEADER_ONLY is defined this will cause FMT_HEADER_ONLY to also get defined
-    #include <spdlog/fmt/fmt.h>
-    #if defined(SPDLOG_FMT_EXTERNAL)
+#if defined(H5PP_USE_FMT) || defined(H5PP_USE_SPDLOG)
+    #if __has_include(<spdlog/fmt/fmt.h>)
+        // Spdlog will include the bundled fmt unless SPDLOG_FMT_EXTERNAL is defined, in which case <fmt/core.h> gets included instead
+        // If SPDLOG_HEADER_ONLY is defined this will cause FMT_HEADER_ONLY to also get defined
+        #include <spdlog/fmt/fmt.h>
+        #if defined(SPDLOG_FMT_EXTERNAL)
+            #include <fmt/compile.h>
+            #include <fmt/core.h>
+            #include <fmt/format.h>
+            #include <fmt/ostream.h>
+            #include <fmt/ranges.h>
+        #else
+            #include <spdlog/fmt/bundled/compile.h>
+            #include <spdlog/fmt/bundled/ostream.h>
+            #include <spdlog/fmt/bundled/ranges.h>
+        #endif
+    #elif __has_include(<fmt/core.h>) &&  __has_include(<fmt/format.h>) && __has_include(<fmt/ranges.h>) &&  __has_include(<fmt/ostream.h>)
+        #if defined(SPDLOG_HEADER_ONLY)
+            // Since spdlog is header-only, let's assume fmt is as well
+            // We do this because we have no way of knowing if this is getting linked to libfmt
+            #define FMT_HEADER_ONLY
+        #endif
+        #include <fmt/compile.h>
+        #include <fmt/core.h>
+        #include <fmt/format.h>
         #include <fmt/ostream.h>
         #include <fmt/ranges.h>
-        #include <fmt/compile.h>
     #else
-        #include <spdlog/fmt/bundled/ostream.h>
-        #include <spdlog/fmt/bundled/ranges.h>
-        #include <spdlog/fmt/bundled/compile.h>
-    #endif
-#elif __has_include(<fmt/core.h>) &&  __has_include(<fmt/format.h>) && __has_include(<fmt/ranges.h>) &&  __has_include(<fmt/ostream.h>)
-    #if defined(SPDLOG_HEADER_ONLY)
-        // Since spdlog is header-only, let's assume fmt is as well
-        // We do this because we have no way of knowing if this is getting linked to libfmt
-        #define FMT_HEADER_ONLY
-    #endif
-    #include <fmt/core.h>
-    #include <fmt/format.h>
-    #include <fmt/ostream.h>
-    #include <fmt/ranges.h>
-    #include <fmt/compile.h>
-#else
-    // In this case there is no fmt so we make our own simple formatter
-    #pragma message \
-        "h5pp warning: could not find fmt library headers <fmt/core.h> or <spdlog/fmt/fmt.h>: A hand-made formatter will be used instead. Consider using the fmt library for maximum performance"
+        // In this case there is no fmt so we make our own simple formatter
+        #pragma message \
+            "h5pp warning: could not find fmt library headers <fmt/core.h> or <spdlog/fmt/fmt.h>: A hand-made formatter will be used instead. Consider using the fmt library for maximum performance"
 
+    #endif
+
+    #if !defined(H5PP_NAME_VAL)
+        #define H5PP_VAL_TO_STR(x) #x
+        #define H5PP_VAL(x) H5PP_VAL_TO_STR(x)
+        #define H5PP_NAME_VAL(var) #var "="  H5PP_VAL(var)
+    #endif
+    #if defined(FMT_VERSION) && FMT_VERSION < 60000
+        #pragma message("h5pp: fmt version unsupported: " H5PP_NAME_VAL(FMT_VERSION) ". Compilation may fail.")
+    #endif
 #endif
 
-#if defined(FMT_FORMAT_H_)
+
+#if defined(FMT_FORMAT_H_) && (defined(H5PP_USE_FMT) || defined(H5PP_USE_SPDLOG))
 
 namespace h5pp {
     template<typename... Args>
@@ -62,13 +76,12 @@ namespace h5pp {
 
 namespace h5pp {
     namespace formatting {
-        template<typename T, typename = std::void_t<>>
+        template<typename T, typename = std::void_t<> >
         struct is_streamable : std::false_type {};
         template<typename T>
-        struct is_streamable<T, std::void_t<decltype(std::declval<std::stringstream &> << std::declval<T>())>> : public std::true_type {};
+        struct is_streamable<T, std::void_t<decltype(std::declval<std::stringstream &> << std::declval<T>())> > : public std::true_type {};
         template<typename T>
         inline constexpr bool is_streamable_v = is_streamable<T>::value;
-
 
         template<class T, class... Ts>
         std::list<std::string> convert_to_string_list(const T &first, const Ts &...rest) {

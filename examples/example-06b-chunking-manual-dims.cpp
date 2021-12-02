@@ -20,7 +20,7 @@
  */
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-06b-chunking-manual.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-06b-chunking-manual.h5", h5pp::FileAccess::REPLACE);
 
     // Initialize a vector of doubles
     std::vector<double> v_write(1000);

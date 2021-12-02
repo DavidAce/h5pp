@@ -1,63 +1,50 @@
 cmake_minimum_required(VERSION 3.15)
 
 if(H5PP_PACKAGE_MANAGER MATCHES "conan")
+    ##################################################################
+    ### Install dependencies from conanfile.py                     ###
+    ##################################################################
 
-    if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-        message(STATUS "Detected Conan build info: ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-        include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-        conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
+    find_program (CONAN_COMMAND conan HINTS ${H5PP_CONAN_CANDIDATE_PATHS} PATH_SUFFIXES bin envs/dmrg/bin)
+    if(NOT CONAN_COMMAND)
+        message(FATAL_ERROR "Could not find conan program executable")
     else()
-
-        ##################################################################
-        ### Install dependencies from conanfile.txt                    ###
-        ### This uses conan to get spdlog/eigen3/h5pp/ceres            ###
-        ##################################################################
-
-        find_program (
-                CONAN_COMMAND
-                conan
-                HINTS ${H5PP_CONAN_CANDIDATE_PATHS}
-                PATH_SUFFIXES bin envs/dmrg/bin
-        )
-
-        if(NOT CONAN_COMMAND)
-            message(FATAL_ERROR "Could not find conan program executable")
-        else()
-            message(STATUS "Found conan: ${CONAN_COMMAND}")
-        endif()
-
-
-
-        # Download automatically, you can also just copy the conan.cmake file
-        if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-            message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-            file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
-                    "${CMAKE_BINARY_DIR}/conan.cmake")
-        endif()
-
-        include(${CMAKE_BINARY_DIR}/conan.cmake)
-
-        if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
-            # Let it autodetect libcxx
-        elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-            # There is no libcxx
-        elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-            list(APPEND conan_libcxx compiler.libcxx=libstdc++11)
-        endif()
-
-        conan_cmake_run(
-                CONANFILE conanfile.txt
-                CONAN_COMMAND ${CONAN_COMMAND}
-                SETTINGS compiler.cppstd=17
-                SETTINGS "${conan_libcxx}"
-                PROFILE_AUTO ALL
-                BUILD_TYPE ${CMAKE_BUILD_TYPE}
-                BASIC_SETUP CMAKE_TARGETS
-                NO_OUTPUT_DIRS
-                BUILD missing)
+        message(STATUS "Found conan: ${CONAN_COMMAND}")
     endif()
+
+    # Download cmake-conan integrator
+    if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan/conan.cmake")
+        message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+        file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/release/0.17/conan.cmake"
+                "${CMAKE_BINARY_DIR}/conan/conan.cmake"
+                EXPECTED_HASH MD5=52a255a933397fdce3d0937f9c737e98
+                TLS_VERIFY ON)
+    endif()
+
+    include(${CMAKE_BINARY_DIR}/conan/conan.cmake)
+    conan_cmake_autodetect(CONAN_AUTODETECT)
+    conan_cmake_install(
+            CONAN_COMMAND ${CONAN_COMMAND}
+            BUILD missing outdated cascade
+            GENERATOR cmake_find_package_multi
+            SETTINGS ${CONAN_AUTODETECT}
+            INSTALL_FOLDER ${CMAKE_BINARY_DIR}/conan
+            PATH_OR_REFERENCE ${CMAKE_SOURCE_DIR}
+    )
+
+
     ##################################################################
-    ### Link all the things!                                       ###
+    ### Find all the things!                                       ###
     ##################################################################
-    target_link_libraries(deps INTERFACE ${CONAN_TARGETS})
+    if(NOT CONAN_CMAKE_SILENT_OUTPUT)
+        set(CONAN_CMAKE_SILENT_OUTPUT OFF) # Default is off
+    endif()
+    list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR}/conan)
+    list(PREPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/conan)
+    # Use CONFIG to avoid MODULE mode. This is recommended for the cmake_find_package_multi generator
+    find_package(HDF5 1.12.0 COMPONENTS C HL REQUIRED CONFIG)
+    find_package(Eigen3 3.4 REQUIRED CONFIG)
+    find_package(spdlog 1.9.2 REQUIRED CONFIG)
+    find_package(fmt 8.0.1 REQUIRED CONFIG)
+    target_link_libraries(deps INTERFACE HDF5::HDF5 Eigen3::Eigen spdlog::spdlog fmt::fmt)
 endif()

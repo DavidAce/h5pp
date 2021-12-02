@@ -61,7 +61,7 @@ void print_events(const std::vector<Volcano> &vs, const std::string &msg = "") {
 
 int main() {
     size_t     logLevel = 2; // Default log level is 2: "info"
-    h5pp::File file("exampledir/example-04c-compound-datatype-vlen-arrays.h5", h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File file("exampledir/example-04c-compound-datatype-vlen-arrays.h5", h5pp::FileAccess::REPLACE, logLevel);
 
     // Below we begin to define the memory layout of Volcano in a new compound HDF5 datatype.
 

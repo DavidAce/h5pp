@@ -1,0 +1,736 @@
+
+# If CMake version >= 3.19 this module will simply pass through to CMake's built-in
+# module FindHDF5.cmake.
+# If CMake version < 3.19 this module replaces CMake's own FindHDF5.cmake module, in an attempt to
+# mimic the
+
+
+# The motivation for this wrapper module is that the naming conventions of HDF5 targets, variables,
+# libraries (e.g. zlib,szip,aec) as well as compile options vary greatly between different
+# CMake versions, HDF5 versions and build options.
+# In addition, the original FindHDF5.cmake doesn't always honor the static/shared settings,
+# in particular when it interrogates the h5cc compiler wrapper. This can cause shared libraries
+# to be injected on static builds.
+
+# Most of these issues are fixed from CMake version 3.19, which defines targets that are passed through
+# in this wrapper.
+
+# When HDF5 is found, a target "HDF5::HDF5" is generated so the user can simply do:
+#
+#       target_link_libraries(myTarget INTERFACE HDF5::HDF5)
+#
+# and hopefully get everything right.
+#
+# The call signature is the same as for the original FindHDF5.cmake bundled with CMake,
+# The user can guide the behavior by setting the following variables prior to calling find_package(HDF5):
+#       HDF5_ROOT                   install directory for HDF5 possible root directories to search in
+#       HDF5_USE_STATIC_LIBRARIES   find static HDF5 libraries
+#       HDF5_FIND_DEBUG             emit more log messages during the search process
+#
+
+
+function(hdf5_message level msg)
+    if(HDF5_FIND_DEBUG)
+        message(${level} "${msg}")
+    endif()
+endfunction()
+
+function(register_standard_hdf5_target_names)
+    # Map any existing HDF5 targets to one of the following
+    #``hdf5::hdf5``
+    #``hdf5::hdf5_hl_cpp``
+    #``hdf5::hdf5_fortran``
+    #``hdf5::hdf5_hl``
+    #``hdf5::hdf5_hl_fortran``
+
+    list(APPEND HDF5_C_SUFFIX "_c")
+    list(APPEND HDF5_CPP_SUFFIX _cpp -cpp)
+    list(APPEND HDF5_HL_SUFFIX _hl -hl)
+    list(APPEND HDF5_HL_CPP_SUFFIX _cpp_hl _hl_cpp -cpp-hl -cpp_hl _cpp-hl)
+    list(APPEND HDF5_FORTRAN_SUFFIX _fortran -fortran)
+    list(APPEND HDF5_HL_FORTRAN_SUFFIX _fortran_hl -fortran-hl _fortran-hl -fortran_hl)
+    list(APPEND HDF5_COMPONENTS CPP HL HL_CPP FORTRAN HL_FORTRAN)
+
+    if(BUILD_SHARED_LIBS AND NOT HDF5_USE_STATIC_LIBRARIES)
+        list(APPEND HDF5_LINKTYPE_SUFFIX "-shared;_shared;;")
+    else()
+        list(APPEND HDF5_LINKTYPE_SUFFIX "-static;_static;;")
+    endif()
+
+    foreach(CONF ${CMAKE_CONFIGURATION_TYPES};${CMAKE_BUILD_TYPE})
+        string(TOLOWER "${CONF}" conf)
+        list(APPEND HDF5_BUILDTYPE_SUFFIX _${CONF} -${CONF} _${conf} -${conf})
+    endforeach()
+
+    list(APPEND HDF5_NAMESPACE_PREFIX "hdf5::")
+
+    foreach(pfx ${HDF5_NAMESPACE_PREFIX})
+        foreach(bfx ${HDF5_BUILDTYPE_SUFFIX})
+            foreach(lfx ${HDF5_LINKTYPE_SUFFIX})
+                if(NOT TARGET hdf5::hdf5)
+                    set(HDF5_C_CANDIDATES
+                            ${pfx}hdf5
+                            ${pfx}hdf5${lfx}${bfx}
+                            ${pfx}hdf5${lfx}
+                            ${pfx}hdf5${bfx}
+                            ${pfx}hdf5${bfx}${lfx}
+                            hdf5
+                            hdf5${lfx}${bfx}
+                            hdf5${lfx}
+                            hdf5${bfx}
+                            hdf5${bfx}${lfx}
+                            )
+                    foreach(tgt ${HDF5_C_CANDIDATES})
+                        if(TARGET ${tgt})
+                            hdf5_message(DEBUG "Mapping ${tgt} --> hdf5::hdf5")
+                            add_library(hdf5::hdf5 INTERFACE IMPORTED)
+                            target_link_libraries(hdf5::hdf5 INTERFACE ${tgt})
+                            break()
+                        endif()
+                    endforeach()
+                endif()
+                foreach(COMP ${HDF5_COMPONENTS})
+                    string(TOLOWER "${COMP}" comp)
+                    if(NOT TARGET hdf5::hdf5_${comp})
+                        foreach(sfx ${HDF5_${COMP}_SUFFIX})
+                            set(HDF5_${COMP}_CANDIDATES
+                                    ${pfx}hdf5${sfx}
+                                    ${pfx}hdf5${sfx}${lfx}${bfx}
+                                    ${pfx}hdf5${sfx}${lfx}
+                                    ${pfx}hdf5${sfx}${bfx}
+                                    ${pfx}hdf5${sfx}${bfx}${lfx}
+                                    hdf5${sfx}
+                                    hdf5${sfx}${lfx}${bfx}
+                                    hdf5${sfx}${lfx}
+                                    hdf5${sfx}${bfx}
+                                    hdf5${sfx}${bfx}${lfx}
+                                    )
+                            foreach(tgt ${HDF5_${COMP}_CANDIDATES})
+                                if(TARGET ${tgt})
+                                    hdf5_message(DEBUG "Mapping ${tgt} --> hdf5::hdf5_${comp}")
+                                    add_library(hdf5::hdf5_${comp} INTERFACE IMPORTED)
+                                    target_link_libraries(hdf5::hdf5_${comp} INTERFACE ${tgt})
+                                    break()
+                                endif()
+                            endforeach()
+                            if(TARGET hdf5::hdf5_${comp})
+                                break()
+                            endif()
+                        endforeach()
+                    endif()
+                endforeach()
+            endforeach()
+        endforeach()
+    endforeach()
+endfunction()
+
+
+function(get_hdf5_library_linkage libs link LINK)
+    foreach(lib ${libs})
+        if("${lib}" MATCHES "hdf5")
+            if(TARGET ${lib})
+                get_target_property(libtype ${lib} TYPE)
+                if(libtype MATCHES "STATIC")
+                    set(${link} static PARENT_SCOPE)
+                    set(${LINK} STATIC PARENT_SCOPE)
+                    return()
+                elseif(libtype MATCHES "SHARED")
+                    set(${link} shared PARENT_SCOPE)
+                    set(${LINK} SHARED PARENT_SCOPE)
+                    return()
+                endif()
+            else()
+                get_filename_component(ext ${lib} EXT)
+                if("${ext}" IN_LIST CMAKE_STATIC_LIBRARY_SUFFIX)
+                    set(${link} static PARENT_SCOPE)
+                    set(${LINK} STATIC PARENT_SCOPE)
+                    return()
+                endif()
+                if("${ext}" IN_LIST CMAKE_SHARED_LIBRARY_SUFFIX)
+                    set(${link} shared PARENT_SCOPE)
+                    set(${LINK} SHARED PARENT_SCOPE)
+                    return()
+                endif()
+            endif()
+        endif()
+    endforeach()
+    set(${link} unknown PARENT_SCOPE)
+    set(${LINK} UNKNOWN PARENT_SCOPE)
+endfunction()
+
+
+function(collect_hdf5_target_names target_list)
+    if("CXX" IN_LIST HDF5_FIND_COMPONENTS)
+        list(APPEND HDF5_COMPONENT_NAMES _cpp )
+    endif()
+    if("CXX_HL" IN_LIST HDF5_FIND_COMPONENTS)
+        list(APPEND HDF5_COMPONENT_NAMES _cpp_hl _hl_cpp )
+    endif()
+    if("Fortran" IN_LIST HDF5_FIND_COMPONENTS)
+        list(APPEND HDF5_COMPONENT_NAMES _fortran )
+    endif()
+    if("HL" IN_LIST HDF5_FIND_COMPONENTS)
+        list(APPEND HDF5_COMPONENT_NAMES _hl)
+    endif()
+    if("Fortran_HL" IN_LIST "${HDF5_FIND_COMPONENTS}")
+        list(APPEND HDF5_COMPONENT_NAMES hl_fortran _hl_fortran )
+    endif()
+    if(NOT HDF5_USE_STATIC_LIBRARIES OR BUILD_SHARED_LIBS)
+        set(HDF5_TARGET_SUFFIX -shared _shared)
+    else()
+        set(HDF5_TARGET_SUFFIX -static _static)
+    endif()
+
+    foreach(cmp ${HDF5_COMPONENT_NAMES})
+        foreach(sfx ${HDF5_TARGET_SUFFIX})
+            list(APPEND HDF5_TARGET_CANDIDATES
+                    hdf5::hdf5${cmp}${sfx}
+                    hdf5::hdf5${cmp}
+                    hdf5::hdf5${sfx}
+                    hdf5::hdf5
+                    hdf5${cmp}${sfx}
+                    hdf5${cmp}
+                    hdf5${sfx}
+                    hdf5
+                    )
+        endforeach()
+    endforeach()
+    list(REMOVE_DUPLICATES HDF5_TARGET_CANDIDATES)
+    foreach(tgt ${HDF5_TARGET_CANDIDATES})
+        if(TARGET ${tgt})
+            if(HDF5_FIND_DEBUG)
+                hdf5_message(STATUS "Found target: ${tgt}")
+            endif()
+            list(APPEND HDF5_TARGETS ${tgt})
+        endif()
+    endforeach()
+    list(REMOVE_DUPLICATES HDF5_TARGETS)
+    set(${target_list} ${HDF5_TARGETS} PARENT_SCOPE)
+endfunction()
+
+
+function(define_hdf5_target lang libnames target_list)
+    # Variable libnames can be a list of library names: usually, it's a list such as "hdf5;pthread;dl;m"
+    # Here we extract the first element and call it lib, and collect the rest as "linklibs"
+    list(GET libnames 0 lib)
+    list(LENGTH libnames numlibs)
+    if(numlibs GREATER 1)
+        list(SUBLIST libnames 1 -1 linklibs)
+    endif()
+
+    if(TARGET hdf5::${lib})
+        # From CMake version > 3.19 we get proper targets defined in hdf5::${lib}. There is no need to manually
+        # model the interface dependencies of the imported libraries in these targets, since that is done for us.
+        # Therefore we just append the HDF5 target to the target list.
+        # Note that hdf5::hdf5 is now the main C library.
+        if(hdf5::${lib} IN_LIST ${target_list})
+            # We already processed this target
+            return()
+        endif()
+        if(NOT ${lib} STREQUAL "hdf5" AND TARGET hdf5::hdf5)
+            # All libraries depend on the main c-library called hdf5::hdf5
+            target_link_libraries(hdf5::${lib} INTERFACE hdf5::hdf5)
+        endif()
+        # Add to target_list further down
+    else()
+
+        # Start modeling the dependency structure of the imported libraries
+        if(HDF5_C_LIBRARY_${lib})
+            get_hdf5_library_linkage(HDF5_C_LIBRARY_${lib} hdf5_c_link_type HDF5_C_LINK_TYPE)
+            add_library(hdf5::${lib} ${HDF5_C_LINK_TYPE} IMPORTED)
+            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION  ${HDF5_C_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES  "hdf5::hdf5")
+            # Apply OS dependent fixes to the main hdf5 library (other hdf5 libraries will link to this one)
+            if(MSVC AND HDF5_C_LINK_TYPE MATCHES "SHARED")
+                target_compile_definitions(hdf5::${lib} INTERFACE H5_BUILT_AS_DYNAMIC_LIB)
+            endif()
+        elseif(HDF5_CXX_LIBRARY_${lib})
+            get_hdf5_library_linkage(HDF5_CXX_LIBRARY_${lib} hdf5_cpp_link_type HDF5_CXX_LINK_TYPE)
+            add_library(hdf5::${lib} ${HDF5_CXX_LINK_TYPE} IMPORTED)
+            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION  ${HDF5_CXX_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES "hdf5::hdf5_cpp;hdf5::hdf5")
+        elseif(HDF5_Fortran_LIBRARY_${lib})
+            get_hdf5_library_linkage(HDF5_Fortran_LIBRARY_${lib} hdf5_fortran_link_type HDF5_Fortran_LINK_TYPE)
+            add_library(hdf5::${lib} ${HDF5_Fortran_LINK_TYPE} IMPORTED)
+            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION  ${HDF5_Fortran_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES "hdf5::hdf5_fortran;hdf5::hdf5")
+        elseif(HDF5_${lib}_LIBRARY)
+            # This is strictly for older versions of CMake
+            get_hdf5_library_linkage(HDF5_${lib}_LIBRARY hdf5_${lib}_link_type HDF5_${lib}_LINK_TYPE)
+            add_library(hdf5::${lib} ${HDF5_${lib}_LINK_TYPE} IMPORTED)
+            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION  ${HDF5_${lib}_LIBRARY})
+            list(APPEND linklibs z dl rt m)  # Just append the usual suspects
+            list(REMOVE_DUPLICATES linklibs)
+        else()
+            hdf5_message(STATUS "Could not match lib ${lib} and language ${lang} to a defined variable \n"
+                    "-- Considered in order: \n"
+                    "--     HDF5_${lang}_LIBRARY_${lib} \n"
+                    "--     HDF5_C_LIBRARY_${lib} \n"
+                    "--     HDF5_CXX_LIBRARY_${lib} \n"
+                    "--     HDF5_Fortran_LIBRARY_${lib} \n"
+                    "--     HDF5_${lib}_LIBRARY \n " )
+            return()
+        endif()
+        # Take care of includes
+        set(${lib}_include ${HDF5_${lang}_INCLUDE_DIRS} ${HDF5_${lang}_INCLUDE_DIR} ${HDF5_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
+        list(REMOVE_DUPLICATES ${lib}_include)
+        target_include_directories(hdf5::${lib} SYSTEM INTERFACE ${${lib}_include})
+    endif()
+
+    if("sz" IN_LIST linklibs)
+        # Fix for missing aec dependency in the apt package when linking statically
+        find_library(AEC_LIBRARY NAMES aec)
+        CHECK_LIBRARY_EXISTS(aec aec_decode_init "/usr/lib/x86_64-linux-gnu" AEC_EXISTS)
+        if(AEC_EXISTS OR AEC_LIBRARY)
+            list(APPEND linklibs aec)
+        endif()
+        if(APPLE)
+            # Fix for HDF5 from brew in macos 10.xx missing -L dir
+            find_library(SZIP_LIBRARY NAMES sz szip szip-static HINTS /usr/local/opt /usr/local/lib) # No built in findSZIP.cmake
+            if(SZIP_LIBRARY)
+                hdf5_message(STATUS "Found SZIP: ${SZIP_LIBRARY}")
+                get_filename_component(SZIP_PARENT_DIR ${SZIP_LIBRARY} DIRECTORY)
+                target_link_libraries(hdf5::${lib} INTERFACE -L${SZIP_PARENT_DIR})
+            endif()
+        endif()
+    endif()
+
+    # Handle the other link libraries in "linklibs".
+    foreach(lnk ${linklibs})
+        if("${lnk}" MATCHES "hdf5")
+            target_link_libraries(hdf5::${lib} INTERFACE hdf5::${lnk})
+        elseif(${lnk} MATCHES "pthread") # Link with -pthread instead of libpthread directly
+            set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+            find_package(Threads REQUIRED)
+            target_link_libraries(Threads::Threads INTERFACE rt dl)
+            target_link_libraries(hdf5::${lib} INTERFACE Threads::Threads)
+        elseif(HDF5_${lang}_LIBRARY_${lnk})
+            if(NOT TARGET hdf5::${lnk})
+                if("${lnk}" STREQUAL "m" OR "${lnk}" STREQUAL "dl")
+                    # dl and m have to be linked with "-ldl" or "-lm", in particular on static builds.
+                    add_library(hdf5::${lnk} INTERFACE IMPORTED)
+                    target_link_libraries(hdf5::${lnk} INTERFACE ${lnk})
+                else()
+                    add_library(hdf5::${lnk} UNKNOWN IMPORTED)
+                    set_target_properties(hdf5::${lnk} PROPERTIES IMPORTED_LOCATION ${HDF5_${lang}_LIBRARY_${lnk}})
+                endif()
+            endif()
+            target_link_libraries(hdf5::${lib} INTERFACE hdf5::${lnk})
+        else()
+            target_link_libraries(hdf5::${lib} INTERFACE ${lnk})
+        endif()
+    endforeach()
+
+    # Append to target_list
+    set(${target_list} "${${target_list}};hdf5::${lib}" PARENT_SCOPE)
+endfunction()
+
+
+macro(define_found_components)
+    foreach(cmp ${HDF5_FIND_COMPONENTS})
+        if(HDF5_${cmp}_LIBRARIES)
+            set(HDF5_${cmp}_LIBRARIES ${HDF5_${cmp}_LIBRARIES} PARENT_SCOPE)
+        endif()
+        if(HDF5_${cmp}_FOUND OR HDF5_${HDF5_TARGET_SUFFIX}_${cmp}_FOUND)
+            set(HDF5_${cmp}_FOUND TRUE PARENT_SCOPE)
+        endif()
+        if(HDF5_HL_${cmp}_FOUND OR HDF5_${cmp}_HL_FOUND OR HDF5_${HDF5_TARGET_SUFFIX}_${cmp}_HL_FOUND)
+            set(HDF5_${cmp}_HL_FOUND TRUE PARENT_SCOPE)
+        endif()
+        # Fortran_HL is special...
+        if("${cmp}" MATCHES "Fortran_HL")
+            if("${HDF5_Fortran_LIBRARY_hdf5};${HDF5_TARGETS};${HDF5_LIBNAMES}" MATCHES "hl_fortran")
+                set(HDF5_Fortran_HL_FOUND TRUE PARENT_SCOPE)
+            endif()
+        endif()
+    endforeach()
+
+    set(HDF5_FOUND              ${HDF5_FOUND}               PARENT_SCOPE)
+    set(HDF5_TARGETS            ${HDF5_TARGETS}             PARENT_SCOPE)
+    set(HDF5_VERSION            ${HDF5_VERSION}             PARENT_SCOPE)
+    set(HDF5_LIBRARIES          ${HDF5_LIBRARIES}           PARENT_SCOPE)
+    set(HDF5_LIBNAMES           ${HDF5_LIBNAMES}            PARENT_SCOPE)
+    set(HDF5_LINK_LIBNAMES      ${HDF5_LINK_LIBNAMES}       PARENT_SCOPE)
+    set(HDF5_LANGUAGE_BINDINGS  ${HDF5_LANGUAGE_BINDINGS}   PARENT_SCOPE)
+    set(HDF5_INCLUDE_DIRS       ${HDF5_INCLUDE_DIRS}        PARENT_SCOPE)
+    if(HDF5_INCLUDE_DIR)
+        list(APPEND HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIR})
+    endif()
+    if(HDF5_IS_PARALLEL)
+        set(HDF5_IS_PARALLEL    ${HDF5_IS_PARALLEL}         PARENT_SCOPE)
+    elseif(HDF5_ENABLE_PARALLEL) # Different name in config mode
+        set(HDF5_IS_PARALLEL    ${HDF5_ENABLE_PARALLEL}     PARENT_SCOPE)
+    endif()
+endmacro()
+
+
+
+function(find_package_hdf5_in_root hdf5_root)
+    unset(HDF5_C_COMPILER_EXECUTABLE   CACHE)
+    unset(HDF5_CXX_COMPILER_EXECUTABLE CACHE)
+    unset(HDF5_Fortran_COMPILER_EXECUTABLE CACHE)
+    unset(HDF5_C_COMPILER_EXECUTABLE)
+    unset(HDF5_CXX_COMPILER_EXECUTABLE)
+    unset(HDF5_Fortran_COMPILER_EXECUTABLE)
+    unset(HDF5_FOUND )
+    unset(HDF5_FOUND CACHE)
+    unset(HDF5_FOUND PARENT_SCOPE)
+    set(HDF5_FOUND OFF)
+    set(HDF5_FIND_REQUIRED OFF)
+    set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE ON)
+    hdf5_message(STATUS "Searching for hdf5 execs in ${hdf5_root}" )
+
+    set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE ON)
+    if(HDF5_USE_STATIC_LIBRARIES)
+        set(HDF5_EXEC_TESTFLAG "-noshlib")
+    else()
+        set(HDF5_EXEC_TESTFLAG "-shlib")
+    endif()
+
+    if("C" IN_LIST HDF5_FIND_COMPONENTS)
+        enable_language(C)
+        find_file(HDF5_C_COMPILER_EXECUTABLE        NAMES h5cc h5pcc  PATHS ${hdf5_root} ${hdf5_root}/hdf5 PATH_SUFFIXES bin hdf5/bin ${CMAKE_INSTALL_LIBEXECDIR} ${CMAKE_INSTALL_BINDIR} NO_DEFAULT_PATH)
+    endif()
+    if("CXX" IN_LIST HDF5_FIND_COMPONENTS)
+        enable_language(CXX)
+        find_file(HDF5_CXX_COMPILER_EXECUTABLE      NAMES h5c++ PATHS ${hdf5_root} ${hdf5_root}/hdf5 PATH_SUFFIXES bin hdf5/bin ${CMAKE_INSTALL_LIBEXECDIR} ${CMAKE_INSTALL_BINDIR} NO_DEFAULT_PATH)
+    endif()
+    if("Fortran" IN_LIST HDF5_FIND_COMPONENTS)
+        enable_language(Fortran)
+        find_file(HDF5_Fortran_COMPILER_EXECUTABLE  NAMES h5fc h5pfc PATHS ${hdf5_root} ${hdf5_root}/hdf5 PATH_SUFFIXES bin hdf5/bin ${CMAKE_INSTALL_LIBEXECDIR} ${CMAKE_INSTALL_BINDIR} NO_DEFAULT_PATH)
+    endif()
+
+    if (HDF5_C_COMPILER_EXECUTABLE OR HDF5_CXX_COMPILER_EXECUTABLE)
+        hdf5_message(STATUS "Found hdf5 compiler wrapper C       : ${HDF5_C_COMPILER_EXECUTABLE} ")
+        hdf5_message(STATUS "Found hdf5 compiler wrapper CXX     : ${HDF5_CXX_COMPILER_EXECUTABLE}")
+        hdf5_message(STATUS "Found hdf5 compiler wrapper Fortran : ${HDF5_Fortran_COMPILER_EXECUTABLE}")
+        hdf5_message(STATUS "Looking for components              : ${HDF5_FIND_COMPONENTS}")
+        hdf5_message(STATUS "Starting find_package in MODULE mode")
+
+        set(CMAKE_MODULE_PATH "") # Modify this variable locally to make sure we use CMake's inbuilt FindHDF5.cmake module
+        find_package(HDF5 ${HDF5_FIND_VERSION} COMPONENTS ${HDF5_FIND_COMPONENTS} QUIET)
+
+        hdf5_message(DEBUG "Starting find_package(HDF5) in MODULE mode... Found: ${HDF5_FOUND}")
+    endif()
+    if(HDF5_FOUND)
+        # Add C_HL and CXX_HL to the language bindings
+        foreach(lang ${HDF5_LANGUAGE_BINDINGS})
+            string(TOUPPER ${lang} LANG)
+            list(APPEND HDF5_LANG ${LANG} ${lang})
+            if("HL" IN_LIST HDF5_FIND_COMPONENTS)
+                list(APPEND HDF5_LANG ${LANG}_HL ${lang}_HL)
+            endif()
+        endforeach()
+        list(REMOVE_DUPLICATES HDF5_LANG)
+        set(ACCEPT_PACKAGE TRUE)
+        set(HDF5_LIBNAMES)
+        set(HDF5_LINK_LIBNAMES)
+
+        # When HDF5 is built with CMake the compiler wrappers sometimes not linked properly.
+        # This causes the FindHDF5.cmake module bundled with CMake to give a false positive,
+        # claiming that the libraries are found when they actually aren't.
+        # We can notice when this happens by checking the return values defined in find_package.
+        # Read more here
+        # https://gitlab.kitware.com/cmake/cmake/-/issues/20387
+
+
+        # In the rare cases the executable wrapper is broken we only get the
+        # hdf5 libraries but not the extra libraries like m, dl, z and sz.
+        # Here we take care of this case by checking if they exist and adding
+        # them to the list of libraries manually.
+
+        if(HDF5_C_RETURN_VALUE OR HDF5_CXX_RETURN_VALUE OR HDF5_Fortran_RETURN_VALUE)
+            hdf5_message(WARNING "One or more HDF5 compiler wrappers may have failed")
+            foreach(lang ${HDF5_LANG})
+                foreach(lib m dl z sz aec)
+                    find_library(${lib}_var NAMES ${lib} QUIET)
+                    if(lib)
+                        list(APPEND HDF5_${lang}_LIBRARY_NAMES $<LINK_ONLY:${lib}>)
+                    endif()
+                endforeach()
+                hdf5_message(STATUS "Added link libraries: ${HDF5_${lang}_LIBRARY_NAMES}")
+            endforeach()
+        endif()
+
+
+        # Get a list of library names like hdf5 hdf5_hl hdf5_hl_cpp etc
+        foreach(lang ${HDF5_LANG})
+            foreach(lib ${HDF5_${lang}_LIBRARY_NAMES})
+                if(${lib} MATCHES "hdf5")
+                    list(APPEND HDF5_LIBNAMES ${lib})
+                else()
+                    list(APPEND HDF5_LINK_LIBNAMES ${lib})
+                endif()
+            endforeach()
+        endforeach()
+
+        # Check that each hdf5 library has correct static/shared extension
+        foreach(lang ${HDF5_LANG} )
+            foreach(lib ${HDF5_LIBNAMES})
+                get_hdf5_library_linkage("${HDF5_${lang}_LIBRARY_${lib}}" link_type LINK_TYPE)
+                if(HDF5_USE_STATIC_LIBRARIES AND ${LINK_TYPE} MATCHES "SHARED")
+                    set(ACCEPT_PACKAGE FALSE)
+                    set(REJECT_REASON "Found shared versions of HDF5 libraries despite having set HDF5_USE_STATIC_LIBRARIES: ${HDF5_USE_STATIC_LIBRARIES}")
+                    list(APPEND HDF5_WRONG_LIBS ${HDF5_${lang}_LIBRARY_${lib}})
+                endif()
+            endforeach()
+        endforeach()
+
+        # Check that each extra link library (not the hdf5 libraries!) have correct static/shared extension
+        foreach(lang ${HDF5_LANG})
+            foreach(lib ${HDF5_LINK_LIBNAMES})
+                get_filename_component(lib_extension "${HDF5_${lang}_LIBRARY_${lib}}" EXT)
+                if(HDF5_USE_STATIC_LIBRARIES AND NOT lib_extension MATCHES "${HDF5_LIBRARY_SUFFIX}" )
+                    # If we reached this point, the package wants to inject shared libraries
+                    # We need to check that each library is available as a static library when linking as "-l<name>" or with "-L <libpath>"
+                    # or else we have to reject this package.
+                    unset(HDF5_LINK_LIBNAME_${lib})
+                    unset(HDF5_LINK_LIBNAME_${lib} CACHE)
+                    find_library(HDF5_LINK_LIBNAME_${lib} NAMES ${lib} HINTS /usr/local/opt)
+                    if(HDF5_LINK_LIBNAME_${lib})
+                        get_filename_component(HDF5_LINK_LIBNAME_${lib}_DIR ${HDF5_LINK_LIBNAME_${lib}} DIRECTORY)
+                        list(APPEND HDF5_LINK_LIBDIRS -L${HDF5_LINK_LIBNAME_${lib}_DIR})
+                    else()
+                        set(ACCEPT_PACKAGE FALSE)
+                        set(REJECT_REASON "HDF5 static libraries depends on a shared library and no static replacement was found")
+                        list(APPEND HDF5_WRONG_LIBS ${lib})
+                    endif()
+                endif()
+            endforeach()
+        endforeach()
+
+
+        if (NOT ACCEPT_PACKAGE)
+            list(REMOVE_DUPLICATES HDF5_WRONG_LIBS)
+            hdf5_message(STATUS "HDF5 Package disqualified: ${HDF5_VERSION} ${HDF5_INCLUDE_DIR}\n \
+            Reason: ${REJECT_REASON}: ${HDF5_WRONG_LIBS}" )
+            #Unset variables so that we start from a clean search next time
+            get_cmake_property(_variableNames VARIABLES)
+            foreach (_variableName ${_variableNames})
+                if("${_variableName}" MATCHES "HDF5_")
+                    unset(${_variableName})
+                    unset(${_variableName} CACHE)
+                endif()
+            endforeach()
+        else()
+            if(NOT HDF5_ROOT AND HDF5_CXX_COMPILER_EXECUTABLE)
+                get_filename_component(HDF5_ROOT "${HDF5_CXX_COMPILER_EXECUTABLE}/../.." ABSOLUTE)
+            endif()
+            if(NOT HDF5_ROOT AND HDF5_C_COMPILER_EXECUTABLE)
+                get_filename_component(HDF5_ROOT "${HDF5_C_COMPILER_EXECUTABLE}/../.." ABSOLUTE)
+            endif()
+            if(NOT HDF5_ROOT AND HDF5_Fortran_COMPILER_EXECUTABLE)
+                get_filename_component(HDF5_ROOT "${HDF5_Fortran_COMPILER_EXECUTABLE}/../.." ABSOLUTE)
+            endif()
+            foreach(lang ${HDF5_LANG})
+                if(HDF5_${lang}_LIBRARY_NAMES)
+                    define_hdf5_target(${lang} "${HDF5_${lang}_LIBRARY_NAMES}" HDF5_TARGETS)
+                endif()
+            endforeach()
+            # Retain some of the variables
+            define_found_components()
+
+        endif()
+    endif()
+endfunction()
+
+
+
+function(find_package_hdf5_exec_wrapper)
+    # Find HDF5 using executable wrappers
+    list(APPEND HDF5_PATHS
+            ${HDF5_ROOT}
+            $ENV{HDF5_ROOT}
+            ${HDF5_PREFIX_PATH}
+            ${EBROOTHDF5})
+    if(NOT HDF5_NO_CMAKE_PATH)
+        list(APPEND HDF5_PATHS ${CMAKE_PREFIX_PATH})
+    endif()
+    if(NOT HDF5_NO_SYSTEM_ENVIRONMENT_PATH)
+        if(DEFINED ENV{PATH})
+            string(REPLACE ":" ";" ENVPATH $ENV{PATH})
+        endif()
+        list(APPEND HDF5_PATHS ${ENVPATH})
+    endif()
+    if(NOT HDF5_NO_CMAKE_SYSTEM_PATH)
+        list(APPEND HDF5_PATHS ${CMAKE_SYSTEM_PREFIX_PATH})
+    endif()
+
+    list(REMOVE_DUPLICATES HDF5_PATHS)
+
+    include(GNUInstallDirs)
+    foreach(hdf5_root ${HDF5_PATHS})
+        find_package_hdf5_in_root("${hdf5_root}")
+        if(HDF5_FOUND)
+            define_found_components()
+            return()
+        else()
+            set(HDF5_FOUND FALSE PARENT_SCOPE)
+        endif()
+    endforeach()
+endfunction()
+
+
+
+function(find_package_hdf5_config_wrapper)
+
+    # We unset the specified version because on some installations, hdf5-config.cmake will mark
+    # a new library (like 1.12) as incompatible with an older (like 1.8) even though h5pp is compatible with both.
+    unset(HDF5_FIND_VERSION) # The user has probably installed the latest version
+    unset(HDF5_FIND_VERSION_COMPLETE) # The user has probably installed the latest version
+    unset(HDF5_FIND_REQUIRED) # There is a chance we may find the library using the executable wrappers
+
+    if(HDF5_FIND_DEBUG)
+        hdf5_message(STATUS "Finding package HDF5 in CONFIG mode...")
+    endif()
+    if(HDF5_USE_STATIC_LIBRARIES)
+        list(APPEND HDF5_COMPONENTS_CONFIG static)
+    else()
+        list(APPEND HDF5_COMPONENTS_CONFIG shared)
+    endif()
+
+    # Honor the HDF5_NO_<option> flags
+    list(APPEND NO_OPTIONS
+            NO_PACKAGE_ROOT_PATH
+            NO_CMAKE_PATH
+            NO_CMAKE_PACKAGE_REGISTRY
+            NO_SYSTEM_ENVIRONMENT_PATH
+            NO_CMAKE_SYSTEM_PATH
+            NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
+            NO_DEFAULT_PATH
+            )
+
+    foreach(opt ${NO_OPTIONS})
+        if(DEFINED HDF5_${opt} AND NOT DEFINED ${opt})
+            set(${opt} ${opt})
+            if(HDF5_FIND_DEBUG)
+                hdf5_message(STATUS "HDF5 find policy: ${${opt}}")
+            endif()
+        endif()
+    endforeach()
+    find_package(HDF5
+            ${HDF5_FIND_VERSION}
+            COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
+            HINTS  ${HDF5_ROOT}  ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
+            PATH_SUFFIXES  hdf5
+            # The following flags are enabled with HDF5_NO_... before calling find_package(HDF5)
+            ${NO_PACKAGE_ROOT_PATH}
+            ${NO_SYSTEM_ENVIRONMENT_PATH}
+            ${NO_CMAKE_PATH}
+            ${NO_CMAKE_PACKAGE_REGISTRY}
+            ${NO_CMAKE_SYSTEM_PATH}
+            ${NO_CMAKE_SYSTEM_PACKAGE_REGISTRY}
+            ${NO_DEFAULT_PATH} # If enabled, this will ignore HDF5_ROOT
+            CONFIG)
+
+    if(HDF5_FOUND)
+        collect_hdf5_target_names(HDF5_TARGETS)
+        define_found_components()
+        return()
+    else()
+        set(HDF5_FOUND FALSE PARENT_SCOPE)
+    endif()
+endfunction()
+
+
+function(find_package_hdf5)
+
+    # Configure shared/static linkage
+
+    if(BUILD_SHARED_LIBS AND NOT DEFINED HDF5_USE_STATIC_LIBRARIES)
+        set(HDF5_USE_STATIC_LIBRARIES OFF)
+    elseif(NOT DEFINED HDF5_USE_STATIC_LIBRARIES)
+        set(HDF5_USE_STATIC_LIBRARIES ON)
+    endif()
+
+    if(HDF5_USE_STATIC_LIBRARIES)
+        set(HDF5_LIBRARY_SUFFIX ${CMAKE_STATIC_LIBRARY_SUFFIX})
+        set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+    else()
+        set(HDF5_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
+        set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX})
+    endif()
+
+    # Setup components
+    if(NOT HDF5_FIND_COMPONENTS)
+        list(APPEND HDF5_FIND_COMPONENTS C)
+    endif()
+
+    # Find HDF5
+    if(NOT HDF5_FOUND)
+        # Try finding HDF5 where it would have been installed previously by h5pp
+        find_package_hdf5_config_wrapper()
+    endif()
+    if(NOT HDF5_FOUND)
+        # Try finding HDF5 using executable wrappers
+        find_package_hdf5_exec_wrapper()
+    endif()
+    define_found_components()
+endfunction()
+
+if(NOT HDF5_FOUND)
+    find_package_hdf5()
+endif()
+
+# To print all variables, use the code below:
+#get_cmake_property(_variableNames VARIABLES)
+#foreach (_variableName ${_variableNames})
+#    if("${_variableName}" MATCHES "HDF5|hdf5|Hdf5")
+#        message(STATUS "${_variableName}=${${_variableName}}")
+#    endif()
+#endforeach()
+#
+
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(HDF5
+        FOUND_VAR HDF5_FOUND
+        REQUIRED_VARS HDF5_INCLUDE_DIRS HDF5_TARGETS
+        VERSION_VAR HDF5_VERSION
+        HANDLE_COMPONENTS
+        FAIL_MESSAGE "Failed to find HDF5"
+        )
+
+
+if(HDF5_FOUND)
+    get_hdf5_library_linkage("${HDF5_TARGETS}" hdf5_link_type HDF5_LINK_TYPE)
+    if(NOT TARGET hdf5::all)
+        add_library(hdf5::all ${HDF5_LINK_TYPE} IMPORTED)
+    endif()
+    if(NOT TARGET HDF5::HDF5)
+        add_library(HDF5::HDF5 ${HDF5_LINK_TYPE} IMPORTED)
+    endif()
+    set_target_properties(hdf5::all  PROPERTIES IMPORTED_LOCATION "" INTERFACE_LINK_LIBRARIES "${HDF5_TARGETS}")
+    set_target_properties(HDF5::HDF5 PROPERTIES IMPORTED_LOCATION "" INTERFACE_LINK_LIBRARIES "${HDF5_TARGETS}")
+
+    # Set variables to match the signature of the original cmake-bundled FindHDF5.cmake
+    foreach(tgt ${HDF5_TARGETS})
+        if(${tgt} MATCHES "cpp_hl|hl_cpp")
+            set(HDF5_CXX_HL_TARGETS ${tgt})
+        elseif(${tgt} MATCHES "cpp")
+            set(HDF5_CXX_TARGETS ${tgt})
+        elseif(${tgt} MATCHES "fortran")
+            set(HDF5_Fortran_TARGETS ${tgt})
+        elseif(${tgt} MATCHES "hl")
+            set(HDF5_C_HL_TARGETS ${tgt})
+        elseif(${tgt} MATCHES "static|shared")
+            set(HDF5_C_TARGETS ${tgt})
+        endif()
+    endforeach()
+
+    foreach(cmp C CXX C_HL CXX_HL Fortran)
+        foreach(tgt ${HDF5_${type}_TARGETS})
+            if(TARGET ${tgt})
+                get_target_property(IMPLIB ${tgt} LOCATION)
+                if(IMPLIB)
+                    list(APPEND HDF5_${cmp}_LIBRARY ${IMPLIB} )
+                    hdf5_message(STATUS "Found HDF5 target ${tgt} for HDF5_${cmp}_LIBRARY: ${HDF5_${cmp}_LIBRARY}")
+                endif()
+            endif()
+        endforeach()
+    endforeach()
+endif()
+
+
+
+
+
+
+

@@ -22,7 +22,7 @@ void compare(const Particle &lhs, const Particle &rhs) {
     CHECK(strncmp(lhs.name, rhs.name, 10) == 0);
 }
 
-h5pp::File     file("output/readWriteTables.h5", h5pp::FilePermission::REPLACE, 2);
+h5pp::File     file("output/readWriteTables.h5", h5pp::FileAccess::REPLACE, 2);
 h5pp::hid::h5t MY_HDF5_NAME_TYPE;
 h5pp::hid::h5t MY_HDF5_RHO_TYPE;
 h5pp::hid::h5t MY_HDF5_PARTICLE_TYPE;
@@ -94,7 +94,7 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
     }
     SECTION("Copy a table entry to another file") {
         auto       info1 = file.getTableInfo("somegroup/particleTable");
-        h5pp::File file2("output/readWriteTablesCopy.h5", h5pp::FilePermission::REPLACE, 2);
+        h5pp::File file2("output/readWriteTablesCopy.h5", h5pp::FileAccess::REPLACE, 2);
         auto       info2 = file2.appendTableRecords(file.openFileHandle(),
                                                     "somegroup/particleTable",
                                                     "somegroup/particleTable",

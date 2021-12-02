@@ -6,12 +6,12 @@
 int main() {
     std::string outputFilename = "output/largeWrite.h5";
     size_t      logLevel       = 0;
-    h5pp::File  file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File  file(outputFilename, h5pp::FileAccess::REPLACE, logLevel);
     file.writeDataset("teststring", "simpleWriteGroup/String");
     std::vector<std::complex<double>> vectorComplexDouble(10000, {10.0, 5.0});
     file.writeDataset(vectorComplexDouble, "largeWriteGroup/vectorComplexDouble");
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     Eigen::MatrixXi  matrixInt           = Eigen::MatrixXi::Random(500, 500);
     Eigen::MatrixXd  matrixDouble        = Eigen::MatrixXd::Random(500, 500);
     Eigen::MatrixXcd matrixComplexDouble = Eigen::MatrixXcd::Random(500, 500);

@@ -7,7 +7,7 @@ int main() {
     // Define dummy data
     std::string outputFilename = "output/overWrite.h5";
     size_t      logLevel       = 0;
-    h5pp::File  file(outputFilename, h5pp::FilePermission::REPLACE, logLevel);
+    h5pp::File  file(outputFilename, h5pp::FileAccess::REPLACE, logLevel);
 
     std::string somestring = "this is a teststring";
 
@@ -98,7 +98,7 @@ int main() {
         throw std::runtime_error("Automatic change from contiguous to chunked when size is large failed: " + std::string(ex.what()));
     }
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     // Do the same for Eigen types
     // Write chunked datasets that can be resized
 
@@ -107,8 +107,9 @@ int main() {
     Eigen::MatrixXd              matrixDouble        = Eigen::MatrixXd::Random(100, 100);
     Eigen::MatrixXcd             matrixComplexDouble = Eigen::MatrixXcd::Random(100, 100);
     Eigen::Map<Eigen::MatrixXcd> matrixMapComplexDouble(matrixComplexDouble.data(), matrixComplexDouble.rows(), matrixComplexDouble.cols());
-    Eigen::TensorMap<Eigen::Tensor<std::complex<double>, 2>> tensorMapComplexDouble(
-        matrixComplexDouble.data(), matrixComplexDouble.rows(), matrixComplexDouble.cols());
+    Eigen::TensorMap<Eigen::Tensor<std::complex<double>, 2>> tensorMapComplexDouble(matrixComplexDouble.data(),
+                                                                                    matrixComplexDouble.rows(),
+                                                                                    matrixComplexDouble.cols());
 
     // Now write
     file.writeDataset(matrixInt, "overWriteGroup_chunked/matrixInt", std::nullopt, H5D_CHUNKED);

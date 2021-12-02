@@ -9,7 +9,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-08c-read-hyperslab.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-08c-read-hyperslab.h5", h5pp::FileAccess::REPLACE);
 
     // Initialize a vector with size 25
     std::vector<double> data5x5(25);
@@ -43,7 +43,7 @@ int main() {
         h5pp::print("\n");
     }
 
-#ifdef H5PP_EIGEN3
+#ifdef H5PP_USE_EIGEN3
     // Eigen comes in handy when dealing with matrices
     // Note 1: h5pp resizes the Eigen container as indicated by the dataset dimensions
     // Note 2: The rank (number of dimensions) of the Eigen container must agree with the rank of the dataset

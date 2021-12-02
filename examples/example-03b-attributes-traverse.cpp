@@ -10,7 +10,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-03b-attributes-traverse.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-03b-attributes-traverse.h5", h5pp::FileAccess::REPLACE);
 
     // Write a dummy integer to file
     file.writeDataset(42, "intGroup/myInt");
@@ -55,7 +55,6 @@ int main() {
                 h5pp::print("{} = {}\n", msg, file.readAttribute<std::vector<double>>(typeInfo.h5Name.value(), typeInfo.h5Path.value()));
 
             // ... and so on. In practice, it is simpler to create templated helper functions to avoid code duplication here.
-
         }
     }
 

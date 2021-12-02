@@ -27,7 +27,7 @@ struct Stats {
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-05c-table-info.h5", h5pp::FilePermission::REPLACE);
+    h5pp::File file("exampledir/example-05c-table-info.h5", h5pp::FileAccess::REPLACE);
 
     // Create a type for the char array from the template H5T_C_S1
     // The template describes a string with a single char.

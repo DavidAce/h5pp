@@ -66,8 +66,8 @@ namespace h5pp {
             data = std::vector<std::string>(std::begin(il), std::end(il));
         }
 
-             operator std::vector<std::string> &() { return data; }
-             operator const std::vector<std::string> &() const { return data; }
+                           operator std::vector<std::string> &() { return data; }
+                           operator const std::vector<std::string> &() const { return data; }
         [[nodiscard]] auto empty() const { return data.empty(); }
     };
 

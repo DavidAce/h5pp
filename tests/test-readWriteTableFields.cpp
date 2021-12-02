@@ -40,7 +40,7 @@ PACK(struct RhoName {
 
 TEST_CASE("Test reading columns from table", "[Table fields]") {
     SECTION("Initialize a file") {
-        h5pp::File     file("output/readWriteTableFields.h5", h5pp::FilePermission::REPLACE, 0);
+        h5pp::File     file("output/readWriteTableFields.h5", h5pp::FileAccess::REPLACE, 0);
         // Create a type for the char array from the template H5T_C_S1
         // The template describes a string with a single char.
         // Set the size with H5Tset_size.
@@ -70,7 +70,7 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
     }
 
     SECTION("Single field by name and index") {
-        h5pp::File        file("output/readWriteTableFields.h5", h5pp::FilePermission::READWRITE, 0);
+        h5pp::File        file("output/readWriteTableFields.h5", h5pp::FileAccess::READWRITE, 0);
         std::vector<Axis> axis_fields;
         /* clang-format off */
         axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", "y", h5pp::TableSelection::FIRST));
@@ -93,9 +93,9 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
     }
 
     SECTION("Single struct field by name") {
-        h5pp::File file("output/readWriteTableFields.h5", h5pp::FilePermission::READWRITE, 2);
+        h5pp::File file("output/readWriteTableFields.h5", h5pp::FileAccess::READWRITE, 2);
         auto       rho_field_first = file.readTableField<Rho>("somegroup/particleTable", "rho", 0, 1);
-        auto       rho_field_last = file.readTableField<Rho>("somegroup/particleTable", "rho", -1ul, 1);
+        auto       rho_field_last  = file.readTableField<Rho>("somegroup/particleTable", "rho", -1ul, 1);
         CHECK(rho_field_first.rho[0] == 20);
         CHECK(rho_field_first.rho[1] == 3.13);
         CHECK(rho_field_first.rho[2] == 102.4);
@@ -105,7 +105,7 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
     }
 
     SECTION("Multiple fields by name and index") {
-        h5pp::File          file("output/readWriteTableFields.h5", h5pp::FilePermission::READWRITE, 2);
+        h5pp::File          file("output/readWriteTableFields.h5", h5pp::FileAccess::READWRITE, 2);
         std::vector<Coords> coords_fields;
         /* clang-format off */
         coords_fields.emplace_back(file.readTableField<Coords>("somegroup/particleTable", {"x", "y", "z", "t"}, h5pp::TableSelection::LAST));
@@ -126,7 +126,7 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
     }
 
     SECTION("Multiple fields of different type by name and index") {
-        h5pp::File           file("output/readWriteTableFields.h5", h5pp::FilePermission::READWRITE, 2);
+        h5pp::File           file("output/readWriteTableFields.h5", h5pp::FileAccess::READWRITE, 2);
         std::vector<RhoName> rhoName_fields;
         /* clang-format off */
 
