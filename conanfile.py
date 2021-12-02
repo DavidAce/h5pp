@@ -1,6 +1,7 @@
 import os
 from conans import ConanFile, CMake, tools
 from conans.errors import ConanInvalidConfiguration
+from conans.errors import ConanException
 from conans.tools import Version
 
 class h5ppConan(ConanFile):
@@ -61,9 +62,9 @@ class h5ppConan(ConanFile):
             self._cmake.configure(source_folder=self._source_subfolder)
         return self._cmake
 
-
     def validate(self):
-        tools.check_min_cppstd(self, "17")
+        if self.settings.compiler.get_safe("cppstd"):
+            tools.check_min_cppstd(self, 17)
 
     def build(self):
         cmake = self._configure_cmake()
