@@ -212,112 +212,148 @@ endfunction()
 function(define_hdf5_target lang libnames target_list)
     # Variable libnames can be a list of library names: usually, it's a list such as "hdf5;pthread;dl;m"
     # Here we extract the first element and call it lib, and collect the rest as "linklibs"
+    message("Defining hdf5 target ${lang} ${libnames} ${target_list}")
     list(GET libnames 0 lib)
     list(LENGTH libnames numlibs)
     if(numlibs GREATER 1)
         list(SUBLIST libnames 1 -1 linklibs)
     endif()
 
-    if(TARGET hdf5::${lib})
-        # From CMake version > 3.19 we get proper targets defined in hdf5::${lib}. There is no need to manually
-        # model the interface dependencies of the imported libraries in these targets, since that is done for us.
-        # Therefore we just append the HDF5 target to the target list.
-        # Note that hdf5::hdf5 is now the main C library.
-        if(hdf5::${lib} IN_LIST ${target_list})
-            # We already processed this target
-            return()
-        endif()
-        if(NOT ${lib} STREQUAL "hdf5" AND TARGET hdf5::hdf5)
-            # All libraries depend on the main c-library called hdf5::hdf5
-            target_link_libraries(hdf5::${lib} INTERFACE hdf5::hdf5)
-        endif()
-        # Add to target_list further down
-    else()
 
-        # Start modeling the dependency structure of the imported libraries
-        if(HDF5_C_LIBRARY_${lib})
-            get_hdf5_library_linkage(HDF5_C_LIBRARY_${lib} hdf5_c_link_type HDF5_C_LINK_TYPE)
-            add_library(hdf5::${lib} ${HDF5_C_LINK_TYPE} IMPORTED)
-            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION  ${HDF5_C_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES  "hdf5::hdf5")
-            # Apply OS dependent fixes to the main hdf5 library (other hdf5 libraries will link to this one)
-            if(MSVC AND HDF5_C_LINK_TYPE MATCHES "SHARED")
-                target_compile_definitions(hdf5::${lib} INTERFACE H5_BUILT_AS_DYNAMIC_LIB)
-            endif()
-        elseif(HDF5_CXX_LIBRARY_${lib})
-            get_hdf5_library_linkage(HDF5_CXX_LIBRARY_${lib} hdf5_cpp_link_type HDF5_CXX_LINK_TYPE)
-            add_library(hdf5::${lib} ${HDF5_CXX_LINK_TYPE} IMPORTED)
-            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION  ${HDF5_CXX_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES "hdf5::hdf5_cpp;hdf5::hdf5")
-        elseif(HDF5_Fortran_LIBRARY_${lib})
-            get_hdf5_library_linkage(HDF5_Fortran_LIBRARY_${lib} hdf5_fortran_link_type HDF5_Fortran_LINK_TYPE)
-            add_library(hdf5::${lib} ${HDF5_Fortran_LINK_TYPE} IMPORTED)
-            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION  ${HDF5_Fortran_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES "hdf5::hdf5_fortran;hdf5::hdf5")
-        elseif(HDF5_${lib}_LIBRARY)
-            # This is strictly for older versions of CMake
-            get_hdf5_library_linkage(HDF5_${lib}_LIBRARY hdf5_${lib}_link_type HDF5_${lib}_LINK_TYPE)
-            add_library(hdf5::${lib} ${HDF5_${lib}_LINK_TYPE} IMPORTED)
-            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION  ${HDF5_${lib}_LIBRARY})
-            list(APPEND linklibs z dl rt m)  # Just append the usual suspects
-            list(REMOVE_DUPLICATES linklibs)
-        else()
-            hdf5_message(STATUS "Could not match lib ${lib} and language ${lang} to a defined variable \n"
-                    "-- Considered in order: \n"
-                    "--     HDF5_${lang}_LIBRARY_${lib} \n"
-                    "--     HDF5_C_LIBRARY_${lib} \n"
-                    "--     HDF5_CXX_LIBRARY_${lib} \n"
-                    "--     HDF5_Fortran_LIBRARY_${lib} \n"
-                    "--     HDF5_${lib}_LIBRARY \n " )
-            return()
+    if(HDF5_${lib}_LIBRARY AND NOT HDF5_${lang}_LIBRARY_${lib}) # This is strictly for older versions of CMake
+        set(HDF5_${lang}_LIBRARY_${lib} ${HDF5_${lib}_LIBRARY})
+        list(APPEND linklibs z dl rt m)  # Just append the usual suspects
+        list(REMOVE_DUPLICATES linklibs)
+    endif()
+    if(HDF5_${lang}_LIBRARY_${lib})
+        get_hdf5_library_linkage(HDF5_${lang}_LIBRARY_${lib} HDF5_${lang}_LIBRARY_${lib}_LINKAGE HDF5_${lang}_LIBRARY_${lib}_LINKAGE)
+    endif()
+
+    # Set up the dependency structure of the imported libraries
+    if(NOT TARGET hdf5::${lib})
+        add_library(hdf5::${lib} ${HDF5_${lang}_LIBRARY_${lib}_LINKAGE} IMPORTED)
+        if(HDF5_${lang}_LIBRARY_${lib})
+            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION ${HDF5_${lang}_LIBRARY_${lib}})
         endif()
+    endif()
+    if(${lib} STREQUAL "hdf5")
         # Take care of includes
         set(${lib}_include ${HDF5_${lang}_INCLUDE_DIRS} ${HDF5_${lang}_INCLUDE_DIR} ${HDF5_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
         list(REMOVE_DUPLICATES ${lib}_include)
         target_include_directories(hdf5::${lib} SYSTEM INTERFACE ${${lib}_include})
+        # Apply OS dependent fixes to the main hdf5 library (other hdf5 libraries will link to this one)
+        if(MSVC AND "${HDF5_${lang}_LIBRARY_${lib}_LINKAGE}" MATCHES "SHARED")
+            target_compile_definitions(hdf5::${lib} INTERFACE H5_BUILT_AS_DYNAMIC_LIB)
+        endif()
+    else()
+        # All hdf5 libraries depend on the main c-library called hdf5::hdf5
+        target_link_libraries(hdf5::${lib} INTERFACE hdf5::hdf5)
     endif()
 
-    if("sz" IN_LIST linklibs)
-        # Fix for missing aec dependency in the apt package when linking statically
-        find_library(AEC_LIBRARY NAMES aec)
-        CHECK_LIBRARY_EXISTS(aec aec_decode_init "/usr/lib/x86_64-linux-gnu" AEC_EXISTS)
-        if(AEC_EXISTS OR AEC_LIBRARY)
-            list(APPEND linklibs aec)
-        endif()
-        if(APPLE)
-            # Fix for HDF5 from brew in macos 10.xx missing -L dir
-            find_library(SZIP_LIBRARY NAMES sz szip szip-static HINTS /usr/local/opt /usr/local/lib) # No built in findSZIP.cmake
-            if(SZIP_LIBRARY)
-                hdf5_message(STATUS "Found SZIP: ${SZIP_LIBRARY}")
-                get_filename_component(SZIP_PARENT_DIR ${SZIP_LIBRARY} DIRECTORY)
-                target_link_libraries(hdf5::${lib} INTERFACE -L${SZIP_PARENT_DIR})
+
+#
+#    if(TARGET hdf5::${lib})
+#        # From CMake version > 3.19 we get targets defined in hdf5::${lib}. There is no need to manually
+#        # model the interface dependencies of the imported libraries in these targets, since that is done for us.
+#        # Therefore we just append the HDF5 target to the target list.
+#        # Note that hdf5::hdf5 is now the main C library.
+#        if(hdf5::${lib} IN_LIST ${target_list})
+#            # We already processed this target
+#            return()
+#        endif()
+#        if(NOT ${lib} STREQUAL "hdf5" AND TARGET hdf5::hdf5)
+#            # All libraries depend on the main c-library called hdf5::hdf5
+#            target_link_libraries(hdf5::${lib} INTERFACE hdf5::hdf5)
+#        endif()
+#        # Add to target_list further down
+#    else()
+#
+#        # Set up the dependency structure of the imported libraries
+#        if(HDF5_C_LIBRARY_${lib})
+#            get_hdf5_library_linkage(HDF5_C_LIBRARY_${lib} hdf5_c_link_type HDF5_C_LINK_TYPE)
+#            add_library(hdf5::${lib} ${HDF5_C_LINK_TYPE} IMPORTED)
+#            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION  ${HDF5_C_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES  "hdf5::hdf5")
+#            # Apply OS dependent fixes to the main hdf5 library (other hdf5 libraries will link to this one)
+#            if(MSVC AND HDF5_C_LINK_TYPE MATCHES "SHARED")
+#                target_compile_definitions(hdf5::${lib} INTERFACE H5_BUILT_AS_DYNAMIC_LIB)
+#            endif()
+#        elseif(HDF5_CXX_LIBRARY_${lib})
+#            get_hdf5_library_linkage(HDF5_CXX_LIBRARY_${lib} hdf5_cpp_link_type HDF5_CXX_LINK_TYPE)
+#            add_library(hdf5::${lib} ${HDF5_CXX_LINK_TYPE} IMPORTED)
+#            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION  ${HDF5_CXX_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES "hdf5::hdf5_cpp;hdf5::hdf5")
+#        elseif(HDF5_Fortran_LIBRARY_${lib})
+#            get_hdf5_library_linkage(HDF5_Fortran_LIBRARY_${lib} hdf5_fortran_link_type HDF5_Fortran_LINK_TYPE)
+#            add_library(hdf5::${lib} ${HDF5_Fortran_LINK_TYPE} IMPORTED)
+#            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION  ${HDF5_Fortran_LIBRARY_${lib}} INTERFACE_LINK_LIBRARIES "hdf5::hdf5_fortran;hdf5::hdf5")
+#        elseif(HDF5_${lib}_LIBRARY)
+#            # This is strictly for older versions of CMake
+#            get_hdf5_library_linkage(HDF5_${lib}_LIBRARY hdf5_${lib}_link_type HDF5_${lib}_LINK_TYPE)
+#            add_library(hdf5::${lib} ${HDF5_${lib}_LINK_TYPE} IMPORTED)
+#            set_target_properties(hdf5::${lib} PROPERTIES IMPORTED_LOCATION  ${HDF5_${lib}_LIBRARY})
+#            list(APPEND linklibs z dl rt m)  # Just append the usual suspects
+#            list(REMOVE_DUPLICATES linklibs)
+#        else()
+#            hdf5_message(STATUS "Could not match lib ${lib} and language ${lang} to a defined variable \n"
+#                    "-- Considered in order: \n"
+#                    "--     HDF5_${lang}_LIBRARY_${lib} \n"
+#                    "--     HDF5_C_LIBRARY_${lib} \n"
+#                    "--     HDF5_CXX_LIBRARY_${lib} \n"
+#                    "--     HDF5_Fortran_LIBRARY_${lib} \n"
+#                    "--     HDF5_${lib}_LIBRARY \n " )
+#            return()
+#        endif()
+#        # Take care of includes
+#        set(${lib}_include ${HDF5_${lang}_INCLUDE_DIRS} ${HDF5_${lang}_INCLUDE_DIR} ${HDF5_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
+#        list(REMOVE_DUPLICATES ${lib}_include)
+#        target_include_directories(hdf5::${lib} SYSTEM INTERFACE ${${lib}_include})
+#    endif()
+
+    # Take care of HDF5 dependencies such as zlib, szip, pthreads, etc
+    if(${lib} STREQUAL "hdf5")
+        if("sz" IN_LIST linklibs)
+            # Fix for missing aec dependency in the apt package when linking statically
+            find_library(AEC_LIBRARY NAMES aec)
+            CHECK_LIBRARY_EXISTS(aec aec_decode_init "/usr/lib/x86_64-linux-gnu" AEC_EXISTS)
+            if(AEC_EXISTS OR AEC_LIBRARY)
+                list(APPEND linklibs aec)
             endif()
-        endif()
-    endif()
-
-    # Handle the other link libraries in "linklibs".
-    foreach(lnk ${linklibs})
-        if("${lnk}" MATCHES "hdf5")
-            target_link_libraries(hdf5::${lib} INTERFACE hdf5::${lnk})
-        elseif(${lnk} MATCHES "pthread") # Link with -pthread instead of libpthread directly
-            set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-            find_package(Threads REQUIRED)
-            target_link_libraries(Threads::Threads INTERFACE rt dl)
-            target_link_libraries(hdf5::${lib} INTERFACE Threads::Threads)
-        elseif(HDF5_${lang}_LIBRARY_${lnk})
-            if(NOT TARGET hdf5::${lnk})
-                if("${lnk}" STREQUAL "m" OR "${lnk}" STREQUAL "dl")
-                    # dl and m have to be linked with "-ldl" or "-lm", in particular on static builds.
-                    add_library(hdf5::${lnk} INTERFACE IMPORTED)
-                    target_link_libraries(hdf5::${lnk} INTERFACE ${lnk})
-                else()
-                    add_library(hdf5::${lnk} UNKNOWN IMPORTED)
-                    set_target_properties(hdf5::${lnk} PROPERTIES IMPORTED_LOCATION ${HDF5_${lang}_LIBRARY_${lnk}})
+            if(APPLE)
+                # Fix for HDF5 from brew in macos 10.xx missing -L dir
+                find_library(SZIP_LIBRARY NAMES sz szip szip-static HINTS /usr/local/opt /usr/local/lib) # No built in findSZIP.cmake
+                if(SZIP_LIBRARY)
+                    hdf5_message(STATUS "Found SZIP: ${SZIP_LIBRARY}")
+                    get_filename_component(SZIP_PARENT_DIR ${SZIP_LIBRARY} DIRECTORY)
+                    target_link_libraries(hdf5::${lib} INTERFACE -L${SZIP_PARENT_DIR})
                 endif()
             endif()
-            target_link_libraries(hdf5::${lib} INTERFACE hdf5::${lnk})
-        else()
-            target_link_libraries(hdf5::${lib} INTERFACE ${lnk})
         endif()
-    endforeach()
 
+        # Handle the other link libraries in "linklibs".
+        foreach(lnk ${linklibs})
+            if("${lnk}" MATCHES "hdf5")
+                target_link_libraries(hdf5::${lib} INTERFACE hdf5::${lnk})
+            elseif(${lnk} MATCHES "pthread") # Link with -pthread instead of libpthread directly
+                set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+                find_package(Threads REQUIRED)
+                target_link_libraries(Threads::Threads INTERFACE rt dl)
+                target_link_libraries(hdf5::${lib} INTERFACE Threads::Threads)
+            elseif(HDF5_${lang}_LIBRARY_${lnk})
+                if(NOT TARGET hdf5::${lnk})
+                    if("${lnk}" STREQUAL "m" OR "${lnk}" STREQUAL "dl")
+                        # dl and m have to be linked with "-ldl" or "-lm", in particular on static builds.
+                        add_library(hdf5::${lnk} INTERFACE IMPORTED)
+                        target_link_libraries(hdf5::${lnk} INTERFACE ${lnk})
+                    else()
+                        add_library(hdf5::${lnk} UNKNOWN IMPORTED)
+                        set_target_properties(hdf5::${lnk} PROPERTIES IMPORTED_LOCATION ${HDF5_${lang}_LIBRARY_${lnk}})
+                    endif()
+                endif()
+                target_link_libraries(hdf5::${lib} INTERFACE hdf5::${lnk})
+            else()
+                target_link_libraries(hdf5::${lib} INTERFACE ${lnk})
+            endif()
+        endforeach()
+    endif()
     # Append to target_list
     set(${target_list} "${${target_list}};hdf5::${lib}" PARENT_SCOPE)
 endfunction()
@@ -691,11 +727,12 @@ find_package_handle_standard_args(HDF5
 if(HDF5_FOUND)
     get_hdf5_library_linkage("${HDF5_TARGETS}" hdf5_link_type HDF5_LINK_TYPE)
     if(NOT TARGET hdf5::all)
-        add_library(hdf5::all ${HDF5_LINK_TYPE} IMPORTED)
+        add_library(hdf5::all INTERFACE IMPORTED)
     endif()
     if(NOT TARGET HDF5::HDF5)
-        add_library(HDF5::HDF5 ${HDF5_LINK_TYPE} IMPORTED)
+        add_library(HDF5::HDF5 INTERFACE IMPORTED)
     endif()
+    message(WARNING "SETTING TARGET PROPERTIES ON HDF5::HDF5: ${HDF5_TARGETS}")
     set_target_properties(hdf5::all  PROPERTIES IMPORTED_LOCATION "" INTERFACE_LINK_LIBRARIES "${HDF5_TARGETS}")
     set_target_properties(HDF5::HDF5 PROPERTIES IMPORTED_LOCATION "" INTERFACE_LINK_LIBRARIES "${HDF5_TARGETS}")
 
