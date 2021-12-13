@@ -38,8 +38,6 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find")
         # CMake version >= 3.20 defines target HDF5::HDF5 with imp lib. but no link dependencies.
         # CMake version >= 3.19 Earlier versions of CMake define target hdf5::hdf5_hl
         # hdf5-config.cmake from source installations will define target hdf5_hl-<static|shared>
-
-        set(HDF5_FIND_DEBUG ON)
         find_package(HDF5 1.8 COMPONENTS C HL ${REQUIRED})
         if(HDF5_FOUND)
             if(TARGET HDF5::HDF5)
