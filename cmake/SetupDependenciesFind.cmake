@@ -34,10 +34,31 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find")
     endif()
 
     if (NOT HDF5_FOUND)
-        # h5pp bundles FindHDF5.cmake which defines an HDF5::HDF5 target
+        # FindHDF5.cmake bundled with h5pp defines target HDF5::HDF5.
+        # CMake version >= 3.20 defines target HDF5::HDF5
+        # CMake version >= 3.19 Earlier versions of CMake define target hdf5::hdf5_hl
+        # hdf5-config.cmake from source installations will define target hdf5_hl-<static|shared>
         find_package(HDF5 1.8 COMPONENTS C HL ${REQUIRED})
         if(HDF5_FOUND)
-            target_link_libraries(deps INTERFACE HDF5::HDF5)
+            if(TARGET HDF5::HDF5)
+                target_link_libraries(deps INTERFACE HDF5::HDF5)
+            elseif(TARGET hdf5::hdf5_hl)
+                target_link_libraries(deps INTERFACE hdf5::hdf5_hl)
+            elseif(TARGET hdf5_hl-static OR TARGET hdf5_hl-shared)
+                if(NOT BUILD_SHARED_LIBS OR HDF5_USE_STATIC_LIBRARIES)
+                    if(TARGET hdf5_hl-static)
+                        target_link_libraries(deps INTERFACE hdf5_hl-static)
+                    elseif(TARGET hdf5_hl-shared)
+                        target_link_libraries(deps INTERFACE hdf5_hl-shared)
+                    endif()
+                endif()
+            else()
+                add_library(HDF5::HDF5 INTERFACE IMPORTED)
+                target_link_libraries(HDF5::HDF5 INTERFACE ${HDF5_LIBRARIES})
+                target_include_directories(HDF5::HDF5 INTERFACE ${HDF5_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
+                target_compile_definitions(HDF5::HDF5 INTERFACE ${HDF5_DEFINITIONS})
+                target_link_directories(deps INTERFACE HDF5::HDF5)
+            endif()
         endif()
     endif()
 endif()

@@ -324,42 +324,44 @@ endfunction()
 
 
 macro(define_found_components)
-    foreach(cmp ${HDF5_FIND_COMPONENTS})
-        if(HDF5_${cmp}_LIBRARIES)
-            set(HDF5_${cmp}_LIBRARIES ${HDF5_${cmp}_LIBRARIES} PARENT_SCOPE)
-        endif()
-        if(HDF5_${cmp}_FOUND OR HDF5_${HDF5_TARGET_SUFFIX}_${cmp}_FOUND)
-            set(HDF5_${cmp}_FOUND TRUE PARENT_SCOPE)
-        endif()
-        if(HDF5_HL_${cmp}_FOUND OR HDF5_${cmp}_HL_FOUND OR HDF5_${HDF5_TARGET_SUFFIX}_${cmp}_HL_FOUND)
-            set(HDF5_${cmp}_HL_FOUND TRUE PARENT_SCOPE)
-        endif()
+    set(HDF5_FOUND                ${HDF5_FOUND}               CACHE INTERNAL "")
+    set(HDF5_TARGETS              ${HDF5_TARGETS}             CACHE INTERNAL "")
+    set(HDF5_VERSION              ${HDF5_VERSION}             CACHE INTERNAL "")
+    set(HDF5_LIBRARIES            ${HDF5_LIBRARIES}           CACHE INTERNAL "")
+    set(HDF5_LIBNAMES             ${HDF5_LIBNAMES}            CACHE INTERNAL "")
+    set(HDF5_LINK_LIBNAMES        ${HDF5_LINK_LIBNAMES}       CACHE INTERNAL "")
+    set(HDF5_LANGUAGE_BINDINGS    ${HDF5_LANGUAGE_BINDINGS}   CACHE INTERNAL "")
+    if(HDF5_IS_PARALLEL)
+        set(HDF5_IS_PARALLEL    ${HDF5_IS_PARALLEL}         CACHE INTERNAL "")
+    elseif(HDF5_ENABLE_PARALLEL) # Different name in config mode
+        set(HDF5_IS_PARALLEL    ${HDF5_ENABLE_PARALLEL}     CACHE INTERNAL "")
+    endif()
+
+    # Include dirs is special. We can get HDF5_INCLUDE_DIRS, HDF5_INCLUDE_DIR or both.
+    list(APPEND HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIR})
+    list(REMOVE_DUPLICATES HDF5_INCLUDE_DIRS)
+    set(HDF5_INCLUDE_DIRS       ${HDF5_INCLUDE_DIRS}        CACHE INTERNAL "")
+
+    # Handle components
+    foreach(comp ${HDF5_FIND_COMPONENTS};"")
+        foreach(conf ${HDF5_COMPONENTS_CONFIG};${HDF5_TARGET_SUFFIX};"")
+            foreach(comb ${comp}_${conf} ${conf}_${comp} ${comp} ${conf})
+                foreach(sfx LIBRARIES LIBRARY FOUND HL_FOUND)
+                    if(HDF5_${comb}_${sfx})
+                        set(HDF5_${comp}_${sfx} ${HDF5_${comb}_${sfx}} CACHE INTERNAL "")
+                        set(HDF5_${comb}_${sfx} ${HDF5_${comb}_${sfx}} CACHE INTERNAL "")
+                    endif()
+                endforeach()
+            endforeach()
+        endforeach()
         # Fortran_HL is special...
-        if("${cmp}" MATCHES "Fortran_HL")
+        if("${comp}" MATCHES "Fortran_HL")
             if("${HDF5_Fortran_LIBRARY_hdf5};${HDF5_TARGETS};${HDF5_LIBNAMES}" MATCHES "hl_fortran")
-                set(HDF5_Fortran_HL_FOUND TRUE PARENT_SCOPE)
+                set(HDF5_Fortran_HL_FOUND TRUE CACHE INTERNAL "")
             endif()
         endif()
     endforeach()
-
-    set(HDF5_FOUND              ${HDF5_FOUND}               PARENT_SCOPE)
-    set(HDF5_TARGETS            ${HDF5_TARGETS}             PARENT_SCOPE)
-    set(HDF5_VERSION            ${HDF5_VERSION}             PARENT_SCOPE)
-    set(HDF5_LIBRARIES          ${HDF5_LIBRARIES}           PARENT_SCOPE)
-    set(HDF5_LIBNAMES           ${HDF5_LIBNAMES}            PARENT_SCOPE)
-    set(HDF5_LINK_LIBNAMES      ${HDF5_LINK_LIBNAMES}       PARENT_SCOPE)
-    set(HDF5_LANGUAGE_BINDINGS  ${HDF5_LANGUAGE_BINDINGS}   PARENT_SCOPE)
-    set(HDF5_INCLUDE_DIRS       ${HDF5_INCLUDE_DIRS}        PARENT_SCOPE)
-    if(HDF5_INCLUDE_DIR)
-        list(APPEND HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIR})
-    endif()
-    if(HDF5_IS_PARALLEL)
-        set(HDF5_IS_PARALLEL    ${HDF5_IS_PARALLEL}         PARENT_SCOPE)
-    elseif(HDF5_ENABLE_PARALLEL) # Different name in config mode
-        set(HDF5_IS_PARALLEL    ${HDF5_ENABLE_PARALLEL}     PARENT_SCOPE)
-    endif()
 endmacro()
-
 
 
 function(find_package_hdf5_in_root hdf5_root)
@@ -526,7 +528,6 @@ function(find_package_hdf5_in_root hdf5_root)
             endforeach()
             # Retain some of the variables
             define_found_components()
-
         endif()
     endif()
 endfunction()
@@ -625,7 +626,7 @@ function(find_package_hdf5_config_wrapper)
         define_found_components()
         return()
     else()
-        set(HDF5_FOUND FALSE PARENT_SCOPE)
+        set(HDF5_FOUND FALSE CACHE INTERNAL "")
     endif()
 endfunction()
 
@@ -681,11 +682,9 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(HDF5
-        FOUND_VAR HDF5_FOUND
         REQUIRED_VARS HDF5_INCLUDE_DIRS HDF5_TARGETS
         VERSION_VAR HDF5_VERSION
         HANDLE_COMPONENTS
-        FAIL_MESSAGE "Failed to find HDF5"
         )
 
 

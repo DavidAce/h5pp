@@ -4,10 +4,10 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
     ##################################################################
     ### Install dependencies from conanfile.py                     ###
     ##################################################################
-
-    find_program (CONAN_COMMAND conan HINTS ${H5PP_CONAN_CANDIDATE_PATHS} PATH_SUFFIXES bin envs/dmrg/bin)
+    unset(CONAN_COMMAND CACHE)
+    find_program (CONAN_COMMAND conan PATHS ${H5PP_CONAN_HINTS} PATH_SUFFIXES ${H5PP_CONAN_PATH_SUFFIXES})
     if(NOT CONAN_COMMAND)
-        message(FATAL_ERROR "Could not find conan program executable")
+        message(FATAL_ERROR "Could not find conan program executable : ${H5PP_CONAN_PATH_SUFFIXES}")
     else()
         message(STATUS "Found conan: ${CONAN_COMMAND}")
     endif()

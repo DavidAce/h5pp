@@ -53,7 +53,7 @@ endif()
 
 
 # Paths to search for conan installation.
-list(APPEND H5PP_CONAN_CANDIDATE_PATHS
+list(APPEND H5PP_CONAN_HINTS
         ${CONAN_PREFIX}
         $ENV{CONAN_PREFIX}
         ${CONDA_PREFIX}
@@ -64,5 +64,6 @@ list(APPEND H5PP_CONAN_CANDIDATE_PATHS
         $ENV{HOME}/miniconda
         $ENV{HOME}/.conda
         )
-
-mark_as_advanced(H5PP_CONAN_CANDIDATE_PATHS)
+list(APPEND H5PP_CONAN_PATH_SUFFIXES bin envs/dmrg/bin)
+mark_as_advanced(H5PP_CONAN_HINTS)
+mark_as_advanced(H5PP_CONAN_PATH_SUFFIXES)

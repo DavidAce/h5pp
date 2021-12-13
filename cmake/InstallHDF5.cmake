@@ -23,7 +23,8 @@ function(install_hdf5)
     mark_as_advanced(HDF5_ROOT)
     mark_as_advanced(ZLIB_ROOT)
 
-    # Download HDF5 (and ZLIB and SZIP)
+    # Download HDF5
+    # Note that ZLIB and SZIP are build requirements for HDF5, so we install them here if needed
     install_package(szip
             NAMES szip sz
             FIND_NAME SZIP
@@ -38,7 +39,7 @@ function(install_hdf5)
             z zlib zdll zlib1 zlibstatic # Release names
             zd zlibd zdlld zlibd1 zlib1d zlibstaticd # Debug names
             ${INSTALL_PREFIX_PKGNAME})
-
+    set(HDF5_FIND_DEBUG ON)
     install_package(hdf5 VERSION 1.12
             COMPONENTS C HL ${HDF5_LINK_TYPE}
             FIND_NAME HDF5
@@ -50,7 +51,7 @@ function(install_hdf5)
             -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON
             -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON
             )
-    set(PKG_hdf5_TARGET ${PKG_hdf5_TARGET} ${PKG_zlib_TARGET} ${PKG_szip_TARGET} PARENT_SCOPE)
+    set(PKG_hdf5_TARGET ${PKG_hdf5_TARGET} PARENT_SCOPE)
     set(PKG_zlib_TARGET ${PKG_zlib_TARGET} PARENT_SCOPE)
     set(PKG_szip_TARGET ${PKG_szip_TARGET} PARENT_SCOPE)
 endfunction()
