@@ -54,7 +54,15 @@ if (H5PP_ENABLE_SPDLOG OR spdlog::spdlog IN_LIST H5PP_LINK_LIBRARIES)
 endif()
 
 # HDF5 must be found either way, so set it to required
-find_dependency(HDF5 1.8 COMPONENTS C HL REQUIRED)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+    find_dependency(HDF5 1.8...1.13 COMPONENTS C HL REQUIRED)
+else()
+    # h5pp is compatible with 1.8 to 1.13, however, builds from source will reject
+    # new versions if we set the version to 1.8 (minimum) here.
+    find_dependency(HDF5 COMPONENTS C HL REQUIRED)
+endif()
+
+
 
 # FindHDF5.cmake bundled with h5pp defines target HDF5::HDF5.
 # CMake version >= 3.20 defines target HDF5::HDF5
