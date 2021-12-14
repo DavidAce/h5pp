@@ -84,8 +84,8 @@ find_package(Threads)
 
 
 if (H5PP_ENABLE_MPI AND NOT WIN32)
-    find_package(MPI COMPONENTS CXX REQUIRED)
-    target_link_libraries(deps INTERFACE MPI::MPI_CXX)
+    find_package(MPI COMPONENTS C CXX REQUIRED)
+    target_link_libraries(deps INTERFACE MPI::MPI_CXX MPI::MPI_C)
 endif ()
 
 # On some HPC clusters Clang needs path to gnu gcc toolchain because it's not in path

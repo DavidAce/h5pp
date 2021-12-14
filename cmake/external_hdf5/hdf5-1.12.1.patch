@@ -1,0 +1,17 @@
+diff --git a/hdf5-1.12.1/config/cmake/hdf5-config.cmake.in b/hdf5-1.12.1/config/cmake/hdf5-config.cmake.in
+index 4d02c9c..a4afd9b 100644
+--- a/hdf5-1.12.1/config/cmake/hdf5-config.cmake.in
++++ b/hdf5-1.12.1/config/cmake/hdf5-config.cmake.in
+@@ -112,10 +112,10 @@ set (${HDF5_PACKAGE_NAME}_VERSION_MINOR  @HDF5_VERSION_MINOR@)
+ #-----------------------------------------------------------------------------
+ if (NOT TARGET "@HDF5_PACKAGE@")
+   if (${HDF5_PACKAGE_NAME}_ENABLE_Z_LIB_SUPPORT AND ${HDF5_PACKAGE_NAME}_PACKAGE_EXTLIBS)
+-    include (@PACKAGE_SHARE_INSTALL_DIR@/@ZLIB_PACKAGE_NAME@/@ZLIB_PACKAGE_NAME@@HDF_PACKAGE_EXT@-targets.cmake)
++    include (@PACKAGE_SHARE_INSTALL_DIR@/zlib/zlib@HDF_PACKAGE_EXT@-targets.cmake)
+   endif ()
+   if (${HDF5_PACKAGE_NAME}_ENABLE_SZIP_SUPPORT AND ${HDF5_PACKAGE_NAME}_PACKAGE_EXTLIBS)
+-    include (@PACKAGE_SHARE_INSTALL_DIR@/@SZ_PACKAGE_NAME@/@SZ_PACKAGE_NAME@@HDF_PACKAGE_EXT@-targets.cmake)
++    include (@PACKAGE_SHARE_INSTALL_DIR@/libaec/libaec@HDF_PACKAGE_EXT@-targets.cmake)
+   endif ()
+   include (@PACKAGE_SHARE_INSTALL_DIR@/@HDF5_PACKAGE@/@HDF5_PACKAGE@@HDF_PACKAGE_EXT@-targets.cmake)
+ endif ()
