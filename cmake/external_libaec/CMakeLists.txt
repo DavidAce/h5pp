@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(external-zlib)
+project(external-szip)
 if(INIT_CACHE_FILE)
     set(INIT_CACHE_ARG -C${INIT_CACHE_FILE})
 endif()
@@ -14,9 +14,10 @@ ExternalProject_Add(external_hdf5
         BUILD_COMMAND ""
         INSTALL_COMMAND ""
         )
-ExternalProject_Add(external_zlib
-        URL         ${CMAKE_BINARY_DIR}/src/external_hdf5/ZLib.tar.gz
-        URL_MD5     57164206869101eeadcff9c631cd07ff
+
+ExternalProject_Add(external_aec
+        URL         ${CMAKE_BINARY_DIR}/src/external_hdf5/LIBAEC.tar.gz
+        URL_MD5     cb73d4de5388ea5b2647f5eb04a51e11
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         DEPENDS external_hdf5
@@ -26,5 +27,4 @@ ExternalProject_Add(external_zlib
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DBUILD_SHARED_LIBS:BOOL=ON
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-        -DZLIB_EXTERNALLY_CONFIGURED:BOOL=OFF
         )
