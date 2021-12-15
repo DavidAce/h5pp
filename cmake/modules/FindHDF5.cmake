@@ -693,14 +693,19 @@ if(HDF5_FOUND)
 
     # Generate interface libraries with everything needed
     get_hdf5_library_linkage("${HDF5_TARGETS}" hdf5_link_type HDF5_LINK_TYPE)
-    if(NOT TARGET hdf5::all)
-        add_library(hdf5::all INTERFACE IMPORTED)
-    endif()
     if(NOT TARGET HDF5::HDF5)
         add_library(HDF5::HDF5 INTERFACE IMPORTED)
     endif()
-    target_link_libraries(hdf5::all INTERFACE ${HDF5_TARGETS})
     target_link_libraries(HDF5::HDF5 INTERFACE ${HDF5_TARGETS})
+
+    if(NOT TARGET HDF5::ALIAS)
+        add_library(HDF5::ALIAS INTERFACE IMPORTED)
+        target_link_libraries(HDF5::ALIAS INTERFACE HDF5::HDF5)
+    endif()
+    if(NOT TARGET hdf5::all) # Deprecated, kept for compatibility
+        add_library(hdf5::all  INTERFACE IMPORTED)
+        target_link_libraries(hdf5::all INTERFACE HDF5::HDF5)
+    endif()
 
     # Set variables to match the signature of the original cmake-bundled FindHDF5.cmake
     foreach(tgt ${HDF5_TARGETS})

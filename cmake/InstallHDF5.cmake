@@ -37,7 +37,7 @@ function(install_hdf5)
             COMPONENTS C HL ${HDF5_LINK_TYPE}
             CONFIG
             FIND_NAME HDF5
-            TARGET_HINTS hdf5::hdf5_hl hdf5_hl HDF5::HDF5
+            TARGET_HINTS hdf5::hdf5_hl hdf5_hl
             LINK_TYPE ${HDF5_LINK_TYPE}
             PATH_SUFFIXES cmake/hdf5 # Needed in vs2019 for some reason
             ${INSTALL_PREFIX_PKGNAME}
@@ -49,6 +49,8 @@ function(install_hdf5)
             -DSZIP_ROOT=${H5PP_HDF5_INSTALL_DIR}
             -DLIBAEC_ROOT=${H5PP_HDF5_INSTALL_DIR}
             )
-    find_package(HDF5 1.12 COMPONENTS C HL REQUIRED)
+    include(cmake/HDF5TargetUtils.cmake)
+    h5pp_get_modern_hdf5_target_name()
     set(PKG_hdf5_TARGET HDF5::HDF5 PARENT_SCOPE)
+
 endfunction()

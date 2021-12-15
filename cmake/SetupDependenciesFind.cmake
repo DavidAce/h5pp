@@ -1,4 +1,3 @@
-
 if(H5PP_PACKAGE_MANAGER MATCHES "find")
     if(H5PP_PACKAGE_MANAGER STREQUAL "find")
         set(REQUIRED REQUIRED)
@@ -34,39 +33,15 @@ if(H5PP_PACKAGE_MANAGER MATCHES "find")
     endif()
 
     if (NOT HDF5_FOUND)
-        # FindHDF5.cmake bundled with h5pp defines target HDF5::HDF5 with "everything"
-        # CMake version >= 3.20 defines target HDF5::HDF5 with imp lib. but no link dependencies.
-        # CMake version >= 3.19 Earlier versions of CMake define target hdf5::hdf5_hl
-        # hdf5-config.cmake from source installations will define target hdf5_hl-<static|shared>
+        # Note that the call below defaults to FindHDF5.cmake bundled with h5pp,
+        # because cmake/modules has been added to CMAKE_MODULE_PATH in cmake/SetupPaths.cmake
+        # Also, we dont impose any version requirement here: h5pp is compatible with 1.8 to 1.13, which
+        # is most of the packages found in the wild.
         find_package(HDF5 COMPONENTS C HL ${REQUIRED})
         if(HDF5_FOUND)
-            if(TARGET HDF5::HDF5)
-                target_link_libraries(deps INTERFACE HDF5::HDF5)
-            elseif(TARGET hdf5::hdf5_hl)
-                target_link_libraries(deps INTERFACE hdf5::hdf5_hl)
-            elseif(TARGET hdf5_hl-static OR TARGET hdf5_hl-shared)
-                if(NOT BUILD_SHARED_LIBS OR HDF5_USE_STATIC_LIBRARIES)
-                    if(TARGET hdf5_hl-static)
-                        target_link_libraries(deps INTERFACE hdf5_hl-static)
-                    elseif(TARGET hdf5_hl-shared)
-                        target_link_libraries(deps INTERFACE hdf5_hl-shared)
-                    endif()
-                endif()
-            elseif(TARGET hdf5::hdf5_hl-static OR TARGET hdf5::hdf5_hl-shared)
-                if(NOT BUILD_SHARED_LIBS OR HDF5_USE_STATIC_LIBRARIES)
-                    if(TARGET hdf5::hdf5_hl-static)
-                        target_link_libraries(deps INTERFACE hdf5::hdf5_hl-static)
-                    elseif(TARGET hdf5::hdf5_hl-shared)
-                        target_link_libraries(deps INTERFACE hdf5::hdf5_hl-shared)
-                    endif()
-                endif()
-            else()
-                add_library(HDF5::HDF5 INTERFACE IMPORTED)
-                target_link_libraries(HDF5::HDF5 INTERFACE ${HDF5_LIBRARIES})
-                target_include_directories(HDF5::HDF5 INTERFACE ${HDF5_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
-                target_compile_definitions(HDF5::HDF5 INTERFACE ${HDF5_DEFINITIONS})
-                target_link_directories(deps INTERFACE HDF5::HDF5)
-            endif()
+            include(cmake/HDF5TargetUtils.cmake)
+            h5pp_get_modern_hdf5_target_name()
+            target_link_libraries(deps INTERFACE HDF5::HDF5)
         endif()
     endif()
 endif()
