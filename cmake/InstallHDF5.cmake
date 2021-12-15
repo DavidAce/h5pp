@@ -14,7 +14,6 @@ function(install_hdf5)
     set(HDF5_ROOT   ${H5PP_HDF5_INSTALL_DIR} CACHE PATH "Default root path for HDF5 installed by h5pp" FORCE)
     set(ZLIB_ROOT   ${H5PP_HDF5_INSTALL_DIR} CACHE PATH "Default root path for ZLIB installed by h5pp" FORCE)
     set(SZIP_ROOT   ${H5PP_HDF5_INSTALL_DIR} CACHE PATH "Default root path for SZIP installed by h5pp" FORCE)
-    set(LIBAEC_ROOT ${H5PP_HDF5_INSTALL_DIR} CACHE PATH "Default root path for LIBAEC installed by h5pp" FORCE)
 
     mark_as_advanced(HDF5_LINK_TYPE)
     mark_as_advanced(HDF5_ROOT)
@@ -25,12 +24,13 @@ function(install_hdf5)
             LINK_TYPE static
             BUILD_SUBDIR hdf5
             INSTALL_SUBDIR ${INSTALL_SUBDIR})
-    install_package(libaec
+    install_package(szip
             COMPONENTS static shared
             CONFIG
-            TARGET_HINTS sz aec
+            TARGET_HINTS sz szip
             LINK_TYPE static
             BUILD_SUBDIR hdf5
+            PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
             INSTALL_SUBDIR ${INSTALL_SUBDIR})
 
     install_package(hdf5 VERSION 1.12
@@ -47,7 +47,6 @@ function(install_hdf5)
             -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON
             -DZLIB_ROOT=${H5PP_HDF5_INSTALL_DIR}
             -DSZIP_ROOT=${H5PP_HDF5_INSTALL_DIR}
-            -DLIBAEC_ROOT=${H5PP_HDF5_INSTALL_DIR}
             )
     include(cmake/HDF5TargetUtils.cmake)
     h5pp_get_modern_hdf5_target_name()

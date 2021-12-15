@@ -14,38 +14,22 @@ option(HDF5_ENABLE_SZIP_SUPPORT     "" ON)
 option(HDF5_ENABLE_SZIP_ENCODING    "" ON)
 option(HDF5_BUILD_HL_LIB            "" ON)
 option(HDF5_BUILD_CPP_LIB           "" OFF)
-option(HDF5_ENABLE_SZIP_SUPPORT     "" OFF)
-option(HDF5_ENABLE_SZIP_SUPPORT     "" OFF)
 option(HDF5_BUILD_FORTRAN           "" OFF)
 option(HDF5_BUILD_JAVA              "" OFF)
 option(HDF5_BUILD_TOOLS             "" ON)
 
 set(ZLIB_ROOT    ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
 set(SZIP_ROOT    ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
-set(LIBAEC_ROOT  ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
 
 if (HDF5_ENABLE_PARALLEL AND NOT WIN32)
     find_package(MPI COMPONENTS C CXX REQUIRED)
 endif ()
-
-if(HDF5_ENABLE_Z_LIB_SUPPORT)
-    find_package(ZLIB COMPONENTS static shared NAMES zlib REQUIRED)
-endif()
-if(HDF5_ENABLE_SZIP_SUPPORT)
-    find_package(SZIP COMPONENTS static shared NAMES libaec REQUIRED)
-endif()
-
-if(NOT WIN32)
-    set(PATCH_COMMAND patch -p1 -t -N < ${CMAKE_CURRENT_LIST_DIR}/hdf5-1.12.1.patch)
-endif()
-
 
 ExternalProject_Add(external_hdf5
         URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/CMake-hdf5-1.12.1.tar.gz
         URL_MD5     2191996e136130c57b3508796ce32c2a
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
-        PATCH_COMMAND ${PATCH_COMMAND}
         BUILD_ALWAYS TRUE
         SOURCE_SUBDIR hdf5-1.12.1
         LIST_SEPARATOR |
@@ -61,7 +45,7 @@ ExternalProject_Add(external_hdf5
         -DBUILD_TESTING:BOOL=OFF
         -DHDF_PACKAGE_NAMESPACE:STRING=hdf5::
         -DHDF5_ALLOW_EXTERNAL_SUPPORT:STRING=NO
-        -DHDF5_PACKAGE_EXTLIBS:BOOL=ON # So that hdf5-config.cmake includes zlib-config.cmake and libaec-config.cmake. See also the patch above
+        -DHDF5_PACKAGE_EXTLIBS:BOOL=ON # So that hdf5-config.cmake includes zlib-config.cmake and szip-config.cmake.
         -DHDF5_ENABLE_PARALLEL:BOOL=${HDF5_ENABLE_PARALLEL}
         -DHDF5_ENABLE_COVERAGE:BOOL=OFF
         -DHDF5_ENABLE_TRACE:BOOL=OFF
@@ -70,19 +54,16 @@ ExternalProject_Add(external_hdf5
         -DHDF5_ENABLE_SZIP_ENCODING:BOOL=${HDF5_ENABLE_SZIP_ENCODING}
         -DZLIB_ROOT:PATH=${ZLIB_ROOT}
         -DSZIP_ROOT:PATH=${SZIP_ROOT}
-        -DLIBAEC_ROOT:PATH=${LIBAEC_ROOT}
         -DZLIB_INCLUDE_DIR:PATH=${ZLIB_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}
-        -DSZIP_INCLUDE_DIR:PATH=${SZIP_ROOT}/${CMAKE_INSTALL_INCLUDEDIR} # Fixes bug when using libaec
+        -DSZIP_INCLUDE_DIR:PATH=${SZIP_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}
         -DZLIB_STATIC_LIBRARY:STRING=zlib-static # Technically not needed -- it is defined by zlib-config.cmake
-        -DSZIP_STATIC_LIBRARY:STRING=sz-static # This one is needed because we use libaec (which defines sz-static)
+        -DSZIP_STATIC_LIBRARY:STRING=sz-static
         -DZLIB_PACKAGE_NAME:STRING=zlib
-        -DSZIP_PACKAGE_NAME:STRING=libaec
-        -DLIBAEC_PACKAGE_NAME:STRING=libaec
-        -DSZ_PACKAGE_NAME:STRING=libaec
-        -DUSE_LIBAEC:BOOL=ON
+        -DSZIP_PACKAGE_NAME:STRING=sz
+        -DSZ_PACKAGE_NAME:STRING=sz
+        -DUSE_LIBAEC:BOOL=OFF
         -DZLIB_USE_EXTERNAL:BOOL=OFF
         -DSZIP_USE_EXTERNAL:BOOL=OFF
-        -DLIBAEC_USE_EXTERNAL:BOOL=OFF
         -DHDF5_BUILD_TOOLS:BOOL=${HDF5_BUILD_TOOLS}
         -DHDF5_BUILD_HL_LIB:BOOL=${HDF5_BUILD_HL_LIB}
         -DHDF5_BUILD_CPP_LIB:BOOL=${HDF5_BUILD_CPP_LIB}
