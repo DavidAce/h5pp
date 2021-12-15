@@ -86,6 +86,6 @@ ExternalProject_Add(external_hdf5
         -DHDF5_BUILD_EXAMPLES:BOOL=OFF
         -DHDF5_DISABLE_COMPILER_WARNINGS:BOOL=ON
         -DALLOW_UNSUPPORTED=ON
-        --loglevel=DEBUG
+#        --loglevel=DEBUG
         )
 
