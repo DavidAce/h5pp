@@ -205,13 +205,13 @@ endif ()
 # Simple testing with ctest
 if (H5PP_ENABLE_TESTS AND TARGET h5pp)
     enable_testing()
-    add_subdirectory(tests EXCLUDE_FROM_ALL)
+    add_subdirectory(tests)
 endif ()
 
 
 # Build examples
 if (H5PP_BUILD_EXAMPLES AND TARGET h5pp)
-    add_subdirectory(examples EXCLUDE_FROM_ALL)
+    add_subdirectory(examples)
 endif ()
 
 
