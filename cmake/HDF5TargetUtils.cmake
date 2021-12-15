@@ -2,9 +2,32 @@ function(h5pp_make_hdf5_target_from_vars target_name)
     if(NOT TARGET ${target_name})
         add_library(${target_name} INTERFACE IMPORTED)
     endif()
-    target_link_libraries(${target_name} INTERFACE ${HDF5_C_HL_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_C_LIBRARIES} ${HDF5_LIBRARIES})
     target_include_directories(${target_name} SYSTEM INTERFACE ${HDF5_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
     target_compile_definitions(${target_name} INTERFACE ${HDF5_DEFINITIONS})
+    # Link found libraries
+    foreach(lib ${HDF5_C_HL_LIBRARIES} ${HDF5_HL_LIBRARIES} ${HDF5_C_LIBRARIES} ${HDF5_LIBRARIES})
+        get_filename_component(name ${lib} NAME)
+        if("${name}" MATCHES "hdf5")
+            target_link_libraries(${target_name} INTERFACE ${lib})
+        elseif(${name} MATCHES "pthread") # Link with -pthread instead of libpthread directly
+            set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+            find_package(Threads REQUIRED)
+            target_link_libraries(Threads::Threads INTERFACE rt dl)
+            target_link_libraries(${target_name} INTERFACE Threads::Threads)
+        elseif("${name}" MATCHES "libdl")
+            # dl and m have to be linked with "-ldl" or "-lm", in particular on static builds.
+            add_library(hdf5::dl INTERFACE IMPORTED)
+            target_link_libraries(hdf5::dl INTERFACE dl)
+            target_link_libraries(${target_name} INTERFACE hdf5::dl)
+        elseif("${name}" MATCHES "libm")
+            # dl and m have to be linked with "-ldl" or "-lm", in particular on static builds.
+            add_library(hdf5::dl INTERFACE IMPORTED)
+            target_link_libraries(hdf5::m INTERFACE m)
+            target_link_libraries(${target_name} INTERFACE hdf5::m)
+        else()
+            target_link_libraries(${target_name} INTERFACE ${lib})
+        endif()
+    endforeach()
 endfunction()
 
 
@@ -27,6 +50,7 @@ function(h5pp_get_modern_hdf5_target_name)
     # If HDF5::ALIAS is a sentinel target from h5pp-bundled FindHDF5.cmake
     # so, if it is defined then we expect HDF5::HDF5 to be self-contained
     if(TARGET HDF5::HDF5 AND TARGET HDF5::ALIAS)
+        message(VERBOSE "Found good HDF5::HDF5 target from bundled FindHDF5.cmake")
         return()
     endif()
 
