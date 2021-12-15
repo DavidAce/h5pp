@@ -202,11 +202,6 @@ function(collect_hdf5_target_names target_list)
                     )
         endforeach()
     endforeach()
-    foreach(exp ${HDF5_EXPORT_LIBRARIES})
-        # Last resort. This variable is defined in hdf5-config.cmake and is the name of the export variable
-        # which coincides with target names with some luck
-        list(APPEND HDF5_TARGET_CANDIDATES ${exp} hdf5::${exp})
-    endforeach()
     list(REMOVE_DUPLICATES HDF5_TARGET_CANDIDATES)
 
     foreach(tgt ${HDF5_TARGET_CANDIDATES})
@@ -332,7 +327,7 @@ macro(define_found_components)
 
     # Handle components
     foreach(comp ${HDF5_FIND_COMPONENTS};${HDF5_LANGUAGE_BINDINGS};"")
-        foreach(conf ${HDF5_COMPONENTS_CONFIG};${HDF5_TARGET_SUFFIX};static;"")
+        foreach(conf ${HDF5_COMPONENTS_CONFIG};${HDF5_TARGET_SUFFIX};"")
             foreach(comb ${comp}_${conf} ${conf}_${comp} ${comp} ${conf})
                 foreach(sfx LIBRARIES LIBRARY FOUND HL_FOUND)
                     if(HDF5_${comb}_${sfx})
@@ -360,7 +355,7 @@ function(find_package_hdf5_in_root hdf5_root)
     hdf5_unset_all(HDF5_FOUND)
     set(HDF5_FIND_REQUIRED OFF)
     set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE ON)
-    hdf5_message(STATUS "Searching for hdf5 execs in ${hdf5_root}" )
+    hdf5_message(VERBOSE "Searching for hdf5 execs in ${hdf5_root}" )
 
     if(HDF5_USE_STATIC_LIBRARIES)
         set(HDF5_EXEC_TESTFLAG "-noshlib")
@@ -560,8 +555,11 @@ function(find_package_hdf5_config_wrapper)
     unset(HDF5_FIND_VERSION_COMPLETE) # The user has probably installed the latest version
     unset(HDF5_FIND_REQUIRED) # There is a chance we may find the library using the executable wrappers
 
-    hdf5_message(TRACE "find_package(HDF5) in CONFIG mode...")
-
+    if(HDF5_USE_STATIC_LIBRARIES)
+        list(APPEND HDF5_COMPONENTS_CONFIG static)
+    else()
+        list(APPEND HDF5_COMPONENTS_CONFIG shared)
+    endif()
     # Honor the HDF5_NO_<option> flags
     list(APPEND NO_OPTIONS
             NO_PACKAGE_ROOT_PATH
@@ -581,9 +579,10 @@ function(find_package_hdf5_config_wrapper)
             endif()
         endif()
     endforeach()
+    hdf5_message(TRACE "find_package(HDF5) in CONFIG mode...")
     find_package(HDF5
             ${HDF5_FIND_VERSION}
-            COMPONENTS ${HDF5_FIND_COMPONENTS} static shared
+            COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
             HINTS  ${HDF5_ROOT}  ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
             PATH_SUFFIXES hdf5
             # The following flags are enabled with HDF5_NO_... before calling find_package(HDF5)
