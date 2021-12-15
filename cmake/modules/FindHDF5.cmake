@@ -696,7 +696,8 @@ if(HDF5_FOUND)
     if(NOT TARGET HDF5::HDF5)
         add_library(HDF5::HDF5 INTERFACE IMPORTED)
     endif()
-    target_link_libraries(HDF5::HDF5 INTERFACE ${HDF5_TARGETS})
+    # Overwrite any existing link libraries, otherwise we risk linking to libdl.a rather than -ldl, or both, instance.
+    set_target_properties(HDF5::HDF5 PROPERTIES INTERFACE_LINK_LIBRARIES "${HDF5_TARGETS}")
 
     if(NOT TARGET HDF5::ALIAS)
         add_library(HDF5::ALIAS INTERFACE IMPORTED)
@@ -706,6 +707,7 @@ if(HDF5_FOUND)
         add_library(hdf5::all  INTERFACE IMPORTED)
         target_link_libraries(hdf5::all INTERFACE HDF5::HDF5)
     endif()
+
 
     # Set variables to match the signature of the original cmake-bundled FindHDF5.cmake
     foreach(tgt ${HDF5_TARGETS})
