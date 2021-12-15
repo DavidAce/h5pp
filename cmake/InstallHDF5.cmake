@@ -21,13 +21,15 @@ function(install_hdf5)
     install_package(zlib
             COMPONENTS static shared
             CONFIG
-            TARGET_HINTS zlib zlib-static zlib-shared libz
+            TARGET_HINTS zlib
+            LINK_TYPE static
             BUILD_SUBDIR hdf5
             INSTALL_SUBDIR ${INSTALL_SUBDIR})
     install_package(libaec
             COMPONENTS static shared
             CONFIG
-            TARGET_HINTS sz aec sz-static aec-static sz-shared aec-shared
+            TARGET_HINTS sz aec
+            LINK_TYPE static
             BUILD_SUBDIR hdf5
             INSTALL_SUBDIR ${INSTALL_SUBDIR})
 
@@ -35,7 +37,8 @@ function(install_hdf5)
             COMPONENTS C HL ${HDF5_LINK_TYPE}
             CONFIG
             FIND_NAME HDF5
-            TARGET_HINTS hdf5::hdf5_hl hdf5::hdf5_hl-${HDF5_LINK_TYPE} hdf5_hl hdf5_hl-${HDF5_LINK_TYPE} HDF5::HDF5
+            TARGET_HINTS hdf5::hdf5_hl hdf5_hl HDF5::HDF5
+            LINK_TYPE ${HDF5_LINK_TYPE}
             PATH_SUFFIXES cmake/hdf5 # Needed in vs2019 for some reason
             ${INSTALL_PREFIX_PKGNAME}
             CMAKE_ARGS
@@ -47,7 +50,5 @@ function(install_hdf5)
             -DLIBAEC_ROOT=${H5PP_HDF5_INSTALL_DIR}
             )
     find_package(HDF5 1.12 COMPONENTS C HL REQUIRED)
-    include(cmake/PrintTargetInfo.cmake)
-    print_target_summary(hdf5::hdf5_hl-static)
     set(PKG_hdf5_TARGET HDF5::HDF5 PARENT_SCOPE)
 endfunction()

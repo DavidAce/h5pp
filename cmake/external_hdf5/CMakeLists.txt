@@ -68,8 +68,8 @@ ExternalProject_Add(external_hdf5
         -DLIBAEC_ROOT:PATH=${LIBAEC_ROOT}
         -DZLIB_INCLUDE_DIR:PATH=${ZLIB_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}
         -DSZIP_INCLUDE_DIR:PATH=${SZIP_ROOT}/${CMAKE_INSTALL_INCLUDEDIR} # Fixes bug when using libaec
-        -DZLIB_STATIC_LIBRARY:STRING=zlib-static
-        -DSZIP_STATIC_LIBRARY:STRING=sz-static
+        -DZLIB_STATIC_LIBRARY:STRING=zlib-static # Technically not needed -- it is defined by zlib-config.cmake
+        -DSZIP_STATIC_LIBRARY:STRING=sz-static # This one is needed because we use libaec (which defines sz-static)
         -DZLIB_PACKAGE_NAME:STRING=zlib
         -DSZIP_PACKAGE_NAME:STRING=libaec
         -DLIBAEC_PACKAGE_NAME:STRING=libaec
@@ -86,5 +86,6 @@ ExternalProject_Add(external_hdf5
         -DHDF5_BUILD_EXAMPLES:BOOL=OFF
         -DHDF5_DISABLE_COMPILER_WARNINGS:BOOL=ON
         -DALLOW_UNSUPPORTED=ON
+        --loglevel=DEBUG
         )
 
