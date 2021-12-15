@@ -37,7 +37,7 @@ function(install_package pkg_name)
         file(LOCK $ENV{USERPROFILE}/cmake.${PROJECT_NAME}.lock GUARD FUNCTION TIMEOUT 600)
     endif()
     set(options CONFIG MODULE CHECK QUIET DEBUG INSTALL_PREFIX_PKGNAME)
-    set(oneValueArgs VERSION INSTALL_DIR INSTALL_SUBDIR BUILD_DIR BUILD_SUBDIR FIND_NAME TARGET_NAME)
+    set(oneValueArgs VERSION INSTALL_DIR INSTALL_SUBDIR BUILD_DIR BUILD_SUBDIR FIND_NAME TARGET_NAME LINK_TYPE)
     set(multiValueArgs HINTS PATHS PATH_SUFFIXES COMPONENTS DEPENDS CMAKE_ARGS LIBRARY_NAMES TARGET_HINTS)
     cmake_parse_arguments(PARSE_ARGV 1 PKG "${options}" "${oneValueArgs}" "${multiValueArgs}")
 
@@ -97,12 +97,19 @@ function(install_package pkg_name)
     if(PKG_COMPONENTS)
         set(COMPONENTS COMPONENTS)
     endif()
-    if(BUILD_SHARED_LIBS)
+    if(PKG_LINK_TYPE)
+        set(pkg_link ${PKG_LINK_TYPE})
+    elseif(BUILD_SHARED_LIBS)
         set(pkg_link shared)
     else()
         set(pkg_link static)
     endif()
+
     if(NOT PKG_TARGET_NAME)
+        foreach(tgt ${PKG_TARGET_HINTS})
+            list(APPEND PKG_TARGET_HINTS_LINK_TYPE ${tgt}-${pkg_link})
+        endforeach()
+
         list(APPEND PKG_TARGET_HINTS
                 ${pkg_target_name}
                 ${pkg_name}::${pkg_name}
@@ -113,6 +120,7 @@ function(install_package pkg_name)
                 ${pkg_find_name}::${pkg_find_name}-${pkg_link}
                 ${pkg_name}-${pkg_link}
                 ${pkg_find_name}-${pkg_link}
+                ${PKG_TARGET_HINTS_LINK_TYPE}
                 )
     endif()
     list(REMOVE_DUPLICATES PKG_TARGET_HINTS)
