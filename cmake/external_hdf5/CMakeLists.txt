@@ -18,6 +18,7 @@ option(HDF5_ENABLE_SZIP_SUPPORT     "" OFF)
 option(HDF5_ENABLE_SZIP_SUPPORT     "" OFF)
 option(HDF5_BUILD_FORTRAN           "" OFF)
 option(HDF5_BUILD_JAVA              "" OFF)
+option(HDF5_BUILD_TOOLS             "" ON)
 
 set(ZLIB_ROOT    ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
 set(SZIP_ROOT    ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
