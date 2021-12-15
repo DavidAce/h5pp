@@ -31,9 +31,9 @@
 
 function(hdf5_message level msg)
     if(HDF5_FIND_DEBUG AND level MATCHES "TRACE|DEBUG|VERBOSE|STATUS")
-        message(STATUS "${msg}")
+        message(STATUS "${msg} ${ARGN}")
     else()
-        message(${level} "${msg}")
+        message(${level} "${msg} ${ARGN}")
     endif()
 endfunction()
 
@@ -594,9 +594,17 @@ function(find_package_hdf5_config_wrapper)
             ${NO_CMAKE_SYSTEM_PACKAGE_REGISTRY}
             ${NO_DEFAULT_PATH} # If enabled, this will ignore HDF5_ROOT
             CONFIG)
-    hdf5_message(DEBUG "find_package(HDF5) in CONFIG mode... Found: ${HDF5_FOUND}")
+    hdf5_message(DEBUG "find_package(HDF5) in CONFIG mode... Found ${HDF5_FOUND}: ${HDF5_INCLUDE_DIR}")
     if(HDF5_FOUND)
         collect_hdf5_target_names(HDF5_TARGETS)
+        if(NOT HDF5_TARGETS)
+            hdf5_message(WARNING "Found HDF5 installation at ${HDF5_INCLUDE_DIR} but it did not provide any"
+                                 "targets matching components: ${HDF5_FIND_COMPONENTS};${HDF5_COMPONENTS_CONFIG}")
+            set(HDF5_FOUND FALSE)
+        endif()
+    endif()
+
+    if(HDF5_FOUND)
         define_found_components()
         return()
     else()
