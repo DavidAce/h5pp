@@ -34,15 +34,19 @@ if(HDF5_ENABLE_SZIP_SUPPORT)
     find_package(SZIP COMPONENTS static shared NAMES libaec REQUIRED)
 endif()
 
+if(NOT WIN32)
+    set(PATCH_COMMAND patch -p1 -t -N < ${CMAKE_CURRENT_LIST_DIR}/hdf5-1.12.1.patch)
+endif()
+
+
 ExternalProject_Add(external_hdf5
         URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/CMake-hdf5-1.12.1.tar.gz
         URL_MD5     2191996e136130c57b3508796ce32c2a
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
-        PATCH_COMMAND patch -p1 -t -N < ${CMAKE_CURRENT_LIST_DIR}/hdf5-1.12.1.patch
+        PATCH_COMMAND ${PATCH_COMMAND}
         BUILD_ALWAYS TRUE
         SOURCE_SUBDIR hdf5-1.12.1
-#        DEPENDS ${hdf5_depends}
         LIST_SEPARATOR |
         CMAKE_ARGS
         ${INIT_CACHE_ARG}
