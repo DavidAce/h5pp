@@ -1,7 +1,8 @@
 #include <h5pp/h5pp.h>
 
 /*
- * h5pp supports writing and reading simple POD structs such as coordinate structs often found in CUDA.
+ * h5pp supports writing and reading simple structs such as coordinate structs often found in CUDA.
+ * This is currently limited to structs with 2 or 3 numeric members of equal type.
  * These types can be used as the atomic type in containers, such as std::vector<> or written directly
  * In this example we consider writing a vector of structs to a dataset
  *
