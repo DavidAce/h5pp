@@ -56,8 +56,10 @@ ExternalProject_Add(external_hdf5
         -DSZIP_ROOT:PATH=${SZIP_ROOT}
         -DZLIB_INCLUDE_DIR:PATH=${ZLIB_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}
         -DSZIP_INCLUDE_DIR:PATH=${SZIP_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}
+        -DZLIB_ROOT:PATH=${ZLIB_ROOT}
+        -DSZIP_ROOT:PATH=${SZIP_ROOT}
         -DZLIB_DIR:PATH=${ZLIB_ROOT}/share/cmake/zlib
-        -DSZIP_DIR:PATH=${SZIP_ROOT}/share/cmake # No subdir
+        -DSZIP_DIR:PATH=${SZIP_ROOT}/share/cmake/szip
         -DZLIB_PACKAGE_NAME:STRING=zlib
         -DSZIP_PACKAGE_NAME:STRING=szip
         -DSZ_PACKAGE_NAME:STRING=szip
