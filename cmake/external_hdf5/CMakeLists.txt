@@ -56,11 +56,11 @@ ExternalProject_Add(external_hdf5
         -DSZIP_ROOT:PATH=${SZIP_ROOT}
         -DZLIB_INCLUDE_DIR:PATH=${ZLIB_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}
         -DSZIP_INCLUDE_DIR:PATH=${SZIP_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}
-        -DZLIB_STATIC_LIBRARY:STRING=zlib-static # Technically not needed -- it is defined by zlib-config.cmake
-        -DSZIP_STATIC_LIBRARY:STRING=sz-static
+        -DZLIB_DIR:PATH=${ZLIB_ROOT}/share/cmake/zlib
+        -DSZIP_DIR:PATH=${SZIP_ROOT}/share/cmake # No subdir
         -DZLIB_PACKAGE_NAME:STRING=zlib
-        -DSZIP_PACKAGE_NAME:STRING=sz
-        -DSZ_PACKAGE_NAME:STRING=sz
+        -DSZIP_PACKAGE_NAME:STRING=szip
+        -DSZ_PACKAGE_NAME:STRING=szip
         -DUSE_LIBAEC:BOOL=OFF
         -DZLIB_USE_EXTERNAL:BOOL=OFF
         -DSZIP_USE_EXTERNAL:BOOL=OFF
@@ -75,3 +75,14 @@ ExternalProject_Add(external_hdf5
 #        --loglevel=DEBUG
         )
 
+# A bug occurs when HDF5 generates hdf5-config.cmake.
+# It uses @ZLIB_PACKAGE_NAME@, but this variable gets converted with TOUPPER when calling find_package(ZLIB ...)
+# This causes the import path to get hardcoded to something like ZLIB/ZLIB-target.cmake rather than zlib/zlib-target.cmake
+# This simply replaces the incorrect string in the generated file
+
+ExternalProject_Add_Step(external_hdf5
+        hdf5-config-patch
+        COMMENT "Fixing hdf5-config.cmake"
+        DEPENDEES configure build install
+        COMMAND ${CMAKE_COMMAND} -DHDF5_ROOT:PATH=${CMAKE_INSTALL_PREFIX} -P ${CMAKE_CURRENT_LIST_DIR}/hdf5-config.patch.cmake
+        )

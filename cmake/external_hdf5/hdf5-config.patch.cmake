@@ -1,0 +1,6 @@
+set(line_old "ZLIB/ZLIB-targets.cmake")
+set(line_new "zlib/zlib-targets.cmake")
+set(filename ${HDF5_ROOT}/share/cmake/hdf5/hdf5-config.cmake)
+file(READ ${filename} hdf5-config-old)
+string(REPLACE "${line_old}" "${line_new}" hdf5-config-new  "${hdf5-config-old}")
+file(WRITE "${filename}" "${hdf5-config-new}")

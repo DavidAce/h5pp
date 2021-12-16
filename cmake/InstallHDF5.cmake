@@ -27,7 +27,7 @@ function(install_hdf5)
     install_package(szip
             COMPONENTS static shared
             CONFIG
-            TARGET_HINTS sz szip
+            TARGET_HINTS szip
             LINK_TYPE static
             BUILD_SUBDIR hdf5
             PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths

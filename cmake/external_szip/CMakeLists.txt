@@ -15,6 +15,8 @@ ExternalProject_Add(external_szip
         CMAKE_ARGS
         ${INIT_CACHE_ARG}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+        -DBUILD_SHARED_LIBS:BOOL=ON # Builds both static and shared
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+        -DSZIP_INSTALL_DATA_DIR:STRING=share
+        -DSZIP_INSTALL_CMAKE_DIR:STRING=share/cmake/szip
         )
