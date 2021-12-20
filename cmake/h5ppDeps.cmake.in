@@ -77,7 +77,9 @@ if(HDF5_FOUND AND HDF5::HDF5 IN_LIST H5PP_LINK_LIBRARIES)
                 find_dependency(ZLIB NAMES zlib COMPONENTS static REQUIRED)
             endif()
             if(${hdf5_dep_link_lib} MATCHES "szip-static" AND NOT TARGET szip-static)
-                find_dependency(SZIP NAMES szip COMPONENTS static REQUIRED)
+                find_dependency(SZIP NAMES szip
+                            PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
+                            COMPONENTS static REQUIRED)
             endif()
             if(${hdf5_dep_link_lib} MATCHES "Threads::Threads" AND NOT TARGET Threads::Threads)
                 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
