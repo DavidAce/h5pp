@@ -103,16 +103,17 @@ function(install_package pkg_name)
         set(COMPONENTS COMPONENTS)
     endif()
     if(PKG_LINK_TYPE)
-        set(pkg_link ${PKG_LINK_TYPE})
+        set(pkg_link_type ${PKG_LINK_TYPE})
     elseif(BUILD_SHARED_LIBS)
-        set(pkg_link shared)
+        set(pkg_link_type shared)
     else()
-        set(pkg_link static)
+        set(pkg_link_type static)
     endif()
 
+    
     if(NOT PKG_TARGET_NAME)
         foreach(tgt ${PKG_TARGET_HINTS})
-            list(APPEND PKG_TARGET_HINTS_LINK_TYPE ${tgt}-${pkg_link})
+            list(APPEND PKG_TARGET_HINTS_LINK_TYPE ${tgt}-${pkg_link_type})
         endforeach()
 
         list(APPEND PKG_TARGET_HINTS
@@ -121,10 +122,10 @@ function(install_package pkg_name)
                 ${pkg_find_name}::${pkg_find_name}
                 ${pkg_name}
                 ${pkg_find_name}
-                ${pkg_name}::${pkg_name}-${pkg_link}
-                ${pkg_find_name}::${pkg_find_name}-${pkg_link}
-                ${pkg_name}-${pkg_link}
-                ${pkg_find_name}-${pkg_link}
+                ${pkg_name}::${pkg_name}-${pkg_link_type}
+                ${pkg_find_name}::${pkg_find_name}-${pkg_link_type}
+                ${pkg_name}-${pkg_link_type}
+                ${pkg_find_name}-${pkg_link_type}
                 ${PKG_TARGET_HINTS_LINK_TYPE}
                 )
     endif()
@@ -155,7 +156,11 @@ function(install_package pkg_name)
     if(PKG_LIBRARY_NAMES)
         # This attempts to find <PackageName>_LIBRARY with given names before calling find_package
         # This is necessary for ZLIB
-        pkg_message(DEBUG "Looking for library names ${PKG_LIBRARY_NAMES}")
+        if(pkg_link_type MATCHES "static|STATIC|Static")
+            set(pkg_link_type_msg ${pkg_link_type})
+            set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+        endif()
+        pkg_message(DEBUG "Looking for ${pkg_link_type_msg} library names ${PKG_LIBRARY_NAMES}")
         find_library(${pkg_find_name}_LIBRARY
                 NAMES ${PKG_LIBRARY_NAMES}
                 HINTS ${pkg_install_dir} ${${pkg_find_name}_ROOT} ${${pkg_name}_ROOT}
@@ -189,29 +194,19 @@ function(install_package pkg_name)
     # Set _FOUND variables for alternate names and components
     if(NOT ${pkg_name}_FOUND)
         if(${pkg_find_name}_FOUND)
-            set(${pkg_name}_FOUND TRUE PARENT_SCOPE)
+            pkg_set(${pkg_name}_FOUND TRUE)
         else()
             # Some packages, such as SZIP, may only set each components as found but not the package itself,
             # with variables like SZIP_shared_FOUND and so on
             foreach(comp ${COMPONENTS})
                 if(${pkg_name}_${comp}_FOUND)
-                    set(${pkg_name}_FOUND TRUE PARENT_SCOPE)
+                    pkg_set(${pkg_name}_FOUND TRUE)
                 endif()
             endforeach()
         endif()
     endif()
     # Check if the package was found
     if(${pkg_name}_FOUND)
-        if(PKG_DEPENDS)
-            target_link_libraries(${pkg_target_name} INTERFACE ${PKG_DEPENDS})
-        endif()
-        if(PKG_CHECK)
-            check_compile(${pkg_name} ${pkg_target_name} ${PROJECT_SOURCE_DIR}/cmake/compile/${pkg_name}.cpp)
-            if(PKG_DEBUG AND NOT check_compile_${pkg_name} AND EXISTS "${CMAKE_BINARY_DIR}/CMakeFiles/CMakeError.log")
-                file(READ "${CMAKE_BINARY_DIR}/CMakeFiles/CMakeError.log" ERROR_LOG)
-                pkg_message(STATUS "CMakeError.log: \n ${ERROR_LOG}")
-            endif()
-        endif()
         foreach(tgt ${PKG_TARGET_HINTS})
             if(TARGET ${tgt})
                 pkg_set(${pkg_name}_FOUND TRUE)
@@ -230,6 +225,16 @@ function(install_package pkg_name)
             pkg_message(VERBOSE "Found ${pkg_name}: [${PKG_${pkg_name}_TARGET}]")
         else()
             pkg_message(WARNING "Found ${pkg_name} but no target matches the hint list: [${PKG_TARGET_HINTS}]")
+        endif()
+        if(PKG_DEPENDS)
+            target_link_libraries(${PKG_${pkg_name}_TARGET} INTERFACE ${PKG_DEPENDS})
+        endif()
+        if(PKG_CHECK)
+            check_compile(${pkg_name} ${PKG_${pkg_name}_TARGET} ${PROJECT_SOURCE_DIR}/cmake/compile/${pkg_name}.cpp)
+            if(PKG_DEBUG AND NOT check_compile_${pkg_name} AND EXISTS "${CMAKE_BINARY_DIR}/CMakeFiles/CMakeError.log")
+                file(READ "${CMAKE_BINARY_DIR}/CMakeFiles/CMakeError.log" ERROR_LOG)
+                pkg_message(STATUS "CMakeError.log: \n ${ERROR_LOG}")
+            endif()
         endif()
         return()
     endif()
@@ -335,28 +340,15 @@ function(install_package pkg_name)
                 )
         find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS} ${QUIET} REQUIRED)
     endif()
-
     if(PKG_MODULE)
         find_package(${pkg_find_name} ${PKG_VERSION} ${COMPONENTS} ${PKG_COMPONENTS} ${QUIET} REQUIRED)
     else()
-        set(HDF5_FIND_DEBUG ON)
         find_package(${pkg_find_name} ${PKG_VERSION}
                 HINTS ${pkg_install_dir}
                 PATH_SUFFIXES ${PKG_PATH_SUFFIXES}
                 ${COMPONENTS} ${PKG_COMPONENTS}
                 ${CONFIG} ${QUIET}
                 NO_DEFAULT_PATH REQUIRED)
-    endif()
-
-    if(PKG_DEPENDS)
-        target_link_libraries(${pkg_target_name} INTERFACE ${PKG_DEPENDS})
-    endif()
-    if(PKG_CHECK)
-        check_compile(${pkg_name} ${pkg_target_name} ${PROJECT_SOURCE_DIR}/cmake/compile/${pkg_name}.cpp)
-        if(PKG_DEBUG AND NOT check_compile_${pkg_name} AND EXISTS "${CMAKE_BINARY_DIR}/CMakeFiles/CMakeError.log")
-            file(READ "${CMAKE_BINARY_DIR}/CMakeFiles/CMakeError.log" ERROR_LOG)
-            pkg_message(STATUS "CMakeError.log: \n ${ERROR_LOG}")
-        endif()
     endif()
     foreach(tgt ${PKG_TARGET_HINTS})
         if(TARGET ${tgt})
@@ -377,5 +369,16 @@ function(install_package pkg_name)
     else()
         pkg_message(WARNING "Found ${pkg_name} but no target matches hint list:\n [${PKG_TARGET_HINTS}]")
     endif()
+    if(PKG_DEPENDS)
+        target_link_libraries(${PKG_${pkg_name}_TARGET} INTERFACE ${PKG_DEPENDS})
+    endif()
+    if(PKG_CHECK)
+        check_compile(${pkg_name} ${PKG_${pkg_name}_TARGET} ${PROJECT_SOURCE_DIR}/cmake/compile/${pkg_name}.cpp)
+        if(PKG_DEBUG AND NOT check_compile_${pkg_name} AND EXISTS "${CMAKE_BINARY_DIR}/CMakeFiles/CMakeError.log")
+            file(READ "${CMAKE_BINARY_DIR}/CMakeFiles/CMakeError.log" ERROR_LOG)
+            pkg_message(STATUS "CMakeError.log: \n ${ERROR_LOG}")
+        endif()
+    endif()
+
 endfunction()
 

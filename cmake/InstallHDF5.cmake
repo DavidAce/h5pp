@@ -17,15 +17,19 @@ function(install_hdf5)
 
     mark_as_advanced(HDF5_LINK_TYPE)
     mark_as_advanced(HDF5_ROOT)
+
     install_package(zlib
-            COMPONENTS static shared
-            CONFIG
-            TARGET_HINTS zlib
+            MODULE
+            FIND_NAME ZLIB
             LINK_TYPE static
             BUILD_SUBDIR hdf5
+            LIBRARY_NAMES
+                z zlib zdll zlib1 zlibstatic # Release names
+                zd zlibd zdlld zlibd1 zlib1d zlibstaticd # Debug names
             INSTALL_SUBDIR ${INSTALL_SUBDIR})
+
     install_package(szip
-            COMPONENTS static shared
+            COMPONENTS static
             CONFIG
             TARGET_HINTS szip
             LINK_TYPE static
@@ -41,15 +45,14 @@ function(install_hdf5)
             LINK_TYPE ${HDF5_LINK_TYPE}
             PATH_SUFFIXES cmake/hdf5 # Needed in vs2019 for some reason
             ${INSTALL_PREFIX_PKGNAME}
+            DEPENDS
             CMAKE_ARGS
             -DHDF5_ENABLE_PARALLEL:BOOL=${H5PP_ENABLE_MPI}
             -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON
             -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON
-            -DZLIB_ROOT=${H5PP_HDF5_INSTALL_DIR}
-            -DSZIP_ROOT=${H5PP_HDF5_INSTALL_DIR}
             )
     include(cmake/HDF5TargetUtils.cmake)
     h5pp_get_modern_hdf5_target_name()
+    target_link_libraries(HDF5::HDF5 INTERFACE ${PKG_zlib_TARGET} ${PKG_szip_TARGET})
     set(PKG_hdf5_TARGET HDF5::HDF5 PARENT_SCOPE)
-
 endfunction()

@@ -25,15 +25,31 @@ if (HDF5_ENABLE_PARALLEL AND NOT WIN32)
     find_package(MPI COMPONENTS C CXX REQUIRED)
 endif ()
 
+if(HDF5_ENABLE_Z_LIB_SUPPORT)
+    find_package(ZLIB REQUIRED)
+    get_target_property(ZLIB_LIBRARY     ZLIB::ZLIB LOCATION )
+    get_target_property(ZLIB_INCLUDE_DIR ZLIB::ZLIB INTERFACE_INCLUDE_DIRECTORIES)
+    message(DEBUG "HDF5: Found ZLIB LIBRARY: ${ZLIB_LIBRARY}")
+    message(DEBUG "HDF5: Found ZLIB INCLUDE: ${ZLIB_INCLUDE_DIR}")
+endif()
+if(HDF5_ENABLE_SZIP_SUPPORT)
+    find_package(SZIP NAMES szip COMPONENTS static shared REQUIRED)
+    get_target_property(SZIP_LIBRARY     szip-static LOCATION )
+    get_target_property(SZIP_INCLUDE_DIR szip-static INTERFACE_INCLUDE_DIRECTORIES)
+    message(DEBUG "HDF5: Found SZIP LIBRARY: ${SZIP_LIBRARY}")
+    message(DEBUG "HDF5: Found SZIP INCLUDE: ${SZIP_INCLUDE_DIR}")
+endif()
+
 ExternalProject_Add(external_hdf5
-        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/CMake-hdf5-1.12.1.tar.gz
-        URL_MD5     2191996e136130c57b3508796ce32c2a
+        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/hdf5-1.12.1.tar.gz
+        URL_MD5     e4f057f0a3eb4237c7799605357a584d
         PREFIX      ${CMAKE_BINARY_DIR}
-        # We need a patch here to get HDF5 to export zlib and szip as public dependencies on both static and shared targets. See also the related patch below
+        # We need a patch here to get HDF5 to export zlib and szip as public dependencies on both static and shared targets
         PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/hdf5-link-public.patch.cmake
+        # We need another patch to force HDF5 to link ZLIB::ZLIB and szip-static targets rather than full paths to libraries
+        PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/hdf5-link-target.patch.cmake
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE
-        SOURCE_SUBDIR hdf5-1.12.1
         LIST_SEPARATOR |
         CMAKE_ARGS
         ${INIT_CACHE_ARG}
@@ -47,24 +63,29 @@ ExternalProject_Add(external_hdf5
         -DBUILD_TESTING:BOOL=OFF
         -DHDF_PACKAGE_NAMESPACE:STRING=hdf5::
         -DHDF5_ALLOW_EXTERNAL_SUPPORT:STRING=NO
-        -DHDF5_PACKAGE_EXTLIBS:BOOL=ON # So that hdf5-config.cmake includes zlib-config.cmake and szip-config.cmake.
+        -DHDF5_PACKAGE_EXTLIBS:BOOL=OFF # So that hdf5-config.cmake includes zlib-config.cmake and szip-config.cmake.
         -DHDF5_ENABLE_PARALLEL:BOOL=${HDF5_ENABLE_PARALLEL}
         -DHDF5_ENABLE_COVERAGE:BOOL=OFF
         -DHDF5_ENABLE_TRACE:BOOL=OFF
         -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=${HDF5_ENABLE_Z_LIB_SUPPORT}
         -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=${HDF5_ENABLE_SZIP_SUPPORT}
         -DHDF5_ENABLE_SZIP_ENCODING:BOOL=${HDF5_ENABLE_SZIP_ENCODING}
-        -DZLIB_ROOT:PATH=${ZLIB_ROOT}
-        -DSZIP_ROOT:PATH=${SZIP_ROOT}
-        -DZLIB_INCLUDE_DIR:PATH=${ZLIB_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}
-        -DSZIP_INCLUDE_DIR:PATH=${SZIP_ROOT}/${CMAKE_INSTALL_INCLUDEDIR}
-        -DZLIB_ROOT:PATH=${ZLIB_ROOT}
-        -DSZIP_ROOT:PATH=${SZIP_ROOT}
-        -DZLIB_DIR:PATH=${ZLIB_ROOT}/share/cmake/zlib
-        -DSZIP_DIR:PATH=${SZIP_ROOT}/share/cmake/szip
-        -DZLIB_PACKAGE_NAME:STRING=zlib
-        -DSZIP_PACKAGE_NAME:STRING=szip
-        -DSZ_PACKAGE_NAME:STRING=szip
+        -DZLIB_FOUND:BOOL=TRUE
+        -DSZIP_FOUND:BOOL=TRUE
+        -DZLIB_LIBRARY:STRING=${ZLIB_LIBRARY} # This is to force FindZLIB.cmake to find and define a target with the correct library
+        -DSZIP_LIBRARY:STRING=szip-static
+        -DZLIB_STATIC_LIBRARY:STRING=ZLIB::ZLIB
+        # This is to use target-based linking instead of hardcoding a path to file
+        -DSZIP_STATIC_LIBRARY:STRING=szip-static # This is to use target-based linking instead of hardcoding a path to file
+        -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
+        -DSZIP_INCLUDE_DIR:PATH=${SZIP_INCLUDE_DIR}
+#        -DZLIB_ROOT:PATH=${ZLIB_ROOT}
+#        -DSZIP_ROOT:PATH=${SZIP_ROOT}
+#        -DZLIB_DIR:PATH=${ZLIB_ROOT}/share/cmake/zlib
+#        -DSZIP_DIR:PATH=${SZIP_ROOT}/share/cmake/szip
+#        -DZLIB_PACKAGE_NAME:STRING=zlib
+#        -DSZIP_PACKAGE_NAME:STRING=szip
+#        -DSZ_PACKAGE_NAME:STRING=szip
         -DUSE_LIBAEC:BOOL=OFF
         -DZLIB_USE_EXTERNAL:BOOL=OFF
         -DSZIP_USE_EXTERNAL:BOOL=OFF
@@ -79,14 +100,3 @@ ExternalProject_Add(external_hdf5
 #        --loglevel=DEBUG
         )
 
-# A bug occurs when HDF5 generates hdf5-config.cmake.
-# It uses @ZLIB_PACKAGE_NAME@, but this variable gets converted with TOUPPER when calling find_package(ZLIB ...)
-# This causes the import path to get hardcoded to something like ZLIB/ZLIB-target.cmake rather than zlib/zlib-target.cmake
-# This simply replaces the incorrect string in the generated file
-
-ExternalProject_Add_Step(external_hdf5
-        hdf5-config-patch
-        COMMENT "Fixing hdf5-config.cmake"
-        DEPENDEES configure build install
-        COMMAND ${CMAKE_COMMAND} -DHDF5_ROOT:PATH=${CMAKE_INSTALL_PREFIX} -P ${CMAKE_CURRENT_LIST_DIR}/hdf5-config.patch.cmake
-        )
