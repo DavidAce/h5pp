@@ -25,6 +25,7 @@ Go to [examples](https://github.com/DavidAce/h5pp/tree/master/examples) to learn
 ---
 
 ## Table of Contents
+
 * [Introduction](#introduction)
 * [Features](#features)
 * [Usage](#usage)
@@ -44,7 +45,6 @@ Go to [examples](https://github.com/DavidAce/h5pp/tree/master/examples) to learn
     * [Opt-in automatic dependency installation with CMake](#opt-in-automatic-dependency-installation-with-cmake)
     * [CMake options](#cmake-options)
   * [Option 3: Copy the headers](#option-1-copy-the-headers)
-
 * [Link](#link)
   * [Link using CMake targets (easy)](#link-using-cmake-targets-easy)
   * [Link manually (not as easy)](#link-manually-not-as-easy)
