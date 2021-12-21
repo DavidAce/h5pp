@@ -36,8 +36,8 @@ namespace h5pp {
         mutable std::optional<hid::h5f> fileHandle   = std::nullopt;             /*!< Keeps a file handle alive in batch operations */
         mutable LogLevel                logLevel     = LogLevel::info;           /*!< Log verbosity from 0 [trace] to 6 [off] */
         bool                            logTimestamp = false;                    /*!< Add a time stamp to console log output */
-        hid::h5e                        error_stack  = H5E_DEFAULT;              /*!< Holds a reference to the error stack used by HDF5 */
-        int currentCompression                       = -1; /*!< Holds the default compression level (-1 is off, 0 is none, 9 is max) */
+        hid::h5e                        error_stack  = H5E_DEFAULT;              /*!< Reference to the error stack used by HDF5 */
+        int currentCompression                       = -1;                       /*!< Compression level (-1 is off, 0 is none, 9 is max) */
 
         void init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
@@ -1406,7 +1406,7 @@ namespace h5pp {
                                 std::string_view targetLinkPath, /*!< Full path to link within the external file */
                                 std::string_view softLinkPath    /*!< Full path to the new soft link created within this file  */
         ) {
-            // The given targetFilePath is written as-is into the TARGETFILE property of the new esternal link.
+            // The given targetFilePath is written as-is into the TARGETFILE property of the new external link.
             // Therefore it is important that it is written either as:
             //      1: a path relative to the current file, and not relative to the current process, or
             //      2: a full path
