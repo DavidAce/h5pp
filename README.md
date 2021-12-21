@@ -62,7 +62,7 @@ Although well documented, the low-level C/C++ API's are vast and using them dire
 There are many high-level wrappers already that help the user experience, but as a matter of opinion,
 things could be even simpler.
 
-`h5pp` is a high-level C++17 wrapper of the HDF5 C library which strives to bring simplicity in following way:
+`h5pp` is a high-level C++17 interface for the HDF5 C library which strives to bring simplicity in following way:
 
 * Read and write common C++ types in a single line of code.
 * No prior knowledge of HDF5 is required.
