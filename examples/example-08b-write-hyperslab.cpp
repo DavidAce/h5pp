@@ -22,7 +22,7 @@ int main() {
     // 0  0  0  0  0
     file.writeDataset(data5x5, "data5x5", {5, 5});
 
-    // In this example we would like write a 2x2 matrix
+    // In this example we would like to write a 2x2 matrix
     //
     // 1 2
     // 3 4
