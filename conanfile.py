@@ -19,7 +19,7 @@ class h5ppConan(ConanFile):
     build_policy    = "missing"
     scm = {
         "type": "git",
-        "url": "auto",
+        "url": "https://github.com/DavidAce/h5pp.git",
         "revision": "auto",
         "subfolder": "source_subfolder"}
 
