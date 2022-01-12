@@ -789,10 +789,7 @@ namespace h5pp {
                 throw h5pp::runtime_error("Cannot read dataset [{}]: It does not exist", options.linkPath.value());
             // Generate the metadata for given data
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
-            // Resize the given data container so that it fits the selection in the dataset
-            h5pp::hdf5::resizeData(data, dataInfo, dsetInfo);
-            // Read
-            h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists);
+            readDataset(data, dataInfo, dsetInfo);
         }
         template<typename DataType>
         [[nodiscard]] DataType readDataset(std::string_view dsetPath, const Options &options) const {
