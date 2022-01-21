@@ -58,11 +58,11 @@ With official [low-level API's for C and Fortran](https://portal.hdfgroup.org/di
 C++ and Java and third-party bindings to Python, Julia, Matlab and many others, 
 HDF5 is a great tool for manipulating data in a collaborative setting.
 
-Although well documented, the low-level C/C++ API's are vast and using them directly can be challenging. 
+Although well documented, the low-level C API is vast and using it directly can be challenging. 
 There are many high-level wrappers already that help the user experience, but as a matter of opinion,
 things could be even simpler.
 
-`h5pp` is a high-level C++17 wrapper of the HDF5 C library which strives to bring simplicity in following way:
+`h5pp` is a high-level C++17 wrapper of the HDF5 C library which aims to be simple to use:
 
 * Read and write common C++ types in a single line of code.
 * No prior knowledge of HDF5 is required.
