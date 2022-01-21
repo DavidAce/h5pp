@@ -913,10 +913,11 @@ namespace h5pp::hdf5 {
         /* clang-format on */
         if(H5Tcommitted(type) > 0) {
             H5Eprint(H5E_DEFAULT, stderr);
-            if(h5pp::logger::log->level() == 0)
-                h5pp::logger::log->trace("No C++ type match for HDF5 type [{}]", getName(type));
+            if(h5pp::logger::log->level() == 0) h5pp::logger::log->trace("No C++ type match for HDF5 type [{}]", getName(type));
         } else {
-            h5pp::logger::log->trace("No known C++ type matches HDF5 type of class [ {} | {} bytes ]. This is usually not a problem", name, h5size);
+            h5pp::logger::log->trace("No known C++ type matches HDF5 type of class [ {} | {} bytes ]. This is usually not a problem",
+                                     name,
+                                     h5size);
         }
         return {typeid(nullptr), name, h5size};
     }
@@ -1661,7 +1662,7 @@ namespace h5pp::hdf5 {
         auto newDims = h5pp::util::getDimensions(data);
         if(oldDims != newDims) {
             // Update the metadata
-            if constexpr(h5pp::type::sfinae::is_container_of_v<DataType,std::byte>)
+            if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::byte>)
                 dataInfo.dataDims = getDimensions(info.h5Space.value());
             else
                 dataInfo.dataDims = h5pp::util::getDimensions(data); // Will fail if no dataDims passed on a pointer
@@ -1728,8 +1729,8 @@ namespace h5pp::hdf5 {
         htri_t equal = H5Sextent_equal(dataSpace, dsetSpace);
         if(equal > 0) return;
         if(equal < 0) throw h5pp::runtime_error("Failed to compare space extents");
-        auto dataDimensions = getDimensions(dataSpace);
-        auto dsetDimensions = getDimensions(dataSpace);
+        auto dataDimensions   = getDimensions(dataSpace);
+        auto dsetDimensions   = getDimensions(dataSpace);
         auto dataSelectedSize = getSizeSelected(dataSpace);
         auto dsetSelectedSize = getSizeSelected(dsetSpace);
 
@@ -1748,7 +1749,6 @@ namespace h5pp::hdf5 {
                                      getSpaceString(dataSpace, h5pp::logger::logIf(LogLevel::debug)),
                                      getSpaceString(dsetSpace, h5pp::logger::logIf(LogLevel::debug)));
         }
-
     }
     namespace internal {
         inline long        maxHits  = -1;
@@ -2822,7 +2822,7 @@ namespace h5pp::hdf5 {
             if(access == h5pp::FileAccess::READONLY) throw h5pp::runtime_error("[READONLY]: File does not exist [{}]", filePath.string());
             if(access == h5pp::FileAccess::COLLISION_FAIL) {} // Do nothing
             if(access == h5pp::FileAccess::RENAME) {}         // Do nothing
-            if(access == h5pp::FileAccess::READWRITE) {}      // Do nothing;
+            if(access == h5pp::FileAccess::READWRITE) {}      // Do nothing
             if(access == h5pp::FileAccess::BACKUP) {}         // Do nothing
             if(access == h5pp::FileAccess::REPLACE) {}        // Do nothing
             try {
@@ -2831,7 +2831,7 @@ namespace h5pp::hdf5 {
                 else
                     h5pp::logger::log->trace("Directory already exists: {}", filePath.parent_path().string());
             } catch(std::exception &ex) { throw h5pp::runtime_error("Failed to create directory: {}", ex.what()); }
-        }
+
 
         // One last sanity check
         if(access == h5pp::FileAccess::READONLY)
@@ -2875,18 +2875,18 @@ namespace h5pp::hdf5 {
         for(auto &name : info.fieldNames.value()) fieldNames.push_back(name.c_str());
         int    compression = info.compression.value() == 0 ? 0 : 1; // Only true/false (1/0). Is set to level 6 in HDF5 sources
         herr_t retval      = H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
-                                            info.getLocId(),
-                                            util::safe_str(info.tablePath.value()).c_str(),
-                                            info.numFields.value(),
-                                            info.numRecords.value(),
-                                            info.recordBytes.value(),
-                                            fieldNames.data(),
-                                            info.fieldOffsets.value().data(),
-                                            fieldTypesHidT.data(),
-                                            info.chunkDims.value()[0],
-                                            nullptr,
-                                            compression,
-                                            nullptr);
+                                       info.getLocId(),
+                                       util::safe_str(info.tablePath.value()).c_str(),
+                                       info.numFields.value(),
+                                       info.numRecords.value(),
+                                       info.recordBytes.value(),
+                                       fieldNames.data(),
+                                       info.fieldOffsets.value().data(),
+                                       fieldTypesHidT.data(),
+                                       info.chunkDims.value()[0],
+                                       nullptr,
+                                       compression,
+                                       nullptr);
         if(retval < 0) throw h5pp::runtime_error("Could not create table [{}]", info.tablePath.value());
 
         // Setup fields so that this TableInfo can be reused for read/write after
