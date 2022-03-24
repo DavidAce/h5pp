@@ -32,9 +32,6 @@ namespace h5pp::hid {
             } else {
                 if(not valid(other)) throw std::runtime_error("Given identifier must be valid");
             }
-            // Why do we not increment the counter here?
-            // The destructor will decrement the reference counter and possibly close this id.
-            // Should this object manage
             close(); // Drop current
             val = other;
         }
