@@ -12,9 +12,8 @@ high-level wrappers already that help the user experience, but as a matter of op
 
 * Read and write common C++ types in a single line of code.
 * No prior knowledge of HDF5 is required.
+* Meaningful logs and error messages.
 * Use HDF5 with modern, idiomatic, type-safe C++.
-* Default settings let simple tasks stay simple, e.g., storage layout, chunking and compression.
-* Advanced tasks remain possible, e.g. MPI parallelism.
-* Meaningful logs and error messages even for beginners.
+* Simple options common tasks, e.g. for file access, storage layout, hyperslabs, chunking and compression.
 * Simple installation with modular dependencies and opt-in automation.
-* Simple documentation (work in progress)
+* Simple documentation (work in progress).

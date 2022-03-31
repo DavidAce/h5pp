@@ -2,12 +2,11 @@
 
 ## Get h5pp
 
-There are currently 4 ways to obtain `h5pp`:
+There are currently 3 ways to obtain `h5pp`:
 
-* `git clone https://github.com/DavidAce/h5pp.git` and install (see below)
-* From [conan-center](https://conan.io/center/h5pp/1.9.0)
-* (Ubuntu/Debian only) Download the [latest release](https://github.com/DavidAce/h5pp/releases) and install with
-  apt: `sudo apt install ./h5pp_<version>_amd64.deb`
+* From [conan-center](https://conan.io/center/h5pp/1.9.0).
+* From [GitHub](https://github.com/DavidAce/h5pp).
+* As a `.deb` package from [latest release](https://github.com/DavidAce/h5pp/releases) (Ubuntu/Debian only).
 
 ## Requirements
 
