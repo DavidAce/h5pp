@@ -14,7 +14,7 @@ list(APPEND Sphinx_ROOT ${CONDA_ROOT})
 set(DOXYGEN_GENERATE_XML YES)
 set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
-find_package(Doxygen REQUIRED)
+find_package(Doxygen REQUIRED dot)
 doxygen_add_docs(h5pp-doxygen
         ${PROJECT_SOURCE_DIR}/include
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

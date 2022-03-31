@@ -5,6 +5,9 @@
 
 # Run CMake configure (optionally do this with cmake-gui)
 # CMake takes care of launching conan and installing dependencies
+# Add -DCONAN_PREFIX=<path-to-conan-bin> if CMake can't find your conan installation
+# (or define CONAN_PREFIX=<...> as an environment variable)
+
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=OFF \
       -S MyProject \

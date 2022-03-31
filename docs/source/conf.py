@@ -50,9 +50,13 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
 	'breathe',
     'myst_parser',
+    'sphinx_rtd_theme',
 ]
 
-
+# Myst configuration
+myst_enable_extensions = [
+    "deflist",
+]
 # Breathe Configuration
 breathe_projects = { 'h5pp': '../xml' }
 breathe_default_project = "h5pp"
