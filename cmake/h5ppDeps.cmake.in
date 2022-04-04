@@ -55,7 +55,7 @@ endif()
 
 # HDF5 must be found either way, so set it to required
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
-    find_dependency(HDF5 1.8...1.13 COMPONENTS C HL REQUIRED)
+    find_dependency(HDF5 1.8...1.13.1 COMPONENTS C HL REQUIRED)
 else()
     # h5pp is compatible with 1.8 to 1.13, however, builds from source will reject
     # new versions if we set the version to 1.8 (minimum) here.
