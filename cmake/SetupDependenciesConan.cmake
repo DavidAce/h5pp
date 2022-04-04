@@ -42,7 +42,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
     list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR}/conan)
     list(PREPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/conan)
     # Use CONFIG to avoid MODULE mode. This is recommended for the cmake_find_package_multi generator
-    find_package(HDF5 1.12.0 COMPONENTS C HL REQUIRED CONFIG)
+    find_package(HDF5 1.12.1 COMPONENTS C HL REQUIRED CONFIG)
     find_package(Eigen3 3.4 REQUIRED CONFIG)
     find_package(spdlog 1.9.2 REQUIRED CONFIG)
     find_package(fmt 8.0.1 REQUIRED CONFIG)
