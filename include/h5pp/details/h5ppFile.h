@@ -996,24 +996,36 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        void readAttribute(DataType          &data,
-                           std::string_view   attrName,
-                           std::string_view   linkPath,
-                           const OptDimsType &dataDims = std::nullopt) const {
+        void readAttribute(DataType               &data,
+                           std::string_view        attrName,
+                           std::string_view        linkPath,
+                           const OptDimsType      &dataDims = std::nullopt,
+                           std::optional<hid::h5t> h5Type   = std::nullopt) const {
             static_assert(not std::is_const_v<DataType>);
             Options options;
             options.linkPath = linkPath;
             options.attrName = attrName;
             options.dataDims = dataDims;
+            options.h5Type   = std::move(h5Type);
             readAttribute(data, options);
         }
 
         template<typename DataType>
-        [[nodiscard]] DataType
-            readAttribute(std::string_view attrName, std::string_view linkPath, const OptDimsType &dataDims = std::nullopt) const {
+        [[nodiscard]] DataType readAttribute(const Options &options) const {
             static_assert(not std::is_const_v<DataType>);
             DataType data;
-            readAttribute(data, attrName, linkPath, dataDims);
+            readAttribute(data, options);
+            return data;
+        }
+
+        template<typename DataType>
+        [[nodiscard]] DataType readAttribute(std::string_view        attrName,
+                                             std::string_view        linkPath,
+                                             const OptDimsType      &dataDims = std::nullopt,
+                                             std::optional<hid::h5t> h5Type   = std::nullopt) const {
+            static_assert(not std::is_const_v<DataType>);
+            DataType data;
+            readAttribute(data, attrName, linkPath, dataDims, h5Type);
             return data;
         }
 
