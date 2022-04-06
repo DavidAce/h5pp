@@ -1457,6 +1457,14 @@ namespace h5pp {
             return h5pp::hdf5::checkIfLinkExists(openFileHandle(), linkPath, plists.linkAccess);
         }
 
+        [[nodiscard]] bool attributeExists(std::string_view linkPath, std::string_view attrName) const {
+            return h5pp::hdf5::checkIfAttrExists(openFileHandle(), linkPath, attrName);
+        }
+        template<typename h5x>
+        [[nodiscard]] bool attributeExists(const h5x &link, std::string_view attrName) const {
+            return h5pp::hdf5::checkIfAttrExists(link, attrName);
+        }
+
         [[nodiscard]] std::vector<std::string> findLinks(std::string_view searchKey      = "",
                                                          std::string_view searchRoot     = "/",
                                                          long             maxHits        = -1,
