@@ -24,7 +24,7 @@ namespace h5pp::hid {
         virtual ~hid_base() = default;
         hid_base()          = default;
         // Use enable_if to avoid implicit conversion from hid_h5x and still have a non-explicit hid_t constructor
-        template<typename T, typename = std::enable_if_t<std::is_same_v<T, hid_t>>>
+        template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
         hid_base(const T &other) {
             // constructor from hid_t
             if constexpr(zeroValueIsOK) {
@@ -32,9 +32,6 @@ namespace h5pp::hid {
             } else {
                 if(not valid(other)) throw std::runtime_error("Given identifier must be valid");
             }
-            // Why do we not increment the counter here?
-            // The destructor will decrement the reference counter and possibly close this id.
-            // Should this object manage
             close(); // Drop current
             val = other;
         }
@@ -81,7 +78,7 @@ namespace h5pp::hid {
             return *this;
         }
 
-        template<typename T, typename = std::enable_if_t<std::is_same_v<T, hid_t>>>
+        template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
         hid_base &operator=(const T &rhs) {
             // Copy assignment from hid_t
             if constexpr(zeroValueIsOK) {

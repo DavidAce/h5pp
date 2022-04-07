@@ -23,8 +23,8 @@ int main() {
     float                             AttributeCArrayFloat[4]      = {1, 2, 3, 4};
     std::vector<std::complex<double>> AttributeVectorComplexDouble = {{2.0, 5.0}, {3.1, -2.3}, 3.0, {-51.2, 5}};
     std::vector<double>               AttributeVectorDouble        = {1.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
-                                                 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
-                                                 -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
+                                                                      0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
+                                                                      -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
     std::string                       AttributeString              = "This is a very long string that I am testing";
     char                              AttributeCharArray[]         = "This is a char array";
 
@@ -37,30 +37,30 @@ int main() {
     file.writeDataset(std::vector<double>(10, 5), "testGroup/vectorDouble");
     // Write attributes
 
-    file.writeAttribute(AttributeInt, "AttributeInt", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeDouble, "AttributeDouble", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeComplexInt, "AttributeComplexInt", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeComplexDouble, "AttributeComplexDouble", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeArrayLong, "AttributeArrayLong", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeCArrayFloat, "AttributeCArrayFloat", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeVectorDouble, "AttributeVectorDouble", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeVectorDouble, "AttributeVectorDouble", "testGroup/vectorDouble"); // Try overwrite
-    file.writeAttribute(AttributeVectorComplexDouble, "AttributeVectorComplexDouble", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeString, "AttributeString", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeString, "AttributeString", "testGroup/vectorDouble"); // Try overwrite
-    file.writeAttribute(AttributeCharArray, "AttributeCharArray", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeInt, "testGroup/vectorDouble", "AttributeInt");
+    file.writeAttribute(AttributeDouble, "testGroup/vectorDouble", "AttributeDouble");
+    file.writeAttribute(AttributeComplexInt, "testGroup/vectorDouble", "AttributeComplexInt");
+    file.writeAttribute(AttributeComplexDouble, "testGroup/vectorDouble", "AttributeComplexDouble");
+    file.writeAttribute(AttributeArrayLong, "testGroup/vectorDouble", "AttributeArrayLong");
+    file.writeAttribute(AttributeCArrayFloat, "testGroup/vectorDouble", "AttributeCArrayFloat");
+    file.writeAttribute(AttributeVectorDouble, "testGroup/vectorDouble", "AttributeVectorDouble");
+    file.writeAttribute(AttributeVectorDouble, "testGroup/vectorDouble", "AttributeVectorDouble"); // Try overwrite
+    file.writeAttribute(AttributeVectorComplexDouble, "testGroup/vectorDouble", "AttributeVectorComplexDouble");
+    file.writeAttribute(AttributeString, "testGroup/vectorDouble", "AttributeString");
+    file.writeAttribute(AttributeString, "testGroup/vectorDouble", "AttributeString"); // Try overwrite
+    file.writeAttribute(AttributeCharArray, "testGroup/vectorDouble", "AttributeCharArray");
     // Read the data back
-    auto ReadAttributeInt           = file.readAttribute<int>("AttributeInt", "testGroup/vectorDouble");
-    auto ReadAttributeDouble        = file.readAttribute<double>("AttributeDouble", "testGroup/vectorDouble");
-    auto ReadAttributeComplexInt    = file.readAttribute<std::complex<int>>("AttributeComplexInt", "testGroup/vectorDouble");
-    auto ReadAttributeComplexDouble = file.readAttribute<std::complex<double>>("AttributeComplexDouble", "testGroup/vectorDouble");
-    auto ReadAttributeArrayLong     = file.readAttribute<std::array<long, 4>>("AttributeArrayLong", "testGroup/vectorDouble");
-    auto ReadAttributeCArrayFloat   = file.readAttribute<std::vector<float>>("AttributeCArrayFloat", "testGroup/vectorDouble");
-    auto ReadAttributeVectorDouble  = file.readAttribute<std::vector<double>>("AttributeVectorDouble", "testGroup/vectorDouble");
+    auto ReadAttributeInt           = file.readAttribute<int>("testGroup/vectorDouble", "AttributeInt");
+    auto ReadAttributeDouble        = file.readAttribute<double>("testGroup/vectorDouble", "AttributeDouble");
+    auto ReadAttributeComplexInt    = file.readAttribute<std::complex<int>>("testGroup/vectorDouble", "AttributeComplexInt");
+    auto ReadAttributeComplexDouble = file.readAttribute<std::complex<double>>("testGroup/vectorDouble", "AttributeComplexDouble");
+    auto ReadAttributeArrayLong     = file.readAttribute<std::array<long, 4>>("testGroup/vectorDouble", "AttributeArrayLong");
+    auto ReadAttributeCArrayFloat   = file.readAttribute<std::vector<float>>("testGroup/vectorDouble", "AttributeCArrayFloat");
+    auto ReadAttributeVectorDouble  = file.readAttribute<std::vector<double>>("testGroup/vectorDouble", "AttributeVectorDouble");
     auto ReadAttributeVectorComplexDouble =
-        file.readAttribute<std::vector<std::complex<double>>>("AttributeVectorComplexDouble", "testGroup/vectorDouble");
-    auto ReadAttributeString    = file.readAttribute<std::string>("AttributeString", "testGroup/vectorDouble");
-    auto ReadAttributeCharArray = file.readAttribute<std::string>("AttributeCharArray", "testGroup/vectorDouble");
+        file.readAttribute<std::vector<std::complex<double>>>("testGroup/vectorDouble", "AttributeVectorComplexDouble");
+    auto ReadAttributeString    = file.readAttribute<std::string>("testGroup/vectorDouble", "AttributeString");
+    auto ReadAttributeCharArray = file.readAttribute<std::string>("testGroup/vectorDouble", "AttributeCharArray");
 
     if(ReadAttributeInt != AttributeInt) throw std::runtime_error("ReadAttributeInt != AttributeInt");
     if(ReadAttributeDouble != AttributeDouble) throw std::runtime_error("ReadAttributeDouble != AttributeDouble");
@@ -89,13 +89,13 @@ int main() {
     AttributeEigenMatrixComplexDouble.setRandom();
 
     // Write attributes
-    file.writeAttribute(AttributeEigenMatrixDouble, "AttributeEigenMatrixDouble", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeEigenMatrixComplexDouble, "AttributeEigenMatrixComplexDouble", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeEigenMatrixDouble, "testGroup/vectorDouble", "AttributeEigenMatrixDouble");
+    file.writeAttribute(AttributeEigenMatrixComplexDouble, "testGroup/vectorDouble", "AttributeEigenMatrixComplexDouble");
 
     // Read the data back
-    auto ReadAttributeEigenMatrixDouble = file.readAttribute<Eigen::MatrixXd>("AttributeEigenMatrixDouble", "testGroup/vectorDouble");
+    auto ReadAttributeEigenMatrixDouble = file.readAttribute<Eigen::MatrixXd>("testGroup/vectorDouble", "AttributeEigenMatrixDouble");
     auto ReadAttributeEigenMatrixComplexDouble =
-        file.readAttribute<Eigen::MatrixXcd>("AttributeEigenMatrixComplexDouble", "testGroup/vectorDouble");
+        file.readAttribute<Eigen::MatrixXcd>("testGroup/vectorDouble", "AttributeEigenMatrixComplexDouble");
 
     if(ReadAttributeEigenMatrixDouble != AttributeEigenMatrixDouble)
         throw std::runtime_error("ReadAttributeEigenMatrixDouble != AttributeEigenMatrixDouble");

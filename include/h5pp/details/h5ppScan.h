@@ -448,9 +448,13 @@ namespace h5pp::scan {
 
         readAttrInfo(info, loc, options, plists);
         if(not info.linkExists or not info.linkExists.value()) {
-            h5pp::logger::log->debug("Attribute metadata is being created for a non existing link: [{}]", options.linkPath.value());
-            //            throw h5pp::runtime_error(
-            //                h5pp::format("Could not get attribute info for link [{}]: Link does not exist.", options.linkPath.value()));
+            h5pp::logger::log->debug("Attribute metadata is being created for a non existing link: [{}]", info.linkPath.value());
+            auto attrLinkExists = h5pp::hdf5::checkIfLinkExists(loc, info.attrName.value(), plists.linkAccess);
+            if(attrLinkExists)
+                throw h5pp::runtime_error("Could not read info in link [{}] for attribute [{}]: Link does not exist. "
+                                          "NOTE: h5pp v1.10 and above requires the 'linkPath' argument before 'attrName'.",
+                                          info.linkPath.value(),
+                                          info.attrName.value());
         }
 
         if(info.attrExists and info.attrExists.value()) return; // attrInfo got populated already

@@ -41,18 +41,21 @@ if(HDF5_ENABLE_SZIP_SUPPORT)
 endif()
 
 ExternalProject_Add(external_hdf5
-        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/hdf5-1.12.1.tar.gz
-        URL_MD5     e4f057f0a3eb4237c7799605357a584d
+#        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/hdf5-1.12.1.tar.gz
+        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.13/hdf5-1.13.1/src/hdf5-1.13.1.tar.gz
+#        URL_MD5     e4f057f0a3eb4237c7799605357a584d
+        URL_MD5     1daffd4662ba2207a96a93272244bb77
         PREFIX      ${CMAKE_BINARY_DIR}
         # We need a patch here to get HDF5 to export zlib and szip as public dependencies on both static and shared targets
-        PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/hdf5-link-public.patch.cmake
+#        PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/hdf5-link-public.patch.cmake
         # We need another patch to force HDF5 to link ZLIB::ZLIB and szip-static targets rather than full paths to libraries
-        PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/hdf5-link-target.patch.cmake
+#        PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/hdf5-link-target.patch.cmake
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE
         LIST_SEPARATOR |
         CMAKE_ARGS
         ${INIT_CACHE_ARG}
+        -DINSTALLDIR=<INSTALL_DIR>
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/${CMAKE_INSTALL_LIBDIR}
         -DCMAKE_SKIP_BUILD_RPATH:BOOL=OFF
@@ -70,13 +73,13 @@ ExternalProject_Add(external_hdf5
         -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=${HDF5_ENABLE_Z_LIB_SUPPORT}
         -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=${HDF5_ENABLE_SZIP_SUPPORT}
         -DHDF5_ENABLE_SZIP_ENCODING:BOOL=${HDF5_ENABLE_SZIP_ENCODING}
-        -DZLIB_FOUND:BOOL=TRUE
-        -DSZIP_FOUND:BOOL=TRUE
+#        -DZLIB_FOUND:BOOL=TRUE
+#        -DSZIP_FOUND:BOOL=TRUE
         -DZLIB_LIBRARY:STRING=${ZLIB_LIBRARY} # This is to force FindZLIB.cmake to find and define a target with the correct library
-        -DSZIP_LIBRARY:STRING=szip-static
-        -DZLIB_STATIC_LIBRARY:STRING=ZLIB::ZLIB
-        # This is to use target-based linking instead of hardcoding a path to file
-        -DSZIP_STATIC_LIBRARY:STRING=szip-static # This is to use target-based linking instead of hardcoding a path to file
+        -DSZIP_LIBRARY:STRING=${SZIP_LIBRARY}
+#        -DSZIP_LIBRARY:STRING=szip-static
+#        -DZLIB_STATIC_LIBRARY:STRING=ZLIB::ZLIB  # This is to use target-based linking instead of hardcoding a path to file
+#        -DSZIP_STATIC_LIBRARY:STRING=szip-static # This is to use target-based linking instead of hardcoding a path to file
         -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
         -DSZIP_INCLUDE_DIR:PATH=${SZIP_INCLUDE_DIR}
 #        -DZLIB_ROOT:PATH=${ZLIB_ROOT}

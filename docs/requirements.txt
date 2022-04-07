@@ -1,3 +1,4 @@
 breathe
 myst_parser
 m2r2
+sphinx_rtd_theme

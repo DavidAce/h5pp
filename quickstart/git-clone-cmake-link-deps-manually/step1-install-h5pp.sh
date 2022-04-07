@@ -4,7 +4,7 @@
 git clone -b dev https://github.com/DavidAce/h5pp.git h5pp-source
 
 # Run CMake configure (optionally do this with cmake-gui)
-# CMake version > 3.19 is required!
+# CMake version > 3.15 is required!
 # h5pp will be installed side by side with the project directory
 # H5PP_PACKAGE_MANAGER=none will skip finding dependencies
 

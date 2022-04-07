@@ -42,14 +42,13 @@
 
     #if !defined(H5PP_NAME_VAL)
         #define H5PP_VAL_TO_STR(x) #x
-        #define H5PP_VAL(x) H5PP_VAL_TO_STR(x)
-        #define H5PP_NAME_VAL(var) #var "="  H5PP_VAL(var)
+        #define H5PP_VAL(x)        H5PP_VAL_TO_STR(x)
+        #define H5PP_NAME_VAL(var) #var "=" H5PP_VAL(var)
     #endif
     #if defined(FMT_VERSION) && FMT_VERSION < 60000
         #pragma message("h5pp: fmt version unsupported: " H5PP_NAME_VAL(FMT_VERSION) ". Compilation may fail.")
     #endif
 #endif
-
 
 #if defined(FMT_FORMAT_H_) && (defined(H5PP_USE_FMT) || defined(H5PP_USE_SPDLOG))
 
@@ -62,26 +61,29 @@ namespace h5pp {
     void print(Args... args) {
         fmt::print(std::forward<Args>(args)...);
     }
-
+}
 #else
 
-    // In this case there is no fmt so we make our own simple formatter
-    #include "h5ppTypeSfinae.h"
-    #include <algorithm>
-    #include <iostream>
-    #include <list>
-    #include <memory>
-    #include <sstream>
-    #include <string>
+// In this case there is no fmt so we make our own simple formatter
+#include "h5ppTypeSfinae.h"
+#include <algorithm>
+#include <iostream>
+#include <list>
+#include <memory>
+#include <sstream>
+#include <string>
 
 namespace h5pp {
-    namespace formatting {
+    namespace type::sfinae{
         template<typename T, typename = std::void_t<> >
         struct is_streamable : std::false_type {};
         template<typename T>
         struct is_streamable<T, std::void_t<decltype(std::declval<std::stringstream &> << std::declval<T>())> > : public std::true_type {};
         template<typename T>
         inline constexpr bool is_streamable_v = is_streamable<T>::value;
+    }
+
+    namespace formatting {
 
         template<class T, class... Ts>
         std::list<std::string> convert_to_string_list(const T &first, const Ts &...rest) {
@@ -90,7 +92,7 @@ namespace h5pp {
                 result.emplace_back(first);
             else if constexpr(std::is_arithmetic_v<T>)
                 result.emplace_back(std::to_string(first));
-            else if constexpr(is_streamable_v<T>) {
+            else if constexpr(h5pp::type::sfinae::is_streamable_v<T>) {
                 std::stringstream sstr;
                 sstr << std::boolalpha << first;
                 result.emplace_back(sstr.str());
@@ -115,16 +117,16 @@ namespace h5pp {
 
     template<typename... Args>
     [[nodiscard]] std::string format(const std::string &fmtstring, [[maybe_unused]] Args... args) {
-        auto brackets_left = std::count(fmtstring.begin(), fmtstring.end(), '{');
+        auto brackets_left  = std::count(fmtstring.begin(), fmtstring.end(), '{');
         auto brackets_right = std::count(fmtstring.begin(), fmtstring.end(), '}');
         if(brackets_left != brackets_right) return std::string("FORMATTING ERROR: GOT STRING: " + fmtstring);
-        auto arglist = formatting::convert_to_string_list(args...);
-        std::string result = fmtstring;
+        auto                   arglist  = formatting::convert_to_string_list(args...);
+        std::string            result   = fmtstring;
         std::string::size_type curr_pos = 0;
         while(true) {
             if(arglist.empty()) break;
             std::string::size_type start_pos = result.find('{', curr_pos);
-            std::string::size_type end_pos = result.find('}', curr_pos);
+            std::string::size_type end_pos   = result.find('}', curr_pos);
             if(start_pos == std::string::npos or end_pos == std::string::npos or start_pos - end_pos == 0) break;
             result.replace(start_pos, end_pos - start_pos + 1, arglist.front());
             curr_pos = start_pos + arglist.front().size();
@@ -137,6 +139,5 @@ namespace h5pp {
     void print(Args... args) {
         std::printf("%s", h5pp::format(std::forward<Args>(args)...).c_str());
     }
-
-#endif
 }
+#endif

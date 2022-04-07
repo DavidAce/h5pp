@@ -69,8 +69,8 @@ int main() {
      */
 
     file.writeDataset("nulltest", "nullDset");
-    file.writeAttribute("this is a nulltest attribute", "nullAttr1", "nullDset");
-    file.writeAttribute("this is a nulltest attribute", "nullAttr2", "nullDset");
+    file.writeAttribute("this is a nulltest attribute", "nullDset", "nullAttr1");
+    file.writeAttribute("this is a nulltest attribute", "nullDset", "nullAttr2");
 
     auto attrNames = file.getAttributeNames("nullDset");
     for(const auto &str : attrNames) {
@@ -88,10 +88,10 @@ int main() {
             h5pp::format("String with fixed size 23 failed: [{}] != [{}]", stringDummy_fixedSize_t, stringDummy_fixedSize_t_read));
 
     std::string stringAttribute_t = "This is a dummy string attribute";
-    file.writeAttribute(stringAttribute_t, "stringAttribute_fixed", "stringDummy_fixedSize", stringAttribute_t.size() + 1);
-    auto stringAttributeRead_fixed_t = file.readAttribute<std::string>("stringAttribute_fixed", "stringDummy_fixedSize");
+    file.writeAttribute(stringAttribute_t, "stringDummy_fixedSize", "stringAttribute_fixed", stringAttribute_t.size() + 1);
+    auto stringAttributeRead_fixed_t = file.readAttribute<std::string>("stringDummy_fixedSize", "stringAttribute_fixed");
     assert_nullfree(stringAttributeRead_fixed_t);
-    stringAttributeRead_fixed_t = file.readAttribute<std::string>("stringAttribute_fixed", "stringDummy_fixedSize", 33);
+    stringAttributeRead_fixed_t = file.readAttribute<std::string>("stringDummy_fixedSize", "stringAttribute_fixed", 33);
     assert_nullfree(stringAttributeRead_fixed_t);
 
     std::cout << "stringAttributeRead_fixed_t: " << stringAttributeRead_fixed_t << std::endl;
@@ -100,14 +100,14 @@ int main() {
             h5pp::format("stringAttributeRead_fixed failed: [{}] != [{}]", stringAttribute_t, stringAttributeRead_fixed_t));
 
     std::vector<std::string> stringVectorAttribute_t = {"This is a variable length", "dummy string attribute"};
-    file.writeAttribute(stringVectorAttribute_t, "stringVectorAttribute_t", "stringDummy_fixedSize");
+    file.writeAttribute(stringVectorAttribute_t, "stringDummy_fixedSize", "stringVectorAttribute_t");
 
-    auto stringVectorAttributeRead_string = file.readAttribute<std::string>("stringVectorAttribute_t", "stringDummy_fixedSize");
+    auto stringVectorAttributeRead_string = file.readAttribute<std::string>("stringDummy_fixedSize", "stringVectorAttribute_t");
     assert_nullfree(stringVectorAttributeRead_string);
     std::cout << "stringVectorAttributeRead_string: \n" << stringVectorAttributeRead_string << std::endl;
 
     auto stringVectorAttributeRead_vector =
-        file.readAttribute<std::vector<std::string>>("stringVectorAttribute_t", "stringDummy_fixedSize");
+        file.readAttribute<std::vector<std::string>>("stringDummy_fixedSize", "stringVectorAttribute_t");
     for(const auto &str : stringVectorAttributeRead_vector) {
         assert_nullfree(str);
         std::cout << "str: " << str << std::endl;
@@ -222,15 +222,15 @@ int main() {
 
     // Now let's try some text attributes
     std::string stringAttribute = "This is a dummy string attribute";
-    file.writeAttribute(stringAttribute, "stringAttribute", "vecString");
-    auto stringAttributeRead = file.readAttribute<std::string>("stringAttribute", "vecString");
+    file.writeAttribute(stringAttribute, "vecString", "stringAttribute");
+    auto stringAttributeRead = file.readAttribute<std::string>("vecString", "stringAttribute");
     std::cout << "\nstringAttribute read:\n" << stringAttributeRead << std::endl;
     if(stringAttribute != stringAttributeRead)
         throw std::runtime_error(h5pp::format("stringAttribute failed: [{}] != [{}]", stringAttribute, stringAttributeRead));
 
     std::vector<std::string> multiStringAttribute = {"This is another dummy string attribute", "With many elements"};
-    file.writeAttribute(multiStringAttribute, "multiStringAttribute", "vecString");
-    auto multiStringAttributeRead = file.readAttribute<std::vector<std::string>>("multiStringAttribute", "vecString");
+    file.writeAttribute(multiStringAttribute, "vecString", "multiStringAttribute");
+    auto multiStringAttributeRead = file.readAttribute<std::vector<std::string>>("vecString", "multiStringAttribute");
     std::cout << "\nmultiStringAttribute read: " << std::endl;
     for(auto &elem : multiStringAttributeRead) std::cout << elem << std::endl;
 
@@ -243,8 +243,8 @@ int main() {
             throw std::runtime_error(
                 h5pp::format("Vecstring read element mismatch: [{}] != [{}]", multiStringAttribute[i], multiStringAttributeRead[i]));
 
-    file.writeAttribute(stringAttribute, "stringAttribute_fixed", "vecString", stringAttribute.size());
-    auto stringAttributeRead_fixed = file.readAttribute<std::string>("stringAttribute_fixed", "vecString");
+    file.writeAttribute(stringAttribute, "vecString", "stringAttribute_fixed", stringAttribute.size());
+    auto stringAttributeRead_fixed = file.readAttribute<std::string>("vecString", "stringAttribute_fixed");
     if(stringAttribute != stringAttributeRead_fixed)
         throw std::runtime_error(
             h5pp::format("stringAttributeRead_fixed failed: [{}] != [{}]", stringAttribute, stringAttributeRead_fixed));

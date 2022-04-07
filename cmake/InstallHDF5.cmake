@@ -37,7 +37,7 @@ function(install_hdf5)
             PATH_SUFFIXES cmake share/cmake # Fixes bug in CMake 3.20.2 not generating search paths
             INSTALL_SUBDIR ${INSTALL_SUBDIR})
 
-    install_package(hdf5 VERSION 1.12
+    install_package(hdf5 VERSION 1.13
             COMPONENTS C HL ${HDF5_LINK_TYPE}
             CONFIG
             FIND_NAME HDF5
