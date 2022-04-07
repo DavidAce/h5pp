@@ -749,6 +749,12 @@ namespace h5pp {
         template<typename DataType>
         [[nodiscard]] DataType readDataset(DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
             static_assert(not std::is_const_v<DataType>);
+            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+                dsetInfo.assertReadReady();
+                if(dsetInfo.dsetExists.value() or linkExists(dsetInfo.dsetPath.value()))
+                    return readDataset<typename DataType::value_type>(dataInfo, dsetInfo);
+                return std::nullopt;
+            }
             DataType data;
             readDataset(data, dataInfo, dsetInfo);
             return data;
@@ -764,6 +770,12 @@ namespace h5pp {
         template<typename DataType>
         [[nodiscard]] DataType readDataset(const DsetInfo &dsetInfo, const Options &options = Options()) const {
             static_assert(not std::is_const_v<DataType>);
+            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+                dsetInfo.assertReadReady();
+                if(dsetInfo.dsetExists.value() or linkExists(dsetInfo.dsetPath.value()))
+                    return readDataset<typename DataType::value_type>(dsetInfo, options);
+                return std::nullopt;
+            }
             DataType data;
             readDataset(data, dsetInfo, options);
             return data;
@@ -772,6 +784,12 @@ namespace h5pp {
         template<typename DataType>
         [[nodiscard]] DataType readDataset(const DsetInfo &dsetInfo, const DimsType &dataDims) const {
             static_assert(not std::is_const_v<DataType>);
+            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+                dsetInfo.assertReadReady();
+                if(dsetInfo.dsetExists.value() or linkExists(dsetInfo.dsetPath.value()))
+                    return readDataset<typename DataType::value_type>(dsetInfo, dataDims);
+                return std::nullopt;
+            }
             DataType data;
             Options  options;
             options.dataDims = dataDims;
@@ -797,6 +815,11 @@ namespace h5pp {
         template<typename DataType>
         [[nodiscard]] DataType readDataset(std::string_view dsetPath, const Options &options) const {
             static_assert(not std::is_const_v<DataType>);
+            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+                if(linkExists(dsetPath)) return readDataset<typename DataType::value_type>(dsetPath, options);
+                return std::nullopt;
+            }
+
             Options options_internal  = options;
             options_internal.linkPath = dsetPath;
             DataType data;
@@ -818,12 +841,17 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        [[nodiscard]] DataType readDataset(std::string_view        datasetPath,
+        [[nodiscard]] DataType readDataset(std::string_view        dsetPath,
                                            const OptDimsType      &dataDims = std::nullopt,
                                            std::optional<hid::h5t> h5Type   = std::nullopt) const {
             static_assert(not std::is_const_v<DataType>);
+            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+                if(linkExists(dsetPath)) return readDataset<typename DataType::value_type>(dsetPath, dataDims, h5Type);
+                return std::nullopt;
+            }
+
             DataType data;
-            readDataset(data, datasetPath, dataDims, std::move(h5Type));
+            readDataset(data, dsetPath, dataDims, std::move(h5Type));
             return data;
         }
 
@@ -923,7 +951,7 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        AttrInfo createAttribute(const DataType &data, const DimsType &dataDims, std::string_view attrName, std::string_view linkPath) {
+        AttrInfo createAttribute(const DataType &data, const DimsType &dataDims, std::string_view linkPath, std::string_view attrName) {
             Options options;
             options.linkPath = linkPath;
             options.attrName = attrName;
@@ -956,8 +984,8 @@ namespace h5pp {
 
         template<typename DataType>
         AttrInfo writeAttribute(const DataType         &data,
-                                std::string_view        attrName,
                                 std::string_view        linkPath,
+                                std::string_view        attrName,
                                 const OptDimsType      &dataDims = std::nullopt,
                                 std::optional<hid::h5t> h5Type   = std::nullopt) {
             Options options;
@@ -973,13 +1001,15 @@ namespace h5pp {
             static_assert(not std::is_const_v<DataType>);
             if(attrInfo.linkExists and not attrInfo.linkExists.value())
                 throw h5pp::runtime_error("Could not read attribute [{}] in link [{}]: "
-                                          "Link does not exist",
+                                          "Link does not exist. "
+                                          "NOTE: h5pp v1.10 and above requires the 'linkPath' argument before 'attrName'.",
                                           attrInfo.attrName.value(),
                                           attrInfo.linkPath.value());
 
             if(attrInfo.attrExists and not attrInfo.attrExists.value())
                 throw h5pp::runtime_error("Could not read attribute [{}] in link [{}]: "
-                                          "Attribute does not exist",
+                                          "Attribute does not exist. "
+                                          "NOTE: h5pp v1.10 and above requires the 'linkPath' argument before 'attrName'.",
                                           attrInfo.attrName.value(),
                                           attrInfo.linkPath.value());
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
@@ -997,8 +1027,8 @@ namespace h5pp {
 
         template<typename DataType>
         void readAttribute(DataType               &data,
-                           std::string_view        attrName,
                            std::string_view        linkPath,
+                           std::string_view        attrName,
                            const OptDimsType      &dataDims = std::nullopt,
                            std::optional<hid::h5t> h5Type   = std::nullopt) const {
             static_assert(not std::is_const_v<DataType>);
@@ -1013,19 +1043,30 @@ namespace h5pp {
         template<typename DataType>
         [[nodiscard]] DataType readAttribute(const Options &options) const {
             static_assert(not std::is_const_v<DataType>);
+            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+                options.assertWellDefined();
+                if(hdf5::checkIfAttrExists(openFileHandle(), options.linkPath.value(), options.attrName.value()))
+                    return readAttribute<typename DataType::value_type>(options);
+                return std::nullopt;
+            }
             DataType data;
             readAttribute(data, options);
             return data;
         }
 
         template<typename DataType>
-        [[nodiscard]] DataType readAttribute(std::string_view        attrName,
-                                             std::string_view        linkPath,
+        [[nodiscard]] DataType readAttribute(std::string_view        linkPath,
+                                             std::string_view        attrName,
                                              const OptDimsType      &dataDims = std::nullopt,
                                              std::optional<hid::h5t> h5Type   = std::nullopt) const {
             static_assert(not std::is_const_v<DataType>);
+            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+                if(hdf5::checkIfAttrExists(openFileHandle(), linkPath, attrName))
+                    return readAttribute<typename DataType::value_type>(linkPath, attrName, dataDims, h5Type);
+                return std::nullopt;
+            }
             DataType data;
-            readAttribute(data, attrName, linkPath, dataDims, h5Type);
+            readAttribute(data, linkPath, attrName, dataDims, h5Type);
             return data;
         }
 
