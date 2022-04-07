@@ -25,6 +25,10 @@ TEST_CASE("Test adding a soft link", "[Soft Link]") {
         REQUIRE(file.linkExists("softlinks/realgroup2/dsetC"));
         REQUIRE(file.linkExists("softlinks/realgroup3/dsetD"));
     }
+    SECTION("Delete a soft link") {
+        h5pp::File file("output/softLink.h5", h5pp::FileAccess::READWRITE, 2);
+        REQUIRE_NOTHROW(file.deleteLink("softlinks/realgroup3"));
+    }
 }
 
 int main(int argc, char *argv[]) {

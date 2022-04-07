@@ -1032,6 +1032,19 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
+    inline void deleteLink(const h5x           &loc,
+                           std::string_view     linkPath,
+                           const hid::h5p     &linkAccess = H5P_DEFAULT){
+        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+                      "Template function [h5pp::hdf5::deleteLink(const h5x & loc, ...)] requires type h5x to be: "
+                      "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
+        auto retval = H5Ldelete(loc, util::safe_str(linkPath).c_str(), linkAccess);
+        if(retval < 0) throw h5pp::runtime_error("Failed to delete link [{}]", linkPath);
+    }
+
+
+
+    template<typename h5x>
     inline void createSoftLink(std::string_view     targetLinkPath,
                                const h5x           &loc,
                                std::string_view     softLinkPath,
