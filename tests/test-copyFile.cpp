@@ -9,7 +9,7 @@ int main() {
     fileB.writeDataset("B", "groupB/B");
 
     // Try copying the file
-    fileA.writeAttribute("hidden_attr", "sneaky_attribute", "/"); // <-- unable to copy this
+    fileA.writeAttribute("hidden_attr", "/", "sneaky_attribute"); // <-- unable to copy this
     fileA.copyFileTo("output/copyFileA_copy.h5", h5pp::FileAccess::REPLACE);
     h5pp::File fileA_copy("output/copyFileA_copy.h5", h5pp::FileAccess::READONLY, logLevel);
     auto       fileA_copy_read = fileA_copy.readDataset<std::string>("groupA/A");

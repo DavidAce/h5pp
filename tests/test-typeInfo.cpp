@@ -16,8 +16,8 @@ int main() {
     float                             AttributeCArrayFloat[4]      = {1, 2, 3, 4};
     std::vector<std::complex<double>> AttributeVectorComplexDouble = {{2.0, 5.0}, {3.1, -2.3}, 3.0, {-51.2, 5}};
     std::vector<double>               AttributeVectorDouble        = {1.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
-                                                 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
-                                                 -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
+                                                                      0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
+                                                                      -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
     std::string                       AttributeString              = "This is a very long string that I am testing";
     char                              AttributeCharArray[]         = "This is a char array";
 
@@ -30,16 +30,16 @@ int main() {
     file.writeDataset(std::vector<double>(10, 5), "testGroup/vectorDouble");
     // Write attributes
 
-    file.writeAttribute(AttributeInt, "AttributeInt", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeDouble, "AttributeDouble", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeComplexInt, "AttributeComplexInt", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeComplexDouble, "AttributeComplexDouble", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeArrayLong, "AttributeArrayLong", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeCArrayFloat, "AttributeCArrayFloat", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeVectorDouble, "AttributeVectorDouble", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeVectorComplexDouble, "AttributeVectorComplexDouble", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeString, "AttributeString", "testGroup/vectorDouble");
-    file.writeAttribute(AttributeCharArray, "AttributeCharArray", "testGroup/vectorDouble");
+    file.writeAttribute(AttributeInt, "testGroup/vectorDouble", "AttributeInt");
+    file.writeAttribute(AttributeDouble, "testGroup/vectorDouble", "AttributeDouble");
+    file.writeAttribute(AttributeComplexInt, "testGroup/vectorDouble", "AttributeComplexInt");
+    file.writeAttribute(AttributeComplexDouble, "testGroup/vectorDouble", "AttributeComplexDouble");
+    file.writeAttribute(AttributeArrayLong, "testGroup/vectorDouble", "AttributeArrayLong");
+    file.writeAttribute(AttributeCArrayFloat, "testGroup/vectorDouble", "AttributeCArrayFloat");
+    file.writeAttribute(AttributeVectorDouble, "testGroup/vectorDouble", "AttributeVectorDouble");
+    file.writeAttribute(AttributeVectorComplexDouble, "testGroup/vectorDouble", "AttributeVectorComplexDouble");
+    file.writeAttribute(AttributeString, "testGroup/vectorDouble", "AttributeString");
+    file.writeAttribute(AttributeCharArray, "testGroup/vectorDouble", "AttributeCharArray");
 
     for(auto &info : file.getTypeInfoAttributes("testGroup/vectorDouble")) { std::cout << info.string() << std::endl; }
 
