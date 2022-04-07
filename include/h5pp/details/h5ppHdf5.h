@@ -2844,7 +2844,7 @@ namespace h5pp::hdf5 {
                 else
                     h5pp::logger::log->trace("Directory already exists: {}", filePath.parent_path().string());
             } catch(std::exception &ex) { throw h5pp::runtime_error("Failed to create directory: {}", ex.what()); }
-
+        }
 
         // One last sanity check
         if(access == h5pp::FileAccess::READONLY)
