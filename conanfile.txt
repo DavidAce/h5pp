@@ -2,8 +2,8 @@
 
 [requires]
 eigen/3.4.0@
-fmt/8.0.1@
-spdlog/1.9.2@
+fmt/8.1.1@
+spdlog/1.10.0@
 hdf5/1.12.1@
 
 [generators]

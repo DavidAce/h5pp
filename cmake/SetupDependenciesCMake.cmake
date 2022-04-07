@@ -22,10 +22,10 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake")
 
     # Install all the depeendencies
     if(H5PP_ENABLE_FMT)
-        install_package(fmt VERSION 8.0.1 ${INSTALL_PREFIX_PKGNAME})
+        install_package(fmt VERSION 8.1.1 ${INSTALL_PREFIX_PKGNAME})
     endif()
     if(H5PP_ENABLE_SPDLOG)
-        install_package(spdlog VERSION 1.9.2 ${INSTALL_PREFIX_PKGNAME}
+        install_package(spdlog VERSION 1.10.0 ${INSTALL_PREFIX_PKGNAME}
                         DEPENDS fmt::fmt
                         CMAKE_ARGS
                             -DSPDLOG_FMT_EXTERNAL:BOOL=ON

@@ -50,9 +50,9 @@ class h5ppConan(ConanFile):
         if self.options.with_eigen:
             self.requires("eigen/3.4.0")
         if self.options.with_spdlog:
-            self.requires("spdlog/1.9.2")
+            self.requires("spdlog/1.10.0")
         if self.options.with_fmt:
-            self.requires("fmt/8.0.1")
+            self.requires("fmt/8.1.1")
 
     def _configure_cmake(self):
         if not self._cmake:
