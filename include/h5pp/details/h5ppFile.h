@@ -31,13 +31,13 @@ namespace h5pp {
 
     class File {
         private:
-        fs::path                        filePath;                                /*!< Full path to the file */
-        h5pp::FileAccess                fileAccess   = h5pp::FileAccess::RENAME; /*!< File open/create policy. */
-        mutable std::optional<hid::h5f> fileHandle   = std::nullopt;             /*!< Keeps a file handle alive in batch operations */
-        mutable LogLevel                logLevel     = LogLevel::info;           /*!< Log verbosity from 0 [trace] to 6 [off] */
-        bool                            logTimestamp = false;                    /*!< Add a time stamp to console log output */
-        hid::h5e                        error_stack  = H5E_DEFAULT;              /*!< Reference to the error stack used by HDF5 */
-        int currentCompression                       = -1;                       /*!< Compression level (-1 is off, 0 is none, 9 is max) */
+        fs::path                        filePath;                                      /*!< Full path to the file */
+        h5pp::FileAccess                fileAccess         = h5pp::FileAccess::RENAME; /*!< File open/create policy. */
+        mutable std::optional<hid::h5f> fileHandle         = std::nullopt;             /*!< Keeps a file handle alive in batch operations */
+        mutable LogLevel                logLevel           = LogLevel::info;           /*!< Log verbosity from 0 [trace] to 6 [off] */
+        bool                            logTimestamp       = false;                    /*!< Add a time stamp to console log output */
+        hid::h5e                        error_stack        = H5E_DEFAULT;              /*!< Reference to the error stack used by HDF5 */
+        int                             currentCompression = -1; /*!< Compression level (-1 is off, 0 is none, 9 is max) */
 
         void init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
@@ -1446,7 +1446,7 @@ namespace h5pp {
             static_assert(not std::is_const_v<DataType>);
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
             static_assert(type::sfinae::has_resize_v<DataType>);
-            readTableField<DataType>(info, fieldId, TableSelection::ALL);
+            return readTableField<DataType>(info, fieldId, TableSelection::ALL);
         }
 
         [[nodiscard]] TableFieldInfo getTableFieldInfo(std::string_view tablePath) const {
