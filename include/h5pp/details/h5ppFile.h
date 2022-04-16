@@ -1449,6 +1449,10 @@ namespace h5pp {
             readTableField<DataType>(info, fieldId, TableSelection::ALL);
         }
 
+        [[nodiscard]] TableFieldInfo getTableFieldInfo(std::string_view tablePath) const {
+            return h5pp::hdf5::getTableFieldInfo(openFileHandle(), tablePath, std::nullopt, std::nullopt, plists.linkAccess);
+        }
+
         /*
          *
          *
@@ -1628,6 +1632,8 @@ namespace h5pp {
                 return getDatasetInfo(linkPath);
             else if constexpr(std::is_same_v<InfoType, TableInfo>)
                 return getTableInfo(linkPath);
+            else if constexpr(std::is_same_v<InfoType, TableFieldInfo>)
+                return getTableFieldInfo(linkPath);
             else if constexpr(std::is_same_v<InfoType, TypeInfo>)
                 return getTypeInfoDataset(linkPath);
             else if constexpr(std::is_same_v<InfoType, LinkInfo>)
@@ -1636,7 +1642,7 @@ namespace h5pp {
                 static_assert(type::sfinae::invalid_type_v<InfoType>,
                               "Template function 'h5pp::File::getInfo<InfoType>(std::string_view linkPath)' "
                               "requires template type 'InfoType' to be one of "
-                              "[h5pp::DsetInfo], [h5pp::TableInfo], [h5pp::TypeInfo] or [h5pp::LinkInfo]");
+                              "[h5pp::DsetInfo], [h5pp::TableInfo], [h5pp::TableFieldInfo], [h5pp::TypeInfo] or [h5pp::LinkInfo]");
         }
 
         template<typename InfoType>
