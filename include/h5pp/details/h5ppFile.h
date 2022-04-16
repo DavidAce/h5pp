@@ -1332,14 +1332,14 @@ namespace h5pp {
         template<typename DataType>
         void readTableField(DataType              &data,
                             const TableInfo       &info,
-                            const NamesOrIndices  &fieldNamesOrIndices,
+                            const NamesOrIndices  &fields,
                             std::optional<hsize_t> offset = std::nullopt,
                             std::optional<hsize_t> extent = std::nullopt) const {
-            auto variant_index = fieldNamesOrIndices.index();
-            if(variant_index == 0)
-                h5pp::hdf5::readTableField(data, info, fieldNamesOrIndices.get_value<0>(), offset, extent);
-            else if(variant_index == 1)
-                h5pp::hdf5::readTableField(data, info, fieldNamesOrIndices.get_value<1>(), offset, extent);
+            auto variant_index = fields.index();
+            if(fields.has_indices())
+                h5pp::hdf5::readTableField(data, info, fields.get_indices(), offset, extent);
+            else if(fields.has_names())
+                h5pp::hdf5::readTableField(data, info, fields.get_names(), offset, extent);
             else
                 throw h5pp::runtime_error("No field names or indices have been specified");
         }
@@ -1347,18 +1347,18 @@ namespace h5pp {
         template<typename DataType>
         void readTableField(DataType              &data,
                             std::string_view       tablePath,
-                            const NamesOrIndices  &fieldNamesOrIndices,
+                            const NamesOrIndices  &fields,
                             std::optional<hsize_t> offset = std::nullopt,
                             std::optional<hsize_t> extent = std::nullopt) const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath);
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
-            readTableField(data, info, fieldNamesOrIndices, offset, extent);
+            readTableField(data, info, fields, offset, extent);
         }
 
         template<typename DataType>
         [[nodiscard]] DataType readTableField(std::string_view       tablePath,
-                                              const NamesOrIndices  &fieldNamesOrIndices,
+                                              const NamesOrIndices  &fields,
                                               std::optional<hsize_t> offset = std::nullopt,
                                               std::optional<hsize_t> extent = std::nullopt) const {
             if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
@@ -1368,15 +1368,12 @@ namespace h5pp {
                     return std::nullopt;
             }
             DataType data;
-            readTableField(data, tablePath, fieldNamesOrIndices, offset, extent);
+            readTableField(data, tablePath, fields, offset, extent);
             return data;
         }
 
         template<typename DataType>
-        void readTableField(DataType             &data,
-                            std::string_view      tablePath,
-                            const NamesOrIndices &fieldNamesOrIndices,
-                            TableSelection        tableSelection) const {
+        void readTableField(DataType &data, std::string_view tablePath, const NamesOrIndices &fields, TableSelection tableSelection) const {
             static_assert(not std::is_const_v<DataType>);
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
             Options options;
@@ -1384,26 +1381,26 @@ namespace h5pp {
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             info.assertReadReady();
             hsize_t offset, extent;
-            auto    variant_index = fieldNamesOrIndices.index();
-            if(variant_index == 0)
-                std::tie(offset, extent) = util::parseTableSelection(data, tableSelection, fieldNamesOrIndices.get_value<0>(), info);
-            else if(variant_index == 1)
-                std::tie(offset, extent) = util::parseTableSelection(data, tableSelection, fieldNamesOrIndices.get_value<1>(), info);
-            else
+            if(fields.has_indices()) {
+                std::tie(offset, extent) = util::parseTableSelection(data, tableSelection, fields.get_indices(), info);
+                readTableField(data, info, fields.get_indices(), offset, extent);
+            } else if(fields.has_names()) {
+                std::tie(offset, extent) = util::parseTableSelection(data, tableSelection, fields.get_names(), info);
+                readTableField(data, info, fields.get_names(), offset, extent);
+            } else
                 throw h5pp::runtime_error("No field names or indices have been specified");
-            readTableField(data, info, fieldNamesOrIndices, offset, extent);
         }
         template<typename DataType>
-        void readTableField(DataType &data, std::string_view tablePath, const NamesOrIndices &fieldNamesOrIndices) const {
+        void readTableField(DataType &data, std::string_view tablePath, const NamesOrIndices &fields) const {
             static_assert(not std::is_const_v<DataType>);
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
             static_assert(type::sfinae::has_resize_v<DataType>);
-            readTableField(data, tablePath, fieldNamesOrIndices, h5pp::TableSelection::ALL);
+            readTableField(data, tablePath, fields, h5pp::TableSelection::ALL);
         }
 
         template<typename DataType>
         [[nodiscard]] DataType
-            readTableField(std::string_view tablePath, const NamesOrIndices &fieldNamesOrIndices, TableSelection tableSelection) const {
+            readTableField(std::string_view tablePath, const NamesOrIndices &fields, TableSelection tableSelection) const {
             static_assert(not std::is_const_v<DataType>);
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
             if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
@@ -1414,15 +1411,15 @@ namespace h5pp {
             }
 
             DataType data;
-            readTableField(data, tablePath, fieldNamesOrIndices, tableSelection);
+            readTableField(data, tablePath, fields, tableSelection);
             return data;
         }
         template<typename DataType>
-        [[nodiscard]] DataType readTableField(std::string_view tablePath, const NamesOrIndices &fieldNamesOrIndices) const {
+        [[nodiscard]] DataType readTableField(std::string_view tablePath, const NamesOrIndices &fields) const {
             static_assert(not std::is_const_v<DataType>);
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
             static_assert(type::sfinae::has_resize_v<DataType>);
-            return readTableField<DataType>(tablePath, fieldNamesOrIndices, h5pp::TableSelection::ALL);
+            return readTableField<DataType>(tablePath, fields, h5pp::TableSelection::ALL);
         }
 
         template<typename DataType>
