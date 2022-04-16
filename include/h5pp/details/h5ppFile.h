@@ -1042,7 +1042,7 @@ namespace h5pp {
             static_assert(not std::is_const_v<DataType>);
             if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
                 options.assertWellDefined();
-                if(hdf5::checkIfAttrExists(openFileHandle(), options.linkPath.value(), options.attrName.value()))
+                if(attributeExists(options.linkPath.value(), options.attrName.value()))
                     return readAttribute<typename DataType::value_type>(options);
                 return std::nullopt;
             }
@@ -1058,7 +1058,7 @@ namespace h5pp {
                                              std::optional<hid::h5t> h5Type   = std::nullopt) const {
             static_assert(not std::is_const_v<DataType>);
             if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
-                if(hdf5::checkIfAttrExists(openFileHandle(), linkPath, attrName))
+                if(attributeExists(linkPath, attrName))
                     return readAttribute<typename DataType::value_type>(linkPath, attrName, dataDims, h5Type);
                 return std::nullopt;
             }
@@ -1067,7 +1067,7 @@ namespace h5pp {
             return data;
         }
 
-        [[nodiscard]] inline std::vector<std::string> getAttributeNames(std::string_view linkPath) const {
+        [[nodiscard]] std::vector<std::string> getAttributeNames(std::string_view linkPath) const {
             return h5pp::hdf5::getAttributeNames(openFileHandle(), linkPath, std::nullopt, plists.linkAccess);
         }
 
@@ -1308,6 +1308,11 @@ namespace h5pp {
         [[nodiscard]] DataType readTableRecords(std::string_view       tablePath,
                                                 std::optional<hsize_t> offset = std::nullopt,
                                                 std::optional<hsize_t> extent = std::nullopt) const {
+            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+                if(linkExists(tablePath)) return readTableRecords<typename DataType::value_type>(tablePath, offset, extent);
+                return std::nullopt;
+            }
+
             DataType data;
             readTableRecords(data, tablePath, offset, extent);
             return data;
@@ -1315,6 +1320,10 @@ namespace h5pp {
 
         template<typename DataType>
         [[nodiscard]] DataType readTableRecords(std::string_view tablePath, h5pp::TableSelection tableSelection) const {
+            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+                if(linkExists(tablePath)) return readTableRecords<typename DataType::value_type>(tablePath, tableSelection);
+                return std::nullopt;
+            }
             DataType data;
             readTableRecords(data, tablePath, tableSelection);
             return data;
@@ -1352,6 +1361,12 @@ namespace h5pp {
                                               const NamesOrIndices  &fieldNamesOrIndices,
                                               std::optional<hsize_t> offset = std::nullopt,
                                               std::optional<hsize_t> extent = std::nullopt) const {
+            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+                if(fieldExists(tablePath, fields))
+                    return readTableField<typename DataType::value_type>(tablePath, fields, offset, extent);
+                else
+                    return std::nullopt;
+            }
             DataType data;
             readTableField(data, tablePath, fieldNamesOrIndices, offset, extent);
             return data;
@@ -1391,6 +1406,13 @@ namespace h5pp {
             readTableField(std::string_view tablePath, const NamesOrIndices &fieldNamesOrIndices, TableSelection tableSelection) const {
             static_assert(not std::is_const_v<DataType>);
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
+            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+                if(fieldExists(tablePath, fields))
+                    return readTableField<typename DataType::value_type>(tablePath, fields, tableSelection);
+                else
+                    return std::nullopt;
+            }
+
             DataType data;
             readTableField(data, tablePath, fieldNamesOrIndices, tableSelection);
             return data;
