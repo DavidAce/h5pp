@@ -489,31 +489,77 @@ namespace h5pp {
     };
 
     /*!
+     * \brief Information about table fields
+     */
+    struct TableFieldInfo {
+        std::optional<size_t>                       recordBytes  = std::nullopt;
+        std::optional<hsize_t>                      numFields    = std::nullopt;
+        std::optional<std::vector<std::string>>     fieldNames   = std::nullopt;
+        std::optional<std::vector<size_t>>          fieldSizes   = std::nullopt;
+        std::optional<std::vector<size_t>>          fieldOffsets = std::nullopt;
+        std::optional<std::vector<hid::h5t>>        fieldTypes   = std::nullopt;
+        std::optional<std::vector<std::string>>     cppTypeName  = std::nullopt;
+        std::optional<std::vector<size_t>>          cppTypeSize  = std::nullopt;
+        std::optional<std::vector<std::type_index>> cppTypeIndex = std::nullopt;
+        /* clang-format off */
+        virtual void assertCreateReady() const{
+            std::string error_msg;
+            if(not numFields)    error_msg.append("\t numFields\n");
+            if(not recordBytes)  error_msg.append("\t recordBytes\n");
+            if(not fieldNames)   error_msg.append("\t fieldNames\n");
+            if(not fieldSizes)   error_msg.append("\t fieldSizes\n");
+            if(not fieldOffsets) error_msg.append("\t fieldOffsets\n");
+            if(not fieldTypes)   error_msg.append("\t fieldTypes\n");
+            if(not error_msg.empty())
+                throw h5pp::runtime_error("Cannot create new table: The following fields are not set:\n{}", error_msg);
+        }
+        virtual void assertReadReady() const {
+            std::string error_msg;
+            if(not numFields)    error_msg.append("\t numFields\n");
+            if(not recordBytes)  error_msg.append("\t recordBytes\n");
+            if(not fieldNames)   error_msg.append("\t fieldNames\n");
+            if(not fieldSizes)   error_msg.append("\t fieldSizes\n");
+            if(not fieldTypes)   error_msg.append("\t fieldTypes\n");
+            if(not fieldOffsets) error_msg.append("\t fieldOffsets\n");
+            if(not error_msg.empty()) throw h5pp::runtime_error("Cannot read from table: The following fields are not set:\n{}", error_msg);
+        }
+        virtual void assertWriteReady() const {
+            std::string error_msg;
+            if(not numFields)    error_msg.append("\t numFields\n");
+            if(not recordBytes)  error_msg.append("\t recordBytes\n");
+            if(not fieldSizes)   error_msg.append("\t fieldSizes\n");
+            if(not fieldOffsets) error_msg.append("\t fieldOffsets\n");
+            if(not error_msg.empty()) throw h5pp::runtime_error("Cannot write to table: The following fields are not set:\n{}", error_msg);
+        }
+
+        [[nodiscard]] virtual std::string string(bool enable = true) const {
+            if(not enable) return {};
+            std::string msg;
+            if(numFields)    msg.append(h5pp::format(" | fields [{}]", numFields.value()));
+            if(fieldSizes)   msg.append(h5pp::format(" | sizes [{}]", fieldSizes.value()));
+            if(fieldOffsets) msg.append(h5pp::format(" | offsets [{}]", fieldOffsets.value()));
+            return msg;
+        }
+        /* clang-format on */
+    };
+
+    /*!
      * \brief Information about tables
      */
-    struct TableInfo {
-        std::optional<hid::h5f>                     h5File         = std::nullopt;
-        std::optional<hid::h5d>                     h5Dset         = std::nullopt;
-        std::optional<hid::h5t>                     h5Type         = std::nullopt;
-        std::optional<hid::h5p>                     h5DsetCreate   = std::nullopt; // dataset creation property list
-        std::optional<hid::h5p>                     h5DsetAccess   = std::nullopt; // dataset access property list
-        std::optional<H5Z_filter_t>                 h5Filters      = std::nullopt;
-        std::optional<std::string>                  tableTitle     = std::nullopt;
-        std::optional<std::string>                  tablePath      = std::nullopt;
-        std::optional<std::string>                  tableGroupName = std::nullopt;
-        std::optional<hsize_t>                      numFields      = std::nullopt;
-        std::optional<hsize_t>                      numRecords     = std::nullopt;
-        std::optional<size_t>                       recordBytes    = std::nullopt;
-        OptDimsType                                 chunkDims      = std::nullopt;
-        std::optional<std::vector<std::string>>     fieldNames     = std::nullopt;
-        std::optional<std::vector<size_t>>          fieldSizes     = std::nullopt;
-        std::optional<std::vector<size_t>>          fieldOffsets   = std::nullopt;
-        std::optional<std::vector<hid::h5t>>        fieldTypes     = std::nullopt;
-        std::optional<bool>                         tableExists    = std::nullopt;
-        std::optional<int>                          compression    = std::nullopt;
-        std::optional<std::vector<std::string>>     cppTypeName    = std::nullopt;
-        std::optional<std::vector<size_t>>          cppTypeSize    = std::nullopt;
-        std::optional<std::vector<std::type_index>> cppTypeIndex   = std::nullopt;
+    struct TableInfo : public TableFieldInfo {
+        std::optional<hid::h5f>     h5File         = std::nullopt;
+        std::optional<hid::h5d>     h5Dset         = std::nullopt;
+        std::optional<hid::h5t>     h5Type         = std::nullopt;
+        std::optional<hid::h5p>     h5DsetCreate   = std::nullopt; // dataset creation property list
+        std::optional<hid::h5p>     h5DsetAccess   = std::nullopt; // dataset access property list
+        std::optional<H5Z_filter_t> h5Filters      = std::nullopt;
+        std::optional<std::string>  tableTitle     = std::nullopt;
+        std::optional<std::string>  tablePath      = std::nullopt;
+        std::optional<std::string>  tableGroupName = std::nullopt;
+        std::optional<hsize_t>      numRecords     = std::nullopt;
+        OptDimsType                 chunkDims      = std::nullopt;
+        std::optional<bool>         tableExists    = std::nullopt;
+        std::optional<int>          compression    = std::nullopt;
 
         [[nodiscard]] hid::h5f getLocId() const {
             if(h5File) return h5File.value();
@@ -525,42 +571,32 @@ namespace h5pp {
         [[nodiscard]] bool hasLocId() const { return h5File.has_value() or h5Dset.has_value(); }
 
         /* clang-format off */
-        void assertCreateReady() const {
+        void assertCreateReady() const override {
             std::string error_msg;
             if(not tableTitle)          error_msg.append("\t tableTitle\n");
             if(not tablePath)           error_msg.append("\t tablePath\n");
             if(not tableGroupName)      error_msg.append("\t tableGroupName\n");
-            if(not numFields)           error_msg.append("\t numFields\n");
             if(not numRecords)          error_msg.append("\t numRecords\n");
             if(not recordBytes)         error_msg.append("\t recordBytes\n");
-            if(not fieldNames)          error_msg.append("\t fieldNames\n");
-            if(not fieldSizes)          error_msg.append("\t fieldSizes\n");
-            if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
-            if(not fieldTypes)          error_msg.append("\t fieldTypes\n");
             if(not compression)         error_msg.append("\t compression\n");
             if(not chunkDims)           error_msg.append("\t chunkDims\n");
             if(not error_msg.empty()) throw h5pp::runtime_error("Cannot create new table: The following fields are not set:\n{}", error_msg);
             if(not hasLocId())        throw h5pp::runtime_error("Cannot create new table [{}]: The location ID is not set", tablePath.value());
+            TableFieldInfo::assertCreateReady();
         }
-        void assertReadReady() const {
+        void assertReadReady() const override {
             std::string error_msg;
             if(not h5Dset)              error_msg.append("\t h5Dset\n");
             if(not h5Type)              error_msg.append("\t h5Type\n");
             if(not tablePath)           error_msg.append("\t tablePath\n");
             if(not tableExists)         error_msg.append("\t tableExists\n");
-            if(not numFields)           error_msg.append("\t numFields\n");
             if(not numRecords)          error_msg.append("\t numRecords\n");
             if(not recordBytes)         error_msg.append("\t recordBytes\n");
-            if(not fieldNames)          error_msg.append("\t fieldNames\n");
-            if(not fieldSizes)          error_msg.append("\t fieldSizes\n");
-            if(not fieldTypes)          error_msg.append("\t fieldTypes\n");
-            if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
             if(not error_msg.empty()) throw h5pp::runtime_error("Cannot read from table: The following fields are not set:\n{}", error_msg);
             if(not tableExists.value()) throw h5pp::runtime_error("Cannot read from table [{}]: it may not exist", tablePath.value());
-
-//            if(not hasLocId()) throw h5pp::runtime_error("Cannot read from table [{}]: The location ID is not set", tablePath.value()));
+            TableFieldInfo::assertReadReady();
         }
-        void assertWriteReady() const {
+        void assertWriteReady() const override {
             std::string error_msg;
             if(not tablePath)           error_msg.append("\t tablePath\n");
             if(not h5Dset)              error_msg.append("\t h5Dset\n");
@@ -568,20 +604,16 @@ namespace h5pp {
             if(not h5DsetCreate)        error_msg.append("\t h5DsetCreate\n");
             if(not h5DsetAccess)        error_msg.append("\t h5DsetAccess\n");
             if(not tableExists)         error_msg.append("\t tableExists\n");
-            if(not numFields)           error_msg.append("\t numFields\n");
             if(not numRecords)          error_msg.append("\t numRecords\n");
             if(not recordBytes)         error_msg.append("\t recordBytes\n");
-            if(not fieldSizes)          error_msg.append("\t fieldSizes\n");
-            if(not fieldOffsets)        error_msg.append("\t fieldOffsets\n");
             if(not error_msg.empty()) throw h5pp::runtime_error("Cannot write to table: The following fields are not set:\n{}", error_msg);
             if(not tableExists.value()) throw h5pp::runtime_error("Cannot write to table [{}]: it may not exist", tablePath.value());
+            TableFieldInfo::assertWriteReady();
         }
-
-        [[nodiscard]] std::string string(bool enable = true) const {
+        [[nodiscard]] std::string string(bool enable = true) const override {
             if(not enable) return {};
             std::string msg;
-            if(tableTitle) msg.append(h5pp::format("Table title [{}]", tableTitle.value()));
-            if(numFields)  msg.append(h5pp::format(" | num fields [{}]", numFields.value()));
+            if(tableTitle) msg.append(h5pp::format(" | title [{}]", tableTitle.value()));
             if(numRecords) msg.append(h5pp::format(" | num records [{}]", numRecords.value()));
             if(chunkDims)  msg.append(h5pp::format(" | chunk dims [{}]", chunkDims.value()));
             if(tablePath)  msg.append(h5pp::format(" | path [{}]",tablePath.value()));
