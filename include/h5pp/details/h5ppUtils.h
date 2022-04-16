@@ -638,21 +638,21 @@ namespace h5pp::util {
         } else
 #endif // H5PP_USE_EIGEN3
             if constexpr(h5pp::type::sfinae::has_size_v<DataType> and h5pp::type::sfinae::has_resize_v<DataType>) {
-            if(newDims.size() > 1)
-                h5pp::logger::log->debug(
-                    "Given data container is 1-dimensional but the desired dimensions are {}. Resizing to fit all the data",
-                    newDims);
-            auto newSize = getSizeFromDimensions(newDims);
-            h5pp::logger::log->debug("Resizing 1d container {} -> {} of type [{}]",
-                                     std::initializer_list<size_t>{static_cast<size_t>(data.size())},
-                                     newDims,
-                                     h5pp::type::sfinae::type_name<DataType>());
-            data.resize(newSize);
-        } else if constexpr(std::is_scalar_v<DataType> or std::is_class_v<DataType>) {
-            return;
-        } else {
-            h5pp::logger::log->debug("Container could not be resized");
-        }
+                if(newDims.size() > 1)
+                    h5pp::logger::log->debug(
+                        "Given data container is 1-dimensional but the desired dimensions are {}. Resizing to fit all the data",
+                        newDims);
+                auto newSize = getSizeFromDimensions(newDims);
+                h5pp::logger::log->debug("Resizing 1d container {} -> {} of type [{}]",
+                                         std::initializer_list<size_t>{static_cast<size_t>(data.size())},
+                                         newDims,
+                                         h5pp::type::sfinae::type_name<DataType>());
+                data.resize(newSize);
+            } else if constexpr(std::is_scalar_v<DataType> or std::is_class_v<DataType>) {
+                return;
+            } else {
+                h5pp::logger::log->debug("Container could not be resized");
+            }
     }
 
     template<typename h5xa,

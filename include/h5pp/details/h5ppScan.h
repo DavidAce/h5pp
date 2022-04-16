@@ -732,33 +732,33 @@ namespace h5pp::scan {
         /* clang-format off */
         if(not info.tableTitle       ) info.tableTitle       = tableTitle;
         if(not info.h5Type           ) info.h5Type           = options.h5Type;
-        if(not info.numFields        ) info.numFields        = H5Tget_nmembers(info.h5Type.value());
         if(not info.numRecords       ) info.numRecords       = 0;
         if(not info.recordBytes      ) info.recordBytes      = H5Tget_size(info.h5Type.value());
         if(not info.compression      ) info.compression      = options.compression;
         if(not info.chunkDims        ) info.chunkDims        = options.dsetChunkDims;
+        if(not info.chunkDims        ) info.chunkDims        = h5pp::util::getChunkDimensions(info.recordBytes.value(), {1}, std::nullopt, H5D_layout_t::H5D_CHUNKED);
+        if(not info.compression      ) info.compression      = h5pp::hdf5::getValidCompressionLevel();
+        if(not info.numFields        ) info.numFields        = H5Tget_nmembers(info.h5Type.value());
 
-        if(not info.chunkDims)   info.chunkDims = h5pp::util::getChunkDimensions(info.recordBytes.value(), {1}, std::nullopt, H5D_layout_t::H5D_CHUNKED);
-        if(not info.compression) info.compression = h5pp::hdf5::getValidCompressionLevel();
-
+        size_t n_fields = info.numFields.value();
         if(not info.fieldTypes){
-            info.fieldTypes   = std::vector<h5pp::hid::h5t>(info.numFields.value());
-            for(unsigned int idx = 0; idx < info.fieldTypes->size(); idx++)
+            info.fieldTypes   = std::vector<h5pp::hid::h5t>(n_fields);
+            for(unsigned int idx = 0; idx < n_fields; idx++)
                 info.fieldTypes.value()[idx] = H5Tget_member_type(info.h5Type.value(), idx);
         }
         if(not info.fieldOffsets){
-            info.fieldOffsets = std::vector<size_t>(info.numFields.value());
-            for(unsigned int idx = 0; idx < info.fieldOffsets->size(); idx++)
+            info.fieldOffsets = std::vector<size_t>(n_fields);
+            for(unsigned int idx = 0; idx < n_fields; idx++)
                 info.fieldOffsets.value()[idx] = H5Tget_member_offset(info.h5Type.value(), idx);
         }
         if(not info.fieldSizes){
-            info.fieldSizes   = std::vector<size_t>(info.numFields.value());
-            for(unsigned int idx = 0; idx < info.fieldSizes->size(); idx++)
+            info.fieldSizes   = std::vector<size_t>(n_fields);
+            for(unsigned int idx = 0; idx < n_fields; idx++)
                 info.fieldSizes.value()[idx] = H5Tget_size(info.fieldTypes.value()[idx]);
         }
         if(not info.fieldNames){
-            info.fieldNames   = std::vector<std::string>(info.numFields.value());
-            for(unsigned int idx = 0; idx < info.fieldNames->size(); idx++){
+            info.fieldNames   = std::vector<std::string>(n_fields);
+            for(unsigned int idx = 0; idx < n_fields; idx++){
                 const char *name = H5Tget_member_name(info.h5Type.value(), idx);
                 info.fieldNames.value()[idx] = name;
                 H5free_memory((void *) name);
@@ -770,8 +770,8 @@ namespace h5pp::scan {
             info.cppTypeIndex = std::vector<std::type_index>();
             info.cppTypeName  = std::vector<std::string>();
             info.cppTypeSize  = std::vector<size_t>();
-            for(size_t idx = 0; idx < info.numFields.value(); idx++) {
-                auto cppInfo = h5pp::hdf5::getCppType(info.fieldTypes.value()[idx]);
+            for(const auto &ftype : info.fieldTypes.value()){
+                auto cppInfo = h5pp::hdf5::getCppType(ftype);
                 info.cppTypeIndex->emplace_back(std::get<0>(cppInfo));
                 info.cppTypeName->emplace_back(std::get<1>(cppInfo));
                 info.cppTypeSize->emplace_back(std::get<2>(cppInfo));

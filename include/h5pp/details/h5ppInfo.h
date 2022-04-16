@@ -243,8 +243,8 @@ namespace h5pp {
         }
         [[nodiscard]] bool hasLocId() const { return h5File.has_value() or h5Dset.has_value(); }
         void               assertCreateReady() const {
-            std::string error_msg;
-            /* clang-format off */
+                          std::string error_msg;
+                          /* clang-format off */
             if(not dsetPath               ) error_msg.append("\t dsetPath\n");
             if(not dsetExists             ) error_msg.append("\t dsetExists\n");
             if(not h5Type                 ) error_msg.append("\t h5Type\n");
