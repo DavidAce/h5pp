@@ -230,6 +230,9 @@ namespace h5pp::type::sfinae {
     inline constexpr bool is_hdf5_loc_id = is_any_v<T, hid::h5f, hid::h5g, hid::h5o, hid_t>;
 
     template<typename T>
+    inline constexpr bool is_hdf5_obj_id = is_any_v<T, hid::h5f, hid::h5g, hid::h5d, hid::h5o, hid_t>; // To call H5Iget_file_id
+
+    template<typename T>
     inline constexpr bool is_h5pp_link_id = is_any_v<T, hid::h5d, hid::h5g, hid::h5o>;
 
     template<typename T>

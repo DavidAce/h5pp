@@ -3315,7 +3315,7 @@ namespace h5pp::hdf5 {
                                                           std::optional<hid::h5t> h5Type     = std::nullopt,
                                                           const hid::h5p         &linkAccess = H5P_DEFAULT) {
         static_assert(type::sfinae::is_hdf5_obj_id<h5x>,
-                      "Template function [h5pp::hdf5::getTableFieldNames(const h5x & loc)] requires type h5x to be: "
+                      "Template function [h5pp::hdf5::getTableFieldInfo(const h5x & loc)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5d], [h5pp::hid::h5o] or [hid_t] "
                       "and tablePath should be an absolute path to the table");
         TableFieldInfo info;
