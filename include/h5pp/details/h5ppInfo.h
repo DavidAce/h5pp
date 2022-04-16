@@ -480,8 +480,7 @@ namespace h5pp {
             if(attrSize) msg.append(h5pp::format(" | size {}", attrSize.value()));
             if(attrByte) msg.append(h5pp::format(" | bytes {}", attrByte.value()));
             if(attrRank) msg.append(h5pp::format(" | rank {}", attrRank.value()));
-            if(attrDims and not attrDims->empty())
-                         msg.append(h5pp::format(" | dims {}", attrDims.value()));
+            if(attrDims) msg.append(h5pp::format(" | dims {}", attrDims.value()));
             if(attrName) msg.append(h5pp::format(" | name [{}]",attrName.value()));
             if(linkPath) msg.append(h5pp::format(" | link [{}]",linkPath.value()));
             return msg;
