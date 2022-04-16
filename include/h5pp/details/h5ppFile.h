@@ -1535,6 +1535,13 @@ namespace h5pp {
         [[nodiscard]] bool attributeExists(const h5x &link, std::string_view attrName) const {
             return h5pp::hdf5::checkIfAttrExists(link, attrName);
         }
+        [[nodiscard]] bool fieldExists(std::string_view tablePath, const NamesOrIndices &fields) const {
+            if(fields.has_indices())
+                return hdf5::checkIfTableFieldsExists(openFileHandle(), tablePath, fields.get_indices(), plists.linkAccess);
+            else if(fields.has_names())
+                return hdf5::checkIfTableFieldsExists(openFileHandle(), tablePath, fields.get_names(), plists.linkAccess);
+            return false;
+        }
 
         [[nodiscard]] std::vector<std::string> findLinks(std::string_view searchKey      = "",
                                                          std::string_view searchRoot     = "/",
