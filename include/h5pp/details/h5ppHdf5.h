@@ -3211,6 +3211,124 @@ namespace h5pp::hdf5 {
         h5pp::hdf5::writeTableRecords(data, tgtInfo, tgtOffset, srcExtent);
     }
 
+    template<typename T>
+    inline bool checkIfTableFieldsExists(const hid::h5t &h5Type, const std::vector<T> &fields) {
+        static_assert(std::is_integral_v<T> or h5pp::type::sfinae::is_text_v<T>);
+        return std::all_of(fields.begin(), fields.end(), [&h5Type](const auto &field) {
+            if constexpr(std::is_integral_v<T>) {
+                return H5Tget_member_class(h5Type, static_cast<unsigned int>(field)) >= 0;
+            } else if constexpr(h5pp::type::sfinae::is_text_v<T>) {
+                if constexpr(h5pp::type::sfinae::has_data_v<T>) return H5Tget_member_index(h5Type, field.data()) >= 0;
+                else return H5Tget_member_index(h5Type, field) >= 0;
+            }
+        });
+    }
+    template<typename T>
+    inline bool checkIfTableFieldsExists(const hid::h5d &h5Dset, const std::vector<T> &fields) {
+        hid::h5t h5Type = H5Dget_type(h5Dset);
+        return checkIfTableFieldsExists(h5Type, fields);
+    }
+    template<typename T>
+    inline bool checkIfTableFieldsExists(const hid::h5f       &h5File,
+                                         std::string_view      tablePath,
+                                         const std::vector<T> &fields,
+                                         const hid::h5p       &linkAccess = H5P_DEFAULT) {
+        auto exists = checkIfLinkExists(h5File, tablePath, linkAccess);
+        if(not exists) return false;
+        auto h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, exists, linkAccess);
+        return checkIfTableFieldsExists(h5Dset, fields);
+    }
+
+    template<typename InfoType>
+    inline void readTableFieldInfo(InfoType               &info,
+                                   const hid::h5f         &h5File,
+                                   std::string_view        tablePath,
+                                   std::optional<hid::h5d> h5Dset     = std::nullopt,
+                                   std::optional<hid::h5t> h5Type     = std::nullopt,
+                                   const hid::h5p         &linkAccess = H5P_DEFAULT) {
+        static_assert(h5pp::type::sfinae::is_any_v<InfoType, TableInfo, TableFieldInfo>);
+        if constexpr(std::is_same_v<InfoType, TableInfo>) {
+            if(info.h5Dset and not h5Dset) h5Dset = info.h5Dset;
+            if(info.h5Type and not h5Type) h5Type = info.h5Type;
+        }
+        if(not info.numFields) {
+            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, linkAccess);
+            if(not h5Type) h5Type = H5Dget_type(h5Dset.value());
+            auto nmembers = H5Tget_nmembers(h5Type.value());
+            if(nmembers < 0) throw h5pp::runtime_error("getTableFieldInfo: Failed to read nmembers on h5Type for table [{}]", tablePath);
+            info.numFields = static_cast<hsize_t>(nmembers);
+        }
+        if(not info.fieldTypes) {
+            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, linkAccess);
+            if(not h5Type) h5Type = H5Dget_type(h5Dset.value());
+            hsize_t n_fields = info.numFields.value();
+            info.fieldTypes  = std::vector<hid::h5t>(n_fields);
+            for(size_t i = 0; i < n_fields; i++) info.fieldTypes.value()[i] = H5Tget_member_type(h5Type.value(), static_cast<unsigned>(i));
+        }
+        if(not info.fieldSizes or not info.fieldOffsets or not info.fieldNames or not info.recordBytes) {
+            hsize_t n_fields   = info.numFields.value();
+            info.fieldSizes    = std::vector<size_t>(n_fields);
+            info.fieldOffsets  = std::vector<size_t>(n_fields);
+            info.fieldNames    = std::vector<std::string>(n_fields);
+            info.recordBytes   = 0;
+            char **field_names = new char *[n_fields];
+            for(size_t i = 0; i < n_fields; i++) field_names[i] = new char[255];
+
+            // Read the data
+            herr_t err = H5TBget_field_info(h5File,
+                                            util::safe_str(tablePath).c_str(),
+                                            field_names,
+                                            info.fieldSizes->data(),
+                                            info.fieldOffsets->data(),
+                                            &info.recordBytes.value());
+
+            if(err < 0) throw h5pp::runtime_error("getTableFieldInfo: Error {}. Failed to read field info for table [{}]", err, tablePath);
+
+            // Copy the the array of char arrays to a vector of strings
+            for(size_t i = 0; i < n_fields; i++) info.fieldNames.value()[i] = field_names[i];
+
+            // release array of char arrays
+            for(size_t i = 0; i < n_fields; i++) delete[] field_names[i];
+            delete[] field_names;
+        }
+        // Get c++ properties
+        if(info.fieldTypes and (not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)) {
+            info.cppTypeIndex = std::vector<std::type_index>();
+            info.cppTypeName  = std::vector<std::string>();
+            info.cppTypeSize  = std::vector<size_t>();
+            info.cppTypeIndex->reserve(info.fieldTypes->size());
+            info.cppTypeName->reserve(info.fieldTypes->size());
+            info.cppTypeSize->reserve(info.fieldTypes->size());
+            for(const auto &ftype : info.fieldTypes.value()) {
+                auto cppInfo = h5pp::hdf5::getCppType(ftype);
+                info.cppTypeIndex->emplace_back(std::get<0>(cppInfo));
+                info.cppTypeName->emplace_back(std::get<1>(cppInfo));
+                info.cppTypeSize->emplace_back(std::get<2>(cppInfo));
+            }
+        }
+    }
+
+    template<typename h5x>
+    [[nodiscard]] inline TableFieldInfo getTableFieldInfo(const h5x              &loc,
+                                                          std::string_view        tablePath,
+                                                          std::optional<hid::h5d> h5Dset     = std::nullopt,
+                                                          std::optional<hid::h5t> h5Type     = std::nullopt,
+                                                          const hid::h5p         &linkAccess = H5P_DEFAULT) {
+        static_assert(type::sfinae::is_hdf5_obj_id<h5x>,
+                      "Template function [h5pp::hdf5::getTableFieldNames(const h5x & loc)] requires type h5x to be: "
+                      "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5d], [h5pp::hid::h5o] or [hid_t] "
+                      "and tablePath should be an absolute path to the table");
+        TableFieldInfo info;
+        hid::h5f       h5File;
+        if constexpr(std::is_same_v<h5x, hid::h5f>)
+            h5File = loc;
+        else
+            h5File = H5Iget_file_id(loc);
+
+        readTableFieldInfo(info, h5File, tablePath, std::move(h5Dset), std::move(h5Type), linkAccess);
+        return info;
+    }
+
     template<typename DataType>
     inline void readTableField(DataType              &data,
                                const TableInfo       &info,
@@ -3328,11 +3446,11 @@ namespace h5pp::hdf5 {
     template<typename DataType>
     inline void readTableField(DataType                  &data,
                                const TableInfo           &info,
-                               const std::vector<size_t> &srcFieldIndices, // Field indices for the table on file
+                               const std::vector<size_t> &fieldIndices, // Field indices for the table on file
                                std::optional<hsize_t>     offset = std::nullopt,
                                std::optional<hsize_t>     extent = std::nullopt) {
         static_assert(not std::is_const_v<DataType>);
-        hid::h5t tgtTypeId = util::getFieldTypeId(info, srcFieldIndices);
+        hid::h5t tgtTypeId = util::getFieldTypeId(info, fieldIndices);
         readTableField(data, info, tgtTypeId, offset, extent);
     }
 

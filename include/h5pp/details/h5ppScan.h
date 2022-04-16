@@ -646,47 +646,11 @@ namespace h5pp::scan {
             if(dims.size() != 1) throw h5pp::logic_error("Tables can only have rank 1");
             info.numRecords = dims[0];
         }
-        if(not info.numFields) {
-            auto nmembers = H5Tget_nmembers(info.h5Type.value());
-            if(nmembers < 0) throw h5pp::runtime_error("Failed to read nmembers for h5Type on table [{}]", info.tablePath.value());
-            info.numFields = static_cast<hsize_t>(nmembers);
-        }
         if(not info.tableTitle) {
             char   table_title[255];
             herr_t err = H5TBAget_title(info.h5Dset.value(), table_title);
             if(err < 0) throw h5pp::runtime_error("Failed to read title for table [{}]", info.tablePath.value());
             info.tableTitle = table_title;
-        }
-
-        if(not info.fieldTypes) {
-            hsize_t               n_fields = info.numFields.value();
-            std::vector<hid::h5t> field_types(n_fields);
-            for(size_t i = 0; i < n_fields; i++) field_types[i] = H5Tget_member_type(info.h5Type.value(), static_cast<unsigned>(i));
-            info.fieldTypes = field_types;
-        }
-
-        if(not info.fieldSizes or not info.fieldOffsets or not info.recordBytes or not info.fieldNames) {
-            hsize_t                  n_fields = info.numFields.value();
-            std::vector<size_t>      field_sizes(n_fields);
-            std::vector<size_t>      field_offsets(n_fields);
-            std::vector<std::string> field_names_vec(n_fields);
-            size_t                   record_bytes;
-            char                   **field_names = new char *[n_fields];
-            for(size_t i = 0; i < n_fields; i++) field_names[i] = new char[255];
-
-            // Read the data
-            H5TBget_field_info(loc, info.tablePath->c_str(), field_names, field_sizes.data(), field_offsets.data(), &record_bytes);
-            for(size_t i = 0; i < n_fields; i++) field_names_vec[i] = field_names[i];
-
-            // release array of char arrays
-            for(size_t i = 0; i < n_fields; i++) delete[] field_names[i];
-            delete[] field_names;
-
-            // Copy the data
-            info.recordBytes  = record_bytes;
-            info.fieldSizes   = field_sizes;
-            info.fieldOffsets = field_offsets;
-            info.fieldNames   = field_names_vec;
         }
         if(not info.h5DsetCreate) info.h5DsetCreate = H5Dget_create_plist(info.h5Dset.value());
         if(not info.h5DsetAccess) info.h5DsetAccess = H5Dget_access_plist(info.h5Dset.value());
@@ -694,18 +658,7 @@ namespace h5pp::scan {
         if(not info.h5Filters) info.h5Filters = h5pp::hdf5::getFilters(info.h5DsetCreate.value());
         if(not info.compression) info.compression = h5pp::hdf5::getDeflateLevel(info.h5DsetCreate.value());
 
-        // Get c++ properties
-        if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize) {
-            info.cppTypeIndex = std::vector<std::type_index>();
-            info.cppTypeName  = std::vector<std::string>();
-            info.cppTypeSize  = std::vector<size_t>();
-            for(size_t idx = 0; idx < info.numFields.value(); idx++) {
-                auto cppInfo = h5pp::hdf5::getCppType(info.fieldTypes.value()[idx]);
-                info.cppTypeIndex->emplace_back(std::get<0>(cppInfo));
-                info.cppTypeName->emplace_back(std::get<1>(cppInfo));
-                info.cppTypeSize->emplace_back(std::get<2>(cppInfo));
-            }
-        }
+        hdf5::readTableFieldInfo(info, info.h5File.value(), info.tablePath.value(), info.h5Dset, info.h5Type, plists.linkAccess);
     }
 
     template<typename h5x>
