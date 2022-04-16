@@ -102,6 +102,8 @@ namespace h5pp {
             if(not indices.empty()) return 1;
             return -1;
         }
+        [[nodiscard]] bool has_names() const { return not names.empty(); }
+        [[nodiscard]] bool has_indices() const { return not indices.empty(); }
 
         template<auto N>
         [[nodiscard]] const auto &get_value() const {
@@ -110,5 +112,7 @@ namespace h5pp {
             else if constexpr(N == 1)
                 return indices;
         }
+        [[nodiscard]] const std::vector<size_t>      &get_indices() const { return indices; }
+        [[nodiscard]] const std::vector<std::string> &get_names() const { return names; }
     };
 }
