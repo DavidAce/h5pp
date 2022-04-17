@@ -1,5 +1,6 @@
 #pragma once
 #include "h5ppConstants.h"
+#include "h5ppEigen.h"
 #include "h5ppInfo.h"
 #include "h5ppOptional.h"
 #include "h5ppType.h"

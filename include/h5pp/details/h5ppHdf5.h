@@ -9,6 +9,7 @@
 #include "h5ppLogger.h"
 #include "h5ppPropertyLists.h"
 #include "h5ppTypeSfinae.h"
+#include "h5ppEigen.h"
 #include "h5ppUtils.h"
 #include <cstddef>
 #include <hdf5.h>
@@ -3218,8 +3219,10 @@ namespace h5pp::hdf5 {
             if constexpr(std::is_integral_v<T>) {
                 return H5Tget_member_class(h5Type, static_cast<unsigned int>(field)) >= 0;
             } else if constexpr(h5pp::type::sfinae::is_text_v<T>) {
-                if constexpr(h5pp::type::sfinae::has_data_v<T>) return H5Tget_member_index(h5Type, field.data()) >= 0;
-                else return H5Tget_member_index(h5Type, field) >= 0;
+                if constexpr(h5pp::type::sfinae::has_data_v<T>)
+                    return H5Tget_member_index(h5Type, field.data()) >= 0;
+                else
+                    return H5Tget_member_index(h5Type, field) >= 0;
             }
         });
     }
