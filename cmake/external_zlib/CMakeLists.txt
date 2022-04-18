@@ -32,8 +32,8 @@ include(ExternalProject)
 
 
 ExternalProject_Add(external_zlib
-        URL         https://github.com/madler/zlib/archive/refs/tags/v1.2.11.tar.gz
-        URL_MD5     0095d2d2d1f3442ce1318336637b695f
+        URL         https://github.com/madler/zlib/archive/refs/tags/v1.2.12.tar.gz
+        URL_MD5     db5b7326d4e0dbcbd1981b640d495c9b
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE

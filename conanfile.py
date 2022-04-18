@@ -15,7 +15,7 @@ class h5ppConan(ConanFile):
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake_find_package_multi"
-    requires = "hdf5/1.12.1"
+    requires = "hdf5/1.12.1", "zlib/1.2.12"
     build_policy    = "missing"
     scm = {
         "type": "git",
