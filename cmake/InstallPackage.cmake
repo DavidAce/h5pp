@@ -161,6 +161,8 @@ function(install_package pkg_name)
             set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
         endif()
         pkg_message(DEBUG "Looking for ${pkg_link_type_msg} library names ${PKG_LIBRARY_NAMES}")
+        unset(${pkg_find_name}_LIBRARY)
+        unset(${pkg_find_name}_LIBRARY CACHE)
         find_library(${pkg_find_name}_LIBRARY
                 NAMES ${PKG_LIBRARY_NAMES}
                 HINTS ${pkg_install_dir} ${${pkg_find_name}_ROOT} ${${pkg_name}_ROOT}
