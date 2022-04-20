@@ -48,8 +48,8 @@ high-level wrappers already that help the user experience, but as a matter of op
 * Read and write common C++ types in a single line of code.
 * No prior knowledge of HDF5 is required.
 * Meaningful logs and error messages.
-* Use HDF5 with modern, idiomatic, type-safe C++.
-* Simple options common tasks, e.g. for file access, storage layout, hyperslabs, chunking and compression.
+* Use HDF5 with modern, idiomatic, type-safe C++17.
+* Simple access to HDF5 features like chunking, hyperslabs and compression.
 * Simple installation with modular dependencies and opt-in automation.
 * Simple documentation (work in progress).
 
@@ -57,8 +57,6 @@ high-level wrappers already that help the user experience, but as a matter of op
 
 * Header-only C++17 template library.
 * High-level front-end to the C API of the HDF5 library.
-* CMake installation of `h5pp` and its dependencies (opt-in).
-* Multi-platform: Linux, Windows, OSX. (Developed under Linux).
 * Type support:
     * all numeric types: `(u)int#_t`, `float`, `double`, `long double`.
     * **`std::complex<>`** with any of the types above.
@@ -71,6 +69,8 @@ high-level wrappers already that help the user experience, but as a matter of op
     * Text types `std::string`, `char` arrays, and `std::vector<std::string>`.
     * Structs as HDF5 Compound types ([example](https://github.com/DavidAce/h5pp/blob/master/examples/example-04a-custom-struct-easy.cpp))
     * Structs as HDF5 Tables (with user-defined compound HDF5 types for entries)
+* Modern CMake installation of `h5pp` and its dependencies (opt-in).
+* Multi-platform: Linux, Windows, OSX. (Developed under Linux).
 
 ## Examples
 
