@@ -9,7 +9,6 @@ ExternalProject_Add(external_ghc_filesystem
         URL_MD5     a6dacafb1e89480518470802255bffae
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
-        BUILD_ALWAYS TRUE
         CMAKE_ARGS
             ${INIT_CACHE_ARG}
             -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
