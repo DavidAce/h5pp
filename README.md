@@ -17,9 +17,9 @@ mind, `h5pp` lets users store common C++ data types into portable binary [HDF5](
 
 [Documentation](https://h5pp.readthedocs.io)
 
-Go to [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart) to see install examples
+Go to [examples](https://github.com/DavidAce/h5pp/tree/master/examples) to learn how to use `h5pp`.
 
-Go to [examples](https://github.com/DavidAce/h5pp/tree/master/examples) to learn how to use `h5pp`
+Go to [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart) to see ways of installing `h5pp`.
 
 ---
 
@@ -37,7 +37,7 @@ Go to [examples](https://github.com/DavidAce/h5pp/tree/master/examples) to learn
 
 [HDF5](https://www.hdfgroup.org/) is a portable file format for storing large datasets efficiently. With
 official [low-level API's for C and Fortran](https://portal.hdfgroup.org/display/HDF5/Core+Library), wrappers for C++
-and Java and third-party bindings to Python, Julia, Matlab and many others, HDF5 is a great tool for manipulating data
+and Java and third-party bindings to Python, Julia, Matlab and many others, HDF5 is a great tool for handling data
 in a collaborative setting.
 
 Although well documented, the low-level C API is vast and using it directly can be challenging. There are many
@@ -94,7 +94,7 @@ functions `.writeDataset(...)` and `.readDataset(...)`.
     #include <h5pp/h5pp.h>
     int main() {
         h5pp::File file("somePath/someFile.h5", h5pp::FileAccess::READWRITE);    // Open (or create) a file
-        auto v = file.readDataset<std::vector<double>>("myStdVector");               // Read the dataset from file
+        auto v = file.readDataset<std::vector<double>>("myStdVector");           // Read the dataset from file
     }
 ```
 
