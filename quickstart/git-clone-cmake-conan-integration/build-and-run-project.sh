@@ -9,7 +9,6 @@
 # (or define CONAN_PREFIX=<...> as an environment variable)
 
 cmake -DCMAKE_BUILD_TYPE=Release \
-      -DBUILD_SHARED_LIBS=OFF \
       -S MyProject \
       -B MyProject-build
 
