@@ -11,12 +11,21 @@ class H5ppConan(ConanFile):
     description = "A C++17 wrapper for HDF5 with focus on simplicity"
     homepage = "https://github.com/DavidAce/h5pp"
     author = "DavidAce <aceituno@kth.se>"
-    topics = ("h5pp", "hdf5", "binary", "storage", "header-only", "c++17")
+    topics = ("h5pp", "hdf5", "binary", "storage", "header-only", "cpp17")
     url = "https://github.com/DavidAce/h5pp"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake_find_package_multi"
     no_copy_source = True
+
+    options = {
+        "with_eigen": [True, False],
+        "with_spdlog": [True, False],
+    }
+    default_options = {
+        "with_eigen": True,
+        "with_spdlog": True,
+    }
 
     @property
     def _source_subfolder(self):
@@ -36,9 +45,12 @@ class H5ppConan(ConanFile):
         self.copy("include/*", os.path.join(self._source_subfolder, "include"))
 
     def requirements(self):
-        self.requires("eigen/3.4.0")
         self.requires("hdf5/1.12.1")
-        self.requires("spdlog/1.10.0")
+        if self.options.with_eigen:
+            self.requires("eigen/3.4.0")
+        if self.options.with_spdlog:
+            self.requires("spdlog/1.10.0")
+
 
     def package_id(self):
         self.info.header_only()
@@ -62,21 +74,25 @@ class H5ppConan(ConanFile):
         self.cpp_info.set_property("cmake_file_name", "h5pp")
         self.cpp_info.set_property("cmake_target_name", "h5pp::h5pp")
         self.cpp_info.components["h5pp_headers"].set_property("cmake_target_name", "h5pp::headers")
-        self.cpp_info.components["h5pp_headers"].includedirs = ["include"]
-        self.cpp_info.components["h5pp_deps"].set_property("cmake_target_name", "h5pp::deps")
         self.cpp_info.components["h5pp_flags"].set_property("cmake_target_name", "h5pp::flags")
-        self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_EIGEN3")
-        self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_SPDLOG")
-        self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_FMT")
+        self.cpp_info.components["h5pp_deps"].set_property("cmake_target_name", "h5pp::deps")
+        self.cpp_info.components["h5pp_deps"].requires = ["hdf5::hdf5"]
 
-        self.cpp_info.components["h5pp_deps"].requires = ["eigen::eigen", "spdlog::spdlog", "hdf5::hdf5"]
-        self.cpp_info.components["h5pp_headers"].requires = ["h5pp_deps",  "h5pp_flags"]
+        if self.options.with_eigen:
+            self.cpp_info.components["h5pp_deps"].requires.append("eigen::eigen")
+            if tools.Version(self.version) >= "1.10.0":
+                self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_EIGEN3")
+        if self.options.with_spdlog:
+            self.cpp_info.components["h5pp_deps"].requires.append("spdlog::spdlog")
+            if tools.Version(self.version) >= "1.10.0":
+                self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_SPDLOG")
+                self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_FMT")
 
         if (self.settings.compiler == "gcc" and tools.Version(self.settings.compiler.version) < "9") or \
            (self.settings.compiler == "clang" and self.settings.compiler.get_safe("libcxx") in ["libstdc++", "libstdc++11"]):
             self.cpp_info.components["h5pp_flags"].system_libs = ["stdc++fs"]
         if is_msvc(self):
-            self.cpp_info.components["h5pp_flags"].defines = ["NOMINMAX"]
+            self.cpp_info.components["h5pp_flags"].defines.append("NOMINMAX")
             self.cpp_info.components["h5pp_flags"].cxxflags = ["/permissive-"]
 
         # TODO: to remove in conan v2 once cmake_find_package_* generators removed
