@@ -136,7 +136,7 @@ Install and configure [conan](https://conan.io), then run the following command 
 from [conan center](https://conan.io/center/h5pp):
 
 ```
-> conan install h5pp/1.10.0 --build=missing
+> conan install h5pp/1.10.0@ --build=missing
 ```
 
 ### Option 2: Install with CMake
