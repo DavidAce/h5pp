@@ -17,7 +17,7 @@ class H5ppConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake_find_package_multi"
     no_copy_source = True
-
+    short_paths = True
     options = {
         "with_eigen": [True, False],
         "with_spdlog": [True, False],
@@ -80,13 +80,11 @@ class H5ppConan(ConanFile):
 
         if self.options.with_eigen:
             self.cpp_info.components["h5pp_deps"].requires.append("eigen::eigen")
-            if tools.Version(self.version) >= "1.10.0":
-                self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_EIGEN3")
+            self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_EIGEN3")
         if self.options.with_spdlog:
             self.cpp_info.components["h5pp_deps"].requires.append("spdlog::spdlog")
-            if tools.Version(self.version) >= "1.10.0":
-                self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_SPDLOG")
-                self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_FMT")
+            self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_SPDLOG")
+            self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_FMT")
 
         if (self.settings.compiler == "gcc" and tools.Version(self.settings.compiler.version) < "9") or \
            (self.settings.compiler == "clang" and self.settings.compiler.get_safe("libcxx") in ["libstdc++", "libstdc++11"]):
