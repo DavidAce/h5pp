@@ -105,7 +105,7 @@ Find more code examples in the [examples directory](https://github.com/DavidAce/
 
 There are currently 3 ways to obtain `h5pp`:
 
-* From [conan-center](https://conan.io/center/h5pp/1.9.0).
+* From [conan-center](https://conan.io/center/h5pp).
 * From [GitHub](https://github.com/DavidAce/h5pp).
 * As a `.deb` package from [latest release](https://github.com/DavidAce/h5pp/releases) (Ubuntu/Debian only).
 
@@ -136,7 +136,7 @@ Install and configure [conan](https://conan.io), then run the following command 
 from [conan center](https://conan.io/center/h5pp):
 
 ```
-> conan install h5pp/1.9.0@ --build=missing
+> conan install h5pp/1.10.0 --build=missing
 ```
 
 ### Option 2: Install with CMake
