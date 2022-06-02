@@ -9,7 +9,6 @@ ExternalProject_Add(external_eigen3
         URL_MD5 4c527a9171d71a72a9d4186e65bea559
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
-        BUILD_ALWAYS TRUE
         CMAKE_ARGS
         ${INIT_CACHE_ARG}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>

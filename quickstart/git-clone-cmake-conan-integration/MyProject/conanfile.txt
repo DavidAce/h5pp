@@ -1,8 +1,5 @@
 [requires]
-h5pp/1.9.0@
+h5pp/1.10.0@
 
 [generators]
-cmake
-
-[options]
-*:shared=False
+CMakeDeps

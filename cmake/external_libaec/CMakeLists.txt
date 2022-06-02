@@ -30,7 +30,6 @@ ExternalProject_Add(external_aec
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         DEPENDS external_hdf5
-        BUILD_ALWAYS TRUE
         CMAKE_ARGS
         ${INIT_CACHE_ARG}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>

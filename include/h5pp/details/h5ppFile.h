@@ -1336,7 +1336,6 @@ namespace h5pp {
                             const NamesOrIndices  &fields,
                             std::optional<hsize_t> offset = std::nullopt,
                             std::optional<hsize_t> extent = std::nullopt) const {
-            auto variant_index = fields.index();
             if(fields.has_indices())
                 h5pp::hdf5::readTableField(data, info, fields.get_indices(), offset, extent);
             else if(fields.has_names())

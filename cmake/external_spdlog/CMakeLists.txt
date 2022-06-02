@@ -18,7 +18,6 @@ ExternalProject_Add(external_spdlog
         URL_MD5     effea813cd81cfb5588806c5754e14f1 #1.10.0
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
-        BUILD_ALWAYS TRUE
         CMAKE_ARGS
         ${INIT_CACHE_ARG}
         -DCMAKE_POLICY_DEFAULT_CMP0074=NEW

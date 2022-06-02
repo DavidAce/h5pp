@@ -20,15 +20,6 @@ foreach (test ${TESTS})
 endforeach ()
 
 
-add_custom_command(
-        TARGET h5pp-test-all
-        POST_BUILD
-        COMMENT "Running Tests"
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        DEPENDS h5pp deps flags
-        COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure)
-
-
 # Speed up compilation with precompiled headers
 if(H5PP_ENABLE_PCH)
     if(COMMAND target_precompile_headers)
