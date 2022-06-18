@@ -15,7 +15,7 @@ class H5ppConan(ConanFile):
     url = "https://github.com/DavidAce/h5pp"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake_find_package_multi"
+    generators = "CMakeDeps"
     no_copy_source = True
     short_paths = True
     options = {
