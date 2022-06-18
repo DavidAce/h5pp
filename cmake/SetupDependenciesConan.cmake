@@ -5,12 +5,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
     ### Install dependencies from conanfile.py                     ###
     ##################################################################
     unset(CONAN_COMMAND CACHE)
-    find_program (CONAN_COMMAND conan PATHS ${H5PP_CONAN_HINTS} PATH_SUFFIXES ${H5PP_CONAN_PATH_SUFFIXES})
-    if(NOT CONAN_COMMAND)
-        message(FATAL_ERROR "Could not find conan program executable : ${H5PP_CONAN_PATH_SUFFIXES}")
-    else()
-        message(STATUS "Found conan: ${CONAN_COMMAND}")
-    endif()
+    find_program (CONAN_COMMAND conan PATHS ${H5PP_CONAN_HINTS} PATH_SUFFIXES ${H5PP_CONAN_PATH_SUFFIXES} REQUIRED)
 
     # Download cmake-conan integrator
     if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan/conan.cmake")
