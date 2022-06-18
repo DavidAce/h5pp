@@ -1,4 +1,12 @@
 #Try to find or get all dependencies
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads)
+
+if (H5PP_ENABLE_MPI AND NOT WIN32)
+    find_package(MPI COMPONENTS C CXX REQUIRED)
+    target_link_libraries(deps INTERFACE MPI::MPI_CXX MPI::MPI_C)
+endif ()
+
 include(cmake/SetupStdFilesystem.cmake)
 include(cmake/SetupDependenciesFind.cmake)
 include(cmake/SetupDependenciesFetch.cmake)

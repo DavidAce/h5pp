@@ -53,49 +53,22 @@ if (NOT H5PP_PACKAGE_MANAGER IN_LIST H5PP_PACKAGE_MANAGERS_VALID)
     message(FATAL_ERROR "H5PP_PACKAGE_MANAGER must be one of ${H5PP_PACKAGE_MANAGERS_VALID}")
 endif ()
 
-
-
-# Setup paths that find_package should search and
-# let cmake find our Find<package>.cmake modules
+# Setup paths that find_package should search, or where to find the conan executable
 include(cmake/SetupPaths.cmake)
 
 # Print cmake build info options and host properties
 include(cmake/PrintBuildInfo.cmake)
 
-# Define main target and auxiliary for partial consumption
+# Check  #include<optional> or #include<experimental/optional>
+include(cmake/CheckCXXOptional.cmake)
+CheckCXXOptional()
+
+
+# Define main target and auxiliary targets for modular use
 add_library(h5pp INTERFACE)
 add_library(headers INTERFACE)
 add_library(deps INTERFACE)
 add_library(flags INTERFACE)
-
-
-
-########################## IMPORTANT #############################
-### Preempt Threads::Threads                                   ###
-### It's looked for in dependencies, so we make it right       ###
-### before it's done wrong, i.e. with pthread instead of       ###
-### -lpthread which causes link errors downstream with         ###
-###    -Wl,--whole-archive.... -Wl,--no-whole-archive          ###
-##################################################################
-### Read more about pthread segfault
-### https://stackoverflow.com/questions/35116327/when-g-static-link-pthread-cause-segmentation-fault-why
-set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-find_package(Threads)
-
-
-if (H5PP_ENABLE_MPI AND NOT WIN32)
-    find_package(MPI COMPONENTS C CXX REQUIRED)
-    target_link_libraries(deps INTERFACE MPI::MPI_CXX MPI::MPI_C)
-endif ()
-
-# On some HPC clusters Clang needs path to gnu gcc toolchain because it's not in path
-if (GCC_TOOLCHAIN AND ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    target_compile_options(flags INTERFACE --gcc-toolchain=${GCC_TOOLCHAIN})
-endif ()
-
-# Check  #include<optional> or #include<experimental/optional>
-include(cmake/CheckCXXOptional.cmake)
-CheckCXXOptional()
 
 # Required compiler features
 target_compile_features(flags INTERFACE cxx_std_17)
@@ -106,16 +79,14 @@ target_include_directories(headers INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_
 target_include_directories(headers SYSTEM INTERFACE $<INSTALL_INTERFACE:include>)
 
 
-#######################################
-# Settings for sanitizers           ###
-#######################################
+# Setup sanitizer
 if(H5PP_ENABLE_ASAN)
     target_compile_options(flags INTERFACE -fsanitize=address -fno-omit-frame-pointer)
     target_link_libraries(flags INTERFACE -fsanitize=address)
 endif()
 
 
-#Try to find or get all dependencies
+# Find or install all dependencies
 include(cmake/SetupDependencies.cmake)
 
 # Link all targets to one main h5pp target (the only one that users should need)
