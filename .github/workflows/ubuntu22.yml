@@ -1,4 +1,4 @@
-name: Ubuntu 18.04
+name: Ubuntu 22.04
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ on:
 jobs:
   ci:
     name: ${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
     strategy:
@@ -20,22 +20,24 @@ jobs:
           - { compiler: gcc,   linkage: static, manager: cmake }
           - { compiler: gcc,   linkage: static, manager: conan }
           - { compiler: gcc,   linkage: static, manager: fetch }
-          - { compiler: gcc,   linkage: static, manager: find-or-cmake }
+          - { compiler: gcc,   linkage: static, manager: cpm }
+          - { compiler: gcc,   linkage: static, manager: find  }
           - { compiler: gcc,   linkage: shared, manager: cmake }
           - { compiler: gcc,   linkage: shared, manager: conan }
           - { compiler: gcc,   linkage: shared, manager: fetch }
           - { compiler: gcc,   linkage: shared, manager: cpm }
-          - { compiler: gcc,   linkage: shared, manager: find-or-cmake }
+          - { compiler: gcc,   linkage: shared, manager: find  }
           - { compiler: clang, linkage: static, manager: cmake }
           - { compiler: clang, linkage: static, manager: conan }
           - { compiler: clang, linkage: static, manager: fetch }
           - { compiler: clang, linkage: static, manager: cpm }
-          - { compiler: clang, linkage: static, manager: find-or-cmake }
+          - { compiler: clang, linkage: static, manager: find }
           - { compiler: clang, linkage: shared, manager: cmake }
           - { compiler: clang, linkage: shared, manager: conan }
           - { compiler: clang, linkage: shared, manager: fetch }
           - { compiler: clang, linkage: shared, manager: cpm }
-          - { compiler: clang, linkage: shared, manager: find-or-cmake }
+          - { compiler: clang, linkage: shared, manager: find }
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
@@ -57,25 +59,24 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}
           max-size: 500M
 
-      - name: Setup gcc
+      - name: Setup gcc # compilers are already installed on the CI
         if: matrix.compiler == 'gcc'
         run: |
-          sudo apt-get install gcc-7 g++-7 gfortran -y
-          echo "FC=gfortran" >> $GITHUB_ENV
-          echo "CC=gcc-7"    >> $GITHUB_ENV
-          echo "CXX=g++-7"   >> $GITHUB_ENV
+          sudo apt-get install gcc-10 g++-10 gfortran -y
+          echo "FC=gfortran"  >> $GITHUB_ENV
+          echo "CC=gcc-10"    >> $GITHUB_ENV
+          echo "CXX=g++-10"   >> $GITHUB_ENV
 
       - name: Setup clang
-        if: matrix.compiler == 'clang'
+        if: matrix.compiler == 'clang' # compilers are already installed on the CI # sudo apt-get install libclang-10-dev gfortran -y
         run: |
-          sudo apt-get install clang-6.0 clang++-6.0 gfortran -y
-          echo "FC=gfortran"     >> $GITHUB_ENV
-          echo "CC=clang-6.0"    >> $GITHUB_ENV
-          echo "CXX=clang++-6.0" >> $GITHUB_ENV
+          echo "FC=gfortran"    >> $GITHUB_ENV
+          echo "CC=clang-10"    >> $GITHUB_ENV
+          echo "CXX=clang++-10" >> $GITHUB_ENV
 
       - name: Setup apt packages
         if: contains(matrix.manager,'find')
-        run: sudo apt install libhdf5-dev libspdlog-dev libeigen3-dev -y
+        run: sudo apt install libhdf5-dev libfmt-dev libspdlog-dev libeigen3-dev gcovr -y
 
       - name: Setup conan
         if: matrix.manager == 'conan'
@@ -96,11 +97,10 @@ jobs:
           -DCMAKE_C_COMPILER_LAUNCHER=ccache                          \
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                        \
           -DH5PP_ENABLE_EIGEN3:BOOL=ON                                \
-          -DH5PP_ENABLE_FMT:BOOL=OFF                                  \
           -DH5PP_ENABLE_SPDLOG:BOOL=ON                                \
           -DH5PP_ENABLE_ASAN:BOOL=ON                                  \
           -DH5PP_ENABLE_TESTS:BOOL=ON                                 \
-          -DH5PP_ENABLE_PCH:BOOL=OFF                                  \
+          -DH5PP_ENABLE_COVERAGE:BOOL=ON                              \
           -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
           -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
           -G "Unix Makefiles"                                         \
@@ -121,6 +121,16 @@ jobs:
         run: |
           cd build/Debug
           ctest -C Debug --output-on-failure -R h5pp
+
+      - name: Coverage
+        if: matrix.compiler == 'gcc' && matrix.linkage == 'static' && matrix.manager == 'find'
+        run: |
+          # Create lcov report
+          lcov --capture --directory build/Debug --output-file coverage.info
+          lcov --remove coverage.info '*/test-*' '/usr/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info # filter system-files
+          lcov --list coverage.info # debug info
+          # Upload report to CodeCov
+          bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
 
 
 
