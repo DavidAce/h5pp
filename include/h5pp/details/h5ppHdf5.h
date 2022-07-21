@@ -9,7 +9,6 @@
 #include "h5ppLogger.h"
 #include "h5ppPropertyLists.h"
 #include "h5ppTypeSfinae.h"
-#include "h5ppEigen.h"
 #include "h5ppUtils.h"
 #include <cstddef>
 #include <hdf5.h>
