@@ -268,8 +268,6 @@ namespace h5pp::util {
             return {getArraySize(data)};
         else if constexpr(std::is_arithmetic_v<DataType> or h5pp::type::sfinae::is_std_complex_v<DataType>)
             return {};
-        else if constexpr(std::is_pod_v<DataType>)
-            return {};
         else if constexpr(std::is_standard_layout_v<DataType>)
             return {};
         else if constexpr(std::is_class_v<DataType>) {
