@@ -149,9 +149,11 @@ function(install_package pkg_name)
     set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" CACHE INTERNAL "Paths for find_package lookup" FORCE)
 
 
-    # Try finding config files before modules
-    pkg_message(DEBUG "Prefer CONFIG mode ON")
-    set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
+    if(NOT PKG_MODULE)
+        # Try finding config files before modules
+        pkg_message(DEBUG "Prefer CONFIG mode ON")
+        set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
+    endif()
 
     if(PKG_LIBRARY_NAMES)
         # This attempts to find <PackageName>_LIBRARY with given names before calling find_package
