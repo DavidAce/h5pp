@@ -653,19 +653,24 @@ namespace h5pp {
     };
 
     struct LinkInfo {
-        std::optional<hid::h5f>       h5File     = std::nullopt;
-        std::optional<hid::h5o>       h5Link     = std::nullopt;
-        std::optional<std::string>    linkPath   = std::nullopt;
-        std::optional<bool>           linkExists = std::nullopt;
-        std::optional<H5O_hdr_info_t> h5HdrInfo  = std::nullopt; /*!< Information struct for object header metadata */
-        std::optional<hsize_t>        h5HdrByte  = std::nullopt; /*!< Total space for storing object header in file */
-        std::optional<H5O_type_t>     h5ObjType  = std::nullopt; /*!< Object type (dataset, group etc)              */
-        std::optional<unsigned>       refCount   = std::nullopt; /*!< Reference count of object                     */
-        std::optional<time_t>         atime      = std::nullopt; /*!< Access time                                   */
-        std::optional<time_t>         mtime      = std::nullopt; /*!< Modification time                             */
-        std::optional<time_t>         ctime      = std::nullopt; /*!< Change time                                   */
-        std::optional<time_t>         btime      = std::nullopt; /*!< Birth time                                    */
-        std::optional<hsize_t>        num_attrs  = std::nullopt; /*!< Number of attributes attached to object       */
+        std::optional<hid::h5f>       h5File       = std::nullopt;
+        std::optional<hid::h5o>       h5Link       = std::nullopt;
+        std::optional<std::string>    linkPath     = std::nullopt;
+        std::optional<bool>           linkExists   = std::nullopt;
+        std::optional<H5O_hdr_info_t> h5HdrInfo    = std::nullopt; /*!< Information struct for object header metadata */
+        std::optional<hsize_t>        h5HdrByte    = std::nullopt; /*!< Total space for storing object header in file */
+        std::optional<H5O_type_t>     h5ObjType    = std::nullopt; /*!< Object type (dataset, group etc)              */
+        std::optional<H5L_type_t>     h5LinkType   = std::nullopt; /*!< Link type (hard, soft, external)              */
+        std::optional<unsigned>       refCount     = std::nullopt; /*!< Reference count of object                     */
+        std::optional<time_t>         atime        = std::nullopt; /*!< Access time                                   */
+        std::optional<time_t>         mtime        = std::nullopt; /*!< Modification time                             */
+        std::optional<time_t>         ctime        = std::nullopt; /*!< Change time                                   */
+        std::optional<time_t>         btime        = std::nullopt; /*!< Birth time                                    */
+        std::optional<hsize_t>        num_attrs    = std::nullopt; /*!< Number of attributes attached to object       */
+        std::optional<int64_t>        corder       = std::nullopt; /*!< Link creation order position                  */
+        std::optional<hbool_t>        corder_valid = std::nullopt; /*!< Whether corder can assumed to be valid        */
+        std::optional<H5T_cset_t>     cset         = std::nullopt; /*!< Character set encoding for the linkPath       */
+
         [[nodiscard]] std::string     string(bool enable = true) const {
             if(not enable) return {};
             std::string msg;

@@ -760,14 +760,14 @@ namespace h5pp::scan {
             throw h5pp::runtime_error("Could not infer table info for new table [{}]: No table title given", info.tablePath.value());
     }
 
-    /*! \brief Populates an AttrInfo object with properties read from file */
+    /*! \brief Populates an LinkInfo object with properties read from file */
     template<typename h5x>
     inline void readLinkInfo(LinkInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5pp_loc_id<h5x>,
                       "Template function [h5pp::scan::readLinkInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
-        if(not options.linkPath and not info.linkPath) throw h5pp::runtime_error("Could not read attribute info: No link path was given");
+        if(not options.linkPath and not info.linkPath) throw h5pp::runtime_error("Could not read link info: No link path was given");
         if(not info.linkPath) info.linkPath = h5pp::util::safe_str(options.linkPath.value());
 
         h5pp::logger::log->debug("Scanning header of object [{}]", info.linkPath.value());
@@ -815,20 +815,28 @@ namespace h5pp::scan {
 #endif
         if(oerr != 0) throw h5pp::runtime_error("H5Oget_info returned error code {} when reading link {}", oerr, info.linkPath.value());
 
-        info.h5HdrInfo = hInfo;
-        info.h5HdrByte = hInfo.space.total;
-        info.h5ObjType = oInfo.type;
-        info.refCount  = oInfo.rc;
-        info.atime     = oInfo.atime;
-        info.mtime     = oInfo.mtime;
-        info.ctime     = oInfo.ctime;
-        info.btime     = oInfo.btime;
-        info.num_attrs = oInfo.num_attrs;
+        H5L_info_t lInfo;
+        herr_t     lerr = H5Lget_info(info.getLocId(), info.linkPath->c_str(), &lInfo, plists.linkAccess.value());
+        if(lerr != 0) throw h5pp::runtime_error("H5Lget_info returned error code {} when reading link {}", lerr, info.linkPath.value());
+
+        info.h5HdrInfo    = hInfo;
+        info.h5HdrByte    = hInfo.space.total;
+        info.h5ObjType    = oInfo.type;
+        info.refCount     = oInfo.rc;
+        info.atime        = oInfo.atime;
+        info.mtime        = oInfo.mtime;
+        info.ctime        = oInfo.ctime;
+        info.btime        = oInfo.btime;
+        info.num_attrs    = oInfo.num_attrs;
+        info.h5LinkType   = lInfo.type;
+        info.corder       = lInfo.corder;
+        info.corder_valid = lInfo.corder_valid;
+        info.cset         = lInfo.cset;
 
         h5pp::logger::log->trace("Scanned header metadata {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
     }
 
-    /*! \brief Creates and returns a populated AttrInfo object with properties read from file */
+    /*! \brief Creates and returns a populated LinkInfo object with properties read from file */
     template<typename h5x>
     [[nodiscard]] inline h5pp::LinkInfo
         readLinkInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
