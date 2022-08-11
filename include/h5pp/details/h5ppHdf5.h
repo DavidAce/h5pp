@@ -3144,15 +3144,15 @@ namespace h5pp::hdf5 {
         if(not H5Tequal_recurse(srcInfo.h5Type.value(), tgtInfo.h5Type.value()))
             throw h5pp::runtime_error("copyTableRecords: table type mismatch");
         if(srcInfo.recordBytes.value() != tgtInfo.recordBytes.value())
-            throw h5pp::runtime_error("copyTableRecords: table record byte size mismatch src {} != tgt {}",
+            throw h5pp::runtime_error("copyTableRecords: table record byte size mismatch \n src {} \n tgt {}",
                                       srcInfo.recordBytes.value(),
                                       tgtInfo.recordBytes.value());
         if(srcInfo.fieldSizes.value() != tgtInfo.fieldSizes.value())
-            throw h5pp::runtime_error("copyTableRecords: table field sizes mismatch src {} != tgt {}",
+            throw h5pp::runtime_error("copyTableRecords: table field sizes mismatch \n src {} \n tgt {}",
                                       srcInfo.fieldSizes.value(),
                                       tgtInfo.fieldSizes.value());
         if(srcInfo.fieldOffsets.value() != tgtInfo.fieldOffsets.value())
-            throw h5pp::runtime_error("copyTableRecords: table field offsets mismatch src {} != tgt {}",
+            throw h5pp::runtime_error("copyTableRecords: table field offsets mismatch \n src {} \n tgt {}",
                                       srcInfo.fieldOffsets.value(),
                                       tgtInfo.fieldOffsets.value());
 
