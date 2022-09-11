@@ -73,46 +73,46 @@ namespace h5pp::type::compound {
         }
     };
 
-    template<typename T, typename = std::enable_if_t<not std::is_same_v<T, std::false_type>>>
+    bool is_complex(const hid::h5t &h5type);
+    bool is_scalar2(const hid::h5t &h5type);
+    bool is_scalar3(const hid::h5t &h5type);
+
+    template<typename T>
     class H5T_COMPLEX {
         private:
         inline static hid::h5t complex_id;
-        inline static hid::h5t native_id;
+        inline static hid::h5t value_id;
         static constexpr char  fieldR[5] = "real";
         static constexpr char  fieldI[5] = "imag";
         static void            init() {
-            if(complex_id.valid() and native_id.valid()) return;
-            complex_id  = H5Tcreate(H5T_COMPOUND, sizeof(Complex<T>));
-            native_id   = h5pp::type::getH5NativeType<T>();
-            herr_t errr = H5Tinsert(complex_id, fieldR, HOFFSET(Complex<T>, real), native_id);
-            herr_t erri = H5Tinsert(complex_id, fieldI, HOFFSET(Complex<T>, imag), native_id);
-            if(errr < 0) throw h5pp::runtime_error("Failed to insert real field to complex type");
-            if(erri < 0) throw h5pp::runtime_error("Failed to insert imag field to complex type");
+            if(not value_id.valid()) value_id = h5pp::type::getH5NativeType<T>();
+            if(not complex_id.valid()) {
+                complex_id  = H5Tcreate(H5T_COMPOUND, sizeof(Complex<T>));
+                herr_t errr = H5Tinsert(complex_id, fieldR, HOFFSET(Complex<T>, real), value_id);
+                herr_t erri = H5Tinsert(complex_id, fieldI, HOFFSET(Complex<T>, imag), value_id);
+                if(errr < 0) throw h5pp::runtime_error("Failed to insert real field to complex type");
+                if(erri < 0) throw h5pp::runtime_error("Failed to insert imag field to complex type");
+            }
         }
 
         public:
         static hid::h5t &h5type() {
-            if(not complex_id.valid()) init();
-            if constexpr(std::is_same_v<T, float>) {
-                if(H5Tget_size(complex_id) != 8) throw h5pp::runtime_error("");
-            }
-            if constexpr(std::is_same_v<T, std::complex<float>>) { throw h5pp::runtime_error(""); }
+            init();
             return complex_id;
         }
-        static bool equal(const hid::h5t &other) {
-            if(H5Tequal(h5type(), other)) return true;
-            if(H5Tget_class(other) != H5T_class_t::H5T_COMPOUND) return false;
-            if(H5Tget_size(other) != H5Tget_size(h5type())) return false;
-            if(H5Tget_nmembers(other) != 2) return false;
-            if(not H5Tequal(native_id, hid::h5t(H5Tget_member_type(other, 0)))) return false;
-            if(not H5Tequal(native_id, hid::h5t(H5Tget_member_type(other, 1)))) return false;
-            auto field0 = H5Tget_member_name(other, 0);
-            auto field1 = H5Tget_member_name(other, 1);
-            bool matchR = std::string_view(fieldR) == std::string_view(field0);
-            bool matchI = std::string_view(fieldI) == std::string_view(field1);
-            H5free_memory(field0);
-            H5free_memory(field1);
-            return matchR and matchI;
+        static constexpr std::string_view get_fieldR_name() { return fieldR; }
+        static constexpr std::string_view get_fieldI_name() { return fieldI; }
+        static bool                       equal(const hid::h5t &other) {
+            // Try to compare without initializing complex_id
+            if(complex_id.valid() and H5Tequal(complex_id, other) == 1) return true;
+            if(H5Tget_size(other) != sizeof(Complex<T>)) return false;
+            if(not is_complex(other)) return false;
+            if(not value_id.valid()) value_id = h5pp::type::getH5NativeType<T>();
+            if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 0)))) return false;
+            if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 1)))) return false;
+            // The user seem to be using this type, so we initialize it to speed up later comparisons
+            init();
+            return true;
         }
         template<typename O>
         constexpr static bool equal() {
@@ -122,20 +122,22 @@ namespace h5pp::type::compound {
              operator hid::h5t() { return h5type(); }
     };
 
-    template<typename T, typename = std::enable_if_t<not std::is_same_v<T, std::false_type>>>
+    template<typename T>
     class H5T_SCALAR2 {
         private:
         inline static hid::h5t scalar2_id;
-        inline static hid::h5t native_id;
+        inline static hid::h5t value_id;
         static constexpr char  fieldX[2] = "x";
         static constexpr char  fieldY[2] = "y";
         static void            init() {
-            scalar2_id  = H5Tcreate(H5T_COMPOUND, sizeof(Scalar2<T>));
-            native_id   = h5pp::type::getH5NativeType<T>();
-            herr_t errx = H5Tinsert(scalar2_id, "x", HOFFSET(Scalar2<T>, x), native_id);
-            herr_t erry = H5Tinsert(scalar2_id, "y", HOFFSET(Scalar2<T>, y), native_id);
-            if(errx < 0) throw h5pp::runtime_error("Failed to insert x field to Scalar2 type");
-            if(erry < 0) throw h5pp::runtime_error("Failed to insert y field to Scalar2 type");
+            if(not value_id.valid()) value_id = h5pp::type::getH5NativeType<T>();
+            if(not scalar2_id.valid()) {
+                scalar2_id  = H5Tcreate(H5T_COMPOUND, sizeof(Scalar2<T>));
+                herr_t errx = H5Tinsert(scalar2_id, "x", HOFFSET(Scalar2<T>, x), value_id);
+                herr_t erry = H5Tinsert(scalar2_id, "y", HOFFSET(Scalar2<T>, y), value_id);
+                if(errx < 0) throw h5pp::runtime_error("Failed to insert x field to Scalar2 type");
+                if(erry < 0) throw h5pp::runtime_error("Failed to insert y field to Scalar2 type");
+            }
         }
 
         public:
@@ -143,20 +145,19 @@ namespace h5pp::type::compound {
             if(not scalar2_id.valid()) init();
             return scalar2_id;
         }
-        static bool equal(const hid::h5t &other) {
-            if(H5Tequal(h5type(), other)) return true;
-            if(H5Tget_class(other) != H5T_class_t::H5T_COMPOUND) return false;
-            if(H5Tget_size(other) != H5Tget_size(h5type())) return false;
-            if(H5Tget_nmembers(other) != 2) return false;
-            if(not H5Tequal(native_id, hid::h5t(H5Tget_member_type(other, 0)))) return false;
-            if(not H5Tequal(native_id, hid::h5t(H5Tget_member_type(other, 1)))) return false;
-            auto field0 = H5Tget_member_name(other, 0);
-            auto field1 = H5Tget_member_name(other, 1);
-            bool matchX = std::string_view(fieldX) == std::string_view(field0);
-            bool matchY = std::string_view(fieldY) == std::string_view(field1);
-            H5free_memory(field0);
-            H5free_memory(field1);
-            return matchX and matchY;
+        static constexpr std::string_view get_fieldX_name() { return fieldX; }
+        static constexpr std::string_view get_fieldY_name() { return fieldY; }
+        static bool                       equal(const hid::h5t &other) {
+            // Try to compare without initializing scalar2_id
+            if(scalar2_id.valid() and H5Tequal(scalar2_id, other) == 1) return true;
+            if(H5Tget_size(other) != sizeof(Scalar2<T>)) return false;
+            if(not is_scalar2(other)) return false;
+            if(not value_id.valid()) value_id = h5pp::type::getH5NativeType<T>();
+            if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 0)))) return false;
+            if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 1)))) return false;
+            // The user seem to be using this type, so we initialize it to speed up later comparisons
+            init();
+            return true;
         }
 
         template<typename O>
@@ -166,23 +167,25 @@ namespace h5pp::type::compound {
         bool operator==(const hid::h5t &other) { return equal(other); }
              operator hid::h5t() { return h5type(); }
     };
-    template<typename T, typename = std::enable_if_t<not std::is_same_v<T, std::false_type>>>
+    template<typename T>
     class H5T_SCALAR3 {
         private:
         inline static hid::h5t scalar3_id;
-        inline static hid::h5t native_id;
+        inline static hid::h5t value_id;
         static constexpr char  fieldX[2] = "x";
         static constexpr char  fieldY[2] = "y";
         static constexpr char  fieldZ[2] = "z";
         static void            init() {
-            scalar3_id  = H5Tcreate(H5T_COMPOUND, sizeof(Scalar3<T>));
-            native_id   = h5pp::type::getH5NativeType<T>();
-            herr_t errx = H5Tinsert(scalar3_id, "x", HOFFSET(Scalar3<T>, x), native_id);
-            herr_t erry = H5Tinsert(scalar3_id, "y", HOFFSET(Scalar3<T>, y), native_id);
-            herr_t errz = H5Tinsert(scalar3_id, "z", HOFFSET(Scalar3<T>, z), native_id);
-            if(errx < 0) throw h5pp::runtime_error("Failed to insert x field to Scalar3 type");
-            if(erry < 0) throw h5pp::runtime_error("Failed to insert y field to Scalar3 type");
-            if(errz < 0) throw h5pp::runtime_error("Failed to insert z field to Scalar3 type");
+            if(not value_id.valid()) value_id = h5pp::type::getH5NativeType<T>();
+            if(not scalar3_id.valid()) {
+                scalar3_id  = H5Tcreate(H5T_COMPOUND, sizeof(Scalar3<T>));
+                herr_t errx = H5Tinsert(scalar3_id, "x", HOFFSET(Scalar3<T>, x), value_id);
+                herr_t erry = H5Tinsert(scalar3_id, "y", HOFFSET(Scalar3<T>, y), value_id);
+                herr_t errz = H5Tinsert(scalar3_id, "z", HOFFSET(Scalar3<T>, z), value_id);
+                if(errx < 0) throw h5pp::runtime_error("Failed to insert x field to Scalar3 type");
+                if(erry < 0) throw h5pp::runtime_error("Failed to insert y field to Scalar3 type");
+                if(errz < 0) throw h5pp::runtime_error("Failed to insert z field to Scalar3 type");
+            }
         }
 
         public:
@@ -190,23 +193,21 @@ namespace h5pp::type::compound {
             if(not scalar3_id.valid()) init();
             return scalar3_id;
         }
-        static bool equal(const hid::h5t &other) {
-            if(H5Tequal(h5type(), other)) return true;
-            if(H5Tget_class(other) != H5T_class_t::H5T_COMPOUND) return false;
-            if(H5Tget_size(other) != H5Tget_size(h5type())) return false;
-            if(H5Tget_nmembers(other) != 3) return false;
-            if(not H5Tequal(native_id, hid::h5t(H5Tget_member_type(other, 0)))) return false;
-            if(not H5Tequal(native_id, hid::h5t(H5Tget_member_type(other, 1)))) return false;
-            auto field0 = H5Tget_member_name(other, 0);
-            auto field1 = H5Tget_member_name(other, 1);
-            auto field2 = H5Tget_member_name(other, 2);
-            bool matchX = std::string_view(fieldX) == std::string_view(field0);
-            bool matchY = std::string_view(fieldY) == std::string_view(field1);
-            bool matchZ = std::string_view(fieldZ) == std::string_view(field2);
-            H5free_memory(field0);
-            H5free_memory(field1);
-            H5free_memory(field2);
-            return matchX and matchY and matchZ;
+        static constexpr std::string_view get_fieldX_name() { return fieldX; }
+        static constexpr std::string_view get_fieldY_name() { return fieldY; }
+        static constexpr std::string_view get_fieldZ_name() { return fieldZ; }
+        static bool                       equal(const hid::h5t &other) {
+            // Try to compare without initializing scalar2_id
+            if(scalar3_id.valid() and H5Tequal(scalar3_id, other) == 1) return true;
+            if(H5Tget_size(other) != sizeof(Scalar3<T>)) return false;
+            if(not is_scalar3(other)) return false;
+            if(not value_id.valid()) value_id = h5pp::type::getH5NativeType<T>();
+            if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 0)))) return false;
+            if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 1)))) return false;
+            if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 2)))) return false;
+            // The user seem to be using this type, so we initialize it to speed up later comparisons
+            init();
+            return true;
         }
 
         template<typename O>
@@ -216,4 +217,64 @@ namespace h5pp::type::compound {
         bool operator==(const hid::h5t &other) { return equal(other); }
              operator hid::h5t() { return h5type(); }
     };
+
+    inline bool is_complex(const hid::h5t &h5type) {
+        if(H5Tget_class(h5type) != H5T_class_t::H5T_COMPOUND) return false;
+        if(H5Tget_nmembers(h5type) != 2) return false;
+        {
+            auto field = H5Tget_member_name(h5type, 0);
+            bool match = std::string_view(H5T_COMPLEX<void>::get_fieldR_name()) == std::string_view(field);
+            H5free_memory(field);
+            if(not match) return false;
+        }
+        {
+            auto field = H5Tget_member_name(h5type, 1);
+            bool match = std::string_view(H5T_COMPLEX<void>::get_fieldI_name()) == std::string_view(field);
+            H5free_memory(field);
+            if(not match) return false;
+        }
+        return true;
+    }
+
+    inline bool is_scalar2(const hid::h5t &h5type) {
+        if(H5Tget_class(h5type) != H5T_class_t::H5T_COMPOUND) return false;
+        if(H5Tget_nmembers(h5type) != 2) return false;
+        {
+            auto field = H5Tget_member_name(h5type, 0);
+            bool match = std::string_view(H5T_SCALAR2<void>::get_fieldX_name()) == std::string_view(field);
+            H5free_memory(field);
+            if(not match) return false;
+        }
+        {
+            auto field = H5Tget_member_name(h5type, 1);
+            bool match = std::string_view(H5T_SCALAR2<void>::get_fieldY_name()) == std::string_view(field);
+            H5free_memory(field);
+            if(not match) return false;
+        }
+        return true;
+    }
+
+    inline bool is_scalar3(const hid::h5t &h5type) {
+        if(H5Tget_class(h5type) != H5T_class_t::H5T_COMPOUND) return false;
+        if(H5Tget_nmembers(h5type) != 3) return false;
+        {
+            auto field = H5Tget_member_name(h5type, 0);
+            bool match = std::string_view(H5T_SCALAR3<void>::get_fieldX_name()) == std::string_view(field);
+            H5free_memory(field);
+            if(not match) return false;
+        }
+        {
+            auto field = H5Tget_member_name(h5type, 1);
+            bool match = std::string_view(H5T_SCALAR3<void>::get_fieldY_name()) == std::string_view(field);
+            H5free_memory(field);
+            if(not match) return false;
+        }
+        {
+            auto field = H5Tget_member_name(h5type, 2);
+            bool match = std::string_view(H5T_SCALAR3<void>::get_fieldZ_name()) == std::string_view(field);
+            H5free_memory(field);
+            if(not match) return false;
+        }
+        return true;
+    }
 }
