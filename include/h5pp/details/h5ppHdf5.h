@@ -1181,7 +1181,7 @@ namespace h5pp::hdf5 {
     }
 
     inline void
-        selectHyperslab(hid::h5s &space, const Hyperslab &hyperSlab, std::optional<H5S_seloper_t> select_op_override = std::nullopt) {
+        selectHyperslab(const hid::h5s &space, const Hyperslab &hyperSlab, std::optional<H5S_seloper_t> select_op_override = std::nullopt) {
         if(hyperSlab.empty()) return;
         hid_t h5space = space.value(); // We will be using this identifier a lot here
         int   rank    = H5Sget_simple_extent_ndims(h5space);
@@ -1393,7 +1393,7 @@ namespace h5pp::hdf5 {
         if(H5Dset_extent(dataset, dims.data()) < 0) throw h5pp::runtime_error("Failed to set extent on dataset");
     }
 
-    inline void setDatasetDims(h5pp::DsetInfo &info, const std::vector<hsize_t> &dims) {
+    inline void setDatasetDims(DsetInfo &info, const std::vector<hsize_t> &dims) {
         info.assertResizeReady();
         setDatasetDims(info.h5Dset.value(), dims);
         info.h5Space  = H5Dget_space(info.h5Space.value());
@@ -1936,7 +1936,7 @@ namespace h5pp::hdf5 {
         return contents;
     }
 
-    inline void createDataset(h5pp::DsetInfo &dsetInfo, const PropertyLists &plists = PropertyLists()) {
+    inline void createDataset(DsetInfo &dsetInfo, const PropertyLists &plists = PropertyLists()) {
         // Here we create, the dataset id and set its properties before writing data to it.
         dsetInfo.assertCreateReady();
         if(dsetInfo.dsetExists and dsetInfo.dsetExists.value()) {
@@ -2343,11 +2343,13 @@ namespace h5pp::hdf5 {
             return;
         }
 #endif
-        dsetInfo.assertWriteReady();
-        dataInfo.assertWriteReady();
         try {
+            dsetInfo.assertWriteReady();
+            dataInfo.assertWriteReady();
             h5pp::logger::log->trace("Writing from memory  {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
             h5pp::logger::log->trace("Writing into dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            if(dsetInfo.dsetSlab) selectHyperslab(dsetInfo.h5Space.value(), dsetInfo.dsetSlab.value());
+            if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
             h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
             h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
             h5pp::hdf5::assertSpacesEqual<DataType>(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
@@ -2383,8 +2385,8 @@ namespace h5pp::hdf5 {
 
     template<typename DataType, bool compile = h5pp::has_direct_chunk>
     void writeDataset_chunkwise([[maybe_unused]] const DataType            &data,
-                                [[maybe_unused]] h5pp::DataInfo            &dataInfo,
-                                [[maybe_unused]] h5pp::DsetInfo            &dsetInfo,
+                                [[maybe_unused]] DataInfo                  &dataInfo,
+                                [[maybe_unused]] DsetInfo                  &dsetInfo,
                                 [[maybe_unused]] const h5pp::PropertyLists &plists = PropertyLists()) {
         if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
             h5pp::logger::log->warn("writeDataset_chunkwise: text data is not supported, defaulting to normal writeDataset");
@@ -2465,18 +2467,17 @@ namespace h5pp::hdf5 {
             return;
         }
 #endif
-
-        dsetInfo.assertReadReady();
-        dataInfo.assertReadReady();
-        h5pp::logger::log->trace("Reading into memory  {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
-        h5pp::logger::log->trace("Reading from dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::trace)));
         try {
+            dsetInfo.assertReadReady();
+            dataInfo.assertReadReady();
+            h5pp::logger::log->trace("Reading into memory  {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            h5pp::logger::log->trace("Reading from dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            if(dsetInfo.dsetSlab) selectHyperslab(dsetInfo.h5Space.value(), dsetInfo.dsetSlab.value());
+            if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
             h5pp::hdf5::assertReadTypeIsLargeEnough<DataType>(dsetInfo.h5Type.value());
             h5pp::hdf5::assertReadSpaceIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
             h5pp::hdf5::assertSpacesEqual<DataType>(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
-        }
-
-        catch(const std::exception &ex) {
+        } catch(const std::exception &ex) {
             throw h5pp::runtime_error("Error reading dataset [{}]:\n{}", dsetInfo.dsetPath.value(), ex.what());
         }
         //        h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
@@ -2583,11 +2584,13 @@ namespace h5pp::hdf5 {
             return;
         }
 #endif
-        dataInfo.assertWriteReady();
-        attrInfo.assertWriteReady();
         try {
+            dataInfo.assertWriteReady();
+            attrInfo.assertWriteReady();
             h5pp::logger::log->trace("Writing from memory    {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
             h5pp::logger::log->trace("Writing into attribute {}", attrInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            if(attrInfo.attrSlab) selectHyperslab(attrInfo.h5Space.value(), attrInfo.attrSlab.value());
+            if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
             h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
             h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
             h5pp::hdf5::assertSpacesEqual<DataType>(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
@@ -2630,11 +2633,13 @@ namespace h5pp::hdf5 {
             return;
         }
 #endif
-        dataInfo.assertReadReady();
-        attrInfo.assertReadReady();
         try {
+            dataInfo.assertReadReady();
+            attrInfo.assertReadReady();
             h5pp::logger::log->trace("Reading into memory {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
             h5pp::logger::log->trace("Reading from file   {}", attrInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            if(attrInfo.attrSlab) selectHyperslab(attrInfo.h5Space.value(), attrInfo.attrSlab.value());
+            if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
             h5pp::hdf5::assertReadSpaceIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
             h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
             h5pp::hdf5::assertSpacesEqual<DataType>(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());

@@ -197,9 +197,11 @@ namespace h5pp {
             if(dataByte) msg.append(h5pp::format(" | bytes {}", dataByte.value()));
             if(dataRank) msg.append(h5pp::format(" | rank {}", dataRank.value()));
             if(dataDims) msg.append(h5pp::format(" | dims {}", dataDims.value()));
-            if (h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
+            if(h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
                 Hyperslab slab(h5Space.value());
                 msg.append(h5pp::format(" | [ Hyperslab {} ]", slab.string()));
+            }else if(dataSlab){
+                msg.append(h5pp::format(" | [ Hyperslab {} ]", dataSlab->string()));
             }
             if(cppTypeName) msg.append(h5pp::format(" | type [{}]", cppTypeName.value()));
             return msg;
@@ -243,8 +245,8 @@ namespace h5pp {
         }
         [[nodiscard]] bool hasLocId() const { return h5File.has_value() or h5Dset.has_value(); }
         void               assertCreateReady() const {
-                          std::string error_msg;
-                          /* clang-format off */
+            std::string error_msg;
+            /* clang-format off */
             if(not dsetPath               ) error_msg.append("\t dsetPath\n");
             if(not dsetExists             ) error_msg.append("\t dsetExists\n");
             if(not h5Type                 ) error_msg.append("\t h5Type\n");
@@ -359,9 +361,11 @@ namespace h5pp {
                 }
                 msg.append(h5pp::format(" | max dims {}", dsetDimsMaxPretty));
             }
-            if (h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
+            if(h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
                 Hyperslab slab(h5Space.value());
                 msg.append(h5pp::format(" | [ Hyperslab {} ]", slab.string()));
+            }else if(dsetSlab){
+                msg.append(h5pp::format(" | [ Hyperslab {} ]", dsetSlab->string()));
             }
             if(resizePolicy){
                 msg.append(" | resize mode ");
@@ -483,6 +487,12 @@ namespace h5pp {
             if(attrDims) msg.append(h5pp::format(" | dims {}", attrDims.value()));
             if(attrName) msg.append(h5pp::format(" | name [{}]",attrName.value()));
             if(linkPath) msg.append(h5pp::format(" | link [{}]",linkPath.value()));
+            if(h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
+                Hyperslab slab(h5Space.value());
+                msg.append(h5pp::format(" | [ Hyperslab {} ]", slab.string()));
+            }else if(attrSlab){
+                msg.append(h5pp::format(" | [ Hyperslab {} ]", attrSlab->string()));
+            }
             return msg;
             /* clang-format on */
         }
@@ -671,7 +681,7 @@ namespace h5pp {
         std::optional<hbool_t>        corder_valid = std::nullopt; /*!< Whether corder can assumed to be valid        */
         std::optional<H5T_cset_t>     cset         = std::nullopt; /*!< Character set encoding for the linkPath       */
 
-        [[nodiscard]] std::string     string(bool enable = true) const {
+        [[nodiscard]] std::string string(bool enable = true) const {
             if(not enable) return {};
             std::string msg;
             /* clang-format off */
