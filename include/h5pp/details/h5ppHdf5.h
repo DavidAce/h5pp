@@ -1584,16 +1584,36 @@ namespace h5pp::hdf5 {
     }
 
     inline void resizeDataset(DsetInfo &dsetInfo, const DataInfo &dataInfo) {
-        // We use this function when writing to a dataset on file.
-        // Then we RESIZE the dataset to FIT given data.
-        // If there is a hyperslab selection on given data, we only need to take that into account.
-        // The new dataset dimensions should be dataInfo.dataDims, unless dataInfo.dataSlab.extent exists, which has priority.
-        // Note that the final dataset size is then determined by dsetInfo.resizePolicy
-        dataInfo.assertWriteReady();
-        if(dataInfo.dataSlab and dataInfo.dataSlab->extent)
-            resizeDataset(dsetInfo, dataInfo.dataSlab->extent.value());
-        else
-            resizeDataset(dsetInfo, dataInfo.dataDims.value());
+        /*! Use this function before writing to a dataset on file.
+         * Requirements
+         *      - dsetInfo.resizePolicy == FIT | GROW
+         *      - dsetInfo.h5Layout == H5D_CHUNKED
+         * If the requirements are fullfilled, this function makes sure the dataset is large enough to receive data.
+         * This also takes hyperslabs into account:
+         *      - If there is a hyperslab in dataInfo, the new dimensions should be at least this big
+         *      - If there is a hyperslab in dsetInfo, the new dimensions should be increased to include it.
+         */
+        try {
+            dataInfo.assertWriteReady();
+            auto newDimensions = dataInfo.dataDims.value();
+            if(dataInfo.dataSlab and dataInfo.dataSlab->extent) {
+                if(dataInfo.dataDims->size() != dataInfo.dataSlab->extent->size())
+                    h5pp::runtime_error("rank mismatch: \n data dims {}\n data slab {}",
+                                        dataInfo.dataDims.value(),
+                                        dataInfo.dataSlab->string());
+                newDimensions = dataInfo.dataSlab->extent.value();
+            }
+            if(dsetInfo.dsetSlab and dsetInfo.dsetSlab->offset and dsetInfo.dsetSlab->extent) {
+                const auto &offset = dsetInfo.dsetSlab->offset.value();
+                const auto &extent = dsetInfo.dsetSlab->extent.value();
+                if(newDimensions.size() != offset.size() or newDimensions.size() != extent.size())
+                    h5pp::runtime_error("rank mismatch: \n data dims {}\n dset slab {}", newDimensions, dsetInfo.dsetSlab->string());
+                for(size_t idx = 0; idx < newDimensions.size(); idx++) {
+                    newDimensions[idx] = std::max(newDimensions[idx], offset[idx] + extent[idx]);
+                }
+            }
+            resizeDataset(dsetInfo, newDimensions);
+        } catch(const std::exception &e) { throw h5pp::runtime_error("Failed to resize dataset: {}", e.what()); }
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
