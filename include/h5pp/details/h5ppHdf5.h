@@ -766,135 +766,126 @@ namespace h5pp::hdf5 {
     [[nodiscard]] inline std::tuple<std::type_index, std::string, size_t> getCppType(const hid::h5t &type) {
         using namespace h5pp::type::compound;
         auto h5class = H5Tget_class(type);
-        auto h5size  = H5Tget_size(type);
-        auto h5bits  = h5size * 8;
+
         /* clang-format off */
         if(h5class == H5T_class_t::H5T_INTEGER){
-            if(h5bits == 8){
-                if(H5Tequal(type, H5T_NATIVE_INT8))          return getCppType<int8_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT8))         return getCppType<uint8_t>();
-                if(H5Tequal(type, H5T_NATIVE_INT_FAST8))     return getCppType<int_fast8_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT_FAST8))    return getCppType<uint_fast8_t>();
-            }else if(h5bits == 16){
-                if(H5Tequal(type, H5T_NATIVE_INT16))         return getCppType<int16_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT16))        return getCppType<uint16_t>();
-                if(H5Tequal(type, H5T_NATIVE_INT_FAST16))    return getCppType<int_fast16_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT_FAST16))   return getCppType<uint_fast16_t>();
-            }else if(h5bits == 32){
-                if(H5Tequal(type, H5T_NATIVE_INT32))         return getCppType<int32_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT32))        return getCppType<uint32_t>();
-                if(H5Tequal(type, H5T_NATIVE_INT_FAST32))    return getCppType<int_fast32_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT_FAST32))   return getCppType<uint_fast32_t>();
+            auto h5sign  = H5Tget_sign(type);
+            if(h5sign  == H5T_sign_t::H5T_SGN_ERROR) throw h5pp::runtime_error("H5Tget_sign() failed on integral type");
+            if(h5sign == H5T_sign_t::H5T_SGN_NONE){
+                if(H5Tequal(type, H5T_NATIVE_USHORT))   return getCppType<unsigned short>();
+                if(H5Tequal(type, H5T_NATIVE_UINT))     return getCppType<unsigned int>();
+                if(H5Tequal(type, H5T_NATIVE_ULONG))    return getCppType<unsigned long>();
+                if(H5Tequal(type, H5T_NATIVE_ULLONG))   return getCppType<unsigned long long>();
             }
-            else if(h5bits == 64){
-                if(H5Tequal(type, H5T_NATIVE_INT64))         return getCppType<int64_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT64))        return getCppType<uint64_t>();
-                if(H5Tequal(type, H5T_NATIVE_INT_FAST64))    return getCppType<int_fast64_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT_FAST64))   return getCppType<uint_fast64_t>();
-            }else{
-                if(H5Tequal(type, H5T_NATIVE_SHORT))         return getCppType<short>();
-                if(H5Tequal(type, H5T_NATIVE_INT))           return getCppType<int>();
-                if(H5Tequal(type, H5T_NATIVE_LONG))          return getCppType<long>();
-                if(H5Tequal(type, H5T_NATIVE_LLONG))         return getCppType<long long>();
-                if(H5Tequal(type, H5T_NATIVE_USHORT))        return getCppType<unsigned short>();
-                if(H5Tequal(type, H5T_NATIVE_UINT))          return getCppType<unsigned int>();
-                if(H5Tequal(type, H5T_NATIVE_ULONG))         return getCppType<unsigned long>();
-                if(H5Tequal(type, H5T_NATIVE_ULLONG))        return getCppType<unsigned long long >();
+            else if(h5sign == H5T_sign_t::H5T_SGN_2){
+               if(H5Tequal(type, H5T_NATIVE_SHORT))   return getCppType<short>();
+               if(H5Tequal(type, H5T_NATIVE_INT))     return getCppType<int>();
+               if(H5Tequal(type, H5T_NATIVE_LONG))    return getCppType<long>();
+               if(H5Tequal(type, H5T_NATIVE_LLONG))   return getCppType<long long>();
             }
         }else if (h5class == H5T_class_t::H5T_FLOAT){
+            if(H5Tequal(type, H5T_NATIVE_FLOAT))            return getCppType<float>();
             if(H5Tequal(type, H5T_NATIVE_DOUBLE))           return getCppType<double>();
             if(H5Tequal(type, H5T_NATIVE_LDOUBLE))          return getCppType<long double>();
-            if(H5Tequal(type, H5T_NATIVE_FLOAT))            return getCppType<float>();
         }else if  (h5class == H5T_class_t::H5T_STRING){
             if(H5Tequal(type, H5T_NATIVE_CHAR))             return getCppType<char>();
             if(H5Tequal_recurse(type, H5Tcopy(H5T_C_S1)))   return getCppType<std::string>();
             if(H5Tequal(type, H5T_NATIVE_SCHAR))            return getCppType<signed char>();
             if(H5Tequal(type, H5T_NATIVE_UCHAR))            return getCppType<unsigned char>();
         }else if (h5class == H5T_COMPOUND){
-            auto nmembers = H5Tget_nmembers(type);
-            if(nmembers < 0)
-                throw h5pp::runtime_error("Failed to read nmembers for type");
+            if(is_complex(type)){
+                auto h5mtype = H5Tget_member_type(type,0);
+                auto h5mclass = H5Tget_class(h5mtype);
+                if(h5mclass == H5T_class_t::H5T_FLOAT){
+                    if (H5T_COMPLEX<float>::equal(type))            return getCppType<std::complex<float>>();
+                    if (H5T_COMPLEX<double>::equal(type))           return getCppType<std::complex<double>>();
+                    if (H5T_COMPLEX<long double>::equal(type))      return getCppType<std::complex<long double>>();
+                }
+                if(h5mclass == H5T_class_t::H5T_INTEGER){
+                    auto h5msign  = H5Tget_sign(h5mtype);
+                    if(h5msign  == H5T_sign_t::H5T_SGN_ERROR) throw h5pp::runtime_error("H5Tget_sign() failed on integral type");
+                    if(h5msign == H5T_sign_t::H5T_SGN_NONE){
+                        if (H5T_COMPLEX<unsigned short>::equal(type))       return getCppType<std::complex<unsigned short>>();
+                        if (H5T_COMPLEX<unsigned int>::equal(type))         return getCppType<std::complex<unsigned int>>();
+                        if (H5T_COMPLEX<unsigned long>::equal(type))        return getCppType<std::complex<unsigned long>>();
+                        if (H5T_COMPLEX<unsigned long long>::equal(type))   return getCppType<std::complex<unsigned long long>>();
+                    }
+                    if(h5msign == H5T_sign_t::H5T_SGN_2){
+                        if (H5T_COMPLEX<short>::equal(type))       return getCppType<std::complex<short>>();
+                        if (H5T_COMPLEX<int>::equal(type))         return getCppType<std::complex<int>>();
+                        if (H5T_COMPLEX<long>::equal(type))        return getCppType<std::complex<long>>();
+                        if (H5T_COMPLEX<long long>::equal(type))   return getCppType<std::complex<long long>>();
+                    }
+                }
+            }
+            if(is_scalar2(type)){
+                auto h5mtype = H5Tget_member_type(type,0);
+                auto h5mclass = H5Tget_class(h5mtype);
+                if(h5mclass == H5T_class_t::H5T_FLOAT){
+                    if (H5T_SCALAR2<float>::equal(type))            return getCppType<h5pp::type::compound::Scalar2<float>>();
+                    if (H5T_SCALAR2<double>::equal(type))           return getCppType<h5pp::type::compound::Scalar2<double>>();
+                    if (H5T_SCALAR2<long double>::equal(type))      return getCppType<h5pp::type::compound::Scalar2<long double>>();
+                }
+                if(h5mclass == H5T_class_t::H5T_INTEGER){
+                    auto h5msign  = H5Tget_sign(h5mtype);
+                    if(h5msign  == H5T_sign_t::H5T_SGN_ERROR) throw h5pp::runtime_error("H5Tget_sign() failed on integral type");
+                    if(h5msign == H5T_sign_t::H5T_SGN_NONE){
+                        if (H5T_SCALAR2<unsigned short>::equal(type))       return getCppType<h5pp::type::compound::Scalar2<unsigned short>>();
+                        if (H5T_SCALAR2<unsigned int>::equal(type))         return getCppType<h5pp::type::compound::Scalar2<unsigned int>>();
+                        if (H5T_SCALAR2<unsigned long>::equal(type))        return getCppType<h5pp::type::compound::Scalar2<unsigned long>>();
+                        if (H5T_SCALAR2<unsigned long long>::equal(type))   return getCppType<h5pp::type::compound::Scalar2<unsigned long long>>();
+                    }
+                    if(h5msign == H5T_sign_t::H5T_SGN_2){
+                        if (H5T_SCALAR2<short>::equal(type))       return getCppType<h5pp::type::compound::Scalar2<short>>();
+                        if (H5T_SCALAR2<int>::equal(type))         return getCppType<h5pp::type::compound::Scalar2<int>>();
+                        if (H5T_SCALAR2<long>::equal(type))        return getCppType<h5pp::type::compound::Scalar2<long>>();
+                        if (H5T_SCALAR2<long long>::equal(type))   return getCppType<h5pp::type::compound::Scalar2<long long>>();
+                    }
+                }
+            }
+            if(is_scalar3(type)){
+                auto h5mtype = H5Tget_member_type(type,0);
+                auto h5mclass = H5Tget_class(h5mtype);
+                if(h5mclass == H5T_class_t::H5T_FLOAT){
+                    if (H5T_SCALAR3<float>::equal(type))            return getCppType<h5pp::type::compound::Scalar3<float>>();
+                    if (H5T_SCALAR3<double>::equal(type))           return getCppType<h5pp::type::compound::Scalar3<double>>();
+                    if (H5T_SCALAR3<long double>::equal(type))      return getCppType<h5pp::type::compound::Scalar3<long double>>();
+                }
+                if(h5mclass == H5T_class_t::H5T_INTEGER){
+                    auto h5msign  = H5Tget_sign(h5mtype);
+                    if(h5msign  == H5T_sign_t::H5T_SGN_ERROR) throw h5pp::runtime_error("H5Tget_sign() failed on integral type");
+                    if(h5msign == H5T_sign_t::H5T_SGN_NONE){
+                        if (H5T_SCALAR3<unsigned short>::equal(type))       return getCppType<h5pp::type::compound::Scalar3<unsigned short>>();
+                        if (H5T_SCALAR3<unsigned int>::equal(type))         return getCppType<h5pp::type::compound::Scalar3<unsigned int>>();
+                        if (H5T_SCALAR3<unsigned long>::equal(type))        return getCppType<h5pp::type::compound::Scalar3<unsigned long>>();
+                        if (H5T_SCALAR3<unsigned long long>::equal(type))   return getCppType<h5pp::type::compound::Scalar3<unsigned long long>>();
+                    }
+                    if(h5msign == H5T_sign_t::H5T_SGN_2){
+                        if (H5T_SCALAR3<short>::equal(type))       return getCppType<h5pp::type::compound::Scalar3<short>>();
+                        if (H5T_SCALAR3<int>::equal(type))         return getCppType<h5pp::type::compound::Scalar3<int>>();
+                        if (H5T_SCALAR3<long>::equal(type))        return getCppType<h5pp::type::compound::Scalar3<long>>();
+                        if (H5T_SCALAR3<long long>::equal(type))   return getCppType<h5pp::type::compound::Scalar3<long long>>();
+                    }
+                }
+            }
+
+            // type is some other compound type.
+            auto h5size  = H5Tget_size(type);
+            auto h5type = H5Tget_native_type(type, H5T_direction_t::H5T_DIR_DEFAULT); // Unrolls nested compound types
+
+            auto nmembers = H5Tget_nmembers(h5type);
             auto nmembers_ul = static_cast<size_t>(nmembers);
-            if(h5bits == 8ul*nmembers_ul){
-                if (H5T_COMPLEX<int8_t>::equal(type))           return getCppType<std::complex<int8_t>>();
-                if (H5T_COMPLEX<uint8_t>::equal(type))          return getCppType<std::complex<uint8_t>>();
-                if (H5T_COMPLEX<int_fast8_t>::equal(type))      return getCppType<std::complex<int_fast8_t>>();
-                if (H5T_COMPLEX<uint_fast8_t>::equal(type))     return getCppType<std::complex<uint_fast8_t>>();
 
-                if (H5T_SCALAR2<int8_t>::equal(type))           return getCppType<h5pp::type::compound::Scalar2<int8_t>>();
-                if (H5T_SCALAR2<uint8_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar2<uint8_t>>();
-                if (H5T_SCALAR2<int_fast8_t>::equal(type))      return getCppType<h5pp::type::compound::Scalar2<int_fast8_t>>();
-                if (H5T_SCALAR2<uint_fast8_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar2<uint_fast8_t>>();
-
-                if (H5T_SCALAR3<int8_t>::equal(type))           return getCppType<h5pp::type::compound::Scalar3<int8_t>>();
-                if (H5T_SCALAR3<uint8_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar3<uint8_t>>();
-                if (H5T_SCALAR3<int_fast8_t>::equal(type))      return getCppType<h5pp::type::compound::Scalar3<int_fast8_t>>();
-                if (H5T_SCALAR3<uint_fast8_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar3<uint_fast8_t>>();
-
+            std::vector<std::string> cpptypenames(nmembers_ul);
+            for(size_t idx = 0; idx < nmembers_ul; idx++ ){
+                auto cpptype = getCppType(H5Tget_member_type(h5type, idx));
+                cpptypenames[idx] = std::get<1>(cpptype);
             }
-            else if(h5bits == 16ul*nmembers_ul){
-                if (H5T_COMPLEX<int16_t>::equal(type))          return getCppType<std::complex<int16_t>>();
-                if (H5T_COMPLEX<uint16_t>::equal(type))         return getCppType<std::complex<uint16_t>>();
-                if (H5T_COMPLEX<int_fast16_t>::equal(type))     return getCppType<std::complex<int_fast16_t>>();
-                if (H5T_COMPLEX<uint_fast16_t>::equal(type))    return getCppType<std::complex<uint_fast16_t>>();
-
-                if (H5T_SCALAR2<int16_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar2<int16_t>>();
-                if (H5T_SCALAR2<uint16_t>::equal(type))         return getCppType<h5pp::type::compound::Scalar2<uint16_t>>();
-                if (H5T_SCALAR2<int_fast16_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar2<int_fast16_t>>();
-                if (H5T_SCALAR2<uint_fast16_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar2<uint_fast16_t>>();
-
-                if (H5T_SCALAR3<int16_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar3<int16_t>>();
-                if (H5T_SCALAR3<uint16_t>::equal(type))         return getCppType<h5pp::type::compound::Scalar3<uint16_t>>();
-                if (H5T_SCALAR3<int_fast16_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar3<int_fast16_t>>();
-                if (H5T_SCALAR3<uint_fast16_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar3<uint_fast16_t>>();
-
-            }
-            else if(h5bits == 32ul*nmembers_ul){
-                if (H5T_COMPLEX<int32_t>::equal(type))          return getCppType<std::complex<int32_t>>();
-                if (H5T_COMPLEX<uint32_t>::equal(type))         return getCppType<std::complex<uint32_t>>();
-                if (H5T_COMPLEX<int_fast32_t>::equal(type))     return getCppType<std::complex<int_fast32_t>>();
-                if (H5T_COMPLEX<uint_fast32_t>::equal(type))    return getCppType<std::complex<uint_fast32_t>>();
-
-                if (H5T_SCALAR2<int32_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar2<int32_t>>();
-                if (H5T_SCALAR2<uint32_t>::equal(type))         return getCppType<h5pp::type::compound::Scalar2<uint32_t>>();
-                if (H5T_SCALAR2<int_fast32_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar2<int_fast32_t>>();
-                if (H5T_SCALAR2<uint_fast32_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar2<uint_fast32_t>>();
-
-                if (H5T_SCALAR3<int32_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar3<int32_t>>();
-                if (H5T_SCALAR3<uint32_t>::equal(type))         return getCppType<h5pp::type::compound::Scalar3<uint32_t>>();
-                if (H5T_SCALAR3<int_fast32_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar3<int_fast32_t>>();
-                if (H5T_SCALAR3<uint_fast32_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar3<uint_fast32_t>>();
-
-            }
-            else if(h5bits == 64ul*nmembers_ul){
-                if (H5T_COMPLEX<int64_t>::equal(type))          return getCppType<std::complex<int64_t>>();
-                if (H5T_COMPLEX<uint64_t>::equal(type))         return getCppType<std::complex<uint64_t>>();
-                if (H5T_COMPLEX<int_fast64_t>::equal(type))     return getCppType<std::complex<int_fast64_t>>();
-                if (H5T_COMPLEX<uint_fast64_t>::equal(type))    return getCppType<std::complex<uint_fast64_t>>();
-                if (H5T_SCALAR2<int64_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar2<int64_t>>();
-                if (H5T_SCALAR2<uint64_t>::equal(type))         return getCppType<h5pp::type::compound::Scalar2<uint64_t>>();
-                if (H5T_SCALAR2<int_fast64_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar2<int_fast64_t>>();
-                if (H5T_SCALAR2<uint_fast64_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar2<uint_fast64_t>>();
-                if (H5T_SCALAR3<int64_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar3<int64_t>>();
-                if (H5T_SCALAR3<uint64_t>::equal(type))         return getCppType<h5pp::type::compound::Scalar3<uint64_t>>();
-                if (H5T_SCALAR3<int_fast64_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar3<int_fast64_t>>();
-                if (H5T_SCALAR3<uint_fast64_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar3<uint_fast64_t>>();
-
-            }else{
-                if (H5T_COMPLEX<double>::equal(type))           return getCppType<std::complex<double>>();
-                if (H5T_COMPLEX<long double>::equal(type))      return getCppType<std::complex<long double>>();
-                if (H5T_COMPLEX<float>::equal(type))            return getCppType<std::complex<float>>();
-                if (H5T_SCALAR2<double>::equal(type))           return getCppType<h5pp::type::compound::Scalar2<double>>();
-                if (H5T_SCALAR2<long double>::equal(type))      return getCppType<h5pp::type::compound::Scalar2<long double>>();
-                if (H5T_SCALAR2<float>::equal(type))            return getCppType<h5pp::type::compound::Scalar2<float>>();
-                if (H5T_SCALAR3<double>::equal(type))           return getCppType<h5pp::type::compound::Scalar3<double>>();
-                if (H5T_SCALAR3<long double>::equal(type))      return getCppType<h5pp::type::compound::Scalar3<long double>>();
-                if (H5T_SCALAR3<float>::equal(type))            return getCppType<h5pp::type::compound::Scalar3<float>>();
-            }
-            return {typeid(std::vector<std::byte>), "H5T_COMPOUND", h5size};
+            return {typeid(std::vector<std::byte>), h5pp::format("{}", cpptypenames), h5size};
         }
         if(H5Tequal(type, H5T_NATIVE_HBOOL))            return getCppType<hbool_t>();
         if(H5Tequal(type, H5T_NATIVE_B8))               return getCppType<std::byte>();
+
         std::string name;
         switch(h5class){
             case H5T_class_t::H5T_INTEGER:      name = "H5T_INTEGER"; break;
@@ -911,6 +902,7 @@ namespace h5pp::hdf5 {
             default: name = "UNKNOWN TYPE";
         }
         /* clang-format on */
+        auto h5size = H5Tget_size(type);
         if(H5Tcommitted(type) > 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             if(h5pp::logger::log->level() == 0) h5pp::logger::log->trace("No C++ type match for HDF5 type [{}]", getName(type));
@@ -1548,7 +1540,7 @@ namespace h5pp::hdf5 {
         if(info.dsetDims->size() != newDimensions.size())
             throw h5pp::runtime_error("Could not resize dataset [{}]: "
                                       "Rank mismatch: "
-                                      "The given dimensions {} must have the same number of elements as the target dimensions {}",
+                                      "The dataset dimensions {} must have the same number of elements as the new dimensions {}",
                                       info.dsetPath.value(),
                                       info.dsetDims.value(),
                                       newDimensions);
@@ -1787,14 +1779,14 @@ namespace h5pp::hdf5 {
             if constexpr(LinkType == H5L_type_t::H5L_TYPE_HARD) return "hard";
             if constexpr(LinkType == H5L_type_t::H5L_TYPE_SOFT) return "soft";
             if constexpr(LinkType == H5L_type_t::H5L_TYPE_EXTERNAL) return "external";
-            if constexpr(LinkType == H5L_type_t::H5L_TYPE_MAX)  return "max";
+            if constexpr(LinkType == H5L_type_t::H5L_TYPE_MAX) return "max";
         }
         [[nodiscard]] inline std::string_view getObjTypeName(H5L_type_t type) {
-            if (type == H5L_type_t::H5L_TYPE_ERROR) return "error";
-            if (type == H5L_type_t::H5L_TYPE_HARD) return "hard";
-            if (type == H5L_type_t::H5L_TYPE_SOFT) return "soft";
-            if (type == H5L_type_t::H5L_TYPE_EXTERNAL) return "external";
-            if (type == H5L_type_t::H5L_TYPE_MAX)  return "max";
+            if(type == H5L_type_t::H5L_TYPE_ERROR) return "error";
+            if(type == H5L_type_t::H5L_TYPE_HARD) return "hard";
+            if(type == H5L_type_t::H5L_TYPE_SOFT) return "soft";
+            if(type == H5L_type_t::H5L_TYPE_EXTERNAL) return "external";
+            if(type == H5L_type_t::H5L_TYPE_MAX) return "max";
         }
         template<H5O_type_t ObjType, typename InfoType>
         inline herr_t matcher([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const InfoType *info, void *opdata) {
@@ -1845,7 +1837,7 @@ namespace h5pp::hdf5 {
                     #endif
                     /* clang-format on */
                     if(oInfo.type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
-                        if(searchKey.empty() or linkName.find(searchKey) != std::string::npos){
+                        if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) {
                             // Otherwise append the match
                             matchList->push_back(name);
                         }
@@ -1863,7 +1855,6 @@ namespace h5pp::hdf5 {
             }
         }
 
-
         template<H5O_type_t ObjType, typename h5x>
         inline herr_t visit_by_name(const h5x                &loc,
                                     std::string_view          root,
@@ -1874,11 +1865,11 @@ namespace h5pp::hdf5 {
                           "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
             auto safe_root = util::safe_str(root);
 
-            if constexpr (h5pp::type::sfinae::is_any_v<h5x, hid::h5f, hid::h5g>){
-                if(internal::maxDepth == 0){
+            if constexpr(h5pp::type::sfinae::is_any_v<h5x, hid::h5f, hid::h5g>) {
+                if(internal::maxDepth == 0) {
                     // Faster when we don't need to iterate recursively
                     hsize_t idx = 0;
-                    auto gid = openLink<hid::h5g>(loc, safe_root, std::nullopt, linkAccess);
+                    auto    gid = openLink<hid::h5g>(loc, safe_root, std::nullopt, linkAccess);
                     return H5Literate(gid,
                                       H5_index_t::H5_INDEX_NAME,
                                       H5_iter_order_t::H5_ITER_NATIVE,
