@@ -1544,10 +1544,12 @@ namespace h5pp::hdf5 {
                                       info.dsetPath.value(),
                                       info.dsetDims.value(),
                                       newDimensions);
+
+        // If the dataset is already larger than newDimensions, and we only allow it to grow, there is nothing to do.
         if(policy == h5pp::ResizePolicy::GROW) {
             bool allDimsAreSmaller = true;
             for(size_t idx = 0; idx < newDimensions.size(); idx++)
-                if(newDimensions[idx] > info.dsetDims.value()[idx]) allDimsAreSmaller = false;
+                if(info.dsetDims.value()[idx] < newDimensions[idx]) allDimsAreSmaller = false;
             if(allDimsAreSmaller) return;
         }
         std::string oldInfoStr = info.string(h5pp::logger::logIf(LogLevel::debug));
@@ -1566,15 +1568,21 @@ namespace h5pp::hdf5 {
                     info.dsetDimsMax.value());
         }
 
-        herr_t err = H5Dset_extent(info.h5Dset.value(), newDimensions.data());
+        std::vector<hsize_t> finalDimensions = newDimensions;
+        if(policy == h5pp::ResizePolicy::GROW) {
+            // Make sure we only grow when the policy is to grow
+            for(size_t idx = 0; idx < finalDimensions.size(); idx++)
+                finalDimensions[idx] = std::max(newDimensions[idx], info.dsetDims.value()[idx]);
+        }
+        herr_t err = H5Dset_extent(info.h5Dset.value(), finalDimensions.data());
         if(err < 0)
             throw h5pp::runtime_error("Failed to resize dataset [{}] from dimensions {} to {}",
                                       info.dsetPath.value(),
                                       info.dsetDims.value(),
-                                      newDimensions);
+                                      finalDimensions);
 
         // By default, all the space (old and new) is selected
-        info.dsetDims = newDimensions;
+        info.dsetDims = finalDimensions;
         info.h5Space  = H5Dget_space(info.h5Dset->value()); // Needs to be refreshed after H5Dset_extent
         info.dsetByte = h5pp::hdf5::getBytesTotal(info.h5Dset.value(), info.h5Space, info.h5Type);
         info.dsetSize = h5pp::hdf5::getSize(info.h5Space.value());
