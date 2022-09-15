@@ -102,8 +102,12 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
                 for(int i = 0; i < writeData.dimension(0); i++)
                     for(int j = 0; j < writeData.dimension(1); j++)
                         for(int k = 0; k < writeData.dimension(2); k++) {
-                            for(int l = 0; l < writeData.dimension(3); l++)
-                                h5pp::print("[{} {} {} {}]: {} == {}", i, j, k, l, writeData(i, j, k, l), readData(i, j, k, l));
+                            for(int l = 0; l < writeData.dimension(3); l++){
+                                auto w = writeData(i, j, k, l);
+                                auto r = readData(i, j, k, l);
+                                h5pp::print("[{} {} {} {}]: {} + i{} == {} + i{}", i, j, k, l, std::real(w), std::imag(w), std::real(r), std::imag(r));
+                            }
+
                             h5pp::print("\n");
                         }
             }
