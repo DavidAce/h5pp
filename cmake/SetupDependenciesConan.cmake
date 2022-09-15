@@ -5,12 +5,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
     ### Install dependencies from conanfile.py                     ###
     ##################################################################
     unset(CONAN_COMMAND CACHE)
-    find_program (CONAN_COMMAND conan PATHS ${H5PP_CONAN_HINTS} PATH_SUFFIXES ${H5PP_CONAN_PATH_SUFFIXES})
-    if(NOT CONAN_COMMAND)
-        message(FATAL_ERROR "Could not find conan program executable : ${H5PP_CONAN_PATH_SUFFIXES}")
-    else()
-        message(STATUS "Found conan: ${CONAN_COMMAND}")
-    endif()
+    find_program (CONAN_COMMAND conan PATHS ${H5PP_CONAN_HINTS} PATH_SUFFIXES ${H5PP_CONAN_PATH_SUFFIXES} REQUIRED)
 
     # Download cmake-conan integrator
     if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan/conan.cmake")
@@ -26,7 +21,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
     conan_cmake_install(
             CONAN_COMMAND ${CONAN_COMMAND}
             BUILD missing outdated cascade
-            GENERATOR cmake_find_package_multi
+            GENERATOR CMakeDeps
             SETTINGS ${CONAN_AUTODETECT}
             INSTALL_FOLDER ${CMAKE_BINARY_DIR}/conan
             PATH_OR_REFERENCE ${CMAKE_SOURCE_DIR}
@@ -42,7 +37,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
     list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR}/conan)
     list(PREPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/conan)
     # Use CONFIG to avoid MODULE mode. This is recommended for the cmake_find_package_multi generator
-    find_package(HDF5 1.12.1 COMPONENTS C HL REQUIRED CONFIG)
+    find_package(HDF5 1.13.1 COMPONENTS C HL REQUIRED CONFIG)
     find_package(Eigen3 3.4 REQUIRED CONFIG)
     find_package(spdlog 1.10.0 REQUIRED CONFIG)
     find_package(fmt 8.1.1 REQUIRED CONFIG)

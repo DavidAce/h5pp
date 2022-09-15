@@ -1,5 +1,4 @@
 name: Ubuntu 20.04
-# INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
 
 on:
   pull_request:
@@ -63,7 +62,6 @@ jobs:
       - name: Setup gcc # compilers are already installed on the CI
         if: matrix.compiler == 'gcc'
         run: |
-          sudo apt-get install gcc-10 g++-10 gfortran -y
           echo "FC=gfortran"  >> $GITHUB_ENV
           echo "CC=gcc-10"    >> $GITHUB_ENV
           echo "CXX=g++-10"   >> $GITHUB_ENV
@@ -72,8 +70,8 @@ jobs:
         if: matrix.compiler == 'clang' # compilers are already installed on the CI # sudo apt-get install libclang-10-dev gfortran -y
         run: |
           echo "FC=gfortran"    >> $GITHUB_ENV
-          echo "CC=clang-10"    >> $GITHUB_ENV
-          echo "CXX=clang++-10" >> $GITHUB_ENV
+          echo "CC=clang-12"    >> $GITHUB_ENV
+          echo "CXX=clang++-12" >> $GITHUB_ENV
 
       - name: Setup apt packages
         if: contains(matrix.manager,'find')

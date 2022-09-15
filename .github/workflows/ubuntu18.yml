@@ -1,5 +1,4 @@
 name: Ubuntu 18.04
-# INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
 
 on:
   pull_request:
@@ -61,7 +60,6 @@ jobs:
       - name: Setup gcc
         if: matrix.compiler == 'gcc'
         run: |
-          sudo apt-get install gcc-7 g++-7 gfortran -y
           echo "FC=gfortran" >> $GITHUB_ENV
           echo "CC=gcc-7"    >> $GITHUB_ENV
           echo "CXX=g++-7"   >> $GITHUB_ENV
@@ -69,10 +67,9 @@ jobs:
       - name: Setup clang
         if: matrix.compiler == 'clang'
         run: |
-          sudo apt-get install clang-6.0 clang++-6.0 gfortran -y
           echo "FC=gfortran"     >> $GITHUB_ENV
-          echo "CC=clang-6.0"    >> $GITHUB_ENV
-          echo "CXX=clang++-6.0" >> $GITHUB_ENV
+          echo "CC=clang-9"    >> $GITHUB_ENV
+          echo "CXX=clang++-9" >> $GITHUB_ENV
 
       - name: Setup apt packages
         if: contains(matrix.manager,'find')

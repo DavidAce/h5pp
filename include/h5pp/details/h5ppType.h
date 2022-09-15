@@ -14,22 +14,6 @@ namespace h5pp::type {
         if constexpr (std::is_pointer_v<DecayType>)                      return getH5NativeType<typename std::remove_pointer<DecayType>::type>();
         if constexpr (std::is_reference_v<DecayType>)                    return getH5NativeType<typename std::remove_reference<DecayType>::type>();
         if constexpr (std::is_array_v<DecayType>)                        return getH5NativeType<typename std::remove_all_extents<DecayType>::type>();
-        if constexpr (std::is_same_v<DecayType, int8_t>)                 return H5Tcopy(H5T_NATIVE_INT8);
-        if constexpr (std::is_same_v<DecayType, int16_t>)                return H5Tcopy(H5T_NATIVE_INT16);
-        if constexpr (std::is_same_v<DecayType, int32_t>)                return H5Tcopy(H5T_NATIVE_INT32);
-        if constexpr (std::is_same_v<DecayType, int64_t>)                return H5Tcopy(H5T_NATIVE_INT64);
-        if constexpr (std::is_same_v<DecayType, int_fast8_t>)            return H5Tcopy(H5T_NATIVE_INT_FAST8);
-        if constexpr (std::is_same_v<DecayType, int_fast16_t>)           return H5Tcopy(H5T_NATIVE_INT_FAST16);
-        if constexpr (std::is_same_v<DecayType, int_fast32_t>)           return H5Tcopy(H5T_NATIVE_INT_FAST32);
-        if constexpr (std::is_same_v<DecayType, int_fast64_t>)           return H5Tcopy(H5T_NATIVE_INT_FAST64);
-        if constexpr (std::is_same_v<DecayType, uint8_t>)                return H5Tcopy(H5T_NATIVE_UINT8);
-        if constexpr (std::is_same_v<DecayType, uint16_t>)               return H5Tcopy(H5T_NATIVE_UINT16);
-        if constexpr (std::is_same_v<DecayType, uint32_t>)               return H5Tcopy(H5T_NATIVE_UINT32);
-        if constexpr (std::is_same_v<DecayType, uint64_t>)               return H5Tcopy(H5T_NATIVE_UINT64);
-        if constexpr (std::is_same_v<DecayType, uint_fast8_t>)           return H5Tcopy(H5T_NATIVE_UINT_FAST8);
-        if constexpr (std::is_same_v<DecayType, uint_fast16_t>)          return H5Tcopy(H5T_NATIVE_UINT_FAST16);
-        if constexpr (std::is_same_v<DecayType, uint_fast32_t>)          return H5Tcopy(H5T_NATIVE_UINT_FAST32);
-        if constexpr (std::is_same_v<DecayType, uint_fast64_t>)          return H5Tcopy(H5T_NATIVE_UINT_FAST64);
         if constexpr (std::is_same_v<DecayType, short>)                  return H5Tcopy(H5T_NATIVE_SHORT);
         if constexpr (std::is_same_v<DecayType, int>)                    return H5Tcopy(H5T_NATIVE_INT);
         if constexpr (std::is_same_v<DecayType, long>)                   return H5Tcopy(H5T_NATIVE_LONG);
@@ -45,6 +29,14 @@ namespace h5pp::type {
         if constexpr (std::is_same_v<DecayType, std::string>)            return H5Tcopy(H5T_C_S1);
         if constexpr (std::is_same_v<DecayType, char>)                   return H5Tcopy(H5T_C_S1);
         if constexpr (std::is_same_v<DecayType, std::byte>)              return H5Tcopy(H5T_NATIVE_B8);
+        if constexpr (std::is_same_v<DecayType, int8_t>)                 return H5Tcopy(H5T_NATIVE_INT8);
+        if constexpr (std::is_same_v<DecayType, int16_t>)                return H5Tcopy(H5T_NATIVE_INT16);
+        if constexpr (std::is_same_v<DecayType, int32_t>)                return H5Tcopy(H5T_NATIVE_INT32);
+        if constexpr (std::is_same_v<DecayType, int64_t>)                return H5Tcopy(H5T_NATIVE_INT64);
+        if constexpr (std::is_same_v<DecayType, uint8_t>)                return H5Tcopy(H5T_NATIVE_UINT8);
+        if constexpr (std::is_same_v<DecayType, uint16_t>)               return H5Tcopy(H5T_NATIVE_UINT16);
+        if constexpr (std::is_same_v<DecayType, uint32_t>)               return H5Tcopy(H5T_NATIVE_UINT32);
+        if constexpr (std::is_same_v<DecayType, uint64_t>)               return H5Tcopy(H5T_NATIVE_UINT64);
         if constexpr (tc::has_Scalar_v <DecayType>)                      return getH5NativeType<typename DecayType::Scalar>();
         if constexpr (tc::has_value_type_v <DecayType>)                  return getH5NativeType<typename DataType::value_type>();
         /* clang-format on */

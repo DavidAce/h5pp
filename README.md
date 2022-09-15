@@ -1,10 +1,11 @@
-[![Ubuntu 16.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2016.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
+[![Ubuntu 18.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2018.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Ubuntu 20.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2020.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
-[![Windows 10](https://github.com/DavidAce/h5pp/workflows/Windows%2010/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
-[![MacOS 10.15](https://github.com/DavidAce/h5pp/workflows/macOS%2010.15/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
+[![Ubuntu 22.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2022.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
+[![Windows 2019](https://github.com/DavidAce/h5pp/workflows/Windows%202019/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
+[![Windows 2022](https://github.com/DavidAce/h5pp/workflows/Windows%202022/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
+[![MacOS 11](https://github.com/DavidAce/h5pp/workflows/macOS%2011/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Documentation Status](https://readthedocs.org/projects/h5pp/badge/?version=latest)](https://h5pp.readthedocs.io/en/latest/?badge=latest)
 [![Conan](https://img.shields.io/badge/Install%20with-conan-green)](https://conan.io/center/h5pp)
-[![OS](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)](https://img.shields.io/badge/OS-Linux%7COSX%7CWindows-blue)
 [![codecov](https://codecov.io/gh/davidace/h5pp/branch/dev/graph/badge.svg)](https://codecov.io/gh/davidace/h5pp)
 ---
 
@@ -136,7 +137,7 @@ Install and configure [conan](https://conan.io), then run the following command 
 from [conan center](https://conan.io/center/h5pp):
 
 ```
-> conan install h5pp/1.10.0 --build=missing
+> conan install h5pp/1.10.0@ --build=missing
 ```
 
 ### Option 2: Install with CMake

@@ -1,5 +1,4 @@
-name: Windows 10
-# INSPIRATION https://github.com/onqtam/doctest/pull/285/files/875052e18cf5f5f0b9176e59f847b6205f3efb78#
+name: Windows 2022
 
 on:
   pull_request:
@@ -11,7 +10,7 @@ on:
 jobs:
   ci:
     name: ${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
-    runs-on: windows-2019
+    runs-on: windows-2022
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
     strategy:
@@ -68,7 +67,7 @@ jobs:
           -DH5PP_ENABLE_TESTS:BOOL=ON                                 \
           -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
           -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
-           -G "Visual Studio 16 2019" -A x64                          \
+           -G "Visual Studio 17 2022" -A x64                          \
           --loglevel=DEBUG \
           ../../
 

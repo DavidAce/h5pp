@@ -197,9 +197,11 @@ namespace h5pp {
             if(dataByte) msg.append(h5pp::format(" | bytes {}", dataByte.value()));
             if(dataRank) msg.append(h5pp::format(" | rank {}", dataRank.value()));
             if(dataDims) msg.append(h5pp::format(" | dims {}", dataDims.value()));
-            if (h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
+            if(h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
                 Hyperslab slab(h5Space.value());
                 msg.append(h5pp::format(" | [ Hyperslab {} ]", slab.string()));
+            }else if(dataSlab){
+                msg.append(h5pp::format(" | [ Hyperslab {} ]", dataSlab->string()));
             }
             if(cppTypeName) msg.append(h5pp::format(" | type [{}]", cppTypeName.value()));
             return msg;
@@ -243,8 +245,8 @@ namespace h5pp {
         }
         [[nodiscard]] bool hasLocId() const { return h5File.has_value() or h5Dset.has_value(); }
         void               assertCreateReady() const {
-                          std::string error_msg;
-                          /* clang-format off */
+            std::string error_msg;
+            /* clang-format off */
             if(not dsetPath               ) error_msg.append("\t dsetPath\n");
             if(not dsetExists             ) error_msg.append("\t dsetExists\n");
             if(not h5Type                 ) error_msg.append("\t h5Type\n");
@@ -359,9 +361,11 @@ namespace h5pp {
                 }
                 msg.append(h5pp::format(" | max dims {}", dsetDimsMaxPretty));
             }
-            if (h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
+            if(h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
                 Hyperslab slab(h5Space.value());
                 msg.append(h5pp::format(" | [ Hyperslab {} ]", slab.string()));
+            }else if(dsetSlab){
+                msg.append(h5pp::format(" | [ Hyperslab {} ]", dsetSlab->string()));
             }
             if(resizePolicy){
                 msg.append(" | resize mode ");
@@ -483,6 +487,12 @@ namespace h5pp {
             if(attrDims) msg.append(h5pp::format(" | dims {}", attrDims.value()));
             if(attrName) msg.append(h5pp::format(" | name [{}]",attrName.value()));
             if(linkPath) msg.append(h5pp::format(" | link [{}]",linkPath.value()));
+            if(h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
+                Hyperslab slab(h5Space.value());
+                msg.append(h5pp::format(" | [ Hyperslab {} ]", slab.string()));
+            }else if(attrSlab){
+                msg.append(h5pp::format(" | [ Hyperslab {} ]", attrSlab->string()));
+            }
             return msg;
             /* clang-format on */
         }
@@ -653,20 +663,25 @@ namespace h5pp {
     };
 
     struct LinkInfo {
-        std::optional<hid::h5f>       h5File     = std::nullopt;
-        std::optional<hid::h5o>       h5Link     = std::nullopt;
-        std::optional<std::string>    linkPath   = std::nullopt;
-        std::optional<bool>           linkExists = std::nullopt;
-        std::optional<H5O_hdr_info_t> h5HdrInfo  = std::nullopt; /*!< Information struct for object header metadata */
-        std::optional<hsize_t>        h5HdrByte  = std::nullopt; /*!< Total space for storing object header in file */
-        std::optional<H5O_type_t>     h5ObjType  = std::nullopt; /*!< Object type (dataset, group etc)              */
-        std::optional<unsigned>       refCount   = std::nullopt; /*!< Reference count of object                     */
-        std::optional<time_t>         atime      = std::nullopt; /*!< Access time                                   */
-        std::optional<time_t>         mtime      = std::nullopt; /*!< Modification time                             */
-        std::optional<time_t>         ctime      = std::nullopt; /*!< Change time                                   */
-        std::optional<time_t>         btime      = std::nullopt; /*!< Birth time                                    */
-        std::optional<hsize_t>        num_attrs  = std::nullopt; /*!< Number of attributes attached to object       */
-        [[nodiscard]] std::string     string(bool enable = true) const {
+        std::optional<hid::h5f>       h5File       = std::nullopt;
+        std::optional<hid::h5o>       h5Link       = std::nullopt;
+        std::optional<std::string>    linkPath     = std::nullopt;
+        std::optional<bool>           linkExists   = std::nullopt;
+        std::optional<H5O_hdr_info_t> h5HdrInfo    = std::nullopt; /*!< Information struct for object header metadata */
+        std::optional<hsize_t>        h5HdrByte    = std::nullopt; /*!< Total space for storing object header in file */
+        std::optional<H5O_type_t>     h5ObjType    = std::nullopt; /*!< Object type (dataset, group etc)              */
+        std::optional<H5L_type_t>     h5LinkType   = std::nullopt; /*!< Link type (hard, soft, external)              */
+        std::optional<unsigned>       refCount     = std::nullopt; /*!< Reference count of object                     */
+        std::optional<time_t>         atime        = std::nullopt; /*!< Access time                                   */
+        std::optional<time_t>         mtime        = std::nullopt; /*!< Modification time                             */
+        std::optional<time_t>         ctime        = std::nullopt; /*!< Change time                                   */
+        std::optional<time_t>         btime        = std::nullopt; /*!< Birth time                                    */
+        std::optional<hsize_t>        num_attrs    = std::nullopt; /*!< Number of attributes attached to object       */
+        std::optional<int64_t>        corder       = std::nullopt; /*!< Link creation order position                  */
+        std::optional<hbool_t>        corder_valid = std::nullopt; /*!< Whether corder can assumed to be valid        */
+        std::optional<H5T_cset_t>     cset         = std::nullopt; /*!< Character set encoding for the linkPath       */
+
+        [[nodiscard]] std::string string(bool enable = true) const {
             if(not enable) return {};
             std::string msg;
             /* clang-format off */

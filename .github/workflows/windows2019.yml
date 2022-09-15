@@ -1,4 +1,4 @@
-name: macOS 11
+name: Windows 2019
 
 on:
   pull_request:
@@ -10,11 +10,11 @@ on:
 jobs:
   ci:
     name: ${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
-    runs-on: macos-11
+    runs-on: windows-2019
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
     strategy:
-      fail-fast: false # True stops all on first error. Stick to false when debugging
+      fail-fast: true # True stops all on first error. Stick to false when debugging
       matrix:
         include:
           - { compiler: cl, linkage: static, manager: conan }
@@ -30,6 +30,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
       - uses: actions/setup-python@v1
         if: contains(matrix.manager, 'conan')
         with:
@@ -40,14 +41,9 @@ jobs:
           path: |
             ~/.conan/data
             ~/cpm-cache
-          #            ~/h5pp-install
-          #            build/Debug/h5pp-deps-install
+#            ~/h5pp-install
+#            build/Debug/h5pp-deps-install
           key: ${{ runner.os }}-${{ env.cache-name }}
-
-      - uses: hendrikmuhs/ccache-action@v1
-        with:
-          key: ${{ runner.os }}-${{ env.cache-name }}
-          max-size: 500M
 
       - name: Setup conan
         if: matrix.manager == 'conan'
@@ -65,16 +61,13 @@ jobs:
           -DBUILD_SHARED_LIBS:BOOL=${{ matrix.linkage == 'shared' }}  \
           -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                            \
           -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install                  \
-          -DCMAKE_C_COMPILER_LAUNCHER=ccache                          \
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                        \
           -DH5PP_ENABLE_EIGEN3:BOOL=ON                                \
           -DH5PP_ENABLE_SPDLOG:BOOL=ON                                \
           -DH5PP_ENABLE_ASAN:BOOL=OFF                                 \
           -DH5PP_ENABLE_TESTS:BOOL=ON                                 \
           -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
           -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
-          -DCPM_SOURCE_CACHE=~/cpm-cache                              \
-           -G "Unix Makefiles"                                        \
+           -G "Visual Studio 16 2019" -A x64                          \
           --loglevel=DEBUG \
           ../../
 

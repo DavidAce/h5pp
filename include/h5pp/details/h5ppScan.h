@@ -66,9 +66,6 @@ namespace h5pp::scan {
             else if(info.dsetSlab) info.resizePolicy = h5pp::ResizePolicy::GROW; // A hyperslab selection on the dataset has been made. Let's not shrink!
             else info.resizePolicy = h5pp::ResizePolicy::FIT;
         }
-
-        // Apply hyperslab selection if there is any
-        if(info.dsetSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.dsetSlab.value());
         /* clang-format on */
 
         // Get c++ properties
@@ -171,8 +168,6 @@ namespace h5pp::scan {
                 info.resizePolicy = h5pp::ResizePolicy::FIT;
         }
         if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.dsetSize.value(), info.dsetDims.value(), info.h5Layout.value(), info.dsetDimsMax);
-        // Apply hyperslab selection if there is any
-        if(info.dsetSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.dsetSlab.value());
         if(not info.h5DsetCreate) info.h5DsetCreate = H5Pcreate(H5P_DATASET_CREATE);
         if(not info.h5DsetAccess) info.h5DsetAccess = H5Pcreate(H5P_DATASET_ACCESS);
         /* clang-format on */
@@ -286,9 +281,6 @@ namespace h5pp::scan {
 
         h5pp::hdf5::setStringSize<DataType>(data, info.h5Type.value(), info.dsetSize.value(), info.dsetByte.value(), info.dsetDims.value());       // String size will be H5T_VARIABLE unless explicitly specified
         if(not info.h5Space)           info.h5Space           = h5pp::util::getDsetSpace(info.dsetSize.value(), info.dsetDims.value(), info.h5Layout.value(), info.dsetDimsMax);
-        // Apply hyperslab selection if there is any
-        if(info.dsetSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.dsetSlab.value());
-
         if(not info.h5DsetCreate) info.h5DsetCreate = H5Pcreate(H5P_DATASET_CREATE);
         if(not info.h5DsetAccess) info.h5DsetAccess = H5Pcreate(H5P_DATASET_ACCESS);
         h5pp::hdf5::setProperty_layout(info);    // Must go before setting chunk dims
@@ -338,8 +330,6 @@ namespace h5pp::scan {
                                             info.dataByte.value(),
                                             info.dataDims.value()); // String size will be H5T_VARIABLE unless explicitly specified
         if(not info.h5Space) info.h5Space = h5pp::util::getMemSpace(info.dataSize.value(), info.dataDims.value());
-        // Apply hyperslab selection if there is any
-        if(info.dataSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.dataSlab.value());
         h5pp::logger::log->trace("Scanned metadata {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
     }
 
@@ -405,9 +395,7 @@ namespace h5pp::scan {
         if(not info.attrDims)   info.attrDims       = h5pp::hdf5::getDimensions(info.h5Space.value());
         if(not info.attrRank)   info.attrRank       = h5pp::hdf5::getRank(info.h5Space.value());
         if(not info.h5PlistAttrCreate) info.h5PlistAttrCreate = H5Aget_create_plist(info.h5Attr.value());
-        // Apply hyperslab selection if there is any
-        if(info.attrSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.attrSlab.value());
-            /* clang-format on */
+        /* clang-format on */
 #if H5_VERSION_GE(1, 10, 0)
         if(not info.h5PlistAttrAccess) info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
 #else
@@ -489,10 +477,7 @@ namespace h5pp::scan {
                                             info.attrByte.value(),
                                             info.attrDims.value()); // String size will be H5T_VARIABLE unless explicitly specified
         if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.attrSize.value(), info.attrDims.value(), H5D_COMPACT);
-        // Apply hyperslab selection if there is any
-        if(info.attrSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.attrSlab.value());
         /* clang-format on */
-
         if(not info.h5PlistAttrCreate) info.h5PlistAttrCreate = H5Pcreate(H5P_ATTRIBUTE_CREATE);
 #if H5_VERSION_GE(1, 10, 0)
         if(not info.h5PlistAttrAccess) info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
@@ -550,8 +535,6 @@ namespace h5pp::scan {
         if(not info.attrRank) info.attrRank = h5pp::util::getRankFromDimensions(info.attrDims.value());
         if(not info.attrByte) info.attrByte = info.attrSize.value() * h5pp::hdf5::getBytesPerElem(info.h5Type.value());
         if(not info.h5Space) info.h5Space = h5pp::util::getDsetSpace(info.attrSize.value(), info.attrDims.value(), H5D_COMPACT);
-        // Apply hyperslab selection if there is any
-        if(info.attrSlab) h5pp::hdf5::selectHyperslab(info.h5Space.value(), info.attrSlab.value());
         if(not info.h5PlistAttrCreate) info.h5PlistAttrCreate = H5Pcreate(H5P_ATTRIBUTE_CREATE);
 #if H5_VERSION_GE(1, 10, 0)
         if(not info.h5PlistAttrAccess) info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
@@ -760,14 +743,14 @@ namespace h5pp::scan {
             throw h5pp::runtime_error("Could not infer table info for new table [{}]: No table title given", info.tablePath.value());
     }
 
-    /*! \brief Populates an AttrInfo object with properties read from file */
+    /*! \brief Populates an LinkInfo object with properties read from file */
     template<typename h5x>
     inline void readLinkInfo(LinkInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5pp_loc_id<h5x>,
                       "Template function [h5pp::scan::readLinkInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
-        if(not options.linkPath and not info.linkPath) throw h5pp::runtime_error("Could not read attribute info: No link path was given");
+        if(not options.linkPath and not info.linkPath) throw h5pp::runtime_error("Could not read link info: No link path was given");
         if(not info.linkPath) info.linkPath = h5pp::util::safe_str(options.linkPath.value());
 
         h5pp::logger::log->debug("Scanning header of object [{}]", info.linkPath.value());
@@ -815,20 +798,28 @@ namespace h5pp::scan {
 #endif
         if(oerr != 0) throw h5pp::runtime_error("H5Oget_info returned error code {} when reading link {}", oerr, info.linkPath.value());
 
-        info.h5HdrInfo = hInfo;
-        info.h5HdrByte = hInfo.space.total;
-        info.h5ObjType = oInfo.type;
-        info.refCount  = oInfo.rc;
-        info.atime     = oInfo.atime;
-        info.mtime     = oInfo.mtime;
-        info.ctime     = oInfo.ctime;
-        info.btime     = oInfo.btime;
-        info.num_attrs = oInfo.num_attrs;
+        H5L_info_t lInfo;
+        herr_t     lerr = H5Lget_info(info.getLocId(), info.linkPath->c_str(), &lInfo, plists.linkAccess.value());
+        if(lerr != 0) throw h5pp::runtime_error("H5Lget_info returned error code {} when reading link {}", lerr, info.linkPath.value());
+
+        info.h5HdrInfo    = hInfo;
+        info.h5HdrByte    = hInfo.space.total;
+        info.h5ObjType    = oInfo.type;
+        info.refCount     = oInfo.rc;
+        info.atime        = oInfo.atime;
+        info.mtime        = oInfo.mtime;
+        info.ctime        = oInfo.ctime;
+        info.btime        = oInfo.btime;
+        info.num_attrs    = oInfo.num_attrs;
+        info.h5LinkType   = lInfo.type;
+        info.corder       = lInfo.corder;
+        info.corder_valid = lInfo.corder_valid;
+        info.cset         = lInfo.cset;
 
         h5pp::logger::log->trace("Scanned header metadata {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
     }
 
-    /*! \brief Creates and returns a populated AttrInfo object with properties read from file */
+    /*! \brief Creates and returns a populated LinkInfo object with properties read from file */
     template<typename h5x>
     [[nodiscard]] inline h5pp::LinkInfo
         readLinkInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {

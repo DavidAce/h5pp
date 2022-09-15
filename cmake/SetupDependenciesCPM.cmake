@@ -26,7 +26,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cpm")
     if(H5PP_ENABLE_FMT)
         CPMAddPackage(NAME fmt
                 GITHUB_REPOSITORY fmtlib/fmt
-                GIT_TAG 8.0.1
+                GIT_TAG 8.1.1
                 OPTIONS "FMT_INSTALL ON" )
         find_package(fmt REQUIRED)
         if(TARGET fmt)
@@ -42,7 +42,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cpm")
         CPMAddPackage(
                 NAME spdlog
                 GITHUB_REPOSITORY gabime/spdlog
-                VERSION 1.9.2
+                VERSION 1.10.0
                 OPTIONS
                 "SPDLOG_INSTALL ON"
                 "SPDLOG_BUILD_SHARED ${BUILD_SHARED_LIBS}"

@@ -24,8 +24,8 @@ function(Fetchspdlog)
 
 
     FetchContent_Declare(fetch-spdlog
-            URL         https://github.com/gabime/spdlog/archive/refs/tags/v1.9.2.tar.gz
-            URL_MD5     cee7f3d31178a00791d7a22c6738df6d
+            URL         https://github.com/gabime/spdlog/archive/refs/tags/v1.10.0.tar.gz
+            URL_MD5     effea813cd81cfb5588806c5754e14f1
             )
     FetchContent_MakeAvailable(fetch-spdlog)
     find_package(spdlog REQUIRED)

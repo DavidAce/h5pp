@@ -9,7 +9,6 @@
 #include "h5ppLogger.h"
 #include "h5ppPropertyLists.h"
 #include "h5ppTypeSfinae.h"
-#include "h5ppEigen.h"
 #include "h5ppUtils.h"
 #include <cstddef>
 #include <hdf5.h>
@@ -590,7 +589,7 @@ namespace h5pp::hdf5 {
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         if constexpr(not h5pp::ndebug) {
             if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
-            if(not linkExists.value()) throw h5pp::runtime_error("Cannot open link [{}]: it does not exist [{}]", linkPath);
+            if(not linkExists.value()) throw h5pp::runtime_error("Cannot open link [{}]: it does not exist", linkPath);
         }
         if constexpr(std::is_same_v<h5x, hid::h5d>) h5pp::logger::log->trace("Opening dataset [{}]", linkPath);
         if constexpr(std::is_same_v<h5x, hid::h5g>) h5pp::logger::log->trace("Opening group [{}]", linkPath);
@@ -767,135 +766,126 @@ namespace h5pp::hdf5 {
     [[nodiscard]] inline std::tuple<std::type_index, std::string, size_t> getCppType(const hid::h5t &type) {
         using namespace h5pp::type::compound;
         auto h5class = H5Tget_class(type);
-        auto h5size  = H5Tget_size(type);
-        auto h5bits  = h5size * 8;
+
         /* clang-format off */
         if(h5class == H5T_class_t::H5T_INTEGER){
-            if(h5bits == 8){
-                if(H5Tequal(type, H5T_NATIVE_INT8))          return getCppType<int8_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT8))         return getCppType<uint8_t>();
-                if(H5Tequal(type, H5T_NATIVE_INT_FAST8))     return getCppType<int_fast8_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT_FAST8))    return getCppType<uint_fast8_t>();
-            }else if(h5bits == 16){
-                if(H5Tequal(type, H5T_NATIVE_INT16))         return getCppType<int16_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT16))        return getCppType<uint16_t>();
-                if(H5Tequal(type, H5T_NATIVE_INT_FAST16))    return getCppType<int_fast16_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT_FAST16))   return getCppType<uint_fast16_t>();
-            }else if(h5bits == 32){
-                if(H5Tequal(type, H5T_NATIVE_INT32))         return getCppType<int32_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT32))        return getCppType<uint32_t>();
-                if(H5Tequal(type, H5T_NATIVE_INT_FAST32))    return getCppType<int_fast32_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT_FAST32))   return getCppType<uint_fast32_t>();
+            auto h5sign  = H5Tget_sign(type);
+            if(h5sign  == H5T_sign_t::H5T_SGN_ERROR) throw h5pp::runtime_error("H5Tget_sign() failed on integral type");
+            if(h5sign == H5T_sign_t::H5T_SGN_NONE){
+                if(H5Tequal(type, H5T_NATIVE_USHORT))   return getCppType<unsigned short>();
+                if(H5Tequal(type, H5T_NATIVE_UINT))     return getCppType<unsigned int>();
+                if(H5Tequal(type, H5T_NATIVE_ULONG))    return getCppType<unsigned long>();
+                if(H5Tequal(type, H5T_NATIVE_ULLONG))   return getCppType<unsigned long long>();
             }
-            else if(h5bits == 64){
-                if(H5Tequal(type, H5T_NATIVE_INT64))         return getCppType<int64_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT64))        return getCppType<uint64_t>();
-                if(H5Tequal(type, H5T_NATIVE_INT_FAST64))    return getCppType<int_fast64_t>();
-                if(H5Tequal(type, H5T_NATIVE_UINT_FAST64))   return getCppType<uint_fast64_t>();
-            }else{
-                if(H5Tequal(type, H5T_NATIVE_SHORT))         return getCppType<short>();
-                if(H5Tequal(type, H5T_NATIVE_INT))           return getCppType<int>();
-                if(H5Tequal(type, H5T_NATIVE_LONG))          return getCppType<long>();
-                if(H5Tequal(type, H5T_NATIVE_LLONG))         return getCppType<long long>();
-                if(H5Tequal(type, H5T_NATIVE_USHORT))        return getCppType<unsigned short>();
-                if(H5Tequal(type, H5T_NATIVE_UINT))          return getCppType<unsigned int>();
-                if(H5Tequal(type, H5T_NATIVE_ULONG))         return getCppType<unsigned long>();
-                if(H5Tequal(type, H5T_NATIVE_ULLONG))        return getCppType<unsigned long long >();
+            else if(h5sign == H5T_sign_t::H5T_SGN_2){
+               if(H5Tequal(type, H5T_NATIVE_SHORT))   return getCppType<short>();
+               if(H5Tequal(type, H5T_NATIVE_INT))     return getCppType<int>();
+               if(H5Tequal(type, H5T_NATIVE_LONG))    return getCppType<long>();
+               if(H5Tequal(type, H5T_NATIVE_LLONG))   return getCppType<long long>();
             }
         }else if (h5class == H5T_class_t::H5T_FLOAT){
+            if(H5Tequal(type, H5T_NATIVE_FLOAT))            return getCppType<float>();
             if(H5Tequal(type, H5T_NATIVE_DOUBLE))           return getCppType<double>();
             if(H5Tequal(type, H5T_NATIVE_LDOUBLE))          return getCppType<long double>();
-            if(H5Tequal(type, H5T_NATIVE_FLOAT))            return getCppType<float>();
         }else if  (h5class == H5T_class_t::H5T_STRING){
             if(H5Tequal(type, H5T_NATIVE_CHAR))             return getCppType<char>();
             if(H5Tequal_recurse(type, H5Tcopy(H5T_C_S1)))   return getCppType<std::string>();
             if(H5Tequal(type, H5T_NATIVE_SCHAR))            return getCppType<signed char>();
             if(H5Tequal(type, H5T_NATIVE_UCHAR))            return getCppType<unsigned char>();
         }else if (h5class == H5T_COMPOUND){
-            auto nmembers = H5Tget_nmembers(type);
-            if(nmembers < 0)
-                throw h5pp::runtime_error("Failed to read nmembers for type");
+            if(is_complex(type)){
+                auto h5mtype = H5Tget_member_type(type,0);
+                auto h5mclass = H5Tget_class(h5mtype);
+                if(h5mclass == H5T_class_t::H5T_FLOAT){
+                    if (H5T_COMPLEX<float>::equal(type))            return getCppType<std::complex<float>>();
+                    if (H5T_COMPLEX<double>::equal(type))           return getCppType<std::complex<double>>();
+                    if (H5T_COMPLEX<long double>::equal(type))      return getCppType<std::complex<long double>>();
+                }
+                if(h5mclass == H5T_class_t::H5T_INTEGER){
+                    auto h5msign  = H5Tget_sign(h5mtype);
+                    if(h5msign  == H5T_sign_t::H5T_SGN_ERROR) throw h5pp::runtime_error("H5Tget_sign() failed on integral type");
+                    if(h5msign == H5T_sign_t::H5T_SGN_NONE){
+                        if (H5T_COMPLEX<unsigned short>::equal(type))       return getCppType<std::complex<unsigned short>>();
+                        if (H5T_COMPLEX<unsigned int>::equal(type))         return getCppType<std::complex<unsigned int>>();
+                        if (H5T_COMPLEX<unsigned long>::equal(type))        return getCppType<std::complex<unsigned long>>();
+                        if (H5T_COMPLEX<unsigned long long>::equal(type))   return getCppType<std::complex<unsigned long long>>();
+                    }
+                    if(h5msign == H5T_sign_t::H5T_SGN_2){
+                        if (H5T_COMPLEX<short>::equal(type))       return getCppType<std::complex<short>>();
+                        if (H5T_COMPLEX<int>::equal(type))         return getCppType<std::complex<int>>();
+                        if (H5T_COMPLEX<long>::equal(type))        return getCppType<std::complex<long>>();
+                        if (H5T_COMPLEX<long long>::equal(type))   return getCppType<std::complex<long long>>();
+                    }
+                }
+            }
+            if(is_scalar2(type)){
+                auto h5mtype = H5Tget_member_type(type,0);
+                auto h5mclass = H5Tget_class(h5mtype);
+                if(h5mclass == H5T_class_t::H5T_FLOAT){
+                    if (H5T_SCALAR2<float>::equal(type))            return getCppType<h5pp::type::compound::Scalar2<float>>();
+                    if (H5T_SCALAR2<double>::equal(type))           return getCppType<h5pp::type::compound::Scalar2<double>>();
+                    if (H5T_SCALAR2<long double>::equal(type))      return getCppType<h5pp::type::compound::Scalar2<long double>>();
+                }
+                if(h5mclass == H5T_class_t::H5T_INTEGER){
+                    auto h5msign  = H5Tget_sign(h5mtype);
+                    if(h5msign  == H5T_sign_t::H5T_SGN_ERROR) throw h5pp::runtime_error("H5Tget_sign() failed on integral type");
+                    if(h5msign == H5T_sign_t::H5T_SGN_NONE){
+                        if (H5T_SCALAR2<unsigned short>::equal(type))       return getCppType<h5pp::type::compound::Scalar2<unsigned short>>();
+                        if (H5T_SCALAR2<unsigned int>::equal(type))         return getCppType<h5pp::type::compound::Scalar2<unsigned int>>();
+                        if (H5T_SCALAR2<unsigned long>::equal(type))        return getCppType<h5pp::type::compound::Scalar2<unsigned long>>();
+                        if (H5T_SCALAR2<unsigned long long>::equal(type))   return getCppType<h5pp::type::compound::Scalar2<unsigned long long>>();
+                    }
+                    if(h5msign == H5T_sign_t::H5T_SGN_2){
+                        if (H5T_SCALAR2<short>::equal(type))       return getCppType<h5pp::type::compound::Scalar2<short>>();
+                        if (H5T_SCALAR2<int>::equal(type))         return getCppType<h5pp::type::compound::Scalar2<int>>();
+                        if (H5T_SCALAR2<long>::equal(type))        return getCppType<h5pp::type::compound::Scalar2<long>>();
+                        if (H5T_SCALAR2<long long>::equal(type))   return getCppType<h5pp::type::compound::Scalar2<long long>>();
+                    }
+                }
+            }
+            if(is_scalar3(type)){
+                auto h5mtype = H5Tget_member_type(type,0);
+                auto h5mclass = H5Tget_class(h5mtype);
+                if(h5mclass == H5T_class_t::H5T_FLOAT){
+                    if (H5T_SCALAR3<float>::equal(type))            return getCppType<h5pp::type::compound::Scalar3<float>>();
+                    if (H5T_SCALAR3<double>::equal(type))           return getCppType<h5pp::type::compound::Scalar3<double>>();
+                    if (H5T_SCALAR3<long double>::equal(type))      return getCppType<h5pp::type::compound::Scalar3<long double>>();
+                }
+                if(h5mclass == H5T_class_t::H5T_INTEGER){
+                    auto h5msign  = H5Tget_sign(h5mtype);
+                    if(h5msign  == H5T_sign_t::H5T_SGN_ERROR) throw h5pp::runtime_error("H5Tget_sign() failed on integral type");
+                    if(h5msign == H5T_sign_t::H5T_SGN_NONE){
+                        if (H5T_SCALAR3<unsigned short>::equal(type))       return getCppType<h5pp::type::compound::Scalar3<unsigned short>>();
+                        if (H5T_SCALAR3<unsigned int>::equal(type))         return getCppType<h5pp::type::compound::Scalar3<unsigned int>>();
+                        if (H5T_SCALAR3<unsigned long>::equal(type))        return getCppType<h5pp::type::compound::Scalar3<unsigned long>>();
+                        if (H5T_SCALAR3<unsigned long long>::equal(type))   return getCppType<h5pp::type::compound::Scalar3<unsigned long long>>();
+                    }
+                    if(h5msign == H5T_sign_t::H5T_SGN_2){
+                        if (H5T_SCALAR3<short>::equal(type))       return getCppType<h5pp::type::compound::Scalar3<short>>();
+                        if (H5T_SCALAR3<int>::equal(type))         return getCppType<h5pp::type::compound::Scalar3<int>>();
+                        if (H5T_SCALAR3<long>::equal(type))        return getCppType<h5pp::type::compound::Scalar3<long>>();
+                        if (H5T_SCALAR3<long long>::equal(type))   return getCppType<h5pp::type::compound::Scalar3<long long>>();
+                    }
+                }
+            }
+
+            // type is some other compound type.
+            auto h5size  = H5Tget_size(type);
+            auto h5type = H5Tget_native_type(type, H5T_direction_t::H5T_DIR_DEFAULT); // Unrolls nested compound types
+
+            auto nmembers = H5Tget_nmembers(h5type);
             auto nmembers_ul = static_cast<size_t>(nmembers);
-            if(h5bits == 8ul*nmembers_ul){
-                if (H5T_COMPLEX<int8_t>::equal(type))           return getCppType<std::complex<int8_t>>();
-                if (H5T_COMPLEX<uint8_t>::equal(type))          return getCppType<std::complex<uint8_t>>();
-                if (H5T_COMPLEX<int_fast8_t>::equal(type))      return getCppType<std::complex<int_fast8_t>>();
-                if (H5T_COMPLEX<uint_fast8_t>::equal(type))     return getCppType<std::complex<uint_fast8_t>>();
 
-                if (H5T_SCALAR2<int8_t>::equal(type))           return getCppType<h5pp::type::compound::Scalar2<int8_t>>();
-                if (H5T_SCALAR2<uint8_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar2<uint8_t>>();
-                if (H5T_SCALAR2<int_fast8_t>::equal(type))      return getCppType<h5pp::type::compound::Scalar2<int_fast8_t>>();
-                if (H5T_SCALAR2<uint_fast8_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar2<uint_fast8_t>>();
-
-                if (H5T_SCALAR3<int8_t>::equal(type))           return getCppType<h5pp::type::compound::Scalar3<int8_t>>();
-                if (H5T_SCALAR3<uint8_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar3<uint8_t>>();
-                if (H5T_SCALAR3<int_fast8_t>::equal(type))      return getCppType<h5pp::type::compound::Scalar3<int_fast8_t>>();
-                if (H5T_SCALAR3<uint_fast8_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar3<uint_fast8_t>>();
-
+            std::vector<std::string> cpptypenames(nmembers_ul);
+            for(size_t idx = 0; idx < nmembers_ul; idx++ ){
+                auto cpptype = getCppType(H5Tget_member_type(h5type, idx));
+                cpptypenames[idx] = std::get<1>(cpptype);
             }
-            else if(h5bits == 16ul*nmembers_ul){
-                if (H5T_COMPLEX<int16_t>::equal(type))          return getCppType<std::complex<int16_t>>();
-                if (H5T_COMPLEX<uint16_t>::equal(type))         return getCppType<std::complex<uint16_t>>();
-                if (H5T_COMPLEX<int_fast16_t>::equal(type))     return getCppType<std::complex<int_fast16_t>>();
-                if (H5T_COMPLEX<uint_fast16_t>::equal(type))    return getCppType<std::complex<uint_fast16_t>>();
-
-                if (H5T_SCALAR2<int16_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar2<int16_t>>();
-                if (H5T_SCALAR2<uint16_t>::equal(type))         return getCppType<h5pp::type::compound::Scalar2<uint16_t>>();
-                if (H5T_SCALAR2<int_fast16_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar2<int_fast16_t>>();
-                if (H5T_SCALAR2<uint_fast16_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar2<uint_fast16_t>>();
-
-                if (H5T_SCALAR3<int16_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar3<int16_t>>();
-                if (H5T_SCALAR3<uint16_t>::equal(type))         return getCppType<h5pp::type::compound::Scalar3<uint16_t>>();
-                if (H5T_SCALAR3<int_fast16_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar3<int_fast16_t>>();
-                if (H5T_SCALAR3<uint_fast16_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar3<uint_fast16_t>>();
-
-            }
-            else if(h5bits == 32ul*nmembers_ul){
-                if (H5T_COMPLEX<int32_t>::equal(type))          return getCppType<std::complex<int32_t>>();
-                if (H5T_COMPLEX<uint32_t>::equal(type))         return getCppType<std::complex<uint32_t>>();
-                if (H5T_COMPLEX<int_fast32_t>::equal(type))     return getCppType<std::complex<int_fast32_t>>();
-                if (H5T_COMPLEX<uint_fast32_t>::equal(type))    return getCppType<std::complex<uint_fast32_t>>();
-
-                if (H5T_SCALAR2<int32_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar2<int32_t>>();
-                if (H5T_SCALAR2<uint32_t>::equal(type))         return getCppType<h5pp::type::compound::Scalar2<uint32_t>>();
-                if (H5T_SCALAR2<int_fast32_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar2<int_fast32_t>>();
-                if (H5T_SCALAR2<uint_fast32_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar2<uint_fast32_t>>();
-
-                if (H5T_SCALAR3<int32_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar3<int32_t>>();
-                if (H5T_SCALAR3<uint32_t>::equal(type))         return getCppType<h5pp::type::compound::Scalar3<uint32_t>>();
-                if (H5T_SCALAR3<int_fast32_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar3<int_fast32_t>>();
-                if (H5T_SCALAR3<uint_fast32_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar3<uint_fast32_t>>();
-
-            }
-            else if(h5bits == 64ul*nmembers_ul){
-                if (H5T_COMPLEX<int64_t>::equal(type))          return getCppType<std::complex<int64_t>>();
-                if (H5T_COMPLEX<uint64_t>::equal(type))         return getCppType<std::complex<uint64_t>>();
-                if (H5T_COMPLEX<int_fast64_t>::equal(type))     return getCppType<std::complex<int_fast64_t>>();
-                if (H5T_COMPLEX<uint_fast64_t>::equal(type))    return getCppType<std::complex<uint_fast64_t>>();
-                if (H5T_SCALAR2<int64_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar2<int64_t>>();
-                if (H5T_SCALAR2<uint64_t>::equal(type))         return getCppType<h5pp::type::compound::Scalar2<uint64_t>>();
-                if (H5T_SCALAR2<int_fast64_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar2<int_fast64_t>>();
-                if (H5T_SCALAR2<uint_fast64_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar2<uint_fast64_t>>();
-                if (H5T_SCALAR3<int64_t>::equal(type))          return getCppType<h5pp::type::compound::Scalar3<int64_t>>();
-                if (H5T_SCALAR3<uint64_t>::equal(type))         return getCppType<h5pp::type::compound::Scalar3<uint64_t>>();
-                if (H5T_SCALAR3<int_fast64_t>::equal(type))     return getCppType<h5pp::type::compound::Scalar3<int_fast64_t>>();
-                if (H5T_SCALAR3<uint_fast64_t>::equal(type))    return getCppType<h5pp::type::compound::Scalar3<uint_fast64_t>>();
-
-            }else{
-                if (H5T_COMPLEX<double>::equal(type))           return getCppType<std::complex<double>>();
-                if (H5T_COMPLEX<long double>::equal(type))      return getCppType<std::complex<long double>>();
-                if (H5T_COMPLEX<float>::equal(type))            return getCppType<std::complex<float>>();
-                if (H5T_SCALAR2<double>::equal(type))           return getCppType<h5pp::type::compound::Scalar2<double>>();
-                if (H5T_SCALAR2<long double>::equal(type))      return getCppType<h5pp::type::compound::Scalar2<long double>>();
-                if (H5T_SCALAR2<float>::equal(type))            return getCppType<h5pp::type::compound::Scalar2<float>>();
-                if (H5T_SCALAR3<double>::equal(type))           return getCppType<h5pp::type::compound::Scalar3<double>>();
-                if (H5T_SCALAR3<long double>::equal(type))      return getCppType<h5pp::type::compound::Scalar3<long double>>();
-                if (H5T_SCALAR3<float>::equal(type))            return getCppType<h5pp::type::compound::Scalar3<float>>();
-            }
-            return {typeid(std::vector<std::byte>), "H5T_COMPOUND", h5size};
+            return {typeid(std::vector<std::byte>), h5pp::format("{}", cpptypenames), h5size};
         }
         if(H5Tequal(type, H5T_NATIVE_HBOOL))            return getCppType<hbool_t>();
         if(H5Tequal(type, H5T_NATIVE_B8))               return getCppType<std::byte>();
+
         std::string name;
         switch(h5class){
             case H5T_class_t::H5T_INTEGER:      name = "H5T_INTEGER"; break;
@@ -912,6 +902,7 @@ namespace h5pp::hdf5 {
             default: name = "UNKNOWN TYPE";
         }
         /* clang-format on */
+        auto h5size = H5Tget_size(type);
         if(H5Tcommitted(type) > 0) {
             H5Eprint(H5E_DEFAULT, stderr);
             if(h5pp::logger::log->level() == 0) h5pp::logger::log->trace("No C++ type match for HDF5 type [{}]", getName(type));
@@ -1190,7 +1181,7 @@ namespace h5pp::hdf5 {
     }
 
     inline void
-        selectHyperslab(hid::h5s &space, const Hyperslab &hyperSlab, std::optional<H5S_seloper_t> select_op_override = std::nullopt) {
+        selectHyperslab(const hid::h5s &space, const Hyperslab &hyperSlab, std::optional<H5S_seloper_t> select_op_override = std::nullopt) {
         if(hyperSlab.empty()) return;
         hid_t h5space = space.value(); // We will be using this identifier a lot here
         int   rank    = H5Sget_simple_extent_ndims(h5space);
@@ -1402,7 +1393,7 @@ namespace h5pp::hdf5 {
         if(H5Dset_extent(dataset, dims.data()) < 0) throw h5pp::runtime_error("Failed to set extent on dataset");
     }
 
-    inline void setDatasetDims(h5pp::DsetInfo &info, const std::vector<hsize_t> &dims) {
+    inline void setDatasetDims(DsetInfo &info, const std::vector<hsize_t> &dims) {
         info.assertResizeReady();
         setDatasetDims(info.h5Dset.value(), dims);
         info.h5Space  = H5Dget_space(info.h5Space.value());
@@ -1549,14 +1540,16 @@ namespace h5pp::hdf5 {
         if(info.dsetDims->size() != newDimensions.size())
             throw h5pp::runtime_error("Could not resize dataset [{}]: "
                                       "Rank mismatch: "
-                                      "The given dimensions {} must have the same number of elements as the target dimensions {}",
+                                      "The dataset dimensions {} must have the same number of elements as the new dimensions {}",
                                       info.dsetPath.value(),
                                       info.dsetDims.value(),
                                       newDimensions);
+
+        // If the dataset is already larger than newDimensions, and we only allow it to grow, there is nothing to do.
         if(policy == h5pp::ResizePolicy::GROW) {
             bool allDimsAreSmaller = true;
             for(size_t idx = 0; idx < newDimensions.size(); idx++)
-                if(newDimensions[idx] > info.dsetDims.value()[idx]) allDimsAreSmaller = false;
+                if(info.dsetDims.value()[idx] < newDimensions[idx]) allDimsAreSmaller = false;
             if(allDimsAreSmaller) return;
         }
         std::string oldInfoStr = info.string(h5pp::logger::logIf(LogLevel::debug));
@@ -1575,15 +1568,21 @@ namespace h5pp::hdf5 {
                     info.dsetDimsMax.value());
         }
 
-        herr_t err = H5Dset_extent(info.h5Dset.value(), newDimensions.data());
+        std::vector<hsize_t> finalDimensions = newDimensions;
+        if(policy == h5pp::ResizePolicy::GROW) {
+            // Make sure we only grow when the policy is to grow
+            for(size_t idx = 0; idx < finalDimensions.size(); idx++)
+                finalDimensions[idx] = std::max(newDimensions[idx], info.dsetDims.value()[idx]);
+        }
+        herr_t err = H5Dset_extent(info.h5Dset.value(), finalDimensions.data());
         if(err < 0)
             throw h5pp::runtime_error("Failed to resize dataset [{}] from dimensions {} to {}",
                                       info.dsetPath.value(),
                                       info.dsetDims.value(),
-                                      newDimensions);
+                                      finalDimensions);
 
         // By default, all the space (old and new) is selected
-        info.dsetDims = newDimensions;
+        info.dsetDims = finalDimensions;
         info.h5Space  = H5Dget_space(info.h5Dset->value()); // Needs to be refreshed after H5Dset_extent
         info.dsetByte = h5pp::hdf5::getBytesTotal(info.h5Dset.value(), info.h5Space, info.h5Type);
         info.dsetSize = h5pp::hdf5::getSize(info.h5Space.value());
@@ -1593,16 +1592,36 @@ namespace h5pp::hdf5 {
     }
 
     inline void resizeDataset(DsetInfo &dsetInfo, const DataInfo &dataInfo) {
-        // We use this function when writing to a dataset on file.
-        // Then we RESIZE the dataset to FIT given data.
-        // If there is a hyperslab selection on given data, we only need to take that into account.
-        // The new dataset dimensions should be dataInfo.dataDims, unless dataInfo.dataSlab.extent exists, which has priority.
-        // Note that the final dataset size is then determined by dsetInfo.resizePolicy
-        dataInfo.assertWriteReady();
-        if(dataInfo.dataSlab and dataInfo.dataSlab->extent)
-            resizeDataset(dsetInfo, dataInfo.dataSlab->extent.value());
-        else
-            resizeDataset(dsetInfo, dataInfo.dataDims.value());
+        /*! Use this function before writing to a dataset on file.
+         * Requirements
+         *      - dsetInfo.resizePolicy == FIT | GROW
+         *      - dsetInfo.h5Layout == H5D_CHUNKED
+         * If the requirements are fullfilled, this function makes sure the dataset is large enough to receive data.
+         * This also takes hyperslabs into account:
+         *      - If there is a hyperslab in dataInfo, the new dimensions should be at least this big
+         *      - If there is a hyperslab in dsetInfo, the new dimensions should be increased to include it.
+         */
+        try {
+            dataInfo.assertWriteReady();
+            auto newDimensions = dataInfo.dataDims.value();
+            if(dataInfo.dataSlab and dataInfo.dataSlab->extent) {
+                if(dataInfo.dataDims->size() != dataInfo.dataSlab->extent->size())
+                    h5pp::runtime_error("rank mismatch: \n data dims {}\n data slab {}",
+                                        dataInfo.dataDims.value(),
+                                        dataInfo.dataSlab->string());
+                newDimensions = dataInfo.dataSlab->extent.value();
+            }
+            if(dsetInfo.dsetSlab and dsetInfo.dsetSlab->offset and dsetInfo.dsetSlab->extent) {
+                const auto &offset = dsetInfo.dsetSlab->offset.value();
+                const auto &extent = dsetInfo.dsetSlab->extent.value();
+                if(newDimensions.size() != offset.size() or newDimensions.size() != extent.size())
+                    h5pp::runtime_error("rank mismatch: \n data dims {}\n dset slab {}", newDimensions, dsetInfo.dsetSlab->string());
+                for(size_t idx = 0; idx < newDimensions.size(); idx++) {
+                    newDimensions[idx] = std::max(newDimensions[idx], offset[idx] + extent[idx]);
+                }
+            }
+            resizeDataset(dsetInfo, newDimensions);
+        } catch(const std::exception &e) { throw h5pp::runtime_error("Failed to resize dataset: {}", e.what()); }
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
@@ -1765,6 +1784,38 @@ namespace h5pp::hdf5 {
         inline long        maxDepth = -1;
         inline bool        symlinks = false;
         inline std::string searchKey;
+        template<H5O_type_t ObjType>
+        [[nodiscard]] inline constexpr std::string_view getObjTypeName() {
+            if constexpr(ObjType == H5O_type_t::H5O_TYPE_DATASET) return "dataset";
+            if constexpr(ObjType == H5O_type_t::H5O_TYPE_GROUP) return "group";
+            if constexpr(ObjType == H5O_type_t::H5O_TYPE_UNKNOWN) return "unknown";
+            if constexpr(ObjType == H5O_type_t::H5O_TYPE_NAMED_DATATYPE) return "named datatype";
+            if constexpr(ObjType == H5O_type_t::H5O_TYPE_NTYPES) return "ntypes";
+            return "map"; // Only in HDF5 v 1.12
+        }
+        [[nodiscard]] inline std::string_view getObjTypeName(H5O_type_t type) {
+            if(type == H5O_type_t::H5O_TYPE_DATASET) return "dataset";
+            if(type == H5O_type_t::H5O_TYPE_GROUP) return "group";
+            if(type == H5O_type_t::H5O_TYPE_UNKNOWN) return "unknown";
+            if(type == H5O_type_t::H5O_TYPE_NAMED_DATATYPE) return "named datatype";
+            if(type == H5O_type_t::H5O_TYPE_NTYPES) return "ntypes";
+            return "map"; // Only in HDF5 v 1.12
+        }
+        template<H5L_type_t LinkType>
+        [[nodiscard]] inline constexpr std::string_view getLinkTypeName() {
+            if constexpr(LinkType == H5L_type_t::H5L_TYPE_ERROR) return "error";
+            if constexpr(LinkType == H5L_type_t::H5L_TYPE_HARD) return "hard";
+            if constexpr(LinkType == H5L_type_t::H5L_TYPE_SOFT) return "soft";
+            if constexpr(LinkType == H5L_type_t::H5L_TYPE_EXTERNAL) return "external";
+            if constexpr(LinkType == H5L_type_t::H5L_TYPE_MAX) return "max";
+        }
+        [[nodiscard]] inline std::string_view getObjTypeName(H5L_type_t type) {
+            if(type == H5L_type_t::H5L_TYPE_ERROR) return "error";
+            if(type == H5L_type_t::H5L_TYPE_HARD) return "hard";
+            if(type == H5L_type_t::H5L_TYPE_SOFT) return "soft";
+            if(type == H5L_type_t::H5L_TYPE_EXTERNAL) return "external";
+            if(type == H5L_type_t::H5L_TYPE_MAX) return "max";
+        }
         template<H5O_type_t ObjType, typename InfoType>
         inline herr_t matcher([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const InfoType *info, void *opdata) {
             // If object type is the one requested, and name matches the search key, then add it to the match list (a vector<string>)
@@ -1772,10 +1823,13 @@ namespace h5pp::hdf5 {
             // Return 0 to continue searching
             // Return 1 to finish the search. Normally when we've reached max search hits.
 
+            // Skip symlinks if not asked for
+            if(not symlinks and (info->type == H5L_TYPE_SOFT or info->type == H5L_TYPE_EXTERNAL)) return 0;
             std::string_view linkPath(name); // <-- This is the full path to the object that we are currently visiting.
 
             // If this group is deeper than maxDepth, just return
-            if(maxDepth >= 0 and std::count(linkPath.begin(), linkPath.end(), '/') > maxDepth) return 0;
+            auto depth = std::count(linkPath.begin(), linkPath.end(), '/');
+            if(maxDepth >= 0 and depth > maxDepth) return 0;
 
             // Get the name of the object without the full path, to match the searchKey
             auto slashpos = linkPath.rfind('/');
@@ -1786,7 +1840,16 @@ namespace h5pp::hdf5 {
             try {
                 if constexpr(std::is_same_v<InfoType, H5O_info_t>) {
                     if(info->type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
-                        if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) matchList->push_back(name);
+                        if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) {
+                            if(depth >= 1 and not symlinks) { // H5Lget_info fails on the root "." or "/"
+                                // Make sure not to include symbolic links if not asked for
+                                H5L_info_t lInfo;
+                                herr_t     lerr = H5Lget_info(id, name, &lInfo, H5P_DEFAULT);
+                                if(lerr < 0) throw h5pp::runtime_error("H5Lget_info failed on link [{}]", name);
+                                if(lInfo.type == H5L_type_t::H5L_TYPE_SOFT or lInfo.type == H5L_TYPE_EXTERNAL) return 0;
+                            }
+                            matchList->push_back(name);
+                        }
                     }
                 }
 
@@ -1802,7 +1865,10 @@ namespace h5pp::hdf5 {
                     #endif
                     /* clang-format on */
                     if(oInfo.type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
-                        if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) matchList->push_back(name);
+                        if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) {
+                            // Otherwise append the match
+                            matchList->push_back(name);
+                        }
                     }
                 } else {
                     if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) { matchList->push_back(name); }
@@ -1812,92 +1878,9 @@ namespace h5pp::hdf5 {
                     return 1;
                 else
                     return 0;
-            } catch(...) { throw h5pp::logic_error(h5pp::format("Could not match object [{}] | loc_id [{}]", name, id)); }
-        }
-
-        template<H5O_type_t ObjType>
-        [[nodiscard]] inline constexpr std::string_view getObjTypeName() {
-            if constexpr(ObjType == H5O_type_t::H5O_TYPE_DATASET)
-                return "dataset";
-            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_GROUP)
-                return "group";
-            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_UNKNOWN)
-                return "unknown";
-            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_NAMED_DATATYPE)
-                return "named datatype";
-            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_NTYPES)
-                return "ntypes";
-            else
-                return "map"; // Only in HDF5 v 1.12
-        }
-
-        template<H5O_type_t ObjType, typename h5x>
-        herr_t H5L_custom_iterate_by_name(const h5x                &loc,
-                                          std::string_view          root,
-                                          std::vector<std::string> &matchList,
-                                          const hid::h5p           &linkAccess = H5P_DEFAULT) {
-            H5Eset_auto(H5E_DEFAULT, nullptr, nullptr); // Silence the error we get from using index directly
-            H5O_info_t oInfo;
-            H5L_info_t lInfo;
-            /* clang-format off */
-            for(hsize_t idx = 0; idx < std::numeric_limits<hsize_t>::max(); idx++) {
-                std::string linkPath; // <-- This is the path to the object that we are currently visiting, relative to root
-                ssize_t namesize = H5Lget_name_by_idx(loc, root.data(), H5_index_t::H5_INDEX_NAME,
-                                                      H5_iter_order_t::H5_ITER_NATIVE, idx,nullptr, linkPath.size(),linkAccess);
-                if(namesize <= 0) {
-                    H5Eclear(H5E_DEFAULT);
-                    break;
-                }
-                linkPath.resize(static_cast<size_t>(namesize));
-                namesize = H5Lget_name_by_idx(loc, root.data(), H5_index_t::H5_INDEX_NAME,
-                                                      H5_iter_order_t::H5_ITER_NATIVE, idx,linkPath.data(),linkPath.size()+1,linkAccess);
-
-                // If this group is deeper than maxDepth, just return
-                if(maxDepth >= 0 and std::count(linkPath.begin(), linkPath.end(), '/') > maxDepth) return 0;
-
-                // Get the name of the object without the full path, to match the searchKey
-                auto slashpos = linkPath.rfind('/');
-                if(slashpos == std::string_view::npos) slashpos = 0;
-                auto linkName = linkPath.substr(slashpos);
-
-                if(ObjType == H5O_TYPE_UNKNOWN) {
-                    // Accept based on name
-                    if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) matchList.emplace_back(linkPath);
-                    if(maxHits > 0 and static_cast<long>(matchList.size()) >= maxHits) return 0;
-                } else {
-                    // Check link type
-                    herr_t lres = H5Lget_info_by_idx(loc, root.data(), H5_index_t::H5_INDEX_NAME, H5_iter_order_t::H5_ITER_NATIVE,idx,  &lInfo, linkAccess);
-                    if (lres < 0) {
-                       H5Eclear(H5E_DEFAULT);
-                       break;
-                    }
-                    switch(lInfo.type){
-                      case H5L_type_t::H5L_TYPE_EXTERNAL:
-                      case H5L_type_t::H5L_TYPE_SOFT: if(not symlinks) break;
-                      default:;
-                    }
-
-                    // Name is not enough to establish a match. Check object type.
-                    #if defined(H5Oget_info_by_idx_vers) && H5Oget_info_by_idx_vers >= 2
-                    herr_t res = H5Oget_info_by_idx(loc, root.data(),
-                                                    H5_index_t::H5_INDEX_NAME, H5_iter_order_t::H5_ITER_NATIVE,
-                                                    idx, &oInfo, H5O_INFO_BASIC,linkAccess );
-                    #else
-                    herr_t res = H5Oget_info_by_idx(loc, root.data(),
-                                                    H5_index_t::H5_INDEX_NAME, H5_iter_order_t::H5_ITER_NATIVE,
-                                                    idx, &oInfo, linkAccess );
-                    #endif
-                    if(res < 0) {
-                        H5Eclear(H5E_DEFAULT);
-                        break;
-                    }
-                    if(oInfo.type == ObjType and (searchKey.empty() or linkName.find(searchKey) != std::string::npos))
-                        matchList.emplace_back(linkPath);
-                    if(maxHits > 0 and static_cast<long>(matchList.size()) >= maxHits) return 0;
-                }
+            } catch(const std::exception &ex) {
+                throw h5pp::logic_error("Could not match object [{}] | loc_id [{}] | reason: {}", name, id, ex.what());
             }
-            /* clang-format on */
-            return 0;
         }
 
         template<H5O_type_t ObjType, typename h5x>
@@ -1910,28 +1893,26 @@ namespace h5pp::hdf5 {
                           "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
             auto safe_root = util::safe_str(root);
 
-            if(internal::maxDepth == 0)
-                // Faster when we don't need to iterate recursively
-                return H5L_custom_iterate_by_name<ObjType>(loc, safe_root, matchList, linkAccess);
-
-#if defined(H5Ovisit_by_name_vers) && H5Ovisit_by_name_vers >= 2
-            return H5Ovisit_by_name(loc,
+            if constexpr(h5pp::type::sfinae::is_any_v<h5x, hid::h5f, hid::h5g>) {
+                if(internal::maxDepth == 0) {
+                    // Faster when we don't need to iterate recursively
+                    hsize_t idx = 0;
+                    auto    gid = openLink<hid::h5g>(loc, safe_root, std::nullopt, linkAccess);
+                    return H5Literate(gid,
+                                      H5_index_t::H5_INDEX_NAME,
+                                      H5_iter_order_t::H5_ITER_NATIVE,
+                                      &idx,
+                                      internal::matcher<ObjType>,
+                                      &matchList);
+                }
+            }
+            return H5Lvisit_by_name(loc,
                                     safe_root.c_str(),
-                                    H5_INDEX_NAME,
-                                    H5_ITER_NATIVE,
+                                    H5_index_t::H5_INDEX_NAME,
+                                    H5_iter_order_t::H5_ITER_NATIVE,
                                     internal::matcher<ObjType>,
                                     &matchList,
-                                    H5O_INFO_BASIC,
                                     linkAccess);
-#else
-            return H5Ovisit_by_name(loc,
-                                    safe_root.c_str(),
-                                    H5_INDEX_NAME,
-                                    H5_ITER_NATIVE,
-                                    internal::matcher<ObjType>,
-                                    &matchList,
-                                    linkAccess);
-#endif
         }
 
     }
@@ -1983,7 +1964,7 @@ namespace h5pp::hdf5 {
         return contents;
     }
 
-    inline void createDataset(h5pp::DsetInfo &dsetInfo, const PropertyLists &plists = PropertyLists()) {
+    inline void createDataset(DsetInfo &dsetInfo, const PropertyLists &plists = PropertyLists()) {
         // Here we create, the dataset id and set its properties before writing data to it.
         dsetInfo.assertCreateReady();
         if(dsetInfo.dsetExists and dsetInfo.dsetExists.value()) {
@@ -2390,11 +2371,13 @@ namespace h5pp::hdf5 {
             return;
         }
 #endif
-        dsetInfo.assertWriteReady();
-        dataInfo.assertWriteReady();
         try {
+            dsetInfo.assertWriteReady();
+            dataInfo.assertWriteReady();
             h5pp::logger::log->trace("Writing from memory  {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
             h5pp::logger::log->trace("Writing into dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            if(dsetInfo.dsetSlab) selectHyperslab(dsetInfo.h5Space.value(), dsetInfo.dsetSlab.value());
+            if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
             h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
             h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
             h5pp::hdf5::assertSpacesEqual<DataType>(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
@@ -2430,8 +2413,8 @@ namespace h5pp::hdf5 {
 
     template<typename DataType, bool compile = h5pp::has_direct_chunk>
     void writeDataset_chunkwise([[maybe_unused]] const DataType            &data,
-                                [[maybe_unused]] h5pp::DataInfo            &dataInfo,
-                                [[maybe_unused]] h5pp::DsetInfo            &dsetInfo,
+                                [[maybe_unused]] DataInfo                  &dataInfo,
+                                [[maybe_unused]] DsetInfo                  &dsetInfo,
                                 [[maybe_unused]] const h5pp::PropertyLists &plists = PropertyLists()) {
         if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
             h5pp::logger::log->warn("writeDataset_chunkwise: text data is not supported, defaulting to normal writeDataset");
@@ -2512,18 +2495,17 @@ namespace h5pp::hdf5 {
             return;
         }
 #endif
-
-        dsetInfo.assertReadReady();
-        dataInfo.assertReadReady();
-        h5pp::logger::log->trace("Reading into memory  {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
-        h5pp::logger::log->trace("Reading from dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::trace)));
         try {
+            dsetInfo.assertReadReady();
+            dataInfo.assertReadReady();
+            h5pp::logger::log->trace("Reading into memory  {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            h5pp::logger::log->trace("Reading from dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            if(dsetInfo.dsetSlab) selectHyperslab(dsetInfo.h5Space.value(), dsetInfo.dsetSlab.value());
+            if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
             h5pp::hdf5::assertReadTypeIsLargeEnough<DataType>(dsetInfo.h5Type.value());
             h5pp::hdf5::assertReadSpaceIsLargeEnough(data, dataInfo.h5Space.value(), dsetInfo.h5Type.value());
             h5pp::hdf5::assertSpacesEqual<DataType>(dataInfo.h5Space.value(), dsetInfo.h5Space.value(), dsetInfo.h5Type.value());
-        }
-
-        catch(const std::exception &ex) {
+        } catch(const std::exception &ex) {
             throw h5pp::runtime_error("Error reading dataset [{}]:\n{}", dsetInfo.dsetPath.value(), ex.what());
         }
         //        h5pp::hdf5::assertBytesPerElemMatch<DataType>(dsetInfo.h5Type.value());
@@ -2630,11 +2612,13 @@ namespace h5pp::hdf5 {
             return;
         }
 #endif
-        dataInfo.assertWriteReady();
-        attrInfo.assertWriteReady();
         try {
+            dataInfo.assertWriteReady();
+            attrInfo.assertWriteReady();
             h5pp::logger::log->trace("Writing from memory    {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
             h5pp::logger::log->trace("Writing into attribute {}", attrInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            if(attrInfo.attrSlab) selectHyperslab(attrInfo.h5Space.value(), attrInfo.attrSlab.value());
+            if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
             h5pp::hdf5::assertWriteBufferIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
             h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
             h5pp::hdf5::assertSpacesEqual<DataType>(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
@@ -2677,11 +2661,13 @@ namespace h5pp::hdf5 {
             return;
         }
 #endif
-        dataInfo.assertReadReady();
-        attrInfo.assertReadReady();
         try {
+            dataInfo.assertReadReady();
+            attrInfo.assertReadReady();
             h5pp::logger::log->trace("Reading into memory {}", dataInfo.string(h5pp::logger::logIf(LogLevel::trace)));
             h5pp::logger::log->trace("Reading from file   {}", attrInfo.string(h5pp::logger::logIf(LogLevel::trace)));
+            if(attrInfo.attrSlab) selectHyperslab(attrInfo.h5Space.value(), attrInfo.attrSlab.value());
+            if(dataInfo.dataSlab) selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
             h5pp::hdf5::assertReadSpaceIsLargeEnough(data, dataInfo.h5Space.value(), attrInfo.h5Type.value());
             h5pp::hdf5::assertBytesPerElemMatch<DataType>(attrInfo.h5Type.value());
             h5pp::hdf5::assertSpacesEqual<DataType>(dataInfo.h5Space.value(), attrInfo.h5Space.value(), attrInfo.h5Type.value());
@@ -3182,15 +3168,15 @@ namespace h5pp::hdf5 {
         if(not H5Tequal_recurse(srcInfo.h5Type.value(), tgtInfo.h5Type.value()))
             throw h5pp::runtime_error("copyTableRecords: table type mismatch");
         if(srcInfo.recordBytes.value() != tgtInfo.recordBytes.value())
-            throw h5pp::runtime_error("copyTableRecords: table record byte size mismatch src {} != tgt {}",
+            throw h5pp::runtime_error("copyTableRecords: table record byte size mismatch \n src {} \n tgt {}",
                                       srcInfo.recordBytes.value(),
                                       tgtInfo.recordBytes.value());
         if(srcInfo.fieldSizes.value() != tgtInfo.fieldSizes.value())
-            throw h5pp::runtime_error("copyTableRecords: table field sizes mismatch src {} != tgt {}",
+            throw h5pp::runtime_error("copyTableRecords: table field sizes mismatch \n src {} \n tgt {}",
                                       srcInfo.fieldSizes.value(),
                                       tgtInfo.fieldSizes.value());
         if(srcInfo.fieldOffsets.value() != tgtInfo.fieldOffsets.value())
-            throw h5pp::runtime_error("copyTableRecords: table field offsets mismatch src {} != tgt {}",
+            throw h5pp::runtime_error("copyTableRecords: table field offsets mismatch \n src {} \n tgt {}",
                                       srcInfo.fieldOffsets.value(),
                                       tgtInfo.fieldOffsets.value());
 
