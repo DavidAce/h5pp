@@ -76,7 +76,7 @@ take one of these string values:
 | Value                | Description                                                                                                                                          |
 |----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `none`               | Skip handling dependencies                                                                                                                           |
-| `find` **(default)** | Use CMake's `find_package`  to find dependencies                                                                                                     |
+| `find` **(default)** | Use CMake's `find_package` to find dependencies                                                                                                     |
 | `cmake` **¹**        | Use isolated CMake instances to download and install dependencies during configure. Disregards pre-installed dependencies on your system             |
 | `fetch` **²**        | Use FetchContent to download and install dependencies. Disregards pre-installed dependencies on your system                                          |
 | `cpm` **³**          | Use [CPM](https://github.com/cpm-cmake/CPM.cmake)to download and install dependencies. Disregards pre-installed dependencies on your system          |
