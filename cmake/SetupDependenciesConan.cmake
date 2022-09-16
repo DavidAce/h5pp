@@ -17,13 +17,26 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
     endif()
 
     include(${CMAKE_BINARY_DIR}/conan/conan.cmake)
+
+    # Copy the current compiler flags to conan
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" CONAN_BUILD_TYPE)
+    set(CONAN_CXXFLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${CONAN_BUILD_TYPE}}")
+    set(CONAN_CFLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${CONAN_BUILD_TYPE}}")
+    set(CONAN_LDFLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+
     conan_cmake_autodetect(CONAN_AUTODETECT)
     conan_cmake_install(
             CONAN_COMMAND ${CONAN_COMMAND}
-            BUILD missing outdated cascade
-            GENERATOR CMakeDeps
+            BUILD ${CONAN_BUILD} missing outdated cascade
+            GENERATOR cmake_find_package_multi
             SETTINGS ${CONAN_AUTODETECT}
             INSTALL_FOLDER ${CMAKE_BINARY_DIR}/conan
+            ENV CC=${CMAKE_C_COMPILER} # Fixes issue with CMake not detecting the right compiler when not building from scratch
+            ENV CXX=${CMAKE_CXX_COMPILER} # Fixes issue with CMake not detecting the right compiler when not building from scratch
+            ENV CXXFLAGS=${CONAN_CXXFLAGS}
+            ENV CFLAGS=${CONAN_CFLAGS}
+            ENV LDFLAGS=${CONAN_LDFLAGS}
+            ${CONAN_OPTIONS}
             PATH_OR_REFERENCE ${CMAKE_SOURCE_DIR}
     )
 
