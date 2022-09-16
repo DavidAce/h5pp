@@ -26,10 +26,14 @@ if(H5PP_PACKAGE_MANAGER MATCHES "cmake|cpm|fetch|conan")
         set(H5PP_DEPS_BUILD_DIR ${CMAKE_BINARY_DIR}/h5pp-deps-build)
     endif()
     if(NOT H5PP_DEPS_INSTALL_DIR)
-        set(H5PP_DEPS_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}) # Install to the same location as h5pp by default
+        if(DEFINED CMAKE_INSTALL_PREFIX)
+            set(H5PP_DEPS_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}) # Install to the same location as h5pp by default
+        else()
+            set(H5PP_DEPS_INSTALL_DIR ${CMAKE_BINARY_DIR}/h5pp-deps-install)
+        endif()
     endif()
-    set(PKG_INSTALL_DIR_DEFAULT ${H5PP_DEPS_INSTALL_DIR} CACHE STRING "" FORCE )
-    set(PKG_BUILD_DIR_DEFAULT   ${H5PP_DEPS_BUILD_DIR}   CACHE STRING "" FORCE )
+    set(PKG_INSTALL_DIR_DEFAULT ${H5PP_DEPS_INSTALL_DIR} CACHE INTERNAL "")
+    set(PKG_BUILD_DIR_DEFAULT   ${H5PP_DEPS_BUILD_DIR}   CACHE INTERNAL "")
     set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${PKG_INSTALL_DIR_DEFAULT};${CMAKE_INSTALL_PREFIX}")
     list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
     set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" CACHE INTERNAL "Paths for find_package lookup" FORCE)
@@ -52,8 +56,8 @@ if(WIN32)
 endif()
 
 if(H5PP_PACKAGE_MANAGER MATCHES "conan")
-# Paths to search for conan installation.
-list(APPEND H5PP_CONAN_HINTS
+    # Paths to search for conan installation.
+    list(APPEND H5PP_CONAN_HINTS
         ${CONAN_PREFIX}
         $ENV{CONAN_PREFIX}
         ${CONDA_PREFIX}
