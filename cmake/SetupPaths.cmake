@@ -51,7 +51,7 @@ if(WIN32)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE PATH "Collect .lib")
 endif()
 
-
+if(H5PP_PACKAGE_MANAGER MATCHES "conan")
 # Paths to search for conan installation.
 list(APPEND H5PP_CONAN_HINTS
         ${CONAN_PREFIX}
@@ -64,6 +64,9 @@ list(APPEND H5PP_CONAN_HINTS
         $ENV{HOME}/miniconda
         $ENV{HOME}/.conda
         )
-list(APPEND H5PP_CONAN_PATH_SUFFIXES bin envs/dmrg/bin)
-mark_as_advanced(H5PP_CONAN_HINTS)
-mark_as_advanced(H5PP_CONAN_PATH_SUFFIXES)
+    list(APPEND H5PP_CONAN_PATH_SUFFIXES bin envs/dmrg/bin)
+    list(REMOVE_DUPLICATES H5PP_CONAN_HINTS)
+    list(REMOVE_DUPLICATES H5PP_CONAN_PATH_SUFFIXES)
+    mark_as_advanced(H5PP_CONAN_HINTS)
+    mark_as_advanced(H5PP_CONAN_PATH_SUFFIXES)
+endif()
