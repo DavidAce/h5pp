@@ -48,7 +48,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: |
-            ~/.conan/data
+#            ~/.conan/data
             ~/cpm-cache
 #            ~/h5pp-install
 #            build/Debug/h5pp-deps-install
@@ -102,6 +102,7 @@ jobs:
           -DH5PP_ENABLE_COVERAGE:BOOL=ON                              \
           -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
           -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
+          -DCONAN_BUILD=all                                           \
           -G "Unix Makefiles"                                         \
           --loglevel=DEBUG \
           ../../
