@@ -28,7 +28,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
     conan_cmake_install(
             CONAN_COMMAND ${CONAN_COMMAND}
             BUILD ${CONAN_BUILD} missing outdated cascade
-            GENERATOR cmake_find_package_multi
+            GENERATOR CMakeDeps
             SETTINGS ${CONAN_AUTODETECT}
             INSTALL_FOLDER ${CMAKE_BINARY_DIR}/conan
             ENV CC=${CMAKE_C_COMPILER} # Fixes issue with CMake not detecting the right compiler when not building from scratch
