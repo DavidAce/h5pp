@@ -43,13 +43,15 @@ jobs:
         with:
           python-version: '3.x'
 
-      - uses: actions/cache@v2
+      - name: Setup caches
+        id: h5pp-cache
+        uses: actions/cache@v3
         with:
           path: |
             ~/cpm-cache
-#            ~/.conan/data
-#            ~/h5pp-install
-#            build/Debug/h5pp-deps-install
+            ~/.conan/data
+          #            ~/h5pp-install
+          #            build/Debug/h5pp-deps-install
           key: ${{ runner.os }}-${{ env.cache-name }}
 
       - uses: hendrikmuhs/ccache-action@v1
@@ -101,7 +103,6 @@ jobs:
           -DH5PP_ENABLE_PCH:BOOL=OFF                                  \
           -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
           -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
-          -DCONAN_BUILD=all                                           \
           -G "Unix Makefiles"                                         \
           --loglevel=DEBUG \
           ../../
