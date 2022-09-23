@@ -70,7 +70,7 @@ namespace h5pp::scan {
 
         // Get c++ properties
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
-            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::type::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Scanned metadata {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
         auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
@@ -178,7 +178,7 @@ namespace h5pp::scan {
 
         // Get c++ properties
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
-            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::type::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Created metadata {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
         auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
@@ -263,8 +263,8 @@ namespace h5pp::scan {
 
         // Next infer the missing properties
         /* clang-format off */
+        if(not info.h5Type)      info.h5Type        = h5pp::type::getH5Type<DataType>();
         if(not info.dsetDims)    info.dsetDims      = h5pp::util::getDimensions(data);
-        if(not info.h5Type)      info.h5Type        = h5pp::util::getH5Type<DataType>();
         if(not info.dsetSize)    info.dsetSize      = h5pp::util::getSizeFromDimensions(info.dsetDims.value());
         if(not info.dsetRank)    info.dsetRank      = h5pp::util::getRankFromDimensions(info.dsetDims.value());
         if(not info.dsetByte)    info.dsetByte      = h5pp::util::getBytesTotal(data,info.dsetSize);
@@ -291,7 +291,7 @@ namespace h5pp::scan {
 
         // Get c++ properties
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
-            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::type::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Created metadata {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
         auto error_msg = h5pp::debug::reportCompatibility(info.h5Layout, info.dsetDims, info.dsetChunk, info.dsetDimsMax);
@@ -324,7 +324,7 @@ namespace h5pp::scan {
         if(not info.dataRank) info.dataRank = h5pp::util::getRankFromDimensions(info.dataDims.value());
         if(not info.dataByte) info.dataByte = info.dataSize.value() * h5pp::util::getBytesPerElem<DataType>();
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
-            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType<DataType>();
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::type::getCppType<DataType>();
         h5pp::util::setStringSize<DataType>(data,
                                             info.dataSize.value(),
                                             info.dataByte.value(),
@@ -403,7 +403,7 @@ namespace h5pp::scan {
 #endif
         // Get c++ properties
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
-            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::type::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Scanned metadata {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
     }
@@ -466,7 +466,7 @@ namespace h5pp::scan {
         }
 
         // Next infer the missing properties
-        if(not info.h5Type)   info.h5Type   = h5pp::util::getH5Type<DataType>();
+        if(not info.h5Type)   info.h5Type   = h5pp::type::getH5Type<DataType>();
         if(not info.attrDims) info.attrDims = h5pp::util::getDimensions(data);
         if(not info.attrSize) info.attrSize = h5pp::util::getSizeFromDimensions(info.attrDims.value());
         if(not info.attrRank) info.attrRank = h5pp::util::getRankFromDimensions(info.attrDims.value());
@@ -486,7 +486,7 @@ namespace h5pp::scan {
 #endif
         // Get c++ properties
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
-            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::type::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Created  metadata  {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
     }
@@ -543,7 +543,7 @@ namespace h5pp::scan {
 #endif
         // Get c++ properties
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
-            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::hdf5::getCppType(info.h5Type.value());
+            std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::type::getCppType(info.h5Type.value());
 
         h5pp::logger::log->trace("Created  metadata  {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
     }
@@ -707,7 +707,7 @@ namespace h5pp::scan {
             info.cppTypeName  = std::vector<std::string>();
             info.cppTypeSize  = std::vector<size_t>();
             for(const auto &ftype : info.fieldTypes.value()){
-                auto cppInfo = h5pp::hdf5::getCppType(ftype);
+                auto cppInfo = h5pp::type::getCppType(ftype);
                 info.cppTypeIndex->emplace_back(std::get<0>(cppInfo));
                 info.cppTypeName->emplace_back(std::get<1>(cppInfo));
                 info.cppTypeSize->emplace_back(std::get<2>(cppInfo));

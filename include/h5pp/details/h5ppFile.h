@@ -535,7 +535,7 @@ namespace h5pp {
             options.dataDims      = dataDims;
             options.dsetChunkDims = dsetChunkDims;
             options.dsetMaxDims   = dsetMaxDims;
-            options.h5Type        = h5pp::util::getH5Type<DataType>();
+            options.h5Type        = h5pp::type::getH5Type<DataType>();
             options.h5Layout      = h5Layout;
             options.compression   = getCompressionLevel(compression);
             // If dsetdims is a nullopt we can infer its dimensions from the given dataset

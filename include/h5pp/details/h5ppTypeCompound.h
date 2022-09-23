@@ -1,10 +1,43 @@
 #pragma once
 #include "h5ppHid.h"
-#include "h5ppType.h"
 #include "h5ppTypeSfinae.h"
 #include <complex>
-#include <hdf5.h>
+#include <H5Tpublic.h>
+
 namespace h5pp::type::compound {
+    template<typename DataType>
+    [[nodiscard]] hid::h5t getValueType() {
+        //        if(h5type.has_value()) return h5type.value(); // Intercept
+        using DecayType = typename std::decay<DataType>::type;
+        /* clang-format off */
+        if constexpr (std::is_pointer_v<DecayType>)                return getValueType<typename std::remove_pointer<DecayType>::type>();
+        else if constexpr (std::is_reference_v<DecayType>)         return getValueType<typename std::remove_reference<DecayType>::type>();
+        else if constexpr (std::is_array_v<DecayType>)             return getValueType<typename std::remove_all_extents<DecayType>::type>();
+        else if constexpr (std::is_arithmetic_v<DecayType>){
+            if constexpr(std::is_same_v<DecayType, short>)                        return H5Tcopy(H5T_NATIVE_SHORT);
+            else if constexpr (std::is_same_v<DecayType, int>)                    return H5Tcopy(H5T_NATIVE_INT);
+            else if constexpr (std::is_same_v<DecayType, long>)                   return H5Tcopy(H5T_NATIVE_LONG);
+            else if constexpr (std::is_same_v<DecayType, long long>)              return H5Tcopy(H5T_NATIVE_LLONG);
+            else if constexpr (std::is_same_v<DecayType, unsigned short>)         return H5Tcopy(H5T_NATIVE_USHORT);
+            else if constexpr (std::is_same_v<DecayType, unsigned int>)           return H5Tcopy(H5T_NATIVE_UINT);
+            else if constexpr (std::is_same_v<DecayType, unsigned long>)          return H5Tcopy(H5T_NATIVE_ULONG);
+            else if constexpr (std::is_same_v<DecayType, unsigned long long>)     return H5Tcopy(H5T_NATIVE_ULLONG);
+            else if constexpr (std::is_same_v<DecayType, double>)                 return H5Tcopy(H5T_NATIVE_DOUBLE);
+            else if constexpr (std::is_same_v<DecayType, long double>)            return H5Tcopy(H5T_NATIVE_LDOUBLE);
+            else if constexpr (std::is_same_v<DecayType, bool> )                  return H5Tcopy(H5T_NATIVE_UINT8);
+            else if constexpr (std::is_same_v<DecayType, char> )                  return H5Tcopy(H5T_NATIVE_CHAR);
+            else if constexpr (std::is_same_v<DecayType, unsigned char> )         return H5Tcopy(H5T_NATIVE_UCHAR);
+            else if constexpr (std::is_same_v<DecayType, float>)                  return H5Tcopy(H5T_NATIVE_FLOAT);
+            else static_assert(type::sfinae::unrecognized_type_v<DecayType> and "Failed to match this type with a native HDF5 type");
+        }
+        else if constexpr(sfinae::has_value_type_v<DecayType> or sfinae::has_Scalar_v<DecayType>){
+            if constexpr (type::sfinae::has_Scalar_v <DecayType>)                 return getValueType<typename DecayType::Scalar>();
+            if constexpr (type::sfinae::has_value_type_v <DecayType>)             return getValueType<typename DataType::value_type>();
+        }
+        /* clang-format on */
+        else
+            static_assert(sfinae::invalid_type_v<DecayType> and "This Complex/ScalarN type is not supported");
+    }
 
     template<typename T>
     struct Complex {
