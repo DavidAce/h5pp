@@ -1,5 +1,6 @@
 #pragma once
-
+#include "h5ppTypeSfinae.h"
+#include <H5Tpublic.h>
 /*! \namespace h5pp
  * \brief A simple C++17 wrapper for the HDF5 library
  */
@@ -92,9 +93,7 @@ namespace h5pp {
         static_assert(std::is_same_v<T, LogLevel> or std::is_integral_v<T>);
         if constexpr(std::is_same_v<T, LogLevel>)
             return static_cast<T>(l);
-        else {
-            return std::min(static_cast<T>(l), static_cast<T>(6));
-        }
+        else { return std::min(static_cast<T>(l), static_cast<T>(6)); }
     }
 
     template<typename T>
@@ -102,9 +101,7 @@ namespace h5pp {
         static_assert(std::is_same_v<T, LogLevel> or std::is_integral_v<T>);
         if constexpr(std::is_same_v<T, LogLevel>)
             return l;
-        else {
-            return static_cast<LogLevel>(std::min(l, static_cast<T>(6)));
-        }
+        else { return static_cast<LogLevel>(std::min(l, static_cast<T>(6))); }
     }
 
     template<typename T>
@@ -120,5 +117,66 @@ namespace h5pp {
         using utype = typename std::underlying_type<LogLevel>::type;
         return Level2Num(level) == static_cast<utype>(num);
     }
-
+    template<typename T>
+    constexpr std::string_view enum2str(const T &item) {
+        /* clang-format off */
+        static_assert(std::is_enum_v<T>);
+        static_assert(type::sfinae::is_any_v<T,
+        FileAccess,
+        TableSelection,
+        ResizePolicy,
+        LogLevel,
+        H5T_class_t>);
+        if constexpr(std::is_same_v<T, FileAccess>) switch(item) {
+            case FileAccess::READONLY:       return "READONLY";
+            case FileAccess::COLLISION_FAIL: return "COLLISION_FAIL";
+            case FileAccess::RENAME:         return "RENAME";
+            case FileAccess::READWRITE:      return "READWRITE";
+            case FileAccess::BACKUP:         return "BACKUP";
+            case FileAccess::REPLACE:        return "REPLACE";
+        }
+        else if constexpr(std::is_same_v<T, TableSelection>) switch(item) {
+            case TableSelection::FIRST:      return "FIRST";
+            case TableSelection::LAST:       return "LAST";
+            case TableSelection::ALL:        return "ALL";
+        }
+        else if constexpr(std::is_same_v<T, ResizePolicy>) switch(item) {
+            case ResizePolicy::FIT:          return "FIT";
+            case ResizePolicy::GROW:         return "GROW";
+            case ResizePolicy::OFF:          return "OFF";
+        }
+        else if constexpr(std::is_same_v<T, LocationMode>) switch(item) {
+            case LocationMode::SAME_FILE:    return "SAME_FILE";
+            case LocationMode::OTHER_FILE:   return "OTHER_FILE";
+            case LocationMode::DETECT:       return "DETECT";
+        }
+        else if constexpr(std::is_same_v<T, LogLevel>) switch(item) {
+            case LogLevel::trace:            return "trace";
+            case LogLevel::debug:            return "debug";
+            case LogLevel::info:             return "info";
+            case LogLevel::warn:             return "warn";
+            case LogLevel::err:              return "err";
+            case LogLevel::critical:         return "critical";
+            case LogLevel::off:              return "off";
+        }
+        else if constexpr(std::is_same_v<T, H5T_class_t>) switch(item) {
+            case H5T_class_t::H5T_NO_CLASS:  return "H5T_NO_CLASS";
+            case H5T_class_t::H5T_INTEGER:   return "H5T_INTEGER";
+            case H5T_class_t::H5T_FLOAT:     return "H5T_FLOAT";
+            case H5T_class_t::H5T_TIME:      return "H5T_TIME";
+            case H5T_class_t::H5T_STRING:    return "H5T_STRING";
+            case H5T_class_t::H5T_BITFIELD:  return "H5T_BITFIELD";
+            case H5T_class_t::H5T_OPAQUE:    return "H5T_OPAQUE";
+            case H5T_class_t::H5T_COMPOUND:  return "H5T_COMPOUND";
+            case H5T_class_t::H5T_REFERENCE: return "H5T_REFERENCE";
+            case H5T_class_t::H5T_ENUM:      return "H5T_ENUM";
+            case H5T_class_t::H5T_VLEN:      return "H5T_VLEN";
+            case H5T_class_t::H5T_ARRAY:     return "H5T_ARRAY";
+            case H5T_class_t::H5T_NCLASSES:  return "H5T_NCLASSES";
+            default:                         return "H5T_NO_CLASS";
+        }
+        else static_assert(type::sfinae::unrecognized_type_v<T> and "enum2str(): Not a known enum");
+        /* clang-format on */
+        return "UNKNOWN ENUM";
+    }
 }
