@@ -118,7 +118,7 @@ namespace h5pp::type::compound {
         static constexpr char  fieldR[5] = "real";
         static constexpr char  fieldI[5] = "imag";
         static void            init() {
-            if(not value_id.valid()) value_id = h5pp::type::getH5NativeType<T>();
+            if(not value_id.valid()) value_id = getValueType<T>();
             if(not complex_id.valid()) {
                 complex_id  = H5Tcreate(H5T_COMPOUND, sizeof(Complex<T>));
                 herr_t errr = H5Tinsert(complex_id, fieldR, HOFFSET(Complex<T>, real), value_id);
@@ -140,7 +140,7 @@ namespace h5pp::type::compound {
             if(complex_id.valid() and H5Tequal(complex_id, other) == 1) return true;
             if(H5Tget_size(other) != sizeof(Complex<T>)) return false;
             if(not is_complex(other)) return false;
-            if(not value_id.valid()) value_id = h5pp::type::getH5NativeType<T>();
+            if(not value_id.valid()) value_id = getValueType<T>();
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 0)))) return false;
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 1)))) return false;
             // The user seem to be using this type, so we initialize it to speed up later comparisons
@@ -163,7 +163,7 @@ namespace h5pp::type::compound {
         static constexpr char  fieldX[2] = "x";
         static constexpr char  fieldY[2] = "y";
         static void            init() {
-            if(not value_id.valid()) value_id = h5pp::type::getH5NativeType<T>();
+            if(not value_id.valid()) value_id = getValueType<T>();
             if(not scalar2_id.valid()) {
                 scalar2_id  = H5Tcreate(H5T_COMPOUND, sizeof(Scalar2<T>));
                 herr_t errx = H5Tinsert(scalar2_id, "x", HOFFSET(Scalar2<T>, x), value_id);
@@ -185,7 +185,7 @@ namespace h5pp::type::compound {
             if(scalar2_id.valid() and H5Tequal(scalar2_id, other) == 1) return true;
             if(H5Tget_size(other) != sizeof(Scalar2<T>)) return false;
             if(not is_scalar2(other)) return false;
-            if(not value_id.valid()) value_id = h5pp::type::getH5NativeType<T>();
+            if(not value_id.valid()) value_id = getValueType<T>();
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 0)))) return false;
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 1)))) return false;
             // The user seem to be using this type, so we initialize it to speed up later comparisons
@@ -209,7 +209,7 @@ namespace h5pp::type::compound {
         static constexpr char  fieldY[2] = "y";
         static constexpr char  fieldZ[2] = "z";
         static void            init() {
-            if(not value_id.valid()) value_id = h5pp::type::getH5NativeType<T>();
+            if(not value_id.valid()) value_id = getValueType<T>();
             if(not scalar3_id.valid()) {
                 scalar3_id  = H5Tcreate(H5T_COMPOUND, sizeof(Scalar3<T>));
                 herr_t errx = H5Tinsert(scalar3_id, "x", HOFFSET(Scalar3<T>, x), value_id);
@@ -234,7 +234,7 @@ namespace h5pp::type::compound {
             if(scalar3_id.valid() and H5Tequal(scalar3_id, other) == 1) return true;
             if(H5Tget_size(other) != sizeof(Scalar3<T>)) return false;
             if(not is_scalar3(other)) return false;
-            if(not value_id.valid()) value_id = h5pp::type::getH5NativeType<T>();
+            if(not value_id.valid()) value_id = getValueType<T>();
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 0)))) return false;
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 1)))) return false;
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 2)))) return false;
