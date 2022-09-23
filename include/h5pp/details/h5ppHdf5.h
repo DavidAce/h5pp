@@ -2358,11 +2358,13 @@ namespace h5pp::hdf5 {
                         "To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
                 }
                 // Free memory allocated by HDF5
-#if H5_VERSION_GE(1,12,0)
+#if H5_VERSION_GE(1, 12, 0)
                 herr_t reclaim_err = H5Treclaim(dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), plists.dsetXfer, vdata.data());
 #else
                 herr_t reclaim_err = H5Dvlen_reclaim(dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), plists.dsetXfer, vdata.data());
 #endif
+                if(reclaim_err < 0) h5pp::runtime_error("readDataset: failed to reclaim variable-length array buffer");
+
             } else {
                 // All the elements in the dataset have the same string size
                 // The whole dataset is read into a contiguous block of memory.
@@ -2413,7 +2415,7 @@ namespace h5pp::hdf5 {
             throw h5pp::runtime_error("Failed to read from dataset \n\t {} \n into memory \n\t {}", dsetInfo.string(), dataInfo.string());
         /* Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
         if(H5Tdetect_class(dsetInfo.h5Type->value(), H5T_class_t::H5T_VLEN)) {
-            dsetInfo.reclaimInfo = {dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), H5P_DEFAULT, dataPtr};
+            dsetInfo.reclaimInfo = {dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), H5P_DEFAULT, dataPtr, dsetInfo.dsetPath.value()};
         }
     }
 
@@ -2528,13 +2530,12 @@ namespace h5pp::hdf5 {
                         "To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
                 }
                 // Free memory allocated by HDF5
-#if H5_VERSION_GE(1,12,0)
+#if H5_VERSION_GE(1, 12, 0)
                 herr_t reclaim_err = H5Treclaim(attrInfo.h5Type.value(), attrInfo.h5Space.value(), H5P_DEFAULT, vdata.data());
 #else
                 herr_t reclaim_err = H5Dvlen_reclaim(attrInfo.h5Type.value(), attrInfo.h5Space.value(), H5P_DEFAULT, vdata.data());
 #endif
-
-
+                if(reclaim_err < 0) h5pp::runtime_error("readAttribute: failed to reclaim variable-length array buffer");
             } else {
                 // All the elements in the dataset have the same string size
                 // The whole dataset is read into a contiguous block of memory.
@@ -2569,7 +2570,11 @@ namespace h5pp::hdf5 {
             throw h5pp::runtime_error("Failed to read from attribute \n\t {} \n into memory \n\t {}", attrInfo.string(), dataInfo.string());
         /* Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
         if(H5Tdetect_class(attrInfo.h5Type->value(), H5T_class_t::H5T_VLEN)) {
-            attrInfo.reclaimInfo = {attrInfo.h5Type.value(), attrInfo.h5Space.value(), H5P_DEFAULT, dataPtr};
+            attrInfo.reclaimInfo = {attrInfo.h5Type.value(),
+                                    attrInfo.h5Space.value(),
+                                    H5P_DEFAULT,
+                                    dataPtr,
+                                    fmt::format("{}|{}", attrInfo.linkPath.value(), attrInfo.attrName.value())};
         }
     }
 
@@ -2819,7 +2824,7 @@ namespace h5pp::hdf5 {
 
         /* Step 4: Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
         if(H5Tdetect_class(info.h5Type->value(), H5T_class_t::H5T_VLEN)) {
-            info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, dataPtr};
+            info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, dataPtr, info.tablePath.value()};
         }
     }
 
@@ -3168,7 +3173,7 @@ namespace h5pp::hdf5 {
             if constexpr(std::is_same_v<DataType, std::vector<hvl_t>>) {
                 data             = vdata;
                 /* Save metadata so that VLEN allocation can be reclaimed/free'd later */
-                info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, vdata.data()};
+                info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, vdata.data(), info.tablePath.value()};
                 return;
             }
             if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
@@ -3205,7 +3210,7 @@ namespace h5pp::hdf5 {
                     }
                 }
             }
-#if H5_VERSION_GE(1,12,0)
+#if H5_VERSION_GE(1, 12, 0)
             herr_t reclaim_err = H5Treclaim(h5t_fields, dsetSpace, H5P_DEFAULT, vdata.data());
 #else
             herr_t reclaim_err = H5Dvlen_reclaim(h5t_fields, dsetSpace, H5P_DEFAULT, vdata.data());

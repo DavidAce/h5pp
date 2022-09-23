@@ -32,15 +32,15 @@ namespace h5pp {
 
     class File {
         private:
-        fs::path                        filePath;                                      /*!< Full path to the file */
-        h5pp::FileAccess                fileAccess         = h5pp::FileAccess::RENAME; /*!< File open/create policy. */
-        mutable std::optional<hid::h5f> fileHandle         = std::nullopt;             /*!< Keeps a file handle alive in batch operations */
-        mutable LogLevel                logLevel           = LogLevel::info;           /*!< Log verbosity from 0 [trace] to 6 [off] */
-        bool                            logTimestamp       = false;                    /*!< Add a time stamp to console log output */
-        hid::h5e                        error_stack        = H5E_DEFAULT;              /*!< Reference to the error stack used by HDF5 */
-        int                             currentCompression = -1; /*!< Compression level (-1 is off, 0 is none, 9 is max) */
-
-        void init() {
+        fs::path                                  filePath;                                      /*!< Full path to the file */
+        h5pp::FileAccess                          fileAccess         = h5pp::FileAccess::RENAME; /*!< File open/create policy. */
+        mutable std::optional<hid::h5f>           fileHandle         = std::nullopt;   /*!< Keeps a file handle alive in batch operations */
+        mutable LogLevel                          logLevel           = LogLevel::info; /*!< Log verbosity from 0 [trace] to 6 [off] */
+        bool                                      logTimestamp       = false;          /*!< Add a time stamp to console log output */
+        hid::h5e                                  error_stack        = H5E_DEFAULT;    /*!< Reference to the error stack used by HDF5 */
+        int                                       currentCompression = -1; /*!< Compression level (-1 is off, 0 is none, 9 is max) */
+        mutable std::vector<ReclaimInfo::Reclaim> reclaimStack;            /*!< Stores alloc metadata from variable-length reads to free */
+        void                                      init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
             h5pp::logger::log->debug("Accessing file: [{}]", filePath.string());
 
@@ -91,6 +91,11 @@ namespace h5pp {
             h5pp::logger::log->trace("Flushing caches");
             H5garbage_collect();
             H5Eprint(H5E_DEFAULT, stderr);
+        }
+        /*! Calls H5Treclaim(...) on any data that HDF5 may have allocated for variable-length data during the last reads */
+        void reclaim() const {
+            for(auto &item : reclaimStack) { item.reclaim(); }
+            reclaimStack.clear();
         }
 
         /*! Returns an HDF5 file handle
@@ -1106,7 +1111,6 @@ namespace h5pp {
             options.compression   = getCompressionLevel(compression);
             auto info             = h5pp::scan::makeTableInfo(openFileHandle(), options, tableTitle, plists);
             h5pp::hdf5::createTable(info, plists);
-            h5pp::scan::readTableInfo(info, info.getLocId(), options, plists);
             return info;
         }
 
@@ -1286,23 +1290,25 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        void readTableRecords(DataType              &data,
-                              std::string_view       tablePath,
-                              std::optional<hsize_t> offset = std::nullopt,
-                              std::optional<hsize_t> extent = std::nullopt) const {
+        TableInfo readTableRecords(DataType              &data,
+                                   std::string_view       tablePath,
+                                   std::optional<hsize_t> offset = std::nullopt,
+                                   std::optional<hsize_t> extent = std::nullopt) const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath);
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             h5pp::hdf5::readTableRecords(data, info, offset, extent);
+            return info;
         }
 
         template<typename DataType>
-        void readTableRecords(DataType &data, std::string_view tablePath, TableSelection tableSelection) const {
+        TableInfo readTableRecords(DataType &data, std::string_view tablePath, TableSelection tableSelection) const {
             Options options;
             options.linkPath      = h5pp::util::safe_str(tablePath);
             auto info             = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             auto [offset, extent] = util::parseTableSelection(data, tableSelection, info.numRecords, info.recordBytes);
             h5pp::hdf5::readTableRecords(data, info, offset, extent);
+            return info;
         }
 
         template<typename DataType>
@@ -1315,7 +1321,8 @@ namespace h5pp {
             }
 
             DataType data;
-            readTableRecords(data, tablePath, offset, extent);
+            auto     info = readTableRecords(data, tablePath, offset, extent);
+            if(info.reclaimInfo) reclaimStack.emplace_back(info.reclaimInfo.value());
             return data;
         }
 
@@ -1326,7 +1333,8 @@ namespace h5pp {
                 return std::nullopt;
             }
             DataType data;
-            readTableRecords(data, tablePath, tableSelection);
+            auto     info = readTableRecords(data, tablePath, tableSelection);
+            if(info.reclaimInfo) reclaimStack.emplace_back(info.reclaimInfo.value());
             return data;
         }
 
@@ -1345,22 +1353,23 @@ namespace h5pp {
         }
 
         template<typename DataType>
-        void readTableField(DataType              &data,
-                            std::string_view       tablePath,
-                            const NamesOrIndices  &fields,
-                            std::optional<hsize_t> offset = std::nullopt,
-                            std::optional<hsize_t> extent = std::nullopt) const {
+        TableInfo readTableField(DataType              &data,
+                                 std::string_view       tablePath,
+                                 const NamesOrIndices  &fields,
+                                 std::optional<hsize_t> offset = std::nullopt,
+                                 std::optional<hsize_t> extent = std::nullopt) const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath);
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             readTableField(data, info, fields, offset, extent);
+            return info;
         }
 
         template<typename DataType>
         [[nodiscard]] DataType readTableField(std::string_view       tablePath,
                                               const NamesOrIndices  &fields,
-                                              std::optional<hsize_t> offset = std::nullopt,
-                                              std::optional<hsize_t> extent = std::nullopt) const {
+                                              std::optional<hsize_t> offset    = std::nullopt,
+                                              std::optional<hsize_t> extent    = std::nullopt) const {
             if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
                 if(fieldExists(tablePath, fields))
                     return readTableField<typename DataType::value_type>(tablePath, fields, offset, extent);
@@ -1368,7 +1377,8 @@ namespace h5pp {
                     return std::nullopt;
             }
             DataType data;
-            readTableField(data, tablePath, fields, offset, extent);
+            auto     info = readTableField(data, tablePath, fields, offset, extent);
+            if(info.reclaimInfo) reclaimStack.emplace_back(info.reclaimInfo.value());
             return data;
         }
 
@@ -1450,7 +1460,7 @@ namespace h5pp {
         }
 
         [[nodiscard]] TableFieldInfo getTableFieldInfo(std::string_view tablePath) const {
-            return h5pp::hdf5::getTableFieldInfo(openFileHandle(), tablePath, std::nullopt, std::nullopt, plists.linkAccess);
+            return h5pp::scan::getTableFieldInfo(openFileHandle(), tablePath, std::nullopt, std::nullopt, plists.linkAccess);
         }
 
         /*

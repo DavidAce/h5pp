@@ -126,35 +126,71 @@ namespace h5pp {
         }
     };
     struct ReclaimInfo {
-        private:
-        struct ReclaimMeta {
+        public:
+        struct Reclaim {
             /*! This stores metadata required to reclaim (free) any memory that is allocated when HDF5 reads variable-length arrays */
 
             private:
-            std::optional<hid::h5t> type  = std::nullopt; // Identifier of the datatype
-            std::optional<hid::h5s> space = std::nullopt; // Identifier of the dataspace
-            std::optional<hid::h5p> plist = std::nullopt; // Identifier of the property list used to create the buffer (HDF5 version >= 1.12
-                                                          // uses the transfer property list)
-            void *buf = nullptr; //  Pointer to the buffer to be reclaimed (which was allocated during a variable-length array read)
+            std::optional<hid::h5t> type  = std::nullopt; /*!< Identifier of the datatype */
+            std::optional<hid::h5s> space = std::nullopt; /*!< Identifier of the dataspace */
+            std::optional<hid::h5p> plist = std::nullopt; /*!< Identifier of the property list used to create the buffer */
+            void *buf = nullptr; /*!<  Pointer to the buffer to be reclaimed (which was allocated during a variable-length array read) */
+            std::string  tag;    /*!< The name of the object that was read */
+            mutable long counter = 0; // Counts how many instances of this object there are
             public:
             void reclaim() {
                 if(buf != nullptr and type and space and plist) {
-                    h5pp::logger::log->trace("Reclaiming vlen buffer");
+                    h5pp::logger::log->trace("Reclaiming vlen buffer from reading [{}]", tag);
 #if H5_VERSION_GE(1, 12, 0)
                     H5Treclaim(type.value(), space.value(), plist.value(), buf);
 #else
                     H5Dvlen_reclaim(type.value(), space.value(), plist.value(), buf);
 #endif
                 }
-                *this = ReclaimMeta();
+                type    = std::nullopt;
+                space   = std::nullopt;
+                plist   = std::nullopt;
+                buf     = nullptr;
+                tag     = "";
+                counter = 0;
             }
-            ReclaimMeta() = default;
-            ReclaimMeta(const hid::h5t &type, const hid::h5s &space, const hid::h5p &plist, void *buf)
-                : type(type), space(space), plist(plist), buf(buf){};
+            Reclaim() = default;
+            Reclaim(const hid::h5t &type, const hid::h5s &space, const hid::h5p &plist, void *buf, const std::string &tag)
+                : type(type), space(space), plist(plist), buf(buf), tag(tag), counter(1){};
+            Reclaim(const Reclaim &r) : type(r.type), space(r.space), plist(r.plist), buf(r.buf), tag(r.tag), counter(r.counter++) {}
+            Reclaim(Reclaim &&r) noexcept
+                : type(std::move(r.type)), space(std::move(r.space)), plist(std::move(r.plist)), buf(std::move(r.buf)),
+                  tag(std::move(r.tag)), counter(std::move(r.counter++)) {}
+
+            Reclaim &operator=(Reclaim &&r) noexcept {
+                type    = std::move(r.type);
+                space   = std::move(r.space);
+                plist   = std::move(r.plist);
+                buf     = std::move(r.buf);
+                tag     = std::move(r.tag);
+                counter = std::move(r.counter++); // ++ makes sure "this" is now in charge of destruction
+                return *this;
+            }
+            Reclaim &operator=(const Reclaim &r) noexcept {
+                type    = r.type;
+                space   = r.space;
+                plist   = r.plist;
+                buf     = r.buf;
+                tag     = r.tag;
+                counter = r.counter++; // ++ makes sure "this" is now in charge of destruction
+                return *this;
+            }
+            ~Reclaim() noexcept {
+                counter--;
+                if(buf != nullptr and counter == 0)
+                    h5pp::logger::log->warn("~Reclaim: buffer for variable-length array likely remains after reading [{}]. "
+                                             "Call h5pp::File::reclaim() or <Dset|Attr|Table>Info::reclaim() to avoid a memory leak.",
+                                             tag);
+            }
         };
 
         public:
-        mutable std::optional<ReclaimMeta> reclaimInfo = /*!< Used to reclaim any memory allocated for variable-length arrays */
+        mutable std::optional<Reclaim> reclaimInfo = /*!< Used to reclaim any memory allocated for variable-length arrays */
             std::nullopt;
 
         /*! Calls H5Treclaim(...) on memory that HDF5 allocates when reading variable-length arrays */
@@ -331,7 +367,7 @@ namespace h5pp {
         void assertWriteReady() const {
             std::string error_msg;
             /* clang-format off */
-            if(not dsetPath           ) error_msg.append("\t linkPath\n");
+            if(not dsetPath           ) error_msg.append("\t dsetPath\n");
             if(not dsetExists         ) error_msg.append("\t dsetExists\n");
             if(not h5Dset             ) error_msg.append("\t h5Dset\n");
             if(not h5Type             ) error_msg.append("\t h5Type\n");
@@ -355,7 +391,7 @@ namespace h5pp {
         void assertReadReady() const {
             std::string error_msg;
             /* clang-format off */
-            if(not dsetPath           ) error_msg.append("\t linkPath\n");
+            if(not dsetPath           ) error_msg.append("\t dsetPath\n");
             if(not dsetExists         ) error_msg.append("\t dsetExists\n");
             if(not h5Dset             ) error_msg.append("\t h5Dset\n");
             if(not h5Type             ) error_msg.append("\t h5Type\n");
