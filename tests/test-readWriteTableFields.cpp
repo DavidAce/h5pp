@@ -10,12 +10,14 @@
 #include "catch.hpp"
 #include <h5pp/h5pp.h>
 #include <iostream>
+#include <complex>
 
 // Define the main table type that will be written
 struct Particle {
     double x = 0, y = 1, z = 2, t = 3;
     double rho[3]   = {20, 3.13, 102.4};
     char   name[10] = "some name"; // Can be replaced by std::string
+    std::complex<double> cplx = {1,1};
     void   dummy_function(int) {}
 };
 
@@ -23,7 +25,9 @@ struct Particle {
 struct Rho {
     double rho[3];
 };
-
+struct Complex {
+    std::complex<double> cplx;
+};
 struct Axis {
     double axis = 0;
 };
@@ -61,6 +65,7 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
         H5Tinsert(MY_HDF5_PARTICLE_TYPE, "t", HOFFSET(Particle, t), H5T_NATIVE_DOUBLE);
         H5Tinsert(MY_HDF5_PARTICLE_TYPE, "rho", HOFFSET(Particle, rho), MY_HDF5_RHO_TYPE);
         H5Tinsert(MY_HDF5_PARTICLE_TYPE, "name", HOFFSET(Particle, name), MY_HDF5_NAME_TYPE);
+        H5Tinsert(MY_HDF5_PARTICLE_TYPE, "cplx", HOFFSET(Particle, cplx), h5pp::type::compound::H5T_COMPLEX<double>::h5type());
 
         REQUIRE_NOTHROW(file.createTable(MY_HDF5_PARTICLE_TYPE, "somegroup/particleTable", "particleTable", {5}, true));
 
@@ -96,12 +101,17 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
         h5pp::File file("output/readWriteTableFields.h5", h5pp::FileAccess::READWRITE, 2);
         auto       rho_field_first = file.readTableField<Rho>("somegroup/particleTable", "rho", 0, 1);
         auto       rho_field_last  = file.readTableField<Rho>("somegroup/particleTable", "rho", -1ul, 1);
+        auto       cplx_field_first  = file.readTableField<Complex>("somegroup/particleTable", "cplx",  0, 1);
+        auto       cplx_field_last  = file.readTableField<Complex>("somegroup/particleTable", "cplx", -1ul, 1);
         CHECK(rho_field_first.rho[0] == 20);
         CHECK(rho_field_first.rho[1] == 3.13);
         CHECK(rho_field_first.rho[2] == 102.4);
         CHECK(rho_field_last.rho[0] == 20);
         CHECK(rho_field_last.rho[1] == 3.13);
         CHECK(rho_field_last.rho[2] == 102.4);
+        CHECK(cplx_field_first.cplx == std::complex<double>(1,1));
+        CHECK(cplx_field_last.cplx == std::complex<double>(1,1));
+
     }
 
     SECTION("Multiple fields by name and index") {
@@ -156,6 +166,6 @@ int main(int argc, char *argv[]) {
 
     //    session.configData().showSuccessfulTests = true;
     //    session.configData().reporterName = "compact";
-    //    session.configData().shouldDebugBreak = true;
+    session.configData().shouldDebugBreak = true;
     return session.run();
 }
