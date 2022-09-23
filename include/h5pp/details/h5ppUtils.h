@@ -666,7 +666,7 @@ namespace h5pp::util {
         info.assertReadReady();
         size_t                   tgtFieldSizeSum = 0;
         std::vector<size_t>      srcFieldOffsets; // Offsets on file
-        std::vector<size_t>      tgtFieldOffsets; // Offsets on new subset h5type
+        std::vector<size_t>      tgtFieldOffsets; // Offsets on new subset type
         std::vector<size_t>      tgtFieldSizes;
         std::vector<std::string> tgtFieldNames;
         srcFieldOffsets.reserve(fieldIndices.size());
@@ -683,19 +683,16 @@ namespace h5pp::util {
         }
 
         /* Create a special tgtTypeId for reading a subset of a table record with the following properties:
-         *      - tgtTypeId has the size of the given field selection i.e. ieldSizeSum.
+         *      - tgtTypeId has the size of the given field selection i.e. fieldSizeSum.
          *      - only the fields to read are defined in it
-         *      - the defined fields are converted to native types
-         *      Then H5Dread will take care of only reading the relevant components of the record
+         *      - the corresponding field types are copied from info.fieldTypes.
+         *      Then H5Dread will take care of only reading the relevant fields of the record.
+         *      H5Dread will find the correct fields by comparing the field names.
          */
-
         hid::h5t typeId = H5Tcreate(H5T_COMPOUND, tgtFieldSizeSum);
         for(size_t tgtIdx = 0; tgtIdx < fieldIndices.size(); tgtIdx++) {
-            size_t   srcIdx           = fieldIndices.at(tgtIdx);
-            hid::h5t temp_member_id   = H5Tget_native_type(info.fieldTypes->at(srcIdx), H5T_DIR_DEFAULT);
-            size_t   temp_member_size = H5Tget_size(temp_member_id);
-            if(tgtFieldSizes.at(tgtIdx) != temp_member_size) H5Tset_size(temp_member_id, tgtFieldSizes[tgtIdx]);
-            H5Tinsert(typeId, tgtFieldNames.at(tgtIdx).c_str(), tgtFieldOffsets.at(tgtIdx), temp_member_id);
+            size_t   srcIdx            = fieldIndices.at(tgtIdx);
+            H5Tinsert(typeId, tgtFieldNames.at(tgtIdx).c_str(), tgtFieldOffsets.at(tgtIdx), info.fieldTypes->at(srcIdx));
         }
         return typeId;
     }

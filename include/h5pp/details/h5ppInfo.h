@@ -125,6 +125,43 @@ namespace h5pp {
             if(not error_msg.empty()) throw h5pp::runtime_error("Options are not well defined: \n{}", error_msg);
         }
     };
+    struct ReclaimInfo {
+        private:
+        struct ReclaimMeta {
+            /*! This stores metadata required to reclaim (free) any memory that is allocated when HDF5 reads variable-length arrays */
+
+            private:
+            std::optional<hid::h5t> type  = std::nullopt; // Identifier of the datatype
+            std::optional<hid::h5s> space = std::nullopt; // Identifier of the dataspace
+            std::optional<hid::h5p> plist = std::nullopt; // Identifier of the property list used to create the buffer (HDF5 version >= 1.12
+                                                          // uses the transfer property list)
+            void *buf = nullptr; //  Pointer to the buffer to be reclaimed (which was allocated during a variable-length array read)
+            public:
+            void reclaim() {
+                if(buf != nullptr and type and space and plist) {
+                    h5pp::logger::log->trace("Reclaiming vlen buffer");
+#if H5_VERSION_GE(1, 12, 0)
+                    H5Treclaim(type.value(), space.value(), plist.value(), buf);
+#else
+                    H5Dvlen_reclaim(type.value(), space.value(), plist.value(), buf);
+#endif
+                }
+                *this = ReclaimMeta();
+            }
+            ReclaimMeta() = default;
+            ReclaimMeta(const hid::h5t &type, const hid::h5s &space, const hid::h5p &plist, void *buf)
+                : type(type), space(space), plist(plist), buf(buf){};
+        };
+
+        public:
+        mutable std::optional<ReclaimMeta> reclaimInfo = /*!< Used to reclaim any memory allocated for variable-length arrays */
+            std::nullopt;
+
+        /*! Calls H5Treclaim(...) on memory that HDF5 allocates when reading variable-length arrays */
+        void reclaim() const {
+            if(reclaimInfo) reclaimInfo->reclaim();
+        }
+    };
 
     /*!
      * \struct DataInfo
@@ -214,7 +251,7 @@ namespace h5pp {
      * \struct DsetInfo
      * Struct with optional fields describing data on file, i.e. a dataset
      */
-    struct DsetInfo {
+    struct DsetInfo : public ReclaimInfo {
         std::optional<hid::h5f>           h5File       = std::nullopt;
         std::optional<hid::h5d>           h5Dset       = std::nullopt;
         std::optional<hid::h5t>           h5Type       = std::nullopt;
@@ -390,7 +427,7 @@ namespace h5pp {
      * \struct AttrInfo
      * Struct with optional fields describing an attribute on file
      */
-    struct AttrInfo {
+    struct AttrInfo : public ReclaimInfo {
         std::optional<hid::h5f>             h5File            = std::nullopt;
         std::optional<hid::h5o>             h5Link            = std::nullopt;
         std::optional<hid::h5a>             h5Attr            = std::nullopt;
@@ -502,13 +539,14 @@ namespace h5pp {
     /*!
      * \brief Information about table fields
      */
-    struct TableFieldInfo {
+    struct TableFieldInfo : public ReclaimInfo {
         std::optional<size_t>                       recordBytes  = std::nullopt;
         std::optional<hsize_t>                      numFields    = std::nullopt;
         std::optional<std::vector<std::string>>     fieldNames   = std::nullopt;
         std::optional<std::vector<size_t>>          fieldSizes   = std::nullopt;
         std::optional<std::vector<size_t>>          fieldOffsets = std::nullopt;
         std::optional<std::vector<hid::h5t>>        fieldTypes   = std::nullopt;
+        std::optional<std::vector<H5T_class_t>>     fieldClasses = std::nullopt;
         std::optional<std::vector<std::string>>     cppTypeName  = std::nullopt;
         std::optional<std::vector<size_t>>          cppTypeSize  = std::nullopt;
         std::optional<std::vector<std::type_index>> cppTypeIndex = std::nullopt;
@@ -521,6 +559,7 @@ namespace h5pp {
             if(not fieldSizes)   error_msg.append("\t fieldSizes\n");
             if(not fieldOffsets) error_msg.append("\t fieldOffsets\n");
             if(not fieldTypes)   error_msg.append("\t fieldTypes\n");
+            if(not fieldClasses) error_msg.append("\t fieldClasses\n");
             if(not error_msg.empty())
                 throw h5pp::runtime_error("Cannot create new table: The following fields are not set:\n{}", error_msg);
         }
@@ -531,6 +570,7 @@ namespace h5pp {
             if(not fieldNames)   error_msg.append("\t fieldNames\n");
             if(not fieldSizes)   error_msg.append("\t fieldSizes\n");
             if(not fieldTypes)   error_msg.append("\t fieldTypes\n");
+            if(not fieldClasses) error_msg.append("\t fieldClasses\n");
             if(not fieldOffsets) error_msg.append("\t fieldOffsets\n");
             if(not error_msg.empty()) throw h5pp::runtime_error("Cannot read from table: The following fields are not set:\n{}", error_msg);
         }
@@ -550,6 +590,22 @@ namespace h5pp {
             if(fieldSizes)   msg.append(h5pp::format(" | sizes [{}]", fieldSizes.value()));
             if(fieldOffsets) msg.append(h5pp::format(" | offsets [{}]", fieldOffsets.value()));
             return msg;
+        }
+        [[nodiscard]] std::string string_fields(bool enable = true) const {
+            if(not enable) return {};
+            std::string msg;
+            /* clang-format off */
+            if(numFields){
+                msg.append(h5pp::format("Fields ({}):\n", numFields.value()));
+                for(size_t m = 0; m < static_cast<size_t>(numFields.value()); m++){
+                    if(fieldNames and fieldNames->size() > m) msg.append(h5pp::format("{:<32} ", fieldNames->operator[](m)));
+                    if(fieldTypes and fieldTypes->size() > m) msg.append(h5pp::format("| {:<16} ", type::getH5TypeName(fieldTypes->operator[](m))));
+                    if(fieldSizes and fieldSizes->size() > m) msg.append(h5pp::format("| {:<4} bytes ", fieldSizes->operator[](m)));
+                    if(fieldOffsets and fieldOffsets->size() > m) msg.append(h5pp::format("| {:<4} offset", fieldOffsets->operator[](m)));
+                }
+            }
+            return msg;
+            /* clang-format on */
         }
         /* clang-format on */
     };
@@ -724,15 +780,42 @@ namespace h5pp {
     };
 
     struct H5TInfo {
-        std::optional<hid::h5t>                 h5Type = std::nullopt;
-        std::optional<H5T_class_t>              h5Class;
-        std::optional<int>                      typeSize;
-        std::optional<int>                      numMembers;
+        std::optional<hid::h5t>                 h5Type       = std::nullopt;
+        std::optional<H5T_class_t>              h5Class      = std::nullopt;
+        std::optional<int>                      typeSize     = std::nullopt;
+        std::optional<int>                      numMembers   = std::nullopt;
         std::optional<std::vector<std::string>> memberNames  = std::nullopt;
         std::optional<std::vector<hid::h5t>>    memberTypes  = std::nullopt;
         std::optional<std::vector<size_t>>      memberSizes  = std::nullopt;
         std::optional<std::vector<size_t>>      memberOffset = std::nullopt;
         std::optional<std::vector<int>>         memberIndex  = std::nullopt;
+        [[nodiscard]] std::string               string(bool enable = true) const {
+            if(not enable) return {};
+            std::string msg;
+            /* clang-format off */
+            if(h5Type)   msg.append(h5pp::format(" | h5Type {}", type::getH5TypeName(h5Type.value())));
+            if(h5Class)  msg.append(h5pp::format(" | h5Class {}", enum2str(h5Class.value())));
+            if(typeSize) msg.append(h5pp::format(" | typeSize {} bytes", typeSize.value()));
+            if(numMembers) msg.append(h5pp::format(" | numMembers {}", numMembers.value()));
+            return msg;
+            /* clang-format on */
+        }
+        [[nodiscard]] std::string string_members(bool enable = true) const {
+            if(not enable) return {};
+            std::string msg;
+            /* clang-format off */
+            if(numMembers){
+                msg.append(h5pp::format("Fields ({}):\n", numMembers.value()));
+                for(size_t m = 0; m < static_cast<size_t>(numMembers.value()); m++){
+                    if(memberIndex and memberIndex->size() > m) msg.append(h5pp::format("    [{:^3}] ", memberIndex->operator[](m)));
+                    if(memberNames and memberNames->size() > m) msg.append(h5pp::format(" {:<32} ", memberNames->operator[](m)));
+                    if(memberTypes and memberTypes->size() > m) msg.append(h5pp::format("| {:<16} ", type::getH5TypeName(memberTypes->operator[](m))));
+                    if(memberSizes and memberSizes->size() > m) msg.append(h5pp::format("| size {:<4} bytes ", memberSizes->operator[](m)));
+                    if(memberOffset and memberOffset->size() > m) msg.append(h5pp::format("| offset {:<4} bytes", memberOffset->operator[](m)));
+                }
+            }
+            return msg;
+            /* clang-format on */
+        }
     };
-
 }

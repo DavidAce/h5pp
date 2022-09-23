@@ -113,7 +113,11 @@ namespace h5pp::hdf5 {
         return getSize(space);
     }
 
-    [[nodiscard]] inline hsize_t getSizeSelected(const hid::h5s &space) { return static_cast<hsize_t>(H5Sget_select_npoints(space)); }
+    [[nodiscard]] inline hsize_t getSizeSelected(const hid::h5s &space) {
+        hssize_t size = H5Sget_select_npoints(space);
+        if(size < 0) h5pp::runtime_error("getSizeSelected: H5Sget_select_npoints failed");
+        return static_cast<hsize_t>(size);
+    }
 
     [[nodiscard]] inline std::vector<hsize_t> getDimensions(const hid::h5s &space) {
         int ndims = H5Sget_simple_extent_ndims(space);
@@ -284,18 +288,19 @@ namespace h5pp::hdf5 {
 
     inline H5TInfo getH5TInfo(const hid::h5t &type) {
         H5TInfo info;
-        info.h5Type     = type;
-        hid_t h5Type    = type.value(); // Used a lot, store here to avoid validity checks
-        info.typeSize   = H5Tget_size(h5Type);
-        info.numMembers = H5Tget_nmembers(h5Type);
-        info.h5Class    = H5Tget_class(h5Type);
+        info.h5Type   = type;
+        hid_t h5Type  = type.value(); // Used a lot, store here to avoid validity checks
+        info.typeSize = H5Tget_size(h5Type);
+        info.h5Class  = H5Tget_class(h5Type);
+        if(info.h5Class != H5T_class_t::H5T_COMPOUND) return info; // Can't do further analysis on its members
 
-        auto nmemb  = static_cast<size_t>(info.numMembers.value());
-        auto types  = std::vector<hid::h5t>(nmemb);
-        auto names  = std::vector<std::string>(nmemb);
-        auto sizes  = std::vector<size_t>(nmemb);
-        auto index  = std::vector<int>(nmemb);
-        auto offset = std::vector<size_t>(nmemb);
+        info.numMembers = H5Tget_nmembers(h5Type);
+        auto nmemb      = static_cast<size_t>(info.numMembers.value());
+        auto types      = std::vector<hid::h5t>(nmemb);
+        auto names      = std::vector<std::string>(nmemb);
+        auto sizes      = std::vector<size_t>(nmemb);
+        auto index      = std::vector<int>(nmemb);
+        auto offset     = std::vector<size_t>(nmemb);
         if(info.h5Class.value() == H5T_COMPOUND) {
             for(size_t idx = 0; idx < nmemb; idx++) {
                 char *name  = H5Tget_member_name(h5Type, static_cast<unsigned int>(idx));
@@ -2353,7 +2358,11 @@ namespace h5pp::hdf5 {
                         "To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
                 }
                 // Free memory allocated by HDF5
-                H5Dvlen_reclaim(dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), plists.dsetXfer, vdata.data());
+#if H5_VERSION_GE(1,12,0)
+                herr_t reclaim_err = H5Treclaim(dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), plists.dsetXfer, vdata.data());
+#else
+                herr_t reclaim_err = H5Dvlen_reclaim(dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), plists.dsetXfer, vdata.data());
+#endif
             } else {
                 // All the elements in the dataset have the same string size
                 // The whole dataset is read into a contiguous block of memory.
@@ -2402,6 +2411,10 @@ namespace h5pp::hdf5 {
 
         if(retval < 0)
             throw h5pp::runtime_error("Failed to read from dataset \n\t {} \n into memory \n\t {}", dsetInfo.string(), dataInfo.string());
+        /* Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
+        if(H5Tdetect_class(dsetInfo.h5Type->value(), H5T_class_t::H5T_VLEN)) {
+            dsetInfo.reclaimInfo = {dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), H5P_DEFAULT, dataPtr};
+        }
     }
 
     template<typename DataType>
@@ -2515,7 +2528,13 @@ namespace h5pp::hdf5 {
                         "To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
                 }
                 // Free memory allocated by HDF5
-                H5Dvlen_reclaim(attrInfo.h5Type.value(), attrInfo.h5Space.value(), H5P_DEFAULT, vdata.data());
+#if H5_VERSION_GE(1,12,0)
+                herr_t reclaim_err = H5Treclaim(attrInfo.h5Type.value(), attrInfo.h5Space.value(), H5P_DEFAULT, vdata.data());
+#else
+                herr_t reclaim_err = H5Dvlen_reclaim(attrInfo.h5Type.value(), attrInfo.h5Space.value(), H5P_DEFAULT, vdata.data());
+#endif
+
+
             } else {
                 // All the elements in the dataset have the same string size
                 // The whole dataset is read into a contiguous block of memory.
@@ -2548,6 +2567,10 @@ namespace h5pp::hdf5 {
             retval = H5Aread(attrInfo.h5Attr.value(), attrInfo.h5Type.value(), dataPtr);
         if(retval < 0)
             throw h5pp::runtime_error("Failed to read from attribute \n\t {} \n into memory \n\t {}", attrInfo.string(), dataInfo.string());
+        /* Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
+        if(H5Tdetect_class(attrInfo.h5Type->value(), H5T_class_t::H5T_VLEN)) {
+            attrInfo.reclaimInfo = {attrInfo.h5Type.value(), attrInfo.h5Space.value(), H5P_DEFAULT, dataPtr};
+        }
     }
 
     [[nodiscard]] inline bool fileIsValid(const fs::path &filePath) {
@@ -2793,6 +2816,11 @@ namespace h5pp::hdf5 {
         auto   dataPtr = h5pp::util::getVoidPointer<void *>(data);
         herr_t retval  = H5Dread(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
         if(retval < 0) throw h5pp::runtime_error("Failed to read data from table [{}]", info.tablePath.value());
+
+        /* Step 4: Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
+        if(H5Tdetect_class(info.h5Type->value(), H5T_class_t::H5T_VLEN)) {
+            info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, dataPtr};
+        }
     }
 
     template<typename DataType>
@@ -2848,15 +2876,6 @@ namespace h5pp::hdf5 {
                                           info.recordBytes.value());
         }
 
-        if(h5pp::logger::log->level() <= 1)
-            h5pp::logger::log->debug("writeTableRecords: offset {} | extent {} | records {} | {} bytes/record | buffer [{}] | table [{}] ",
-                                     offset,
-                                     extent.value(),
-                                     info.numRecords.value(),
-                                     info.recordBytes.value(),
-                                     type::sfinae::type_name<DataType>(),
-                                     info.tablePath.value());
-
         /* Step 1: set the new table size if necessary */
         if(numRecordsNew > numRecordsOld) setTableSize(info, numRecordsNew);
         /* Step 2: draw a hyperslab in the dataset */
@@ -2871,6 +2890,19 @@ namespace h5pp::hdf5 {
         herr_t   retval = 0;
         hid::h5s dsetSpace;
         hid::h5s dataSpace;
+
+        // Log
+        if(h5pp::logger::log->level() <= 1)
+            h5pp::logger::log->debug(
+                "writeTableRecords: offset {} | extent {} | {} bytes/record | buffer [{}] | table [{}] (size {} -> {} records) ",
+                offset,
+                extent.value(),
+                info.recordBytes.value(),
+                type::sfinae::type_name<DataType>(),
+                info.tablePath.value(),
+                numRecordsOld,
+                numRecordsNew);
+
         if constexpr(has_direct_chunk) {
             if(use_direct_chunk) {
                 /* Step 3: write the records */
@@ -2999,6 +3031,7 @@ namespace h5pp::hdf5 {
         data.resize(srcExtent * tgtInfo.recordBytes.value());
         h5pp::hdf5::readTableRecords(data, srcInfo, srcOffset, srcExtent);
         h5pp::hdf5::writeTableRecords(data, tgtInfo, tgtOffset, srcExtent);
+        srcInfo.reclaim(); // In case there were any vlen arrays in a field
     }
 
     template<typename T>
@@ -3029,96 +3062,6 @@ namespace h5pp::hdf5 {
         if(not exists) return false;
         auto h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, exists, linkAccess);
         return checkIfTableFieldsExists(h5Dset, fields);
-    }
-
-    template<typename InfoType>
-    inline void readTableFieldInfo(InfoType               &info,
-                                   const hid::h5f         &h5File,
-                                   std::string_view        tablePath,
-                                   std::optional<hid::h5d> h5Dset     = std::nullopt,
-                                   std::optional<hid::h5t> h5Type     = std::nullopt,
-                                   const hid::h5p         &linkAccess = H5P_DEFAULT) {
-        static_assert(h5pp::type::sfinae::is_any_v<InfoType, TableInfo, TableFieldInfo>);
-        if constexpr(std::is_same_v<InfoType, TableInfo>) {
-            if(info.h5Dset and not h5Dset) h5Dset = info.h5Dset;
-            if(info.h5Type and not h5Type) h5Type = info.h5Type;
-        }
-        if(not info.numFields) {
-            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, linkAccess);
-            if(not h5Type) h5Type = H5Dget_type(h5Dset.value());
-            auto nmembers = H5Tget_nmembers(h5Type.value());
-            if(nmembers < 0) throw h5pp::runtime_error("getTableFieldInfo: Failed to read nmembers on h5Type for table [{}]", tablePath);
-            info.numFields = static_cast<hsize_t>(nmembers);
-        }
-        if(not info.fieldTypes) {
-            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, linkAccess);
-            if(not h5Type) h5Type = H5Dget_type(h5Dset.value());
-            hsize_t n_fields = info.numFields.value();
-            info.fieldTypes  = std::vector<hid::h5t>(n_fields);
-            for(size_t i = 0; i < n_fields; i++) info.fieldTypes.value()[i] = H5Tget_member_type(h5Type.value(), static_cast<unsigned>(i));
-        }
-        if(not info.fieldSizes or not info.fieldOffsets or not info.fieldNames or not info.recordBytes) {
-            hsize_t n_fields   = info.numFields.value();
-            info.fieldSizes    = std::vector<size_t>(n_fields);
-            info.fieldOffsets  = std::vector<size_t>(n_fields);
-            info.fieldNames    = std::vector<std::string>(n_fields);
-            info.recordBytes   = 0;
-            char **field_names = new char *[n_fields];
-            for(size_t i = 0; i < n_fields; i++) field_names[i] = new char[255];
-
-            // Read the data
-            herr_t err = H5TBget_field_info(h5File,
-                                            util::safe_str(tablePath).c_str(),
-                                            field_names,
-                                            info.fieldSizes->data(),
-                                            info.fieldOffsets->data(),
-                                            &info.recordBytes.value());
-
-            if(err < 0) throw h5pp::runtime_error("getTableFieldInfo: Error {}. Failed to read field info for table [{}]", err, tablePath);
-
-            // Copy the the array of char arrays to a vector of strings
-            for(size_t i = 0; i < n_fields; i++) info.fieldNames.value()[i] = field_names[i];
-
-            // release array of char arrays
-            for(size_t i = 0; i < n_fields; i++) delete[] field_names[i];
-            delete[] field_names;
-        }
-        // Get c++ properties
-        if(info.fieldTypes and (not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)) {
-            info.cppTypeIndex = std::vector<std::type_index>();
-            info.cppTypeName  = std::vector<std::string>();
-            info.cppTypeSize  = std::vector<size_t>();
-            info.cppTypeIndex->reserve(info.fieldTypes->size());
-            info.cppTypeName->reserve(info.fieldTypes->size());
-            info.cppTypeSize->reserve(info.fieldTypes->size());
-            for(const auto &ftype : info.fieldTypes.value()) {
-                auto cppInfo = h5pp::hdf5::getCppType(ftype);
-                info.cppTypeIndex->emplace_back(std::get<0>(cppInfo));
-                info.cppTypeName->emplace_back(std::get<1>(cppInfo));
-                info.cppTypeSize->emplace_back(std::get<2>(cppInfo));
-            }
-        }
-    }
-
-    template<typename h5x>
-    [[nodiscard]] inline TableFieldInfo getTableFieldInfo(const h5x              &loc,
-                                                          std::string_view        tablePath,
-                                                          std::optional<hid::h5d> h5Dset     = std::nullopt,
-                                                          std::optional<hid::h5t> h5Type     = std::nullopt,
-                                                          const hid::h5p         &linkAccess = H5P_DEFAULT) {
-        static_assert(type::sfinae::is_hdf5_obj_id<h5x>,
-                      "Template function [h5pp::hdf5::getTableFieldInfo(const h5x & loc)] requires type h5x to be: "
-                      "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5d], [h5pp::hid::h5o] or [hid_t] "
-                      "and tablePath should be an absolute path to the table");
-        TableFieldInfo info;
-        hid::h5f       h5File;
-        if constexpr(std::is_same_v<h5x, hid::h5f>)
-            h5File = loc;
-        else
-            h5File = H5Iget_file_id(loc);
-
-        readTableFieldInfo(info, h5File, tablePath, std::move(h5Dset), std::move(h5Type), linkAccess);
-        return info;
     }
 
     template<typename DataType>
@@ -3157,15 +3100,23 @@ namespace h5pp::hdf5 {
             offset = totalRecords - extent.value();
         }
 
-        // Sanity check
+        // Sanity checks
+        auto fieldClass = H5Tget_class(h5t_fields);
+        if(fieldClass != H5T_class_t::H5T_COMPOUND)
+            throw h5pp::logic_error("readTableField: expected HDF5 class H5T_COMPOUND. Got {}", enum2str(fieldClass));
+
+        int    nmembers    = H5Tget_nmembers(h5t_fields);
+        htri_t detect_vlen = H5Tdetect_class(h5t_fields, H5T_class_t::H5T_VLEN);
+        if(detect_vlen > 0 and nmembers > 1)
+            throw h5pp::logic_error("readTableField: h5t_fields has multiple fields, but one or more are variable-length types. h5pp can "
+                                    "only read one variable-length field at a time");
+
         if(offset.value() + extent.value() > info.numRecords.value())
             throw h5pp::logic_error("readTableField: requested offset {} and extent {} is out of bounds for table with {} records: [{}]",
                                     offset.value(),
                                     extent.value(),
                                     info.numRecords.value(),
                                     info.tablePath.value());
-
-        size_t fieldSizeSum = getBytesPerElem(h5t_fields);
 
         if(h5pp::logger::log->level() <= 1) {
             h5pp::logger::log->debug("readTableField: offset {} | extent {} | records {} | {} bytes/record | buffer [{}] | table [{}]",
@@ -3179,28 +3130,113 @@ namespace h5pp::hdf5 {
         if constexpr(not h5pp::ndebug)
             if(h5pp::logger::log->level() == 0) {
                 auto h5t_info = getH5TInfo(h5t_fields);
-                h5pp::logger::log->trace("readTableField: field names {} | indices {} | sizes {} | offsets {} | total size {} bytes",
-                                         h5t_info.memberNames.value(),
-                                         h5t_info.memberIndex.value(),
-                                         h5t_info.memberSizes.value(),
-                                         h5t_info.memberOffset.value(),
-                                         h5t_info.typeSize.value());
+                h5pp::logger::log->trace("readTableField: table [{}] | {}{}{}",
+                                         info.tablePath.value(),
+                                         h5t_info.string(),
+                                         h5t_info.numMembers ? "\n" : "",
+                                         h5t_info.string_members());
             }
 
-        if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
+        /* Step 1: Get the dataset and memory spaces */
+        hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value());
+        hid::h5s dataSpace = util::getMemSpace(extent.value(), {extent.value()});
+
+        /* Step 2: draw a hyperslab in the dataset */
+        h5pp::Hyperslab slab;
+        slab.offset = {offset.value()};
+        slab.extent = {extent.value()};
+        selectHyperslab(dsetSpace, slab, H5S_SELECT_SET);
+
+        /* Step 3: Resize the recipient data buffer */
+        if(detect_vlen > 0) {
+            auto               size = h5pp::hdf5::getSizeSelected(dsetSpace);
+            std::vector<hvl_t> vdata(static_cast<size_t>(size)); // Allocate len/ptr pairs for "size" number of vlen arrays
+            // HDF5 allocates space for each vlen array
+            herr_t             retval = H5Dread(info.h5Dset.value(), h5t_fields, H5S_ALL, dsetSpace, H5P_DEFAULT, vdata.data());
+            if(retval < 0) {
+                auto h5t_info = getH5TInfo(h5t_fields);
+                h5pp::runtime_error("readTableField: H5Dread failed for variable-length field data\n"
+                                    "table [{}] | {}{}{}",
+                                    info.tablePath.value(),
+                                    h5t_info.string(),
+                                    h5t_info.numMembers ? "\n" : "",
+                                    h5t_info.string_members());
+            }
+
+            // Now vdata contains the dataset selection, and we need to put the data into the user-given container.
+            // Depending on the type of the recipient data container, we can copy the data in different ways e.g. plain vector or of vectors
+            if constexpr(std::is_same_v<DataType, std::vector<hvl_t>>) {
+                data             = vdata;
+                /* Save metadata so that VLEN allocation can be reclaimed/free'd later */
+                info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, vdata.data()};
+                return;
+            }
+            if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
+                hsize_t bufsize = 0;
+                herr_t  buferr  = H5Dvlen_get_buf_size(info.h5Dset.value(), h5t_fields, dsetSpace, &bufsize);
+                if(buferr < 0) throw h5pp::runtime_error("Failed to get vlen buffer size");
+                data.resize(bufsize);
+            }
+            [[maybe_unused]] size_t bufoffset = 0;
+            for(size_t idx = 0; idx < size; idx++) {
+                if constexpr(type::sfinae::has_value_type_v<DataType>) {
+                    using value_type = typename DataType::value_type;
+                    if constexpr(type::sfinae::is_std_vector_v<value_type>) {
+                        // Vector of vectors
+                        using inner_value_type = typename DataType::value_type::value_type;
+                        auto begin             = static_cast<inner_value_type *>(vdata[idx].p);
+                        auto end               = static_cast<inner_value_type *>(vdata[idx].p) + vdata[idx].len;
+                        data.emplace_back(begin, end);
+                    } else if constexpr(type::sfinae::is_std_vector_v<DataType>) {
+                        // Plain vector takes all the data
+                        auto begin = static_cast<value_type *>(vdata[idx].p);
+                        auto end   = static_cast<value_type *>(vdata[idx].p) + vdata[idx].len;
+                        std::copy(begin, end, std::back_inserter(data));
+                    } else if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
+                        // Raw buffer takes all the data
+                        hsize_t         bufsize;
+                        hid::h5s        elemSpace;
+                        h5pp::Hyperslab elemSlab({offset.value() + idx}, {1});
+                        selectHyperslab(elemSpace, elemSlab, H5S_SELECT_SET);
+                        herr_t buferr = H5Dvlen_get_buf_size(info.h5Dset.value(), h5t_fields, elemSpace, &bufsize);
+                        if(buferr < 0) throw h5pp::runtime_error("Failed to get vlen buffer size");
+                        std::memcpy(util::getVoidPointer<void *>(data, bufoffset), vdata[idx].p, bufsize);
+                        bufoffset += bufsize;
+                    }
+                }
+            }
+#if H5_VERSION_GE(1,12,0)
+            herr_t reclaim_err = H5Treclaim(h5t_fields, dsetSpace, H5P_DEFAULT, vdata.data());
+#else
+            herr_t reclaim_err = H5Dvlen_reclaim(h5t_fields, dsetSpace, H5P_DEFAULT, vdata.data());
+#endif
+
+            if(reclaim_err) {
+                auto h5t_info = getH5TInfo(h5t_fields);
+                h5pp::runtime_error("readTableField: H5Dvlen_reclaim failed when reading variable-length field data\n"
+                                    "table [{}] | {}{}{}",
+                                    info.tablePath.value(),
+                                    h5t_info.string(),
+                                    h5t_info.numMembers ? "\n" : "",
+                                    h5t_info.string_members());
+            }
+            return;
+        } else if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
+            auto fieldSizeSum = getBytesPerElem(h5t_fields);
             data.resize(fieldSizeSum * extent.value());
         } else {
             h5pp::util::resizeData(data, {extent.value()});
             // Make sure the data type of the given read buffer matches the size computed above.
             // If there is a mismatch here it can cause horrible bugs/segfaults
-            size_t dtypeSize = util::getBytesPerElem<DataType>();
+            size_t dtypeSize    = util::getBytesPerElem<DataType>();
+            auto   fieldSizeSum = getBytesPerElem(h5t_fields);
             if(dtypeSize != fieldSizeSum) {
                 auto        h5t_info = getH5TInfo(h5t_fields);
                 std::string error_msg;
                 for(size_t idx = 0; idx < static_cast<size_t>(h5t_info.numMembers.value()); idx++)
-                    error_msg += h5pp::format("{:<10} Field {:<32} = {} bytes\n",
-                                              " ",
+                    error_msg += h5pp::format("     Field {:>5}/{:<5} {:>32} = {} bytes\n",
                                               idx,
+                                              h5t_info.numMembers.value(),
                                               h5t_info.memberNames.value()[idx],
                                               h5t_info.memberSizes.value()[idx]);
                 throw h5pp::runtime_error("readTableField: Type size mismatch:\n"
@@ -3212,6 +3248,7 @@ namespace h5pp::hdf5 {
                                           "      Consider declaring such structs with __attribute__((packed, aligned(1)))",
                                           info.tablePath.value(),
                                           error_msg,
+                                          fieldSizeSum,
                                           type::sfinae::type_name<DataType>(),
                                           dtypeSize);
             }
@@ -3219,16 +3256,6 @@ namespace h5pp::hdf5 {
 
         // Get the memory address to the data buffer
         auto dataPtr = h5pp::util::getVoidPointer<void *>(data);
-
-        /* Step 1: Get the dataset and memory spaces */
-        hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value());                   /* get a copy of the new file data space for writing */
-        hid::h5s dataSpace = util::getMemSpace(extent.value(), {extent.value()}); /* create a simple memory data space */
-
-        /* Step 2: draw a hyperslab in the dataset */
-        h5pp::Hyperslab slab;
-        slab.offset = {offset.value()};
-        slab.extent = {extent.value()};
-        selectHyperslab(dsetSpace, slab, H5S_SELECT_SET);
 
         /* Read data */
         herr_t retval = H5Dread(info.h5Dset.value(), h5t_fields, dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
