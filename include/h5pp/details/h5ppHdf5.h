@@ -294,29 +294,25 @@ namespace h5pp::hdf5 {
         info.h5Class  = H5Tget_class(h5Type);
         if(info.h5Class != H5T_class_t::H5T_COMPOUND) return info; // Can't do further analysis on its members
 
-        info.numMembers = H5Tget_nmembers(h5Type);
-        auto nmemb      = static_cast<size_t>(info.numMembers.value());
-        auto types      = std::vector<hid::h5t>(nmemb);
-        auto names      = std::vector<std::string>(nmemb);
-        auto sizes      = std::vector<size_t>(nmemb);
-        auto index      = std::vector<int>(nmemb);
-        auto offset     = std::vector<size_t>(nmemb);
+        info.numMembers   = H5Tget_nmembers(h5Type);
+        auto nmemb        = static_cast<size_t>(info.numMembers.value());
+        info.memberNames  = std::vector<std::string>(nmemb);
+        info.memberTypes  = std::vector<hid::h5t>(nmemb);
+        info.memberSizes  = std::vector<size_t>(nmemb);
+        info.memberIndex  = std::vector<int>(nmemb);
+        info.memberOffset = std::vector<size_t>(nmemb);
         if(info.h5Class.value() == H5T_COMPOUND) {
             for(size_t idx = 0; idx < nmemb; idx++) {
-                char *name  = H5Tget_member_name(h5Type, static_cast<unsigned int>(idx));
-                names[idx]  = name;
-                types[idx]  = H5Tget_member_type(h5Type, static_cast<unsigned int>(idx));
-                sizes[idx]  = H5Tget_size(types[idx]);
-                index[idx]  = H5Tget_member_index(h5Type, name);
-                offset[idx] = H5Tget_member_offset(h5Type, static_cast<unsigned int>(idx));
+                char              *name            = H5Tget_member_name(h5Type, static_cast<unsigned int>(idx));
+                info.memberNames-> operator[](idx) = name;
+                info.memberTypes-> operator[](idx) = H5Tget_member_type(h5Type, static_cast<unsigned int>(idx));
+                info.memberSizes-> operator[](idx) = H5Tget_size(info.memberTypes->operator[](idx));
+                info.memberIndex-> operator[](idx) = H5Tget_member_index(h5Type, name);
+                info.memberOffset->operator[](idx) = H5Tget_member_offset(h5Type, static_cast<unsigned int>(idx));
                 H5free_memory(name);
             }
         }
-        info.memberNames  = names;
-        info.memberTypes  = types;
-        info.memberSizes  = sizes;
-        info.memberIndex  = index;
-        info.memberOffset = offset;
+
         return info;
     }
 
@@ -2714,12 +2710,14 @@ namespace h5pp::hdf5 {
                                        nullptr,
                                        compression,
                                        nullptr);
-        if(retval < 0) throw h5pp::runtime_error("Could not create table [{}]", info.tablePath.value());
+        if(retval < 0) throw h5pp::runtime_error("Could not create table {}\n{}", info.string(), info.string_fields());
 
         // Setup fields so that this TableInfo can be reused for read/write after
         info.compression  = compression == 0 ? 0 : 6; // Set to 0/6 so that users can read this field later
         info.tableExists  = true;
         info.h5Dset       = hdf5::openLink<hid::h5d>(info.getLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess);
+        info.h5Type       = H5Dget_type(info.h5Dset.value());
+        info.recordBytes  = H5Tget_size(info.h5Type.value());
         info.h5DsetCreate = H5Dget_create_plist(info.h5Dset.value());
         info.h5DsetAccess = H5Dget_access_plist(info.h5Dset.value());
         info.assertReadReady();
@@ -2837,11 +2835,25 @@ namespace h5pp::hdf5 {
          */
         info.assertWriteReady();
         offset = util::wrapUnsigned(offset, info.numRecords.value()); // Allows python style negative indexing
-        if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
-            if(not extent) extent = data.size() / info.recordBytes.value();
-        } else {
-            if(not extent) extent = h5pp::util::getSize(data);
+        if(not extent) {
+            if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
+                std::string errmsg;
+                if(data.size() < info.recordBytes.value())
+                    errmsg.append("is smaller than");
+                else if(data.size() % info.recordBytes.value() != 0)
+                    errmsg.append("is not a multiple of");
+                if(not errmsg.empty())
+                    throw h5pp::logic_error("The data buffer size [{} : {} bytes] {} the record size of table [{} : {} bytes]",
+                                            h5pp::type::sfinae::type_name<DataType>(),
+                                            data.size(),
+                                            errmsg,
+                                            info.tablePath.value(),
+                                            info.recordBytes.value());
+                extent = data.size() / info.recordBytes.value();
+            } else
+                extent = h5pp::util::getSize(data);
         }
+
         if(extent.value() == 0)
             h5pp::logger::log->warn("Given 0 records to write to table [{}]. This is likely an error.", info.tablePath.value());
 

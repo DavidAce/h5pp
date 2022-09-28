@@ -395,7 +395,7 @@ namespace h5pp::scan {
         if(not info.attrDims)   info.attrDims       = h5pp::hdf5::getDimensions(info.h5Space.value());
         if(not info.attrRank)   info.attrRank       = h5pp::hdf5::getRank(info.h5Space.value());
         if(not info.h5PlistAttrCreate) info.h5PlistAttrCreate = H5Aget_create_plist(info.h5Attr.value());
-        /* clang-format on */
+            /* clang-format on */
 #if H5_VERSION_GE(1, 10, 0)
         if(not info.h5PlistAttrAccess) info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
 #else
@@ -621,30 +621,15 @@ namespace h5pp::scan {
                 info.fieldClasses.value()[i] = H5Tget_member_class(h5Type.value(), static_cast<unsigned>(i));
         }
         if(not info.fieldSizes or not info.fieldOffsets or not info.fieldNames or not info.recordBytes) {
-            hsize_t n_fields   = info.numFields.value();
-            info.fieldSizes    = std::vector<size_t>(n_fields);
-            info.fieldOffsets  = std::vector<size_t>(n_fields);
-            info.fieldNames    = std::vector<std::string>(n_fields);
-            info.recordBytes   = 0;
-            char **field_names = new char *[n_fields];
-            for(size_t i = 0; i < n_fields; i++) field_names[i] = new char[255];
-
-            // Read the data
-            herr_t err = H5TBget_field_info(h5File,
-                                            util::safe_str(tablePath).c_str(),
-                                            field_names,
-                                            info.fieldSizes->data(),
-                                            info.fieldOffsets->data(),
-                                            &info.recordBytes.value());
-
-            if(err < 0) throw h5pp::runtime_error("getTableFieldInfo: Error {}. Failed to read field info for table [{}]", err, tablePath);
-
-            // Copy the array of char arrays to a vector of strings
-            for(size_t i = 0; i < n_fields; i++) info.fieldNames.value()[i] = field_names[i];
-
-            // release array of char arrays
-            for(size_t i = 0; i < n_fields; i++) delete[] field_names[i];
-            delete[] field_names;
+            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, linkAccess);
+            if(not h5Type) h5Type = H5Dget_type(h5Dset.value());
+            auto h5typeInfo   = hdf5::getH5TInfo(h5Type.value());
+            info.recordBytes  = h5typeInfo.typeSize;
+            info.numFields    = h5typeInfo.numMembers;
+            info.fieldNames   = h5typeInfo.memberNames;
+            info.fieldSizes   = h5typeInfo.memberSizes;
+            info.fieldTypes   = h5typeInfo.memberTypes;
+            info.fieldOffsets = h5typeInfo.memberOffset;
         }
         // Get c++ properties
         if(info.fieldTypes and (not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)) {

@@ -13,30 +13,31 @@ namespace tc = h5pp::type::sfinae;
 namespace h5pp::type {
 
     [[nodiscard]] inline std::string getH5TypeName(const hid::h5t &h5type) {
-        /*clang-format off */
-        if(H5Tequal(h5type, H5T_NATIVE_SHORT))    return "H5T_NATIVE_SHORT";
-        if(H5Tequal(h5type, H5T_NATIVE_INT))      return "H5T_NATIVE_INT";
-        if(H5Tequal(h5type, H5T_NATIVE_LONG))     return "H5T_NATIVE_LONG";
-        if(H5Tequal(h5type, H5T_NATIVE_LLONG))    return "H5T_NATIVE_LLONG";
-        if(H5Tequal(h5type, H5T_NATIVE_USHORT))   return "H5T_NATIVE_USHORT";
-        if(H5Tequal(h5type, H5T_NATIVE_UINT))     return "H5T_NATIVE_UINT";
-        if(H5Tequal(h5type, H5T_NATIVE_ULONG))    return "H5T_NATIVE_ULONG";
-        if(H5Tequal(h5type, H5T_NATIVE_ULLONG))   return "H5T_NATIVE_ULLONG";
-        if(H5Tequal(h5type, H5T_NATIVE_FLOAT))    return "H5T_NATIVE_FLOAT";
-        if(H5Tequal(h5type, H5T_NATIVE_DOUBLE))   return "H5T_NATIVE_DOUBLE";
-        if(H5Tequal(h5type, H5T_NATIVE_LDOUBLE))  return "H5T_NATIVE_LDOUBLE";
-        if(H5Tequal(h5type, H5T_NATIVE_INT8))     return "H5T_NATIVE_INT8";
-        if(H5Tequal(h5type, H5T_NATIVE_INT16))    return "H5T_NATIVE_INT16";
-        if(H5Tequal(h5type, H5T_NATIVE_INT32))    return "H5T_NATIVE_INT32";
-        if(H5Tequal(h5type, H5T_NATIVE_INT64))    return "H5T_NATIVE_INT64";
-        if(H5Tequal(h5type, H5T_NATIVE_UINT8))    return "H5T_NATIVE_UINT8";
-        if(H5Tequal(h5type, H5T_NATIVE_UINT16))   return "H5T_NATIVE_UINT16";
-        if(H5Tequal(h5type, H5T_NATIVE_UINT32))   return "H5T_NATIVE_UINT32";
-        if(H5Tequal(h5type, H5T_NATIVE_UINT64))   return "H5T_NATIVE_UINT64";
-        if(H5Tequal(h5type, H5T_NATIVE_UINT8))    return "H5T_NATIVE_UINT8";
-        if(H5Tequal(h5type, H5T_C_S1))            return "H5T_C_S1";
-        if(H5Tcommitted(h5type) == 0)             return "H5T_NOT_COMMITTED";
-        /*clang-format on */
+        /* clang-format off */
+        if(H5Tequal(h5type, H5T_NATIVE_SHORT))             return "H5T_NATIVE_SHORT";
+        if(H5Tequal(h5type, H5T_NATIVE_INT))               return "H5T_NATIVE_INT";
+        if(H5Tequal(h5type, H5T_NATIVE_LONG))              return "H5T_NATIVE_LONG";
+        if(H5Tequal(h5type, H5T_NATIVE_LLONG))             return "H5T_NATIVE_LLONG";
+        if(H5Tequal(h5type, H5T_NATIVE_USHORT))            return "H5T_NATIVE_USHORT";
+        if(H5Tequal(h5type, H5T_NATIVE_UINT))              return "H5T_NATIVE_UINT";
+        if(H5Tequal(h5type, H5T_NATIVE_ULONG))             return "H5T_NATIVE_ULONG";
+        if(H5Tequal(h5type, H5T_NATIVE_ULLONG))            return "H5T_NATIVE_ULLONG";
+        if(H5Tequal(h5type, H5T_NATIVE_FLOAT))             return "H5T_NATIVE_FLOAT";
+        if(H5Tequal(h5type, H5T_NATIVE_DOUBLE))            return "H5T_NATIVE_DOUBLE";
+        if(H5Tequal(h5type, H5T_NATIVE_LDOUBLE))           return "H5T_NATIVE_LDOUBLE";
+        if(H5Tequal(h5type, H5T_NATIVE_INT8))              return "H5T_NATIVE_INT8";
+        if(H5Tequal(h5type, H5T_NATIVE_INT16))             return "H5T_NATIVE_INT16";
+        if(H5Tequal(h5type, H5T_NATIVE_INT32))             return "H5T_NATIVE_INT32";
+        if(H5Tequal(h5type, H5T_NATIVE_INT64))             return "H5T_NATIVE_INT64";
+        if(H5Tequal(h5type, H5T_NATIVE_UINT8))             return "H5T_NATIVE_UINT8";
+        if(H5Tequal(h5type, H5T_NATIVE_UINT16))            return "H5T_NATIVE_UINT16";
+        if(H5Tequal(h5type, H5T_NATIVE_UINT32))            return "H5T_NATIVE_UINT32";
+        if(H5Tequal(h5type, H5T_NATIVE_UINT64))            return "H5T_NATIVE_UINT64";
+        if(H5Tequal(h5type, H5T_NATIVE_UINT8))             return "H5T_NATIVE_UINT8";
+        if(H5Tequal(h5type, H5T_C_S1))                     return "H5T_C_S1";
+        if(H5Tget_class(h5type) == H5T_class_t::H5T_ENUM)  return h5pp::format("H5T_ENUM{}",H5Tget_size(h5type));
+        if(H5Tcommitted(h5type) == 0)                      return "H5T_NOT_COMMITTED";
+        /* clang-format on */
         // Read about the buffer size inconsistency here
         // http://hdf-forum.184993.n3.nabble.com/H5Iget-name-inconsistency-td193143.html
         std::string buf;

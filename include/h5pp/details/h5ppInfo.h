@@ -636,8 +636,9 @@ namespace h5pp {
                 for(size_t m = 0; m < static_cast<size_t>(numFields.value()); m++){
                     if(fieldNames and fieldNames->size() > m) msg.append(h5pp::format("{:<32} ", fieldNames->operator[](m)));
                     if(fieldTypes and fieldTypes->size() > m) msg.append(h5pp::format("| {:<16} ", type::getH5TypeName(fieldTypes->operator[](m))));
-                    if(fieldSizes and fieldSizes->size() > m) msg.append(h5pp::format("| {:<4} bytes ", fieldSizes->operator[](m)));
-                    if(fieldOffsets and fieldOffsets->size() > m) msg.append(h5pp::format("| {:<4} offset", fieldOffsets->operator[](m)));
+                    if(fieldSizes and fieldSizes->size() > m) msg.append(h5pp::format("| extent {:<4} bytes ", fieldSizes->operator[](m)));
+                    if(fieldOffsets and fieldOffsets->size() > m) msg.append(h5pp::format("| offset {:<4} bytes", fieldOffsets->operator[](m)));
+                    msg.append(".\n");
                 }
             }
             return msg;
