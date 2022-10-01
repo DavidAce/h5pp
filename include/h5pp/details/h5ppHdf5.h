@@ -581,7 +581,7 @@ namespace h5pp::hdf5 {
     [[nodiscard]] h5x openLink(const h5x_loc      &loc,
                                std::string_view    linkPath,
                                std::optional<bool> linkExists = std::nullopt,
-                               const hid::h5p     &linkAccess = H5P_DEFAULT) {
+                               const hid::h5p     &access     = H5P_DEFAULT) {
         static_assert(type::sfinae::is_h5pp_link_id<h5x>,
                       "Template function [h5pp::hdf5::openLink<h5x>(...)] requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
@@ -589,7 +589,7 @@ namespace h5pp::hdf5 {
                       "Template function [h5pp::hdf5::openLink<h5x>(const h5x_loc & loc, ...)] requires type h5x_loc to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         if constexpr(not h5pp::ndebug) {
-            if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
+            if(not linkExists) linkExists = checkIfLinkExists(loc, linkPath, access);
             if(not linkExists.value()) throw h5pp::runtime_error("Cannot open link [{}]: it does not exist", linkPath);
         }
         if constexpr(std::is_same_v<h5x, hid::h5d>) h5pp::logger::log->trace("Opening dataset [{}]", linkPath);
@@ -597,9 +597,9 @@ namespace h5pp::hdf5 {
         if constexpr(std::is_same_v<h5x, hid::h5o>) h5pp::logger::log->trace("Opening object [{}]", linkPath);
 
         hid_t link;
-        if constexpr(std::is_same_v<h5x, hid::h5d>) link = H5Dopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
-        if constexpr(std::is_same_v<h5x, hid::h5g>) link = H5Gopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
-        if constexpr(std::is_same_v<h5x, hid::h5o>) link = H5Oopen(loc, util::safe_str(linkPath).c_str(), linkAccess);
+        if constexpr(std::is_same_v<h5x, hid::h5d>) link = H5Dopen(loc, util::safe_str(linkPath).c_str(), access);
+        if constexpr(std::is_same_v<h5x, hid::h5g>) link = H5Gopen(loc, util::safe_str(linkPath).c_str(), access);
+        if constexpr(std::is_same_v<h5x, hid::h5o>) link = H5Oopen(loc, util::safe_str(linkPath).c_str(), access);
 
         if(link < 0) {
             if constexpr(std::is_same_v<h5x, hid::h5d>) throw h5pp::runtime_error("Failed to open dataset [{}]", linkPath);
@@ -607,6 +607,31 @@ namespace h5pp::hdf5 {
             if constexpr(std::is_same_v<h5x, hid::h5o>) throw h5pp::runtime_error("Failed to open object [{}]", linkPath);
         }
         return link;
+    }
+
+    template<typename h5x>
+    inline void createGroup(const h5x           &loc,
+                            std::string_view     relGroupPath,
+                            std::optional<bool>  groupExists = std::nullopt,
+                            const PropertyLists &plists      = PropertyLists()) {
+        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+                      "Template function [h5pp::hdf5::createGroup(const h5x & loc, ...)] requires type h5x to be: "
+                      "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
+        // Check if group exists already
+        if(relGroupPath.empty()) return;
+        if(not groupExists) groupExists = checkIfLinkExists(loc, relGroupPath, plists.linkAccess);
+        if(not groupExists.value()) {
+            h5pp::logger::log->trace("Creating group link [{}]", relGroupPath);
+            // Setup property to create intermediate links
+            hid::h5p lcpl = H5Pcopy(plists.linkCreate);
+            herr_t   lerr = H5Pset_create_intermediate_group(lcpl, 1); // Create intermediate groups
+            if(lerr < 0) throw h5pp::runtime_error("H5Pset_create_intermediate_group failed when creating group [{}]", relGroupPath);
+            hid_t gid = H5Gcreate(loc, util::safe_str(relGroupPath).c_str(), lcpl, plists.groupCreate, plists.groupAccess);
+            if(gid < 0) throw h5pp::runtime_error("H5Gcreate: Failed to create group link [{}]", relGroupPath);
+            herr_t gerr = H5Gclose(gid);
+            if(gerr < 0) throw h5pp::runtime_error("H5Gclose: Failed to close id for group [{}]", relGroupPath);
+        } else
+            h5pp::logger::log->trace("Group exists already: [{}]", relGroupPath);
     }
 
     template<typename h5x>
@@ -1691,7 +1716,7 @@ namespace h5pp::hdf5 {
         inline herr_t visit_by_name(const h5x                &loc,
                                     std::string_view          root,
                                     std::vector<std::string> &matchList,
-                                    const hid::h5p           &linkAccess = H5P_DEFAULT) {
+                                    const PropertyLists      &plists = PropertyLists()) {
             static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
                           "Template function [h5pp::hdf5::visit_by_name(const h5x & loc, ...)] requires type h5x to be: "
                           "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
@@ -1701,7 +1726,7 @@ namespace h5pp::hdf5 {
                 if(internal::maxDepth == 0) {
                     // Faster when we don't need to iterate recursively
                     hsize_t idx = 0;
-                    auto    gid = openLink<hid::h5g>(loc, safe_root, std::nullopt, linkAccess);
+                    auto    gid = openLink<hid::h5g>(loc, safe_root, std::nullopt, plists.groupAccess);
                     return H5Literate(gid,
                                       H5_index_t::H5_INDEX_NAME,
                                       H5_iter_order_t::H5_ITER_NATIVE,
@@ -1716,19 +1741,19 @@ namespace h5pp::hdf5 {
                                     H5_iter_order_t::H5_ITER_NATIVE,
                                     internal::matcher<ObjType>,
                                     &matchList,
-                                    linkAccess);
+                                    plists.linkAccess);
         }
 
     }
 
     template<H5O_type_t ObjType, typename h5x>
-    [[nodiscard]] inline std::vector<std::string> findLinks(const h5x       &loc,
-                                                            std::string_view searchKey      = "",
-                                                            std::string_view searchRoot     = "/",
-                                                            long             maxHits        = -1,
-                                                            long             maxDepth       = -1,
-                                                            bool             followSymlinks = false,
-                                                            const hid::h5p  &linkAccess     = H5P_DEFAULT) {
+    [[nodiscard]] inline std::vector<std::string> findLinks(const h5x           &loc,
+                                                            std::string_view     searchKey      = "",
+                                                            std::string_view     searchRoot     = "/",
+                                                            long                 maxHits        = -1,
+                                                            long                 maxDepth       = -1,
+                                                            bool                 followSymlinks = false,
+                                                            const PropertyLists &plists         = PropertyLists()) {
         h5pp::logger::log->trace("search key: {} | root: {} | type: {} | max hits {} | max depth {}",
                                  searchKey,
                                  searchRoot,
@@ -1736,7 +1761,7 @@ namespace h5pp::hdf5 {
                                  maxHits,
                                  maxDepth);
 
-        if(not checkIfLinkExists(loc, searchRoot, linkAccess))
+        if(not checkIfLinkExists(loc, searchRoot, plists.linkAccess))
             throw h5pp::runtime_error("Cannot find links inside group [{}]: it does not exist", searchRoot);
 
         std::vector<std::string> matchList;
@@ -1744,7 +1769,7 @@ namespace h5pp::hdf5 {
         internal::maxDepth  = maxDepth;
         internal::symlinks  = followSymlinks;
         internal::searchKey = searchKey;
-        herr_t err          = internal::visit_by_name<ObjType>(loc, searchRoot, matchList, linkAccess);
+        herr_t err          = internal::visit_by_name<ObjType>(loc, searchRoot, matchList, plists);
         if(err < 0)
             throw h5pp::runtime_error(
                 "Error occurred when trying to find links of type [{}] containing [{}] while iterating from root [{}]",
@@ -1757,12 +1782,12 @@ namespace h5pp::hdf5 {
 
     template<H5O_type_t ObjType, typename h5x>
     [[nodiscard]] inline std::vector<std::string>
-        getContentsOfLink(const h5x &loc, std::string_view linkPath, long maxDepth = 1, const hid::h5p &linkAccess = H5P_DEFAULT) {
+        getContentsOfLink(const h5x &loc, std::string_view linkPath, long maxDepth = 1, const PropertyLists &plists = PropertyLists()) {
         std::vector<std::string> contents;
         internal::maxHits  = -1;
         internal::maxDepth = maxDepth;
         internal::searchKey.clear();
-        herr_t err = internal::visit_by_name<ObjType>(loc, linkPath, contents, linkAccess);
+        herr_t err = internal::visit_by_name<ObjType>(loc, linkPath, contents, plists);
         if(err < 0) throw h5pp::runtime_error("Failed to iterate link [{}] of type [{}]", linkPath, internal::getObjTypeName<ObjType>());
 
         return contents;
@@ -1775,6 +1800,8 @@ namespace h5pp::hdf5 {
             h5pp::logger::log->trace("No need to create dataset [{}]: exists already", dsetInfo.dsetPath.value());
             return;
         }
+        // Create intermediate groups
+        createGroup(dsetInfo.getLocId(), util::getParentPath(dsetInfo.dsetPath.value()), std::nullopt, plists);
         h5pp::logger::log->debug("Creating dataset {}", dsetInfo.string(h5pp::logger::logIf(LogLevel::debug)));
         hid_t dsetId = H5Dcreate(dsetInfo.getLocId(),
                                  util::safe_str(dsetInfo.dsetPath.value()).c_str(),
@@ -2205,6 +2232,8 @@ namespace h5pp::hdf5 {
             dataPtr = getTextPtrForH5Dwrite(data, dsetInfo.h5Type.value(), tempBuf, vlenBuf);
         }
 
+        // Write to file
+
         herr_t retval = H5Dwrite(dsetInfo.h5Dset.value(),
                                  dsetInfo.h5Type.value(),
                                  dataInfo.h5Space.value(),
@@ -2359,7 +2388,7 @@ namespace h5pp::hdf5 {
 #else
                 herr_t reclaim_err = H5Dvlen_reclaim(dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), plists.dsetXfer, vdata.data());
 #endif
-                if(reclaim_err < 0) h5pp::runtime_error("readDataset: failed to reclaim variable-length array buffer");
+                if(reclaim_err < 0) h5pp::runtime_error("readDataset: failed to vlenReclaim variable-length array buffer");
 
             } else {
                 // All the elements in the dataset have the same string size
@@ -2410,7 +2439,7 @@ namespace h5pp::hdf5 {
         if(retval < 0)
             throw h5pp::runtime_error("Failed to read from dataset \n\t {} \n into memory \n\t {}", dsetInfo.string(), dataInfo.string());
         /* Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
-        if(H5Tdetect_class(dsetInfo.h5Type->value(), H5T_class_t::H5T_VLEN)) {
+        if(plists.vlenTrackReclaims and H5Tdetect_class(dsetInfo.h5Type->value(), H5T_class_t::H5T_VLEN)) {
             dsetInfo.reclaimInfo = {dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), H5P_DEFAULT, dataPtr, dsetInfo.dsetPath.value()};
         }
     }
@@ -2464,7 +2493,7 @@ namespace h5pp::hdf5 {
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
-    void readAttribute(DataType &data, const DataInfo &dataInfo, const AttrInfo &attrInfo) {
+    void readAttribute(DataType &data, const DataInfo &dataInfo, const AttrInfo &attrInfo, const PropertyLists &plists = PropertyLists()) {
         // Transpose the data container before reading
 #ifdef H5PP_USE_EIGEN3
         if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
@@ -2531,7 +2560,7 @@ namespace h5pp::hdf5 {
 #else
                 herr_t reclaim_err = H5Dvlen_reclaim(attrInfo.h5Type.value(), attrInfo.h5Space.value(), H5P_DEFAULT, vdata.data());
 #endif
-                if(reclaim_err < 0) h5pp::runtime_error("readAttribute: failed to reclaim variable-length array buffer");
+                if(reclaim_err < 0) h5pp::runtime_error("readAttribute: failed to vlenReclaim variable-length array buffer");
             } else {
                 // All the elements in the dataset have the same string size
                 // The whole dataset is read into a contiguous block of memory.
@@ -2565,7 +2594,7 @@ namespace h5pp::hdf5 {
         if(retval < 0)
             throw h5pp::runtime_error("Failed to read from attribute \n\t {} \n into memory \n\t {}", attrInfo.string(), dataInfo.string());
         /* Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
-        if(H5Tdetect_class(attrInfo.h5Type->value(), H5T_class_t::H5T_VLEN)) {
+        if(plists.vlenTrackReclaims and H5Tdetect_class(attrInfo.h5Type->value(), H5T_class_t::H5T_VLEN)) {
             attrInfo.reclaimInfo = {attrInfo.h5Type.value(),
                                     attrInfo.h5Space.value(),
                                     H5P_DEFAULT,
@@ -2715,7 +2744,7 @@ namespace h5pp::hdf5 {
         // Setup fields so that this TableInfo can be reused for read/write after
         info.compression  = compression == 0 ? 0 : 6; // Set to 0/6 so that users can read this field later
         info.tableExists  = true;
-        info.h5Dset       = hdf5::openLink<hid::h5d>(info.getLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess);
+        info.h5Dset       = hdf5::openLink<hid::h5d>(info.getLocId(), info.tablePath.value(), info.tableExists, plists.dsetAccess);
         info.h5Type       = H5Dget_type(info.h5Dset.value());
         info.recordBytes  = H5Tget_size(info.h5Type.value());
         info.h5DsetCreate = H5Dget_create_plist(info.h5Dset.value());
@@ -2729,7 +2758,8 @@ namespace h5pp::hdf5 {
     inline void readTableRecords(DataType             &data,
                                  const TableInfo      &info,
                                  std::optional<size_t> offset = std::nullopt,
-                                 std::optional<size_t> extent = std::nullopt) {
+                                 std::optional<size_t> extent = std::nullopt,
+                                 const PropertyLists  &plists = PropertyLists()) {
         /*
          *  This function replaces H5TBread_records() and avoids creating expensive temporaries for the dataset id and type id for the
          * compound table type.
@@ -2817,17 +2847,21 @@ namespace h5pp::hdf5 {
         /* Step 3: read the records */
         // Get the memory address to the data buffer
         auto   dataPtr = h5pp::util::getVoidPointer<void *>(data);
-        herr_t retval  = H5Dread(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
+        herr_t retval  = H5Dread(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, plists.dsetXfer, dataPtr);
         if(retval < 0) throw h5pp::runtime_error("Failed to read data from table [{}]", info.tablePath.value());
 
         /* Step 4: Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
-        if(H5Tdetect_class(info.h5Type->value(), H5T_class_t::H5T_VLEN)) {
+        if(plists.vlenTrackReclaims and H5Tdetect_class(info.h5Type->value(), H5T_class_t::H5T_VLEN)) {
             info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, dataPtr, info.tablePath.value()};
         }
     }
 
     template<typename DataType>
-    inline void writeTableRecords(const DataType &data, TableInfo &info, hsize_t offset = 0, std::optional<hsize_t> extent = std::nullopt) {
+    inline void writeTableRecords(const DataType        &data,
+                                  TableInfo             &info,
+                                  hsize_t                offset = 0,
+                                  std::optional<hsize_t> extent = std::nullopt,
+                                  const PropertyLists   &plists = PropertyLists()) {
         /*
          *  This function replaces H5TBwrite_records() and avoids creating expensive temporaries for the dataset id and type id for the
          * compound table type. In addition, it has the ability to extend the existing the dataset if the incoming data larger than the
@@ -2927,7 +2961,7 @@ namespace h5pp::hdf5 {
                                    info.h5Dset.value(),
                                    info.h5Type.value(),
                                    info.h5DsetCreate.value(),
-                                   H5P_DEFAULT,
+                                   plists.dsetXfer,
                                    {numRecordsNew},
                                    info.chunkDims.value(),
                                    dsetSlab,
@@ -3074,10 +3108,10 @@ namespace h5pp::hdf5 {
     inline bool checkIfTableFieldsExists(const hid::h5f       &h5File,
                                          std::string_view      tablePath,
                                          const std::vector<T> &fields,
-                                         const hid::h5p       &linkAccess = H5P_DEFAULT) {
-        auto exists = checkIfLinkExists(h5File, tablePath, linkAccess);
+                                         const PropertyLists  &plists = PropertyLists()) {
+        auto exists = checkIfLinkExists(h5File, tablePath, plists.linkAccess);
         if(not exists) return false;
-        auto h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, exists, linkAccess);
+        auto h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, exists, plists.dsetAccess);
         return checkIfTableFieldsExists(h5Dset, fields);
     }
 
@@ -3086,7 +3120,8 @@ namespace h5pp::hdf5 {
                                const TableInfo       &info,
                                const hid::h5t        &h5t_fields,
                                std::optional<hsize_t> offset = std::nullopt,
-                               std::optional<hsize_t> extent = std::nullopt) {
+                               std::optional<hsize_t> extent = std::nullopt,
+                               const PropertyLists   &plists = PropertyLists()) {
         static_assert(not std::is_const_v<DataType>);
         static_assert(not type::sfinae::is_h5pp_id<DataType>);
         // If none of offset or extent are given:
@@ -3169,7 +3204,7 @@ namespace h5pp::hdf5 {
             auto               size = h5pp::hdf5::getSizeSelected(dsetSpace);
             std::vector<hvl_t> vdata(static_cast<size_t>(size)); // Allocate len/ptr pairs for "size" number of vlen arrays
             // HDF5 allocates space for each vlen array
-            herr_t             retval = H5Dread(info.h5Dset.value(), h5t_fields, H5S_ALL, dsetSpace, H5P_DEFAULT, vdata.data());
+            herr_t             retval = H5Dread(info.h5Dset.value(), h5t_fields, H5S_ALL, dsetSpace, plists.dsetXfer, vdata.data());
             if(retval < 0) {
                 auto h5t_info = getH5TInfo(h5t_fields);
                 h5pp::runtime_error("readTableField: H5Dread failed for variable-length field data\n"
@@ -3183,9 +3218,10 @@ namespace h5pp::hdf5 {
             // Now vdata contains the dataset selection, and we need to put the data into the user-given container.
             // Depending on the type of the recipient data container, we can copy the data in different ways e.g. plain vector or of vectors
             if constexpr(std::is_same_v<DataType, std::vector<hvl_t>>) {
-                data             = vdata;
+                data = vdata;
                 /* Save metadata so that VLEN allocation can be reclaimed/free'd later */
-                info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, vdata.data(), info.tablePath.value()};
+                if(plists.vlenTrackReclaims)
+                    info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, vdata.data(), info.tablePath.value()};
                 return;
             }
             if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
@@ -3284,10 +3320,11 @@ namespace h5pp::hdf5 {
                                const TableInfo           &info,
                                const std::vector<size_t> &fieldIndices, // Field indices for the table on file
                                std::optional<hsize_t>     offset = std::nullopt,
-                               std::optional<hsize_t>     extent = std::nullopt) {
+                               std::optional<hsize_t>     extent = std::nullopt,
+                               const PropertyLists       &plists = PropertyLists()) {
         static_assert(not std::is_const_v<DataType>);
         hid::h5t tgtTypeId = util::getFieldTypeId(info, fieldIndices);
-        readTableField(data, info, tgtTypeId, offset, extent);
+        readTableField(data, info, tgtTypeId, offset, extent, plists);
     }
 
     template<typename DataType>
@@ -3295,10 +3332,11 @@ namespace h5pp::hdf5 {
                                const TableInfo                &info,
                                const std::vector<std::string> &fieldNames,
                                std::optional<hsize_t>          offset = std::nullopt,
-                               std::optional<hsize_t>          extent = std::nullopt) {
+                               std::optional<hsize_t>          extent = std::nullopt,
+                               const PropertyLists            &plists = PropertyLists()) {
         static_assert(not std::is_const_v<DataType>);
         hid::h5t tgtTypeId = util::getFieldTypeId(info, fieldNames);
-        readTableField(data, info, tgtTypeId, offset, extent);
+        readTableField(data, info, tgtTypeId, offset, extent, plists);
     }
 
     template<typename h5x_src,
@@ -3321,12 +3359,13 @@ namespace h5pp::hdf5 {
         h5pp::logger::log->trace("Copying link [{}] --> [{}]", srcLinkPath, tgtLinkPath);
         // Copy the link srcLinkPath to tgtLinkPath. Note that H5Ocopy does this recursively, so we don't need
         // to iterate links recursively here.
-        auto retval = H5Ocopy(srcLocId,
-                              util::safe_str(srcLinkPath).c_str(),
-                              tgtLocId,
-                              util::safe_str(tgtLinkPath).c_str(),
-                              H5P_DEFAULT,
-                              plists.linkCreate);
+        hid::h5p lcpl   = H5Pcopy(plists.linkCreate);
+        hid::h5p ocpypl = H5Pcreate(H5P_OBJECT_COPY);
+        if(H5Pset_create_intermediate_group(lcpl, 1) < 0) // Set to create intermediate groups
+            throw h5pp::runtime_error("H5Pset_create_intermediate_group failed");
+        if(H5Pset_copy_object(ocpypl, H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG) < 0) throw h5pp::runtime_error("H5Pset_copy_object failed");
+
+        auto retval = H5Ocopy(srcLocId, util::safe_str(srcLinkPath).c_str(), tgtLocId, util::safe_str(tgtLinkPath).c_str(), ocpypl, lcpl);
         if(retval < 0) throw h5pp::runtime_error("Could not copy link [{}] --> [{}]", srcLinkPath, tgtLinkPath);
     }
 
@@ -3351,26 +3390,26 @@ namespace h5pp::hdf5 {
         h5pp::logger::log->trace("Moving link [{}] --> [{}]", srcLinkPath, tgtLinkPath);
         // Move the link srcLinkPath to tgtLinkPath. Note that H5Lmove only works inside a single file.
         // For different files we should do H5Ocopy followed by H5Ldelete
-        bool sameFile = h5pp::util::onSameFile(srcLocId, tgtLocId, locationMode);
+        bool     sameFile = h5pp::util::onSameFile(srcLocId, tgtLocId, locationMode);
+        hid::h5p lcpl     = H5Pcopy(plists.linkCreate);
+        if(H5Pset_create_intermediate_group(lcpl, 1) < 0) // Set to create intermediate groups
+            throw h5pp::runtime_error("H5Pset_create_intermediate_group failed");
 
         if(sameFile) {
-            // Same file
             auto retval = H5Lmove(srcLocId,
                                   util::safe_str(srcLinkPath).c_str(),
                                   tgtLocId,
                                   util::safe_str(tgtLinkPath).c_str(),
-                                  plists.linkCreate,
+                                  lcpl,
                                   plists.linkAccess);
             if(retval < 0) throw h5pp::runtime_error("Could not copy link [{}] --> [{}]", srcLinkPath, tgtLinkPath);
 
         } else {
             // Different files
-            auto retval = H5Ocopy(srcLocId,
-                                  util::safe_str(srcLinkPath).c_str(),
-                                  tgtLocId,
-                                  util::safe_str(tgtLinkPath).c_str(),
-                                  H5P_DEFAULT,
-                                  plists.linkCreate);
+            hid::h5p ocpypl = H5Pcreate(H5P_OBJECT_COPY);
+            if(H5Pset_copy_object(ocpypl, H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG) < 0) throw h5pp::runtime_error("H5Pset_copy_object failed");
+            auto retval =
+                H5Ocopy(srcLocId, util::safe_str(srcLinkPath).c_str(), tgtLocId, util::safe_str(tgtLinkPath).c_str(), ocpypl, lcpl);
             if(retval < 0) throw h5pp::runtime_error("Could not copy link [{}] --> [{}]", srcLinkPath, tgtLinkPath);
 
             retval = H5Ldelete(srcLocId, util::safe_str(srcLinkPath).c_str(), plists.linkAccess);
@@ -3437,14 +3476,20 @@ namespace h5pp::hdf5 {
 
             hid::h5f srcFile = hidSrc;
             hid::h5f tgtFile = hidTgt;
+            hid::h5p lcpl    = H5Pcopy(plists.linkCreate);
+            hid::h5p ocpypl  = H5Pcreate(H5P_OBJECT_COPY);
+            if(H5Pset_create_intermediate_group(lcpl, 1) < 0) // Set to create intermediate groups
+                throw h5pp::runtime_error("H5Pset_create_intermediate_group failed");
+
+            if(H5Pset_copy_object(ocpypl, H5O_COPY_MERGE_COMMITTED_DTYPE_FLAG) < 0) throw h5pp::runtime_error("H5Pset_copy_object failed");
 
             // Copy all the groups in the file root recursively. Note that H5Ocopy does this recursively, so we don't need
             // to iterate links recursively here. Therefore, maxDepth = 0
             long maxDepth = 0;
-            for(const auto &link : getContentsOfLink<H5O_TYPE_UNKNOWN>(srcFile, "/", maxDepth, plists.linkAccess)) {
+            for(const auto &link : getContentsOfLink<H5O_TYPE_UNKNOWN>(srcFile, "/", maxDepth, plists)) {
                 if(link == ".") continue;
                 h5pp::logger::log->trace("Copying recursively: [{}]", link);
-                auto retval = H5Ocopy(srcFile, link.c_str(), tgtFile, link.c_str(), H5P_DEFAULT, plists.linkCreate);
+                auto retval = H5Ocopy(srcFile, link.c_str(), tgtFile, link.c_str(), ocpypl, lcpl);
                 if(retval < 0)
                     throw h5pp::runtime_error(
                         "Failed to copy file contents with H5Ocopy(srcFile,{},tgtFile,{},H5P_DEFAULT,link_create_propery_list)",

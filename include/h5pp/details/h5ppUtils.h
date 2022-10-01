@@ -27,7 +27,7 @@ namespace h5pp::util {
         // at the first occurence of '\0'. Therefore, we have to make sure that there are no embedded '\0'
         // characters in the strings that we pass to the HDF5 C-API.
         // Note that this function leaves alone any null terminator that is technically in the buffer
-        // but outside of .size() (where it is allowed to be!)
+        // but outside .size() (where it is allowed to be!)
         if(str.empty()) return {};
         std::string tmp(str);
         size_t      start_pos = 0;
@@ -36,6 +36,12 @@ namespace h5pp::util {
             start_pos += 1;
         }
         return tmp;
+    }
+
+    inline std::string_view getParentPath(std::string_view linkPath) {
+        size_t pos = linkPath.find_last_of('/');
+        if(pos == std::string_view::npos) pos = 0; // No parent path
+        return linkPath.substr(0, pos);
     }
 
     /*! \brief Calculates the python-style negative index. For instance, if num == -1ul and piv == 5ul, this returns 4ul */
@@ -691,7 +697,7 @@ namespace h5pp::util {
          */
         hid::h5t typeId = H5Tcreate(H5T_COMPOUND, tgtFieldSizeSum);
         for(size_t tgtIdx = 0; tgtIdx < fieldIndices.size(); tgtIdx++) {
-            size_t   srcIdx            = fieldIndices.at(tgtIdx);
+            size_t srcIdx = fieldIndices.at(tgtIdx);
             H5Tinsert(typeId, tgtFieldNames.at(tgtIdx).c_str(), tgtFieldOffsets.at(tgtIdx), info.fieldTypes->at(srcIdx));
         }
         return typeId;

@@ -574,7 +574,7 @@ namespace h5pp {
                 h5pp::scan::readDsetInfo(dsetInfo, openFileHandle(), options, plists);
             // Fill missing metadata in dataInfo
             h5pp::scan::scanDataInfo(dataInfo, data, options);
-            if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
+            h5pp::hdf5::createDataset(dsetInfo, plists);
             // Resize dataset to fit the given data (or a selection therein)
             h5pp::hdf5::resizeDataset(dsetInfo, dataInfo);
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists);
@@ -1017,7 +1017,7 @@ namespace h5pp {
                                           attrInfo.linkPath.value());
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             h5pp::hdf5::resizeData(data, dataInfo, attrInfo);
-            h5pp::hdf5::readAttribute(data, dataInfo, attrInfo);
+            h5pp::hdf5::readAttribute(data, dataInfo, attrInfo, plists);
         }
 
         template<typename DataType>
@@ -1297,7 +1297,7 @@ namespace h5pp {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath);
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
-            h5pp::hdf5::readTableRecords(data, info, offset, extent);
+            h5pp::hdf5::readTableRecords(data, info, offset, extent, plists);
             return info;
         }
 
@@ -1307,7 +1307,7 @@ namespace h5pp {
             options.linkPath      = h5pp::util::safe_str(tablePath);
             auto info             = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
             auto [offset, extent] = util::parseTableSelection(data, tableSelection, info.numRecords, info.recordBytes);
-            h5pp::hdf5::readTableRecords(data, info, offset, extent);
+            h5pp::hdf5::readTableRecords(data, info, offset, extent, plists);
             return info;
         }
 
@@ -1345,9 +1345,9 @@ namespace h5pp {
                             std::optional<hsize_t> offset = std::nullopt,
                             std::optional<hsize_t> extent = std::nullopt) const {
             if(fields.has_indices())
-                h5pp::hdf5::readTableField(data, info, fields.get_indices(), offset, extent);
+                h5pp::hdf5::readTableField(data, info, fields.get_indices(), offset, extent, plists);
             else if(fields.has_names())
-                h5pp::hdf5::readTableField(data, info, fields.get_names(), offset, extent);
+                h5pp::hdf5::readTableField(data, info, fields.get_names(), offset, extent, plists);
             else
                 throw h5pp::runtime_error("No field names or indices have been specified");
         }
@@ -1368,8 +1368,8 @@ namespace h5pp {
         template<typename DataType>
         [[nodiscard]] DataType readTableField(std::string_view       tablePath,
                                               const NamesOrIndices  &fields,
-                                              std::optional<hsize_t> offset    = std::nullopt,
-                                              std::optional<hsize_t> extent    = std::nullopt) const {
+                                              std::optional<hsize_t> offset = std::nullopt,
+                                              std::optional<hsize_t> extent = std::nullopt) const {
             if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
                 if(fieldExists(tablePath, fields))
                     return readTableField<typename DataType::value_type>(tablePath, fields, offset, extent);
@@ -1437,7 +1437,7 @@ namespace h5pp {
             static_assert(not std::is_const_v<DataType>);
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
             DataType data;
-            h5pp::hdf5::readTableField(data, info, fieldId, offset, extent);
+            h5pp::hdf5::readTableField(data, info, fieldId, offset, extent, plists);
             return data;
         }
 
@@ -1448,7 +1448,7 @@ namespace h5pp {
             info.assertReadReady();
             DataType data;
             auto [offset, extent] = util::parseTableSelection(data, tableSelection, fieldId, info);
-            h5pp::hdf5::readTableField(data, info, fieldId, offset, extent);
+            h5pp::hdf5::readTableField(data, info, fieldId, offset, extent, plists);
             return data;
         }
         template<typename DataType>
@@ -1460,7 +1460,7 @@ namespace h5pp {
         }
 
         [[nodiscard]] TableFieldInfo getTableFieldInfo(std::string_view tablePath) const {
-            return h5pp::scan::getTableFieldInfo(openFileHandle(), tablePath, std::nullopt, std::nullopt, plists.linkAccess);
+            return h5pp::scan::getTableFieldInfo(openFileHandle(), tablePath, std::nullopt, std::nullopt, plists.dsetAccess);
         }
 
         /*
@@ -1492,7 +1492,7 @@ namespace h5pp {
                                 std::string_view softLinkPath    /*!< Full path to the new soft link created within this file  */
         ) {
             // The given targetFilePath is written as-is into the TARGETFILE property of the new external link.
-            // Therefore it is important that it is written either as:
+            // Therefore, it is important that it is written either as:
             //      1: a path relative to the current file, and not relative to the current process, or
             //      2: a full path
 #if __cplusplus > 201703L
@@ -1517,24 +1517,24 @@ namespace h5pp {
 
         [[nodiscard]] int getDatasetRank(std::string_view datasetPath) const {
             auto filehdl = openFileHandle();
-            auto dataset = h5pp::hdf5::openLink<hid::h5d>(filehdl, datasetPath);
+            auto dataset = h5pp::hdf5::openLink<hid::h5d>(filehdl, datasetPath, std::nullopt, plists.dsetAccess);
             return h5pp::hdf5::getRank(dataset);
         }
 
         [[nodiscard]] std::vector<hsize_t> getDatasetDimensions(std::string_view datasetPath) const {
             auto filehdl = openFileHandle();
-            auto dataset = h5pp::hdf5::openLink<hid::h5d>(filehdl, datasetPath);
+            auto dataset = h5pp::hdf5::openLink<hid::h5d>(filehdl, datasetPath, std::nullopt, plists.dsetAccess);
             return h5pp::hdf5::getDimensions(dataset);
         }
         [[nodiscard]] std::optional<std::vector<hsize_t>> getDatasetMaxDimensions(std::string_view datasetPath) const {
             auto filehdl = openFileHandle();
-            auto dataset = h5pp::hdf5::openLink<hid::h5d>(filehdl, datasetPath);
+            auto dataset = h5pp::hdf5::openLink<hid::h5d>(filehdl, datasetPath, std::nullopt, plists.dsetAccess);
             return h5pp::hdf5::getMaxDimensions(dataset);
         }
 
         [[nodiscard]] std::optional<std::vector<hsize_t>> getDatasetChunkDimensions(std::string_view datasetPath) const {
             auto filehdl = openFileHandle();
-            auto dataset = h5pp::hdf5::openLink<hid::h5d>(filehdl, datasetPath);
+            auto dataset = h5pp::hdf5::openLink<hid::h5d>(filehdl, datasetPath, std::nullopt, plists.dsetAccess);
             return h5pp::hdf5::getChunkDimensions(dataset);
         }
 
@@ -1551,9 +1551,9 @@ namespace h5pp {
         }
         [[nodiscard]] bool fieldExists(std::string_view tablePath, const NamesOrIndices &fields) const {
             if(fields.has_indices())
-                return hdf5::checkIfTableFieldsExists(openFileHandle(), tablePath, fields.get_indices(), plists.linkAccess);
+                return hdf5::checkIfTableFieldsExists(openFileHandle(), tablePath, fields.get_indices(), plists);
             else if(fields.has_names())
-                return hdf5::checkIfTableFieldsExists(openFileHandle(), tablePath, fields.get_names(), plists.linkAccess);
+                return hdf5::checkIfTableFieldsExists(openFileHandle(), tablePath, fields.get_names(), plists);
             return false;
         }
 
@@ -1568,7 +1568,7 @@ namespace h5pp {
                                                            maxHits,
                                                            maxDepth,
                                                            followSymlinks,
-                                                           plists.linkAccess);
+                                                           plists);
         }
 
         [[nodiscard]] std::vector<std::string> findDatasets(std::string_view searchKey      = "",
@@ -1582,7 +1582,7 @@ namespace h5pp {
                                                            maxHits,
                                                            maxDepth,
                                                            followSymlinks,
-                                                           plists.linkAccess);
+                                                           plists);
         }
 
         [[nodiscard]] std::vector<std::string> findGroups(std::string_view searchKey      = "",
@@ -1596,7 +1596,7 @@ namespace h5pp {
                                                          maxHits,
                                                          maxDepth,
                                                          followSymlinks,
-                                                         plists.linkAccess);
+                                                         plists);
         }
 
         [[nodiscard]] DsetInfo getDatasetInfo(std::string_view dsetPath) const {
@@ -1612,7 +1612,7 @@ namespace h5pp {
         }
 
         [[nodiscard]] TypeInfo getTypeInfoDataset(std::string_view dsetPath) const {
-            return h5pp::hdf5::getTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.linkAccess);
+            return h5pp::hdf5::getTypeInfo(openFileHandle(), dsetPath, std::nullopt, plists.dsetAccess);
         }
 
         [[nodiscard]] AttrInfo getAttributeInfo(std::string_view linkPath, std::string_view attrName) const {

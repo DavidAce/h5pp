@@ -39,7 +39,7 @@ namespace h5pp::scan {
         // If the dataset does not exist, there isn't much else to do so we return;
         if(not info.dsetExists.value()) return;
         // From here on the dataset exists
-        if(not info.h5Dset)  info.h5Dset  = h5pp::hdf5::openLink<hid::h5d>(loc, info.dsetPath.value(), info.dsetExists, plists.linkAccess);
+        if(not info.h5Dset)  info.h5Dset  = h5pp::hdf5::openLink<hid::h5d>(loc, info.dsetPath.value(), info.dsetExists, plists.dsetAccess);
         if(not info.h5Type)  info.h5Type  = H5Dget_type(info.h5Dset.value());
         if(not info.h5Space) info.h5Space = H5Dget_space(info.h5Dset.value());
 
@@ -592,28 +592,28 @@ namespace h5pp::scan {
                                    std::string_view        tablePath,
                                    std::optional<hid::h5d> h5Dset     = std::nullopt,
                                    std::optional<hid::h5t> h5Type     = std::nullopt,
-                                   const hid::h5p         &linkAccess = H5P_DEFAULT) {
+                                   const hid::h5p         &dsetAccess = H5P_DEFAULT) {
         static_assert(h5pp::type::sfinae::is_any_v<InfoType, TableInfo, TableFieldInfo>);
         if constexpr(std::is_same_v<InfoType, TableInfo>) {
             if(info.h5Dset and not h5Dset) h5Dset = info.h5Dset;
             if(info.h5Type and not h5Type) h5Type = info.h5Type;
         }
         if(not info.numFields) {
-            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, linkAccess);
+            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, dsetAccess);
             if(not h5Type) h5Type = H5Dget_type(h5Dset.value());
             auto nmembers = H5Tget_nmembers(h5Type.value());
             if(nmembers < 0) throw h5pp::runtime_error("getTableFieldInfo: Failed to read nmembers on h5Type for table [{}]", tablePath);
             info.numFields = static_cast<hsize_t>(nmembers);
         }
         if(not info.fieldTypes) {
-            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, linkAccess);
+            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, dsetAccess);
             if(not h5Type) h5Type = H5Dget_type(h5Dset.value());
             hsize_t n_fields = info.numFields.value();
             info.fieldTypes  = std::vector<hid::h5t>(n_fields);
             for(size_t i = 0; i < n_fields; i++) info.fieldTypes.value()[i] = H5Tget_member_type(h5Type.value(), static_cast<unsigned>(i));
         }
         if(not info.fieldClasses) {
-            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, linkAccess);
+            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, dsetAccess);
             if(not h5Type) h5Type = H5Dget_type(h5Dset.value());
             hsize_t n_fields  = info.numFields.value();
             info.fieldClasses = std::vector<H5T_class_t>(n_fields);
@@ -621,7 +621,7 @@ namespace h5pp::scan {
                 info.fieldClasses.value()[i] = H5Tget_member_class(h5Type.value(), static_cast<unsigned>(i));
         }
         if(not info.fieldSizes or not info.fieldOffsets or not info.fieldNames or not info.recordBytes) {
-            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, linkAccess);
+            if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, dsetAccess);
             if(not h5Type) h5Type = H5Dget_type(h5Dset.value());
             auto h5typeInfo   = hdf5::getH5TInfo(h5Type.value());
             info.recordBytes  = h5typeInfo.typeSize;
@@ -653,7 +653,7 @@ namespace h5pp::scan {
                                                           std::string_view        tablePath,
                                                           std::optional<hid::h5d> h5Dset     = std::nullopt,
                                                           std::optional<hid::h5t> h5Type     = std::nullopt,
-                                                          const hid::h5p         &linkAccess = H5P_DEFAULT) {
+                                                          const hid::h5p         &dsetAccess = H5P_DEFAULT) {
         static_assert(type::sfinae::is_hdf5_obj_id<h5x>,
                       "Template function [h5pp::hdf5::getTableFieldInfo(const h5x & loc)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5d], [h5pp::hid::h5o] or [hid_t] "
@@ -665,7 +665,7 @@ namespace h5pp::scan {
         else
             h5File = H5Iget_file_id(loc);
 
-        readTableFieldInfo(info, h5File, tablePath, std::move(h5Dset), std::move(h5Type), linkAccess);
+        readTableFieldInfo(info, h5File, tablePath, std::move(h5Dset), std::move(h5Type), dsetAccess);
         return info;
     }
 
@@ -694,16 +694,11 @@ namespace h5pp::scan {
             info.tableExists = h5pp::hdf5::checkIfLinkExists(info.getLocId(), info.tablePath.value(), plists.linkAccess);
 
         // Infer the group name
-        if(not info.tableGroupName) {
-            info.tableGroupName = "";
-            size_t pos          = info.tablePath.value().find_last_of('/');
-            if(pos != std::string::npos)
-                info.tableGroupName.value().assign(info.tablePath->begin(), info.tablePath->begin() + static_cast<long>(pos));
-        }
+        if(not info.tableGroupName) info.tableGroupName = util::getParentPath(info.tablePath.value());
         // This is as far as we get if the table does not exist
         if(not info.tableExists.value()) return;
         if(not info.h5Dset)
-            info.h5Dset = hdf5::openLink<hid::h5d>(info.getLocId(), info.tablePath.value(), info.tableExists, plists.linkAccess);
+            info.h5Dset = hdf5::openLink<hid::h5d>(info.getLocId(), info.tablePath.value(), info.tableExists, plists.dsetAccess);
         if(not info.h5Type) info.h5Type = H5Dget_type(info.h5Dset.value());
         if(not info.numRecords) {
             // We could use H5TBget_table_info here but internally that would create a temporary
@@ -724,7 +719,7 @@ namespace h5pp::scan {
         if(not info.h5Filters) info.h5Filters = h5pp::hdf5::getFilters(info.h5DsetCreate.value());
         if(not info.compression) info.compression = h5pp::hdf5::getDeflateLevel(info.h5DsetCreate.value());
 
-        readTableFieldInfo(info, info.h5File.value(), info.tablePath.value(), info.h5Dset, info.h5Type, plists.linkAccess);
+        readTableFieldInfo(info, info.h5File.value(), info.tablePath.value(), info.h5Dset, info.h5Type, plists.dsetAccess);
     }
 
     template<typename h5x>
