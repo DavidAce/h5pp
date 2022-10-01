@@ -873,11 +873,11 @@ namespace h5pp::hdf5 {
         }
 
         h5pp::logger::log->trace("Creating soft link [{}] --> [{}]", targetLinkPath, softLinkPath);
-        herr_t retval = H5Lcreate_soft(util::safe_str(targetLinkPath).c_str(),
-                                       loc,
-                                       util::safe_str(softLinkPath).c_str(),
-                                       plists.linkCreate,
-                                       plists.linkAccess);
+        hid::h5p lcpl = H5Pcopy(plists.linkCreate);
+        if(H5Pset_create_intermediate_group(lcpl, 1) < 0) // Set to create intermediate groups
+            throw h5pp::runtime_error("H5Pset_create_intermediate_group failed");
+        herr_t retval =
+            H5Lcreate_soft(util::safe_str(targetLinkPath).c_str(), loc, util::safe_str(softLinkPath).c_str(), lcpl, plists.linkAccess);
         if(retval < 0) throw h5pp::runtime_error("Failed to create soft link [{}]  ", targetLinkPath);
     }
 
@@ -895,11 +895,14 @@ namespace h5pp::hdf5 {
                 throw h5pp::runtime_error("Tried to create a hard link to a path that does not exist [{}]", targetLinkPath);
         }
         h5pp::logger::log->trace("Creating hard link [{}] --> [{}]", targetLinkPath, hardLinkPath);
+        hid::h5p lcpl = H5Pcopy(plists.linkCreate);
+        if(H5Pset_create_intermediate_group(lcpl, 1) < 0) // Set to create intermediate groups
+            throw h5pp::runtime_error("H5Pset_create_intermediate_group failed");
         herr_t retval = H5Lcreate_hard(targetLinkLoc,
                                        util::safe_str(targetLinkPath).c_str(),
                                        hardLinkLoc,
                                        util::safe_str(hardLinkPath).c_str(),
-                                       plists.linkCreate,
+                                       lcpl,
                                        plists.linkAccess);
         if(retval < 0) throw h5pp::runtime_error("Failed to create hard link [{}] -> [{}] ", targetLinkPath, hardLinkPath);
     }
@@ -914,12 +917,14 @@ namespace h5pp::hdf5 {
                       "Template function [h5pp::hdf5::createExternalLink(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         h5pp::logger::log->trace("Creating external link [{}] from file [{}] : [{}]", softLinkPath, targetFilePath, targetLinkPath);
-
+        hid::h5p lcpl = H5Pcopy(plists.linkCreate);
+        if(H5Pset_create_intermediate_group(lcpl, 1) < 0) // Set to create intermediate groups
+            throw h5pp::runtime_error("H5Pset_create_intermediate_group failed");
         herr_t retval = H5Lcreate_external(util::safe_str(targetFilePath).c_str(),
                                            util::safe_str(targetLinkPath).c_str(),
                                            loc,
                                            util::safe_str(softLinkPath).c_str(),
-                                           plists.linkCreate,
+                                           lcpl,
                                            plists.linkAccess);
 
         if(retval < 0) throw h5pp::runtime_error("Failed to create external link [{}] --> [{}]", targetLinkPath, softLinkPath);
