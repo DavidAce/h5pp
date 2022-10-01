@@ -124,8 +124,9 @@ namespace h5pp::type {
         else if constexpr (std::is_same_v<DecayType, uint64_t>)              return H5Tcopy(H5T_NATIVE_UINT64);
         else if constexpr (std::is_same_v<DecayType, bool>)                  return H5Tcopy(H5T_NATIVE_UINT8);
         else if constexpr (std::is_same_v<DecayType, std::string>)           return H5Tcopy(H5T_C_S1);
+        else if constexpr (std::is_same_v<DecayType, std::string_view>)      return H5Tcopy(H5T_C_S1);
         else if constexpr (std::is_same_v<DecayType, char>)                  return H5Tcopy(H5T_C_S1);
-        else if constexpr (std::is_same_v<DecayType, std::byte>)             return H5Tcopy(H5T_NATIVE_B8);
+        else if constexpr (std::is_same_v<DecayType, std::byte>)             return H5Tcopy(H5T_NATIVE_UCHAR);
         else if constexpr (tc::is_std_complex_v<DecayType>)                  return H5Tcopy(type::compound::H5T_COMPLEX<typename DecayType::value_type>::h5type());
         else if constexpr (tc::is_Scalar2_v<DecayType>)                      return H5Tcopy(type::compound::H5T_SCALAR2<tc::get_Scalar2_t<DecayType>>::h5type());
         else if constexpr (tc::is_Scalar3_v<DecayType>)                      return H5Tcopy(type::compound::H5T_SCALAR3<tc::get_Scalar3_t<DecayType>>::h5type());
