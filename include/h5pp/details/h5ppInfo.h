@@ -138,6 +138,14 @@ namespace h5pp {
             std::string  tag;    /*!< The name of the object that was read */
             mutable long counter = 0; // Counts how many instances of this object there are
             public:
+            void drop() {
+                type    = std::nullopt;
+                space   = std::nullopt;
+                plist   = std::nullopt;
+                buf     = nullptr;
+                tag     = "";
+                counter = 0;
+            }
             void reclaim() {
                 if(buf != nullptr and type and space and plist) {
                     h5pp::logger::log->trace("Reclaiming vlen buffer from reading [{}]", tag);
@@ -147,12 +155,7 @@ namespace h5pp {
                     H5Dvlen_reclaim(type.value(), space.value(), plist.value(), buf);
 #endif
                 }
-                type    = std::nullopt;
-                space   = std::nullopt;
-                plist   = std::nullopt;
-                buf     = nullptr;
-                tag     = "";
-                counter = 0;
+                drop();
             }
             Reclaim() = default;
             Reclaim(const hid::h5t &type, const hid::h5s &space, const hid::h5p &plist, void *buf, const std::string &tag)
@@ -184,13 +187,13 @@ namespace h5pp {
                 counter--;
                 if(buf != nullptr and counter == 0)
                     h5pp::logger::log->warn("~Reclaim: buffer for variable-length array likely remains after reading [{}]. "
-                                             "Call h5pp::File::reclaim() or <Dset|Attr|Table>Info::reclaim() to avoid a memory leak.",
-                                             tag);
+                                            "Call h5pp::File::reclaim() or <Dset|Attr|Table>Info::vlenReclaim() to avoid a memory leak.",
+                                            tag);
             }
         };
 
         public:
-        mutable std::optional<Reclaim> reclaimInfo = /*!< Used to reclaim any memory allocated for variable-length arrays */
+        mutable std::optional<Reclaim> reclaimInfo = /*!< Used to vlenReclaim any memory allocated for variable-length arrays */
             std::nullopt;
 
         /*! Calls H5Treclaim(...) on memory that HDF5 allocates when reading variable-length arrays */

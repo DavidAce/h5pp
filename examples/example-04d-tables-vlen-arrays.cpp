@@ -62,7 +62,7 @@ int main() {
         scienceReadEntry.emplace_back(ScienceEntry{helper.index, std::vector<double>(data_begin, data_end)});
     }
     // Free hvl_t data! h5pp stores metadata when it detects H5T_VLEN data being read, so that we can reclaim (free) it later.
-    file.reclaim(); // Note that you can also reclaim from TableInfo objects
+    file.vlenReclaim(); // Note that you can also reclaim from TableInfo objects
 
     // Print data
     h5pp::print("Wrote and read entry:\n");

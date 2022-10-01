@@ -93,10 +93,19 @@ namespace h5pp {
             H5Eprint(H5E_DEFAULT, stderr);
         }
         /*! Calls H5Treclaim(...) on any data that HDF5 may have allocated for variable-length data during the last reads */
-        void reclaim() const {
+        void vlenReclaim() const {
             for(auto &item : reclaimStack) { item.reclaim(); }
             reclaimStack.clear();
         }
+
+        /*!  Drop all tracked claims to allocated variable-length data (users should call H5Treclaim or free manually)  */
+        void vlenDropReclaims() const { reclaimStack.clear(); }
+
+        /*! Enable tracking of variable-length data allocations (e.g. when reading tables containgin H5T_VLEN members) */
+        void vlenEnableReclaimsTracking() { plists.vlenTrackReclaims = true; }
+
+        /*! Disable tracking of variable-length data allocations (users should call H5Treclaim or free manually) */
+        void vlenDisableReclaimsTracking() { plists.vlenTrackReclaims = false; }
 
         /*! Returns an HDF5 file handle
          *
