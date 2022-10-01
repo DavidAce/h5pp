@@ -131,8 +131,8 @@ namespace h5pp::type {
         else if constexpr (tc::is_Scalar3_v<DecayType>)                      return H5Tcopy(type::compound::H5T_SCALAR3<tc::get_Scalar3_t<DecayType>>::h5type());
         else if constexpr (tc::has_Scalar_v<DecayType>)                      return getH5Type<typename DecayType::Scalar>();
         else if constexpr (tc::has_value_type_v <DecayType>)                 return getH5Type<typename DataType::value_type>();
-        else if constexpr (std::is_class_v<DataType>)                        return H5Tcreate(H5T_COMPOUND, sizeof(DataType)); // Last resort
-        else if constexpr (std::is_enum_v<DataType>)                         return H5Tcreate(H5T_ENUM, sizeof(DataType)); // Last resort
+        else if constexpr (std::is_enum_v<DecayType>)                        return getH5Type<std::underlying_type_t<DecayType>>(); // User should provide a h5 type
+        else if constexpr (std::is_class_v<DecayType>)                       return H5Tcreate(H5T_COMPOUND, sizeof(DecayType)); // Last resort
         else static_assert(type::sfinae::unrecognized_type_v<DecayType> and "h5pp could not match the given C++ type to an HDF5 type.");
         /* clang-format on */
         throw h5pp::runtime_error("getH5Type could not match the type provided [{}] | size {}",
