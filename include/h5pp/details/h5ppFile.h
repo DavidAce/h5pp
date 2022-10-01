@@ -1472,6 +1472,9 @@ namespace h5pp {
          */
 
         void deleteLink(std::string_view linkPath) { h5pp::hdf5::deleteLink(openFileHandle(), linkPath, plists.linkAccess); }
+        void deleteAttribute(std::string_view linkPath, std::string_view attrName) {
+            h5pp::hdf5::deleteAttribute(openFileHandle(), linkPath, attrName, plists.linkAccess);
+        }
 
         void createSoftLink(std::string_view targetLinkPath, std::string_view softLinkPath) {
             // It's important that targetLinkPath is a full path

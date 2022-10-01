@@ -834,32 +834,29 @@ namespace h5pp::hdf5 {
     }
 
     template<typename h5x>
-    inline void createGroup(const h5x           &loc,
-                            std::string_view     groupName,
-                            std::optional<bool>  linkExists = std::nullopt,
-                            const PropertyLists &plists     = PropertyLists()) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
-                      "Template function [h5pp::hdf5::createGroup(const h5x & loc, ...)] requires type h5x to be: "
-                      "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        // Check if group exists already
-        if(not linkExists) linkExists = checkIfLinkExists(loc, groupName, plists.linkAccess);
-        if(not linkExists.value()) {
-            h5pp::logger::log->trace("Creating group link [{}]", groupName);
-            hid_t gid = H5Gcreate(loc, util::safe_str(groupName).c_str(), plists.linkCreate, plists.groupCreate, plists.groupAccess);
-            if(gid < 0) throw h5pp::runtime_error("Failed to create group link [{}]", groupName);
-
-            H5Gclose(gid);
-        } else
-            h5pp::logger::log->trace("Group exists already: [{}]", groupName);
-    }
-
-    template<typename h5x>
     inline void deleteLink(const h5x &loc, std::string_view linkPath, const hid::h5p &linkAccess = H5P_DEFAULT) {
         static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::deleteLink(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        auto retval = H5Ldelete(loc, util::safe_str(linkPath).c_str(), linkAccess);
-        if(retval < 0) throw h5pp::runtime_error("Failed to delete link [{}]", linkPath);
+        if(checkIfLinkExists(loc, linkPath, linkAccess)) {
+            auto retval = H5Ldelete(loc, util::safe_str(linkPath).c_str(), linkAccess);
+            if(retval < 0) throw h5pp::runtime_error("Failed to delete link [{}]", linkPath);
+        }
+    }
+
+    template<typename h5x>
+    inline void
+        deleteAttribute(const h5x &loc, std::string_view linkPath, std::string_view attrName, const hid::h5p &linkAccess = H5P_DEFAULT) {
+        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+                      "Template function [h5pp::hdf5::deleteAttribute(const h5x & loc, ...)] requires type h5x to be: "
+                      "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
+        if(checkIfLinkExists(loc, linkPath, linkAccess)) {
+            auto link = openLink<hid::h5o>(loc, linkPath, true, linkAccess);
+            if(checkIfAttrExists(link, attrName, linkAccess)) {
+                auto retval = H5Adelete(link, util::safe_str(attrName).c_str());
+                if(retval < 0) throw h5pp::runtime_error("Failed to delete attribute [{}] in link [{}]", attrName, linkPath);
+            }
+        }
     }
 
     template<typename h5x>
