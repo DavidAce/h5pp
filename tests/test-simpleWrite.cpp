@@ -22,6 +22,10 @@ int main() {
     std::vector<std::complex<int>>    vectorComplexInt(10, std::complex<int>(42, 7));
     std::vector<std::complex<double>> vectorComplexDouble(10, {10.0, 5.0});
 
+    h5pp::varr_t<double>              vlenDouble = std::vector<double>(10, 42.0);
+    std::vector<h5pp::varr_t<double>> vectorVlenDouble;
+    for(size_t i = 0; i < 10; i++) vectorVlenDouble.emplace_back(std::vector<double>(i, static_cast<double>(i)));
+
     struct Field2 {
         double x;
         double y;
@@ -63,6 +67,10 @@ int main() {
     file.writeDataset(vectorInt.data(), "simpleWriteGroup/vectorInt", vectorInt.size());
     file.writeDataset(vectorDouble.data(), "simpleWriteGroup/vectorDouble", vectorDouble.size());
     file.writeDataset(vectorInt.data(), "simpleWriteGroup/vectorInt", vectorInt.size());
+
+    // Test variable-length data
+    file.writeDataset(vlenDouble, "simpleWriteGroup/vlenDouble");
+    file.writeDataset(vectorVlenDouble, "simpleWriteGroup/vectorVlenDouble");
 
 #ifdef H5PP_USE_EIGEN3
     Eigen::MatrixXi  matrixInt(2, 2);

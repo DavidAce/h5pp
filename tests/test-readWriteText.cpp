@@ -256,5 +256,19 @@ int main() {
     if(stringView != stringViewRead)
         throw std::runtime_error(h5pp::format("string view mismatch:  [{}] != [{}]", stringView, stringViewRead));
 
+
+    // Test vstr_t for variable-length text
+    h5pp::vstr_t vlenString = "This is a variable-length string";
+    file.writeDataset(vlenString, "vlenString");
+    auto vlenStringRead = file.readDataset<h5pp::vstr_t>("vlenString");
+    if(vlenString != vlenStringRead)
+        throw std::runtime_error(h5pp::format("vlen string mismatch:  [{}] != [{}]", vlenString, vlenStringRead));
+
+    std::vector<h5pp::vstr_t> vectorVlenString = {{"This is "},{"a variable-length string vector"}};
+    file.writeDataset(vectorVlenString, "vectorVlenString");
+    auto vectorVlenStringRead = file.readDataset<std::vector<h5pp::vstr_t>>("vectorVlenString");
+    if(vectorVlenString != vectorVlenStringRead)
+        throw std::runtime_error(h5pp::format("vector vlen string mismatch:  [{}] != [{}]", vectorVlenString, vectorVlenStringRead));
+
     return 0;
 }

@@ -1,17 +1,5 @@
 
 #include <h5pp/h5pp.h>
-#include <iostream>
-
-/*! \brief Prints the content of a vector nicely */
-template<typename T>
-std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
-    if(!v.empty()) {
-        out << "[ ";
-        std::copy(v.begin(), v.end(), std::ostream_iterator<T>(out, " "));
-        out << "]";
-    }
-    return out;
-}
 
 template<typename T>
 struct has_scalar2 {
@@ -102,10 +90,18 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
                 for(int i = 0; i < writeData.dimension(0); i++)
                     for(int j = 0; j < writeData.dimension(1); j++)
                         for(int k = 0; k < writeData.dimension(2); k++) {
-                            for(int l = 0; l < writeData.dimension(3); l++){
+                            for(int l = 0; l < writeData.dimension(3); l++) {
                                 auto w = writeData(i, j, k, l);
                                 auto r = readData(i, j, k, l);
-                                h5pp::print("[{} {} {} {}]: {} + i{} == {} + i{}", i, j, k, l, std::real(w), std::imag(w), std::real(r), std::imag(r));
+                                h5pp::print("[{} {} {} {}]: {} + i{} == {} + i{}",
+                                            i,
+                                            j,
+                                            k,
+                                            l,
+                                            std::real(w),
+                                            std::imag(w),
+                                            std::real(r),
+                                            std::imag(r));
                             }
 
                             h5pp::print("\n");
@@ -125,12 +121,8 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
 #endif
     else {
         if(writeData != readData) {
-            std::cerr << "Wrote: \n"
-                      << writeData << "\n"
-                      << "Read: \n"
-                      << readData << std::endl;
-            //            if constexpr(h5pp::type::sfinae::is_streamable_v<WriteType> and h5pp::type::sfinae::is_streamable_v<ReadType>)
-
+            h5pp::print("Wrote: \n{}\n", writeData);
+            h5pp::print("Read: \n{}\n", readData);
             throw std::runtime_error("Data mismatch: Write != Read");
         }
     }
@@ -149,7 +141,7 @@ void test_h5pp(h5pp::File &file, const WriteType *writeData, const DimsType &dim
     for(size_t i = 0; i < size; i++) {
         if(writeData[i] != readData[i]) {
             for(size_t j = 0; j < size; j++) {
-                std::cerr << "Wrote [" << j << "]: " << writeData[j] << " | Read [" << j << "]: " << readData[j] << std::endl;
+                h5pp::print("Wrote [{}]: {} | Read [{}]: {}", j, writeData[j], j, readData[j]);
             }
             throw std::runtime_error("Data mismatch: Write != Read");
         }
@@ -175,7 +167,7 @@ int main() {
     std::string         stringDummy = "Dummy string with spaces";
     std::complex<float> cplxFloat(1, 1);
     std::vector<double> vectorDouble      = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
-                                        1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
+                                             1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
     std::vector<cplx>   vectorComplex     = {{-0.191154, 0.326211}, {0.964728, -0.712335}, {-0.0351791, -0.10264}, {0.177544, 0.99999}};
     auto               *cStyleDoubleArray = new double[10];
     for(size_t i = 0; i < 10; i++) cStyleDoubleArray[i] = static_cast<double>(i);
@@ -204,6 +196,9 @@ int main() {
         field3vector[i].y = 20.5 * d;
         field3vector[i].z = 200.9 * d;
     }
+
+    h5pp::varr_t<double>              vlenDouble       = {1.0, 2.0, 3.0, 4.0};
+    std::vector<h5pp::varr_t<double>> vectorVlenDouble = {{1.0}, {2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0, 10.0}};
 
 #ifdef H5PP_USE_EIGEN3
     Eigen::MatrixXd                              matrixDouble        = Eigen::MatrixXd::Random(3, 2);
@@ -235,10 +230,11 @@ int main() {
     test_h5pp(file, field2vector, "field2vector");
     test_h5pp(file, field3vector, "field3vector");
 
+    test_h5pp(file, vlenDouble, "vlenDouble");
+    test_h5pp(file, vectorVlenDouble, "vectorVlenDouble");
+
     // Read data as std::vector<std::byte>
     auto vectorReadBytes = file.readDataset<std::vector<std::byte>>("vectorDouble");
-
-
 
 #ifdef H5PP_USE_EIGEN3
     test_h5pp(file, matrixDouble, "matrixDouble");
