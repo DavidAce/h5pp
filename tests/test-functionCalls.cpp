@@ -2,7 +2,6 @@
 #include "catch.hpp"
 #include <complex>
 #include <h5pp/h5pp.h>
-#include <iostream>
 
 // Here we try all the function signatures
 std::string outputFilename = "output/functionCalls.h5";

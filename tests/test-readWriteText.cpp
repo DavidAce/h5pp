@@ -1,18 +1,6 @@
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
 #include <h5pp/h5pp.h>
-#include <iostream>
-
-/*! \brief Prints the content of a vector nicely */
-template<typename T>
-std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
-    if(!v.empty()) {
-        out << "[ ";
-        std::copy(v.begin(), v.end(), std::ostream_iterator<T>(out, " "));
-        out << "]";
-    }
-    return out;
-}
 
 void assert_nullfree(const std::string &s) {
     std::string s_esc;
@@ -93,8 +81,7 @@ int main() {
     assert_nullfree(stringAttributeRead_fixed_t);
     stringAttributeRead_fixed_t = file.readAttribute<std::string>("stringDummy_fixedSize", "stringAttribute_fixed", 33);
     assert_nullfree(stringAttributeRead_fixed_t);
-
-    std::cout << "stringAttributeRead_fixed_t: " << stringAttributeRead_fixed_t << std::endl;
+    h5pp::print("stringAttributeRead_fixed_t: {}\n", stringAttributeRead_fixed_t);
     if(stringAttribute_t != stringAttributeRead_fixed_t)
         throw std::runtime_error(
             h5pp::format("stringAttributeRead_fixed failed: [{}] != [{}]", stringAttribute_t, stringAttributeRead_fixed_t));
@@ -104,13 +91,14 @@ int main() {
 
     auto stringVectorAttributeRead_string = file.readAttribute<std::string>("stringDummy_fixedSize", "stringVectorAttribute_t");
     assert_nullfree(stringVectorAttributeRead_string);
-    std::cout << "stringVectorAttributeRead_string: \n" << stringVectorAttributeRead_string << std::endl;
+    h5pp::print("stringVectorAttributeRead_string: {}\n", stringVectorAttributeRead_string);
 
     auto stringVectorAttributeRead_vector =
         file.readAttribute<std::vector<std::string>>("stringDummy_fixedSize", "stringVectorAttribute_t");
     for(const auto &str : stringVectorAttributeRead_vector) {
         assert_nullfree(str);
-        std::cout << "str: " << str << std::endl;
+        h5pp::print("str: {}\n", str);
+
     }
 
     h5pp::hid::h5t custom_string = H5Tcopy(H5T_C_S1);
@@ -173,11 +161,6 @@ int main() {
     file.writeDataset(stringDummy, "stringDummy");
     file.writeDataset(hugeString, "hugeString");
 
-    // The following shouldn't work
-    //    try {
-    //        file.writeDataset(charDummy, {2}, "charDummy_asarray_dims",{2}, std::nullopt,{});
-    //    } catch(std::exception &err) { std::cout << "Expected error: " << err.what() << std::endl; }
-
     auto stringDummyRead = file.readDataset<std::string>("stringDummy");
     if(stringDummy != stringDummyRead)
         throw std::runtime_error(h5pp::format("String dummy failed: [{}] != [{}]", stringDummy, stringDummyRead));
@@ -224,15 +207,15 @@ int main() {
     std::string stringAttribute = "This is a dummy string attribute";
     file.writeAttribute(stringAttribute, "vecString", "stringAttribute");
     auto stringAttributeRead = file.readAttribute<std::string>("vecString", "stringAttribute");
-    std::cout << "\nstringAttribute read:\n" << stringAttributeRead << std::endl;
+    h5pp::print("\nstringAttributeRead: {}\n", stringAttributeRead);
+
     if(stringAttribute != stringAttributeRead)
         throw std::runtime_error(h5pp::format("stringAttribute failed: [{}] != [{}]", stringAttribute, stringAttributeRead));
 
     std::vector<std::string> multiStringAttribute = {"This is another dummy string attribute", "With many elements"};
     file.writeAttribute(multiStringAttribute, "vecString", "multiStringAttribute");
     auto multiStringAttributeRead = file.readAttribute<std::vector<std::string>>("vecString", "multiStringAttribute");
-    std::cout << "\nmultiStringAttribute read: " << std::endl;
-    for(auto &elem : multiStringAttributeRead) std::cout << elem << std::endl;
+    h5pp::print("multiStringAttributeRead: {}\n", multiStringAttributeRead);
 
     if(multiStringAttributeRead.size() != multiStringAttribute.size())
         throw std::runtime_error(h5pp::format("multiStringAttribute read size mismatch: [{}] != [{}]",

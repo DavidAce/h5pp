@@ -1,5 +1,12 @@
 
 #include <h5pp/h5pp.h>
+#if H5PP_USE_FMT
+    #if __has_include(<fmt/ostream.h>)
+        #include <fmt/ostream.h>
+    #elif __has_include(<spdlog/fmt/bundled/ranges.h>)
+        #include <spdlog/fmt/bundled/ranges.h>
+    #endif
+#endif
 
 template<typename T>
 struct has_scalar2 {
@@ -121,8 +128,10 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
 #endif
     else {
         if(writeData != readData) {
+#if H5PP_USE_FMT
             h5pp::print("Wrote: \n{}\n", writeData);
             h5pp::print("Read: \n{}\n", readData);
+#endif
             throw std::runtime_error("Data mismatch: Write != Read");
         }
     }
@@ -140,9 +149,7 @@ void test_h5pp(h5pp::File &file, const WriteType *writeData, const DimsType &dim
     file.readDataset(readData, dsetpath, dims);
     for(size_t i = 0; i < size; i++) {
         if(writeData[i] != readData[i]) {
-            for(size_t j = 0; j < size; j++) {
-                h5pp::print("Wrote [{}]: {} | Read [{}]: {}", j, writeData[j], j, readData[j]);
-            }
+            for(size_t j = 0; j < size; j++) { h5pp::print("Wrote [{}]: {} | Read [{}]: {}", j, writeData[j], j, readData[j]); }
             throw std::runtime_error("Data mismatch: Write != Read");
         }
     }

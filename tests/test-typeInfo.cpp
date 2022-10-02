@@ -1,6 +1,5 @@
 
 #include <h5pp/h5pp.h>
-#include <iostream>
 
 int main() {
     static_assert(
@@ -41,10 +40,10 @@ int main() {
     file.writeAttribute(AttributeString, "testGroup/vectorDouble", "AttributeString");
     file.writeAttribute(AttributeCharArray, "testGroup/vectorDouble", "AttributeCharArray");
 
-    for(auto &info : file.getTypeInfoAttributes("testGroup/vectorDouble")) { std::cout << info.string() << std::endl; }
+    for(auto &info : file.getTypeInfoAttributes("testGroup/vectorDouble")) h5pp::print("{}\n", info.string());
 
     auto info = file.getTypeInfoDataset("testGroup/vectorDouble");
-    std::cout << info.string() << std::endl;
+    h5pp::print("{}\n", info.string());
 
     return 0;
 }

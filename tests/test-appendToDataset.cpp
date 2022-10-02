@@ -1,7 +1,6 @@
 
 #include <complex>
 #include <h5pp/h5pp.h>
-#include <iostream>
 
 int main() {
     std::string outputFilename = "output/appendToDataset.h5";

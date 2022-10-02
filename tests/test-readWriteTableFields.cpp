@@ -9,7 +9,6 @@
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
 #include <h5pp/h5pp.h>
-#include <iostream>
 #include <complex>
 
 // Define the main table type that will be written

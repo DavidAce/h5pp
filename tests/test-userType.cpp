@@ -1,6 +1,5 @@
 
 #include <h5pp/h5pp.h>
-#include <iostream>
 
 struct Particle {
     double x = 0, y = 0, z = 0, t = 0;
@@ -14,8 +13,7 @@ struct Particle {
 };
 
 void print_particle(const Particle &p) {
-    std::cout << " \t x: " << p.x << " \t y: " << p.y << " \t z: " << p.z << " \t t: " << p.t << " \t id: " << p.id << "\t name: " << p.name
-              << std::endl;
+    h5pp::print(" \t x:{} \t y: {} \t z: {} \t id: {} \t name: {}\n", p.x, p.y, p.z, p.t, p.id, p.name);
 }
 
 int main() {

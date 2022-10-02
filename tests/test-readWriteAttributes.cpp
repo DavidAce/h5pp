@@ -1,7 +1,7 @@
 
 #include <complex>
 #include <h5pp/h5pp.h>
-#include <iostream>
+
 /*! \brief Prints the content of a vector nicely */
 template<typename T>
 std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
@@ -104,7 +104,6 @@ int main() {
 #endif
 
     auto allAttributes = file.getAttributeNames("testGroup/vectorDouble");
-    for(auto &attr : allAttributes) std::cout << attr << std::endl;
-
+    h5pp::print("{}\n", allAttributes);
     return 0;
 }

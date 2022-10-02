@@ -2,7 +2,6 @@
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
 #include <h5pp/h5pp.h>
-#include <iostream>
 
 struct Particle {
     double x = 0, y = 0, z = 0, t = 0;

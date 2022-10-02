@@ -1,7 +1,6 @@
 
 #include <complex>
 #include <h5pp/h5pp.h>
-#include <iostream>
 
 int main() {
     // Define dummy data
@@ -67,19 +66,19 @@ int main() {
         vectorComplexDouble = std::vector<std::complex<double>>(100, {10.0, 5.0});
         file.writeDataset(vectorComplexDouble, "overWriteGroup/vectorComplexDouble");
 
-    } catch(std::exception &ex) { std::cout << "THE ERROR BELOW IS PART OF THE TEST AND WAS EXPECTED: \n -- " << ex.what() << std::endl; }
+    } catch(std::exception &ex) { h5pp::print("THE ERROR BELOW IS PART OF THE TEST AND WAS EXPECTED: \n -- {}", ex.what()); }
 
     try {
         // Let's try writing something larger that should fit in the allocated space
         vectorComplexDouble = std::vector<std::complex<double>>(10000, {10.0, 5.0});
         file.writeDataset(vectorComplexDouble, "overWriteGroup/vectorComplexDouble");
-    } catch(std::exception &ex) { std::cout << "THE ERROR IS PART OF THE TEST AND IS EXPECTED: \n -- " << ex.what() << std::endl; }
+    } catch(std::exception &ex) { h5pp::print("THE ERROR BELOW IS PART OF THE TEST AND WAS EXPECTED: \n -- {}", ex.what()); }
 
     try {
         // Let's try writing something exactly the same size as before which should fit exactly in the allocated space
         vectorComplexDouble = std::vector<std::complex<double>>(1000, {10.0, 5.0});
         file.writeDataset(vectorComplexDouble, "overWriteGroup/vectorComplexDouble");
-    } catch(std::exception &ex) { std::cout << "THIS ERROR IS PART OF THE TEST AND IS EXPECTED:\n" << ex.what() << std::endl; }
+    } catch(std::exception &ex) { h5pp::print("THE ERROR BELOW IS PART OF THE TEST AND WAS EXPECTED: \n -- {}", ex.what()); }
 
     // Strings are a special case that shouldn't fail for non-e
     somestring = "this is a teststring";

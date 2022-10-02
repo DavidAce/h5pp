@@ -1,7 +1,6 @@
 
 #include <complex>
 #include <h5pp/h5pp.h>
-#include <iostream>
 
 /*! \brief Prints the content of a vector nicely */
 template<typename T>
@@ -26,7 +25,7 @@ int main() {
     size_t logLevel = 0;
 
     h5pp::File file0;
-    std::cout << "file0: " << file0.getFilePath() << std::endl;
+    h5pp::print("file0: {}\n", file0.getFilePath());
 
     h5pp::File fileA("output/copySwapA.h5", h5pp::FileAccess::REPLACE, logLevel);
     h5pp::File fileB("output/copySwapB.h5", h5pp::FileAccess::REPLACE, logLevel);
