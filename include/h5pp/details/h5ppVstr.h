@@ -13,8 +13,7 @@ namespace h5pp::type::vlen {
         public:
         using value_type = char *;
         using data_type  = char;
-        operator std::string() const;      // Can be copied to vector on-the-fly
-        operator std::string_view() const; // Can be copied to vector on-the-fly
+        operator std::string_view() const; // Can be read as std::string_view on-the-fly
         vstr_t() = default;
         vstr_t(const vstr_t &v);
         vstr_t(const char *v);
@@ -24,8 +23,6 @@ namespace h5pp::type::vlen {
         vstr_t              &operator=(std::string_view v);
         vstr_t              &operator=(const hvl_t &v) = delete; /*!< inherently unsafe to allocate an unknown type */
         vstr_t              &operator=(hvl_t &&v)      = delete; /*!< inherently unsafe to allocate an unknown type */
-        bool                 operator==(const vstr_t &v) const;
-        bool                 operator!=(const vstr_t &v) const;
         bool                 operator==(std::string_view v) const;
         bool                 operator!=(std::string_view v) const;
         char                *data();
@@ -40,12 +37,8 @@ namespace h5pp::type::vlen {
         void                 clear();
         bool                 empty() const;
         void                 resize(size_t n);
-//        void                 erase(std::string::const_iterator itr, size_t pos);
-//        void                 erase(size_t index, size_t pos);
         void                 erase(const char *b, const char *e);
         void                 erase(std::string::size_type pos, std::string::size_type n);
-        void                 erase(std::string::const_iterator pos);
-        void                 erase(std::string::const_iterator begin, std::string::const_iterator end);
         void                 append(const char *v);
         void                 append(const std::string &v);
         void                 append(std::string_view v);
@@ -53,7 +46,6 @@ namespace h5pp::type::vlen {
         ~vstr_t() noexcept;
     };
 
-    vstr_t::operator std::string() const { return {begin(), size()}; }
     vstr_t::operator std::string_view() const { return {begin(), size()}; }
 
     vstr_t::vstr_t(const vstr_t &v) {
@@ -95,13 +87,6 @@ namespace h5pp::type::vlen {
         ptr[v.size()] = '\0';
         return *this;
     }
-
-    bool vstr_t::operator==(const vstr_t &v) const {
-        if(size() != v.size()) return false;
-        return std::equal(begin(), end(), v.begin());
-    }
-
-    bool vstr_t::operator!=(const vstr_t &v) const { return !(static_cast<const vstr_t &>(*this) == v); }
 
     bool vstr_t::operator==(std::string_view v) const {
         if(size() != v.size()) return false;

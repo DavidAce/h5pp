@@ -27,6 +27,10 @@ namespace h5pp::type::vlen {
         varr_t              &operator=(std::initializer_list<T> v);
         varr_t              &operator=(const hvl_t &v) = delete; /*!< inherently unsafe to allocate an unknown type */
         varr_t              &operator=(hvl_t &&v)      = delete; /*!< inherently unsafe to allocate an unknown type */
+        T                   &operator[](size_t n);
+        const T             &operator[](size_t n) const;
+        T                   &at(size_t n);
+        const T             &at(size_t n) const;
         bool                 operator==(const varr_t<T> &v) const;
         bool                 operator!=(const varr_t<T> &v) const;
         bool                 operator==(const std::vector<T> &v) const;
@@ -34,10 +38,12 @@ namespace h5pp::type::vlen {
         hvl_t               *vlen_data();
         const hvl_t         *vlen_data() const;
         [[nodiscard]] size_t vlen_size() const;
+        [[nodiscard]] size_t length() const;
         const T             *begin() const;
         const T             *end() const;
         T                   *begin();
         T                   *end();
+        bool                 empty() const;
         static hid::h5t      get_h5type();
         ~varr_t() noexcept;
     };
@@ -104,7 +110,24 @@ namespace h5pp::type::vlen {
         std::copy(v.begin(), v.end(), begin());
         return *this;
     }
-
+    template<typename T>
+    T &varr_t<T>::operator[](size_t n) {
+        return *(static_cast<T *>(vl.p) + n);
+    }
+    template<typename T>
+    const T &varr_t<T>::operator[](size_t n) const {
+        return *(static_cast<const T *>(vl.p) + n);
+    }
+    template<typename T>
+    T &varr_t<T>::at(size_t n) {
+        if(n < vl.len) return operator[](n);
+        throw h5pp::runtime_error("varr_t::at({}) out of bounds (length {})", n, vl.len);
+    }
+    template<typename T>
+    const T &varr_t<T>::at(size_t n) const {
+        if(n < vl.len) return operator[](n);
+        throw h5pp::runtime_error("varr_t::at({}) out of bounds (length {})", n, vl.len);
+    }
     template<typename T>
     bool varr_t<T>::operator==(const varr_t<T> &v) const {
         if(vl.len != v.vl.len) return false;
@@ -137,6 +160,10 @@ namespace h5pp::type::vlen {
         return vl.len;
     }
     template<typename T>
+    size_t varr_t<T>::length() const {
+        return vl.len;
+    }
+    template<typename T>
     const T *varr_t<T>::begin() const {
         return static_cast<const T *>(vl.p);
     }
@@ -152,6 +179,11 @@ namespace h5pp::type::vlen {
     T *varr_t<T>::end() {
         return static_cast<T *>(vl.p) + vl.len;
     }
+    template<typename T>
+    bool varr_t<T>::empty() const {
+        return vl.len == 0 or vl.p == nullptr;
+    }
+
     template<typename T>
     varr_t<T>::~varr_t() noexcept {
         free(vl.p);
