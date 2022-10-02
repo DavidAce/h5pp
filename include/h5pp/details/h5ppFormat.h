@@ -16,10 +16,9 @@
             #include <fmt/ranges.h>
         #else
             #include <spdlog/fmt/bundled/compile.h>
-            #include <spdlog/fmt/bundled/ostream.h>
             #include <spdlog/fmt/bundled/ranges.h>
         #endif
-    #elif __has_include(<fmt/core.h>) &&  && __has_include(<fmt/ranges.h>))
+    #elif __has_include(<fmt/core.h>) && __has_include(<fmt/ranges.h>))
         #if defined(SPDLOG_HEADER_ONLY)
             // Since spdlog is header-only, let's assume fmt is as well
             // We do this because we have no way of knowing if this is getting linked to libfmt
