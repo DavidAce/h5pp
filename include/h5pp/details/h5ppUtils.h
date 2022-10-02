@@ -44,6 +44,18 @@ namespace h5pp::util {
         return linkPath.substr(0, pos);
     }
 
+    template<typename T>
+    [[nodiscard]] bool should_track_vlen_reclaims(const hid::h5t &h5type, const PropertyLists &plists) {
+        if(not plists.vlenTrackReclaims) return false;
+        htri_t h5type_has_vlen = H5Tdetect_class(h5type, H5T_class_t::H5T_VLEN);
+        htri_t h5type_is_vstr  = H5Tis_variable_str(h5type);
+        bool   is_or_has_varr  = type::sfinae::is_or_has_varr_v<T>;
+        bool   is_or_has_vstr  = type::sfinae::is_or_has_vstr_v<T>;
+        bool   track_vlen      = h5type_has_vlen and not is_or_has_varr;
+        bool   track_varr      = h5type_is_vstr and is_or_has_vstr;
+        return track_vlen or track_varr;
+    }
+
     /*! \brief Calculates the python-style negative index. For instance, if num == -1ul and piv == 5ul, this returns 4ul */
     template<typename T>
     [[nodiscard]] T wrapUnsigned(T num, T piv) noexcept {

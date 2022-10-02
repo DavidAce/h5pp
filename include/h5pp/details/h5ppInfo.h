@@ -186,10 +186,11 @@ namespace h5pp {
             ~Reclaim() noexcept {
                 counter--;
                 if(buf != nullptr and counter == 0)
-                    h5pp::logger::log->warn("~Reclaim: buffer for variable-length array likely remains without free() after reading [{}]. "
-                                            "Call h5pp::File::vlenReclaim() or <Dset|Attr|Table>Info::reclaim() to avoid a memory leak, or "
-                                            "call h5pp::File::vlenDisableReclaimsTracking() when freeing manually.",
-                                            tag);
+                    h5pp::logger::log->warn(
+                        "~Reclaim: a pointer for a variable-length array likely remains without free() after reading [{}]. "
+                        "Tip: use h5pp::vlen_t or h5pp::vstr_t or call h5pp::File::vlenReclaim() to avoid a memory leak, "
+                        "or call h5pp::File::vlenDisableReclaimsTracking() to handle memory manually",
+                        tag);
             }
         };
 

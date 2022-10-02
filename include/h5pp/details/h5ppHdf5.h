@@ -2359,8 +2359,9 @@ namespace h5pp::hdf5 {
             //      2) Allocation on char * must be done before reading.
 
             if(H5Tis_variable_str(dsetInfo.h5Type.value())) {
-                auto                size = H5Sget_select_npoints(dsetInfo.h5Space.value());
-                std::vector<char *> vdata(static_cast<size_t>(size)); // Allocate pointers for "size" number of strings
+                auto                      size = H5Sget_select_npoints(dsetInfo.h5Space.value());
+                std::vector<h5pp::vstr_t> vdata(size);
+                //                std::vector<char *> vdata(static_cast<size_t>(size)); // Allocate pointers for "size" number of strings
                 // HDF5 allocates space for each string in vdata
                 retval = H5Dread(dsetInfo.h5Dset.value(),
                                  dsetInfo.h5Type.value(),
@@ -2369,29 +2370,22 @@ namespace h5pp::hdf5 {
                                  plists.dsetXfer,
                                  vdata.data());
                 // Now vdata contains the whole dataset, and we need to put the data into the user-given container.
-                if constexpr(std::is_same_v<DataType, std::string>) {
+                if constexpr(std::is_same_v<DataType, std::string> or type::sfinae::is_vstr_v<DataType>) {
                     // A vector of strings (vdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
                     for(size_t i = 0; i < vdata.size(); i++) {
-                        if(!vdata.empty() and vdata[i] != nullptr) data.append(vdata[i]);
+                        if(!vdata.empty() and vdata[i].data() != nullptr) data.append(vdata[i].c_str());
                         if(i < vdata.size() - 1) data.append("\n");
                     }
-                } else if constexpr(type::sfinae::is_container_of_v<DataType, std::string> and type::sfinae::has_resize_v<DataType>) {
+                } else if constexpr(type::sfinae::has_resize_v<DataType> and (type::sfinae::is_container_of_v<DataType, h5pp::vstr_t> or
+                                                                              type::sfinae::is_container_of_v<DataType, std::string>)) {
                     data.clear();
                     data.resize(vdata.size());
-                    for(size_t i = 0; i < data.size(); i++) data[i] = std::string(vdata[i]);
+                    for(size_t i = 0; i < data.size(); i++) data[i] = vdata[i];
                 } else {
-                    throw h5pp::runtime_error(
-                        "To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
+                    static_assert(type::sfinae::unrecognized_type_v<DataType> and
+                                  "To read text-data, please use h5pp::vstr_t, std::string or a container of them such as std::vector");
                 }
-                // Free memory allocated by HDF5
-#if H5_VERSION_GE(1, 12, 0)
-                herr_t reclaim_err = H5Treclaim(dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), plists.dsetXfer, vdata.data());
-#else
-                herr_t reclaim_err = H5Dvlen_reclaim(dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), plists.dsetXfer, vdata.data());
-#endif
-                if(reclaim_err < 0) h5pp::runtime_error("readDataset: failed to vlenReclaim variable-length array buffer");
-
             } else {
                 // All the elements in the dataset have the same string size
                 // The whole dataset is read into a contiguous block of memory.
@@ -2406,7 +2400,7 @@ namespace h5pp::hdf5 {
                                  plists.dsetXfer,
                                  fdata.data());
                 // Now fdata contains the whole dataset, and we need to put the data into the user-given container.
-                if constexpr(std::is_same_v<DataType, std::string>) {
+                if constexpr(std::is_same_v<DataType, std::string> or type::sfinae::is_vstr_v<DataType>) {
                     // A vector of strings (fdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
                     for(size_t i = 0; i < static_cast<size_t>(size); i++) {
@@ -2414,7 +2408,8 @@ namespace h5pp::hdf5 {
                         if(data.size() < fdata.size() - 1) data.append("\n");
                     }
                     data.erase(std::find(data.begin(), data.end(), '\0'), data.end()); // Prune all but the last null terminator
-                } else if constexpr(type::sfinae::is_container_of_v<DataType, std::string> and type::sfinae::has_resize_v<DataType>) {
+                } else if constexpr(type::sfinae::has_resize_v<DataType> and (type::sfinae::is_container_of_v<DataType, h5pp::vstr_t> or
+                                                                              type::sfinae::is_container_of_v<DataType, std::string>)) {
                     if(data.size() != static_cast<size_t>(size))
                         throw h5pp::runtime_error("Given container of strings has the wrong size: dset size {} | container size {}",
                                                   size,
@@ -2426,11 +2421,11 @@ namespace h5pp::hdf5 {
                         data[i].erase(std::find(data[i].begin(), data[i].end(), '\0'), data[i].end());
                     }
                 } else {
-                    throw h5pp::runtime_error(
-                        "To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
+                    static_assert(type::sfinae::unrecognized_type_v<DataType> and
+                                  "To read text-data, please use h5pp::vstr_t, std::string or a container of them such as std::vector");
                 }
             }
-        } else
+        } else {
             retval = H5Dread(dsetInfo.h5Dset.value(),
                              dsetInfo.h5Type.value(),
                              dataInfo.h5Space.value(),
@@ -2438,11 +2433,14 @@ namespace h5pp::hdf5 {
                              plists.dsetXfer,
                              dataPtr);
 
-        if(retval < 0)
-            throw h5pp::runtime_error("Failed to read from dataset \n\t {} \n into memory \n\t {}", dsetInfo.string(), dataInfo.string());
-        /* Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
-        if(plists.vlenTrackReclaims and H5Tdetect_class(dsetInfo.h5Type->value(), H5T_class_t::H5T_VLEN)) {
-            dsetInfo.reclaimInfo = {dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), H5P_DEFAULT, dataPtr, dsetInfo.dsetPath.value()};
+            if(retval < 0)
+                throw h5pp::runtime_error("Failed to read from dataset \n\t {} \n into memory \n\t {}",
+                                          dsetInfo.string(),
+                                          dataInfo.string());
+            /* Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
+            if(util::should_track_vlen_reclaims<DataType>(dsetInfo.h5Type.value(), plists)) {
+                dsetInfo.reclaimInfo = {dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), H5P_DEFAULT, dataPtr, dsetInfo.dsetPath.value()};
+            }
         }
     }
 
@@ -2596,7 +2594,7 @@ namespace h5pp::hdf5 {
         if(retval < 0)
             throw h5pp::runtime_error("Failed to read from attribute \n\t {} \n into memory \n\t {}", attrInfo.string(), dataInfo.string());
         /* Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
-        if(plists.vlenTrackReclaims and H5Tdetect_class(attrInfo.h5Type->value(), H5T_class_t::H5T_VLEN)) {
+        if(util::should_track_vlen_reclaims<DataType>(attrInfo.h5Type.value(), plists)) {
             attrInfo.reclaimInfo = {attrInfo.h5Type.value(),
                                     attrInfo.h5Space.value(),
                                     H5P_DEFAULT,
@@ -2853,7 +2851,7 @@ namespace h5pp::hdf5 {
         if(retval < 0) throw h5pp::runtime_error("Failed to read data from table [{}]", info.tablePath.value());
 
         /* Step 4: Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
-        if(plists.vlenTrackReclaims and H5Tdetect_class(info.h5Type->value(), H5T_class_t::H5T_VLEN)) {
+        if(util::should_track_vlen_reclaims<DataType>(info.h5Type.value(), plists)) {
             info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, dataPtr, info.tablePath.value()};
         }
     }
@@ -3222,7 +3220,7 @@ namespace h5pp::hdf5 {
             if constexpr(std::is_same_v<DataType, std::vector<hvl_t>>) {
                 data = vdata;
                 /* Save metadata so that VLEN allocation can be reclaimed/free'd later */
-                if(plists.vlenTrackReclaims)
+                if(util::should_track_vlen_reclaims<DataType>(info.h5Type.value(), plists))
                     info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, vdata.data(), info.tablePath.value()};
                 return;
             }

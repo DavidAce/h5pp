@@ -4,6 +4,8 @@
 #include "h5ppHid.h"
 #include "h5ppTypeCompound.h"
 #include "h5ppTypeSfinae.h"
+#include "h5ppVarr.h"
+#include "h5ppVstr.h"
 #include <cstddef>
 #include <H5Tpublic.h>
 #include <H5version.h>
@@ -127,13 +129,15 @@ namespace h5pp::type {
         else if constexpr (std::is_same_v<DecayType, std::string_view>)      return H5Tcopy(H5T_C_S1);
         else if constexpr (std::is_same_v<DecayType, char>)                  return H5Tcopy(H5T_C_S1);
         else if constexpr (std::is_same_v<DecayType, std::byte>)             return H5Tcopy(H5T_NATIVE_UCHAR);
+        else if constexpr (tc::is_vlen_v<DecayType>)                         return H5Tvlen_create(getH5Type<typename DecayType::data_type>());
         else if constexpr (tc::is_std_complex_v<DecayType>)                  return H5Tcopy(type::compound::H5T_COMPLEX<typename DecayType::value_type>::h5type());
         else if constexpr (tc::is_Scalar2_v<DecayType>)                      return H5Tcopy(type::compound::H5T_SCALAR2<tc::get_Scalar2_t<DecayType>>::h5type());
         else if constexpr (tc::is_Scalar3_v<DecayType>)                      return H5Tcopy(type::compound::H5T_SCALAR3<tc::get_Scalar3_t<DecayType>>::h5type());
         else if constexpr (tc::has_Scalar_v<DecayType>)                      return getH5Type<typename DecayType::Scalar>();
         else if constexpr (tc::has_value_type_v <DecayType>)                 return getH5Type<typename DataType::value_type>();
-        else if constexpr (std::is_enum_v<DecayType>)                        return getH5Type<std::underlying_type_t<DecayType>>(); // User should provide a h5 type
-        else if constexpr (std::is_class_v<DecayType>)                       return H5Tcreate(H5T_COMPOUND, sizeof(DecayType)); // Last resort
+        else if constexpr (std::is_same_v<DecayType, hvl_t>)                 return H5Tvlen_create(H5T_NATIVE_OPAQUE); // Last resort ... user should provide a h5 type at runtime
+        else if constexpr (std::is_enum_v<DecayType>)                        return getH5Type<std::underlying_type_t<DecayType>>(); // Last resort ... user should provide a h5 type at runtime
+        else if constexpr (std::is_class_v<DecayType>)                       return H5Tcreate(H5T_COMPOUND, sizeof(DecayType)); // Last resort ... user should provide a h5 type at runtime
         else static_assert(type::sfinae::unrecognized_type_v<DecayType> and "h5pp could not match the given C++ type to an HDF5 type.");
         /* clang-format on */
         throw h5pp::runtime_error("getH5Type could not match the type provided [{}] | size {}",

@@ -15,7 +15,10 @@ namespace h5pp::type::sfinae {
 
     // SFINAE detection
     template<typename...>
-    struct print_type_and_exit_compile_time;
+    struct print_type_and_quit_compile_time;
+
+    template<typename T>
+    [[deprecated]] inline constexpr void print_type_and_continue_compile_time([[maybe_unused]] const char *msg = nullptr) {}
 
     // helper constant for static asserts
     template<class>
@@ -84,6 +87,13 @@ namespace h5pp::type::sfinae {
     struct has_value_type<T, std::void_t<typename T::value_type>> : public std::true_type {};
     template<typename T>
     inline constexpr bool has_value_type_v = has_value_type<T>::value;
+
+    template<typename T, typename = std::void_t<>>
+    struct has_vlen_type : public std::false_type {};
+    template<typename T>
+    struct has_vlen_type<T, std::void_t<typename T::vlen_type>> : public std::true_type {};
+    template<typename T>
+    inline constexpr bool has_vlen_type_v = has_vlen_type<T>::value;
 
     template<typename T, typename = std::void_t<>>
     struct has_c_str : public std::false_type {};
@@ -309,11 +319,10 @@ namespace h5pp::type::sfinae {
         private:
         template<typename O, typename I>
         static constexpr bool test() {
-            //            using Od = typename std::decay<O>::type;
             if constexpr(is_iterable_v<O>) {
                 if constexpr(has_value_type_v<O>) {
-                    using I_lhs = typename std::decay<I>::type;
-                    using I_rhs = typename std::decay<typename O::value_type>::type;
+                    using I_lhs = typename std::decay_t<typename O::value_type>;
+                    using I_rhs = typename std::decay_t<I>;
                     return std::is_same_v<I_lhs, I_rhs>;
                 }
             }

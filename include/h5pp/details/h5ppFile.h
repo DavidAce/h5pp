@@ -15,7 +15,9 @@
 #include "h5ppPropertyLists.h"
 #include "h5ppScan.h"
 #include "h5ppUtils.h"
+#include "h5ppVarr.h"
 #include "h5ppVersion.h"
+#include "h5ppVstr.h"
 #include <hdf5.h>
 #include <hdf5_hl.h>
 #include <string>
