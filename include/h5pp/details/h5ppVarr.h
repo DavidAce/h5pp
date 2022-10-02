@@ -18,12 +18,15 @@ namespace h5pp::type::vlen {
         operator std::vector<T>() const; // Can be copied to vector on-the-fly
         varr_t() noexcept;
         varr_t(const varr_t &v);
-        varr_t(const std::vector<T> &v);
         varr_t(size_t n, const T &val);
         varr_t(std::initializer_list<T> vals);
+        template<typename V>
+        varr_t(const V &v);
         varr_t(varr_t &&other) noexcept;
-        varr_t              &operator=(const varr_t &v) noexcept;
-        varr_t              &operator=(const std::vector<T> &v);
+        varr_t &operator=(const varr_t &v) noexcept;
+        varr_t &operator=(const std::vector<T> &v);
+        template<typename V>
+        varr_t              &operator=(const V &v);
         varr_t              &operator=(std::initializer_list<T> v);
         varr_t              &operator=(const hvl_t &v) = delete; /*!< inherently unsafe to allocate an unknown type */
         varr_t              &operator=(hvl_t &&v)      = delete; /*!< inherently unsafe to allocate an unknown type */
@@ -52,6 +55,25 @@ namespace h5pp::type::vlen {
     varr_t<T>::varr_t() noexcept : vl(hvl_t{0, nullptr}) {}
 
     template<typename T>
+    template<typename V>
+    varr_t<T>::varr_t(const V &v) {
+        static_assert(h5pp::type::sfinae::has_data_v<V>);
+        static_assert(h5pp::type::sfinae::has_size_v<V>);
+        static_assert(h5pp::type::sfinae::has_value_type_v<V> or h5pp::type::sfinae::has_Scalar_v<V>);
+        size_t vtype_size;
+        if constexpr(h5pp::type::sfinae::has_value_type_v<V>) {
+            static_assert(std::is_same_v<T, typename V::value_type>);
+            vtype_size = sizeof(typename V::value_type);
+        } else {
+            static_assert(std::is_same_v<T, typename V::Scalar>);
+            vtype_size = sizeof(typename V::Scalar);
+        }
+        vl.len = v.size();
+        vl.p   = malloc(v.size() * vtype_size);
+        std::copy(v.data(), v.data() + v.size(), begin());
+    }
+
+    template<typename T>
     varr_t<T>::operator std::vector<T>() const {
         return std::vector<T>(begin(), end());
     }
@@ -60,12 +82,6 @@ namespace h5pp::type::vlen {
         vl.len = v.vl.len;
         vl.p   = malloc(v.vl.len * sizeof(T));
         std::memcpy(vl.p, v.vl.p, vl.len * sizeof(T));
-    }
-    template<typename T>
-    varr_t<T>::varr_t(const std::vector<T> &v) {
-        vl.len = v.size();
-        vl.p   = malloc(v.size() * sizeof(T));
-        std::copy(v.begin(), v.end(), begin());
     }
     template<typename T>
     varr_t<T>::varr_t(varr_t<T> &&v) noexcept {
@@ -102,6 +118,27 @@ namespace h5pp::type::vlen {
         std::copy(v.begin(), v.end(), begin());
         return *this;
     }
+
+    template<typename T>
+    template<typename V>
+    varr_t<T> &varr_t<T>::operator=(const V &v) {
+        static_assert(h5pp::type::sfinae::has_data_v<V>);
+        static_assert(h5pp::type::sfinae::has_size_v<V>);
+        static_assert(h5pp::type::sfinae::has_value_type_v<V> or h5pp::type::sfinae::has_Scalar_v<V>);
+        size_t vtype_size;
+        if constexpr(h5pp::type::sfinae::has_value_type_v<V>) {
+            static_assert(std::is_same_v<T, typename V::value_type>);
+            vtype_size = sizeof(typename V::value_type);
+        } else {
+            static_assert(std::is_same_v<T, typename V::Scalar>);
+            vtype_size = sizeof(typename V::Scalar);
+        }
+        vl.len = v.size();
+        vl.p   = malloc(v.size() * vtype_size);
+        std::copy(v.data(), v.data() + v.size(), begin());
+        return *this;
+    }
+
     template<typename T>
     varr_t<T> &varr_t<T>::operator=(std::initializer_list<T> v) {
         free(vl.p);
@@ -217,6 +254,7 @@ namespace h5pp::type::vlen {
         else static_assert(type::sfinae::invalid_type_v<T> and "h5pp could not match the given C++ type to an variable-length HDF5 type.");
         /* clang-format on */
     }
+
 }
 namespace h5pp {
     using h5pp::type::vlen::varr_t;
@@ -228,7 +266,7 @@ namespace h5pp::type::sfinae {
     template<typename T>
     struct is_varr_t<h5pp::varr_t<T>> : public std::true_type {};
     template<typename T>
-    inline constexpr bool is_vlen_v = is_varr_t<T>::value;
+    inline constexpr bool is_varr_v = is_varr_t<T>::value;
 
     template<typename T>
     struct has_varr_t {
@@ -248,5 +286,5 @@ namespace h5pp::type::sfinae {
     inline constexpr bool has_varr_v = has_varr_t<T>::value;
 
     template<typename T>
-    inline constexpr bool is_or_has_varr_v = is_vlen_v<T> or has_varr_v<T>;
+    inline constexpr bool is_or_has_varr_v = is_varr_v<T> or has_varr_v<T>;
 }
