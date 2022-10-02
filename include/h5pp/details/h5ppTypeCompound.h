@@ -1,4 +1,5 @@
 #pragma once
+#include "h5ppError.h"
 #include "h5ppHid.h"
 #include "h5ppTypeSfinae.h"
 #include <complex>
