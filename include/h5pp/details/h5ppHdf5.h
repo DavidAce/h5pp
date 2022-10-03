@@ -1994,7 +1994,7 @@ namespace h5pp::hdf5 {
                 if(err < 0) throw h5pp::runtime_error("Failed to read compressed chunk at offset {}", chunkOffset);
 
                 int z_err = uncompress(reinterpret_cast<Bytef *>(chunkBuffer.data()),
-                                       static_cast<uLongf *>(&chunkByte),
+                                       reinterpret_cast<uLongf *>(&chunkByte),
                                        reinterpret_cast<const Bytef *>(chunkZBuffer.data()),
                                        static_cast<uLong>(chunkByteStorage));
                 /* Check for various zlib errors */
