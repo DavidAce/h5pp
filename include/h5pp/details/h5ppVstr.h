@@ -132,8 +132,8 @@ namespace h5pp::type::vlen {
     }
     inline void vstr_t::erase(std::string::size_type pos, std::string::size_type n) { *this = std::string(*this).erase(pos, n); }
     inline void vstr_t::erase(const char *b, const char *e) {
-        std::string::size_type pos = b - ptr;
-        std::string::size_type n   = e - ptr;
+        auto pos = static_cast<std::string::size_type>(b - ptr);
+        auto n   = static_cast<std::string::size_type>(e - ptr);
         erase(pos, n);
     }
     inline void vstr_t::append(const char *v) {

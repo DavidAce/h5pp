@@ -219,7 +219,7 @@ int main() {
     for(int row = 0; row < field2Matrix.rows(); row++)
         for(int col = 0; col < field2Matrix.cols(); col++) field2Matrix(row, col) = {static_cast<double>(row), static_cast<double>(col)};
 
-    Eigen::Map<Eigen::VectorXd>                vectorMapDouble(vectorDouble.data(), (long) vectorDouble.size());
+    Eigen::Map<Eigen::VectorXd>                vectorMapDouble(vectorDouble.data(), static_cast<long>(vectorDouble.size()));
     Eigen::Map<Eigen::MatrixXd>                matrixMapDouble(matrixDouble.data(), matrixDouble.rows(), matrixDouble.cols());
     Eigen::TensorMap<Eigen::Tensor<double, 2>> tensorMapDouble(matrixDouble.data(), matrixDouble.rows(), matrixDouble.cols());
     Eigen::MatrixXd                            vectorMatrix = Eigen::MatrixXd::Random(10, 1);

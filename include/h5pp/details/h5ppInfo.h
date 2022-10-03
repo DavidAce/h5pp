@@ -824,7 +824,7 @@ namespace h5pp {
     struct H5TInfo {
         std::optional<hid::h5t>                 h5Type       = std::nullopt;
         std::optional<H5T_class_t>              h5Class      = std::nullopt;
-        std::optional<int>                      typeSize     = std::nullopt;
+        std::optional<size_t>                   typeSize     = std::nullopt;
         std::optional<int>                      numMembers   = std::nullopt;
         std::optional<std::vector<std::string>> memberNames  = std::nullopt;
         std::optional<std::vector<hid::h5t>>    memberTypes  = std::nullopt;

@@ -76,7 +76,7 @@ int main() {
     if(particles.size() != particles_read.size()) throw std::runtime_error("Particles container size mismatch");
     i = 0;
     for(auto &p : particles)
-        if(p != particles_read[(size_t) i++]) throw std::runtime_error("Particle mismatch position " + std::to_string(--i));
+        if(p != particles_read[static_cast<unsigned long>(i++)]) throw std::runtime_error("Particle mismatch position " + std::to_string(--i));
 
     // TODO: Add support for packed datatypes. The test below will not crash, but the data in the hdf5 file will be scrambled.
     // One can optionally repack the datatype to squeeze out any padding present in the struct.

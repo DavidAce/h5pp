@@ -27,8 +27,8 @@ void assert_nullfree(const std::string &s) {
         }
     }
     if(found_null) {
-        printf("printf before esc: %s | size %lu\n", s.c_str(), s.size());
-        printf("printf after  esc: %s | size %lu\n", s_esc.c_str(), s_esc.size());
+        h5pp::print("print before esc: {} | size {}", s.c_str(), s.size());
+        h5pp::print("print after  esc: {} | size {}", s_esc.c_str(), s_esc.size());
         throw std::runtime_error("Found null character");
     }
 }

@@ -778,9 +778,9 @@ namespace h5pp::scan {
         if(not info.fieldNames){
             info.fieldNames   = std::vector<std::string>(n_fields);
             for(unsigned int idx = 0; idx < n_fields; idx++){
-                const char *name = H5Tget_member_name(info.h5Type.value(), idx);
+                char *name = H5Tget_member_name(info.h5Type.value(), idx);
                 info.fieldNames.value()[idx] = name;
-                H5free_memory((void *) name);
+                H5free_memory(name);
             }
         }
 

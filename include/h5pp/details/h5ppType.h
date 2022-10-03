@@ -265,10 +265,10 @@ namespace h5pp::type {
             auto h5type = H5Tget_native_type(type, H5T_direction_t::H5T_DIR_DEFAULT); // Unrolls nested compound types
 
             auto nmembers = H5Tget_nmembers(h5type);
-            auto nmembers_ul = static_cast<size_t>(nmembers);
+            auto nmembers_ul = static_cast<unsigned int>(nmembers);
 
             std::vector<std::string> cpptypenames(nmembers_ul);
-            for(size_t idx = 0; idx < nmembers_ul; idx++ ){
+            for(unsigned int idx = 0; idx < nmembers_ul; idx++ ){
                 auto cpptype = getCppType(H5Tget_member_type(h5type, idx));
                 cpptypenames[idx] = std::get<1>(cpptype);
             }

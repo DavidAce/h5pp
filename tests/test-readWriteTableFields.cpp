@@ -54,7 +54,7 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
 
         // Specify the array "rho" as rank-1 array of length 3
         std::vector<hsize_t> dims             = {3};
-        h5pp::hid::h5t       MY_HDF5_RHO_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE, (unsigned int) dims.size(), dims.data());
+        h5pp::hid::h5t       MY_HDF5_RHO_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE, dims.size(), dims.data());
 
         // Register the compound type
         h5pp::hid::h5t MY_HDF5_PARTICLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Particle));

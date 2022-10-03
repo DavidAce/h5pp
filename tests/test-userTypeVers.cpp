@@ -45,7 +45,7 @@ bool are_common_members_equal_with_defaults(const ParticleV1 &p1, const Particle
 
 auto create_unique_v1(int i) { return ParticleV1{100.0 + i, 200.0 + i, 1000 + i, "v1-123456"}; }
 
-auto create_unique_v2(int i) { return ParticleV2{100.0 + i, 200.0 + i, 300.0 + i, (short) (400 + i), 1000 + i, "v2-1234567890123"}; }
+auto create_unique_v2(int i) { return ParticleV2{100.0 + i, 200.0 + i, 300.0 + i, static_cast<short>(400 + i), 1000 + i, "v2-1234567890123"}; }
 
 void print_particle(const ParticleV1 &p, const std::string &msg = "") {
     h5pp::print("{} \t x: {} \t y: {} \t id: {}  \t name: {}\n", msg, p.x, p.y, p.id, p.name);

@@ -286,15 +286,15 @@ namespace h5pp::util {
     [[nodiscard]] inline size_t sub2ind(const std::vector<hsize_t> &dims, const std::vector<hsize_t> &coords) {
         if(dims.size() != coords.size())
             throw h5pp::runtime_error("dims and coords do not have the same rank: {} != {}", dims.size(), coords.size());
-        auto   rank  = dims.size();
-        size_t index = 0;
-        long   j     = 1; // current
+        size_t  rank  = dims.size();
+        hsize_t index = 0;
+        hsize_t j     = 1; // current
         for(size_t i = 0; i < rank; i++) {
             if(coords[i] >= dims[i]) throw h5pp::runtime_error("coords out of bounds: coords {} |  dims {}", coords, dims);
-            auto dimprod = std::accumulate(dims.begin() + j++, dims.end(), 1ul, std::multiplies<>());
+            hsize_t dimprod = std::accumulate(dims.begin() + static_cast<long>(j++), dims.end(), hsize_t(1), std::multiplies<>());
             index += dimprod * coords[i];
         }
-        return index;
+        return static_cast<size_t>(index);
     }
 
     [[nodiscard]] inline hid::h5s getDsetSpace(const hsize_t                       size,

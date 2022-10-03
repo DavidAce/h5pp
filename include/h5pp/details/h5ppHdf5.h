@@ -1616,37 +1616,41 @@ namespace h5pp::hdf5 {
         inline bool        symlinks = false;
         inline std::string searchKey;
         template<H5O_type_t ObjType>
+        /* clang-format off */
         [[nodiscard]] inline constexpr std::string_view getObjTypeName() {
-            if constexpr(ObjType == H5O_type_t::H5O_TYPE_DATASET) return "dataset";
-            if constexpr(ObjType == H5O_type_t::H5O_TYPE_GROUP) return "group";
-            if constexpr(ObjType == H5O_type_t::H5O_TYPE_UNKNOWN) return "unknown";
-            if constexpr(ObjType == H5O_type_t::H5O_TYPE_NAMED_DATATYPE) return "named datatype";
-            if constexpr(ObjType == H5O_type_t::H5O_TYPE_NTYPES) return "ntypes";
-            return "map"; // Only in HDF5 v 1.12
+            if constexpr     (ObjType == H5O_type_t::H5O_TYPE_DATASET) return "dataset";
+            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_GROUP) return "group";
+            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_UNKNOWN) return "unknown";
+            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_NAMED_DATATYPE) return "named datatype";
+            else if constexpr(ObjType == H5O_type_t::H5O_TYPE_NTYPES) return "ntypes";
+            else return "map"; // Only in HDF5 v 1.12
         }
         [[nodiscard]] inline std::string_view getObjTypeName(H5O_type_t type) {
-            if(type == H5O_type_t::H5O_TYPE_DATASET) return "dataset";
-            if(type == H5O_type_t::H5O_TYPE_GROUP) return "group";
-            if(type == H5O_type_t::H5O_TYPE_UNKNOWN) return "unknown";
-            if(type == H5O_type_t::H5O_TYPE_NAMED_DATATYPE) return "named datatype";
-            if(type == H5O_type_t::H5O_TYPE_NTYPES) return "ntypes";
+            if     (type == H5O_type_t::H5O_TYPE_DATASET) return "dataset";
+            else if(type == H5O_type_t::H5O_TYPE_GROUP) return "group";
+            else if(type == H5O_type_t::H5O_TYPE_UNKNOWN) return "unknown";
+            else if(type == H5O_type_t::H5O_TYPE_NAMED_DATATYPE) return "named datatype";
+            else if(type == H5O_type_t::H5O_TYPE_NTYPES) return "ntypes";
             return "map"; // Only in HDF5 v 1.12
         }
         template<H5L_type_t LinkType>
         [[nodiscard]] inline constexpr std::string_view getLinkTypeName() {
-            if constexpr(LinkType == H5L_type_t::H5L_TYPE_ERROR) return "error";
             if constexpr(LinkType == H5L_type_t::H5L_TYPE_HARD) return "hard";
-            if constexpr(LinkType == H5L_type_t::H5L_TYPE_SOFT) return "soft";
-            if constexpr(LinkType == H5L_type_t::H5L_TYPE_EXTERNAL) return "external";
-            if constexpr(LinkType == H5L_type_t::H5L_TYPE_MAX) return "max";
+            else if constexpr(LinkType == H5L_type_t::H5L_TYPE_SOFT) return "soft";
+            else if constexpr(LinkType == H5L_type_t::H5L_TYPE_EXTERNAL) return "external";
+            else if constexpr(LinkType == H5L_type_t::H5L_TYPE_MAX) return "max";
+            else return "error";
         }
         [[nodiscard]] inline std::string_view getObjTypeName(H5L_type_t type) {
-            if(type == H5L_type_t::H5L_TYPE_ERROR) return "error";
             if(type == H5L_type_t::H5L_TYPE_HARD) return "hard";
-            if(type == H5L_type_t::H5L_TYPE_SOFT) return "soft";
-            if(type == H5L_type_t::H5L_TYPE_EXTERNAL) return "external";
-            if(type == H5L_type_t::H5L_TYPE_MAX) return "max";
+            else if(type == H5L_type_t::H5L_TYPE_SOFT) return "soft";
+            else if(type == H5L_type_t::H5L_TYPE_EXTERNAL) return "external";
+            else if(type == H5L_type_t::H5L_TYPE_MAX) return "max";
+            else return "error";
+
         }
+        /* clang-format on */
+
         template<H5O_type_t ObjType, typename InfoType>
         inline herr_t matcher([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const InfoType *info, void *opdata) {
             // If object type is the one requested, and name matches the search key, then add it to the match list (a vector<string>)
@@ -1899,7 +1903,7 @@ namespace h5pp::hdf5 {
 
                 // Allocate space for the compressed buffer
                 std::vector<std::byte> chunkZBuffer(z_dst_nbytes);
-                auto                   z_dst = (Bytef *) (chunkZBuffer.data());
+                auto                   z_dst = reinterpret_cast<Bytef *>(chunkZBuffer.data());
 
                 // Get a pointer to the source buffer for compression
                 auto z_src = static_cast<const Bytef *>(h5pp::util::getVoidPointer<const void *>(chunkBuffer));
@@ -1989,10 +1993,10 @@ namespace h5pp::hdf5 {
                 herr_t                 err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, chunkZBuffer.data());
                 if(err < 0) throw h5pp::runtime_error("Failed to read compressed chunk at offset {}", chunkOffset);
 
-                int z_err = uncompress((Bytef *) chunkBuffer.data(),
-                                       (uLongf *) &chunkByte,
-                                       (const Bytef *) chunkZBuffer.data(),
-                                       (uLong) chunkByteStorage);
+                int z_err = uncompress(reinterpret_cast<Bytef *>(chunkBuffer.data()),
+                                       static_cast<uLongf *>(&chunkByte),
+                                       reinterpret_cast<const Bytef *>(chunkZBuffer.data()),
+                                       static_cast<uLong>(chunkByteStorage));
                 /* Check for various zlib errors */
                 if(Z_BUF_ERROR == z_err)
                     throw h5pp::runtime_error("error: not enough room in output buffer");
@@ -2359,9 +2363,9 @@ namespace h5pp::hdf5 {
             //      2) Allocation on char * must be done before reading.
 
             if(H5Tis_variable_str(dsetInfo.h5Type.value())) {
-                auto                      size = H5Sget_select_npoints(dsetInfo.h5Space.value());
-                std::vector<h5pp::vstr_t> vdata(size);
-                //                std::vector<char *> vdata(static_cast<size_t>(size)); // Allocate pointers for "size" number of strings
+                hssize_t size = H5Sget_select_npoints(dsetInfo.h5Space.value());
+                if(size < 0) throw h5pp::runtime_error("H5S_select_npoints: failed on dataset [{}]", dsetInfo.dsetPath.value());
+                std::vector<h5pp::vstr_t> vdata(static_cast<size_t>(size));
                 // HDF5 allocates space for each string in vdata
                 retval = H5Dread(dsetInfo.h5Dset.value(),
                                  dsetInfo.h5Type.value(),
