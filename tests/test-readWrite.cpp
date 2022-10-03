@@ -129,8 +129,10 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
     else {
         if(writeData != readData) {
 #if H5PP_USE_FMT
-            h5pp::print("Wrote: \n{}\n", writeData);
-            h5pp::print("Read: \n{}\n", readData);
+            if constexpr(not h5pp::type::sfinae::is_eigen_any_v<ReadType>) {
+                h5pp::print("Wrote: \n{}\n", writeData);
+                h5pp::print("Read: \n{}\n", readData);
+            }
 #endif
             throw std::runtime_error("Data mismatch: Write != Read");
         }
