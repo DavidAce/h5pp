@@ -836,7 +836,7 @@ namespace h5pp {
             std::string msg;
             /* clang-format off */
             if(h5Type)   msg.append(h5pp::format(" | h5Type {}", type::getH5TypeName(h5Type.value())));
-            if(h5Class)  msg.append(h5pp::format(" | h5Class {}", enum2str(h5Class.value())));
+            if(h5Class)  msg.append(h5pp::format(" | h5Class {}", h5pp::enum2str(h5Class.value())));
             if(typeSize) msg.append(h5pp::format(" | typeSize {} bytes", typeSize.value()));
             if(numMembers) msg.append(h5pp::format(" | numMembers {}", numMembers.value()));
             return msg;

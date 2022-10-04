@@ -3159,7 +3159,7 @@ namespace h5pp::hdf5 {
         // Sanity checks
         auto fieldClass = H5Tget_class(h5t_fields);
         if(fieldClass != H5T_class_t::H5T_COMPOUND)
-            throw h5pp::logic_error("readTableField: expected HDF5 class H5T_COMPOUND. Got {}", enum2str(fieldClass));
+            throw h5pp::logic_error("readTableField: expected HDF5 class H5T_COMPOUND. Got {}", h5pp::enum2str(fieldClass));
 
         int    nmembers    = H5Tget_nmembers(h5t_fields);
         htri_t detect_vlen = H5Tdetect_class(h5t_fields, H5T_class_t::H5T_VLEN);
