@@ -266,7 +266,7 @@ namespace h5pp::util {
         static_assert(std::is_integral_v<T>);
         if(dims.size() != coord.size()) throw h5pp::runtime_error("dims.size [{}] != coord.size [{}]", dims.size(), coord.size());
         auto rank    = dims.size();
-        auto dimprod = std::accumulate(dims.begin(), dims.end(), 1ul, std::multiplies<>());
+        auto dimprod = std::accumulate(dims.begin(), dims.end(), static_cast<size_t>(1), std::multiplies<>());
         if(idx >= dimprod) throw h5pp::runtime_error("linearIndex {} out of range for dims with size {}", idx, dimprod);
         for(size_t i = rank - 1; i < rank; --i) {
             coord[i] = idx % dims[i];
@@ -826,7 +826,7 @@ namespace h5pp::util {
         std::vector<size_t> fieldSizes;
         fieldSizes.reserve(fieldIndices.size());
         for(const auto &idx : fieldIndices) fieldSizes.emplace_back(info.fieldSizes.value().at(idx));
-        size_t fieldSizeTotal = std::accumulate(fieldSizes.begin(), fieldSizes.end(), 0ul);
+        size_t fieldSizeTotal = std::accumulate(fieldSizes.begin(), fieldSizes.end(), static_cast<size_t>(0));
 
         if constexpr(not type::sfinae::has_resize_v<DataType>) {
             // The given buffer is not resizeable. Make sure it can handle extent
