@@ -7,7 +7,7 @@ required_conan_version = ">=1.45.0"
 
 class H5ppConan(ConanFile):
     name = "h5pp"
-    version = "1.10.1"
+    version = "1.11.0"
     description = "A C++17 wrapper for HDF5 with focus on simplicity"
     homepage = "https://github.com/DavidAce/h5pp"
     author = "DavidAce <aceituno@kth.se>"
@@ -49,7 +49,7 @@ class H5ppConan(ConanFile):
         if self.options.with_eigen:
             self.requires("eigen/3.4.0")
         if self.options.with_spdlog:
-            self.requires("spdlog/1.10.0")
+            self.requires("spdlog/1.11.0")
 
 
     def package_id(self):
