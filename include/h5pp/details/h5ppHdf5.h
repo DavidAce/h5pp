@@ -3193,6 +3193,10 @@ namespace h5pp::hdf5 {
                                          h5t_info.string_members());
             }
 
+        // Last sanity check. If there are no records to read, just return;
+        if(extent.value() == 0) return;
+        if(info.numRecords.value() == 0) return;
+
         /* Step 1: Get the dataset and memory spaces */
         hid::h5s dsetSpace = H5Dget_space(info.h5Dset.value());
         hid::h5s dataSpace = util::getMemSpace(extent.value(), {extent.value()});
