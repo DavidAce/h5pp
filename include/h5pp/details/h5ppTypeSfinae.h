@@ -415,6 +415,47 @@ namespace h5pp::type::sfinae {
     }
 
     template<typename T>
+    struct has_Scalar2 {
+        private:
+        static constexpr bool test() {
+            if constexpr(h5pp::type::sfinae::has_value_type_v<T>)
+                return h5pp::type::sfinae::is_Scalar2_v<typename T::value_type>;
+            else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>)
+                return h5pp::type::sfinae::is_Scalar2_v<typename T::Scalar>;
+            else
+                return false;
+        }
+
+        public:
+        static constexpr bool value = test();
+    };
+
+    template<typename T>
+    inline constexpr bool has_Scalar2_v = has_Scalar2<T>::value;
+
+    template<typename T>
+    struct has_Scalar3 {
+        private:
+        static constexpr bool test() {
+            if constexpr(h5pp::type::sfinae::has_value_type_v<T>)
+                return h5pp::type::sfinae::is_Scalar3_v<typename T::value_type>;
+            else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>)
+                return h5pp::type::sfinae::is_Scalar3_v<typename T::Scalar>;
+            else
+                return false;
+        }
+
+        public:
+        static constexpr bool value = test();
+    };
+
+    template<typename T>
+    inline constexpr bool has_Scalar3_v = has_Scalar3<T>::value;
+
+    template<typename T>
+    inline constexpr bool has_ScalarN_v = has_Scalar2<T>::value or has_Scalar3<T>::value;
+
+    template<typename T>
     constexpr auto type_name() {
         std::string_view name, prefix, suffix;
 #ifdef __clang__
