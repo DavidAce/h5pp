@@ -1,4 +1,5 @@
 #pragma once
+#include "h5ppFormat.h"
 #include "h5ppTypeCompound.h"
 #include <complex>
 #include <cstdlib>
@@ -41,6 +42,7 @@ namespace h5pp::type::vlen {
         hvl_t               *vlen_data();
         const hvl_t         *vlen_data() const;
         [[nodiscard]] size_t vlen_size() const;
+        [[nodiscard]] size_t size() const;
         [[nodiscard]] size_t length() const;
         const T             *begin() const;
         const T             *end() const;
@@ -49,6 +51,19 @@ namespace h5pp::type::vlen {
         bool                 empty() const;
         static hid::h5t      get_h5type();
         ~varr_t() noexcept;
+
+#if !defined(FMT_FORMAT_H_) || !defined(H5PP_USE_FMT)
+        friend auto operator<<(std::ostream &os, const varr_t &v) -> std::ostream & {
+            if(v.empty())
+                os << "[]";
+            else {
+                os << "[";
+                std::copy(v.begin(), v.end(), std::ostream_iterator<T>(os, ", "));
+                os << "\b\b]";
+            }
+            return os;
+        }
+#endif
     };
 
     template<typename T>
@@ -194,6 +209,10 @@ namespace h5pp::type::vlen {
     }
     template<typename T>
     size_t varr_t<T>::vlen_size() const {
+        return vl.len;
+    }
+    template<typename T>
+    size_t varr_t<T>::size() const {
         return vl.len;
     }
     template<typename T>

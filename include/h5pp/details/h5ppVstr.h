@@ -44,6 +44,12 @@ namespace h5pp::type::vlen {
         void                 append(std::string_view v);
         static hid::h5t      get_h5type();
         ~vstr_t() noexcept;
+#if !defined(FMT_FORMAT_H_) || !defined(H5PP_USE_FMT)
+        friend auto operator<<(std::ostream &os, const vstr_t &v) -> std::ostream & {
+            std::copy(v.begin(), v.end(), std::ostream_iterator<char>(os, ", "));
+            return os;
+        }
+#endif
     };
 
     inline vstr_t::operator std::string_view() const { return {begin(), size()}; }
