@@ -57,7 +57,7 @@ namespace h5pp {
 }
 #else
 
-// In this case there is no fmt so we make our own simple formatter
+// In this case there is no fmt, so we make our own simple formatter
 #include "h5ppTypeSfinae.h"
 #include <algorithm>
 #include <iostream>

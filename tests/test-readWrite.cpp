@@ -1,59 +1,7 @@
 
 #include <h5pp/h5pp.h>
-#if H5PP_USE_FMT
-    #if __has_include(<fmt/ostream.h>)
-        #include <fmt/ostream.h>
-    #elif __has_include(<spdlog/fmt/bundled/ranges.h>)
-        #include <spdlog/fmt/bundled/ranges.h>
-    #endif
-#endif
+#include <h5pp/details/h5ppFormatComplex.h>
 
-template<typename T>
-struct has_scalar2 {
-    private:
-    static constexpr bool test() {
-        if constexpr(h5pp::type::sfinae::has_value_type_v<T>)
-            return h5pp::type::sfinae::is_Scalar2_v<typename T::value_type>;
-        else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>)
-            return h5pp::type::sfinae::is_Scalar2_v<typename T::Scalar>;
-        else
-            return false;
-    }
-
-    public:
-    static constexpr bool value = test();
-};
-template<typename T>
-inline constexpr bool has_scalar2_v = has_scalar2<T>::value;
-
-template<typename T>
-struct has_scalar3 {
-    private:
-    static constexpr bool test() {
-        if constexpr(h5pp::type::sfinae::has_value_type_v<T>)
-            return h5pp::type::sfinae::is_Scalar3_v<typename T::value_type>;
-        else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>)
-            return h5pp::type::sfinae::is_Scalar3_v<typename T::Scalar>;
-        else
-            return false;
-    }
-
-    public:
-    static constexpr bool value = test();
-};
-template<typename T>
-inline constexpr bool has_scalar3_v = has_scalar3<T>::value;
-
-template<typename T>
-struct has_scalarN {
-    private:
-    static constexpr bool test() { return has_scalar2_v<T> or has_scalar3_v<T>; }
-
-    public:
-    static constexpr bool value = test();
-};
-template<typename T>
-inline constexpr bool has_scalarN_v = has_scalarN<T>::value;
 
 template<typename T>
 void compareScalar(const T &lhs, const T &rhs) {
@@ -71,6 +19,7 @@ void compareScalar(const T &lhs, const T &rhs) {
 
 template<typename WriteType, typename ReadType = WriteType>
 void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view dsetpath, std::string tag = "") {
+    using namespace h5pp::type::sfinae;
     if(tag.empty()) tag = dsetpath;
     h5pp::logger::log->info("Writing {}", tag);
     file.writeDataset(writeData, dsetpath);
@@ -78,7 +27,7 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
     auto readData = file.readDataset<ReadType>(dsetpath);
     if constexpr(h5pp::type::sfinae::is_ScalarN_v<ReadType>) {
         compareScalar(writeData, readData);
-    } else if constexpr(has_scalarN_v<ReadType>) {
+    } else if constexpr(has_ScalarN_v<ReadType>) {
         if(writeData.size() != readData.size()) throw std::runtime_error("Size mismatch in ScalarN container");
 #ifdef H5PP_USE_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_matrix_v<ReadType>)

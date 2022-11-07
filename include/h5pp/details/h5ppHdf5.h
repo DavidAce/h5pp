@@ -2603,7 +2603,7 @@ namespace h5pp::hdf5 {
                                     attrInfo.h5Space.value(),
                                     H5P_DEFAULT,
                                     dataPtr,
-                                    fmt::format("{}|{}", attrInfo.linkPath.value(), attrInfo.attrName.value())};
+                                    h5pp::format("{}|{}", attrInfo.linkPath.value(), attrInfo.attrName.value())};
         }
     }
 
