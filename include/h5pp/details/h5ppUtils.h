@@ -38,7 +38,7 @@ namespace h5pp::util {
         return tmp;
     }
 
-    inline std::string_view getParentPath(std::string_view linkPath) {
+    [[nodiscard]] inline std::string_view getParentPath(std::string_view linkPath) {
         size_t pos = linkPath.find_last_of('/');
         if(pos == std::string_view::npos) pos = 0; // No parent path
         return linkPath.substr(0, pos);
@@ -75,7 +75,6 @@ namespace h5pp::util {
     template<typename PtrType, typename DataType>
     [[nodiscard]] inline PtrType getVoidPointer(DataType &data, size_t offset = 0) noexcept {
         // Get the memory address to a data buffer
-
         if constexpr(h5pp::type::sfinae::has_data_v<DataType>)
             return static_cast<PtrType>(data.data() + offset);
         else if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>)
@@ -89,7 +88,7 @@ namespace h5pp::util {
      *   \return bool, true if all args are equal
      */
     template<typename First, typename... T>
-    bool all_equal(First &&first, T &&...t) noexcept {
+    [[nodiscard]] bool all_equal(First &&first, T &&...t) noexcept {
         return ((first == t) && ...);
     }
 
@@ -175,28 +174,41 @@ namespace h5pp::util {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] hsize_t getSize(const DataType &data) {
-        if constexpr(h5pp::type::sfinae::is_text_v<DataType>)
-            return static_cast<hsize_t>(1); // Strings and char arrays are treated as a single unit
-        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return static_cast<hsize_t>(data.size());
-        if constexpr(std::is_array_v<DataType>) return static_cast<hsize_t>(getArraySize(data));
-        if constexpr(std::is_pointer_v<DataType>)
+        // variable-length arrays and text such as std::string/char arrays are scalar,
+        if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::is_varr_v<DataType> or
+                     h5pp::type::sfinae::is_vstr_v<DataType>)
+            return static_cast<hsize_t>(1);
+        else if constexpr(h5pp::type::sfinae::has_size_v<DataType>)
+            return static_cast<hsize_t>(data.size());
+        else if constexpr(std::is_array_v<DataType>)
+            return static_cast<hsize_t>(getArraySize(data));
+        else if constexpr(std::is_pointer_v<DataType>)
             throw h5pp::runtime_error("Failed to read data size: Pointer data has no specified dimensions");
-        // Add more checks here. As it is, these two checks above handle all cases I have encountered.
-        return 1; // All others should be "H5S_SCALAR" of size 1.
+        else
+            return 1; // All others can be "H5S_SCALAR" of size 1.
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] constexpr int getRank() {
+        if constexpr(h5pp::type::sfinae::is_text_v<DataType> or h5pp::type::sfinae::is_varr_v<DataType> or
+                     h5pp::type::sfinae::is_vstr_v<DataType>)
+            return 0;
 #ifdef H5PP_USE_EIGEN3
-        if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) return static_cast<int>(DataType::NumIndices);
-        if constexpr(h5pp::type::sfinae::is_eigen_1d_v<DataType>) return 1;
-        if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType>) return 2;
+        else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>)
+            return static_cast<int>(DataType::NumIndices);
+        else if constexpr(h5pp::type::sfinae::is_eigen_1d_v<DataType>)
+            return 1;
+        else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType>)
+            return 2;
 #endif
-        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) return 0;
-        if constexpr(h5pp::type::sfinae::has_NumIndices_v<DataType>) return static_cast<int>(DataType::NumIndices);
-        if constexpr(std::is_array_v<DataType>) return std::rank_v<DataType>;
-        if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return 1;
-        return 0;
+        else if constexpr(h5pp::type::sfinae::has_NumIndices_v<DataType>)
+            return static_cast<int>(DataType::NumIndices);
+        else if constexpr(std::is_array_v<DataType>)
+            return std::rank_v<DataType>;
+        else if constexpr(h5pp::type::sfinae::has_size_v<DataType>)
+            return 1;
+        else
+            return 0;
     }
 
     [[nodiscard]] inline int getRankFromDimensions(const std::vector<hsize_t> &dims) { return static_cast<int>(dims.size()); }
@@ -204,41 +216,42 @@ namespace h5pp::util {
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] std::vector<hsize_t> getDimensions(const DataType &data) {
         // Empty vector means H5S_SCALAR, size 1 and rank 0
-        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) return {};
+        namespace sfn      = h5pp::type::sfinae;
         constexpr int rank = getRank<DataType>();
-        if constexpr(rank == 0) return {};
-        if constexpr(h5pp::type::sfinae::has_dimensions_v<DataType>) {
+        if constexpr(rank == 0)
+            return {};
+        else if constexpr(sfn::is_text_v<DataType> or sfn::is_varr_v<DataType> or sfn::is_vstr_v<DataType>)
+            return {};
+        else if constexpr(sfn::has_dimensions_v<DataType>) {
             // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
             std::vector<hsize_t> dims(std::begin(data.dimensions()), std::end(data.dimensions()));
             if(data.dimensions().size() != rank) throw h5pp::runtime_error("given dimensions do not match detected rank");
             if(dims.size() != rank) throw h5pp::runtime_error("copied dimensions do not match detected rank");
             return dims;
-        } else if constexpr(h5pp::type::sfinae::has_size_v<DataType> and rank == 1)
+        } else if constexpr(sfn::has_size_v<DataType> and rank == 1)
             return {static_cast<hsize_t>(data.size())};
-
 #ifdef H5PP_USE_EIGEN3
-        else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
+        else if constexpr(sfn::is_eigen_tensor_v<DataType>) {
             if(data.dimensions().size() != rank) throw h5pp::runtime_error("given dimensions do not match detected rank");
             // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
             return std::vector<hsize_t>(std::begin(data.dimensions()), std::end(data.dimensions()));
-        } else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType>) {
+        } else if constexpr(sfn::is_eigen_dense_v<DataType>) {
             return {static_cast<hsize_t>(data.rows()), static_cast<hsize_t>(data.cols())};
         }
 #endif
-        else if constexpr(h5pp::type::sfinae::is_ScalarN_v<DataType>)
+        else if constexpr(sfn::is_ScalarN_v<DataType>)
             return {};
         else if constexpr(std::is_array_v<DataType>)
             return {getArraySize(data)};
-        else if constexpr(std::is_arithmetic_v<DataType> or h5pp::type::sfinae::is_std_complex_v<DataType>)
+        else if constexpr(std::is_arithmetic_v<DataType> or sfn::is_std_complex_v<DataType>)
             return {};
         else if constexpr(std::is_standard_layout_v<DataType>)
             return {};
         else if constexpr(std::is_class_v<DataType>) {
             h5pp::logger::log->warn("Detected possible unsupported non-POD class. h5pp may fail.");
             return {};
-        } else {
-            throw h5pp::runtime_error("getDimensions can't match the type provided [{}]", h5pp::type::sfinae::type_name<DataType>());
-        }
+        } else
+            throw h5pp::runtime_error("getDimensions can't match the type provided [{}]", sfn::type_name<DataType>());
     }
 
     [[nodiscard]] inline std::optional<std::vector<hsize_t>> decideDimensionsMax(const std::vector<hsize_t> &dims,
@@ -378,20 +391,31 @@ namespace h5pp::util {
         static_assert(not type::sfinae::is_h5pp_id<DataType>);
         namespace sfn   = h5pp::type::sfinae;
         using DecayType = typename std::decay<DataType>::type;
-        if constexpr(std::is_pointer_v<DecayType>) return getBytesPerElem<typename std::remove_pointer<DecayType>::type>();
-        if constexpr(std::is_reference_v<DecayType>) return getBytesPerElem<typename std::remove_reference<DecayType>::type>();
-        if constexpr(std::is_array_v<DecayType>) return getBytesPerElem<typename std::remove_all_extents<DecayType>::type>();
-        if constexpr(sfn::is_std_complex_v<DecayType>) return sizeof(DecayType);
-        if constexpr(sfn::is_ScalarN_v<DecayType>) return sizeof(DecayType);
-        if constexpr(std::is_arithmetic_v<DecayType>) return sizeof(DecayType);
-        if constexpr(sfn::has_Scalar_v<DecayType>) return sizeof(typename DecayType::Scalar);
-        if constexpr(sfn::has_value_type_v<DecayType>) return getBytesPerElem<typename DecayType::value_type>();
-        return sizeof(std::remove_all_extents_t<DecayType>);
+        if constexpr(std::is_pointer_v<DecayType>)
+            return getBytesPerElem<typename std::remove_pointer<DecayType>::type>();
+        else if constexpr(std::is_reference_v<DecayType>)
+            return getBytesPerElem<typename std::remove_reference<DecayType>::type>();
+        else if constexpr(std::is_array_v<DecayType>)
+            return getBytesPerElem<typename std::remove_all_extents<DecayType>::type>();
+        else if constexpr(sfn::is_std_complex_v<DecayType>)
+            return sizeof(DecayType);
+        else if constexpr(sfn::is_ScalarN_v<DecayType>)
+            return sizeof(DecayType);
+        else if constexpr(std::is_arithmetic_v<DecayType>)
+            return sizeof(DecayType);
+        else if constexpr(sfn::has_Scalar_v<DecayType>)
+            return sizeof(typename DecayType::Scalar);
+        else if constexpr(sfn::has_value_type_v<DecayType>)
+            return getBytesPerElem<typename DecayType::value_type>();
+        else
+            return sizeof(std::remove_all_extents_t<DecayType>);
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] size_t getBytesTotal(const DataType &data, std::optional<size_t> size = std::nullopt) {
-        if constexpr(h5pp::type::sfinae::is_iterable_v<DataType> and h5pp::type::sfinae::has_value_type_v<DataType>) {
+        if constexpr(h5pp::type::sfinae::is_or_has_varr_v<DataType> or h5pp::type::sfinae::is_or_has_vstr_v<DataType>) {
+            return h5pp::util::getSize(data) * h5pp::util::getBytesPerElem<DataType>();
+        } else if constexpr(h5pp::type::sfinae::is_iterable_v<DataType> and h5pp::type::sfinae::has_value_type_v<DataType>) {
             using value_type = typename DataType::value_type;
             if constexpr(h5pp::type::sfinae::has_size_v<value_type>) { // E.g. std::vector<std::string>
                 // Count all the null terminators
@@ -405,24 +429,20 @@ namespace h5pp::util {
                 num             = static_cast<size_t>(data.size()) + nullterm; // Static cast because Eigen uses long
                 return num * h5pp::util::getBytesPerElem<value_type>();
             }
-        }
-        auto bytesperelem = h5pp::util::getBytesPerElem<DataType>();
-        if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {
-            if(not size) size = getCharArraySize(data) + 1; // Add null terminator
-            return size.value() * bytesperelem;
-        }
-        if constexpr(std::is_array_v<DataType>) {
+        } else if constexpr(h5pp::type::sfinae::is_text_v<DataType>) { // E.g. char[n]
+            if(not size) size = getCharArraySize(data) + 1;            // Add null terminator
+            return size.value() * h5pp::util::getBytesPerElem<DataType>();
+        } else if constexpr(std::is_array_v<DataType>) {
             if(not size) size = h5pp::util::getArraySize(data);
-            return size.value() * bytesperelem;
-        }
-        if constexpr(std::is_pointer_v<DataType>) {
+            return size.value() * h5pp::util::getBytesPerElem<DataType>();
+        } else if constexpr(std::is_pointer_v<DataType>) {
             if(not size)
                 throw h5pp::runtime_error("Could not determine total amount of bytes in buffer: Pointer data has no specified size");
-            return size.value() * bytesperelem;
+            return size.value() * h5pp::util::getBytesPerElem<DataType>();
+        } else {
+            if(not size) size = h5pp::util::getSize(data);
+            return size.value() * h5pp::util::getBytesPerElem<DataType>();
         }
-
-        if(not size) size = h5pp::util::getSize(data);
-        return size.value() * bytesperelem;
     }
 
     [[nodiscard]] inline H5D_layout_t decideLayout(const size_t totalBytes) {
@@ -476,10 +496,10 @@ namespace h5pp::util {
         return decideLayout(bytes);
     }
 
-    inline std::optional<std::vector<hsize_t>> getChunkDimensions(size_t                              bytesPerElem,
-                                                                  const std::vector<hsize_t>         &dims,
-                                                                  std::optional<std::vector<hsize_t>> dimsMax,
-                                                                  std::optional<H5D_layout_t>         layout) {
+    [[nodiscard]] inline std::optional<std::vector<hsize_t>> getChunkDimensions(size_t                              bytesPerElem,
+                                                                                const std::vector<hsize_t>         &dims,
+                                                                                std::optional<std::vector<hsize_t>> dimsMax,
+                                                                                std::optional<H5D_layout_t>         layout) {
         // Here we make a naive guess for chunk dimensions
         // We try to make a square in N dimensions with a target byte size of 10 kb - 1 MB.
         // Here is a great read for chunking considerations https://www.oreilly.com/library/view/python-and-hdf5/9781491944981/ch04.html
