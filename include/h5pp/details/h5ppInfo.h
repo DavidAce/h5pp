@@ -49,25 +49,29 @@ namespace h5pp {
             if(h5Layout) {
                 if(h5Layout.value() == H5D_CHUNKED) {}
                 if(h5Layout.value() == H5D_COMPACT) {
-                    if(dimsChunk)
+                    if(dimsChunk) {
                         error_msg.append(h5pp::format(
                             "Chunk dims {} | Layout is H5D_COMPACT | chunk dimensions are only meant for H5D_CHUNKED layouts\n",
                             dimsChunk.value()));
-                    if(dimsMax and dims and dimsMax.value() != dims.value())
+                    }
+                    if(dimsMax and dims and dimsMax.value() != dims.value()) {
                         error_msg.append(h5pp::format("dims {} | max dims {} | layout is H5D_COMPACT | dims and max dims must be equal "
                                                       "unless the layout is H5D_CHUNKED\n",
                                                       dims.value(),
                                                       dimsMax.value()));
+                    }
                 }
                 if(h5Layout.value() == H5D_CONTIGUOUS) {
-                    if(dimsChunk)
+                    if(dimsChunk) {
                         error_msg.append(h5pp::format("Chunk dims {} | Layout is H5D_CONTIGUOUS | chunk dimensions are only meant for "
                                                       "datasets with H5D_CHUNKED layout \n",
                                                       dimsChunk.value()));
-                    if(dimsMax)
+                    }
+                    if(dimsMax) {
                         error_msg.append(h5pp::format("Max dims {} | Layout is H5D_CONTIGUOUS | max dimensions are only meant for datasets "
                                                       "with H5D_CHUNKED layout \n",
                                                       dimsMax.value()));
+                    }
                 }
             }
             std::string res1 = reportCompatibility(dims, dimsMax);
@@ -185,12 +189,13 @@ namespace h5pp {
             }
             ~Reclaim() noexcept {
                 counter--;
-                if(buf != nullptr and counter == 0)
+                if(buf != nullptr and counter == 0) {
                     h5pp::logger::log->warn(
                         "~Reclaim: a pointer for a variable-length array likely remains without free() after reading [{}]. "
                         "Tip: use h5pp::vlen_t or h5pp::vstr_t or call h5pp::File::vlenReclaim() to avoid a memory leak, "
                         "or call h5pp::File::vlenDisableReclaimsTracking() to handle memory manually",
                         tag);
+                }
             }
         };
 
@@ -242,11 +247,12 @@ namespace h5pp {
 
             /* clang-format on */
             hsize_t size_check = std::accumulate(dataDims->begin(), dataDims->end(), static_cast<hsize_t>(1), std::multiplies<>());
-            if(size_check != dataSize.value())
+            if(size_check != dataSize.value()) {
                 throw h5pp::runtime_error("Data size mismatch: dataSize [{}] | dataDims {} = size [{}]",
                                           dataSize.value(),
                                           dataDims.value(),
                                           size_check);
+            }
         }
 
         void assertReadReady() const {
@@ -388,10 +394,11 @@ namespace h5pp {
                 if(not h5Space->valid() ) error_msg.append("\t h5Space\n");
             }
             /* clang-format on */
-            if(not error_msg.empty())
+            if(not error_msg.empty()) {
                 throw h5pp::runtime_error("Cannot write into dataset [{}]. The following fields are not valid:\n",
                                           dsetPath.value(),
                                           error_msg);
+            }
         }
         void assertReadReady() const {
             std::string error_msg;

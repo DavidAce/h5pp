@@ -195,12 +195,10 @@ namespace h5pp::hid {
         bool               operator>=(const hid_h5x &rhs) const { return val >= rhs.value(); }
         bool               operator<(const hid_h5x &rhs) const { return val < rhs.value(); }
         bool               operator>(const hid_h5x &rhs) const { return val > rhs.value(); }
-
-        [[nodiscard]] operator hid_t() const { return value(); } // Class can be used as an actual hid_t
-
-        explicit             operator bool() const { return valid() and val > 0; } // Test if set with syntax if(a)
-        explicit             operator std::string() const { return h5pp::format("{}: {}", hid_h5x::tag, val); }
-        explicit             operator std::string_view() const { return h5pp::format("{}: {}", hid_h5x::tag, val); }
+        [[nodiscard]]      operator hid_t() const { return value(); }            // Class can be used as an actual hid_t
+        explicit           operator bool() const { return valid() and val > 0; } // Test if set with syntax if(a)
+        explicit           operator std::string() const { return h5pp::format("{}: {}", hid_h5x::tag, val); }
+        explicit           operator std::string_view() const { return h5pp::format("{}: {}", hid_h5x::tag, val); }
     };
 
     // All our safe hid_t wrapper classes

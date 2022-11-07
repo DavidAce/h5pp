@@ -35,9 +35,9 @@ namespace h5pp::type::compound {
             if constexpr (type::sfinae::has_Scalar_v <DecayType>)                 return getValueType<typename DecayType::Scalar>();
             if constexpr (type::sfinae::has_value_type_v <DecayType>)             return getValueType<typename DataType::value_type>();
         }
-        /* clang-format on */
         else
             static_assert(sfinae::invalid_type_v<DecayType> and "This Complex/ScalarN type is not supported");
+        /* clang-format on */
     }
 
     template<typename T>

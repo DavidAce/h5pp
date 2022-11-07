@@ -84,9 +84,8 @@ namespace h5pp {
             // decreasing order.
             static_assert(std::is_integral_v<idxType>);
             idxlistpair<N> pairlistOut;
-            for(size_t i = 0; i < N; i++) {
+            for(size_t i = 0; i < N; i++)
                 pairlistOut[i] = Eigen::IndexPair<Eigen::Index>{static_cast<Eigen::Index>(list1[i]), static_cast<Eigen::Index>(list2[i])};
-            }
             return pairlistOut;
         }
 
@@ -103,10 +102,10 @@ namespace h5pp {
             // When doing contractions, some indices may be larger than others. For performance, you want to
             // contract the largest indices first. This will return a sorted index list in decreasing order.
             Eigen::array<idx_dim_pair, N> idx_dim_pair_list;
-            for(size_t i = 0; i < N; i++) { idx_dim_pair_list[i] = {idx_ctrct_A[i], idx_ctrct_B[i], dimensions[idx_ctrct_B[i]]}; }
+            for(size_t i = 0; i < N; i++) idx_dim_pair_list[i] = {idx_ctrct_A[i], idx_ctrct_B[i], dimensions[idx_ctrct_B[i]]};
             std::sort(idx_dim_pair_list.begin(), idx_dim_pair_list.end(), [](const auto &i, const auto &j) { return i.dimB > j.dimB; });
             idxlistpair<N> pairlistOut;
-            for(size_t i = 0; i < N; i++) { pairlistOut[i] = Eigen::IndexPair<long>{idx_dim_pair_list[i].idxA, idx_dim_pair_list[i].idxB}; }
+            for(size_t i = 0; i < N; i++) pairlistOut[i] = Eigen::IndexPair<long>{idx_dim_pair_list[i].idxA, idx_dim_pair_list[i].idxB};
             return pairlistOut;
         }
 
@@ -123,7 +122,7 @@ namespace h5pp {
             if(tensor.dimension(0) != tensor.dimension(1)) throw h5pp::runtime_error("extractDiagonal expects a square tensor");
 
             Eigen::Tensor<Scalar, 1> diagonals(rows);
-            for(auto i = 0; i < rows; i++) { diagonals(i) = tensor(i, i); }
+            for(auto i = 0; i < rows; i++) diagonals(i) = tensor(i, i);
             return diagonals;
         }
 
@@ -229,9 +228,9 @@ namespace h5pp {
         //************************//
         template<typename Derived>
         auto to_RowMajor(const Eigen::TensorBase<Derived, Eigen::ReadOnlyAccessors> &tensor) {
-            if constexpr(Eigen::RowMajor == static_cast<Eigen::StorageOptions>(Derived::Layout))
+            if constexpr(Eigen::RowMajor == static_cast<Eigen::StorageOptions>(Derived::Layout)) {
                 return tensor;
-            else {
+            } else {
                 array<Derived::NumIndices> neworder;
                 std::iota(std::begin(neworder), std::end(neworder), 0);
                 std::reverse(neworder.data(), neworder.data() + neworder.size());
@@ -242,9 +241,9 @@ namespace h5pp {
 
         template<typename Derived>
         auto to_ColMajor(const Eigen::TensorBase<Derived, Eigen::ReadOnlyAccessors> &tensor) {
-            if constexpr(Eigen::ColMajor == static_cast<Eigen::StorageOptions>(Derived::Layout))
+            if constexpr(Eigen::ColMajor == static_cast<Eigen::StorageOptions>(Derived::Layout)) {
                 return tensor;
-            else {
+            } else {
                 array<Derived::NumIndices> neworder;
                 std::iota(std::begin(neworder), std::end(neworder), 0);
                 std::reverse(neworder.data(), neworder.data() + neworder.size());
@@ -255,7 +254,7 @@ namespace h5pp {
 
         template<typename Derived>
         auto to_RowMajor(const Eigen::DenseBase<Derived> &dense) {
-            if constexpr(Derived::IsRowMajor) { return dense; }
+            if constexpr(Derived::IsRowMajor) return dense;
             if constexpr(is_matrixObject<Derived>::value) {
                 return Eigen::Matrix<typename Derived::Scalar, Derived::RowsAtCompileTime, Derived::ColsAtCompileTime, Eigen::RowMajor>(
                     dense);
@@ -268,7 +267,7 @@ namespace h5pp {
 
         template<typename Derived>
         auto to_ColMajor(const Eigen::DenseBase<Derived> &dense) {
-            if constexpr(not Derived::IsRowMajor) { return dense; }
+            if constexpr(not Derived::IsRowMajor) return dense;
             if constexpr(is_matrixObject<Derived>::value) {
                 return Eigen::Matrix<typename Derived::Scalar, Derived::RowsAtCompileTime, Derived::ColsAtCompileTime, Eigen::ColMajor>(
                     dense);
@@ -280,7 +279,7 @@ namespace h5pp {
         }
     }
 
-    namespace type::sfinae{
+    namespace type::sfinae {
 
         template<typename T>
         using is_eigen_matrix = std::is_base_of<Eigen::MatrixBase<std::decay_t<T>>, std::decay_t<T>>;
@@ -337,11 +336,9 @@ namespace h5pp {
             template<typename U>
             static constexpr auto test() {
                 if constexpr(is_eigen_map<U>::value) return test<typename U::PlainObject>();
-                if constexpr(is_eigen_dense<U>::value) return U::RowsAtCompileTime == 1 or U::ColsAtCompileTime == 1;
-                if constexpr(is_eigen_tensor<U>::value and has_NumIndices<U>::value)
-                    return U::NumIndices == 1;
-                else
-                    return false;
+                else if constexpr(is_eigen_dense<U>::value) return U::RowsAtCompileTime == 1 or U::ColsAtCompileTime == 1;
+                else if constexpr(is_eigen_tensor<U>::value and has_NumIndices<U>::value) return U::NumIndices == 1;
+                else return false;
             }
 
             public:
@@ -355,10 +352,8 @@ namespace h5pp {
             template<typename U>
             static constexpr bool test() {
                 if constexpr(is_eigen_base<U>::value) return not U::IsRowMajor;
-                if constexpr(is_eigen_tensor<U>::value)
-                    return Eigen::ColMajor == static_cast<Eigen::StorageOptions>(U::Layout);
-                else
-                    return false;
+                else if constexpr(is_eigen_tensor<U>::value) return Eigen::ColMajor == static_cast<Eigen::StorageOptions>(U::Layout);
+                else return false;
             }
 
             public:
@@ -372,10 +367,8 @@ namespace h5pp {
             template<typename U>
             static constexpr bool test() {
                 if constexpr(is_eigen_base<U>::value) return U::IsRowMajor;
-                if constexpr(is_eigen_tensor<U>::value)
-                    return Eigen::RowMajor == static_cast<Eigen::StorageOptions>(U::Layout);
-                else
-                    return false;
+                if constexpr(is_eigen_tensor<U>::value) return Eigen::RowMajor == static_cast<Eigen::StorageOptions>(U::Layout);
+                else return false;
             }
 
             public:

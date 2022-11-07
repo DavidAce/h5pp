@@ -57,17 +57,17 @@ namespace h5pp {
 }
 #else
 
-// In this case there is no fmt, so we make our own simple formatter
-#include "h5ppTypeSfinae.h"
-#include <algorithm>
-#include <iostream>
-#include <list>
-#include <memory>
-#include <sstream>
-#include <string>
+    // In this case there is no fmt, so we make our own simple formatter
+    #include "h5ppTypeSfinae.h"
+    #include <algorithm>
+    #include <iostream>
+    #include <list>
+    #include <memory>
+    #include <sstream>
+    #include <string>
 
 namespace h5pp {
-    namespace type::sfinae{
+    namespace type::sfinae {
         template<typename T, typename = std::void_t<> >
         struct is_streamable : std::false_type {};
         template<typename T>
@@ -81,11 +81,11 @@ namespace h5pp {
         template<class T, class... Ts>
         std::list<std::string> convert_to_string_list(const T &first, const Ts &...rest) {
             std::list<std::string> result;
-            if constexpr(h5pp::type::sfinae::is_text_v<T>)
+            if constexpr(h5pp::type::sfinae::is_text_v<T>) {
                 result.emplace_back(first);
-            else if constexpr(std::is_arithmetic_v<T>)
+            } else if constexpr(std::is_arithmetic_v<T>) {
                 result.emplace_back(std::to_string(first));
-            else if constexpr(h5pp::type::sfinae::is_streamable_v<T>) {
+            } else if constexpr(h5pp::type::sfinae::is_streamable_v<T>) {
                 std::stringstream sstr;
                 sstr << std::boolalpha << first;
                 result.emplace_back(sstr.str());
@@ -99,9 +99,8 @@ namespace h5pp {
                 sstr << "}";
                 result.emplace_back(sstr.str());
             }
-            if constexpr(sizeof...(rest) > 0) {
+            if constexpr(sizeof...(rest) > 0)
                 for(auto &elem : convert_to_string_list(rest...)) result.push_back(elem);
-            }
             return result;
         }
     }

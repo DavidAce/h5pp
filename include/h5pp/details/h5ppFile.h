@@ -126,17 +126,13 @@ namespace h5pp {
             if(fileAccess == h5pp::FileAccess::READONLY) {
                 h5pp::logger::log->trace("Opening file with READONLY access");
                 hid_t fid = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
-                if(fid < 0)
-                    throw h5pp::runtime_error("Failed to open file with read-only access [{}]", filePath.string());
-                else
-                    return fid;
+                if(fid < 0) throw h5pp::runtime_error("Failed to open file with read-only access [{}]", filePath.string());
+                else return fid;
             } else {
                 h5pp::logger::log->trace("Opening file with READWRITE access");
                 hid_t fid = H5Fopen(filePath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
-                if(fid < 0)
-                    throw h5pp::runtime_error("Failed to open file with read-write access [{}]", filePath.string());
-                else
-                    return fid;
+                if(fid < 0) throw h5pp::runtime_error("Failed to open file with read-write access [{}]", filePath.string());
+                else return fid;
             }
         }
 
@@ -299,7 +295,7 @@ namespace h5pp {
                        const FileAccess     &perm = FileAccess::COLLISION_FAIL /*!< File access permission at the new path */
             ) {
             auto newPath = h5pp::hdf5::moveFile(getFilePath(), targetFilePath, perm, plists);
-            if(fs::exists(newPath)) { filePath = newPath; }
+            if(fs::exists(newPath)) filePath = newPath;
             return newPath;
         }
 
@@ -454,10 +450,8 @@ namespace h5pp {
          */
         [[nodiscard]] int getCompressionLevel(const std::optional<int> compression /*!< Suggested compression level */
         ) const {
-            if(compression)
-                return h5pp::hdf5::getValidCompressionLevel(compression.value());
-            else
-                return currentCompression;
+            if(compression) return h5pp::hdf5::getValidCompressionLevel(compression.value());
+            else return currentCompression;
         }
 
         /*
@@ -566,10 +560,8 @@ namespace h5pp {
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to write on read-only file [{}]", filePath.string());
             // Fill missing metadata in given dset
-            if(dsetInfo.hasLocId())
-                h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), options, plists);
-            else
-                h5pp::scan::readDsetInfo(dsetInfo, openFileHandle(), options, plists);
+            if(dsetInfo.hasLocId()) h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), options, plists);
+            else h5pp::scan::readDsetInfo(dsetInfo, openFileHandle(), options, plists);
             if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             // Resize dataset to fit the given data (or a selection therein)
@@ -582,10 +574,8 @@ namespace h5pp {
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to write on read-only file [{}]", filePath.string());
             // Fill missing metadata in dsetInfo
-            if(dsetInfo.hasLocId())
-                h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), options, plists);
-            else
-                h5pp::scan::readDsetInfo(dsetInfo, openFileHandle(), options, plists);
+            if(dsetInfo.hasLocId()) h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), options, plists);
+            else h5pp::scan::readDsetInfo(dsetInfo, openFileHandle(), options, plists);
             // Fill missing metadata in dataInfo
             h5pp::scan::scanDataInfo(dataInfo, data, options);
             h5pp::hdf5::createDataset(dsetInfo, plists);
@@ -937,10 +927,8 @@ namespace h5pp {
         void createAttribute(AttrInfo &attrInfo, const Options &options = Options()) {
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to create attribute on read-only file [{}]", filePath.string());
-            if(attrInfo.hasLocId())
-                h5pp::scan::inferAttrInfo(attrInfo, attrInfo.getLocId(), options, plists);
-            else
-                h5pp::scan::inferAttrInfo(attrInfo, openFileHandle(), options, plists);
+            if(attrInfo.hasLocId()) h5pp::scan::inferAttrInfo(attrInfo, attrInfo.getLocId(), options, plists);
+            else h5pp::scan::inferAttrInfo(attrInfo, openFileHandle(), options, plists);
 
             h5pp::hdf5::createAttribute(attrInfo);
         }
@@ -949,10 +937,8 @@ namespace h5pp {
         AttrInfo createAttribute(const DataType &data, AttrInfo &attrInfo, const Options &options = Options()) {
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to create attribute on read-only file [{}]", filePath.string());
-            if(attrInfo.hasLocId())
-                h5pp::scan::inferAttrInfo(attrInfo, attrInfo.getLocId(), data, options, plists);
-            else
-                h5pp::scan::inferAttrInfo(attrInfo, openFileHandle(), data, options, plists);
+            if(attrInfo.hasLocId()) h5pp::scan::inferAttrInfo(attrInfo, attrInfo.getLocId(), data, options, plists);
+            else h5pp::scan::inferAttrInfo(attrInfo, openFileHandle(), data, options, plists);
 
             h5pp::hdf5::createAttribute(attrInfo);
             return attrInfo;
@@ -980,10 +966,8 @@ namespace h5pp {
         void writeAttribute(const DataType &data, DataInfo &dataInfo, AttrInfo &attrInfo, const Options &options = Options()) {
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to write on read-only file [{}]", filePath.string());
-            if(attrInfo.hasLocId())
-                h5pp::scan::inferAttrInfo(attrInfo, attrInfo.getLocId(), data, options, plists);
-            else
-                h5pp::scan::inferAttrInfo(attrInfo, openFileHandle(), data, options, plists);
+            if(attrInfo.hasLocId()) h5pp::scan::inferAttrInfo(attrInfo, attrInfo.getLocId(), data, options, plists);
+            else h5pp::scan::inferAttrInfo(attrInfo, openFileHandle(), data, options, plists);
             h5pp::scan::scanDataInfo(dataInfo, data, options);
             h5pp::hdf5::writeAttribute(data, dataInfo, attrInfo);
         }
@@ -1016,19 +1000,21 @@ namespace h5pp {
         template<typename DataType>
         void readAttribute(DataType &data, const h5pp::AttrInfo &attrInfo, const Options &options = Options()) const {
             static_assert(not std::is_const_v<DataType>);
-            if(attrInfo.linkExists and not attrInfo.linkExists.value())
+            if(attrInfo.linkExists and not attrInfo.linkExists.value()) {
                 throw h5pp::runtime_error("Could not read attribute [{}] in link [{}]: "
                                           "Link does not exist. "
                                           "NOTE: h5pp v1.10 and above requires the 'linkPath' argument before 'attrName'.",
                                           attrInfo.attrName.value(),
                                           attrInfo.linkPath.value());
+            }
 
-            if(attrInfo.attrExists and not attrInfo.attrExists.value())
+            if(attrInfo.attrExists and not attrInfo.attrExists.value()) {
                 throw h5pp::runtime_error("Could not read attribute [{}] in link [{}]: "
                                           "Attribute does not exist. "
                                           "NOTE: h5pp v1.10 and above requires the 'linkPath' argument before 'attrName'.",
                                           attrInfo.attrName.value(),
                                           attrInfo.linkPath.value());
+            }
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             h5pp::hdf5::resizeData(data, dataInfo, attrInfo);
             h5pp::hdf5::readAttribute(data, dataInfo, attrInfo, plists);
@@ -1102,10 +1088,8 @@ namespace h5pp {
         void createTable(TableInfo &info, const Options &options = Options()) {
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to write on read-only file [{}]", filePath.string());
-            if(info.hasLocId())
-                h5pp::scan::inferTableInfo(info, info.getLocId(), options, plists);
-            else
-                h5pp::scan::inferTableInfo(info, openFileHandle(), options, plists);
+            if(info.hasLocId()) h5pp::scan::inferTableInfo(info, info.getLocId(), options, plists);
+            else h5pp::scan::inferTableInfo(info, openFileHandle(), options, plists);
             h5pp::hdf5::createTable(info, plists);
         }
 
@@ -1358,12 +1342,9 @@ namespace h5pp {
                             const NamesOrIndices  &fields,
                             std::optional<hsize_t> offset = std::nullopt,
                             std::optional<hsize_t> extent = std::nullopt) const {
-            if(fields.has_indices())
-                h5pp::hdf5::readTableField(data, info, fields.get_indices(), offset, extent, plists);
-            else if(fields.has_names())
-                h5pp::hdf5::readTableField(data, info, fields.get_names(), offset, extent, plists);
-            else
-                throw h5pp::runtime_error("No field names or indices have been specified");
+            if(fields.has_indices()) h5pp::hdf5::readTableField(data, info, fields.get_indices(), offset, extent, plists);
+            else if(fields.has_names()) h5pp::hdf5::readTableField(data, info, fields.get_names(), offset, extent, plists);
+            else throw h5pp::runtime_error("No field names or indices have been specified");
         }
 
         template<typename DataType>
@@ -1385,10 +1366,8 @@ namespace h5pp {
                                               std::optional<hsize_t> offset = std::nullopt,
                                               std::optional<hsize_t> extent = std::nullopt) const {
             if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
-                if(fieldExists(tablePath, fields))
-                    return readTableField<typename DataType::value_type>(tablePath, fields, offset, extent);
-                else
-                    return std::nullopt;
+                if(fieldExists(tablePath, fields)) return readTableField<typename DataType::value_type>(tablePath, fields, offset, extent);
+                else return std::nullopt;
             }
             DataType data;
             auto     info = readTableField(data, tablePath, fields, offset, extent);
@@ -1411,8 +1390,9 @@ namespace h5pp {
             } else if(fields.has_names()) {
                 std::tie(offset, extent) = util::parseTableSelection(data, tableSelection, fields.get_names(), info);
                 readTableField(data, info, fields.get_names(), offset, extent);
-            } else
+            } else {
                 throw h5pp::runtime_error("No field names or indices have been specified");
+            }
         }
         template<typename DataType>
         void readTableField(DataType &data, std::string_view tablePath, const NamesOrIndices &fields) const {
@@ -1428,10 +1408,8 @@ namespace h5pp {
             static_assert(not std::is_const_v<DataType>);
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
             if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
-                if(fieldExists(tablePath, fields))
-                    return readTableField<typename DataType::value_type>(tablePath, fields, tableSelection);
-                else
-                    return std::nullopt;
+                if(fieldExists(tablePath, fields)) return readTableField<typename DataType::value_type>(tablePath, fields, tableSelection);
+                else return std::nullopt;
             }
 
             DataType data;
@@ -1515,9 +1493,10 @@ namespace h5pp {
 #if __cplusplus > 201703L
             if(fs::path(targetFilePath).is_relative()) {
                 auto prox = fs::proximate(targetFilePath, filePath);
-                if(prox != targetFilePath)
+                if(prox != targetFilePath) {
                     h5pp::logger::log->debug("External link [{}] is not relative to the current file [{}]."
                                              "This can cause a dangling soft link");
+                }
             }
 #endif
 
@@ -1567,10 +1546,8 @@ namespace h5pp {
             return h5pp::hdf5::checkIfAttrExists(link, attrName);
         }
         [[nodiscard]] bool fieldExists(std::string_view tablePath, const NamesOrIndices &fields) const {
-            if(fields.has_indices())
-                return hdf5::checkIfTableFieldsExists(openFileHandle(), tablePath, fields.get_indices(), plists);
-            else if(fields.has_names())
-                return hdf5::checkIfTableFieldsExists(openFileHandle(), tablePath, fields.get_names(), plists);
+            if(fields.has_indices()) return hdf5::checkIfTableFieldsExists(openFileHandle(), tablePath, fields.get_indices(), plists);
+            else if(fields.has_names()) return hdf5::checkIfTableFieldsExists(openFileHandle(), tablePath, fields.get_names(), plists);
             return false;
         }
 
@@ -1655,34 +1632,36 @@ namespace h5pp {
 
         template<typename InfoType>
         [[nodiscard]] InfoType getInfo(std::string_view linkPath) const {
-            if constexpr(std::is_same_v<InfoType, DsetInfo>)
+            if constexpr(std::is_same_v<InfoType, DsetInfo>) {
                 return getDatasetInfo(linkPath);
-            else if constexpr(std::is_same_v<InfoType, TableInfo>)
+            } else if constexpr(std::is_same_v<InfoType, TableInfo>) {
                 return getTableInfo(linkPath);
-            else if constexpr(std::is_same_v<InfoType, TableFieldInfo>)
+            } else if constexpr(std::is_same_v<InfoType, TableFieldInfo>) {
                 return getTableFieldInfo(linkPath);
-            else if constexpr(std::is_same_v<InfoType, TypeInfo>)
+            } else if constexpr(std::is_same_v<InfoType, TypeInfo>) {
                 return getTypeInfoDataset(linkPath);
-            else if constexpr(std::is_same_v<InfoType, LinkInfo>)
+            } else if constexpr(std::is_same_v<InfoType, LinkInfo>) {
                 return getLinkInfo(linkPath);
-            else
+            } else {
                 static_assert(type::sfinae::invalid_type_v<InfoType>,
                               "Template function 'h5pp::File::getInfo<InfoType>(std::string_view linkPath)' "
                               "requires template type 'InfoType' to be one of "
                               "[h5pp::DsetInfo], [h5pp::TableInfo], [h5pp::TableFieldInfo], [h5pp::TypeInfo] or [h5pp::LinkInfo]");
+            }
         }
 
         template<typename InfoType>
         [[nodiscard]] InfoType getInfo(std::string_view linkPath, std::string_view attrName) const {
-            if constexpr(std::is_same_v<InfoType, AttrInfo>)
+            if constexpr(std::is_same_v<InfoType, AttrInfo>) {
                 return getAttributeInfo(linkPath, attrName);
-            else if constexpr(std::is_same_v<InfoType, TypeInfo>)
+            } else if constexpr(std::is_same_v<InfoType, TypeInfo>) {
                 return getTypeInfoAttribute(linkPath, attrName);
-            else
+            } else {
                 static_assert(type::sfinae::invalid_type_v<InfoType>,
                               "Template function 'h5pp::File::getInfo<InfoType>(std::string_view linkPath, std::string_view attrName)' "
                               "requires template type 'InfoType' to be either "
                               "[h5pp::AttrInfo] or [h5pp::TypeInfo]");
+            }
         }
 
         [[nodiscard]] bool fileIsValid() const { return h5pp::hdf5::fileIsValid(filePath); }

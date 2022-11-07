@@ -38,9 +38,10 @@ namespace h5pp {
 #if H5_VERSION_GE(1, 10, 0)
                 htri_t is_regular = H5Sis_regular_hyperslab(space);
                 if(is_regular < 0) throw h5pp::runtime_error("Failed to query hyperslab type in space");
-                if(not is_regular)
+                if(not is_regular) {
                     throw h5pp::runtime_error("The space has irregular (non-rectangular) hyperslab selection.\n"
                                               "This is not yet supported by h5pp");
+                }
 #endif
                 offset = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
                 extent = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
@@ -55,12 +56,13 @@ namespace h5pp {
                 offset = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
                 extent = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
                 H5Sget_simple_extent_dims(space, extent->data(), nullptr);
-            } else if(select_type.value() == H5S_SEL_NONE)
+            } else if(select_type.value() == H5S_SEL_NONE) {
                 return;
-            else if(select_type.value() == H5S_SEL_ERROR)
+            } else if(select_type.value() == H5S_SEL_ERROR) {
                 throw h5pp::runtime_error("Invalid hyperslab selection");
-            else
+            } else {
                 throw h5pp::runtime_error("Unsupported selection type. Choose space selection type NONE, ALL or HYPERSLABS");
+            }
         }
         [[nodiscard]] bool empty() const { return not offset and not extent and not stride and not blocks; }
 

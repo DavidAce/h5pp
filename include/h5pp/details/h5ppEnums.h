@@ -91,17 +91,15 @@ namespace h5pp {
     template<typename LogLevelType, typename T = typename std::underlying_type<LogLevel>::type>
     constexpr T Level2Num(LogLevelType l) noexcept {
         static_assert(std::is_same_v<T, LogLevel> or std::is_integral_v<T>);
-        if constexpr(std::is_same_v<T, LogLevel>)
-            return static_cast<T>(l);
-        else { return std::min(static_cast<T>(l), static_cast<T>(6)); }
+        if constexpr(std::is_same_v<T, LogLevel>) return static_cast<T>(l);
+        else return std::min(static_cast<T>(l), static_cast<T>(6));
     }
 
     template<typename T>
     constexpr LogLevel Num2Level(T l) {
         static_assert(std::is_same_v<T, LogLevel> or std::is_integral_v<T>);
-        if constexpr(std::is_same_v<T, LogLevel>)
-            return l;
-        else { return static_cast<LogLevel>(std::min(l, static_cast<T>(6))); }
+        if constexpr(std::is_same_v<T, LogLevel>) return l;
+        else return static_cast<LogLevel>(std::min(l, static_cast<T>(6)));
     }
 
     template<typename T>

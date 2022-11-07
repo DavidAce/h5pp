@@ -39,20 +39,18 @@ namespace h5pp {
         }
         template<typename UnknownType>
         DimsType(const UnknownType &dims_) {
-            if constexpr(std::is_integral_v<UnknownType>)
+            if constexpr(std::is_integral_v<UnknownType>) {
                 dims = std::vector<hsize_t>{static_cast<size_t>(dims_)};
-            else if constexpr(h5pp::type::sfinae::is_iterable_v<UnknownType>)
+            } else if constexpr(h5pp::type::sfinae::is_iterable_v<UnknownType>) {
                 dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
-            else if constexpr(std::is_same_v<UnknownType, OptDimsType>)
-                if(not dims_)
-                    throw h5pp::runtime_error("Cannot initialize DimsType with nullopt");
-                else
-                    dims = dims_.value();
-            else if constexpr(std::is_assignable_v<UnknownType, DimsType>)
+            } else if constexpr(std::is_same_v<UnknownType, OptDimsType>) {
+                if(not dims_) throw h5pp::runtime_error("Cannot initialize DimsType with nullopt");
+                else dims = dims_.value();
+            } else if constexpr(std::is_assignable_v<UnknownType, DimsType>) {
                 dims = dims_;
-            else if constexpr(std::is_array_v<UnknownType> and std::is_integral_v<std::remove_all_extents_t<UnknownType>>)
+            } else if constexpr(std::is_array_v<UnknownType> and std::is_integral_v<std::remove_all_extents_t<UnknownType>>) {
                 dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
-            else {
+            } else {
                 static_assert(h5pp::type::sfinae::invalid_type_v<UnknownType>, "Could not identify dimension type");
                 throw h5pp::runtime_error("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>());
             }
@@ -85,15 +83,15 @@ namespace h5pp {
         OptDimsType(std::optional<std::vector<hsize_t>> otherDims) : dims(std::move(otherDims)) {}
         template<typename UnknownType>
         OptDimsType(const UnknownType &dims_) {
-            if constexpr(std::is_integral_v<UnknownType>)
+            if constexpr(std::is_integral_v<UnknownType>) {
                 dims = std::vector<hsize_t>{static_cast<size_t>(dims_)};
-            else if constexpr(h5pp::type::sfinae::is_iterable_v<UnknownType>)
+            } else if constexpr(h5pp::type::sfinae::is_iterable_v<UnknownType>) {
                 dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
-            else if constexpr(std::is_assignable_v<UnknownType, OptDimsType> or std::is_assignable_v<UnknownType, DimsType>)
+            } else if constexpr(std::is_assignable_v<UnknownType, OptDimsType> or std::is_assignable_v<UnknownType, DimsType>) {
                 dims = dims_;
-            else if constexpr(std::is_array_v<UnknownType> and std::is_integral_v<std::remove_all_extents_t<UnknownType>>)
+            } else if constexpr(std::is_array_v<UnknownType> and std::is_integral_v<std::remove_all_extents_t<UnknownType>>) {
                 dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
-            else {
+            } else {
                 static_assert(h5pp::type::sfinae::invalid_type_v<UnknownType>, "Could not identify dimension type");
                 throw h5pp::runtime_error("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>());
             }

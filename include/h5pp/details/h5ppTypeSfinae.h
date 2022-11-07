@@ -185,10 +185,8 @@ namespace h5pp::type::sfinae {
         private:
         template<typename U>
         static constexpr bool test() {
-            if constexpr(is_iterable_v<U> and has_value_type_v<U>)
-                return std::is_integral_v<typename T::value_type>;
-            else
-                return false;
+            if constexpr(is_iterable_v<U> and has_value_type_v<U>) return std::is_integral_v<typename T::value_type>;
+            else return false;
         }
 
         public:
@@ -282,10 +280,8 @@ namespace h5pp::type::sfinae {
             if constexpr(std::is_same_v<DecayType, const char[]>) return true;
             if constexpr(std::is_same_v<DecayType, char *>) return true;
             if constexpr(std::is_same_v<DecayType, char[]>) return true;
-            if constexpr(std::is_same_v<DecayType, char>)
-                return true;
-            else
-                return false;
+            if constexpr(std::is_same_v<DecayType, char>) return true;
+            else return false;
         }
 
         public:
@@ -408,22 +404,17 @@ namespace h5pp::type::sfinae {
 
     template<typename T1, typename T2>
     constexpr bool is_Scalar3_of_type() {
-        if constexpr(is_Scalar3_v<T1>)
-            return std::is_same<decltype(T1::x), T2>::value;
-        else
-            return false;
+        if constexpr(is_Scalar3_v<T1>) return std::is_same<decltype(T1::x), T2>::value;
+        else return false;
     }
 
     template<typename T>
     struct has_Scalar2 {
         private:
         static constexpr bool test() {
-            if constexpr(h5pp::type::sfinae::has_value_type_v<T>)
-                return h5pp::type::sfinae::is_Scalar2_v<typename T::value_type>;
-            else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>)
-                return h5pp::type::sfinae::is_Scalar2_v<typename T::Scalar>;
-            else
-                return false;
+            if constexpr(h5pp::type::sfinae::has_value_type_v<T>) return h5pp::type::sfinae::is_Scalar2_v<typename T::value_type>;
+            else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>) return h5pp::type::sfinae::is_Scalar2_v<typename T::Scalar>;
+            else return false;
         }
 
         public:
@@ -437,12 +428,9 @@ namespace h5pp::type::sfinae {
     struct has_Scalar3 {
         private:
         static constexpr bool test() {
-            if constexpr(h5pp::type::sfinae::has_value_type_v<T>)
-                return h5pp::type::sfinae::is_Scalar3_v<typename T::value_type>;
-            else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>)
-                return h5pp::type::sfinae::is_Scalar3_v<typename T::Scalar>;
-            else
-                return false;
+            if constexpr(h5pp::type::sfinae::has_value_type_v<T>) return h5pp::type::sfinae::is_Scalar3_v<typename T::value_type>;
+            else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>) return h5pp::type::sfinae::is_Scalar3_v<typename T::Scalar>;
+            else return false;
         }
 
         public:
@@ -478,11 +466,8 @@ namespace h5pp::type::sfinae {
 
     template<typename T>
     constexpr auto value_type_name() {
-        if constexpr(has_value_type_v<T>)
-            return type_name<typename T::value_type>();
-        else if constexpr(has_Scalar_v<T>)
-            return type_name<typename T::Scalar>();
-        else
-            return type_name<T>();
+        if constexpr(has_value_type_v<T>) return type_name<typename T::value_type>();
+        else if constexpr(has_Scalar_v<T>) return type_name<typename T::Scalar>();
+        else return type_name<T>();
     }
 }

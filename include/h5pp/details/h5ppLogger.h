@@ -18,10 +18,8 @@ namespace h5pp::logger {
     }
 
     inline h5pp::LogLevel getLogLevel() {
-        if(log != nullptr)
-            return Num2Level(static_cast<int>(log->level()));
-        else
-            return h5pp::LogLevel::info;
+        if(log != nullptr) return Num2Level(static_cast<int>(log->level()));
+        else return h5pp::LogLevel::info;
     }
 
     template<typename LogLevelType>
@@ -29,8 +27,7 @@ namespace h5pp::logger {
         static_assert(type::sfinae::is_any_v<LogLevelType, spdlog::level::level_enum, h5pp::LogLevel> or std::is_integral_v<LogLevelType>);
         if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or std::is_integral_v<LogLevelType>)
             return getLogLevel() <= levelZeroToSix;
-        else if constexpr(std::is_same_v<LogLevelType, spdlog::level::level_enum>)
-            return getLogLevel() <= static_cast<int>(levelZeroToSix);
+        else if constexpr(std::is_same_v<LogLevelType, spdlog::level::level_enum>) return getLogLevel() <= static_cast<int>(levelZeroToSix);
     }
 
     template<typename LogLevelType>
@@ -44,26 +41,23 @@ namespace h5pp::logger {
                                              std::optional<int>> or
                       std::is_integral_v<LogLevelType>);
 
-        if constexpr(std::is_same_v<LogLevelType, spdlog::level::level_enum>) log->set_level(levelZeroToSix);
-        if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or std::is_integral_v<LogLevelType>)
+        if constexpr(std::is_same_v<LogLevelType, spdlog::level::level_enum>) {
+            log->set_level(levelZeroToSix);
+        } else if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or std::is_integral_v<LogLevelType>) {
             log->set_level(static_cast<spdlog::level::level_enum>(Level2Num(levelZeroToSix)));
-        if constexpr(type::sfinae::is_any_v<LogLevelType,
-                                            std::optional<spdlog::level::level_enum>,
-                                            std::optional<h5pp::LogLevel>,
-                                            std::optional<size_t>,
-                                            std::optional<int>>) {
-            if(levelZeroToSix)
-                return setLogLevel(levelZeroToSix.value());
-            else
-                return;
+        } else if constexpr(type::sfinae::is_any_v<LogLevelType,
+                                                   std::optional<spdlog::level::level_enum>,
+                                                   std::optional<h5pp::LogLevel>,
+                                                   std::optional<size_t>,
+                                                   std::optional<int>>) {
+            if(levelZeroToSix) return setLogLevel(levelZeroToSix.value());
+            else return;
         }
     }
     template<typename LogLevelType>
     inline void setLogger(const std::string &name, LogLevelType levelZeroToSix = LogLevel::info, bool timestamp = false) {
-        if(spdlog::get(name) == nullptr)
-            log = spdlog::stdout_color_mt(name, spdlog::color_mode::automatic);
-        else
-            log = spdlog::get(name);
+        if(spdlog::get(name) == nullptr) log = spdlog::stdout_color_mt(name, spdlog::color_mode::automatic);
+        else log = spdlog::get(name);
         log->set_pattern("[%n]%^[%=8l]%$ %v"); // Disabled timestamp is the default
         setLogLevel(levelZeroToSix);
         if(timestamp) enableTimestamp();
@@ -110,10 +104,8 @@ namespace h5pp::logger {
     inline void     enableTimestamp() {}
     inline void     disableTimestamp() {}
     inline LogLevel getLogLevel() {
-        if(log != nullptr)
-            return log->level();
-        else
-            return LogLevel::info;
+        if(log != nullptr) return log->level();
+        else return LogLevel::info;
     }
 
     template<typename LogLevelType>
@@ -128,13 +120,12 @@ namespace h5pp::logger {
                 is_any_v<LogLevelType, h5pp::LogLevel, std::optional<h5pp::LogLevel>, std::optional<size_t>, std::optional<int>> or
             std::is_integral_v<LogLevelType>);
 
-        if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or std::is_integral_v<LogLevelType>)
+        if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or std::is_integral_v<LogLevelType>) {
             if(log != nullptr) log->set_level(Num2Level(levelZeroToSix));
-        if constexpr(type::sfinae::is_any_v<LogLevelType, std::optional<h5pp::LogLevel>, std::optional<size_t>, std::optional<int>>) {
-            if(levelZeroToSix)
-                return setLogLevel(levelZeroToSix.value());
-            else
-                return;
+        } else if constexpr(type::sfinae::
+                                is_any_v<LogLevelType, std::optional<h5pp::LogLevel>, std::optional<size_t>, std::optional<int>>) {
+            if(levelZeroToSix) return setLogLevel(levelZeroToSix.value());
+            else return;
         }
     }
     template<typename LogLevelType>

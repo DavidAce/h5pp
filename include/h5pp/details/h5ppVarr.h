@@ -54,9 +54,9 @@ namespace h5pp::type::vlen {
 
 #if !defined(FMT_FORMAT_H_) || !defined(H5PP_USE_FMT)
         friend auto operator<<(std::ostream &os, const varr_t &v) -> std::ostream & {
-            if(v.empty())
+            if(v.empty()) {
                 os << "[]";
-            else {
+            } else {
                 os << "[";
                 std::copy(v.begin(), v.end(), std::ostream_iterator<T>(os, ", "));
                 os << "\b\b]";
@@ -291,9 +291,8 @@ namespace h5pp::type::sfinae {
     struct has_varr_t {
         private:
         static constexpr bool test() {
-            if constexpr(is_iterable_v<T> and has_value_type_v<T>) {
+            if constexpr(is_iterable_v<T> and has_value_type_v<T>)
                 return is_specialization_v<typename T::value_type, h5pp::varr_t> or has_vlen_type_v<typename T::value_type>;
-            }
             return has_vlen_type_v<T>;
         }
 

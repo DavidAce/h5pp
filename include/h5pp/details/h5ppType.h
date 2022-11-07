@@ -59,15 +59,15 @@ namespace h5pp::type {
                       "Template function [h5pp::hdf5::H5Tequal_recurse<h5t>(const h5t1 & type1, const h5t2 & type2)]\n"
                       "requires type h5t1 and h5t2 to be: [h5pp::hid::h5t] or [hid_t]");
         // If types are compound, check recursively that all members have equal types and names
-        if constexpr(type::sfinae::are_same_v<hid_t, h5t1, h5t2>)
+        if constexpr(type::sfinae::are_same_v<hid_t, h5t1, h5t2>) {
             if(type1 == type2) return true;
-        if constexpr(type::sfinae::are_same_v<hid::h5t, h5t1, h5t2>)
+        } else if constexpr(type::sfinae::are_same_v<hid::h5t, h5t1, h5t2>) {
             if(type1.value() == type2.value()) return true;
+        }
 
         H5T_class_t dataClass1 = H5Tget_class(type1);
         H5T_class_t dataClass2 = H5Tget_class(type2);
         if(dataClass1 != dataClass2) return false;
-
         if(dataClass1 == H5T_STRING) {
             return true;
         } else if(dataClass1 == H5T_COMPOUND and dataClass2 == H5T_COMPOUND) {
@@ -84,9 +84,9 @@ namespace h5pp::type {
             }
             return true;
         } else {
-            if constexpr(type::sfinae::is_h5pp_type_id<h5t1> and type::sfinae::is_h5pp_type_id<h5t2>)
+            if constexpr(type::sfinae::is_h5pp_type_id<h5t1> and type::sfinae::is_h5pp_type_id<h5t2>) {
                 return type1 == type2;
-            else {
+            } else {
                 htri_t res = H5Tequal(type1, type2);
                 if(res < 0) throw h5pp::runtime_error("Failed to check type equality");
 

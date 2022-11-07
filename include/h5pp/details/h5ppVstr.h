@@ -110,10 +110,8 @@ namespace h5pp::type::vlen {
     inline char *vstr_t::c_str() { return ptr; }
 
     inline size_t vstr_t::size() const {
-        if(ptr != nullptr)
-            return strlen(ptr);
-        else
-            return 0;
+        if(ptr != nullptr) return strlen(ptr);
+        else return 0;
     }
 
     inline const char *vstr_t::begin() const { return ptr; }
@@ -175,9 +173,8 @@ namespace h5pp::type::sfinae {
     struct has_vstr_t {
         private:
         static constexpr bool test() {
-            if constexpr(is_iterable_v<T> and has_value_type_v<T>) {
+            if constexpr(is_iterable_v<T> and has_value_type_v<T>)
                 return is_vstr_v<typename T::value_type> or has_vlen_type_v<typename T::value_type>;
-            }
             return has_vlen_type_v<T>;
         }
 
