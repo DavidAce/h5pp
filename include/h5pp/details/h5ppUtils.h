@@ -503,20 +503,20 @@ namespace h5pp::util {
             }
         }
 
-        auto rank = dims.size();
-        auto volumeChunkBytes =
-            static_cast<size_t>(std::pow(*std::max_element(dims_effective.begin(), dims_effective.end()), rank)) * bytesPerElem;
-        auto targetChunkBytes = std::max<size_t>(volumeChunkBytes, h5pp::constants::minChunkSize);
-        targetChunkBytes      = std::min<size_t>(targetChunkBytes, h5pp::constants::maxChunkSize);
-        targetChunkBytes      = static_cast<size_t>(std::pow(2, std::ceil(std::log2(targetChunkBytes)))); // Next nearest power of two
-        auto linearChunkSize =
-            static_cast<hsize_t>(std::ceil(std::pow<size_t>(targetChunkBytes / bytesPerElem, 1.0 / static_cast<double>(rank))));
-        std::vector<hsize_t> chunkDims(rank, linearChunkSize);
+        auto rank             = dims.size();
+        auto maxDimension     = *std::max_element(dims_effective.begin(), dims_effective.end());
+        auto volumeChunkBytes = std::pow(maxDimension, rank) * static_cast<double>(bytesPerElem);
+        auto targetChunkBytes =
+            std::clamp<double>(volumeChunkBytes,
+                               std::max<double>(static_cast<const double>(bytesPerElem), h5pp::constants::minChunkBytes),
+                               std::max<double>(static_cast<const double>(bytesPerElem), h5pp::constants::maxChunkBytes));
+        targetChunkBytes     = std::pow(2, std::ceil(std::log2(targetChunkBytes))); // Next nearest power of two
+        auto linearChunkSize = std::ceil(std::pow(targetChunkBytes / static_cast<double>(bytesPerElem), 1.0 / static_cast<double>(rank)));
+        auto chunkSize       = std::max<hsize_t>(1, static_cast<hsize_t>(linearChunkSize)); // Make sure the chunk size is positive
+        std::vector<hsize_t> chunkDims(rank, chunkSize);
         // Now effective dims contains either dims or dimsMax (if not H5S_UNLIMITED) at each position.
         for(size_t idx = 0; idx < chunkDims.size(); idx++)
-            if(dimsMax and dimsMax.value()[idx] == H5S_UNLIMITED) chunkDims[idx] = linearChunkSize;
-            else if(dimsMax and dimsMax.value()[idx] != H5S_UNLIMITED) chunkDims[idx] = std::min(dimsMax.value()[idx], linearChunkSize);
-            else chunkDims[idx] = linearChunkSize;
+            if(dimsMax and dimsMax.value()[idx] != H5S_UNLIMITED) chunkDims[idx] = std::min(dimsMax.value()[idx], chunkSize);
         h5pp::logger::log->debug("Estimated reasonable chunk dimensions: {}", chunkDims);
         return chunkDims;
     }
