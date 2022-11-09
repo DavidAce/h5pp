@@ -36,10 +36,10 @@ Go to [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart) to s
 
 ## Introduction
 
-[HDF5](https://www.hdfgroup.org/) is a portable file format for storing large datasets efficiently. With
-official [low-level API's for C and Fortran](https://portal.hdfgroup.org/display/HDF5/Core+Library), wrappers for C++
-and Java and third-party bindings to Python, Julia, Matlab and many others, HDF5 is a great tool for handling data
-in a collaborative setting.
+[HDF5](https://www.hdfgroup.org/) is a portable file format for storing large datasets efficiently. HDF5 has
+official [low-level API's for C and Fortran](https://portal.hdfgroup.org/display/HDF5/Core+Library) with wrappers
+for C++ and Java, and third-party bindings for Python, Julia, Matlab and many other languages. This makes HDF5 a
+great tool for handling data in a collaborative setting.
 
 Although well documented, the low-level C API is vast and using it directly can be challenging. There are many
 high-level wrappers already that help the user experience, but as a matter of opinion, things could be even simpler.
@@ -51,7 +51,7 @@ high-level wrappers already that help the user experience, but as a matter of op
 * Meaningful logs and error messages.
 * Use HDF5 with modern, idiomatic, type-safe C++17.
 * Simple access to HDF5 features like chunking, hyperslabs and compression.
-* Simple installation with modular dependencies and opt-in automation.
+* Simple installation with opt-in automatic installation of dependencies.
 * Simple documentation (work in progress).
 
 ## Features
