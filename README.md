@@ -50,7 +50,7 @@ high-level wrappers already that help the user experience, but as a matter of op
 * No prior knowledge of HDF5 is required.
 * Meaningful logs and error messages.
 * Use HDF5 with modern, idiomatic, type-safe C++17.
-* Simple access to HDF5 features like chunking, hyperslabs and compression.
+* Simple access to HDF5 features like chunking, hyper-slabs and compression.
 * Simple installation with opt-in automatic installation of dependencies.
 * Simple documentation (work in progress).
 
@@ -99,7 +99,7 @@ functions `.writeDataset(...)` and `.readDataset(...)`.
     }
 ```
 
-Find more code examples in the [examples directory](https://github.com/DavidAce/h5pp/tree/master/examples).
+Find more code examples in the [example directory](https://github.com/DavidAce/h5pp/tree/master/examples).
 
 
 ## Get h5pp
@@ -108,7 +108,7 @@ There are currently 3 ways to obtain `h5pp`:
 
 * From [conan-center](https://conan.io/center/h5pp).
 * From [GitHub](https://github.com/DavidAce/h5pp).
-* As a `.deb` package from [latest release](https://github.com/DavidAce/h5pp/releases) (Ubuntu/Debian only).
+* As a `.deb` package from the [latest release](https://github.com/DavidAce/h5pp/releases) (Ubuntu/Debian only).
 
 ## Requirements
 
