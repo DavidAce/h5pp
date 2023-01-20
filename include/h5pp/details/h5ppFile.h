@@ -929,7 +929,6 @@ namespace h5pp {
                 throw h5pp::runtime_error("Attempted to create attribute on read-only file [{}]", filePath.string());
             if(attrInfo.hasLocId()) h5pp::scan::inferAttrInfo(attrInfo, attrInfo.getLocId(), options, plists);
             else h5pp::scan::inferAttrInfo(attrInfo, openFileHandle(), options, plists);
-
             h5pp::hdf5::createAttribute(attrInfo);
         }
 
@@ -1000,7 +999,7 @@ namespace h5pp {
         template<typename DataType>
         void readAttribute(DataType &data, const h5pp::AttrInfo &attrInfo, const Options &options = Options()) const {
             static_assert(not std::is_const_v<DataType>);
-            if(attrInfo.linkExists and not attrInfo.linkExists.value()) {
+            if(attrInfo.linkExists.has_value() and not attrInfo.linkExists.value()) {
                 throw h5pp::runtime_error("Could not read attribute [{}] in link [{}]: "
                                           "Link does not exist. "
                                           "NOTE: h5pp v1.10 and above requires the 'linkPath' argument before 'attrName'.",
@@ -1008,7 +1007,7 @@ namespace h5pp {
                                           attrInfo.linkPath.value());
             }
 
-            if(attrInfo.attrExists and not attrInfo.attrExists.value()) {
+            if(attrInfo.attrExists.has_value() and not attrInfo.attrExists.value()) {
                 throw h5pp::runtime_error("Could not read attribute [{}] in link [{}]: "
                                           "Attribute does not exist. "
                                           "NOTE: h5pp v1.10 and above requires the 'linkPath' argument before 'attrName'.",

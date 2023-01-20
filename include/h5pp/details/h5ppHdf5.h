@@ -1845,6 +1845,12 @@ namespace h5pp::hdf5 {
 
     inline void createAttribute(AttrInfo &attrInfo) {
         // Here we create, or register, the attribute id and set its properties before writing data to it.
+        if(attrInfo.linkExists.has_value() and not attrInfo.linkExists.value()) {
+            throw h5pp::runtime_error("Could not create attribute [{}] in link [{}]: "
+                                      "Link does not exist.",
+                                      attrInfo.attrName.value(),
+                                      attrInfo.linkPath.value());
+        }
         attrInfo.assertCreateReady();
         if(attrInfo.attrExists and attrInfo.attrExists.value()) {
             h5pp::logger::log->trace("No need to create attribute [{}] in link [{}]: exists already",
@@ -2191,25 +2197,21 @@ namespace h5pp::hdf5 {
             if(H5Tis_variable_str(h5Type) > 0) {
                 // When H5T_VARIABLE, H5Dwrite function expects [const char **], which is what we get from vlenBuf.data()
                 dataPtr = reinterpret_cast<const void **>(vlenBuf.data());
-            } else {
-                if(vlenBuf.size() == 1) {
-                    dataPtr = static_cast<const void *>(*vlenBuf.data());
-                } else {
-                    if constexpr(type::sfinae::has_text_v<DataType> and type::sfinae::is_iterable_v<DataType>) {
-                        // We have a fixed-size string array now. We have to copy the strings to a contiguous array.
-                        // vlenBuf already contains the pointer to each string, and bytesPerStr should be the size of each string
-                        // including null terminators
-                        size_t bytesPerStr = H5Tget_size(h5Type); // This is the fixed-size of a string, not a char! Includes null term
-                        tempBuf.resize(bytesPerStr * vlenBuf.size());
-                        for(size_t i = 0; i < vlenBuf.size(); i++) {
-                            auto offset = tempBuf.data() + static_cast<long>(i * bytesPerStr);
-                            // Construct a view of the null-terminated character string, not including the null character.
-                            auto view   = std::string_view(vlenBuf[i]); // view.size() will not include null term here!
-                            std::copy_n(std::begin(view), std::min(view.size(), bytesPerStr - 1), offset); // Do not copy null character
-                        }
-                        dataPtr = static_cast<const void *>(tempBuf.data());
-                    }
+            } else if(vlenBuf.size() == 1) {
+                dataPtr = static_cast<const void *>(*vlenBuf.data());
+            } else if constexpr(type::sfinae::has_text_v<DataType> and type::sfinae::is_iterable_v<DataType>) {
+                // We have a fixed-size string array now. We have to copy the strings to a contiguous array.
+                // vlenBuf already contains the pointer to each string, and bytesPerStr should be the size of each string
+                // including null terminators
+                size_t bytesPerStr = H5Tget_size(h5Type); // This is the fixed-size of a string, not a char! Includes null term
+                tempBuf.resize(bytesPerStr * vlenBuf.size());
+                for(size_t i = 0; i < vlenBuf.size(); i++) {
+                    auto offset = tempBuf.data() + static_cast<long>(i * bytesPerStr);
+                    // Construct a view of the null-terminated character string, not including the null character.
+                    auto view   = std::string_view(vlenBuf[i]); // view.size() will not include null term here!
+                    std::copy_n(std::begin(view), std::min(view.size(), bytesPerStr - 1), offset); // Do not copy null character
                 }
+                dataPtr = static_cast<const void *>(tempBuf.data());
             }
         }
         return dataPtr;
