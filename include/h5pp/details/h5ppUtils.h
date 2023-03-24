@@ -508,8 +508,8 @@ namespace h5pp::util {
         auto volumeChunkBytes = std::pow(maxDimension, rank) * static_cast<double>(bytesPerElem);
         auto targetChunkBytes =
             std::clamp<double>(volumeChunkBytes,
-                               std::max<double>(static_cast<const double>(bytesPerElem), h5pp::constants::minChunkBytes),
-                               std::max<double>(static_cast<const double>(bytesPerElem), h5pp::constants::maxChunkBytes));
+                               std::max<double>(static_cast<double>(bytesPerElem), h5pp::constants::minChunkBytes),
+                               std::max<double>(static_cast<double>(bytesPerElem), h5pp::constants::maxChunkBytes));
         targetChunkBytes     = std::pow(2, std::ceil(std::log2(targetChunkBytes))); // Next nearest power of two
         auto linearChunkSize = std::ceil(std::pow(targetChunkBytes / static_cast<double>(bytesPerElem), 1.0 / static_cast<double>(rank)));
         auto chunkSize       = std::max<hsize_t>(1, static_cast<hsize_t>(linearChunkSize)); // Make sure the chunk size is positive
