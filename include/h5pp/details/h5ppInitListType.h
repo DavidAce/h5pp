@@ -21,7 +21,7 @@ namespace h5pp {
                 else if constexpr(std::is_constructible_v<std::vector<size_t>, U>) data = std::vector<size_t>(num);
                 else data = std::vector<size_t>(std::begin(num), std::end(num));
             } else if constexpr(std::is_integral_v<U>) {
-                data = {static_cast<size_t>(num)};
+                data = {type::safe_cast<size_t>(num)};
             } else {
                 static_assert(h5pp::type::sfinae::invalid_type_v<U>, "Unrecognized index type");
                 throw h5pp::runtime_error("Could not identify index type: {}", h5pp::type::sfinae::type_name<U>());

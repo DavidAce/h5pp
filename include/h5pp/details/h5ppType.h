@@ -47,8 +47,8 @@ namespace h5pp::type {
         if(bufSize < 0) throw h5pp::runtime_error("H5Iget_name failed");
 
         if(bufSize > 0) {
-            buf.resize(static_cast<size_t>(bufSize) + 1);                      // We allocate space for the null terminator with +1
-            H5Iget_name(h5type, buf.data(), static_cast<size_t>(bufSize + 1)); // Read name including \0 with +1
+            buf.resize(type::safe_cast<size_t>(bufSize) + 1);                      // We allocate space for the null terminator with +1
+            H5Iget_name(h5type, buf.data(), type::safe_cast<size_t>(bufSize + 1)); // Read name including \0 with +1
         }
         return buf.c_str(); // Use .c_str() to convert to a "standard" std::string, i.e. one where .size() does not include \0
     }
@@ -77,7 +77,7 @@ namespace h5pp::type {
             auto nMembers1 = H5Tget_nmembers(type1);
             auto nMembers2 = H5Tget_nmembers(type2);
             if(nMembers1 != nMembers2) return false;
-            for(auto idx = 0; idx < nMembers1; idx++) {
+            for(int idx = 0; idx < nMembers1; idx++) {
                 hid::h5t t1 = H5Tget_member_type(type1, static_cast<unsigned int>(idx));
                 hid::h5t t2 = H5Tget_member_type(type2, static_cast<unsigned int>(idx));
                 if(not H5Tequal_recurse(t1, t2)) return false;
@@ -265,7 +265,7 @@ namespace h5pp::type {
             auto h5type = H5Tget_native_type(type, H5T_direction_t::H5T_DIR_DEFAULT); // Unrolls nested compound types
 
             auto nmembers = H5Tget_nmembers(h5type);
-            auto nmembers_ul = static_cast<unsigned int>(nmembers);
+            auto nmembers_ul = type::safe_cast<unsigned int>(nmembers);
 
             std::vector<std::string> cpptypenames(nmembers_ul);
             for(unsigned int idx = 0; idx < nmembers_ul; idx++ ){

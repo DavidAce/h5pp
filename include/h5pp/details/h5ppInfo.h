@@ -227,7 +227,7 @@ namespace h5pp {
         void setFromSpace() {
             if(not h5Space) return;
             dataRank = H5Sget_simple_extent_ndims(h5Space.value());
-            dataDims = std::vector<hsize_t>(static_cast<size_t>(dataRank.value()), 0);
+            dataDims = std::vector<hsize_t>(type::safe_cast<size_t>(dataRank.value()), 0);
             H5Sget_simple_extent_dims(h5Space.value(), dataDims->data(), nullptr);
         }
 
@@ -443,7 +443,7 @@ namespace h5pp {
                     if(dim == H5S_UNLIMITED)
                         dsetDimsMaxPretty.emplace_back(-1);
                     else
-                        dsetDimsMaxPretty.emplace_back(static_cast<long>(dim));
+                        dsetDimsMaxPretty.emplace_back(type::safe_cast<long>(dim));
                 }
                 msg.append(h5pp::format(" | max dims {}", dsetDimsMaxPretty));
             }
@@ -645,7 +645,7 @@ namespace h5pp {
             /* clang-format off */
             if(numFields){
                 msg.append(h5pp::format("Fields ({}):\n", numFields.value()));
-                for(size_t m = 0; m < static_cast<size_t>(numFields.value()); m++){
+                for(size_t m = 0; m < type::safe_cast<size_t>(numFields.value()); m++){
                     if(fieldNames and fieldNames->size() > m) msg.append(h5pp::format("{:<32} ", fieldNames->operator[](m)));
                     if(fieldTypes and fieldTypes->size() > m) msg.append(h5pp::format("| {:<16} ", type::getH5TypeName(fieldTypes->operator[](m))));
                     if(fieldSizes and fieldSizes->size() > m) msg.append(h5pp::format("| extent {:<4} bytes ", fieldSizes->operator[](m)));
@@ -855,7 +855,7 @@ namespace h5pp {
             /* clang-format off */
             if(numMembers){
                 msg.append(h5pp::format("Fields ({}):\n", numMembers.value()));
-                for(size_t m = 0; m < static_cast<size_t>(numMembers.value()); m++){
+                for(size_t m = 0; m < type::safe_cast<size_t>(numMembers.value()); m++){
                     if(memberIndex and memberIndex->size() > m) msg.append(h5pp::format("    [{:^3}] ", memberIndex->operator[](m)));
                     if(memberNames and memberNames->size() > m) msg.append(h5pp::format(" {:<32} ", memberNames->operator[](m)));
                     if(memberTypes and memberTypes->size() > m) msg.append(h5pp::format("| {:<16} ", type::getH5TypeName(memberTypes->operator[](m))));

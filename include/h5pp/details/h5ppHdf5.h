@@ -8,6 +8,7 @@
 #include "h5ppInfo.h"
 #include "h5ppLogger.h"
 #include "h5ppPropertyLists.h"
+#include "h5ppTypeCast.h"
 #include "h5ppTypeSfinae.h"
 #include "h5ppUtils.h"
 #include <cstddef>
@@ -83,8 +84,8 @@ namespace h5pp::hdf5 {
         std::string buf;
         ssize_t     bufSize = H5Iget_name(object, nullptr, 0); // Size in bytes of the object name (NOT including \0)
         if(bufSize > 0) {
-            buf.resize(static_cast<size_t>(bufSize) + 1);                      // We allocate space for the null terminator with +1
-            H5Iget_name(object, buf.data(), static_cast<size_t>(bufSize + 1)); // Read name including \0 with +1
+            buf.resize(type::safe_cast<size_t>(bufSize) + 1);                      // We allocate space for the null terminator with +1
+            H5Iget_name(object, buf.data(), type::safe_cast<size_t>(bufSize + 1)); // Read name including \0 with +1
         }
         return buf.c_str(); // Use .c_str() to convert to a "standard" std::string, i.e. one where .size() does not include \0
     }
@@ -101,7 +102,7 @@ namespace h5pp::hdf5 {
         return getRank(space);
     }
 
-    [[nodiscard]] inline hsize_t getSize(const hid::h5s &space) { return static_cast<hsize_t>(H5Sget_simple_extent_npoints(space)); }
+    [[nodiscard]] inline hsize_t getSize(const hid::h5s &space) { return type::safe_cast<hsize_t>(H5Sget_simple_extent_npoints(space)); }
 
     [[nodiscard]] inline hsize_t getSize(const hid::h5d &dataset) {
         hid::h5s space = H5Dget_space(dataset);
@@ -116,13 +117,13 @@ namespace h5pp::hdf5 {
     [[nodiscard]] inline hsize_t getSizeSelected(const hid::h5s &space) {
         hssize_t size = H5Sget_select_npoints(space);
         if(size < 0) h5pp::runtime_error("getSizeSelected: H5Sget_select_npoints failed");
-        return static_cast<hsize_t>(size);
+        return type::safe_cast<hsize_t>(size);
     }
 
     [[nodiscard]] inline std::vector<hsize_t> getDimensions(const hid::h5s &space) {
         int ndims = H5Sget_simple_extent_ndims(space);
         if(ndims < 0) throw h5pp::runtime_error("Failed to get dimensions");
-        std::vector<hsize_t> dims(static_cast<size_t>(ndims));
+        std::vector<hsize_t> dims(type::safe_cast<size_t>(ndims));
         H5Sget_simple_extent_dims(space, dims.data(), nullptr);
         return dims;
     }
@@ -152,7 +153,7 @@ namespace h5pp::hdf5 {
         auto ndims = H5Pget_chunk(dsetCreatePropertyList, 0, nullptr);
         if(ndims < 0) throw h5pp::runtime_error("Failed to get chunk dimensions");
         if(ndims > 0) {
-            std::vector<hsize_t> chunkDims(static_cast<size_t>(ndims));
+            std::vector<hsize_t> chunkDims(type::safe_cast<size_t>(ndims));
             H5Pget_chunk(dsetCreatePropertyList, ndims, chunkDims.data());
             return chunkDims;
         } else {
@@ -178,7 +179,7 @@ namespace h5pp::hdf5 {
             std::array<unsigned int, 1> cd_values = {0};
             size_t                      cd_nelmts = cd_values.size();
             H5Pget_filter_by_id(dcpl, H5Z_FILTER_DEFLATE, nullptr, &cd_nelmts, cd_values.data(), 0, nullptr, nullptr);
-            return static_cast<int>(cd_values[0]);
+            return type::safe_cast<int>(cd_values[0]);
         } else {
             return -1; // No deflate
         }
@@ -189,7 +190,7 @@ namespace h5pp::hdf5 {
         if(H5Sget_simple_extent_type(space) != H5S_SIMPLE) return std::nullopt;
         int rank = H5Sget_simple_extent_ndims(space);
         if(rank < 0) throw h5pp::runtime_error("Failed to get dimensions");
-        std::vector<hsize_t> dimsMax(static_cast<size_t>(rank));
+        std::vector<hsize_t> dimsMax(type::safe_cast<size_t>(rank));
         H5Sget_simple_extent_dims(space, nullptr, dimsMax.data());
         return dimsMax;
     }
@@ -210,7 +211,7 @@ namespace h5pp::hdf5 {
         if(H5Dget_storage_size(dset) <= 0) return 0;
 
         auto                      size = H5Sget_simple_extent_npoints(space);
-        std::vector<const char *> vdata{static_cast<size_t>(size)}; // Allocate for pointers for "size" number of strings
+        std::vector<const char *> vdata{type::safe_cast<size_t>(size)}; // Allocate for pointers for "size" number of strings
         // HDF5 allocates space for each string
         herr_t                    retval = H5Dread(dset, type, H5S_ALL, H5S_ALL, H5P_DEFAULT, vdata.data());
         if(retval < 0) {
@@ -221,7 +222,7 @@ namespace h5pp::hdf5 {
         size_t maxLen = h5pp::constants::maxSizeCompact;
         for(auto elem : vdata) {
             if(elem == nullptr) continue;
-            *vlen += static_cast<hsize_t>(std::min(std::string_view(elem).size(), maxLen) + 1); // Add null-terminator
+            *vlen += type::safe_cast<hsize_t>(std::min(std::string_view(elem).size(), maxLen) + 1); // Add null-terminator
         }
         H5Dvlen_reclaim(type, space, H5P_DEFAULT, vdata.data());
         return 1;
@@ -233,7 +234,7 @@ namespace h5pp::hdf5 {
         if(H5Aget_storage_size(attr) <= 0) return 0;
 
         auto                      size = H5Sget_simple_extent_npoints(space);
-        std::vector<const char *> vdata{static_cast<size_t>(size)}; // Allocate pointers for "size" number of strings
+        std::vector<const char *> vdata{type::safe_cast<size_t>(size)}; // Allocate pointers for "size" number of strings
         // HDF5 allocates space for each string
         herr_t                    retval = H5Aread(attr, type, vdata.data());
         if(retval < 0) {
@@ -244,7 +245,7 @@ namespace h5pp::hdf5 {
         size_t maxLen = h5pp::constants::maxSizeCompact;
         for(auto elem : vdata) {
             if(elem == nullptr) continue;
-            *vlen += static_cast<hsize_t>(std::min(std::string_view(elem).size(), maxLen) + 1); // Add null-terminator
+            *vlen += type::safe_cast<hsize_t>(std::min(std::string_view(elem).size(), maxLen) + 1); // Add null-terminator
         }
         H5Dvlen_reclaim(type, space, H5P_DEFAULT, vdata.data());
         return 1;
@@ -293,7 +294,7 @@ namespace h5pp::hdf5 {
         if(info.h5Class != H5T_class_t::H5T_COMPOUND) return info; // Can't do further analysis on its members
 
         info.numMembers   = H5Tget_nmembers(h5Type);
-        auto nmemb        = static_cast<size_t>(info.numMembers.value());
+        auto nmemb        = type::safe_cast<size_t>(info.numMembers.value());
         info.memberNames  = std::vector<std::string>(nmemb);
         info.memberTypes  = std::vector<hid::h5t>(nmemb);
         info.memberSizes  = std::vector<size_t>(nmemb);
@@ -301,12 +302,12 @@ namespace h5pp::hdf5 {
         info.memberOffset = std::vector<size_t>(nmemb);
         if(info.h5Class.value() == H5T_COMPOUND) {
             for(size_t idx = 0; idx < nmemb; idx++) {
-                char              *name            = H5Tget_member_name(h5Type, static_cast<unsigned int>(idx));
+                char              *name            = H5Tget_member_name(h5Type, type::safe_cast<unsigned int>(idx));
                 info.memberNames-> operator[](idx) = name;
-                info.memberTypes-> operator[](idx) = H5Tget_member_type(h5Type, static_cast<unsigned int>(idx));
+                info.memberTypes-> operator[](idx) = H5Tget_member_type(h5Type, type::safe_cast<unsigned int>(idx));
                 info.memberSizes-> operator[](idx) = H5Tget_size(info.memberTypes->operator[](idx));
                 info.memberIndex-> operator[](idx) = H5Tget_member_index(h5Type, name);
-                info.memberOffset->operator[](idx) = H5Tget_member_offset(h5Type, static_cast<unsigned int>(idx));
+                info.memberOffset->operator[](idx) = H5Tget_member_offset(h5Type, type::safe_cast<unsigned int>(idx));
                 H5free_memory(name);
             }
         }
@@ -711,8 +712,8 @@ namespace h5pp::hdf5 {
         std::string buf;
         ssize_t     bufSize = H5Aget_name(attribute, 0ul, nullptr); // Returns number of chars excluding \0
         if(bufSize >= 0) {
-            buf.resize(static_cast<size_t>(bufSize));
-            H5Aget_name(attribute, static_cast<size_t>(bufSize) + 1, buf.data()); // buf is guaranteed to have \0 at the end
+            buf.resize(type::safe_cast<size_t>(bufSize));
+            H5Aget_name(attribute, type::safe_cast<size_t>(bufSize) + 1, buf.data()); // buf is guaranteed to have \0 at the end
         } else {
             H5Eprint(H5E_DEFAULT, stderr);
             h5pp::logger::log->debug("Failed to get attribute names");
@@ -729,7 +730,7 @@ namespace h5pp::hdf5 {
         std::vector<std::string> attrNames;
         std::string              buf;
         for(auto i = 0; i < numAttrs; i++) {
-            hid::h5a attrId = H5Aopen_idx(link, static_cast<unsigned int>(i));
+            hid::h5a attrId = H5Aopen_idx(link, type::safe_cast<unsigned int>(i));
             attrNames.emplace_back(getAttributeName(attrId));
         }
         return attrNames;
@@ -820,7 +821,7 @@ namespace h5pp::hdf5 {
         if(num_attrs < 0) throw h5pp::runtime_error("Failed to get number of attributes in link");
 
         for(int idx = 0; idx < num_attrs; idx++) {
-            hid::h5a attribute = H5Aopen_idx(link, static_cast<unsigned int>(idx));
+            hid::h5a attribute = H5Aopen_idx(link, type::safe_cast<unsigned int>(idx));
             allAttrInfo.emplace_back(getTypeInfo(attribute));
         }
         return allAttrInfo;
@@ -976,7 +977,7 @@ namespace h5pp::hdf5 {
             throw h5pp::logic_error("Could not configure chunk dimensions: the dataset rank (n dims) has not been initialized");
         if(not dsetInfo.dsetDims)
             throw h5pp::logic_error("Could not configure chunk dimensions: the dataset dimensions have not been initialized");
-        if(dsetInfo.dsetRank.value() != static_cast<int>(dsetInfo.dsetDims->size())) {
+        if(dsetInfo.dsetRank.value() != type::safe_cast<int>(dsetInfo.dsetDims->size())) {
             throw h5pp::logic_error("Could not set chunk dimensions properties: Rank mismatch: dataset dimensions {} has "
                                     "different number of elements than reported rank {}",
                                     dsetInfo.dsetDims.value(),
@@ -990,7 +991,7 @@ namespace h5pp::hdf5 {
         }
 
         h5pp::logger::log->trace("Setting chunk dimensions {}", dsetInfo.dsetChunk.value());
-        herr_t err = H5Pset_chunk(dsetInfo.h5DsetCreate.value(), static_cast<int>(dsetInfo.dsetChunk->size()), dsetInfo.dsetChunk->data());
+        herr_t err = H5Pset_chunk(dsetInfo.h5DsetCreate.value(), type::safe_cast<int>(dsetInfo.dsetChunk->size()), dsetInfo.dsetChunk->data());
         if(err < 0) throw h5pp::runtime_error("Could not set chunk dimensions");
     }
 
@@ -1014,7 +1015,7 @@ namespace h5pp::hdf5 {
             dsetInfo.compression = 9;
         }
         h5pp::logger::log->trace("Setting compression level {}", dsetInfo.compression.value());
-        herr_t err = H5Pset_deflate(dsetInfo.h5DsetCreate.value(), static_cast<unsigned int>(dsetInfo.compression.value()));
+        herr_t err = H5Pset_deflate(dsetInfo.h5DsetCreate.value(), type::safe_cast<unsigned int>(dsetInfo.compression.value()));
         if(err < 0) throw h5pp::runtime_error("Failed to set compression level. Check that your HDF5 version has zlib enabled.");
     }
 
@@ -1024,7 +1025,7 @@ namespace h5pp::hdf5 {
         hid_t h5space = space.value(); // We will be using this identifier a lot here
         int   rank    = H5Sget_simple_extent_ndims(h5space);
         if(rank < 0) throw h5pp::runtime_error("Failed to read space rank");
-        std::vector<hsize_t> dims(static_cast<size_t>(rank));
+        std::vector<hsize_t> dims(type::safe_cast<size_t>(rank));
         H5Sget_simple_extent_dims(h5space, dims.data(), nullptr);
         // If one of slabOffset or slabExtent is given, then the other must also be given
         if(hyperSlab.offset and not hyperSlab.extent)
@@ -1040,7 +1041,7 @@ namespace h5pp::hdf5 {
                              hyperSlab.extent.value()));
         }
 
-        if(hyperSlab.offset and hyperSlab.offset.value().size() != static_cast<size_t>(rank)) {
+        if(hyperSlab.offset and hyperSlab.offset.value().size() != type::safe_cast<size_t>(rank)) {
             throw h5pp::logic_error(
                 h5pp::format("Could not setup hyperslab metadata: Hyperslab arrays have different rank compared to the given space: "
                              "offset {} | extent {} | space dims {}",
@@ -1050,7 +1051,7 @@ namespace h5pp::hdf5 {
         }
 
         // If given, slabStride must have the same rank as the dataset
-        if(hyperSlab.stride and hyperSlab.stride.value().size() != static_cast<size_t>(rank)) {
+        if(hyperSlab.stride and hyperSlab.stride.value().size() != type::safe_cast<size_t>(rank)) {
             throw h5pp::logic_error(
                 h5pp::format("Could not setup hyperslab metadata: Hyperslab stride has a different rank compared to the dataset: "
                              "stride {} | dataset dims {}",
@@ -1058,7 +1059,7 @@ namespace h5pp::hdf5 {
                              dims));
         }
         // If given, slabBlock must have the same rank as the dataset
-        if(hyperSlab.blocks and hyperSlab.blocks.value().size() != static_cast<size_t>(rank)) {
+        if(hyperSlab.blocks and hyperSlab.blocks.value().size() != type::safe_cast<size_t>(rank)) {
             throw h5pp::logic_error(
                 h5pp::format("Could not setup hyperslab metadata: Hyperslab blocks has a different rank compared to the dataset: "
                              "blocks {} | dataset dims {}",
@@ -1177,14 +1178,14 @@ namespace h5pp::hdf5 {
             std::vector<long> dimsMaxPretty;
             for(auto &dim : dimsMax.value())
                 if(dim == H5S_UNLIMITED) dimsMaxPretty.emplace_back(-1);
-                else dimsMaxPretty.emplace_back(static_cast<long>(dim));
+                else dimsMaxPretty.emplace_back(type::safe_cast<long>(dim));
             h5pp::logger::log->trace("Setting dataspace extents: dims {} | max dims {}", dims, dimsMaxPretty);
-            err = H5Sset_extent_simple(h5Space, static_cast<int>(dims.size()), dims.data(), dimsMax->data());
+            err = H5Sset_extent_simple(h5Space, type::safe_cast<int>(dims.size()), dims.data(), dimsMax->data());
             if(err < 0) throw h5pp::runtime_error("Failed to set extents on space: dims {} | max dims {}", dims, dimsMax.value());
 
         } else {
             h5pp::logger::log->trace("Setting dataspace extents: dims {}", dims);
-            err = H5Sset_extent_simple(h5Space, static_cast<int>(dims.size()), dims.data(), nullptr);
+            err = H5Sset_extent_simple(h5Space, type::safe_cast<int>(dims.size()), dims.data(), nullptr);
             if(err < 0) throw h5pp::runtime_error("Failed to set extents on space. Dims {}", dims);
         }
     }
@@ -1197,7 +1198,7 @@ namespace h5pp::hdf5 {
 
         if(dsetInfo.h5Layout and dsetInfo.h5Layout.value() == H5D_CHUNKED and not dsetInfo.dsetDimsMax) {
             // Chunked datasets are unlimited unless told explicitly otherwise
-            dsetInfo.dsetDimsMax = std::vector<hsize_t>(static_cast<size_t>(dsetInfo.dsetRank.value()), 0);
+            dsetInfo.dsetDimsMax = std::vector<hsize_t>(type::safe_cast<size_t>(dsetInfo.dsetRank.value()), 0);
             std::fill_n(dsetInfo.dsetDimsMax->begin(), dsetInfo.dsetDimsMax->size(), H5S_UNLIMITED);
         }
         try {
@@ -1211,15 +1212,15 @@ namespace h5pp::hdf5 {
         h5pp::logger::log->trace("Extending space dimension [{}] to extent [{}]", dim, extent);
         // Retrieve the current extent of this space
         const int            oldRank = H5Sget_simple_extent_ndims(space);
-        std::vector<hsize_t> oldDims(static_cast<size_t>(oldRank));
+        std::vector<hsize_t> oldDims(type::safe_cast<size_t>(oldRank));
         H5Sget_simple_extent_dims(space, oldDims.data(), nullptr);
 
         // We may need to change the rank, for instance, if we are appending a new column
         // to a vector of size n, so it becomes an (n x 2) "matrix".
         const int            newRank = std::max(dim + 1, oldRank);
-        std::vector<hsize_t> newDims(static_cast<size_t>(newRank), 1);
+        std::vector<hsize_t> newDims(type::safe_cast<size_t>(newRank), 1);
         std::copy(oldDims.begin(), oldDims.end(), newDims.begin());
-        newDims[static_cast<size_t>(dim)] = extent;
+        newDims[type::safe_cast<size_t>(dim)] = extent;
         setSpaceExtent(space, newDims);
         //        H5Sset_extent_simple(space,newRank,newDims.data(),nullptr);
     }
@@ -1262,13 +1263,13 @@ namespace h5pp::hdf5 {
         // We use this function to EXTEND the dataset to APPEND given data
         // We add dims to the current dimensions of the dataset.
         info.assertResizeReady();
-        int appRank = static_cast<int>(dims.size());
+        int appRank = type::safe_cast<int>(dims.size());
         if(H5Tis_variable_str(info.h5Type.value()) > 0) {
             // These are resized on the fly
             return;
         } else {
             // Sanity checks
-            if(info.dsetRank.value() <= static_cast<int>(axis)) {
+            if(info.dsetRank.value() <= type::safe_cast<int>(axis)) {
                 throw h5pp::runtime_error(
                     "Could not append to dataset [{}] along axis {}: Dataset rank ({}) must be strictly larger than the given axis ({})",
                     info.dsetPath.value(),
@@ -1301,7 +1302,7 @@ namespace h5pp::hdf5 {
             // Compute the new dset dimension. Note that dataRank <= dsetRank,
             // For instance when we add a column to a matrix, the column may be an nx1 vector.
             // Therefore, we embed the data dimensions in a (possibly) higher-dimensional space
-            auto embeddedDims = std::vector<hsize_t>(static_cast<size_t>(info.dsetRank.value()), 1);
+            auto embeddedDims = std::vector<hsize_t>(type::safe_cast<size_t>(info.dsetRank.value()), 1);
             std::copy(dims.begin(), dims.end(), embeddedDims.begin()); // In the example above, we get nx1
             auto oldAxisSize  = info.dsetDims.value()[axis];           // Will need this later when drawing the hyperspace
             auto newAxisSize  = embeddedDims[axis];                    // Will need this later when drawing the hyperspace
@@ -1324,7 +1325,7 @@ namespace h5pp::hdf5 {
             // Draw the target space on a hyperslab
             Hyperslab slab;
             slab.extent               = embeddedDims;
-            slab.offset               = std::vector<hsize_t>(static_cast<size_t>(info.dsetRank.value()), 0);
+            slab.offset               = std::vector<hsize_t>(type::safe_cast<size_t>(info.dsetRank.value()), 0);
             slab.offset.value()[axis] = oldAxisSize;
             h5pp::hdf5::selectHyperslab(info.h5Space.value(), slab);
             h5pp::logger::log->debug("Extended dataset \n \t old: {} \n \t new: {}",
@@ -1488,30 +1489,30 @@ namespace h5pp::hdf5 {
             if constexpr(type::sfinae::is_text_v<DataType>) {
                 // Minus one: String resize allocates the null-terminator automatically, and bytes is the number of characters including
                 // null-terminator
-                h5pp::util::resizeData(data, {static_cast<hsize_t>(bytes) - 1});
+                h5pp::util::resizeData(data, {type::safe_cast<hsize_t>(bytes) - 1});
             } else if constexpr(type::sfinae::has_text_v<DataType> and type::sfinae::is_iterable_v<DataType>) {
                 // We have a container such as std::vector<std::string> here, and the dataset may have multiple string elements
                 auto size = getSizeSelected(space);
-                h5pp::util::resizeData(data, {static_cast<hsize_t>(size)});
+                h5pp::util::resizeData(data, {type::safe_cast<hsize_t>(size)});
                 // In variable length arrays each string element is dynamically resized when read.
                 // For fixed-size we can resize already.
                 if(not H5Tis_variable_str(type)) {
                     auto fixedStringSize = H5Tget_size(type) - 1; // Subtract null terminator
-                    for(auto &str : data) h5pp::util::resizeData(str, {static_cast<hsize_t>(fixedStringSize)});
+                    for(auto &str : data) h5pp::util::resizeData(str, {type::safe_cast<hsize_t>(fixedStringSize)});
                 }
             } else {
                 throw h5pp::runtime_error("Could not resize given container for text data: Unrecognized type for text [{}]",
                                           type::sfinae::type_name<DataType>());
             }
         } else if(H5Sget_simple_extent_type(space) == H5S_SCALAR) {
-            h5pp::util::resizeData(data, {static_cast<hsize_t>(1)});
+            h5pp::util::resizeData(data, {type::safe_cast<hsize_t>(1)});
         } else {
             int                  rank = H5Sget_simple_extent_ndims(space);
-            std::vector<hsize_t> extent(static_cast<size_t>(rank), 0); // This will have the bounding box containing the current selection
+            std::vector<hsize_t> extent(type::safe_cast<size_t>(rank), 0); // This will have the bounding box containing the current selection
             H5S_sel_type         select_type = H5Sget_select_type(space);
             if(select_type == H5S_sel_type::H5S_SEL_HYPERSLABS) {
-                std::vector<hsize_t> start(static_cast<size_t>(rank), 0);
-                std::vector<hsize_t> end(static_cast<size_t>(rank), 0);
+                std::vector<hsize_t> start(type::safe_cast<size_t>(rank), 0);
+                std::vector<hsize_t> end(type::safe_cast<size_t>(rank), 0);
                 H5Sget_select_bounds(space, start.data(), end.data());
                 for(size_t idx = 0; idx < extent.size(); idx++) extent[idx] = std::max<hsize_t>(0, 1 + end[idx] - start[idx]);
             } else {
@@ -1585,7 +1586,7 @@ namespace h5pp::hdf5 {
         std::string msg;
         msg.append(h5pp::format(" | size {}", H5Sget_simple_extent_npoints(space)));
         int                  rank = H5Sget_simple_extent_ndims(space);
-        std::vector<hsize_t> dims(static_cast<size_t>(rank), 0);
+        std::vector<hsize_t> dims(type::safe_cast<size_t>(rank), 0);
         H5Sget_simple_extent_dims(space, dims.data(), nullptr);
         msg.append(h5pp::format(" | rank {}", rank));
         msg.append(h5pp::format(" | dims {}", dims));
@@ -1730,7 +1731,7 @@ namespace h5pp::hdf5 {
                     if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) matchList->push_back(name);
                 }
 
-                if(maxHits > 0 and static_cast<long>(matchList->size()) >= maxHits) return 1;
+                if(maxHits > 0 and type::safe_cast<long>(matchList->size()) >= maxHits) return 1;
                 else return 0;
             } catch(const std::exception &ex) {
                 throw h5pp::logic_error("Could not match object [{}] | loc_id [{}] | reason: {}", name, id, ex.what());
@@ -2206,7 +2207,7 @@ namespace h5pp::hdf5 {
                 size_t bytesPerStr = H5Tget_size(h5Type); // This is the fixed-size of a string, not a char! Includes null term
                 tempBuf.resize(bytesPerStr * vlenBuf.size());
                 for(size_t i = 0; i < vlenBuf.size(); i++) {
-                    auto offset = tempBuf.data() + static_cast<long>(i * bytesPerStr);
+                    auto offset = tempBuf.data() + type::safe_cast<long>(i * bytesPerStr);
                     // Construct a view of the null-terminated character string, not including the null character.
                     auto view   = std::string_view(vlenBuf[i]); // view.size() will not include null term here!
                     std::copy_n(std::begin(view), std::min(view.size(), bytesPerStr - 1), offset); // Do not copy null character
@@ -2388,7 +2389,7 @@ namespace h5pp::hdf5 {
             if(H5Tis_variable_str(dsetInfo.h5Type.value())) {
                 hssize_t size = H5Sget_select_npoints(dsetInfo.h5Space.value());
                 if(size < 0) throw h5pp::runtime_error("H5S_select_npoints: failed on dataset [{}]", dsetInfo.dsetPath.value());
-                std::vector<h5pp::vstr_t> vdata(static_cast<size_t>(size));
+                std::vector<h5pp::vstr_t> vdata(type::safe_cast<size_t>(size));
                 // HDF5 allocates space for each string in vdata
                 retval = H5Dread(dsetInfo.h5Dset.value(),
                                  dsetInfo.h5Type.value(),
@@ -2419,7 +2420,7 @@ namespace h5pp::hdf5 {
                 size_t      bytesPerString = H5Tget_size(dsetInfo.h5Type.value()); // Includes null terminator
                 auto        size           = H5Sget_select_npoints(dsetInfo.h5Space.value());
                 std::string fdata;
-                fdata.resize(static_cast<size_t>(size) * bytesPerString);
+                fdata.resize(type::safe_cast<size_t>(size) * bytesPerString);
                 retval = H5Dread(dsetInfo.h5Dset.value(),
                                  dsetInfo.h5Type.value(),
                                  dataInfo.h5Space.value(),
@@ -2430,19 +2431,19 @@ namespace h5pp::hdf5 {
                 if constexpr(std::is_same_v<DataType, std::string> or type::sfinae::is_vstr_v<DataType>) {
                     // A vector of strings (fdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
-                    for(size_t i = 0; i < static_cast<size_t>(size); i++) {
+                    for(size_t i = 0; i < type::safe_cast<size_t>(size); i++) {
                         data.append(fdata.substr(i * bytesPerString, bytesPerString));
                         if(data.size() < fdata.size() - 1) data.append("\n");
                     }
                     data.erase(std::find(data.begin(), data.end(), '\0'), data.end()); // Prune all but the last null terminator
                 } else if constexpr(type::sfinae::has_resize_v<DataType> and (type::sfinae::is_container_of_v<DataType, h5pp::vstr_t> or
                                                                               type::sfinae::is_container_of_v<DataType, std::string>)) {
-                    if(data.size() != static_cast<size_t>(size)) {
+                    if(data.size() != type::safe_cast<size_t>(size)) {
                         throw h5pp::runtime_error("Given container of strings has the wrong size: dset size {} | container size {}",
                                                   size,
                                                   data.size());
                     }
-                    for(size_t i = 0; i < static_cast<size_t>(size); i++) {
+                    for(size_t i = 0; i < type::safe_cast<size_t>(size); i++) {
                         // Each data[i] has type std::string, so we can use the std::string constructor to copy data
                         data[i] = std::string(fdata.data() + i * bytesPerString, bytesPerString);
                         // Prune away all null terminators except the last one
@@ -2564,7 +2565,7 @@ namespace h5pp::hdf5 {
             //      2) Allocation on char * must be done before reading.
             if(H5Tis_variable_str(attrInfo.h5Type.value()) > 0) {
                 auto                size = H5Sget_select_npoints(attrInfo.h5Space.value());
-                std::vector<char *> vdata(static_cast<size_t>(size)); // Allocate pointers for "size" number of strings
+                std::vector<char *> vdata(type::safe_cast<size_t>(size)); // Allocate pointers for "size" number of strings
                 // HDF5 allocates space for each string
                 retval = H5Aread(attrInfo.h5Attr.value(), attrInfo.h5Type.value(), vdata.data());
                 // Now vdata contains the whole dataset, and we need to put the data into the user-given container.
@@ -2596,20 +2597,20 @@ namespace h5pp::hdf5 {
                 size_t      bytesPerString = H5Tget_size(attrInfo.h5Type.value()); // Includes null terminator
                 auto        size           = H5Sget_select_npoints(attrInfo.h5Space.value());
                 std::string fdata;
-                fdata.resize(static_cast<size_t>(size) * bytesPerString);
+                fdata.resize(type::safe_cast<size_t>(size) * bytesPerString);
                 retval = H5Aread(attrInfo.h5Attr.value(), attrInfo.h5Type.value(), fdata.data());
                 // Now fdata contains the whole dataset, and we need to put the data into the user-given container.
                 if constexpr(std::is_same_v<DataType, std::string>) {
                     // A vector of strings (fdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
-                    for(size_t i = 0; i < static_cast<size_t>(size); i++) {
+                    for(size_t i = 0; i < type::safe_cast<size_t>(size); i++) {
                         data.append(fdata.substr(i * bytesPerString, bytesPerString));
                         if(data.size() < fdata.size() - 1) data.append("\n");
                     }
                 } else if constexpr(type::sfinae::is_container_of_v<DataType, std::string> and type::sfinae::has_resize_v<DataType>) {
                     data.clear();
-                    data.resize(static_cast<size_t>(size));
-                    for(size_t i = 0; i < static_cast<size_t>(size); i++) data[i] = fdata.substr(i * bytesPerString, bytesPerString);
+                    data.resize(type::safe_cast<size_t>(size));
+                    for(size_t i = 0; i < type::safe_cast<size_t>(size); i++) data[i] = fdata.substr(i * bytesPerString, bytesPerString);
                 } else {
                     throw h5pp::runtime_error(
                         "To read text-data, please use std::string or a container of std::string like std::vector<std::string>");
@@ -2999,7 +3000,7 @@ namespace h5pp::hdf5 {
             } else {
                 /* Step 2: Get the dataset and memory spaces */
                 dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
-                dataSpace = H5Screate_simple(static_cast<int>(dataSlab.extent->size()),
+                dataSpace = H5Screate_simple(type::safe_cast<int>(dataSlab.extent->size()),
                                              dataSlab.extent->data(),
                                              nullptr); /* create a simple memory data space */
                 //
@@ -3015,7 +3016,7 @@ namespace h5pp::hdf5 {
         } else {
             /* Step 2: Get the dataset and memory spaces */
             dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
-            dataSpace = H5Screate_simple(static_cast<int>(dataSlab.extent->size()),
+            dataSpace = H5Screate_simple(type::safe_cast<int>(dataSlab.extent->size()),
                                          dataSlab.extent->data(),
                                          nullptr); /* create a simple memory data space */
             //
@@ -3125,7 +3126,7 @@ namespace h5pp::hdf5 {
         static_assert(std::is_integral_v<T> or h5pp::type::sfinae::is_text_v<T>);
         return std::all_of(fields.begin(), fields.end(), [&h5Type](const auto &field) {
             if constexpr(std::is_integral_v<T>) {
-                return H5Tget_member_class(h5Type, static_cast<unsigned int>(field)) >= 0;
+                return H5Tget_member_class(h5Type, type::safe_cast<unsigned int>(field)) >= 0;
             } else if constexpr(h5pp::type::sfinae::is_text_v<T>) {
                 if constexpr(h5pp::type::sfinae::has_data_v<T>) return H5Tget_member_index(h5Type, field.data()) >= 0;
                 else return H5Tget_member_index(h5Type, field) >= 0;
@@ -3239,7 +3240,7 @@ namespace h5pp::hdf5 {
         /* Step 3: Resize the recipient data buffer */
         if(detect_vlen > 0) {
             auto               size = h5pp::hdf5::getSizeSelected(dsetSpace);
-            std::vector<hvl_t> vdata(static_cast<size_t>(size)); // Allocate len/ptr pairs for "size" number of vlen arrays
+            std::vector<hvl_t> vdata(type::safe_cast<size_t>(size)); // Allocate len/ptr pairs for "size" number of vlen arrays
             // HDF5 allocates space for each vlen array
             herr_t             retval = H5Dread(info.h5Dset.value(), h5t_fields, H5S_ALL, dsetSpace, plists.dsetXfer, vdata.data());
             if(retval < 0) {
@@ -3323,7 +3324,7 @@ namespace h5pp::hdf5 {
             if(dtypeSize != fieldSizeSum) {
                 auto        h5t_info = getH5TInfo(h5t_fields);
                 std::string error_msg;
-                for(size_t idx = 0; idx < static_cast<size_t>(h5t_info.numMembers.value()); idx++) {
+                for(size_t idx = 0; idx < type::safe_cast<size_t>(h5t_info.numMembers.value()); idx++) {
                     error_msg += h5pp::format("     Field {:>5}/{:<5} {:>32} = {} bytes\n",
                                               idx,
                                               h5t_info.numMembers.value(),
