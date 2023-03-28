@@ -20,9 +20,6 @@ if (NOT DEFINED H5PP_IS_SUBPROJECT)
     endif ()
 endif ()
 
-
-
-
 option(BUILD_SHARED_LIBS                "Builds shared libraries"                                                 OFF)
 option(H5PP_ENABLE_EIGEN3               "Enables Eigen3 linear algebra library"                                   OFF)
 option(H5PP_ENABLE_FMT                  "Enables the {fmt} formatting library"                                    OFF)
