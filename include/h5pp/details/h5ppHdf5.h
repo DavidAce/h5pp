@@ -82,7 +82,7 @@ namespace h5pp::hdf5 {
         // Read about the buffer size inconsistency here
         // http://hdf-forum.184993.n3.nabble.com/H5Iget-name-inconsistency-td193143.html
         std::string buf;
-        ssize_t     bufSize = H5Iget_name(object, nullptr, 0); // Size in bytes of the object name (NOT including \0)
+        ssize_t     bufSize = H5Iget_name(object, nullptr, 0);                     // Size in bytes of the object name (NOT including \0)
         if(bufSize > 0) {
             buf.resize(type::safe_cast<size_t>(bufSize) + 1);                      // We allocate space for the null terminator with +1
             H5Iget_name(object, buf.data(), type::safe_cast<size_t>(bufSize + 1)); // Read name including \0 with +1
@@ -302,11 +302,11 @@ namespace h5pp::hdf5 {
         info.memberOffset = std::vector<size_t>(nmemb);
         if(info.h5Class.value() == H5T_COMPOUND) {
             for(size_t idx = 0; idx < nmemb; idx++) {
-                char              *name            = H5Tget_member_name(h5Type, type::safe_cast<unsigned int>(idx));
-                info.memberNames-> operator[](idx) = name;
-                info.memberTypes-> operator[](idx) = H5Tget_member_type(h5Type, type::safe_cast<unsigned int>(idx));
-                info.memberSizes-> operator[](idx) = H5Tget_size(info.memberTypes->operator[](idx));
-                info.memberIndex-> operator[](idx) = H5Tget_member_index(h5Type, name);
+                char *name                         = H5Tget_member_name(h5Type, type::safe_cast<unsigned int>(idx));
+                info.memberNames->operator[](idx)  = name;
+                info.memberTypes->operator[](idx)  = H5Tget_member_type(h5Type, type::safe_cast<unsigned int>(idx));
+                info.memberSizes->operator[](idx)  = H5Tget_size(info.memberTypes->operator[](idx));
+                info.memberIndex->operator[](idx)  = H5Tget_member_index(h5Type, name);
                 info.memberOffset->operator[](idx) = H5Tget_member_offset(h5Type, type::safe_cast<unsigned int>(idx));
                 H5free_memory(name);
             }
@@ -318,7 +318,7 @@ namespace h5pp::hdf5 {
     template<typename DataType>
     void assertWriteBufferIsLargeEnough(const DataType &data, const hid::h5s &space, const hid::h5t &type) {
         if(H5Tget_class(type) == H5T_STRING) {
-            if(H5Tis_variable_str(type)) return; // This transfers the string from memory until finding a null terminator
+            if(H5Tis_variable_str(type)) return;   // This transfers the string from memory until finding a null terminator
             if constexpr(type::sfinae::is_text_v<DataType>) {
                 auto hdf5Byte = H5Tget_size(type); // Chars including null-terminator. The memory buffer must fit this size. Also, these
                                                    // many bytes will participate in IO
@@ -369,7 +369,7 @@ namespace h5pp::hdf5 {
             if(H5Tis_variable_str(type)) return; // These are resized on the fly
             if constexpr(type::sfinae::is_text_v<DataType>) {
                 // The memory buffer must fit hdf5Byte: that's how many bytes will participate in IO
-                auto hdf5Byte = H5Tget_size(type); // Chars including null-terminator.
+                auto hdf5Byte = H5Tget_size(type);                      // Chars including null-terminator.
                 auto hdf5Size = getSizeSelected(space);
                 auto dataByte = h5pp::util::getCharArraySize(data) + 1; // Chars including null terminator
                 auto dataSize = h5pp::util::getSize(data);
@@ -991,7 +991,8 @@ namespace h5pp::hdf5 {
         }
 
         h5pp::logger::log->trace("Setting chunk dimensions {}", dsetInfo.dsetChunk.value());
-        herr_t err = H5Pset_chunk(dsetInfo.h5DsetCreate.value(), type::safe_cast<int>(dsetInfo.dsetChunk->size()), dsetInfo.dsetChunk->data());
+        herr_t err =
+            H5Pset_chunk(dsetInfo.h5DsetCreate.value(), type::safe_cast<int>(dsetInfo.dsetChunk->size()), dsetInfo.dsetChunk->data());
         if(err < 0) throw h5pp::runtime_error("Could not set chunk dimensions");
     }
 
@@ -1508,7 +1509,8 @@ namespace h5pp::hdf5 {
             h5pp::util::resizeData(data, {type::safe_cast<hsize_t>(1)});
         } else {
             int                  rank = H5Sget_simple_extent_ndims(space);
-            std::vector<hsize_t> extent(type::safe_cast<size_t>(rank), 0); // This will have the bounding box containing the current selection
+            std::vector<hsize_t> extent(type::safe_cast<size_t>(rank),
+                                        0); // This will have the bounding box containing the current selection
             H5S_sel_type         select_type = H5Sget_select_type(space);
             if(select_type == H5S_sel_type::H5S_SEL_HYPERSLABS) {
                 std::vector<hsize_t> start(type::safe_cast<size_t>(rank), 0);
@@ -1881,12 +1883,12 @@ namespace h5pp::hdf5 {
         std::vector<const char *> sv;
         if constexpr(type::sfinae::is_text_v<DataType> and type::sfinae::has_data_v<DataType>) { // Takes care of std::string
             sv.push_back(data.data());
-        } else if constexpr(type::sfinae::is_text_v<DataType>) { // Takes care of char pointers and arrays
+        } else if constexpr(type::sfinae::is_text_v<DataType>) {                                 // Takes care of char pointers and arrays
             sv.push_back(data);
-        } else if constexpr(type::sfinae::is_iterable_v<DataType>) { // Takes care of containers with text
+        } else if constexpr(type::sfinae::is_iterable_v<DataType>) {                             // Takes care of containers with text
             for(auto &elem : data) {
                 if constexpr(type::sfinae::is_text_v<decltype(elem)> and
-                             type::sfinae::has_data_v<decltype(elem)>) { // Takes care of containers with std::string
+                             type::sfinae::has_data_v<decltype(elem)>) {       // Takes care of containers with std::string
                     sv.push_back(elem.data());
                 } else if constexpr(type::sfinae::is_text_v<decltype(elem)>) { // Takes care of containers  of char pointers and arrays
                     sv.push_back(elem);
@@ -2084,7 +2086,7 @@ namespace h5pp::hdf5 {
             if(ern < 0) throw h5pp::runtime_error("writeDataset_chunkwise: failed to get number of chunks in dataset");
 
             // Compute the total number of chunks that this dataset has room for
-            std::vector<hsize_t> chunkRoom(rank); // counts how many chunks fit in each direction
+            std::vector<hsize_t> chunkRoom(rank);                                // counts how many chunks fit in each direction
             for(size_t i = 0; i < chunkRoom.size(); i++)
                 chunkRoom[i] = (dims[i] + chunkDims[i] - 1) / chunkDims[i];      // Integral ceil on division
             size_t chunkCapacity = h5pp::util::getSizeFromDimensions(chunkRoom); // The total number of chunks that can fit
@@ -3060,7 +3062,8 @@ namespace h5pp::hdf5 {
                                  hsize_t                srcOffset,
                                  hsize_t                srcExtent,
                                  h5pp::TableInfo       &tgtInfo,
-                                 hsize_t                tgtOffset) {
+                                 hsize_t                tgtOffset,
+                                 const PropertyLists   &plists = PropertyLists()) {
         srcInfo.assertReadReady();
         tgtInfo.assertWriteReady();
         srcOffset = util::wrapUnsigned(srcOffset, srcInfo.numRecords.value()); // Allows python style negative indexing
@@ -3116,8 +3119,8 @@ namespace h5pp::hdf5 {
 
         std::vector<std::byte> data(srcExtent * tgtInfo.recordBytes.value());
         data.resize(srcExtent * tgtInfo.recordBytes.value());
-        h5pp::hdf5::readTableRecords(data, srcInfo, srcOffset, srcExtent);
-        h5pp::hdf5::writeTableRecords(data, tgtInfo, tgtOffset, srcExtent);
+        h5pp::hdf5::readTableRecords(data, srcInfo, srcOffset, srcExtent, plists);
+        h5pp::hdf5::writeTableRecords(data, tgtInfo, tgtOffset, srcExtent, plists);
         srcInfo.reclaim(); // In case there were any vlen arrays in a field
     }
 
@@ -3486,7 +3489,7 @@ namespace h5pp::hdf5 {
 
             hid::h5f srcFile = hidSrc;
             hid::h5f tgtFile = hidTgt;
-            copyLink(srcFile, srcLinkPath, tgtFile, tgtLinkPath);
+            h5pp::hdf5::copyLink(srcFile, srcLinkPath, tgtFile, tgtLinkPath, plists);
         } catch(const std::exception &ex) {
             throw h5pp::runtime_error("Could not copy link [{}] from file [{}]: {}", srcLinkPath, srcFilePath.string(), ex.what());
         }
@@ -3576,7 +3579,7 @@ namespace h5pp::hdf5 {
             hid::h5f tgtFile = hidTgt;
 
             auto locMode = h5pp::util::getLocationMode(srcFilePath, tgtFilePath);
-            moveLink(srcFile, srcLinkPath, tgtFile, tgtLinkPath, locMode);
+            h5pp::hdf5::moveLink(srcFile, srcLinkPath, tgtFile, tgtLinkPath, locMode, plists);
         } catch(const std::exception &ex) {
             throw h5pp::runtime_error("Could not move link [{}] from file [{}]: {}", srcLinkPath, srcFilePath.string(), ex.what());
         }
@@ -3587,7 +3590,7 @@ namespace h5pp::hdf5 {
                              FileAccess            tgtFileAccess = FileAccess::COLLISION_FAIL,
                              const PropertyLists  &plists        = PropertyLists()) {
         h5pp::logger::log->trace("Moving file by copy+remove: [{}] --> [{}]", src.string(), tgt.string());
-        auto tgtPath = copyFile(src, tgt, tgtFileAccess, plists); // Returns the path to the newly created file
+        auto tgtPath = h5pp::hdf5::copyFile(src, tgt, tgtFileAccess, plists); // Returns the path to the newly created file
         auto srcPath = fs::absolute(src);
         if(fs::exists(tgtPath)) {
             h5pp::logger::log->trace("Removing file [{}]", srcPath.string());
