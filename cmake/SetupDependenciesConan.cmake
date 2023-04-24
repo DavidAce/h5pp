@@ -49,7 +49,7 @@ if(H5PP_PACKAGE_MANAGER MATCHES "conan")
     list(REMOVE_DUPLICATES CMAKE_MODULE_PATH)
     list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
     # Use CONFIG to avoid MODULE mode. This is recommended for the cmake_find_package_multi generator
-    find_package(HDF5 1.13.1 COMPONENTS C HL REQUIRED CONFIG)
+    find_package(HDF5 1.14.0 COMPONENTS C HL REQUIRED CONFIG)
     find_package(Eigen3 3.4 REQUIRED CONFIG)
     find_package(spdlog 1.11.0 REQUIRED CONFIG)
     find_package(fmt 9.1.0 REQUIRED CONFIG)
