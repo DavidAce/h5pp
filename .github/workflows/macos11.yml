@@ -53,7 +53,7 @@ jobs:
         if: matrix.manager == 'conan'
         run: |
           pip install conan
-          conan user
+          conan profile detect
 
       - name: Configure
         shell: bash
