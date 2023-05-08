@@ -1,6 +1,10 @@
+from conan import ConanFile
+from conan.tools.layout import basic_layout
+from conan.tools.files import copy
 from conan.tools.microsoft import is_msvc
-from conans import ConanFile, tools
-from conans.errors import ConanInvalidConfiguration
+from conan.tools.build import check_min_cppstd
+from conan.tools.scm import Version
+from conan.errors import ConanInvalidConfiguration
 import os
 
 required_conan_version = ">=1.45.0"
@@ -28,10 +32,6 @@ class H5ppConan(ConanFile):
     }
 
     @property
-    def _source_subfolder(self):
-        return "source_subfolder"
-
-    @property
     def _compilers_minimum_version(self):
         return {
             "gcc": "7.4",
@@ -40,34 +40,35 @@ class H5ppConan(ConanFile):
             "apple-clang": "10",
         }
 
-    def export_sources(self):
-        self.copy("LICENSE", dst=self._source_subfolder)
-        self.copy("include/*", os.path.join(self._source_subfolder, "include"))
-
     def requirements(self):
-        self.requires("hdf5/1.14.0")
-        if self.options.with_eigen:
-            self.requires("eigen/3.4.0")
-        if self.options.with_spdlog:
-            self.requires("spdlog/1.11.0")
+        if Version(self.version) < "1.10.0":
+            self.requires("hdf5/1.12.1", transitive_headers=True, transitive_libs=True)
+        else:
+            self.requires("hdf5/1.14.0", transitive_headers=True, transitive_libs=True)
+        if Version(self.version) < "1.10.0" or self.options.get_safe('with_eigen'):
+            self.requires("eigen/3.4.0", transitive_headers=True)
+        if Version(self.version) < "1.10.0" or self.options.get_safe('with_spdlog'):
+            self.requires("spdlog/1.11.0", transitive_headers=True, transitive_libs=True)
 
+    def layout(self):
+        basic_layout(self)
 
     def package_id(self):
-        self.info.header_only()
+        self.info.clear()
 
     def validate(self):
         if self.settings.compiler.get_safe("cppstd"):
-            tools.check_min_cppstd(self, 17)
+            check_min_cppstd(self, 17)
         minimum_version = self._compilers_minimum_version.get(str(self.settings.compiler), False)
         if minimum_version:
-            if tools.Version(self.settings.compiler.version) < minimum_version:
+            if Version(self.settings.compiler.version) < minimum_version:
                 raise ConanInvalidConfiguration("h5pp requires C++17, which your compiler does not support.")
         else:
             self.output.warn("h5pp requires C++17. Your compiler is unknown. Assuming it supports C++17.")
 
     def package(self):
-        self.copy("LICENSE", src=self._source_subfolder, dst="licenses")
-        self.copy("*.h", src=os.path.join(self._source_subfolder, "include"))
+        copy(self, pattern="*", src=os.path.join(self.source_folder, "include"), dst=os.path.join(self.package_folder, "include"))
+        copy(self, pattern="LICENSE", src=self.source_folder, dst=os.path.join(self.package_folder, "licenses"))
 
 
     def package_info(self):
@@ -86,7 +87,7 @@ class H5ppConan(ConanFile):
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_SPDLOG")
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_FMT")
 
-        if (self.settings.compiler == "gcc" and tools.Version(self.settings.compiler.version) < "9") or \
+        if (self.settings.compiler == "gcc" and Version(self.settings.compiler.version) < "9") or \
            (self.settings.compiler == "clang" and self.settings.compiler.get_safe("libcxx") in ["libstdc++", "libstdc++11"]):
             self.cpp_info.components["h5pp_flags"].system_libs = ["stdc++fs"]
         if is_msvc(self):
