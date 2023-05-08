@@ -3,6 +3,7 @@
 #include "h5ppError.h"
 #include "h5ppHid.h"
 #include "h5ppTypeCompound.h"
+#include "h5ppTypeCustom.h"
 #include "h5ppTypeSfinae.h"
 #include "h5ppVarr.h"
 #include "h5ppVstr.h"
@@ -37,6 +38,9 @@ namespace h5pp::type {
         if(H5Tequal(h5type, H5T_NATIVE_UINT64))            return "H5T_NATIVE_UINT64";
         if(H5Tequal(h5type, H5T_NATIVE_UINT8))             return "H5T_NATIVE_UINT8";
         if(H5Tequal(h5type, H5T_C_S1))                     return "H5T_C_S1";
+#if H5PP_USE_FLOAT128 == 1
+        if(type::custom::H5T_FLOAT<__float128>::equal(h5type)) return type::custom::H5T_FLOAT<__float128>::h5name();
+#endif
         if(H5Tget_class(h5type) == H5T_class_t::H5T_ENUM)  return h5pp::format("H5T_ENUM{}",H5Tget_size(h5type));
         if(H5Tcommitted(h5type) == 0)                      return "H5T_NOT_COMMITTED";
         /* clang-format on */
@@ -83,15 +87,13 @@ namespace h5pp::type {
                 if(not H5Tequal_recurse(t1, t2)) return false;
             }
             return true;
+        } else if constexpr(type::sfinae::is_h5pp_type_id<h5t1> and type::sfinae::is_h5pp_type_id<h5t2>) {
+            return type1 == type2;
         } else {
-            if constexpr(type::sfinae::is_h5pp_type_id<h5t1> and type::sfinae::is_h5pp_type_id<h5t2>) {
-                return type1 == type2;
-            } else {
-                htri_t res = H5Tequal(type1, type2);
-                if(res < 0) throw h5pp::runtime_error("Failed to check type equality");
+            htri_t res = H5Tequal(type1, type2);
+            if(res < 0) throw h5pp::runtime_error("Failed to check type equality");
 
-                return res > 0;
-            }
+            return res > 0;
         }
     }
 
@@ -116,6 +118,9 @@ namespace h5pp::type {
         else if constexpr (std::is_same_v<DecayType, float>)                 return H5Tcopy(H5T_NATIVE_FLOAT);
         else if constexpr (std::is_same_v<DecayType, double>)                return H5Tcopy(H5T_NATIVE_DOUBLE);
         else if constexpr (std::is_same_v<DecayType, long double>)           return H5Tcopy(H5T_NATIVE_LDOUBLE);
+        #if H5PP_USE_FLOAT128 == 1
+        else if constexpr(std::is_same_v<DecayType, __float128>)             return H5Tcopy(type::custom::H5T_FLOAT<__float128>::h5type());
+        #endif
         else if constexpr (std::is_same_v<DecayType, int8_t>)                return H5Tcopy(H5T_NATIVE_INT8);
         else if constexpr (std::is_same_v<DecayType, int16_t>)               return H5Tcopy(H5T_NATIVE_INT16);
         else if constexpr (std::is_same_v<DecayType, int32_t>)               return H5Tcopy(H5T_NATIVE_INT32);

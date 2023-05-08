@@ -1,5 +1,7 @@
 #Try to find or get all dependencies
-set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+if(NOT THREADS_PREFER_PTHREAD_FLAG)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+endif()
 find_package(Threads)
 
 if (H5PP_ENABLE_MPI AND NOT WIN32)
@@ -14,7 +16,6 @@ include(cmake/SetupDependenciesCMake.cmake)
 include(cmake/SetupDependenciesCPM.cmake)
 include(cmake/SetupDependenciesConan.cmake)
 
-
 if(H5PP_ENABLE_SPDLOG)
     target_compile_definitions(deps INTERFACE H5PP_USE_SPDLOG)
 endif()
@@ -26,3 +27,18 @@ endif()
 if(H5PP_ENABLE_EIGEN3)
     target_compile_definitions(deps INTERFACE H5PP_USE_EIGEN3)
 endif()
+
+if(H5PP_USE_FLOAT128)
+   include(CheckTypeSize)
+    check_type_size(__float128 H5PP_FLOAT128_SIZE BUILTIN_TYPES_ONLY LANGUAGE CXX)
+    mark_as_advanced(H5PP_FLOAT128_SIZE)
+    if(H5PP_FLOAT128_SIZE)
+        target_compile_definitions(flags INTERFACE H5PP_USE_FLOAT128=1)
+    else()
+        message(WARNING "CMake option H5PP_USE_FLOAT128 is ON, but type __float128 could not be detected")
+        target_compile_definitions(flags INTERFACE H5PP_USE_FLOAT128=0)
+    endif()
+else()
+    target_compile_definitions(flags INTERFACE H5PP_USE_FLOAT128=0)
+endif()
+
