@@ -17,17 +17,21 @@
 #include <typeindex>
 #include <utility>
 
-#if defined(H5_HAVE_FILTER_DEFLATE)
-    #define H5PP_HAS_FILTER_DEFLATE 1
-#else
-    #define H5PP_HAS_FILTER_DEFLATE 0
+#if !defined(H5PP_HAS_ZLIB_H)
+    #if H5_HAVE_ZLIB_H == 1 && __has_include(<zlib.h>)
+        #define H5PP_HAS_ZLIB_H 1
+        #include <zlib.h>
+    #else
+        #define H5PP_HAS_ZLIB_H 0
+    #endif
 #endif
 
-#if defined(H5_HAVE_ZLIB_H)
-    #define H5PP_HAS_ZLIB_H 1
-    #include <zlib.h>
-#else
-    #define H5PP_HAS_ZLIB_H 0
+#ifndef H5PP_HAS_FILTER_DEFLATE
+    #if H5PP_HAS_ZLIB_H == 1
+        #define H5PP_HAS_FILTER_DEFLATE H5_HAVE_FILTER_DEFLATE
+    #else
+        #define H5PP_HAS_FILTER_DEFLATE 0
+    #endif
 #endif
 
 #if H5_VERSION_GE(1, 10, 5)
