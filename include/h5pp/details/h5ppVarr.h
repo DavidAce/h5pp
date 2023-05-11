@@ -1,6 +1,7 @@
 #pragma once
 #include "h5ppFormat.h"
 #include "h5ppTypeCompound.h"
+#include "h5ppVstr.h"
 #include <complex>
 #include <cstdlib>
 #include <cstring>
@@ -247,29 +248,30 @@ namespace h5pp::type::vlen {
     template<typename T>
     hid::h5t varr_t<T>::get_h5type() {
         /* clang-format off */
-        if constexpr      (std::is_same_v<T, short>)                 return H5Tvlen_create(H5T_NATIVE_SHORT);
-        else if constexpr (std::is_same_v<T, int>)                   return H5Tvlen_create(H5T_NATIVE_INT);
-        else if constexpr (std::is_same_v<T, long>)                  return H5Tvlen_create(H5T_NATIVE_LONG);
-        else if constexpr (std::is_same_v<T, long long>)             return H5Tvlen_create(H5T_NATIVE_LLONG);
-        else if constexpr (std::is_same_v<T, unsigned short>)        return H5Tvlen_create(H5T_NATIVE_USHORT);
-        else if constexpr (std::is_same_v<T, unsigned int>)          return H5Tvlen_create(H5T_NATIVE_UINT);
-        else if constexpr (std::is_same_v<T, unsigned long>)         return H5Tvlen_create(H5T_NATIVE_ULONG);
-        else if constexpr (std::is_same_v<T, unsigned long long >)   return H5Tvlen_create(H5T_NATIVE_ULLONG);
-        else if constexpr (std::is_same_v<T, float>)                 return H5Tvlen_create(H5T_NATIVE_FLOAT);
-        else if constexpr (std::is_same_v<T, double>)                return H5Tvlen_create(H5T_NATIVE_DOUBLE);
-        else if constexpr (std::is_same_v<T, long double>)           return H5Tvlen_create(H5T_NATIVE_LDOUBLE);
-        else if constexpr (std::is_same_v<T, int8_t>)                return H5Tvlen_create(H5T_NATIVE_INT8);
-        else if constexpr (std::is_same_v<T, int16_t>)               return H5Tvlen_create(H5T_NATIVE_INT16);
-        else if constexpr (std::is_same_v<T, int32_t>)               return H5Tvlen_create(H5T_NATIVE_INT32);
-        else if constexpr (std::is_same_v<T, int64_t>)               return H5Tvlen_create(H5T_NATIVE_INT64);
-        else if constexpr (std::is_same_v<T, uint8_t>)               return H5Tvlen_create(H5T_NATIVE_UINT8);
-        else if constexpr (std::is_same_v<T, uint16_t>)              return H5Tvlen_create(H5T_NATIVE_UINT16);
-        else if constexpr (std::is_same_v<T, uint32_t>)              return H5Tvlen_create(H5T_NATIVE_UINT32);
-        else if constexpr (std::is_same_v<T, uint64_t>)              return H5Tvlen_create(H5T_NATIVE_UINT64);
-        else if constexpr (std::is_same_v<T, bool>)                  return H5Tvlen_create(H5T_NATIVE_UINT8);
-        else if constexpr (type::sfinae::is_std_complex_v<T>)        return H5Tvlen_create(type::compound::H5T_COMPLEX<typename T::value_type>::h5type());
-        else if constexpr (type::sfinae::is_Scalar2_v<T>)            return H5Tvlen_create(type::compound::H5T_SCALAR2<type::sfinae::get_Scalar2_t<T>>::h5type());
-        else if constexpr (type::sfinae::is_Scalar3_v<T>)            return H5Tvlen_create(type::compound::H5T_SCALAR3<type::sfinae::get_Scalar3_t<T>>::h5type());
+        if constexpr      (std::is_same_v<T, short>)                    return H5Tvlen_create(H5T_NATIVE_SHORT);
+        else if constexpr (std::is_same_v<T, int>)                      return H5Tvlen_create(H5T_NATIVE_INT);
+        else if constexpr (std::is_same_v<T, long>)                     return H5Tvlen_create(H5T_NATIVE_LONG);
+        else if constexpr (std::is_same_v<T, long long>)                return H5Tvlen_create(H5T_NATIVE_LLONG);
+        else if constexpr (std::is_same_v<T, unsigned short>)           return H5Tvlen_create(H5T_NATIVE_USHORT);
+        else if constexpr (std::is_same_v<T, unsigned int>)             return H5Tvlen_create(H5T_NATIVE_UINT);
+        else if constexpr (std::is_same_v<T, unsigned long>)            return H5Tvlen_create(H5T_NATIVE_ULONG);
+        else if constexpr (std::is_same_v<T, unsigned long long >)      return H5Tvlen_create(H5T_NATIVE_ULLONG);
+        else if constexpr (std::is_same_v<T, float>)                    return H5Tvlen_create(H5T_NATIVE_FLOAT);
+        else if constexpr (std::is_same_v<T, double>)                   return H5Tvlen_create(H5T_NATIVE_DOUBLE);
+        else if constexpr (std::is_same_v<T, long double>)              return H5Tvlen_create(H5T_NATIVE_LDOUBLE);
+        else if constexpr (std::is_same_v<T, int8_t>)                   return H5Tvlen_create(H5T_NATIVE_INT8);
+        else if constexpr (std::is_same_v<T, int16_t>)                  return H5Tvlen_create(H5T_NATIVE_INT16);
+        else if constexpr (std::is_same_v<T, int32_t>)                  return H5Tvlen_create(H5T_NATIVE_INT32);
+        else if constexpr (std::is_same_v<T, int64_t>)                  return H5Tvlen_create(H5T_NATIVE_INT64);
+        else if constexpr (std::is_same_v<T, uint8_t>)                  return H5Tvlen_create(H5T_NATIVE_UINT8);
+        else if constexpr (std::is_same_v<T, uint16_t>)                 return H5Tvlen_create(H5T_NATIVE_UINT16);
+        else if constexpr (std::is_same_v<T, uint32_t>)                 return H5Tvlen_create(H5T_NATIVE_UINT32);
+        else if constexpr (std::is_same_v<T, uint64_t>)                 return H5Tvlen_create(H5T_NATIVE_UINT64);
+        else if constexpr (std::is_same_v<T, bool>)                     return H5Tvlen_create(H5T_NATIVE_UINT8);
+        else if constexpr (std::is_same_v<T, h5pp::type::vlen::vstr_t>) return H5Tvlen_create(h5pp::type::vlen::vstr_t::get_h5type());
+        else if constexpr (type::sfinae::is_std_complex_v<T>)           return H5Tvlen_create(type::compound::H5T_COMPLEX<typename T::value_type>::h5type());
+        else if constexpr (type::sfinae::is_Scalar2_v<T>)               return H5Tvlen_create(type::compound::H5T_SCALAR2<type::sfinae::get_Scalar2_t<T>>::h5type());
+        else if constexpr (type::sfinae::is_Scalar3_v<T>)               return H5Tvlen_create(type::compound::H5T_SCALAR3<type::sfinae::get_Scalar3_t<T>>::h5type());
         else static_assert(type::sfinae::invalid_type_v<T> and "h5pp could not match the given C++ type to an variable-length HDF5 type.");
         /* clang-format on */
     }
