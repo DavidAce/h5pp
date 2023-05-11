@@ -84,7 +84,7 @@ namespace h5pp::type::vlen {
             vtype_size = sizeof(typename V::Scalar);
         }
         vl.len = v.size();
-        vl.p   = malloc(v.size() * vtype_size);
+        vl.p   = calloc(v.size(), vtype_size);
         std::copy(v.data(), v.data() + v.size(), begin());
     }
 
@@ -95,25 +95,25 @@ namespace h5pp::type::vlen {
     template<typename T>
     varr_t<T>::varr_t(const varr_t<T> &v) {
         vl.len = v.vl.len;
-        vl.p   = malloc(v.vl.len * sizeof(T));
-        std::memcpy(vl.p, v.vl.p, vl.len * sizeof(T));
+        vl.p   = calloc(v.vl.len, sizeof(T));
+        std::copy(v.begin(), v.end(), begin());
     }
     template<typename T>
     varr_t<T>::varr_t(varr_t<T> &&v) noexcept {
         vl.len = v.vl.len;
-        vl.p   = malloc(v.vl.len * sizeof(T));
+        vl.p   = calloc(v.vl.len, sizeof(T));
         std::copy(v.begin(), v.end(), begin());
     }
     template<typename T>
     varr_t<T>::varr_t(size_t n, const T &val) {
         vl.len = n;
-        vl.p   = malloc(n * sizeof(T));
+        vl.p   = calloc(n, sizeof(T));
         std::fill(begin(), end(), val);
     }
     template<typename T>
     varr_t<T>::varr_t(std::initializer_list<T> vals) {
         vl.len = vals.size();
-        vl.p   = malloc(vals.size() * sizeof(T));
+        vl.p   = calloc(vals.size(), sizeof(T));
         std::copy(vals.begin(), vals.end(), begin());
     }
 
@@ -121,7 +121,7 @@ namespace h5pp::type::vlen {
     varr_t<T> &varr_t<T>::operator=(const varr_t<T> &v) noexcept {
         free(vl.p);
         vl.len = v.vl.len;
-        vl.p   = malloc(v.vl.len * sizeof(T));
+        vl.p   = calloc(v.vl.len, sizeof(T));
         std::copy(v.begin(), v.end(), begin());
         return *this;
     }
@@ -129,7 +129,7 @@ namespace h5pp::type::vlen {
     varr_t<T> &varr_t<T>::operator=(const std::vector<T> &v) {
         free(vl.p);
         vl.len = v.size();
-        vl.p   = malloc(v.size() * sizeof(T));
+        vl.p   = calloc(v.size(), sizeof(T));
         std::copy(v.begin(), v.end(), begin());
         return *this;
     }
@@ -149,7 +149,7 @@ namespace h5pp::type::vlen {
             vtype_size = sizeof(typename V::Scalar);
         }
         vl.len = v.size();
-        vl.p   = malloc(v.size() * vtype_size);
+        vl.p   = calloc(v.size(), vtype_size);
         std::copy(v.data(), v.data() + v.size(), begin());
         return *this;
     }
@@ -158,7 +158,7 @@ namespace h5pp::type::vlen {
     varr_t<T> &varr_t<T>::operator=(std::initializer_list<T> v) {
         free(vl.p);
         vl.len = v.size();
-        vl.p   = malloc(v.size() * sizeof(T));
+        vl.p   = calloc(v.size(), sizeof(T));
         std::copy(v.begin(), v.end(), begin());
         return *this;
     }
