@@ -41,13 +41,10 @@ class H5ppConan(ConanFile):
         }
 
     def requirements(self):
-        if Version(self.version) < "1.10.0":
-            self.requires("hdf5/1.12.1", transitive_headers=True, transitive_libs=True)
-        else:
-            self.requires("hdf5/1.14.0", transitive_headers=True, transitive_libs=True)
-        if Version(self.version) < "1.10.0" or self.options.get_safe('with_eigen'):
+        self.requires("hdf5/1.14.0", transitive_headers=True, transitive_libs=True)
+        if self.options.get_safe('with_eigen'):
             self.requires("eigen/3.4.0", transitive_headers=True)
-        if Version(self.version) < "1.10.0" or self.options.get_safe('with_spdlog'):
+        if self.options.get_safe('with_spdlog'):
             self.requires("spdlog/1.11.0", transitive_headers=True, transitive_libs=True)
 
     def layout(self):
