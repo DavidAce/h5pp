@@ -1,13 +1,26 @@
 #pragma once
+#include "h5ppHid.h"
+#include "h5ppLogger.h"
+#include "h5ppTypeSfinae.h"
 #include <cstdlib>
 #include <cstring>
 #include <H5Tpublic.h>
 #include <string>
 #include <string_view>
 
+#if !defined(H5PP_USE_FLOAT128)
+    #if defined(__GNUC__) || defined(__clang__)
+        #define H5PP_USE_FLOAT128
+    #endif
+#endif
+#if H5PP_USE_QUADMATH
+    #include <quadmath.h>
+#endif
+
 namespace h5pp::type::vlen {
     struct vstr_t {
         private:
+        static constexpr bool debug_vstr_t = false;
         char *ptr = nullptr;
 
         public:
@@ -19,30 +32,46 @@ namespace h5pp::type::vlen {
         vstr_t(const char *v);
         vstr_t(std::string_view v);
         vstr_t(vstr_t &&other) noexcept;
-        vstr_t              &operator=(const vstr_t &v) noexcept;
-        vstr_t              &operator=(std::string_view v);
-        vstr_t              &operator=(const hvl_t &v) = delete; /*!< inherently unsafe to allocate an unknown type */
-        vstr_t              &operator=(hvl_t &&v)      = delete; /*!< inherently unsafe to allocate an unknown type */
-        bool                 operator==(std::string_view v) const;
-        bool                 operator!=(std::string_view v) const;
-        char                *data();
-        const char          *data() const;
-        char                *c_str();
-        const char          *c_str() const;
-        [[nodiscard]] size_t size() const;
-        const char          *begin() const;
-        const char          *end() const;
-        char                *begin();
-        char                *end();
-        void                 clear();
-        bool                 empty() const;
-        void                 resize(size_t n);
-        void                 erase(const char *b, const char *e);
-        void                 erase(std::string::size_type pos, std::string::size_type n);
-        void                 append(const char *v);
-        void                 append(const std::string &v);
-        void                 append(std::string_view v);
-        static hid::h5t      get_h5type();
+        template<typename T, typename = std::enable_if_t<!std::is_convertible_v<T, std::string>>>
+        vstr_t(const T &v);
+        vstr_t &operator=(const vstr_t &v) noexcept;
+        vstr_t &operator=(std::string_view v);
+        vstr_t &operator=(const hvl_t &v) = delete; /*!< inherently unsafe to allocate an unknown type */
+        vstr_t &operator=(hvl_t &&v)      = delete; /*!< inherently unsafe to allocate an unknown type */
+        template<typename T, typename = std::enable_if_t<!std::is_convertible_v<T, std::string>>>
+        vstr_t &operator=(const T &v);
+        template<typename T, typename = std::enable_if_t<!std::is_convertible_v<T, std::string>>>
+        vstr_t                   &operator+=(const T &v);
+        bool                      operator==(std::string_view v) const;
+        bool                      operator!=(std::string_view v) const;
+        char                     *data();
+        [[nodiscard]] const char *data() const;
+        char                     *c_str();
+        [[nodiscard]] const char *c_str() const;
+        [[nodiscard]] size_t      size() const;
+        [[nodiscard]] const char *begin() const;
+        [[nodiscard]] const char *end() const;
+        char                     *begin();
+        char                     *end();
+        void                      clear() noexcept;
+        [[nodiscard]] bool        empty() const;
+        void                      resize(size_t n);
+        void                      erase(const char *b, const char *e);
+        void                      erase(std::string::size_type pos, std::string::size_type n);
+        void                      append(const char *v);
+        void                      append(const std::string &v);
+        void                      append(std::string_view v);
+
+        template<typename T,
+                 typename = std::enable_if_t<std::is_floating_point_v<T> || type::sfinae::is_std_complex_v<T>
+#if defined(H5PP_USE_QUADMATH)
+                                             || std::is_same_v<T, __float128> || std::is_same_v<T, __complex128> ||
+                                             std::is_same_v<T, std::complex<__float128>>
+#endif
+                                             >>
+        T to_floating_point() const;
+
+        static hid::h5t get_h5type();
         ~vstr_t() noexcept;
 #if !defined(FMT_FORMAT_H_) || !defined(H5PP_USE_FMT)
         friend auto operator<<(std::ostream &os, const vstr_t &v) -> std::ostream & {
@@ -55,45 +84,52 @@ namespace h5pp::type::vlen {
     inline vstr_t::operator std::string_view() const { return {begin(), size()}; }
 
     inline vstr_t::vstr_t(const vstr_t &v) {
+        if(v.ptr == nullptr) return;
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.ptr);
         ptr[v.size()] = '\0';
+        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
     }
     inline vstr_t::vstr_t(const char *v) {
+        if(v == nullptr) return;
         size_t len = strlen(v);
         ptr        = static_cast<char *>(malloc(len + 1 * sizeof(char)));
         strcpy(ptr, v);
         ptr[len] = '\0';
+        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
     }
     inline vstr_t::vstr_t(std::string_view v) {
+        if(v.size() == 0) return;
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.data());
         ptr[v.size()] = '\0';
+        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
     }
 
     inline vstr_t::vstr_t(vstr_t &&v) noexcept {
+        if(v.ptr == nullptr) return;
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.ptr);
         ptr[v.size()] = '\0';
     }
     inline vstr_t &vstr_t::operator=(const vstr_t &v) noexcept {
         if(this != &v and ptr != v.ptr) {
-            free(ptr);
+            clear();
             ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
             strcpy(ptr, v.ptr);
             ptr[v.size()] = '\0';
+            if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
         }
         return *this;
     }
 
     inline vstr_t &vstr_t::operator=(std::string_view v) {
-        free(ptr);
+        clear();
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.data());
         ptr[v.size()] = '\0';
         return *this;
     }
-
     inline bool vstr_t::operator==(std::string_view v) const {
         if(size() != v.size()) return false;
         return std::equal(begin(), end(), v.begin());
@@ -122,7 +158,10 @@ namespace h5pp::type::vlen {
 
     inline char *vstr_t::end() { return ptr + size(); }
 
-    inline void vstr_t::clear() {
+    inline void vstr_t::clear() noexcept {
+        if constexpr(debug_vstr_t) {
+            if(ptr != nullptr) h5pp::logger::log->info("vstr_t clearing {} | {}", fmt::ptr(ptr), ptr);
+        }
         free(ptr);
         ptr = nullptr;
     }
@@ -133,6 +172,7 @@ namespace h5pp::type::vlen {
             throw;
         }
         ptr = newptr;
+        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t realloc {} | {}", fmt::ptr(ptr), ptr);
     }
     inline void vstr_t::erase(std::string::size_type pos, std::string::size_type n) { *this = std::string(*this).erase(pos, n); }
     inline void vstr_t::erase(const char *b, const char *e) {
@@ -141,10 +181,12 @@ namespace h5pp::type::vlen {
         erase(pos, n);
     }
     inline void vstr_t::append(const char *v) {
+        if(v == nullptr) return;
         size_t oldlen = size();
         resize(oldlen + strlen(v));
         strcpy(ptr + oldlen, v);
         ptr[size()] = '\0';
+        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t appended to {} | {} -> {}", fmt::ptr(ptr), v, ptr);
     }
     inline void vstr_t::append(const std::string &v) { append(v.c_str()); }
     inline void vstr_t::append(std::string_view v) { append(v.data()); }
@@ -158,7 +200,7 @@ namespace h5pp::type::vlen {
         return h5type;
     }
 
-    inline vstr_t::~vstr_t() noexcept { free(ptr); }
+    inline vstr_t::~vstr_t() noexcept { clear(); }
 
 }
 namespace h5pp {
