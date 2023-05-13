@@ -60,8 +60,16 @@ namespace h5pp::type {
 #if H5PP_USE_FLOAT128 == 1
         if(type::custom::H5T_FLOAT<__float128>::equal(h5type)) return type::custom::H5T_FLOAT<__float128>::h5name();
 #endif
-        if(H5Tget_class(h5type) == H5T_class_t::H5T_ENUM)  return h5pp::format("H5T_ENUM{}",H5Tget_size(h5type));
-        if(H5Tcommitted(h5type) == 0)                      return "H5T_NOT_COMMITTED";
+        if(H5Tget_class(h5type) == H5T_class_t::H5T_ENUM)      return h5pp::format("H5T_ENUM{}",H5Tget_size(h5type));
+        if(H5Tget_class(h5type) == H5T_class_t::H5T_ARRAY)     return fmt::format("H5T_ARRAY<{}>", getH5TypeName(H5Tget_super(h5type)));
+        if(H5Tis_variable_str(h5type))                         return "H5T_VARIABLE";
+        if(H5Tcommitted(h5type) == 0){
+            hid::h5t h5native = H5Tget_native_type(h5type, H5T_direction_t::H5T_DIR_DEFAULT);
+            if(H5Tequal(h5native, h5type) == 0)
+                return fmt::format("{}<{}>",getH5ClassName(h5type), getH5TypeName(h5native));
+            // Just get the class and size...
+            return h5pp::format("{}:{}",getH5ClassName(h5type), H5Tget_size(h5type));
+        }
         /* clang-format on */
         // Read about the buffer size inconsistency here
         // http://hdf-forum.184993.n3.nabble.com/H5Iget-name-inconsistency-td193143.html
