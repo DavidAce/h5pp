@@ -50,6 +50,19 @@ namespace h5pp::type::vlen {
         T                   *begin();
         T                   *end();
         bool                 empty() const;
+
+        template<typename V,
+                 typename = std::enable_if_t<
+                 (std::is_constructible_v<T, std::string> || std::is_same_v<T, h5pp::vstr_t>) &&
+                 (std::is_floating_point_v<V>
+#if defined(H5PP_USE_QUADMATH)
+                 || std::is_same_v<V, __float128>
+                 || std::is_same_v<T, __complex128>
+                 || std::is_same_v<T, std::complex<__float128>>
+#endif
+                 )>>
+        varr_t<V> to_floating_point() const;
+
         static hid::h5t      get_h5type();
         ~varr_t() noexcept;
 

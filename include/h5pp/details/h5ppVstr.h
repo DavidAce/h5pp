@@ -111,7 +111,34 @@ namespace h5pp::type::vlen {
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.ptr);
         ptr[v.size()] = '\0';
+        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
     }
+    template<typename T, typename>
+    vstr_t::vstr_t(const T &v) {
+#if defined(H5PP_USE_QUADMATH)
+        auto flt128_to_string = [](__float128 &val) -> std::string {
+            auto n = quadmath_snprintf(nullptr, 0, "%.36Qg", val);
+            if(n > -1) {
+                auto s = std::string();
+                s.resize(static_cast<size_t>(n) + 1);
+                quadmath_snprintf(s.data(), static_cast<size_t>(n) + 1, "%.36Qg", val);
+                return s;
+            }
+            return {};
+        };
+        if constexpr(std::is_same_v<std::decay_t<T>, __float128>) {
+            *this = flt128_to_string(v);
+        } else if constexpr(std::is_same_v<std::decay_t<T>, std::complex<__float128>>) {
+            *this = h5pp::format("({},{})", flt128_to_string(v.real()), flt128_to_string(v.imag()));
+        } else if constexpr(std::is_same_v<std::decay_t<T>, __complex128>) {
+            *this = h5pp::format("({},{})", flt128_to_string(crealq(v)), flt128_to_string(cimagq(v)));
+        } else
+#endif
+        {
+            *this = h5pp::format("{}", v);
+        }
+    }
+
     inline vstr_t &vstr_t::operator=(const vstr_t &v) noexcept {
         if(this != &v and ptr != v.ptr) {
             clear();
@@ -128,6 +155,38 @@ namespace h5pp::type::vlen {
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.data());
         ptr[v.size()] = '\0';
+        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
+        return *this;
+    }
+    template<typename T, typename>
+    vstr_t &vstr_t::operator=(const T &v) {
+#if defined(H5PP_USE_QUADMATH)
+        auto flt128_to_string = [](const __float128 &val) -> std::string {
+            auto n = quadmath_snprintf(nullptr, 0, "%.36Qg", val);
+            if(n > -1) {
+                auto s = std::string();
+                s.resize(static_cast<size_t>(n) + 1);
+                quadmath_snprintf(s.data(), static_cast<size_t>(n) + 1, "%.36Qg", val);
+                return s.c_str(); // We want a null terminated string
+            }
+            return {};
+        };
+        if constexpr(std::is_same_v<std::decay_t<T>, __float128>) {
+            *this = flt128_to_string(v);
+        } else if constexpr(std::is_same_v<std::decay_t<T>, std::complex<__float128>>) {
+            *this = h5pp::format("({},{})", flt128_to_string(v.real()), flt128_to_string(v.imag()));
+        } else if constexpr(std::is_same_v<std::decay_t<T>, __complex128>) {
+            *this = h5pp::format("({},{})", flt128_to_string(crealq(v)), flt128_to_string(cimagq(v)));
+        } else
+#endif
+        {
+            *this = h5pp::format("{}", v);
+        }
+        return *this;
+    }
+    template<typename T, typename>
+    vstr_t &vstr_t::operator+=(const T &v) {
+        *this = to_floating_point<T>() + v;
         return *this;
     }
     inline bool vstr_t::operator==(std::string_view v) const {
@@ -191,6 +250,52 @@ namespace h5pp::type::vlen {
     inline void vstr_t::append(const std::string &v) { append(v.c_str()); }
     inline void vstr_t::append(std::string_view v) { append(v.data()); }
     inline bool vstr_t::empty() const { return size() == 0; }
+
+    template<typename T, typename>
+    T vstr_t::to_floating_point() const {
+        if(ptr == nullptr) return 0;
+        if(size() == 0) return 0;
+        if constexpr(std::is_same_v<std::decay_t<T>, float>) {
+            return strtof(c_str(), nullptr);
+        } else if constexpr(std::is_same_v<std::decay_t<T>, double>) {
+            return strtod(c_str(), nullptr);
+        } else if constexpr(std::is_same_v<std::decay_t<T>, long double>) {
+            return strtold(c_str(), nullptr);
+        }
+#if defined(H5PP_USE_QUADMATH)
+        else if constexpr(std::is_same_v<std::decay_t<T>, __float128>) {
+            return strtoflt128(c_str(), nullptr);
+        }
+#endif
+        else {
+            auto strtocomplex = [](std::string_view s, auto strtox) -> T {
+                auto  pfx  = s.rfind('(', 0) == 0 ? 1ul : 0ul;
+                auto  rstr = s.substr(pfx);
+                char *rem;
+                auto  real = strtox(rstr.data(), &rem);
+                auto  imag = 0.0;
+                auto  dlim = std::string_view(rem).find_first_not_of(",+-");
+                if(dlim != std::string_view::npos) {
+                    auto istr = std::string_view(rem).substr(dlim);
+                    imag      = strtox(istr.data(), nullptr);
+                }
+                return T{real, imag};
+            };
+            if constexpr(std::is_same_v<std::decay_t<T>, std::complex<float>>) {
+                return strtocomplex(c_str(), strtof);
+            } else if constexpr(std::is_same_v<std::decay_t<T>, std::complex<double>>) {
+                return strtocomplex(c_str(), strtod);
+            } else if constexpr(std::is_same_v<std::decay_t<T>, std::complex<long double>>) {
+                return strtocomplex(c_str(), strtold);
+            }
+#if defined(H5PP_USE_QUADMATH)
+            else if constexpr(std::is_same_v<std::decay_t<T>, __complex128> or std::is_same_v<std::decay_t<T>, std::complex<__float128>>) {
+                return strtocomplex(c_str(), strtoflt128);
+            }
+#endif
+        }
+        return 0;
+    }
 
     inline hid::h5t vstr_t::get_h5type() {
         hid::h5t h5type = H5Tcopy(H5T_C_S1);
