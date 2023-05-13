@@ -9,9 +9,7 @@
 
 #if !defined(H5PP_USE_FLOAT128)
     #if defined(__GNUC__) || defined(__clang__)
-        #define H5PP_USE_FLOAT128 1
-    #else
-        #define H5PP_USE_FLOAT128 0
+        #define H5PP_USE_FLOAT128
     #endif
 #endif
 
@@ -24,7 +22,7 @@ namespace h5pp::type::custom {
         inline static hid::h5t    float_id;
         static void               init() {
             if(not float_id.valid()) {
-#if H5PP_USE_FLOAT128 == 1
+#if defined(H5PP_USE_FLOAT128)
                 if constexpr(std::is_same_v<T, __float128>) {
     #if __BYTE_ORDER == LITTLE_ENDIAN
                     float_id   = H5Tcopy(H5T_IEEE_F64LE);
