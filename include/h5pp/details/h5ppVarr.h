@@ -282,6 +282,9 @@ namespace h5pp::type::vlen {
         else if constexpr (std::is_same_v<T, uint64_t>)                 return H5Tvlen_create(H5T_NATIVE_UINT64);
         else if constexpr (std::is_same_v<T, bool>)                     return H5Tvlen_create(H5T_NATIVE_UINT8);
         else if constexpr (std::is_same_v<T, h5pp::type::vlen::vstr_t>) return H5Tvlen_create(h5pp::type::vlen::vstr_t::get_h5type());
+        #if defined(H5PP_USE_FLOAT128)
+        else if constexpr (std::is_same_v<T, __float128>)               return type::custom::H5T_FLOAT<__float128>::h5type();
+        #endif
         else if constexpr (type::sfinae::is_std_complex_v<T>)           return H5Tvlen_create(type::compound::H5T_COMPLEX<typename T::value_type>::h5type());
         else if constexpr (type::sfinae::is_Scalar2_v<T>)               return H5Tvlen_create(type::compound::H5T_SCALAR2<type::sfinae::get_Scalar2_t<T>>::h5type());
         else if constexpr (type::sfinae::is_Scalar3_v<T>)               return H5Tvlen_create(type::compound::H5T_SCALAR3<type::sfinae::get_Scalar3_t<T>>::h5type());

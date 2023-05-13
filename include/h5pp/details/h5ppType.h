@@ -57,7 +57,7 @@ namespace h5pp::type {
         if(H5Tequal(h5type, H5T_NATIVE_UINT64))            return "H5T_NATIVE_UINT64";
         if(H5Tequal(h5type, H5T_NATIVE_UINT8))             return "H5T_NATIVE_UINT8";
         if(H5Tequal(h5type, H5T_C_S1))                     return "H5T_C_S1";
-#if H5PP_USE_FLOAT128 == 1
+#if defined(H5PP_USE_FLOAT128)
         if(type::custom::H5T_FLOAT<__float128>::equal(h5type)) return type::custom::H5T_FLOAT<__float128>::h5name();
 #endif
         if(H5Tget_class(h5type) == H5T_class_t::H5T_ENUM)      return h5pp::format("H5T_ENUM{}",H5Tget_size(h5type));
@@ -145,7 +145,7 @@ namespace h5pp::type {
         else if constexpr (std::is_same_v<DecayType, float>)                 return H5Tcopy(H5T_NATIVE_FLOAT);
         else if constexpr (std::is_same_v<DecayType, double>)                return H5Tcopy(H5T_NATIVE_DOUBLE);
         else if constexpr (std::is_same_v<DecayType, long double>)           return H5Tcopy(H5T_NATIVE_LDOUBLE);
-        #if H5PP_USE_FLOAT128 == 1
+        #if defined(H5PP_USE_FLOAT128)
         else if constexpr(std::is_same_v<DecayType, __float128>)             return H5Tcopy(type::custom::H5T_FLOAT<__float128>::h5type());
         #endif
         else if constexpr (std::is_same_v<DecayType, int8_t>)                return H5Tcopy(H5T_NATIVE_INT8);
@@ -309,21 +309,7 @@ namespace h5pp::type {
         if(H5Tequal(type, H5T_NATIVE_HBOOL))            return getCppType<hbool_t>();
         if(H5Tequal(type, H5T_NATIVE_B8))               return getCppType<std::byte>();
 
-        std::string name;
-        switch(h5class){
-            case H5T_class_t::H5T_INTEGER:      name = "H5T_INTEGER"; break;
-            case H5T_class_t::H5T_FLOAT:        name = "H5T_FLOAT"; break;
-            case H5T_class_t::H5T_TIME:         name = "H5T_TIME"; break;
-            case H5T_class_t::H5T_STRING:       name = "H5T_STRING"; break;
-            case H5T_class_t::H5T_BITFIELD:     name = "H5T_BITFIELD"; break;
-            case H5T_class_t::H5T_OPAQUE:       name = "H5T_OPAQUE"; break;
-            case H5T_class_t::H5T_COMPOUND:     name = "H5T_COMPOUND"; break;
-            case H5T_class_t::H5T_REFERENCE:    name = "H5T_REFERENCE"; break;
-            case H5T_class_t::H5T_ENUM:         name = "H5T_ENUM"; break;
-            case H5T_class_t::H5T_VLEN:         name = "H5T_VLEN"; break;
-            case H5T_class_t::H5T_ARRAY:        name = "H5T_ARRAY"; break;
-            default: name = "UNKNOWN TYPE";
-        }
+        auto name = getH5ClassName(type);
         /* clang-format on */
         auto h5size = H5Tget_size(type);
         if(H5Tcommitted(type) > 0) {

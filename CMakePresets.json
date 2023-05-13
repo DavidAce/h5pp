@@ -80,7 +80,8 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc-12",
-        "CMAKE_CXX_COMPILER": "g++-12"
+        "CMAKE_CXX_COMPILER": "g++-12",
+        "H5PP_USE_QUADMATH": "TRUE"
       }
     },
     {
