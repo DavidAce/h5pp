@@ -15,6 +15,25 @@
 namespace tc = h5pp::type::sfinae;
 namespace h5pp::type {
 
+    [[nodiscard]] inline std::string getH5ClassName(H5T_class_t h5class) {
+        switch(h5class) {
+            case H5T_class_t::H5T_INTEGER: return "H5T_INTEGER";
+            case H5T_class_t::H5T_FLOAT: return "H5T_FLOAT";
+            case H5T_class_t::H5T_TIME: return "H5T_TIME";
+            case H5T_class_t::H5T_STRING: return "H5T_STRING";
+            case H5T_class_t::H5T_BITFIELD: return "H5T_BITFIELD";
+            case H5T_class_t::H5T_OPAQUE: return "H5T_OPAQUE";
+            case H5T_class_t::H5T_COMPOUND: return "H5T_COMPOUND";
+            case H5T_class_t::H5T_REFERENCE: return "H5T_REFERENCE";
+            case H5T_class_t::H5T_ENUM: return "H5T_ENUM";
+            case H5T_class_t::H5T_VLEN: return "H5T_VLEN";
+            case H5T_class_t::H5T_ARRAY: return "H5T_ARRAY";
+            default: return "H5T_UNKNOWN_CLASS";
+        }
+    }
+
+    [[nodiscard]] inline std::string getH5ClassName(const hid::h5t &h5type) { return getH5ClassName(H5Tget_class(h5type)); }
+
     [[nodiscard]] inline std::string getH5TypeName(const hid::h5t &h5type) {
         /* clang-format off */
         if(H5Tequal(h5type, H5T_NATIVE_SHORT))             return "H5T_NATIVE_SHORT";
