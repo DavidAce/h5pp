@@ -1,4 +1,5 @@
 #pragma once
+#include "h5ppEnums.h"
 #include "h5ppFormat.h"
 #include "h5ppOptional.h"
 #include "h5ppSpdlog.h"
