@@ -653,18 +653,23 @@ namespace h5pp {
         }
         [[nodiscard]] std::string string_fields(bool enable = true) const {
             if(not enable) return {};
-            std::string msg;
+            if(not numFields) return {};
+            size_t nwidth = 4;
+            for(const auto &name : fieldNames.value()) nwidth = std::max(nwidth, 1ul + name.size());
             /* clang-format off */
-            if(numFields){
-                msg.append(h5pp::format("Fields ({}):\n", numFields.value()));
-                for(size_t m = 0; m < type::safe_cast<size_t>(numFields.value()); m++){
-                    if(fieldNames and fieldNames->size() > m) msg.append(h5pp::format("{:<32} ", fieldNames->operator[](m)));
-                    if(fieldTypes and fieldTypes->size() > m) msg.append(h5pp::format("| {:<16} ", type::getH5TypeName(fieldTypes->operator[](m))));
-                    if(fieldSizes and fieldSizes->size() > m) msg.append(h5pp::format("| extent {:<4} bytes ", fieldSizes->operator[](m)));
-                    if(fieldOffsets and fieldOffsets->size() > m) msg.append(h5pp::format("| offset {:<4} bytes", fieldOffsets->operator[](m)));
-                    msg.append(".\n");
-                }
+            std::string msg = fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth, "idx", "name", "size", "offset", "class", "type");
+            for(size_t m = 0; m < type::safe_cast<size_t>(numFields.value()); ++m) {
+                msg += fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth,
+                                         m,
+                                         fieldNames and fieldNames->size() > m ? fieldNames->at(m) : "",
+                                         fieldSizes and fieldSizes->size() > m ? fieldSizes->at(m) : -1ul,
+                                         fieldOffsets and fieldOffsets->size() > m ? fieldOffsets->at(m) : -1ul,
+                                         fieldClasses and fieldClasses->size() > m ? h5pp::type::getH5ClassName(fieldClasses->at(m)) : "",
+                                         fieldTypes and fieldTypes->size() > m ? h5pp::type::getH5TypeName(fieldTypes->at(m)) : ""
+                                         );
             }
+
+            /* clang-format on */
             return msg;
             /* clang-format on */
         }
@@ -864,7 +869,9 @@ namespace h5pp {
         }
         [[nodiscard]] std::string string_members(bool enable = true) const {
             if(not enable) return {};
-            std::string msg;
+            if(not numMembers) return {};
+            size_t nwidth = 4;
+            for(const auto &name : memberNames.value()) nwidth = std::max(nwidth, 1ul + name.size());
             /* clang-format off */
             std::string msg = fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth, "idx", "name", "size", "offset", "class", "type");
             for(size_t m = 0; m < type::safe_cast<size_t>(numMembers.value()); ++m) {
@@ -879,7 +886,6 @@ namespace h5pp {
             }
             /* clang-format on */
             return msg;
-            /* clang-format on */
         }
     };
 }
