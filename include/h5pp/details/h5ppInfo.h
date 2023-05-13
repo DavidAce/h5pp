@@ -838,6 +838,7 @@ namespace h5pp {
         std::optional<std::vector<size_t>>      memberSizes  = std::nullopt;
         std::optional<std::vector<size_t>>      memberOffset = std::nullopt;
         std::optional<std::vector<int>>         memberIndex  = std::nullopt;
+        std::optional<std::vector<H5T_class_t>> memberClass  = std::nullopt;
         [[nodiscard]] std::string               string(bool enable = true) const {
             if(not enable) return {};
             std::string msg;
@@ -853,16 +854,18 @@ namespace h5pp {
             if(not enable) return {};
             std::string msg;
             /* clang-format off */
-            if(numMembers){
-                msg.append(h5pp::format("Fields ({}):\n", numMembers.value()));
-                for(size_t m = 0; m < type::safe_cast<size_t>(numMembers.value()); m++){
-                    if(memberIndex and memberIndex->size() > m) msg.append(h5pp::format("    [{:^3}] ", memberIndex->operator[](m)));
-                    if(memberNames and memberNames->size() > m) msg.append(h5pp::format(" {:<32} ", memberNames->operator[](m)));
-                    if(memberTypes and memberTypes->size() > m) msg.append(h5pp::format("| {:<16} ", type::getH5TypeName(memberTypes->operator[](m))));
-                    if(memberSizes and memberSizes->size() > m) msg.append(h5pp::format("| size {:<4} bytes ", memberSizes->operator[](m)));
-                    if(memberOffset and memberOffset->size() > m) msg.append(h5pp::format("| offset {:<4} bytes", memberOffset->operator[](m)));
-                }
+            std::string msg = fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth, "idx", "name", "size", "offset", "class", "type");
+            for(size_t m = 0; m < type::safe_cast<size_t>(numMembers.value()); ++m) {
+                msg += fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth,
+                                         m,
+                                         memberNames and memberNames->size() > m ? memberNames->at(m) : "",
+                                         memberSizes and memberSizes->size() > m ? memberSizes->at(m) : -1ul,
+                                         memberOffset and memberOffset->size() > m ? memberOffset->at(m) : -1ul,
+                                         memberClass and memberClass->size() > m ? h5pp::type::getH5ClassName(memberClass->at(m)) : "",
+                                         memberTypes and memberTypes->size() > m ? h5pp::type::getH5TypeName(memberTypes->at(m)) : ""
+                                         );
             }
+            /* clang-format on */
             return msg;
             /* clang-format on */
         }

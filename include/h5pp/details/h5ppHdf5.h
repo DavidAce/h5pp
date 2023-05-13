@@ -304,6 +304,7 @@ namespace h5pp::hdf5 {
         info.memberSizes  = std::vector<size_t>(nmemb);
         info.memberIndex  = std::vector<int>(nmemb);
         info.memberOffset = std::vector<size_t>(nmemb);
+        info.memberClass  = std::vector<H5T_class_t>(nmemb);
         if(info.h5Class.value() == H5T_COMPOUND) {
             for(size_t idx = 0; idx < nmemb; idx++) {
                 char *name                         = H5Tget_member_name(h5Type, type::safe_cast<unsigned int>(idx));
@@ -312,6 +313,7 @@ namespace h5pp::hdf5 {
                 info.memberSizes->operator[](idx)  = H5Tget_size(info.memberTypes->operator[](idx));
                 info.memberIndex->operator[](idx)  = H5Tget_member_index(h5Type, name);
                 info.memberOffset->operator[](idx) = H5Tget_member_offset(h5Type, type::safe_cast<unsigned int>(idx));
+                info.memberClass->operator[](idx)  = H5Tget_member_class(h5Type, type::safe_cast<unsigned int>(idx));
                 H5free_memory(name);
             }
         }
