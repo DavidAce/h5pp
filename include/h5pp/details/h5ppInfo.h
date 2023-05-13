@@ -130,6 +130,9 @@ namespace h5pp {
         }
     };
     struct ReclaimInfo {
+        private:
+        static constexpr bool debug_reclaim = false;
+
         public:
         struct Reclaim {
             /*! This stores metadata required to reclaim (free) any memory that is allocated when HDF5 reads variable-length arrays */
@@ -143,6 +146,7 @@ namespace h5pp {
             mutable long counter = 0; // Counts how many instances of this object there are
             public:
             void drop() {
+                if constexpr(debug_reclaim) h5pp::logger::log->info("Reclaim dropping [{}] (counter {} -> 0) {}", tag, counter, buf);
                 type    = std::nullopt;
                 space   = std::nullopt;
                 plist   = std::nullopt;
@@ -152,30 +156,36 @@ namespace h5pp {
             }
             void reclaim() {
                 if(buf != nullptr and type and space and plist) {
-                    h5pp::logger::log->trace("Reclaiming vlen buffer from reading [{}]", tag);
+                    if constexpr(debug_reclaim) h5pp::logger::log->trace("Reclaiming vlen buffer from reading [{}] (counter {}) {}", tag, counter, buf);
 #if H5_VERSION_GE(1, 12, 0)
-                    H5Treclaim(type.value(), space.value(), plist.value(), buf);
+                    herr_t err = H5Treclaim(type.value(), space.value(), plist.value(), buf);
 #else
-                    H5Dvlen_reclaim(type.value(), space.value(), plist.value(), buf);
+                    herr_t err = H5Dvlen_reclaim(type.value(), space.value(), plist.value(), buf);
 #endif
+                    if(err < 0) h5pp::runtime_error("H5Treclaim: failed to deallocate after reading []: {}", tag, buf);
                 }
                 drop();
             }
             Reclaim() = default;
             Reclaim(const hid::h5t &type, const hid::h5s &space, const hid::h5p &plist, void *buf, const std::string &tag)
-                : type(type), space(space), plist(plist), buf(buf), tag(tag), counter(1){};
-            Reclaim(const Reclaim &r) : type(r.type), space(r.space), plist(r.plist), buf(r.buf), tag(r.tag), counter(r.counter++) {}
-            Reclaim(Reclaim &&r) noexcept
-                : type(std::move(r.type)), space(std::move(r.space)), plist(std::move(r.plist)), buf(std::move(r.buf)),
-                  tag(std::move(r.tag)), counter(std::move(r.counter++)) {}
+                : type(type), space(space), plist(plist), buf(buf), tag(tag), counter(1) {
+                if constexpr(debug_reclaim) h5pp::logger::log->info("Reclaim args ctor: tracking [{}] (counter {}) {}", tag, counter, buf);
+            }
+            Reclaim(const Reclaim &r) : type(r.type), space(r.space), plist(r.plist), buf(r.buf), tag(r.tag), counter(r.counter++) {
+                if constexpr(debug_reclaim) h5pp::logger::log->info("Reclaim copy ctor: tracking [{}] (counter {}) {}", tag, counter, buf);
+            }
+            Reclaim(Reclaim &&r) noexcept : type(r.type), space(r.space), plist(r.plist), buf(r.buf), tag(r.tag), counter(r.counter++) {
+                if constexpr(debug_reclaim) h5pp::logger::log->info("Reclaim move ctor: tracking [{}] (counter {}) {}", tag, counter, buf);
+            }
 
             Reclaim &operator=(Reclaim &&r) noexcept {
-                type    = std::move(r.type);
-                space   = std::move(r.space);
-                plist   = std::move(r.plist);
-                buf     = std::move(r.buf);
-                tag     = std::move(r.tag);
-                counter = std::move(r.counter++); // ++ makes sure "this" is now in charge of destruction
+                type    = r.type;
+                space   = r.space;
+                plist   = r.plist;
+                buf     = r.buf;
+                tag     = r.tag;
+                counter = r.counter++; // ++ makes sure "this" is now in charge of destruction
+                if constexpr(debug_reclaim) h5pp::logger::log->info("Reclaim move asgn: tracking [{}] (counter {}) {}", tag, counter, buf);
                 return *this;
             }
             Reclaim &operator=(const Reclaim &r) noexcept {
@@ -185,10 +195,12 @@ namespace h5pp {
                 buf     = r.buf;
                 tag     = r.tag;
                 counter = r.counter++; // ++ makes sure "this" is now in charge of destruction
+                if constexpr(debug_reclaim) h5pp::logger::log->info("Reclaim copy asgn: tracking [{}] (counter {}) {}", tag, counter, buf);
                 return *this;
             }
             ~Reclaim() noexcept {
                 counter--;
+                if constexpr(debug_reclaim) h5pp::logger::log->info("~Reclaim [{}] (counter {}) {}", tag, counter, buf);
                 if(buf != nullptr and counter == 0) {
                     h5pp::logger::log->warn(
                         "~Reclaim: a pointer for a variable-length array likely remains without free() after reading [{}]. "
