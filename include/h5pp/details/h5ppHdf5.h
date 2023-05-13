@@ -2603,7 +2603,7 @@ namespace h5pp::hdf5 {
 #else
                 herr_t reclaim_err = H5Dvlen_reclaim(attrInfo.h5Type.value(), attrInfo.h5Space.value(), H5P_DEFAULT, vdata.data());
 #endif
-                if(reclaim_err < 0) h5pp::runtime_error("readAttribute: failed to vlenReclaim variable-length array buffer");
+                if(reclaim_err < 0) h5pp::runtime_error("readAttribute: failed to reclaim variable-length array buffer");
             } else {
                 // All the elements in the dataset have the same string size
                 // The whole dataset is read into a contiguous block of memory.
@@ -3257,7 +3257,7 @@ namespace h5pp::hdf5 {
             auto               size = h5pp::hdf5::getSizeSelected(dsetSpace);
             std::vector<hvl_t> vdata(type::safe_cast<size_t>(size)); // Allocate len/ptr pairs for "size" number of vlen arrays
             // HDF5 allocates space for each vlen array
-            herr_t             retval = H5Dread(info.h5Dset.value(), h5t_fields, H5S_ALL, dsetSpace, plists.dsetXfer, vdata.data());
+            herr_t             retval = H5Dread(info.h5Dset.value(), h5t_fields, dataSpace, dsetSpace, plists.dsetXfer, vdata.data());
             if(retval < 0) {
                 auto h5t_info = getH5TInfo(h5t_fields);
                 h5pp::runtime_error("readTableField: H5Dread failed for variable-length field data\n"
