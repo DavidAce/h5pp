@@ -2476,8 +2476,13 @@ namespace h5pp::hdf5 {
                                           dataInfo.string());
             }
             /* Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
-            if(util::should_track_vlen_reclaims<DataType>(dsetInfo.h5Type.value(), plists))
-                dsetInfo.reclaimInfo = {dsetInfo.h5Type.value(), dsetInfo.h5Space.value(), H5P_DEFAULT, dataPtr, dsetInfo.dsetPath.value()};
+            if(util::should_track_vlen_reclaims<DataType>(dsetInfo.h5Type.value(), plists)) {
+                dsetInfo.reclaimInfo = h5pp::ReclaimInfo::Reclaim(dsetInfo.h5Type.value(),
+                                                                  dataInfo.h5Space.value(),
+                                                                  plists.dsetXfer,
+                                                                  dataPtr,
+                                                                  dsetInfo.dsetPath.value());
+            }
         }
     }
 
@@ -2628,17 +2633,18 @@ namespace h5pp::hdf5 {
                 data.erase(std::find(data.begin(), data.end(), '\0'), data.end()); // Prune all but the last null terminator
         } else {
             retval = H5Aread(attrInfo.h5Attr.value(), attrInfo.h5Type.value(), dataPtr);
+            /* Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
+            if(util::should_track_vlen_reclaims<DataType>(attrInfo.h5Type.value(), plists)) {
+                attrInfo.reclaimInfo =
+                    h5pp::ReclaimInfo::Reclaim(attrInfo.h5Type.value(),
+                                               attrInfo.h5Space.value(),
+                                               plists.dsetXfer,
+                                               dataPtr,
+                                               h5pp::format("{}|{}", attrInfo.linkPath.value(), attrInfo.attrName.value()));
+            }
         }
         if(retval < 0)
             throw h5pp::runtime_error("Failed to read from attribute \n\t {} \n into memory \n\t {}", attrInfo.string(), dataInfo.string());
-        /* Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
-        if(util::should_track_vlen_reclaims<DataType>(attrInfo.h5Type.value(), plists)) {
-            attrInfo.reclaimInfo = {attrInfo.h5Type.value(),
-                                    attrInfo.h5Space.value(),
-                                    H5P_DEFAULT,
-                                    dataPtr,
-                                    h5pp::format("{}|{}", attrInfo.linkPath.value(), attrInfo.attrName.value())};
-        }
     }
 
     [[nodiscard]] inline bool fileIsValid(const fs::path &filePath) {
@@ -2889,7 +2895,7 @@ namespace h5pp::hdf5 {
 
         /* Step 4: Detect if any VLEN arrays were read, that would have to be reclaimed/free'd later */
         if(util::should_track_vlen_reclaims<DataType>(info.h5Type.value(), plists))
-            info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, dataPtr, info.tablePath.value()};
+            info.reclaimInfo = h5pp::ReclaimInfo::Reclaim(info.h5Type.value(), dataSpace, plists.dsetXfer, dataPtr, info.tablePath.value());
     }
 
     template<typename DataType>
@@ -3267,8 +3273,13 @@ namespace h5pp::hdf5 {
             if constexpr(std::is_same_v<DataType, std::vector<hvl_t>>) {
                 data = vdata;
                 /* Save metadata so that VLEN allocation can be reclaimed/free'd later */
-                if(util::should_track_vlen_reclaims<DataType>(info.h5Type.value(), plists))
-                    info.reclaimInfo = {info.h5Type.value(), dsetSpace, H5P_DEFAULT, vdata.data(), info.tablePath.value()};
+                if(util::should_track_vlen_reclaims<DataType>(info.h5Type.value(), plists)) {
+                    info.reclaimInfo = h5pp::ReclaimInfo::Reclaim(info.h5Type.value(),
+                                                                  dataSpace,
+                                                                  plists.dsetXfer,
+                                                                  vdata.data(),
+                                                                  info.tablePath.value());
+                }
                 return;
             }
             if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
