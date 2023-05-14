@@ -2848,8 +2848,11 @@ namespace h5pp::hdf5 {
         }
 
         if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
-            h5pp::logger::log->trace("Resizing std::vector<std::byte> to size ", info.recordBytes.value() * extent.value());
-            data.resize(info.recordBytes.value() * extent.value());
+            auto newsize = info.recordBytes.value() * extent.value();
+            if(data.size() != newsize){
+                h5pp::logger::log->trace("Resizing std::vector<std::byte> to size {}", newsize);
+                data.resize(newsize);
+            }
         } else {
             size_t dtypeSize = util::getBytesPerElem<DataType>();
             if(dtypeSize != info.recordBytes.value()) {
