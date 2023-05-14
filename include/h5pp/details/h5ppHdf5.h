@@ -2848,6 +2848,7 @@ namespace h5pp::hdf5 {
         }
 
         if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {
+            h5pp::logger::log->trace("Resizing std::vector<std::byte> to size ", info.recordBytes.value() * extent.value());
             data.resize(info.recordBytes.value() * extent.value());
         } else {
             size_t dtypeSize = util::getBytesPerElem<DataType>();
@@ -3024,7 +3025,7 @@ namespace h5pp::hdf5 {
                 /* Step 4: write the records */
                 // Get the memory address to the data buffer
                 auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
-                retval       = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
+                retval       = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, plists.dsetXfer, dataPtr);
             }
 
         } else {
@@ -3040,7 +3041,7 @@ namespace h5pp::hdf5 {
             /* Step 4: write the records */
             // Get the memory address to the data buffer
             auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
-            retval       = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, H5P_DEFAULT, dataPtr);
+            retval       = H5Dwrite(info.h5Dset.value(), info.h5Type.value(), dataSpace, dsetSpace, plists.dsetXfer, dataPtr);
         }
 
         if(retval < 0) {
