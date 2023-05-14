@@ -64,6 +64,7 @@ namespace h5pp::type::vlen {
         varr_t<V> to_floating_point() const;
 
         static hid::h5t      get_h5type();
+        void clear() noexcept;
         ~varr_t() noexcept;
 
 #if !defined(FMT_FORMAT_H_) || !defined(H5PP_USE_FMT)
@@ -133,7 +134,7 @@ namespace h5pp::type::vlen {
 
     template<typename T>
     varr_t<T> &varr_t<T>::operator=(const varr_t<T> &v) noexcept {
-        free(vl.p);
+        clear();
         vl.len = v.vl.len;
         vl.p   = calloc(v.vl.len, sizeof(T));
         std::copy(v.begin(), v.end(), begin());
@@ -141,7 +142,7 @@ namespace h5pp::type::vlen {
     }
     template<typename T>
     varr_t<T> &varr_t<T>::operator=(const std::vector<T> &v) {
-        free(vl.p);
+        clear();
         vl.len = v.size();
         vl.p   = calloc(v.size(), sizeof(T));
         std::copy(v.begin(), v.end(), begin());
@@ -154,14 +155,13 @@ namespace h5pp::type::vlen {
         static_assert(h5pp::type::sfinae::has_data_v<V>);
         static_assert(h5pp::type::sfinae::has_size_v<V>);
         static_assert(h5pp::type::sfinae::has_value_type_v<V> or h5pp::type::sfinae::has_Scalar_v<V>);
-        size_t vtype_size;
+        size_t vtype_size = sizeof(T);
         if constexpr(h5pp::type::sfinae::has_value_type_v<V>) {
-            static_assert(std::is_same_v<T, typename V::value_type>);
             vtype_size = sizeof(typename V::value_type);
-        } else {
-            static_assert(std::is_same_v<T, typename V::Scalar>);
+        } else if constexpr(h5pp::type::sfinae::has_Scalar_v<V>){
             vtype_size = sizeof(typename V::Scalar);
         }
+        clear();
         vl.len = v.size();
         vl.p   = calloc(v.size(), vtype_size);
         std::copy(v.data(), v.data() + v.size(), begin());
@@ -170,7 +170,7 @@ namespace h5pp::type::vlen {
 
     template<typename T>
     varr_t<T> &varr_t<T>::operator=(std::initializer_list<T> v) {
-        free(vl.p);
+        clear();
         vl.len = v.size();
         vl.p   = calloc(v.size(), sizeof(T));
         std::copy(v.begin(), v.end(), begin());
@@ -253,11 +253,31 @@ namespace h5pp::type::vlen {
     bool varr_t<T>::empty() const {
         return vl.len == 0 or vl.p == nullptr;
     }
-
+    template<typename T>
+    void varr_t<T>::clear() noexcept {
+        if constexpr(std::is_destructible_v<T>){
+            for(auto & v : *this) v.~T();
+        }
+        free(vl.p);
+        vl.p = nullptr;
+    }
     template<typename T>
     varr_t<T>::~varr_t() noexcept {
+        if constexpr(std::is_destructible_v<T>){
+            for(auto & v : *this) v.~T();
+        }
         free(vl.p);
+        vl.p = nullptr;
     }
+
+    template<typename T>
+    template<typename V, typename>
+    varr_t<V> varr_t<T>::to_floating_point() const {
+        auto v = std::vector<V>();
+        for(const auto & t : *this ) v.emplace_back(t.template to_floating_point<V>());
+        return v;
+    }
+
     template<typename T>
     hid::h5t varr_t<T>::get_h5type() {
         /* clang-format off */
