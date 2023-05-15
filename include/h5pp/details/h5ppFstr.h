@@ -21,7 +21,6 @@ namespace h5pp::type::flen {
     namespace internal {
         static constexpr bool debug_fstr_t = false;
     }
-    template<typename T> struct is_fstr_t;
 
     template<size_t N>
     struct fstr_t {
@@ -84,11 +83,8 @@ namespace h5pp::type::flen {
         }
 #endif
 
-        template<typename T> friend struct is_fstr_t;
-        private:
-        static constexpr bool is_h5pp_fstr_t = true;
+        static constexpr bool is_h5pp_fstr_t() { return true; };
     };
-
 
     template<size_t N>
     inline fstr_t<N>::operator std::string_view() const {
@@ -99,21 +95,21 @@ namespace h5pp::type::flen {
     inline fstr_t<N>::fstr_t(const fstr_t &v) {
         if(v.ptr == nullptr) return;
         strncpy(ptr, v.ptr, N);
-        ptr[N-1] = '\0';
+        ptr[N - 1] = '\0';
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t copied into {}: {}", fmt::ptr(ptr), ptr);
     }
     template<size_t N>
     inline fstr_t<N>::fstr_t(const char *v) {
         if(v == nullptr) return;
         strncpy(ptr, v, N);
-        ptr[N-1] = '\0';
+        ptr[N - 1] = '\0';
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t copied into {}: {}", fmt::ptr(ptr), ptr);
     }
     template<size_t N>
     inline fstr_t<N>::fstr_t(std::string_view v) {
         if(v.empty()) return;
         strncpy(ptr, v.data(), N);
-        ptr[N-1] = '\0';
+        ptr[N - 1] = '\0';
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t copied into {}: {}", fmt::ptr(ptr), ptr);
     }
 
@@ -121,7 +117,7 @@ namespace h5pp::type::flen {
     inline fstr_t<N>::fstr_t(fstr_t &&v) noexcept {
         if(v.ptr == nullptr) return;
         strncpy(ptr, v.ptr, N);
-        ptr[N-1] = '\0';
+        ptr[N - 1] = '\0';
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t copied into {}: {}", fmt::ptr(ptr), ptr);
     }
     template<size_t N>
@@ -155,7 +151,7 @@ namespace h5pp::type::flen {
         if(this != &v and ptr != v.ptr) {
             clear();
             strncpy(ptr, v.ptr, N);
-            ptr[N-1] = '\0';
+            ptr[N - 1] = '\0';
             if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t assigned into {}: {}", fmt::ptr(ptr), ptr);
         }
         return *this;
@@ -163,8 +159,8 @@ namespace h5pp::type::flen {
     template<size_t N>
     inline fstr_t<N> &fstr_t<N>::operator=(std::string_view v) {
         clear();
-            strncpy(ptr, v.data(), N);
-            ptr[N-1] = '\0';
+        strncpy(ptr, v.data(), N);
+        ptr[N - 1] = '\0';
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t assigned into {}: {}", fmt::ptr(ptr), ptr);
         return *this;
     }
@@ -278,8 +274,8 @@ namespace h5pp::type::flen {
     inline void fstr_t<N>::append(const char *v) {
         if(v == nullptr) return;
         size_t oldlen = size();
-        strncpy(ptr + oldlen, v, N-oldlen);
-        ptr[N-1] = '\0';
+        strncpy(ptr + oldlen, v, N - oldlen);
+        ptr[N - 1] = '\0';
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t appended to {} | {} -> {}", fmt::ptr(ptr), v, ptr);
     }
 
@@ -364,7 +360,7 @@ namespace h5pp::type::sfinae {
     template<typename T, typename = std::void_t<>>
     struct is_fstr_t : public std::false_type {};
     template<typename T>
-    struct is_fstr_t<T, std::void_t<decltype(std::declval<T>().is_h5pp_fstr_t())>> : public std::true_type {};
+    struct is_fstr_t<T, std::void_t<decltype(T::is_h5pp_fstr_t())>> : public std::true_type {};
     template<typename T>
     inline constexpr bool is_fstr_v = is_fstr_t<T>::value;
 
@@ -372,8 +368,7 @@ namespace h5pp::type::sfinae {
     struct has_fstr_t {
         private:
         static constexpr bool test() {
-            if constexpr(is_iterable_v<T> and has_value_type_v<T>)
-                return is_fstr_v<typename T::value_type>;
+            if constexpr(is_iterable_v<T> and has_value_type_v<T>) return is_fstr_v<typename T::value_type>;
             return false;
         }
 
