@@ -184,7 +184,8 @@ namespace h5pp::util {
         // variable-length arrays and text such as std::string/char arrays are scalar,
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or
                      h5pp::type::sfinae::is_varr_v<DataType> or
-                     h5pp::type::sfinae::is_vstr_v<DataType>)       return type::safe_cast<hsize_t>(1);
+                     h5pp::type::sfinae::is_vstr_v<DataType> or
+                     h5pp::type::sfinae::is_fstr_v<DataType>)       return type::safe_cast<hsize_t>(1);
         else if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return type::safe_cast<hsize_t>(data.size());
         else if constexpr(std::is_array_v<DataType>)                return type::safe_cast<hsize_t>(getArraySize(data));
         else if constexpr(std::is_pointer_v<DataType>)
@@ -199,7 +200,9 @@ namespace h5pp::util {
 
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or
                      h5pp::type::sfinae::is_varr_v<DataType> or
-                     h5pp::type::sfinae::is_vstr_v<DataType>)               return 0;
+                     h5pp::type::sfinae::is_vstr_v<DataType> or
+                     h5pp::type::sfinae::is_fstr_v<DataType>
+                     )               return 0;
 #ifdef H5PP_USE_EIGEN3
         else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>)  return type::safe_cast<int>(DataType::NumIndices);
         else if constexpr(h5pp::type::sfinae::is_eigen_1d_v<DataType>)      return 1;
