@@ -18,20 +18,23 @@
 #endif
 
 namespace h5pp::type::vlen {
+    namespace internal {
+        static constexpr bool debug_vstr_t = false;
+    }
+
     struct vstr_t {
         private:
-        static constexpr bool debug_vstr_t = false;
         char *ptr = nullptr;
 
         public:
         using value_type = char *;
-        using data_type  = char;
+        using data_type [[maybe_unused]] = char;
         operator std::string_view() const; // Can be read as std::string_view on-the-fly
         vstr_t() = default;
         vstr_t(const vstr_t &v);
         vstr_t(const char *v);
         vstr_t(std::string_view v);
-        vstr_t(vstr_t &&other) noexcept;
+        vstr_t(vstr_t &&v) noexcept;
         template<typename T, typename = std::enable_if_t<!std::is_convertible_v<T, std::string>>>
         vstr_t(const T &v);
         vstr_t &operator=(const vstr_t &v) noexcept;
@@ -88,7 +91,7 @@ namespace h5pp::type::vlen {
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.ptr);
         ptr[v.size()] = '\0';
-        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
     }
     inline vstr_t::vstr_t(const char *v) {
         if(v == nullptr) return;
@@ -96,14 +99,14 @@ namespace h5pp::type::vlen {
         ptr        = static_cast<char *>(malloc(len + 1 * sizeof(char)));
         strcpy(ptr, v);
         ptr[len] = '\0';
-        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
     }
     inline vstr_t::vstr_t(std::string_view v) {
-        if(v.size() == 0) return;
+        if(v.empty()) return;
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.data());
         ptr[v.size()] = '\0';
-        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
     }
 
     inline vstr_t::vstr_t(vstr_t &&v) noexcept {
@@ -111,7 +114,7 @@ namespace h5pp::type::vlen {
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.ptr);
         ptr[v.size()] = '\0';
-        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
     }
     template<typename T, typename>
     vstr_t::vstr_t(const T &v) {
@@ -145,7 +148,7 @@ namespace h5pp::type::vlen {
             ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
             strcpy(ptr, v.ptr);
             ptr[v.size()] = '\0';
-            if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
+            if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
         }
         return *this;
     }
@@ -155,7 +158,7 @@ namespace h5pp::type::vlen {
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.data());
         ptr[v.size()] = '\0';
-        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
         return *this;
     }
     template<typename T, typename>
@@ -218,7 +221,7 @@ namespace h5pp::type::vlen {
     inline char *vstr_t::end() { return ptr + size(); }
 
     inline void vstr_t::clear() noexcept {
-        if constexpr(debug_vstr_t) {
+        if constexpr(internal::debug_vstr_t) {
             if(ptr != nullptr) h5pp::logger::log->info("vstr_t clearing {} | {}", fmt::ptr(ptr), ptr);
         }
         free(ptr);
@@ -231,7 +234,7 @@ namespace h5pp::type::vlen {
             throw;
         }
         ptr = newptr;
-        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t realloc {} | {}", fmt::ptr(ptr), ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t realloc {} | {}", fmt::ptr(ptr), ptr);
     }
     inline void vstr_t::erase(std::string::size_type pos, std::string::size_type n) { *this = std::string(*this).erase(pos, n); }
     inline void vstr_t::erase(const char *b, const char *e) {
@@ -245,7 +248,7 @@ namespace h5pp::type::vlen {
         resize(oldlen + strlen(v));
         strcpy(ptr + oldlen, v);
         ptr[size()] = '\0';
-        if constexpr(debug_vstr_t) h5pp::logger::log->info("vstr_t appended to {} | {} -> {}", fmt::ptr(ptr), v, ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t appended to {} | {} -> {}", fmt::ptr(ptr), v, ptr);
     }
     inline void vstr_t::append(const std::string &v) { append(v.c_str()); }
     inline void vstr_t::append(std::string_view v) { append(v.data()); }
