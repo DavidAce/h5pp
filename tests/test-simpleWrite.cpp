@@ -94,7 +94,7 @@ int main() {
     }
 #endif
 
-#if H5PP_USE_FLOAT128 == 1
+#if defined(H5PP_USE_FLOAT128)
     __float128 f128 = 6.28318530717958623199592693708837032318115234375;
     file.writeDataset(f128, "simpleWriteGroup/f128");
 #endif

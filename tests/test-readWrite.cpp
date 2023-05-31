@@ -81,7 +81,7 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
     else {
         if(writeData != readData) {
 #if H5PP_USE_FMT
-    #if H5PP_USE_FLOAT128 == 1
+    #if defined(H5PP_USE_FLOAT128)
             if constexpr(std::is_same_v<ReadType, __float128>) {
                 return;
             } else
@@ -224,7 +224,7 @@ int main() {
     test_h5pp<Eigen::MatrixXd, Eigen::VectorXd>(file, vectorMatrix, "vectorMatrix");
 #endif
 
-#if H5PP_USE_FLOAT128 == 1
+#if defined(H5PP_USE_FLOAT128)
     __float128 f128 = 6.28318530717958623199592693708837032318115234375;
     test_h5pp(file, f128, "__float128");
 #endif
