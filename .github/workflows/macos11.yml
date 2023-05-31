@@ -19,10 +19,8 @@ jobs:
         include:
           - { compiler: gcc,   manager: cmake }
           - { compiler: gcc,   manager: conan }
-          - { compiler: gcc,   manager: find  }
           - { compiler: clang, manager: cmake }
           - { compiler: clang, manager: conan }
-          - { compiler: clang, manager: find  }
 
     steps:
       - uses: actions/checkout@v3
