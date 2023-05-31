@@ -8,11 +8,6 @@
 #include <string>
 #include <string_view>
 
-#if !defined(H5PP_USE_FLOAT128)
-    #if defined(__GNUC__) || defined(__clang__)
-        #define H5PP_USE_FLOAT128
-    #endif
-#endif
 #if H5PP_USE_QUADMATH
     #include <quadmath.h>
 #endif

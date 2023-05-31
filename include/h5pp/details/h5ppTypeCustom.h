@@ -7,12 +7,6 @@
 #include <complex>
 #include <H5Tpublic.h>
 
-#if !defined(H5PP_USE_FLOAT128)
-    #if defined(__GNUC__) || defined(__clang__)
-        #define H5PP_USE_FLOAT128
-    #endif
-#endif
-
 namespace h5pp::type::custom {
 
     template<typename T>
