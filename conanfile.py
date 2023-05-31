@@ -71,7 +71,7 @@ class H5ppConan(ConanFile):
             if Version(self.settings.compiler.version) < minimum_version:
                 raise ConanInvalidConfiguration("h5pp requires C++17, which your compiler does not support.")
         else:
-            self.output.warn("h5pp requires C++17. Your compiler is unknown. Assuming it supports C++17.")
+            self.output.warning("h5pp requires C++17. Your compiler is unknown. Assuming it supports C++17.")
 
     def package(self):
         includedir = os.path.join(self.source_folder, "include")
@@ -108,13 +108,3 @@ class H5ppConan(ConanFile):
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_FLOAT128")
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_QUADMATH")
             self.cpp_info.system_libs.append('quadmath')
-
-        # TODO: to remove in conan v2 once cmake_find_package_* generators removed
-        self.cpp_info.names["cmake_find_package"] = "h5pp"
-        self.cpp_info.names["cmake_find_package_multi"] = "h5pp"
-        self.cpp_info.components["h5pp_headers"].names["cmake_find_package"] = "headers"
-        self.cpp_info.components["h5pp_headers"].names["cmake_find_package_multi"] = "headers"
-        self.cpp_info.components["h5pp_deps"].names["cmake_find_package"] = "deps"
-        self.cpp_info.components["h5pp_deps"].names["cmake_find_package_multi"] = "deps"
-        self.cpp_info.components["h5pp_flags"].names["cmake_find_package"] = "flags"
-        self.cpp_info.components["h5pp_flags"].names["cmake_find_package_multi"] = "flags"
