@@ -2,8 +2,8 @@
 
 #include "h5ppFormat.h"
 
-#if defined(H5PP_USE_FMT) && defined(FMT_FORMAT_H_) && !defined(H5PP_NO_COMPLEX_FMT)
-    #if !defined(FMT_USE_COMPLEX)
+#if defined(H5PP_USE_FMT) && defined(FMT_FORMAT_H_) && defined(FMT_VERSION) && !defined(H5PP_NO_COMPLEX_FMT)
+    #if !defined(FMT_USE_COMPLEX) && FMT_VERSION > 90000
         #define FMT_USE_COMPLEX 1
         #include <complex>
         #include <type_traits>
