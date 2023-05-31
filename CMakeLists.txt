@@ -43,15 +43,6 @@ if(H5PP_ENABLE_SPDLOG)
 endif()
 
 
-# Make an "enum" for valid package managers: find cmake fetch find-or-cmake conan
-set(H5PP_PACKAGE_MANAGERS_VALID none find fetch cmake cpm find-or-fetch find-or-cmake find-or-cpm conan)
-set(H5PP_PACKAGE_MANAGER find CACHE STRING "Package manager for external dependencies")
-mark_as_advanced(H5PP_PACKAGE_MANAGERS_VALID)
-set_property(CACHE H5PP_PACKAGE_MANAGER PROPERTY STRINGS ${H5PP_PACKAGE_MANAGERS_VALID})
-if (NOT H5PP_PACKAGE_MANAGER IN_LIST H5PP_PACKAGE_MANAGERS_VALID)
-    message(FATAL_ERROR "H5PP_PACKAGE_MANAGER must be one of ${H5PP_PACKAGE_MANAGERS_VALID}. Got [${H5PP_PACKAGE_MANAGER}]")
-endif ()
-
 # Setup paths that find_package should search, or where to find the conan executable
 include(cmake/SetupPaths.cmake)
 

@@ -175,7 +175,7 @@ function(conan_provide_dependency package_name)
             set(CONAN_GENERATORS_FOLDER "${CONAN_GENERATORS_FOLDER}" CACHE PATH "Conan generators folder")
         endif ()
     else ()
-        message(STATUS "CMake-conan: find_package(${package_name}) found, 'conan install' aready ran")
+        message(VERBOSE "CMake-conan: find_package(${package_name}) found, 'conan install' already ran")
     endif ()
 
     if (CONAN_GENERATORS_FOLDER)

@@ -62,9 +62,8 @@
       "displayName": "Debug|no package manager",
       "description": "Plain debug build without dependency handling.",
       "cacheVariables": {
-        "BUILD_SHARED_LIBS": "TRUE",
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_MAKEFILE_VERBOSE": "TRUE",
+        "CMAKE_VERBOSE_MAKEFILE": "TRUE",
         "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
         "H5PP_ENABLE_TESTS": "TRUE",
         "H5PP_BUILD_EXAMPLES": "TRUE",
@@ -96,17 +95,11 @@
       }
     },
     {
-      "name": "pkg-find",
-      "hidden": true,
-      "cacheVariables": {
-        "H5PP_PACKAGE_MANAGER": "find"
-      }
-    },
-    {
       "name": "pkg-cmake",
       "hidden": true,
       "cacheVariables": {
-        "H5PP_PACKAGE_MANAGER": "cmake",
+        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/cmake_dependency_provider/cmake_provider.cmake",
+        "CMAKE_FIND_PACKAGE_PREFER_CONFIG": "TRUE",
         "CMAKE_COMPILE_WARNING_AS_ERROR": "FALSE"
       }
     },
@@ -114,12 +107,11 @@
       "name": "pkg-conan",
       "hidden": true,
       "cacheVariables": {
-        "H5PP_PACKAGE_MANAGER": "find",
-        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/conan/conan_provider.cmake",
+        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/conan_dependency_provider/conan_provider.cmake",
         "CMAKE_FIND_PACKAGE_PREFER_CONFIG": "TRUE"
       },
       "environment": {
-        "PATH": "$env{HOME}/miniconda3/envs/dmrg/bin:$env{HOME}/miniconda3/bin:$penv{PATH}"
+        "PATH": "$env{HOME}/miniconda3/bin:$env{HOME}/anaconda3/bin:$penv{PATH}"
       }
     },
     {
@@ -226,14 +218,44 @@
     },
     {
       "name": "github-actions",
+      "hidden": true,
       "displayName": "Default configuration for github-actions",
       "inherits": "default",
       "cacheVariables": {
-        "H5PP_BUILD_DOCS": "OFF",
-        "H5PP_ENABLE_ASAN": "FALSE",
-        "H5PP_ENABLE_CCACHE": "FALSE",
+        "H5PP_BUILD_DOCS": "TRUE",
+        "H5PP_ENABLE_ASAN": "TRUE",
+        "H5PP_ENABLE_TESTS": "TRUE",
+        "H5PP_BUILD_EXAMPLES": "TRUE",
+        "H5PP_ENABLE_CCACHE": "TRUE",
+        "H5PP_ENABLE_PCH": "TRUE",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_VERBOSE_MAKEFILE": "TRUE",
+        "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
         "CMAKE_COMPILE_WARNING_AS_ERROR": "FALSE"
       }
+    },
+    {
+      "name": "github-actions-find",
+      "displayName": "github-actions using plain find_package",
+      "inherits": [
+        "github-actions"
+      ]
+    },
+    {
+      "name": "github-actions-conan",
+      "displayName": "github-actions using conan package manager",
+      "inherits": [
+        "pkg-conan",
+        "github-actions"
+      ]
+    },
+    {
+      "name": "github-actions-cmake",
+      "displayName": "github-actions using cmake package manager",
+      "inherits": [
+        "pkg-cmake",
+        "github-actions"
+      ]
     }
   ],
   "buildPresets": [
@@ -294,9 +316,19 @@
       "configurePreset": "debug-clang-14-cmake"
     },
     {
-      "name": "github-actions",
+      "name": "github-actions-find",
+      "displayName": "github-actions using plain find_package",
+      "configurePreset": "github-actions-find"
+    },
+    {
+      "name": "github-actions-conan",
+      "displayName": "github-actions using conan package manager",
+      "configurePreset": "github-actions-conan"
+    },
+    {
+      "name": "github-actions-cmake",
       "displayName": "Default build for github-actions",
-      "configurePreset": "github-actions"
+      "configurePreset": "github-actions-cmake"
     }
   ],
   "testPresets": [
@@ -311,6 +343,18 @@
       "execution": {
         "noTestsAction": "error",
         "stopOnFailure": false
+      }
+    },
+    {
+      "name": "github-actions-default",
+      "hidden": true,
+      "output": {
+        "verbosity": "extra",
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
       }
     },
     {
@@ -344,16 +388,19 @@
       "inherits": "default"
     },
     {
-      "name": "github-actions",
-      "configurePreset": "github-actions",
-      "output": {
-        "verbosity": "extra",
-        "outputOnFailure": true
-      },
-      "execution": {
-        "noTestsAction": "error",
-        "stopOnFailure": true
-      }
+      "name": "github-actions-find",
+      "configurePreset": "github-actions-find",
+      "inherits": "github-actions-default"
+    },
+    {
+      "name": "github-actions-conan",
+      "configurePreset": "github-actions-conan",
+      "inherits": "github-actions-default"
+    },
+    {
+      "name": "github-actions-cmake",
+      "configurePreset": "github-actions-cmake",
+      "inherits": "github-actions-default"
     }
   ]
 }
