@@ -14,7 +14,7 @@ namespace h5pp::type::vlen {
     template<typename T>
     struct varr_t {
         private:
-        hvl_t vl;
+        hvl_t vl = {0, nullptr};
 
         public:
         using value_type = hvl_t;
@@ -93,7 +93,6 @@ namespace h5pp::type::vlen {
     }
     template<typename T>
     varr_t<T>::varr_t(varr_t<T> &&v) noexcept {
-        if(vl.p == v.vl.p) return;
         vl.len   = v.vl.len;
         vl.p     = v.vl.p;
         v.vl.len = 0;
@@ -105,7 +104,6 @@ namespace h5pp::type::vlen {
     varr_t<T>::varr_t(const V &v) {
         static_assert(sfinae::has_size_v<V>);
         static_assert(sfinae::is_iterable_v<V> or sfinae::has_data_v<V>);
-        if(v.size() == 0) return;
         vl.len = v.size();
         vl.p   = calloc(v.size(), sizeof(T));
         if constexpr(sfinae::is_iterable_v<V>) std::copy(v.begin(), v.end(), begin());
@@ -113,10 +111,10 @@ namespace h5pp::type::vlen {
     }
 
     template<typename T>
-    varr_t<T>::varr_t(std::initializer_list<T> vals) {
-        vl.len = vals.size();
-        vl.p   = calloc(vals.size(), sizeof(T));
-        std::copy(vals.begin(), vals.end(), begin());
+    varr_t<T>::varr_t(std::initializer_list<T> v) {
+        vl.len = v.size();
+        vl.p   = calloc(v.size(), sizeof(T));
+        std::copy(v.begin(), v.end(), begin());
     }
 
     template<typename T>
