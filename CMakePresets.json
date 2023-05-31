@@ -32,12 +32,6 @@
         "CMAKE_CXX_EXTENSIONS": "FALSE",
         "CMAKE_POSITION_INDEPENDENT_CODE": "TRUE",
         "THREADS_PREFER_PTHREAD_FLAG": "TRUE",
-        "CMAKE_CXX_FLAGS": "-g -fdiagnostics-color=always",
-        "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g3 -ggdb -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wall -Wextra -Wpedantic -Wconversion -Wunused",
-        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-Og -g3 -ggdb -fstack-protector-strong -D_FORTIFY_SOURCE=2",
-        "CMAKE_C_FLAGS": "-g -fdiagnostics-color=always",
-        "CMAKE_C_FLAGS_DEBUG": "-O0 -g3 -ggdb -fstack-protector-strong -D_FORTIFY_SOURCE=2 -fno-omit-frame-pointer -Wall -Wextra -Wpedantic -Wconversion -Wunused",
-        "CMAKE_C_FLAGS_RELWITHDEBINFO": "-Og -g3 -ggdb  -fstack-protector-strong -D_FORTIFY_SOURCE=2",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE",
         "CMAKE_SKIP_BUILD_RPATH": "FALSE",
         "CMAKE_BUILD_WITH_INSTALL_RPATH": "FALSE",
@@ -45,6 +39,37 @@
       },
       "environment": {
         "NINJA_STATUS": "[run %r|beg %s|fin %f|tot %t|rate %o|time %e]:"
+      }
+    },
+    {
+      "name": "warnings-nix",
+      "hidden": true,
+      "description": "Enable compiler warnings on linux and osx",
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wconversion -Wunused",
+        "CMAKE_C_FLAGS": "-Wall -Wextra -Wpedantic -Wconversion -Wunused"
+      },
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Linux",
+          "Darwin"
+        ]
+      }
+    },
+    {
+      "name": "warnings-win",
+      "hidden": true,
+      "description": "Enable compiler warnings on linux and osx",
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS": "/W4",
+        "CMAKE_C_FLAGS": "/W4"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
       }
     },
     {
@@ -61,6 +86,11 @@
       "hidden": false,
       "displayName": "Debug|no package manager",
       "description": "Plain debug build without dependency handling.",
+      "inherits": [
+        "warnings-nix",
+        "warnings-win",
+        "default"
+      ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_VERBOSE_MAKEFILE": "TRUE",
@@ -222,7 +252,7 @@
       "displayName": "Default configuration for github-actions",
       "inherits": "default",
       "cacheVariables": {
-        "H5PP_BUILD_DOCS": "TRUE",
+        "H5PP_BUILD_DOCS": "FALSE",
         "H5PP_ENABLE_ASAN": "TRUE",
         "H5PP_ENABLE_TESTS": "TRUE",
         "H5PP_BUILD_EXAMPLES": "TRUE",
