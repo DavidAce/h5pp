@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
 
 # Append search paths for find_package and find_library calls
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/conan)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
-list(REMOVE_DUPLICATES CMAKE_MODULE_PATH)
-
+if(NOT "${CMAKE_SOURCE_DIR}/cmake/modules" IN_LIST CMAKE_MODULE_PATH)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
+endif()
 # Make sure find_library prefers static/shared library depending on BUILD_SHARED_LIBS
 # This is important when finding dependencies such as zlib which provides both shared and static libraries.
 # Note that we do not force this cache variable, so users can override it

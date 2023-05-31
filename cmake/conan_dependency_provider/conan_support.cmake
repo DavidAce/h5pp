@@ -178,7 +178,7 @@ function(conan_provide_dependency package_name)
         message(VERBOSE "CMake-conan: find_package(${package_name}) found, 'conan install' already ran")
     endif ()
 
-    if (CONAN_GENERATORS_FOLDER)
+    if (CONAN_GENERATORS_FOLDER AND NOT "${CONAN_GENERATORS_FOLDER}" IN_LIST CMAKE_PREFIX_PATH)
         list(PREPEND CMAKE_PREFIX_PATH "${CONAN_GENERATORS_FOLDER}")
     endif ()
 
