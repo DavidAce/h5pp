@@ -44,15 +44,16 @@ great tool for handling data in a collaborative setting.
 Although well documented, the low-level C API is vast and using it directly can be challenging. There are many
 high-level wrappers already that help the user experience, but as a matter of opinion, things could be even simpler.
 
+### Goals
+
 `h5pp` is a high-level C++17 interface for the HDF5 C library which aims to be simple to use:
 
 * Read and write common C++ types in a single line of code.
-* No prior knowledge of HDF5 is required.
 * Meaningful logs and error messages.
-* Use HDF5 with modern, idiomatic, type-safe C++17.
-* Simple access to HDF5 features like chunking, hyperslabs and compression.
+* No prior knowledge of HDF5 is required.
+* Simple access to HDF5 features like tables, compression, chunking and hyperslabs.
 * Simple installation with opt-in automatic installation of dependencies.
-* Simple documentation (work in progress).
+* Simple documentation.
 
 ## Features
 
@@ -70,13 +71,11 @@ high-level wrappers already that help the user experience, but as a matter of op
     * Text types `std::string`, `char` arrays, and `std::vector<std::string>`.
     * Structs as HDF5 Compound types ([example](https://github.com/DavidAce/h5pp/blob/master/examples/example-04a-custom-struct-easy.cpp))
     * Structs as HDF5 Tables (with user-defined compound HDF5 types for entries)
-* Modern CMake installation of `h5pp` and its dependencies (opt-in).
+    * Ragged "variable-length" data in HDF5 Table columns using `h5pp::varr_t<>` and `h5pp::vstr_t`.
+* Modern CMake installation of `h5pp` and (opt-in) installation of dependencies.
 * Multi-platform: Linux, Windows, OSX. (Developed under Linux).
 
 ## Examples
-
-Using `h5pp` is intended to be simple. After initializing a file, most the work can be achieved using just two member
-functions `.writeDataset(...)` and `.readDataset(...)`.
 
 ### Write an `std::vector`
 
@@ -137,20 +136,21 @@ Install and configure [conan](https://conan.io), then run the following command 
 from [conan center](https://conan.io/center/h5pp):
 
 ```
-> conan install h5pp/1.10.0@ --build=missing
+> conan install h5pp/1.11.0
 ```
 
-### Option 2: Install with CMake
+### Option 2: Install with CMake Presets
 
-Git clone and build from command line:
+Git clone and use one of the bundled CMake Presets to configure and build the project.
+In this case we choose `release-cmake` to install all the dependencies using just CMake. 
 
 ```bash
     git clone https://github.com/DavidAce/h5pp.git
-    mkdir h5pp/build
-    cd h5pp/build
-    cmake -DCMAKE_INSTALL_PREFIX=<install-dir>  ../
-    make
-    make install
+    cd h5pp
+    cmake --preset=release-cmake         # Configure. Optionally add -DCMAKE_INSTALL_PREFIX=<install-dir>
+    cmake --build --preset=release-cmake # Builds tests and examples. Optionally add --parallel=<num cores>
+    cmake --install build/release-cmake  # Install to <install-dir> (default is ./install)
+    ctest --preset=release-cmake         # Optionally run tests
 ```
 
 Read more about `h5pp` CMake options in the [documentation](https://h5pp.readthedocs.io/en/latest/installation.html)
