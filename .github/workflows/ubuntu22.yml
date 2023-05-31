@@ -33,6 +33,9 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Update apt
+        run: sudo apt update
+
       - name: Setup caches
         id: h5pp-cache
         uses: actions/cache@v3
@@ -41,12 +44,6 @@ jobs:
             ~/.conan2
             install/github-actions-${{ matrix.manager }}
           key: ${{ runner.os }}-${{ env.cache-name }}
-
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ${{ env.cache-name }}
-          max-size: 1000M
 
       - name: Setup gcc
         if: matrix.compiler == 'gcc'
@@ -67,6 +64,13 @@ jobs:
       - name: Setup apt packages
         if: contains(matrix.manager,'find')
         run: sudo apt install ninja-build gcovr lcov libhdf5-dev libfmt-dev libspdlog-dev libeigen3-dev -y
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ env.cache-name }}
+          max-size: 1000M
+
 
       - name: Setup conan
         if: matrix.manager == 'conan'
