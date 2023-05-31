@@ -252,6 +252,7 @@ function(install_package pkg_name)
     # Set policies for CMakeLists in packages that require older CMake versions
     set(CMAKE_POLICY_DEFAULT_CMP0074 NEW CACHE STRING "Honor <PackageName>_ROOT")
     set(CMAKE_POLICY_DEFAULT_CMP0091 NEW CACHE STRING "Use MSVC_RUNTIME_LIBRARY") # Fixes spdlog on MSVC
+    set(CMAKE_POLICY_DEFAULT_CMP0135 NEW CACHE STRING "Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24")
 
     if(CMAKE_GENERATOR MATCHES "Ninja")
         set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE CACHE BOOL "Otherwise fails with -G Ninja" FORCE)
