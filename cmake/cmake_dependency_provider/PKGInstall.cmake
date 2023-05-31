@@ -114,10 +114,14 @@ function(pkg_install pkg_name)
         pkg_message(FATAL_ERROR "Failed to configure ${pkg_name}")
     endif()
 
-
     # Make sure to do multithreaded builds if possible
-    cmake_host_system_information(RESULT num_threads QUERY NUMBER_OF_PHYSICAL_CORES)
-
+    if($ENV{CMAKE_BUILD_PARALLEL_LEVEL})
+        set(num_threads $ENV{CMAKE_BUILD_PARALLEL_LEVEL})
+    elseif(CMAKE_BUILD_PARALLEL_LEVEL)
+        set(num_threads ${CMAKE_BUILD_PARALLEL_LEVEL})
+    else()
+        cmake_host_system_information(RESULT num_threads QUERY NUMBER_OF_PHYSICAL_CORES)
+    endif()
 
     # Build the package
     if(CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
