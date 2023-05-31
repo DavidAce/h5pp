@@ -9,90 +9,56 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
+    name: ${{ matrix.compiler }}-${{ matrix.manager }}
     runs-on: macos-11
     env:
-      cache-name: cache-${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
+      cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
     strategy:
       fail-fast: false # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { compiler: cl, linkage: static, manager: conan }
-          - { compiler: cl, linkage: static, manager: cmake }
-          - { compiler: cl, linkage: static, manager: fetch }
-          - { compiler: cl, linkage: static, manager: cpm }
-          - { compiler: cl, linkage: static, manager: find-or-cmake }
-          - { compiler: cl, linkage: shared, manager: conan }
-          - { compiler: cl, linkage: shared, manager: cmake }
-          - { compiler: cl, linkage: shared, manager: fetch }
-          - { compiler: cl, linkage: shared, manager: cpm }
-          - { compiler: cl, linkage: shared, manager: find-or-cmake }
+          - { compiler: gcc,   manager: cmake }
+          - { compiler: gcc,   manager: conan }
+          - { compiler: gcc,   manager: find  }
+          - { compiler: clang, manager: cmake }
+          - { compiler: clang, manager: conan }
+          - { compiler: clang, manager: find  }
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@v3
+      - uses: lukka/get-cmake@latest
+      - name: Setup Python
+        uses: actions/setup-python@v4
         if: contains(matrix.manager, 'conan')
         with:
           python-version: '3.x'
 
-      - uses: actions/cache@v2
+      - name: Setup caches
+        id: h5pp-cache
+        uses: actions/cache@v3
         with:
           path: |
-            ~/cpm-cache
-            ~/.conan/data
-          #            ~/h5pp-install
-          #            build/Debug/h5pp-deps-install
+            ~/.conan2
+            install/github-actions-${{ matrix.manager }}
           key: ${{ runner.os }}-${{ env.cache-name }}
 
-      - uses: hendrikmuhs/ccache-action@v1
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ runner.os }}-${{ env.cache-name }}
-          max-size: 500M
+          key: ${{ env.cache-name }}
+          max-size: 1000M
 
       - name: Setup conan
         if: matrix.manager == 'conan'
         run: |
           pip install conan
-          conan profile detect
+          conan profile detect --force
 
-      - name: Configure
-        shell: bash
-        run: |
-          cmake -E make_directory build/Debug
-          cd build/Debug
-          cmake                                                       \
-          -DCMAKE_BUILD_TYPE=Debug                                    \
-          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.linkage == 'shared' }}  \
-          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                            \
-          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install                  \
-          -DCMAKE_C_COMPILER_LAUNCHER=ccache                          \
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                        \
-          -DH5PP_ENABLE_EIGEN3:BOOL=ON                                \
-          -DH5PP_ENABLE_SPDLOG:BOOL=ON                                \
-          -DH5PP_ENABLE_ASAN:BOOL=OFF                                 \
-          -DH5PP_ENABLE_TESTS:BOOL=ON                                 \
-          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
-          -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
-          -DCPM_SOURCE_CACHE=~/cpm-cache                              \
-          -DCONAN_BUILD=all                                           \
-           -G "Unix Makefiles"                                        \
-          --loglevel=DEBUG \
-          ../../
-
-      - name: Build
-        run: |
-          cd build/Debug
-          cmake --build . --parallel 2
-
-      - name: Install
-        run: |
-          cd build/Debug
-          cmake --build . --target install
-
-      - name: Test
-        run: |
-          cd build/Debug
-          ctest -C Debug --output-on-failure -R h5pp
-
+      - name: Run CMakePreset
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: 'github-actions-${{ matrix.manager }}'
+          buildPreset: 'github-actions-${{ matrix.manager }}'
+          testPreset: 'github-actions-${{ matrix.manager }}'
 
 

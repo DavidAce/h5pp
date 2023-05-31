@@ -9,38 +9,26 @@ on:
 
 jobs:
   ci:
-    name: ${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
+    name: ${{ matrix.compiler }}-${{ matrix.manager }}
     runs-on: ubuntu-22.04
     env:
-      cache-name: cache-${{ matrix.compiler }}-${{ matrix.linkage }}-${{ matrix.manager }}
+      cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
     strategy:
       fail-fast: true # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { compiler: gcc,   linkage: static, manager: cmake }
-          - { compiler: gcc,   linkage: static, manager: conan }
-          - { compiler: gcc,   linkage: static, manager: fetch }
-          - { compiler: gcc,   linkage: static, manager: cpm }
-          - { compiler: gcc,   linkage: static, manager: find  }
-          - { compiler: gcc,   linkage: shared, manager: cmake }
-          - { compiler: gcc,   linkage: shared, manager: conan }
-          - { compiler: gcc,   linkage: shared, manager: fetch }
-          - { compiler: gcc,   linkage: shared, manager: cpm }
-          - { compiler: gcc,   linkage: shared, manager: find  }
-          - { compiler: clang, linkage: static, manager: cmake }
-          - { compiler: clang, linkage: static, manager: conan }
-          - { compiler: clang, linkage: static, manager: fetch }
-          - { compiler: clang, linkage: static, manager: cpm }
-          - { compiler: clang, linkage: static, manager: find }
-          - { compiler: clang, linkage: shared, manager: cmake }
-          - { compiler: clang, linkage: shared, manager: conan }
-          - { compiler: clang, linkage: shared, manager: fetch }
-          - { compiler: clang, linkage: shared, manager: cpm }
-          - { compiler: clang, linkage: shared, manager: find }
+          - { compiler: gcc,   manager: cmake }
+          - { compiler: gcc,   manager: conan }
+          - { compiler: gcc,   manager: find  }
+          - { compiler: clang, manager: cmake }
+          - { compiler: clang, manager: conan }
+          - { compiler: clang, manager: find  }
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@v3
+      - uses: lukka/get-cmake@latest
+      - name: Setup Python
+        uses: actions/setup-python@v4
         if: contains(matrix.manager, 'conan')
         with:
           python-version: '3.x'
@@ -50,75 +38,56 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/cpm-cache
-            ~/.conan/data
-          #            ~/h5pp-install
-          #            build/Debug/h5pp-deps-install
+            ~/.conan2
+            install/github-actions-${{ matrix.manager }}
           key: ${{ runner.os }}-${{ env.cache-name }}
 
-      - uses: hendrikmuhs/ccache-action@v1
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ runner.os }}-${{ env.cache-name }}
-          max-size: 500M
+          key: ${{ env.cache-name }}
+          max-size: 1000M
 
       - name: Setup gcc
         if: matrix.compiler == 'gcc'
         run: |
-          echo "FC=gfortran"  >> $GITHUB_ENV
-          echo "CC=gcc-11"    >> $GITHUB_ENV
-          echo "CXX=g++-11"   >> $GITHUB_ENV
+          sudo apt install gcc-12 g++-12 -y
+          echo "FC=gfortran-12" >> $GITHUB_ENV
+          echo "CC=gcc-12"      >> $GITHUB_ENV
+          echo "CXX=g++-12"     >> $GITHUB_ENV
 
       - name: Setup clang
-        if: matrix.compiler == 'clang' # compilers are already installed on the CI # sudo apt-get install libclang-10-dev gfortran -y
+        if: matrix.compiler == 'clang'
         run: |
-          echo "FC=gfortran"    >> $GITHUB_ENV
-          echo "CC=clang-14"    >> $GITHUB_ENV
-          echo "CXX=clang++-14" >> $GITHUB_ENV
+          sudo apt install clang-15 libomp-15-dev -y
+          echo "FC=gfortran-12" >> $GITHUB_ENV
+          echo "CC=clang-15"    >> $GITHUB_ENV
+          echo "CXX=clang++-15" >> $GITHUB_ENV
 
       - name: Setup apt packages
         if: contains(matrix.manager,'find')
-        run: sudo apt install libhdf5-dev libfmt-dev libspdlog-dev libeigen3-dev -y
+        run: sudo apt install ninja-build gcovr lcov libhdf5-dev libfmt-dev libspdlog-dev libeigen3-dev -y
 
       - name: Setup conan
         if: matrix.manager == 'conan'
         run: |
           pip install conan
-          conan profile detect
+          conan profile detect --force
 
-      - name: Configure
-        shell: bash
-        run: |
-          cmake -E make_directory build/Debug
-          cd build/Debug
-          cmake                                                       \
-          -DCMAKE_BUILD_TYPE=Debug                                    \
-          -DBUILD_SHARED_LIBS:BOOL=${{ matrix.linkage == 'shared' }}  \
-          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON                            \
-          -DCMAKE_INSTALL_PREFIX:PATH=~/h5pp-install                  \
-          -DCMAKE_C_COMPILER_LAUNCHER=ccache                          \
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                        \
-          -DH5PP_ENABLE_EIGEN3:BOOL=ON                                \
-          -DH5PP_ENABLE_SPDLOG:BOOL=ON                                \
-          -DH5PP_ENABLE_ASAN:BOOL=ON                                  \
-          -DH5PP_ENABLE_TESTS:BOOL=ON                                 \
-          -DH5PP_ENABLE_COVERAGE:BOOL=OFF                             \
-          -DH5PP_PACKAGE_MANAGER:STRING=${{ matrix.manager }}         \
-          -DH5PP_BUILD_EXAMPLES:BOOL=ON                               \
-          -G "Unix Makefiles"                                         \
-          --loglevel=DEBUG \
-          ../../
+      - name: Run CMakePreset
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: 'github-actions-${{ matrix.manager }}'
+          configurePresetAdditionalArgs: "['-DH5PP_ENABLE_COVERAGE=TRUE']"
+          buildPreset: 'github-actions-${{ matrix.manager }}'
+          testPreset: 'github-actions-${{ matrix.manager }}'
 
-      - name: Build
+      - name: Coverage
+        if: matrix.compiler == 'gcc' && matrix.manager == 'find'
         run: |
-          cd build/Debug
-          cmake --build . --parallel 2
-
-      - name: Install
-        run: |
-          cd build/Debug
-          cmake --build . --target install
-
-      - name: Test
-        run: |
-          cd build/Debug
-          ctest -C Debug --output-on-failure -R h5pp
+          # Create lcov report
+          lcov --gcov-tool=gcov-12 --capture --directory build/github-actions-find --output-file coverage.info
+          lcov --gcov-tool=gcov-12 --remove coverage.info '*/test-*' '/usr/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info # filter system-files
+          lcov --gcov-tool=gcov-12 --list coverage.info # debug info
+          # Upload report to CodeCov
+          bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
