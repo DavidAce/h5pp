@@ -16,21 +16,6 @@
 # The user can set search directory hints from CMake or environment, such as
 # fmt_DIR, fmt_ROOT, etc.
 
-if(FMT_NO_DEFAULT_PATH)
-    set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
-endif()
-
-if(FMT_NO_CMAKE_PACKAGE_REGISTRY)
-    set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
-endif()
-
-if(FMT_NO_CMAKE_SYSTEM_PATH)
-    set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH)
-endif()
-if(FMT_NO_SYSTEM_ENVIRONMENT_PATH)
-    set(NO_SYSTEM_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH)
-endif()
-
 if(NOT fmt_FIND_VERSION)
     if(NOT fmt_FIND_VERSION_MAJOR)
         set(fmt_FIND_VERSION_MAJOR 5)
@@ -108,79 +93,19 @@ function(fmt_check_version_target tgt)
     endif()
 endfunction()
 
-
-function(find_fmt_config)
-    # Try to find a config somewhere in the system
-    find_package(fmt ${fmt_FIND_VERSION}
-            HINTS ${fmt_FIND_HINTS} ${H5PP_DEPS_INSTALL_DIR}
-            PATH_SUFFIXES include fmt include/fmt fmt/include/fmt
-            ${NO_DEFAULT_PATH}
-            ${NO_CMAKE_PACKAGE_REGISTRY}
-            ${NO_CMAKE_SYSTEM_PATH}
-            ${NO_SYSTEM_ENVIRONMENT_PATH}
-            CONFIG QUIET
-            )
-    if(TARGET fmt::fmt)
-        fmt_check_version_target(fmt::fmt)
-        if(NOT FMT_VERSION_OK OR NOT FMT_VERSION)
-            message(WARNING "Could not determine the version of fmt.\n"
-                    "However, the target fmt::fmt has already been defined, so it will be used:\n"
-                    "FMT_INCLUDE_DIR: ${FMT_INCLUDE_DIR}\n"
-                    "FMT_VERSION:     ${FMT_VERSION}\n"
-                    "Something is wrong with your installation of fmt")
-            set(FMT_VERSION_OK TRUE)
-        endif()
-
-        if(FMT_INCLUDE_DIR MATCHES "conda")
-            # Use the header-only mode to avoid weird linking errors
-            target_compile_definitions(fmt::fmt INTERFACE FMT_HEADER_ONLY)
-        endif()
-    endif()
-    set(FMT_INCLUDE_DIR ${FMT_INCLUDE_DIR} PARENT_SCOPE)
-    set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
-    set(FMT_VERSION_OK ${FMT_VERSION_OK} PARENT_SCOPE)
-endfunction()
-
-function(find_fmt_manual)
-    if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
-        find_path(FMT_INCLUDE_DIR
+function(find_fmt)
+    find_path(FMT_INCLUDE_DIR
                 fmt/core.h
-                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
+                HINTS ${CMAKE_PREFIX_PATH} ${CMAKE_INSTALL_PREFIX}
                 PATH_SUFFIXES fmt fmt/include include include/fmt
-                ${NO_DEFAULT_PATH}
-                ${NO_CMAKE_SYSTEM_PATH}
-                ${NO_SYSTEM_ENVIRONMENT_PATH}
                 )
+    if(FMT_INCLUDE_DIR)
         find_library(FMT_LIBRARY
                 NAMES fmt
-                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
-                PATH_SUFFIXES fmt fmt/lib
-                ${NO_DEFAULT_PATH}
-                ${NO_CMAKE_SYSTEM_PATH}
-                ${NO_SYSTEM_ENVIRONMENT_PATH}
+                HINTS ${FMT_INCLUDE_DIR} ${FMT_INCLUDE_DIR}../ ${CMAKE_PREFIX_PATH} ${CMAKE_INSTALL_PREFIX}
+                PATH_SUFFIXES lib fmt fmt/lib
                 )
-
-        fmt_check_version_include(FMT_INCLUDE_DIR)
-
-        if(FMT_VERSION_OK AND FMT_INCLUDE_DIR)
-            if(NOT TARGET fmt::fmt)
-                if(FMT_LIBRARY)
-                    add_library(fmt::fmt UNKNOWN IMPORTED)
-                    set_target_properties(fmt::fmt PROPERTIES IMPORTED_LOCATION ${FMT_LIBRARY})
-                else()
-                    add_library(fmt::fmt INTERFACE IMPORTED)
-                endif()
-            endif()
-            if(NOT TARGET fmt::fmt-header-only)
-                add_library(fmt::fmt-header-only INTERFACE IMPORTED)
-            endif()
-            target_include_directories(fmt::fmt SYSTEM INTERFACE ${FMT_INCLUDE_DIR})
-            target_include_directories(fmt::fmt-header-only SYSTEM INTERFACE ${FMT_INCLUDE_DIR})
-
-            target_compile_definitions(fmt::fmt-header-only INTERFACE FMT_HEADER_ONLY=1)
-            target_compile_features(fmt::fmt INTERFACE cxx_variadic_templates)
-            target_compile_features(fmt::fmt-header-only INTERFACE cxx_variadic_templates)
-        endif()
+    fmt_check_version_include(FMT_INCLUDE_DIR)
     endif()
 endfunction()
 
@@ -202,17 +127,34 @@ function(set_fmt_version tgt_name vers)
     endif()
 endfunction()
 
-find_fmt_config()
-find_fmt_manual()
+find_fmt()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(fmt
+        FOUND_VAR fmt_FOUND
         REQUIRED_VARS FMT_INCLUDE_DIR FMT_VERSION_OK
         VERSION_VAR FMT_VERSION
         FAIL_MESSAGE "Failed to find fmt"
         )
 
+
 if(fmt_FOUND)
+    if(FMT_LIBRARY AND NOT TARGET fmt::fmt)
+        add_library(fmt::fmt UNKNOWN IMPORTED)
+        set_target_properties(fmt::fmt PROPERTIES IMPORTED_LOCATION "${FMT_LIBRARY}")
+    elseif(NOT TARGET fmt::fmt)
+        add_library(fmt::fmt INTERFACE IMPORTED)
+    endif()
+    if(NOT TARGET fmt::fmt-header-only)
+        add_library(fmt::fmt-header-only INTERFACE IMPORTED)
+    endif()
+    target_include_directories(fmt::fmt SYSTEM INTERFACE "${FMT_INCLUDE_DIR}")
+    target_include_directories(fmt::fmt-header-only SYSTEM INTERFACE "${FMT_INCLUDE_DIR}")
+
+    target_compile_definitions(fmt::fmt-header-only INTERFACE FMT_HEADER_ONLY=1)
+    target_compile_features(fmt::fmt INTERFACE cxx_variadic_templates)
+    target_compile_features(fmt::fmt-header-only INTERFACE cxx_variadic_templates)
+
     set_fmt_version(fmt::fmt FMT_VERSION)
     set_fmt_version(fmt::fmt-header-only FMT_VERSION)
 endif()
