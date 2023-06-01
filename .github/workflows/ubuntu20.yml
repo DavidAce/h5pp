@@ -29,28 +29,29 @@ jobs:
       - uses: lukka/get-cmake@latest
       - name: Setup Python
         uses: actions/setup-python@v4
-        if: contains(matrix.manager, 'conan')
         with:
           python-version: '3.x'
+          cache: 'pip'
+
+      - name: Update apt
+        run: |
+          sed -i 's/htt[p|ps]:\/\/archive.ubuntu.com\/ubuntu\//mirror:\/\/mirrors.ubuntu.com\/mirrors.txt/g' /etc/apt/sources.list
+          sudo apt update
 
       - name: Setup caches
         id: h5pp-cache
         uses: actions/cache@v3
         with:
           path: |
+            ~/.ccache
             ~/.conan2
             install/github-actions-${{ matrix.manager }}
           key: ${{ runner.os }}-${{ env.cache-name }}
 
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ${{ env.cache-name }}
-          max-size: 1000M
-
-      - name: Setup gcc # compilers are already installed on the CI
+      - name: Setup gcc
         if: matrix.compiler == 'gcc'
         run: |
+          sudo apt install gcc-10 g++-10 -y
           echo "FC=gfortran"  >> $GITHUB_ENV
           echo "CC=gcc-10"    >> $GITHUB_ENV
           echo "CXX=g++-10"   >> $GITHUB_ENV
@@ -62,9 +63,14 @@ jobs:
           echo "CC=clang-12"    >> $GITHUB_ENV
           echo "CXX=clang++-12" >> $GITHUB_ENV
 
-      - name: Setup apt packages
-        if: contains(matrix.manager,'find')
-        run: sudo apt install ninja-build libhdf5-dev libfmt-dev libspdlog-dev libeigen3-dev -y
+      - name: Setup build tools
+        run: |
+          sudo apt install ccache ninja-build -y
+          echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
+
+      - name: Setup apt packages (dependencies)
+        if: matrix.manager == 'find'
+        run: sudo apt install libhdf5-dev libfmt-dev libspdlog-dev libeigen3-dev -y
 
       - name: Setup conan
         if: matrix.manager == 'conan'
