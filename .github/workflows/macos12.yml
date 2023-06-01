@@ -1,0 +1,65 @@
+name: macOS 12
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+
+jobs:
+  ci:
+    name: ${{ matrix.compiler }}-${{ matrix.manager }}
+    runs-on: macos-12
+    env:
+      cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
+    strategy:
+      fail-fast: false # True stops all on first error. Stick to false when debugging
+      matrix:
+        include:
+          - { compiler: cl,   manager: cmake }
+          - { compiler: cl,   manager: conan }
+          - { compiler: cl,   manager: find }
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: lukka/get-cmake@latest
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        if: matrix.manager == 'conan'
+        with:
+          python-version: '3.x'
+
+      - name: Setup caches
+        id: h5pp-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.ccache
+            ~/.conan2
+            install/github-actions-${{ matrix.manager }}
+          key: ${{ runner.os }}-${{ env.cache-name }}
+
+      - name: Setup build tools
+        run: |
+          brew install ccache ninja -y
+          echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
+
+      - name: Setup brew packages
+        if: matrix.manager == 'find'
+        run: brew install hdf5 spdlog fmt eigen -y
+
+      - name: Setup conan
+        if: matrix.manager == 'conan'
+        run: |
+          pip install conan
+          conan profile detect --force
+
+      - name: Run CMakePreset
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: 'github-actions-${{ matrix.manager }}'
+          buildPreset: 'github-actions-${{ matrix.manager }}'
+          testPreset: 'github-actions-${{ matrix.manager }}'
+
+
