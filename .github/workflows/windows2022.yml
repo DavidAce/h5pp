@@ -51,3 +51,4 @@ jobs:
           configurePresetAdditionalArgs: "['-DH5PP_ENABLE_ASAN=FALSE']"
           buildPreset: 'github-actions-${{ matrix.manager }}'
           testPreset: 'github-actions-${{ matrix.manager }}'
+          testPresetAdditionalArgs: "['--config Debug']"

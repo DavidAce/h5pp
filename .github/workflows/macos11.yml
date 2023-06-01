@@ -42,12 +42,12 @@ jobs:
 
       - name: Setup build tools
         run: |
-          brew install ccache ninja -y
+          brew install ccache ninja
           echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
 
       - name: Setup brew packages
         if: matrix.manager == 'find'
-        run: brew install hdf5 spdlog fmt eigen -y
+        run: brew install hdf5 spdlog fmt eigen
 
       - name: Setup conan
         if: matrix.manager == 'conan'
