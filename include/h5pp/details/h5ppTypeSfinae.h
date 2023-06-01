@@ -340,6 +340,22 @@ namespace h5pp::type::sfinae {
     inline constexpr bool is_std_complex_v = is_std_complex<T>::value;
 
     template<typename T>
+    struct has_std_complex {
+        private:
+        static constexpr bool test() {
+            if constexpr(h5pp::type::sfinae::has_value_type_v<T>) return h5pp::type::sfinae::is_std_complex_v<typename T::value_type>;
+            else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>) return h5pp::type::sfinae::is_std_complex_v<typename T::Scalar>;
+            else return false;
+        }
+        public:
+        static constexpr bool value = test();
+    };
+
+    template<typename T>
+    inline constexpr bool has_std_complex_v = has_std_complex<T>::value;
+
+
+    template<typename T>
     struct is_Scalar2 {
         private:
         static constexpr bool test() {

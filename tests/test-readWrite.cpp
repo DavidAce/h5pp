@@ -87,8 +87,15 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
             } else
     #endif
                 if constexpr(not h5pp::type::sfinae::is_eigen_any_v<ReadType>) {
-                h5pp::print("Wrote: \n{}\n", writeData);
-                h5pp::print("Read: \n{}\n", readData);
+                if constexpr(h5pp::type::sfinae::is_std_complex_v<ReadType> or h5pp::type::sfinae::has_std_complex_v<ReadType>) {
+    #if defined(FMT_USE_COMPLEX)
+                    h5pp::print("Wrote: \n{}\n", writeData);
+                    h5pp::print("Read: \n{}\n", readData);
+    #endif
+                } else {
+                    h5pp::print("Wrote: \n{}\n", writeData);
+                    h5pp::print("Read: \n{}\n", readData);
+                }
             }
 #endif
             throw std::runtime_error("Data mismatch: Write != Read");
