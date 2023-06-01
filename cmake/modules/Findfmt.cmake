@@ -16,19 +16,6 @@
 # The user can set search directory hints from CMake or environment, such as
 # fmt_DIR, fmt_ROOT, etc.
 
-if(NOT fmt_FIND_VERSION)
-    if(NOT fmt_FIND_VERSION_MAJOR)
-        set(fmt_FIND_VERSION_MAJOR 5)
-    endif()
-    if(NOT fmt_FIND_VERSION_MINOR)
-        set(fmt_FIND_VERSION_MINOR 0)
-    endif()
-    if(NOT fmt_FIND_VERSION_PATCH)
-        set(fmt_FIND_VERSION_PATCH 0)
-    endif()
-    set(fmt_FIND_VERSION "${fmt_FIND_VERSION_MAJOR}.${fmt_FIND_VERSION_MINOR}.${fmt_FIND_VERSION_PATCH}")
-endif()
-
 function(fmt_check_version_include incdir)
     if (IS_DIRECTORY "${incdir}")
         set(include ${incdir})
@@ -50,46 +37,7 @@ function(fmt_check_version_include incdir)
             math(EXPR ${ver} "${FMT_VERSION} % 100")
             math(EXPR FMT_VERSION "(${FMT_VERSION} - ${${ver}}) / 100")
         endforeach()
-        set(FMT_VERSION "${FMT_VERSION_MAJOR}.${FMT_VERSION_MINOR}.${FMT_VERSION_PATCH}")
-    endif()
-
-    if(FMT_VERSION VERSION_GREATER_EQUAL fmt_FIND_VERSION)
-        set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
-        set(FMT_VERSION_OK TRUE PARENT_SCOPE)
-    else()
-        set(FMT_VERSION_OK FALSE PARENT_SCOPE)
-    endif()
-endfunction()
-
-
-function(fmt_check_version_include_genexp genexp_incdir)
-    string(REGEX REPLACE "BUILD_INTERFACE|INSTALL_INTERFACE|<|>|:" ";" incdirs "${${genexp_incdir}}")
-    foreach(inc ${incdirs})
-        if(inc STREQUAL "$") # The regex does not match dollar signs in generator expressions
-            continue()
-        endif()
-        fmt_check_version_include(${inc})
-        if(FMT_VERSION_OK)
-            set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
-            set(FMT_VERSION_OK TRUE PARENT_SCOPE)
-            break()
-        endif()
-    endforeach()
-endfunction()
-
-function(fmt_check_version_target tgt)
-    if(TARGET ${tgt})
-        get_target_property(FMT_VERSION ${tgt} VERSION)
-        get_target_property(FMT_INCLUDE_DIR fmt::fmt INTERFACE_INCLUDE_DIRECTORIES)
-        set(FMT_INCLUDE_DIR ${FMT_INCLUDE_DIR} PARENT_SCOPE)
-        if(FMT_VERSION VERSION_GREATER_EQUAL fmt_FIND_VERSION)
-            set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
-            set(FMT_VERSION_OK TRUE PARENT_SCOPE)
-        else()
-            fmt_check_version_include_genexp(FMT_INCLUDE_DIR)
-            set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
-            set(FMT_VERSION_OK ${FMT_VERSION_OK} PARENT_SCOPE)
-        endif()
+        set(FMT_VERSION "${FMT_VERSION_MAJOR}.${FMT_VERSION_MINOR}.${FMT_VERSION_PATCH}" PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -105,8 +53,11 @@ function(find_fmt)
                 HINTS ${FMT_INCLUDE_DIR} ${FMT_INCLUDE_DIR}../ ${CMAKE_PREFIX_PATH} ${CMAKE_INSTALL_PREFIX}
                 PATH_SUFFIXES lib fmt fmt/lib
                 )
-    fmt_check_version_include(FMT_INCLUDE_DIR)
+        fmt_check_version_include(FMT_INCLUDE_DIR)
     endif()
+    set(FMT_INCLUDE_DIR ${FMT_INCLUDE_DIR}  PARENT_SCOPE)
+    set(FMT_LIBRARY     ${FMT_LIBRARY}      PARENT_SCOPE)
+    set(FMT_VERSION     ${FMT_VERSION}      PARENT_SCOPE)
 endfunction()
 
 function(set_fmt_version tgt_name vers)
@@ -129,12 +80,15 @@ endfunction()
 
 find_fmt()
 
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+    set(HANDLE_VERSION_RANGE HANDLE_VERSION_RANGE)
+endif()
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(fmt
-        FOUND_VAR fmt_FOUND
-        REQUIRED_VARS FMT_INCLUDE_DIR FMT_VERSION_OK
+        REQUIRED_VARS FMT_INCLUDE_DIR
         VERSION_VAR FMT_VERSION
-        FAIL_MESSAGE "Failed to find fmt"
+        ${HANDLE_VERSION_RANGE}
         )
 
 
