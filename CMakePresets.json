@@ -390,46 +390,55 @@
     {
       "name": "release",
       "configurePreset": "release",
+      "configuration": "Release",
       "inherits": "default"
     },
     {
       "name": "debug",
       "configurePreset": "debug",
+      "configuration": "Debug",
       "inherits": "default"
     },
     {
       "name": "release-conan",
       "configurePreset": "release-conan",
+      "configuration": "Release",
       "inherits": "default"
     },
     {
       "name": "release-cmake",
       "configurePreset": "release-cmake",
+      "configuration": "Release",
       "inherits": "default"
     },
     {
       "name": "debug-conan",
       "configurePreset": "debug-conan",
+      "configuration": "Debug",
       "inherits": "default"
     },
     {
       "name": "debug-cmake",
       "configurePreset": "debug-cmake",
+      "configuration": "Debug",
       "inherits": "default"
     },
     {
       "name": "github-actions-find",
       "configurePreset": "github-actions-find",
+      "configuration": "Debug",
       "inherits": "github-actions-default"
     },
     {
       "name": "github-actions-conan",
       "configurePreset": "github-actions-conan",
+      "configuration": "Debug",
       "inherits": "github-actions-default"
     },
     {
       "name": "github-actions-cmake",
       "configurePreset": "github-actions-cmake",
+      "configuration": "Debug",
       "inherits": "github-actions-default"
     }
   ]
