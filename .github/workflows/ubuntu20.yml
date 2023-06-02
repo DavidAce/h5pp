@@ -31,7 +31,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-          cache: 'pip'
 
       - name: Update apt
         run: |
@@ -45,7 +44,7 @@ jobs:
             ~/.ccache
             ~/.conan2
             install/github-actions-${{ matrix.manager }}
-          key: ${{ runner.os }}-${{ env.cache-name }}
+          key: ${{ github.workflow }}-${{ env.cache-name }}
 
       - name: Setup gcc
         if: matrix.compiler == 'gcc'

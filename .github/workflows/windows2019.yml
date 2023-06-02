@@ -25,7 +25,7 @@ jobs:
       - uses: lukka/get-cmake@latest
       - name: Setup Python
         uses: actions/setup-python@v4
-        if: contains(matrix.manager, 'conan')
+        if: matrix.manager == 'conan'
         with:
           python-version: '3.x'
 
@@ -36,7 +36,7 @@ jobs:
           path: |
             ~/.conan2
             install/github-actions-${{ matrix.manager }}
-          key: ${{ runner.os }}-${{ env.cache-name }}
+          key: ${{ github.workflow }}-${{ env.cache-name }}
 
       - name: Setup conan
         if: matrix.manager == 'conan'
@@ -51,4 +51,4 @@ jobs:
           configurePresetAdditionalArgs: "['-DH5PP_ENABLE_ASAN=FALSE']"
           buildPreset: 'github-actions-${{ matrix.manager }}'
           testPreset: 'github-actions-${{ matrix.manager }}'
-          testPresetAdditionalArgs: "['--config Debug']"
+          testPresetAdditionalArgs: "['--build-config=Debug']"

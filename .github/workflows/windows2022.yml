@@ -36,7 +36,7 @@ jobs:
           path: |
             ~/.conan2
             install/github-actions-${{ matrix.manager }}
-          key: ${{ runner.os }}-${{ env.cache-name }}
+          key: ${{ github.workflow }}-${{ env.cache-name }}
 
       - name: Setup conan
         if: matrix.manager == 'conan'
@@ -51,4 +51,4 @@ jobs:
           configurePresetAdditionalArgs: "['-DH5PP_ENABLE_ASAN=FALSE']"
           buildPreset: 'github-actions-${{ matrix.manager }}'
           testPreset: 'github-actions-${{ matrix.manager }}'
-          testPresetAdditionalArgs: "['--config Debug']"
+          testPresetAdditionalArgs: "['--build-config=Debug']"

@@ -38,7 +38,7 @@ jobs:
             ~/.ccache
             ~/.conan2
             install/github-actions-${{ matrix.manager }}
-          key: ${{ runner.os }}-${{ env.cache-name }}
+          key: ${{ github.workflow }}-${{ env.cache-name }}
 
       - name: Setup build tools
         run: |
