@@ -1,6 +1,6 @@
  
 cmake_minimum_required(VERSION 3.15)
-project(h5pp VERSION 1.11.0
+project(h5pp VERSION 1.11.1
         DESCRIPTION "A C++17 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         LANGUAGES C CXX
@@ -20,9 +20,6 @@ if (NOT DEFINED H5PP_IS_SUBPROJECT)
     endif ()
 endif ()
 
-
-
-
 option(BUILD_SHARED_LIBS                "Builds shared libraries"                                                 OFF)
 option(H5PP_ENABLE_EIGEN3               "Enables Eigen3 linear algebra library"                                   OFF)
 option(H5PP_ENABLE_FMT                  "Enables the {fmt} formatting library"                                    OFF)
@@ -32,6 +29,8 @@ option(H5PP_ENABLE_ASAN                 "Enable runtime address sanitizer -fsani
 option(H5PP_ENABLE_PCH                  "Enable precompiled headers (if supported) to speed up test compilation"  OFF)
 option(H5PP_ENABLE_CCACHE               "Enable ccache (if available) to speed up test compilation"               OFF)
 option(H5PP_ENABLE_COVERAGE             "Enable test coverage"                                                    OFF)
+option(H5PP_USE_FLOAT128                "Add support for __float128 if the compiler supports it"                  OFF)
+option(H5PP_USE_QUADMATH                "Link the quadmath library for more advanced use of __float128"           OFF)
 option(H5PP_BUILD_EXAMPLES              "Builds examples"                                                         OFF)
 option(H5PP_BUILD_DOCS                  "Builds documentation (Requires doxygen, sphinx and breathe)"             OFF)
 option(H5PP_ENABLE_TESTS                "Enable testing"                                                          OFF)
@@ -43,15 +42,6 @@ if(H5PP_ENABLE_SPDLOG)
     set(H5PP_ENABLE_FMT ON CACHE INTERNAL "H5PP_ENABLE_SPDLOG:ON implies H5PP_ENABLE_FMT:ON)" FORCE)
 endif()
 
-
-# Make an "enum" for valid package managers: find cmake fetch find-or-cmake conan
-set(H5PP_PACKAGE_MANAGERS_VALID none find fetch cmake cpm find-or-fetch find-or-cmake find-or-cpm conan)
-set(H5PP_PACKAGE_MANAGER find CACHE STRING "Package manager for external dependencies")
-mark_as_advanced(H5PP_PACKAGE_MANAGERS_VALID)
-set_property(CACHE H5PP_PACKAGE_MANAGER PROPERTY STRINGS ${H5PP_PACKAGE_MANAGERS_VALID})
-if (NOT H5PP_PACKAGE_MANAGER IN_LIST H5PP_PACKAGE_MANAGERS_VALID)
-    message(FATAL_ERROR "H5PP_PACKAGE_MANAGER must be one of ${H5PP_PACKAGE_MANAGERS_VALID}. Got [${H5PP_PACKAGE_MANAGER}]")
-endif ()
 
 # Setup paths that find_package should search, or where to find the conan executable
 include(cmake/SetupPaths.cmake)

@@ -3,6 +3,7 @@
 #include "h5ppFormat.h"
 #include "h5ppOptional.h"
 #include "h5ppTypeSfinae.h"
+#include "h5ppTypeCast.h"
 #include <H5Spublic.h>
 #include <type_traits>
 #include <utility>
@@ -43,18 +44,18 @@ namespace h5pp {
                                               "This is not yet supported by h5pp");
                 }
 #endif
-                offset = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
-                extent = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
-                stride = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
-                blocks = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
+                offset = std::vector<hsize_t>(type::safe_cast<size_t>(rank), 0);
+                extent = std::vector<hsize_t>(type::safe_cast<size_t>(rank), 0);
+                stride = std::vector<hsize_t>(type::safe_cast<size_t>(rank), 0);
+                blocks = std::vector<hsize_t>(type::safe_cast<size_t>(rank), 0);
 #if H5_VERSION_GE(1, 10, 0)
                 H5Sget_regular_hyperslab(space, offset->data(), stride->data(), extent->data(), blocks->data());
 #else
                 H5Sget_simple_extent_dims(space, extent->data(), nullptr);
 #endif
             } else if(select_type.value() == H5S_SEL_ALL) {
-                offset = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
-                extent = std::vector<hsize_t>(static_cast<size_t>(rank), 0);
+                offset = std::vector<hsize_t>(type::safe_cast<size_t>(rank), 0);
+                extent = std::vector<hsize_t>(type::safe_cast<size_t>(rank), 0);
                 H5Sget_simple_extent_dims(space, extent->data(), nullptr);
             } else if(select_type.value() == H5S_SEL_NONE) {
                 return;

@@ -1,7 +1,6 @@
 
-#include <h5pp/h5pp.h>
 #include <h5pp/details/h5ppFormatComplex.h>
-
+#include <h5pp/h5pp.h>
 
 template<typename T>
 void compareScalar(const T &lhs, const T &rhs) {
@@ -30,10 +29,10 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
     } else if constexpr(has_ScalarN_v<ReadType>) {
         if(writeData.size() != readData.size()) throw std::runtime_error("Size mismatch in ScalarN container");
 #ifdef H5PP_USE_EIGEN3
-        if constexpr(h5pp::type::sfinae::is_eigen_matrix_v<ReadType>)
+        if constexpr(h5pp::type::sfinae::is_eigen_matrix_v<ReadType>) {
             for(Eigen::Index j = 0; j < writeData.cols(); j++)
                 for(Eigen::Index i = 0; i < writeData.rows(); i++) compareScalar(writeData(i, j), readData(i, j));
-        else
+        } else
 #endif
             for(size_t i = 0; i < static_cast<size_t>(writeData.size()); i++) compareScalar(writeData[i], readData[i]);
     }
@@ -43,8 +42,8 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
         Eigen::Map<const Eigen::Matrix<typename ReadType::Scalar, Eigen::Dynamic, 1>>  tensorMapRead(readData.data(), readData.size());
         if(tensorMap != tensorMapRead) {
             if constexpr(WriteType::NumIndices == 4) {
-                for(int i = 0; i < writeData.dimension(0); i++)
-                    for(int j = 0; j < writeData.dimension(1); j++)
+                for(int i = 0; i < writeData.dimension(0); i++) {
+                    for(int j = 0; j < writeData.dimension(1); j++) {
                         for(int k = 0; k < writeData.dimension(2); k++) {
                             for(int l = 0; l < writeData.dimension(3); l++) {
                                 auto w = writeData(i, j, k, l);
@@ -62,14 +61,18 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
 
                             h5pp::print("\n");
                         }
+                    }
+                }
             }
             if constexpr(WriteType::NumIndices == 3) {
-                for(int i = 0; i < writeData.dimension(0); i++)
-                    for(int j = 0; j < writeData.dimension(1); j++)
+                for(int i = 0; i < writeData.dimension(0); i++) {
+                    for(int j = 0; j < writeData.dimension(1); j++) {
                         for(int k = 0; k < writeData.dimension(2); k++) {
                             h5pp::print("[{} {} {}]: {} == {}", i, j, k, writeData(i, j, k), readData(i, j, k));
                             h5pp::print("\n");
                         }
+                    }
+                }
             }
             throw std::runtime_error("tensor written != tensor read");
         }
@@ -78,9 +81,21 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
     else {
         if(writeData != readData) {
 #if H5PP_USE_FMT
-            if constexpr(not h5pp::type::sfinae::is_eigen_any_v<ReadType>) {
-                h5pp::print("Wrote: \n{}\n", writeData);
-                h5pp::print("Read: \n{}\n", readData);
+    #if defined(H5PP_USE_FLOAT128)
+            if constexpr(std::is_same_v<ReadType, __float128>) {
+                return;
+            } else
+    #endif
+                if constexpr(not h5pp::type::sfinae::is_eigen_any_v<ReadType>) {
+                if constexpr(h5pp::type::sfinae::is_std_complex_v<ReadType> or h5pp::type::sfinae::has_std_complex_v<ReadType>) {
+    #if defined(FMT_USE_COMPLEX)
+                    h5pp::print("Wrote: \n{}\n", writeData);
+                    h5pp::print("Read: \n{}\n", readData);
+    #endif
+                } else {
+                    h5pp::print("Wrote: \n{}\n", writeData);
+                    h5pp::print("Read: \n{}\n", readData);
+                }
             }
 #endif
             throw std::runtime_error("Data mismatch: Write != Read");
@@ -100,7 +115,7 @@ void test_h5pp(h5pp::File &file, const WriteType *writeData, const DimsType &dim
     file.readDataset(readData, dsetpath, dims);
     for(size_t i = 0; i < size; i++) {
         if(writeData[i] != readData[i]) {
-            for(size_t j = 0; j < size; j++) { h5pp::print("Wrote [{}]: {} | Read [{}]: {}", j, writeData[j], j, readData[j]); }
+            for(size_t j = 0; j < size; j++) h5pp::print("Wrote [{}]: {} | Read [{}]: {}", j, writeData[j], j, readData[j]);
             throw std::runtime_error("Data mismatch: Write != Read");
         }
     }
@@ -124,10 +139,15 @@ int main() {
     std::vector<int>    emptyVector;
     std::string         stringDummy = "Dummy string with spaces";
     std::complex<float> cplxFloat(1, 1);
-    std::vector<double> vectorDouble      = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
-                                             1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
-    std::vector<cplx>   vectorComplex     = {{-0.191154, 0.326211}, {0.964728, -0.712335}, {-0.0351791, -0.10264}, {0.177544, 0.99999}};
-    auto               *cStyleDoubleArray = new double[10];
+    std::vector<double> vectorDouble  = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
+                                         1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
+    std::vector<cplx>   vectorComplex = {
+        { -0.191154,  0.326211},
+        {  0.964728, -0.712335},
+        {-0.0351791,  -0.10264},
+        {  0.177544,   0.99999}
+    };
+    auto *cStyleDoubleArray = new double[10];
     for(size_t i = 0; i < 10; i++) cStyleDoubleArray[i] = static_cast<double>(i);
 
     struct Field2 {
@@ -156,7 +176,12 @@ int main() {
     }
 
     h5pp::varr_t<double>              vlenDouble       = {1.0, 2.0, 3.0, 4.0};
-    std::vector<h5pp::varr_t<double>> vectorVlenDouble = {{1.0}, {2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0, 10.0}};
+    std::vector<h5pp::varr_t<double>> vectorVlenDouble = {
+        {1.0},
+        {2.0, 3.0},
+        {4.0, 5.0, 6.0},
+        {7.0, 8.0, 9.0, 10.0}
+    };
 
 #ifdef H5PP_USE_EIGEN3
     Eigen::MatrixXd                              matrixDouble        = Eigen::MatrixXd::Random(3, 2);
@@ -204,6 +229,11 @@ int main() {
     test_h5pp<Eigen::Map<Eigen::MatrixXd>, Eigen::MatrixXd>(file, matrixMapDouble, "matrixMapDouble");
     test_h5pp<Eigen::TensorMap<Eigen::Tensor<double, 2>>, Eigen::Tensor<double, 2>>(file, tensorMapDouble, "tensorMapDouble");
     test_h5pp<Eigen::MatrixXd, Eigen::VectorXd>(file, vectorMatrix, "vectorMatrix");
+#endif
+
+#if defined(H5PP_USE_FLOAT128)
+    __float128 f128 = 6.28318530717958623199592693708837032318115234375;
+    test_h5pp(file, f128, "__float128");
 #endif
 
     auto foundLinksInRoot = file.findDatasets();

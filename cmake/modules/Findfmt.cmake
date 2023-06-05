@@ -16,34 +16,6 @@
 # The user can set search directory hints from CMake or environment, such as
 # fmt_DIR, fmt_ROOT, etc.
 
-if(FMT_NO_DEFAULT_PATH)
-    set(NO_DEFAULT_PATH NO_DEFAULT_PATH)
-endif()
-
-if(FMT_NO_CMAKE_PACKAGE_REGISTRY)
-    set(NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
-endif()
-
-if(FMT_NO_CMAKE_SYSTEM_PATH)
-    set(NO_CMAKE_SYSTEM_PATH NO_CMAKE_SYSTEM_PATH)
-endif()
-if(FMT_NO_SYSTEM_ENVIRONMENT_PATH)
-    set(NO_SYSTEM_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH)
-endif()
-
-if(NOT fmt_FIND_VERSION)
-    if(NOT fmt_FIND_VERSION_MAJOR)
-        set(fmt_FIND_VERSION_MAJOR 5)
-    endif()
-    if(NOT fmt_FIND_VERSION_MINOR)
-        set(fmt_FIND_VERSION_MINOR 0)
-    endif()
-    if(NOT fmt_FIND_VERSION_PATCH)
-        set(fmt_FIND_VERSION_PATCH 0)
-    endif()
-    set(fmt_FIND_VERSION "${fmt_FIND_VERSION_MAJOR}.${fmt_FIND_VERSION_MINOR}.${fmt_FIND_VERSION_PATCH}")
-endif()
-
 function(fmt_check_version_include incdir)
     if (IS_DIRECTORY "${incdir}")
         set(include ${incdir})
@@ -65,121 +37,27 @@ function(fmt_check_version_include incdir)
             math(EXPR ${ver} "${FMT_VERSION} % 100")
             math(EXPR FMT_VERSION "(${FMT_VERSION} - ${${ver}}) / 100")
         endforeach()
-        set(FMT_VERSION "${FMT_VERSION_MAJOR}.${FMT_VERSION_MINOR}.${FMT_VERSION_PATCH}")
-    endif()
-
-    if(FMT_VERSION VERSION_GREATER_EQUAL fmt_FIND_VERSION)
-        set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
-        set(FMT_VERSION_OK TRUE PARENT_SCOPE)
-    else()
-        set(FMT_VERSION_OK FALSE PARENT_SCOPE)
+        set(FMT_VERSION "${FMT_VERSION_MAJOR}.${FMT_VERSION_MINOR}.${FMT_VERSION_PATCH}" PARENT_SCOPE)
     endif()
 endfunction()
 
-
-function(fmt_check_version_include_genexp genexp_incdir)
-    string(REGEX REPLACE "BUILD_INTERFACE|INSTALL_INTERFACE|<|>|:" ";" incdirs "${${genexp_incdir}}")
-    foreach(inc ${incdirs})
-        if(inc STREQUAL "$") # The regex does not match dollar signs in generator expressions
-            continue()
-        endif()
-        fmt_check_version_include(${inc})
-        if(FMT_VERSION_OK)
-            set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
-            set(FMT_VERSION_OK TRUE PARENT_SCOPE)
-            break()
-        endif()
-    endforeach()
-endfunction()
-
-function(fmt_check_version_target tgt)
-    if(TARGET ${tgt})
-        get_target_property(FMT_VERSION ${tgt} VERSION)
-        get_target_property(FMT_INCLUDE_DIR fmt::fmt INTERFACE_INCLUDE_DIRECTORIES)
-        set(FMT_INCLUDE_DIR ${FMT_INCLUDE_DIR} PARENT_SCOPE)
-        if(FMT_VERSION VERSION_GREATER_EQUAL fmt_FIND_VERSION)
-            set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
-            set(FMT_VERSION_OK TRUE PARENT_SCOPE)
-        else()
-            fmt_check_version_include_genexp(FMT_INCLUDE_DIR)
-            set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
-            set(FMT_VERSION_OK ${FMT_VERSION_OK} PARENT_SCOPE)
-        endif()
-    endif()
-endfunction()
-
-
-function(find_fmt_config)
-    # Try to find a config somewhere in the system
-    find_package(fmt ${fmt_FIND_VERSION}
-            HINTS ${fmt_FIND_HINTS} ${H5PP_DEPS_INSTALL_DIR}
-            PATH_SUFFIXES include fmt include/fmt fmt/include/fmt
-            ${NO_DEFAULT_PATH}
-            ${NO_CMAKE_PACKAGE_REGISTRY}
-            ${NO_CMAKE_SYSTEM_PATH}
-            ${NO_SYSTEM_ENVIRONMENT_PATH}
-            CONFIG QUIET
-            )
-    if(TARGET fmt::fmt)
-        fmt_check_version_target(fmt::fmt)
-        if(NOT FMT_VERSION_OK OR NOT FMT_VERSION)
-            message(WARNING "Could not determine the version of fmt.\n"
-                    "However, the target fmt::fmt has already been defined, so it will be used:\n"
-                    "FMT_INCLUDE_DIR: ${FMT_INCLUDE_DIR}\n"
-                    "FMT_VERSION:     ${FMT_VERSION}\n"
-                    "Something is wrong with your installation of fmt")
-            set(FMT_VERSION_OK TRUE)
-        endif()
-
-        if(FMT_INCLUDE_DIR MATCHES "conda")
-            # Use the header-only mode to avoid weird linking errors
-            target_compile_definitions(fmt::fmt INTERFACE FMT_HEADER_ONLY)
-        endif()
-    endif()
-    set(FMT_INCLUDE_DIR ${FMT_INCLUDE_DIR} PARENT_SCOPE)
-    set(FMT_VERSION ${FMT_VERSION} PARENT_SCOPE)
-    set(FMT_VERSION_OK ${FMT_VERSION_OK} PARENT_SCOPE)
-endfunction()
-
-function(find_fmt_manual)
-    if(NOT TARGET fmt::fmt AND NOT FMT_CONFIG_ONLY)
-        find_path(FMT_INCLUDE_DIR
+function(find_fmt)
+    find_path(FMT_INCLUDE_DIR
                 fmt/core.h
-                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
+                HINTS ${CMAKE_PREFIX_PATH} ${CMAKE_INSTALL_PREFIX}
                 PATH_SUFFIXES fmt fmt/include include include/fmt
-                ${NO_DEFAULT_PATH}
-                ${NO_CMAKE_SYSTEM_PATH}
-                ${NO_SYSTEM_ENVIRONMENT_PATH}
                 )
+    if(FMT_INCLUDE_DIR)
         find_library(FMT_LIBRARY
                 NAMES fmt
-                HINTS ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
-                PATH_SUFFIXES fmt fmt/lib
-                ${NO_DEFAULT_PATH}
-                ${NO_CMAKE_SYSTEM_PATH}
-                ${NO_SYSTEM_ENVIRONMENT_PATH}
+                HINTS ${FMT_INCLUDE_DIR} ${FMT_INCLUDE_DIR}../ ${CMAKE_PREFIX_PATH} ${CMAKE_INSTALL_PREFIX}
+                PATH_SUFFIXES lib fmt fmt/lib
                 )
-
         fmt_check_version_include(FMT_INCLUDE_DIR)
-
-        if(FMT_VERSION_OK AND FMT_INCLUDE_DIR)
-            add_library(fmt::fmt INTERFACE IMPORTED)
-            add_library(fmt::fmt-header-only INTERFACE IMPORTED)
-            target_include_directories(fmt::fmt SYSTEM INTERFACE ${FMT_INCLUDE_DIR})
-            target_include_directories(fmt::fmt-header-only SYSTEM INTERFACE ${FMT_INCLUDE_DIR})
-
-            target_compile_definitions(fmt::fmt-header-only INTERFACE FMT_HEADER_ONLY=1)
-            target_compile_features(fmt::fmt INTERFACE cxx_variadic_templates)
-            target_compile_features(fmt::fmt-header-only INTERFACE cxx_variadic_templates)
-
-            if(FMT_LIBRARY AND NOT FMT_LIBRARY MATCHES "conda")
-                set_target_properties(fmt::fmt PROPERTIES IMPORTED_LOCATION ${FMT_LIBRARY})
-            else()
-                # Choose header-only because conda libraries sometimes give linking errors
-                target_compile_definitions(fmt::fmt INTERFACE FMT_HEADER_ONLY=1)
-            endif()
-        endif()
     endif()
+    set(FMT_INCLUDE_DIR ${FMT_INCLUDE_DIR}  PARENT_SCOPE)
+    set(FMT_LIBRARY     ${FMT_LIBRARY}      PARENT_SCOPE)
+    set(FMT_VERSION     ${FMT_VERSION}      PARENT_SCOPE)
 endfunction()
 
 function(set_fmt_version tgt_name vers)
@@ -200,17 +78,37 @@ function(set_fmt_version tgt_name vers)
     endif()
 endfunction()
 
-find_fmt_config()
-find_fmt_manual()
+find_fmt()
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+    set(HANDLE_VERSION_RANGE HANDLE_VERSION_RANGE)
+endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(fmt
-        REQUIRED_VARS FMT_INCLUDE_DIR FMT_VERSION_OK
+        REQUIRED_VARS FMT_INCLUDE_DIR
         VERSION_VAR FMT_VERSION
-        FAIL_MESSAGE "Failed to find fmt"
+        ${HANDLE_VERSION_RANGE}
         )
 
+
 if(fmt_FOUND)
+    if(FMT_LIBRARY AND NOT TARGET fmt::fmt)
+        add_library(fmt::fmt UNKNOWN IMPORTED)
+        set_target_properties(fmt::fmt PROPERTIES IMPORTED_LOCATION "${FMT_LIBRARY}")
+    elseif(NOT TARGET fmt::fmt)
+        add_library(fmt::fmt INTERFACE IMPORTED)
+    endif()
+    if(NOT TARGET fmt::fmt-header-only)
+        add_library(fmt::fmt-header-only INTERFACE IMPORTED)
+    endif()
+    target_include_directories(fmt::fmt SYSTEM INTERFACE "${FMT_INCLUDE_DIR}")
+    target_include_directories(fmt::fmt-header-only SYSTEM INTERFACE "${FMT_INCLUDE_DIR}")
+
+    target_compile_definitions(fmt::fmt-header-only INTERFACE FMT_HEADER_ONLY=1)
+    target_compile_features(fmt::fmt INTERFACE cxx_variadic_templates)
+    target_compile_features(fmt::fmt-header-only INTERFACE cxx_variadic_templates)
+
     set_fmt_version(fmt::fmt FMT_VERSION)
     set_fmt_version(fmt::fmt-header-only FMT_VERSION)
 endif()

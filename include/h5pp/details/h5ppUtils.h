@@ -4,6 +4,7 @@
 #include "h5ppInfo.h"
 #include "h5ppOptional.h"
 #include "h5ppType.h"
+#include "h5ppTypeCast.h"
 #include "h5ppTypeCompound.h"
 #include "h5ppTypeSfinae.h"
 #include <cstring>
@@ -47,13 +48,25 @@ namespace h5pp::util {
     template<typename T>
     [[nodiscard]] bool should_track_vlen_reclaims(const hid::h5t &h5type, const PropertyLists &plists) {
         if(not plists.vlenTrackReclaims) return false;
-        htri_t h5type_has_vlen = H5Tdetect_class(h5type, H5T_class_t::H5T_VLEN);
-        htri_t h5type_is_vstr  = H5Tis_variable_str(h5type);
-        bool   is_or_has_varr  = type::sfinae::is_or_has_varr_v<T>;
-        bool   is_or_has_vstr  = type::sfinae::is_or_has_vstr_v<T>;
-        bool   track_vlen      = h5type_has_vlen and not is_or_has_varr;
-        bool   track_varr      = h5type_is_vstr and is_or_has_vstr;
-        return track_vlen or track_varr;
+        if constexpr (type::sfinae::has_vlen_type_v<T>) {
+            // In this case, the user has put "using vlen_type = ..." into this data
+            // type. This signals to h5pp that this datatype is using one or
+            // more h5pp::vstr_t or h5pp::varr_t types, that manage their own
+            // memory. Therefore, h5pp doesn't need to reclaim any memory
+            // manually later.
+            return false;
+        } else{
+            // In this case we need to do more work to detect whether the type has a variable-length arrays
+            // and if so, if they are self-managing h5pp::vstr_t types or h5pp::varr_t types.
+            // Remember that the type T could be std::vector<std::byte> during table row transfers
+            htri_t h5type_has_vlen = H5Tdetect_class(h5type, H5T_class_t::H5T_VLEN);
+            htri_t h5type_is_vstr  = H5Tis_variable_str(h5type);
+            bool   is_or_has_varr  = type::sfinae::is_or_has_varr_v<T>;
+            bool   is_or_has_vstr  = type::sfinae::is_or_has_vstr_v<T>;
+            bool   track_vlen      = h5type_has_vlen and not is_or_has_varr;
+            bool   track_vstr      = h5type_is_vstr and not is_or_has_vstr;
+            return track_vlen or track_vstr;
+        }
     }
 
     /*! \brief Calculates the python-style negative index. For instance, if num == -1ul and piv == 5ul, this returns 4ul */
@@ -138,18 +151,16 @@ namespace h5pp::util {
                       "an iterable container of integral types e.g. [std::vector<int>, std::initializer_list<size_t>] ...");
         if constexpr(std::is_same_v<DimType, std::vector<hsize_t>>) {
             return dims;
+        } else if constexpr(h5pp::type::sfinae::is_iterable_v<DimType>) {
+            std::vector<hsize_t> dimVec;
+            std::copy(std::begin(dims), std::end(dims), std::back_inserter(dimVec));
+            return dimVec;
+        } else if constexpr(std::is_integral_v<DimType>) {
+            return std::vector<hsize_t>{type::safe_cast<hsize_t>(dims)};
         } else {
-            if constexpr(h5pp::type::sfinae::is_iterable_v<DimType>) {
-                std::vector<hsize_t> dimVec;
-                std::copy(std::begin(dims), std::end(dims), std::back_inserter(dimVec));
-                return dimVec;
-            } else if constexpr(std::is_integral_v<DimType>) {
-                return std::vector<hsize_t>{static_cast<hsize_t>(dims)};
-            } else {
-                static_assert(h5pp::type::sfinae::invalid_type_v<DimType>,
-                              "Template function [h5pp::util::getDimVector(const DimType & dims)] failed to statically detect "
-                              "an invalid type for DimsType. Please submit a bug report.");
-            }
+            static_assert(h5pp::type::sfinae::invalid_type_v<DimType>,
+                          "Template function [h5pp::util::getDimVector(const DimType & dims)] failed to statically detect "
+                          "an invalid type for DimsType. Please submit a bug report.");
         }
     }
 
@@ -164,7 +175,7 @@ namespace h5pp::util {
     }
 
     [[nodiscard]] inline hsize_t getSizeFromDimensions(const std::vector<hsize_t> &dims) {
-        return std::accumulate(std::begin(dims), std::end(dims), static_cast<hsize_t>(1), std::multiplies<>());
+        return std::accumulate(std::begin(dims), std::end(dims), type::safe_cast<hsize_t>(1), std::multiplies<>());
     }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
@@ -173,9 +184,10 @@ namespace h5pp::util {
         // variable-length arrays and text such as std::string/char arrays are scalar,
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or
                      h5pp::type::sfinae::is_varr_v<DataType> or
-                     h5pp::type::sfinae::is_vstr_v<DataType>)       return static_cast<hsize_t>(1);
-        else if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return static_cast<hsize_t>(data.size());
-        else if constexpr(std::is_array_v<DataType>)                return static_cast<hsize_t>(getArraySize(data));
+                     h5pp::type::sfinae::is_vstr_v<DataType> or
+                     h5pp::type::sfinae::is_fstr_v<DataType>)       return type::safe_cast<hsize_t>(1);
+        else if constexpr(h5pp::type::sfinae::has_size_v<DataType>) return type::safe_cast<hsize_t>(data.size());
+        else if constexpr(std::is_array_v<DataType>)                return type::safe_cast<hsize_t>(getArraySize(data));
         else if constexpr(std::is_pointer_v<DataType>)
             throw h5pp::runtime_error("Failed to read data size: Pointer data has no specified dimensions");
         else return 1; // All others can be "H5S_SCALAR" of size 1.
@@ -188,20 +200,22 @@ namespace h5pp::util {
 
         if constexpr(h5pp::type::sfinae::is_text_v<DataType> or
                      h5pp::type::sfinae::is_varr_v<DataType> or
-                     h5pp::type::sfinae::is_vstr_v<DataType>)               return 0;
+                     h5pp::type::sfinae::is_vstr_v<DataType> or
+                     h5pp::type::sfinae::is_fstr_v<DataType>
+                     )               return 0;
 #ifdef H5PP_USE_EIGEN3
-        else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>)  return static_cast<int>(DataType::NumIndices);
+        else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>)  return type::safe_cast<int>(DataType::NumIndices);
         else if constexpr(h5pp::type::sfinae::is_eigen_1d_v<DataType>)      return 1;
         else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType>)   return 2;
 #endif
-        else if constexpr(h5pp::type::sfinae::has_NumIndices_v<DataType>)   return static_cast<int>(DataType::NumIndices);
+        else if constexpr(h5pp::type::sfinae::has_NumIndices_v<DataType>)   return type::safe_cast<int>(DataType::NumIndices);
         else if constexpr(std::is_array_v<DataType>)                        return std::rank_v<DataType>;
         else if constexpr(h5pp::type::sfinae::has_size_v<DataType>)         return 1;
         else                                                                return 0;
         /* clang-format on */
     }
 
-    [[nodiscard]] inline int getRankFromDimensions(const std::vector<hsize_t> &dims) { return static_cast<int>(dims.size()); }
+    [[nodiscard]] inline int getRankFromDimensions(const std::vector<hsize_t> &dims) { return type::safe_cast<int>(dims.size()); }
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     [[nodiscard]] std::vector<hsize_t> getDimensions(const DataType &data) {
@@ -217,13 +231,13 @@ namespace h5pp::util {
             if(data.dimensions().size() != rank) throw h5pp::runtime_error("given dimensions do not match detected rank");
             if(dims.size() != rank) throw h5pp::runtime_error("copied dimensions do not match detected rank");
             return dims;
-        } else if constexpr(sfn::has_size_v<DataType> and rank == 1) return {static_cast<hsize_t>(data.size())};
+        } else if constexpr(sfn::has_size_v<DataType> and rank == 1) return {type::safe_cast<hsize_t>(data.size())};
 #ifdef H5PP_USE_EIGEN3
         else if constexpr(sfn::is_eigen_tensor_v<DataType>) {
             if(data.dimensions().size() != rank) throw h5pp::runtime_error("given dimensions do not match detected rank");
             // We copy because the vectors may not be assignable or may not be implicitly convertible to hsize_t.
             return std::vector<hsize_t>(std::begin(data.dimensions()), std::end(data.dimensions()));
-        } else if constexpr(sfn::is_eigen_dense_v<DataType>) return {static_cast<hsize_t>(data.rows()), static_cast<hsize_t>(data.cols())};
+        } else if constexpr(sfn::is_eigen_dense_v<DataType>) return {type::safe_cast<hsize_t>(data.rows()), type::safe_cast<hsize_t>(data.cols())};
 #endif
         else throw h5pp::runtime_error("getDimensions can't match the type provided [{}]", sfn::type_name<DataType>());
         /* clang-format on */
@@ -251,7 +265,7 @@ namespace h5pp::util {
         static_assert(std::is_integral_v<T>);
         if(dims.size() != coord.size()) throw h5pp::runtime_error("dims.size [{}] != coord.size [{}]", dims.size(), coord.size());
         auto rank    = dims.size();
-        auto dimprod = std::accumulate(dims.begin(), dims.end(), static_cast<size_t>(1), std::multiplies<>());
+        auto dimprod = std::accumulate(dims.begin(), dims.end(), type::safe_cast<size_t>(1), std::multiplies<>());
         if(idx >= dimprod) throw h5pp::runtime_error("linearIndex {} out of range for dims with size {}", idx, dimprod);
         for(size_t i = rank - 1; i < rank; --i) {
             coord[i] = idx % dims[i];
@@ -276,10 +290,10 @@ namespace h5pp::util {
         hsize_t j     = 1; // current
         for(size_t i = 0; i < rank; i++) {
             if(coords[i] >= dims[i]) throw h5pp::runtime_error("coords out of bounds: coords {} |  dims {}", coords, dims);
-            hsize_t dimprod = std::accumulate(dims.begin() + static_cast<long>(j++), dims.end(), hsize_t(1), std::multiplies<>());
+            hsize_t dimprod = std::accumulate(dims.begin() + type::safe_cast<long>(j++), dims.end(), hsize_t(1), std::multiplies<>());
             index += dimprod * coords[i];
         }
-        return static_cast<size_t>(index);
+        return type::safe_cast<size_t>(index);
     }
 
     [[nodiscard]] inline hid::h5s getDsetSpace(const hsize_t                       size,
@@ -340,7 +354,7 @@ namespace h5pp::util {
                 dimsMax = dims;
             }
 
-            return H5Screate_simple(static_cast<int>(dims.size()), dims.data(), dimsMax->data());
+            return H5Screate_simple(type::safe_cast<int>(dims.size()), dims.data(), dimsMax->data());
         }
     }
 
@@ -359,7 +373,7 @@ namespace h5pp::util {
         } else {
             auto num_elements = getSizeFromDimensions(dims);
             if(size != num_elements) throw h5pp::runtime_error("Number of elements mismatch: size {} | dimensions {}", size, dims);
-            return H5Screate_simple(static_cast<int>(dims.size()), dims.data(), nullptr);
+            return H5Screate_simple(type::safe_cast<int>(dims.size()), dims.data(), nullptr);
         }
     }
 
@@ -396,7 +410,7 @@ namespace h5pp::util {
             } else if constexpr(h5pp::type::sfinae::has_size_v<DataType>) { // E.g. std::string or std::vector<double>
                 size_t num      = 0;
                 size_t nullterm = h5pp::type::sfinae::is_text_v<DataType> ? 1 : 0;
-                num             = static_cast<size_t>(data.size()) + nullterm; // Static cast because Eigen uses long
+                num             = type::safe_cast<size_t>(data.size()) + nullterm; // Static cast because Eigen uses long
                 return num * h5pp::util::getBytesPerElem<value_type>();
             }
         } else if constexpr(h5pp::type::sfinae::is_text_v<DataType>) { // E.g. char[n]
@@ -440,9 +454,21 @@ namespace h5pp::util {
             so this layout can only be used for very small datasets.
          */
         // Otherwise, we decide based on size
-        if(totalBytes < h5pp::constants::maxSizeCompact) return H5D_COMPACT;
-        else if(totalBytes < h5pp::constants::maxSizeContiguous) return H5D_CONTIGUOUS;
-        else return H5D_CHUNKED;
+        if(totalBytes < h5pp::constants::maxSizeCompact) {
+            h5pp::logger::log->trace("Selected layout H5D_COMPACT because byte size {} < {}", totalBytes, h5pp::constants::maxSizeCompact);
+            return H5D_COMPACT;
+        } else if(totalBytes < h5pp::constants::maxSizeContiguous) {
+            h5pp::logger::log->trace("Selected layout H5D_CONTIGUOUS because byte size {} is between {} and {}",
+                                     totalBytes,
+                                     h5pp::constants::maxSizeCompact,
+                                     h5pp::constants::maxSizeContiguous);
+            return H5D_CONTIGUOUS;
+        } else {
+            h5pp::logger::log->trace("Selected layout H5D_CHUNKED because byte size {} > {}",
+                                     totalBytes,
+                                     h5pp::constants::maxSizeContiguous);
+            return H5D_CHUNKED;
+        }
     }
 
     template<typename DataType>
@@ -506,17 +532,16 @@ namespace h5pp::util {
         auto rank             = dims.size();
         auto maxDimension     = *std::max_element(dims_effective.begin(), dims_effective.end());
         auto volumeChunkBytes = std::pow(maxDimension, rank) * static_cast<double>(bytesPerElem);
-        auto targetChunkBytes =
-            std::clamp<double>(volumeChunkBytes,
-                               std::max<double>(static_cast<const double>(bytesPerElem), h5pp::constants::minChunkBytes),
-                               std::max<double>(static_cast<const double>(bytesPerElem), h5pp::constants::maxChunkBytes));
-        targetChunkBytes     = std::pow(2, std::ceil(std::log2(targetChunkBytes))); // Next nearest power of two
-        auto linearChunkSize = std::ceil(std::pow(targetChunkBytes / static_cast<double>(bytesPerElem), 1.0 / static_cast<double>(rank)));
-        auto chunkSize       = std::max<hsize_t>(1, static_cast<hsize_t>(linearChunkSize)); // Make sure the chunk size is positive
+        auto targetChunkBytes = std::clamp<double>(volumeChunkBytes,
+                                                   std::max<double>(static_cast<double>(bytesPerElem), h5pp::constants::minChunkBytes),
+                                                   std::max<double>(static_cast<double>(bytesPerElem), h5pp::constants::maxChunkBytes));
+        targetChunkBytes      = std::pow(2, std::ceil(std::log2(targetChunkBytes))); // Next nearest power of two
+        auto linearChunkSize  = std::ceil(std::pow(targetChunkBytes / static_cast<double>(bytesPerElem), 1.0 / static_cast<double>(rank)));
+        auto chunkSize        = std::max<hsize_t>(1, static_cast<hsize_t>(linearChunkSize)); // Make sure the chunk size is positive
         std::vector<hsize_t> chunkDims(rank, chunkSize);
         // Now effective dims contains either dims or dimsMax (if not H5S_UNLIMITED) at each position.
         for(size_t idx = 0; idx < chunkDims.size(); idx++)
-            if(dimsMax and dimsMax.value()[idx] != H5S_UNLIMITED) chunkDims[idx] = std::min(dimsMax.value()[idx], chunkSize);
+            if(dimsMax.has_value() and dimsMax.value()[idx] != H5S_UNLIMITED) chunkDims[idx] = std::min(dimsMax.value()[idx], chunkSize);
         h5pp::logger::log->debug("Estimated reasonable chunk dimensions: {}", chunkDims);
         return chunkDims;
     }
@@ -559,14 +584,14 @@ namespace h5pp::util {
             h5pp::logger::log->debug("Resizing eigen 1d container {} -> {}",
                                      std::initializer_list<Eigen::Index>{data.size()},
                                      std::initializer_list<hsize_t>{newSize});
-            data.resize(static_cast<Eigen::Index>(newSize));
+            data.resize(type::safe_cast<Eigen::Index>(newSize));
         } else if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and not h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             if(newDims.size() != 2)
                 throw h5pp::runtime_error("Failed to resize 2-dimensional Eigen type: Dataset has dimensions {}", newDims);
             h5pp::logger::log->debug("Resizing eigen 2d container {} -> {}",
                                      std::initializer_list<Eigen::Index>{data.rows(), data.cols()},
                                      newDims);
-            data.resize(static_cast<Eigen::Index>(newDims[0]), static_cast<Eigen::Index>(newDims[1]));
+            data.resize(type::safe_cast<Eigen::Index>(newDims[0]), type::safe_cast<Eigen::Index>(newDims[1]));
         } else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
                 if(newDims.size() != DataType::NumDimensions) {
@@ -579,7 +604,7 @@ namespace h5pp::util {
                 data.resize(eigenDims);
             } else {
                 auto newSize = getSizeFromDimensions(newDims);
-                if(data.size() != static_cast<Eigen::Index>(newSize)) {
+                if(data.size() != type::safe_cast<Eigen::Index>(newSize)) {
                     h5pp::logger::log->warn("Detected non-resizeable tensor container with wrong size: Given size {}. Required size {}",
                                             data.size(),
                                             newSize);
@@ -595,7 +620,7 @@ namespace h5pp::util {
                 }
                 auto newSize = getSizeFromDimensions(newDims);
                 h5pp::logger::log->debug("Resizing 1d container {} -> {} of type [{}]",
-                                         std::initializer_list<size_t>{static_cast<size_t>(data.size())},
+                                         std::initializer_list<size_t>{type::safe_cast<size_t>(data.size())},
                                          newDims,
                                          h5pp::type::sfinae::type_name<DataType>());
                 data.resize(newSize);
@@ -657,7 +682,7 @@ namespace h5pp::util {
                                           info.tablePath.value(),
                                           info.fieldNames.value());
             } else {
-                fieldIndices.emplace_back(static_cast<size_t>(std::distance(info.fieldNames->begin(), it)));
+                fieldIndices.emplace_back(type::safe_cast<size_t>(std::distance(info.fieldNames->begin(), it)));
             }
         }
         return fieldIndices;
@@ -708,11 +733,11 @@ namespace h5pp::util {
         if(h5tclass != H5T_COMPOUND) throw h5pp::runtime_error("fieldId for reading table fields must be H5T_COMPOUND");
         int nmembers = H5Tget_nmembers(fieldId);
         if(nmembers < 0) throw h5pp::runtime_error("Failed to read nmembers for fieldId");
-        auto                     nmembers_ul = static_cast<size_t>(nmembers);
+        auto                     nmembers_ul = type::safe_cast<size_t>(nmembers);
         std::vector<std::string> fieldNames;
         fieldNames.reserve(nmembers_ul);
         for(size_t idx = 0; idx < nmembers_ul; idx++) {
-            char *name = H5Tget_member_name(fieldId, static_cast<unsigned int>(idx));
+            char *name = H5Tget_member_name(fieldId, type::safe_cast<unsigned int>(idx));
             fieldNames.emplace_back(name);
             H5free_memory(name);
         }
@@ -810,7 +835,7 @@ namespace h5pp::util {
         std::vector<size_t> fieldSizes;
         fieldSizes.reserve(fieldIndices.size());
         for(const auto &idx : fieldIndices) fieldSizes.emplace_back(info.fieldSizes.value().at(idx));
-        size_t fieldSizeTotal = std::accumulate(fieldSizes.begin(), fieldSizes.end(), static_cast<size_t>(0));
+        size_t fieldSizeTotal = std::accumulate(fieldSizes.begin(), fieldSizes.end(), type::safe_cast<size_t>(0));
 
         if constexpr(not type::sfinae::has_resize_v<DataType>) {
             // The given buffer is not resizeable. Make sure it can handle extent

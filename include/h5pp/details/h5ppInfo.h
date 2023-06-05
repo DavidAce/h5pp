@@ -130,6 +130,9 @@ namespace h5pp {
         }
     };
     struct ReclaimInfo {
+        private:
+        static constexpr bool debug_reclaim = false;
+
         public:
         struct Reclaim {
             /*! This stores metadata required to reclaim (free) any memory that is allocated when HDF5 reads variable-length arrays */
@@ -143,6 +146,7 @@ namespace h5pp {
             mutable long counter = 0; // Counts how many instances of this object there are
             public:
             void drop() {
+                if constexpr(debug_reclaim) h5pp::logger::log->info("Reclaim dropping [{}] (counter {} -> 0) {}", tag, counter, buf);
                 type    = std::nullopt;
                 space   = std::nullopt;
                 plist   = std::nullopt;
@@ -152,30 +156,36 @@ namespace h5pp {
             }
             void reclaim() {
                 if(buf != nullptr and type and space and plist) {
-                    h5pp::logger::log->trace("Reclaiming vlen buffer from reading [{}]", tag);
+                    if constexpr(debug_reclaim) h5pp::logger::log->trace("Reclaiming vlen buffer from reading [{}] (counter {}) {}", tag, counter, buf);
 #if H5_VERSION_GE(1, 12, 0)
-                    H5Treclaim(type.value(), space.value(), plist.value(), buf);
+                    herr_t err = H5Treclaim(type.value(), space.value(), plist.value(), buf);
 #else
-                    H5Dvlen_reclaim(type.value(), space.value(), plist.value(), buf);
+                    herr_t err = H5Dvlen_reclaim(type.value(), space.value(), plist.value(), buf);
 #endif
+                    if(err < 0) h5pp::runtime_error("H5Treclaim: failed to deallocate after reading []: {}", tag, buf);
                 }
                 drop();
             }
             Reclaim() = default;
             Reclaim(const hid::h5t &type, const hid::h5s &space, const hid::h5p &plist, void *buf, const std::string &tag)
-                : type(type), space(space), plist(plist), buf(buf), tag(tag), counter(1){};
-            Reclaim(const Reclaim &r) : type(r.type), space(r.space), plist(r.plist), buf(r.buf), tag(r.tag), counter(r.counter++) {}
-            Reclaim(Reclaim &&r) noexcept
-                : type(std::move(r.type)), space(std::move(r.space)), plist(std::move(r.plist)), buf(std::move(r.buf)),
-                  tag(std::move(r.tag)), counter(std::move(r.counter++)) {}
+                : type(type), space(space), plist(plist), buf(buf), tag(tag), counter(1) {
+                if constexpr(debug_reclaim) h5pp::logger::log->info("Reclaim args ctor: tracking [{}] (counter {}) {}", tag, counter, buf);
+            }
+            Reclaim(const Reclaim &r) : type(r.type), space(r.space), plist(r.plist), buf(r.buf), tag(r.tag), counter(r.counter++) {
+                if constexpr(debug_reclaim) h5pp::logger::log->info("Reclaim copy ctor: tracking [{}] (counter {}) {}", tag, counter, buf);
+            }
+            Reclaim(Reclaim &&r) noexcept : type(r.type), space(r.space), plist(r.plist), buf(r.buf), tag(r.tag), counter(r.counter++) {
+                if constexpr(debug_reclaim) h5pp::logger::log->info("Reclaim move ctor: tracking [{}] (counter {}) {}", tag, counter, buf);
+            }
 
             Reclaim &operator=(Reclaim &&r) noexcept {
-                type    = std::move(r.type);
-                space   = std::move(r.space);
-                plist   = std::move(r.plist);
-                buf     = std::move(r.buf);
-                tag     = std::move(r.tag);
-                counter = std::move(r.counter++); // ++ makes sure "this" is now in charge of destruction
+                type    = r.type;
+                space   = r.space;
+                plist   = r.plist;
+                buf     = r.buf;
+                tag     = r.tag;
+                counter = r.counter++; // ++ makes sure "this" is now in charge of destruction
+                if constexpr(debug_reclaim) h5pp::logger::log->info("Reclaim move asgn: tracking [{}] (counter {}) {}", tag, counter, buf);
                 return *this;
             }
             Reclaim &operator=(const Reclaim &r) noexcept {
@@ -185,10 +195,12 @@ namespace h5pp {
                 buf     = r.buf;
                 tag     = r.tag;
                 counter = r.counter++; // ++ makes sure "this" is now in charge of destruction
+                if constexpr(debug_reclaim) h5pp::logger::log->info("Reclaim copy asgn: tracking [{}] (counter {}) {}", tag, counter, buf);
                 return *this;
             }
             ~Reclaim() noexcept {
                 counter--;
+                if constexpr(debug_reclaim) h5pp::logger::log->info("~Reclaim [{}] (counter {}) {}", tag, counter, buf);
                 if(buf != nullptr and counter == 0) {
                     h5pp::logger::log->warn(
                         "~Reclaim: a pointer for a variable-length array likely remains without free() after reading [{}]. "
@@ -227,7 +239,7 @@ namespace h5pp {
         void setFromSpace() {
             if(not h5Space) return;
             dataRank = H5Sget_simple_extent_ndims(h5Space.value());
-            dataDims = std::vector<hsize_t>(static_cast<size_t>(dataRank.value()), 0);
+            dataDims = std::vector<hsize_t>(type::safe_cast<size_t>(dataRank.value()), 0);
             H5Sget_simple_extent_dims(h5Space.value(), dataDims->data(), nullptr);
         }
 
@@ -443,7 +455,7 @@ namespace h5pp {
                     if(dim == H5S_UNLIMITED)
                         dsetDimsMaxPretty.emplace_back(-1);
                     else
-                        dsetDimsMaxPretty.emplace_back(static_cast<long>(dim));
+                        dsetDimsMaxPretty.emplace_back(type::safe_cast<long>(dim));
                 }
                 msg.append(h5pp::format(" | max dims {}", dsetDimsMaxPretty));
             }
@@ -641,18 +653,23 @@ namespace h5pp {
         }
         [[nodiscard]] std::string string_fields(bool enable = true) const {
             if(not enable) return {};
-            std::string msg;
+            if(not numFields) return {};
+            size_t nwidth = 4;
+            for(const auto &name : fieldNames.value()) nwidth = std::max(nwidth, 1ul + name.size());
             /* clang-format off */
-            if(numFields){
-                msg.append(h5pp::format("Fields ({}):\n", numFields.value()));
-                for(size_t m = 0; m < static_cast<size_t>(numFields.value()); m++){
-                    if(fieldNames and fieldNames->size() > m) msg.append(h5pp::format("{:<32} ", fieldNames->operator[](m)));
-                    if(fieldTypes and fieldTypes->size() > m) msg.append(h5pp::format("| {:<16} ", type::getH5TypeName(fieldTypes->operator[](m))));
-                    if(fieldSizes and fieldSizes->size() > m) msg.append(h5pp::format("| extent {:<4} bytes ", fieldSizes->operator[](m)));
-                    if(fieldOffsets and fieldOffsets->size() > m) msg.append(h5pp::format("| offset {:<4} bytes", fieldOffsets->operator[](m)));
-                    msg.append(".\n");
-                }
+            std::string msg = fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth, "idx", "name", "size", "offset", "class", "type");
+            for(size_t m = 0; m < type::safe_cast<size_t>(numFields.value()); ++m) {
+                msg += fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth,
+                                         m,
+                                         fieldNames and fieldNames->size() > m ? fieldNames->at(m) : "",
+                                         fieldSizes and fieldSizes->size() > m ? fieldSizes->at(m) : -1ul,
+                                         fieldOffsets and fieldOffsets->size() > m ? fieldOffsets->at(m) : -1ul,
+                                         fieldClasses and fieldClasses->size() > m ? h5pp::type::getH5ClassName(fieldClasses->at(m)) : "",
+                                         fieldTypes and fieldTypes->size() > m ? h5pp::type::getH5TypeName(fieldTypes->at(m)) : ""
+                                         );
             }
+
+            /* clang-format on */
             return msg;
             /* clang-format on */
         }
@@ -838,6 +855,7 @@ namespace h5pp {
         std::optional<std::vector<size_t>>      memberSizes  = std::nullopt;
         std::optional<std::vector<size_t>>      memberOffset = std::nullopt;
         std::optional<std::vector<int>>         memberIndex  = std::nullopt;
+        std::optional<std::vector<H5T_class_t>> memberClass  = std::nullopt;
         [[nodiscard]] std::string               string(bool enable = true) const {
             if(not enable) return {};
             std::string msg;
@@ -851,20 +869,23 @@ namespace h5pp {
         }
         [[nodiscard]] std::string string_members(bool enable = true) const {
             if(not enable) return {};
-            std::string msg;
+            if(not numMembers) return {};
+            size_t nwidth = 4;
+            for(const auto &name : memberNames.value()) nwidth = std::max(nwidth, 1ul + name.size());
             /* clang-format off */
-            if(numMembers){
-                msg.append(h5pp::format("Fields ({}):\n", numMembers.value()));
-                for(size_t m = 0; m < static_cast<size_t>(numMembers.value()); m++){
-                    if(memberIndex and memberIndex->size() > m) msg.append(h5pp::format("    [{:^3}] ", memberIndex->operator[](m)));
-                    if(memberNames and memberNames->size() > m) msg.append(h5pp::format(" {:<32} ", memberNames->operator[](m)));
-                    if(memberTypes and memberTypes->size() > m) msg.append(h5pp::format("| {:<16} ", type::getH5TypeName(memberTypes->operator[](m))));
-                    if(memberSizes and memberSizes->size() > m) msg.append(h5pp::format("| size {:<4} bytes ", memberSizes->operator[](m)));
-                    if(memberOffset and memberOffset->size() > m) msg.append(h5pp::format("| offset {:<4} bytes", memberOffset->operator[](m)));
-                }
+            std::string msg = fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth, "idx", "name", "size", "offset", "class", "type");
+            for(size_t m = 0; m < type::safe_cast<size_t>(numMembers.value()); ++m) {
+                msg += fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth,
+                                         m,
+                                         memberNames and memberNames->size() > m ? memberNames->at(m) : "",
+                                         memberSizes and memberSizes->size() > m ? memberSizes->at(m) : -1ul,
+                                         memberOffset and memberOffset->size() > m ? memberOffset->at(m) : -1ul,
+                                         memberClass and memberClass->size() > m ? h5pp::type::getH5ClassName(memberClass->at(m)) : "",
+                                         memberTypes and memberTypes->size() > m ? h5pp::type::getH5TypeName(memberTypes->at(m)) : ""
+                                         );
             }
-            return msg;
             /* clang-format on */
+            return msg;
         }
     };
 }

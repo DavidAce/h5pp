@@ -616,7 +616,7 @@ namespace h5pp::scan {
             if(not h5Type) h5Type = H5Dget_type(h5Dset.value());
             auto nmembers = H5Tget_nmembers(h5Type.value());
             if(nmembers < 0) throw h5pp::runtime_error("getTableFieldInfo: Failed to read nmembers on h5Type for table [{}]", tablePath);
-            info.numFields = static_cast<hsize_t>(nmembers);
+            info.numFields = type::safe_cast<hsize_t>(nmembers);
         }
         if(not info.fieldTypes) {
             if(not h5Dset) h5Dset = hdf5::openLink<hid::h5d>(h5File, tablePath, std::nullopt, dsetAccess);

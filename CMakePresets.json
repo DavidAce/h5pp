@@ -1,0 +1,445 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "FALSE",
+        "H5PP_ENABLE_EIGEN3": "TRUE",
+        "H5PP_ENABLE_FMT": "TRUE",
+        "H5PP_ENABLE_SPDLOG": "TRUE",
+        "H5PP_ENABLE_TESTS": "FALSE",
+        "H5PP_BUILD_EXAMPLES": "FALSE",
+        "H5PP_BUILD_DOCS": "FALSE",
+        "H5PP_ENABLE_MPI": "FALSE",
+        "H5PP_ENABLE_ASAN": "FALSE",
+        "H5PP_ENABLE_PCH": "TRUE",
+        "H5PP_ENABLE_CCACHE": "TRUE",
+        "H5PP_ENABLE_COVERAGE": "FALSE",
+        "CMAKE_VERBOSE_MAKEFILE": "FALSE",
+        "CMAKE_MESSAGE_LOG_LEVEL": "STATUS",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
+        "CMAKE_C_STANDARD": "17",
+        "CMAKE_CXX_STANDARD": "17",
+        "CMAKE_CXX_STANDARD_REQUIRED": "TRUE",
+        "CMAKE_CXX_EXTENSIONS": "FALSE",
+        "CMAKE_POSITION_INDEPENDENT_CODE": "TRUE",
+        "THREADS_PREFER_PTHREAD_FLAG": "TRUE",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "TRUE",
+        "CMAKE_SKIP_BUILD_RPATH": "FALSE",
+        "CMAKE_BUILD_WITH_INSTALL_RPATH": "FALSE",
+        "CMAKE_INSTALL_RPATH_USE_LINK_PATH": "TRUE"
+      },
+      "environment": {
+        "NINJA_STATUS": "[run %r|beg %s|fin %f|tot %t|rate %o|time %e]:"
+      }
+    },
+    {
+      "name": "warnings-nix",
+      "hidden": true,
+      "description": "Enable compiler warnings on linux and osx",
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wconversion -Wunused",
+        "CMAKE_C_FLAGS": "-Wall -Wextra -Wpedantic -Wconversion -Wunused"
+      },
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Linux",
+          "Darwin"
+        ]
+      }
+    },
+    {
+      "name": "warnings-win",
+      "hidden": true,
+      "description": "Enable compiler warnings on linux and osx",
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS": "/W4",
+        "CMAKE_C_FLAGS": "/W4"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "release",
+      "hidden": false,
+      "displayName": "Release|no package manager",
+      "description": "Plain release build without dependency handling.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "debug",
+      "hidden": false,
+      "displayName": "Debug|no package manager",
+      "description": "Plain debug build without dependency handling.",
+      "inherits": [
+        "warnings-nix",
+        "warnings-win",
+        "default"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_VERBOSE_MAKEFILE": "TRUE",
+        "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
+        "H5PP_ENABLE_TESTS": "TRUE",
+        "H5PP_BUILD_EXAMPLES": "TRUE",
+        "H5PP_ENABLE_ASAN": "TRUE",
+        "H5PP_ENABLE_PCH": "FALSE",
+        "H5PP_ENABLE_CCACHE": "FALSE",
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "FALSE",
+        "CMAKE_COMPILE_WARNING_AS_ERROR": "TRUE"
+      },
+      "environment": {
+        "VERBOSE": "1"
+      }
+    },
+    {
+      "name": "gcc-12",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc-12",
+        "CMAKE_CXX_COMPILER": "g++-12",
+        "H5PP_USE_QUADMATH": "TRUE"
+      }
+    },
+    {
+      "name": "clang-14",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-14",
+        "CMAKE_CXX_COMPILER": "clang++-14"
+      }
+    },
+    {
+      "name": "pkg-cmake",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/cmake_dependency_provider/cmake_provider.cmake",
+        "CMAKE_FIND_PACKAGE_PREFER_CONFIG": "TRUE",
+        "CMAKE_COMPILE_WARNING_AS_ERROR": "FALSE"
+      }
+    },
+    {
+      "name": "pkg-conan",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/conan_dependency_provider/conan_provider.cmake",
+        "CMAKE_FIND_PACKAGE_PREFER_CONFIG": "TRUE"
+      },
+      "environment": {
+        "PATH": "$env{HOME}/miniconda3/bin:$env{HOME}/anaconda3/bin:$penv{PATH}"
+      }
+    },
+    {
+      "name": "release-conan",
+      "displayName": "Release|conan package manager",
+      "description": "CMake calls Conan as a dependency provider on the first find_package call",
+      "inherits": [
+        "pkg-conan",
+        "release",
+        "default"
+      ]
+    },
+    {
+      "name": "release-cmake",
+      "displayName": "Release|cmake package manager",
+      "description": "Uses a custom wrapper for external_project_add at CMake configure time",
+      "inherits": [
+        "pkg-cmake",
+        "release",
+        "default"
+      ]
+    },
+    {
+      "name": "release-gcc-12-conan",
+      "displayName": "Release|gcc-12|conan package manager",
+      "inherits": [
+        "gcc-12",
+        "release-conan"
+      ]
+    },
+    {
+      "name": "release-gcc-12-cmake",
+      "displayName": "Release|gcc-12|cmake package manager",
+      "inherits": [
+        "gcc-12",
+        "release-cmake"
+      ]
+    },
+    {
+      "name": "release-clang-14-conan",
+      "displayName": "Release|clang-14|conan package manager",
+      "inherits": [
+        "clang-14",
+        "release-conan"
+      ]
+    },
+    {
+      "name": "release-clang-14-cmake",
+      "displayName": "Release|clang-14|cmake package manager",
+      "inherits": [
+        "clang-14",
+        "release-cmake"
+      ]
+    },
+    {
+      "name": "debug-conan",
+      "displayName": "Debug|conan package manager",
+      "inherits": [
+        "pkg-conan",
+        "debug",
+        "default"
+      ]
+    },
+    {
+      "name": "debug-cmake",
+      "displayName": "Debug|cmake package manager",
+      "inherits": [
+        "pkg-cmake",
+        "debug",
+        "default"
+      ]
+    },
+    {
+      "name": "debug-gcc-12-conan",
+      "displayName": "Debug|gcc-12|conan package manager",
+      "inherits": [
+        "gcc-12",
+        "debug-conan"
+      ]
+    },
+    {
+      "name": "debug-gcc-12-cmake",
+      "displayName": "Debug|gcc-12|cmake package manager",
+      "inherits": [
+        "gcc-12",
+        "debug-cmake"
+      ]
+    },
+    {
+      "name": "debug-clang-14-conan",
+      "displayName": "Debug|clang-14|conan package manager",
+      "inherits": [
+        "clang-14",
+        "debug-conan"
+      ]
+    },
+    {
+      "name": "debug-clang-14-cmake",
+      "displayName": "Debug|clang-14|cmake package manager",
+      "inherits": [
+        "clang-14",
+        "debug-cmake"
+      ]
+    },
+    {
+      "name": "github-actions",
+      "hidden": true,
+      "displayName": "Default configuration for github-actions",
+      "inherits": "default",
+      "cacheVariables": {
+        "H5PP_BUILD_DOCS": "FALSE",
+        "H5PP_ENABLE_ASAN": "TRUE",
+        "H5PP_ENABLE_TESTS": "TRUE",
+        "H5PP_BUILD_EXAMPLES": "TRUE",
+        "H5PP_ENABLE_CCACHE": "TRUE",
+        "H5PP_ENABLE_PCH": "TRUE",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_VERBOSE_MAKEFILE": "TRUE",
+        "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
+        "CMAKE_COMPILE_WARNING_AS_ERROR": "FALSE"
+      }
+    },
+    {
+      "name": "github-actions-find",
+      "displayName": "github-actions using plain find_package",
+      "inherits": [
+        "github-actions"
+      ]
+    },
+    {
+      "name": "github-actions-conan",
+      "displayName": "github-actions using conan package manager",
+      "inherits": [
+        "pkg-conan",
+        "github-actions"
+      ]
+    },
+    {
+      "name": "github-actions-cmake",
+      "displayName": "github-actions using cmake package manager",
+      "inherits": [
+        "pkg-cmake",
+        "github-actions"
+      ]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release-conan",
+      "configurePreset": "release-conan"
+    },
+    {
+      "name": "release-cmake",
+      "configurePreset": "release-cmake"
+    },
+    {
+      "name": "release-gcc-12-conan",
+      "configurePreset": "release-gcc-12-conan"
+    },
+    {
+      "name": "release-gcc-12-cmake",
+      "configurePreset": "release-gcc-12-cmake"
+    },
+    {
+      "name": "release-clang-14-conan",
+      "configurePreset": "release-gcc-12-conan"
+    },
+    {
+      "name": "release-clang-14-cmake",
+      "configurePreset": "release-gcc-12-cmake"
+    },
+    {
+      "name": "debug-conan",
+      "configurePreset": "debug-conan"
+    },
+    {
+      "name": "debug-cmake",
+      "configurePreset": "debug-cmake"
+    },
+    {
+      "name": "debug-gcc-12-conan",
+      "configurePreset": "debug-gcc-12-conan"
+    },
+    {
+      "name": "debug-gcc-12-cmake",
+      "configurePreset": "debug-gcc-12-cmake"
+    },
+    {
+      "name": "debug-clang-14-conan",
+      "configurePreset": "debug-clang-14-conan"
+    },
+    {
+      "name": "debug-clang-14-cmake",
+      "configurePreset": "debug-clang-14-cmake"
+    },
+    {
+      "name": "github-actions-find",
+      "displayName": "github-actions using plain find_package",
+      "configurePreset": "github-actions-find"
+    },
+    {
+      "name": "github-actions-conan",
+      "displayName": "github-actions using conan package manager",
+      "configurePreset": "github-actions-conan"
+    },
+    {
+      "name": "github-actions-cmake",
+      "displayName": "Default build for github-actions",
+      "configurePreset": "github-actions-cmake"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "displayName": "Default setting for tests",
+      "hidden": true,
+      "output": {
+        "verbosity": "default",
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false
+      }
+    },
+    {
+      "name": "github-actions-default",
+      "hidden": true,
+      "output": {
+        "verbosity": "default",
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "configuration": "Release",
+      "inherits": "default"
+    },
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "configuration": "Debug",
+      "inherits": "default"
+    },
+    {
+      "name": "release-conan",
+      "configurePreset": "release-conan",
+      "configuration": "Release",
+      "inherits": "default"
+    },
+    {
+      "name": "release-cmake",
+      "configurePreset": "release-cmake",
+      "configuration": "Release",
+      "inherits": "default"
+    },
+    {
+      "name": "debug-conan",
+      "configurePreset": "debug-conan",
+      "configuration": "Debug",
+      "inherits": "default"
+    },
+    {
+      "name": "debug-cmake",
+      "configurePreset": "debug-cmake",
+      "configuration": "Debug",
+      "inherits": "default"
+    },
+    {
+      "name": "github-actions-find",
+      "configurePreset": "github-actions-find",
+      "configuration": "Debug",
+      "inherits": "github-actions-default"
+    },
+    {
+      "name": "github-actions-conan",
+      "configurePreset": "github-actions-conan",
+      "configuration": "Debug",
+      "inherits": "github-actions-default"
+    },
+    {
+      "name": "github-actions-cmake",
+      "configurePreset": "github-actions-cmake",
+      "configuration": "Debug",
+      "inherits": "github-actions-default"
+    }
+  ]
+}

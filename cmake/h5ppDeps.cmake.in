@@ -21,7 +21,7 @@ if(std::filesystem IN_LIST H5PP_LINK_LIBRARIES)
 endif()
 
 if (H5PP_ENABLE_EIGEN3 OR Eigen3::Eigen IN_LIST H5PP_LINK_LIBRARIES)
-    find_dependency(Eigen3 3.3 REQUIRED)
+    find_dependency(Eigen3 REQUIRED)
     if(TARGET Eigen3 AND NOT TARGET Eigen3::Eigen)
         add_library(Eigen3::Eigen ALIAS Eigen3)
     endif()
@@ -32,7 +32,7 @@ if (H5PP_ENABLE_EIGEN3 OR Eigen3::Eigen IN_LIST H5PP_LINK_LIBRARIES)
 endif()
 
 if (H5PP_ENABLE_FMT OR fmt::fmt IN_LIST H5PP_LINK_LIBRARIES)
-    find_dependency(fmt 6.1.2 REQUIRED)
+    find_dependency(fmt REQUIRED)
     if(TARGET fmt AND NOT TARGET fmt::fmt)
         add_library(fmt::fmt ALIAS fmt)
     endif()
@@ -43,7 +43,7 @@ if (H5PP_ENABLE_FMT OR fmt::fmt IN_LIST H5PP_LINK_LIBRARIES)
 endif()
 
 if (H5PP_ENABLE_SPDLOG OR spdlog::spdlog IN_LIST H5PP_LINK_LIBRARIES)
-    find_dependency(spdlog 1.5.0 REQUIRED)
+    find_dependency(spdlog REQUIRED)
     if(TARGET spdlog AND NOT TARGET spdlog::spdlog)
         add_library(spdlog::spdlog ALIAS spdlog)
     endif()
@@ -54,14 +54,8 @@ if (H5PP_ENABLE_SPDLOG OR spdlog::spdlog IN_LIST H5PP_LINK_LIBRARIES)
 endif()
 
 # HDF5 must be found either way, so set it to required
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
-    find_dependency(HDF5 1.8...1.13.2 COMPONENTS C HL REQUIRED)
-else()
-    # h5pp is compatible with 1.8 to 1.13.2, however, builds from source will reject
-    # new versions if we set the version to 1.8 (minimum) here.
-    find_dependency(HDF5 COMPONENTS C HL REQUIRED)
-endif()
-
+# Also, we don't impose any version requirement here: h5pp is compatible with 1.8 to 1.14.
+find_dependency(HDF5 COMPONENTS C HL REQUIRED)
 
 if(HDF5_FOUND AND HDF5::HDF5 IN_LIST H5PP_LINK_LIBRARIES)
     include(${CMAKE_CURRENT_LIST_DIR}/HDF5TargetUtils.cmake)

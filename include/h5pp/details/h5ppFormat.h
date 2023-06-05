@@ -94,7 +94,7 @@ namespace h5pp {
                 sstr << std::boolalpha << "{";
                 for(const auto &elem : first) sstr << elem << ",";
                 //  Laborious casting here to avoid MSVC warnings and errors in std::min()
-                long rewind = -1 * std::min(1l, static_cast<long>(first.size()));
+                long rewind = -1 * std::min(1l, type::safe_cast<long>(first.size()));
                 sstr.seekp(rewind, std::ios_base::end);
                 sstr << "}";
                 result.emplace_back(sstr.str());

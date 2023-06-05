@@ -3,6 +3,7 @@
 #include "h5ppError.h"
 #include "h5ppHid.h"
 #include "h5ppTypeCompound.h"
+#include "h5ppTypeCustom.h"
 #include "h5ppTypeSfinae.h"
 #include "h5ppVarr.h"
 #include "h5ppVstr.h"
@@ -13,6 +14,25 @@
 
 namespace tc = h5pp::type::sfinae;
 namespace h5pp::type {
+
+    [[nodiscard]] inline std::string getH5ClassName(H5T_class_t h5class) {
+        switch(h5class) {
+            case H5T_class_t::H5T_INTEGER: return "H5T_INTEGER";
+            case H5T_class_t::H5T_FLOAT: return "H5T_FLOAT";
+            case H5T_class_t::H5T_TIME: return "H5T_TIME";
+            case H5T_class_t::H5T_STRING: return "H5T_STRING";
+            case H5T_class_t::H5T_BITFIELD: return "H5T_BITFIELD";
+            case H5T_class_t::H5T_OPAQUE: return "H5T_OPAQUE";
+            case H5T_class_t::H5T_COMPOUND: return "H5T_COMPOUND";
+            case H5T_class_t::H5T_REFERENCE: return "H5T_REFERENCE";
+            case H5T_class_t::H5T_ENUM: return "H5T_ENUM";
+            case H5T_class_t::H5T_VLEN: return "H5T_VLEN";
+            case H5T_class_t::H5T_ARRAY: return "H5T_ARRAY";
+            default: return "H5T_UNKNOWN_CLASS";
+        }
+    }
+
+    [[nodiscard]] inline std::string getH5ClassName(const hid::h5t &h5type) { return getH5ClassName(H5Tget_class(h5type)); }
 
     [[nodiscard]] inline std::string getH5TypeName(const hid::h5t &h5type) {
         /* clang-format off */
@@ -37,8 +57,19 @@ namespace h5pp::type {
         if(H5Tequal(h5type, H5T_NATIVE_UINT64))            return "H5T_NATIVE_UINT64";
         if(H5Tequal(h5type, H5T_NATIVE_UINT8))             return "H5T_NATIVE_UINT8";
         if(H5Tequal(h5type, H5T_C_S1))                     return "H5T_C_S1";
-        if(H5Tget_class(h5type) == H5T_class_t::H5T_ENUM)  return h5pp::format("H5T_ENUM{}",H5Tget_size(h5type));
-        if(H5Tcommitted(h5type) == 0)                      return "H5T_NOT_COMMITTED";
+#if defined(H5PP_USE_FLOAT128)
+        if(type::custom::H5T_FLOAT<__float128>::equal(h5type)) return type::custom::H5T_FLOAT<__float128>::h5name();
+#endif
+        if(H5Tget_class(h5type) == H5T_class_t::H5T_ENUM)      return h5pp::format("H5T_ENUM{}",H5Tget_size(h5type));
+        if(H5Tget_class(h5type) == H5T_class_t::H5T_ARRAY)     return fmt::format("H5T_ARRAY<{}>", getH5TypeName(H5Tget_super(h5type)));
+        if(H5Tis_variable_str(h5type))                         return "H5T_VARIABLE";
+        if(H5Tcommitted(h5type) == 0){
+            hid::h5t h5native = H5Tget_native_type(h5type, H5T_direction_t::H5T_DIR_DEFAULT);
+            if(H5Tequal(h5native, h5type) == 0)
+                return fmt::format("{}<{}>",getH5ClassName(h5type), getH5TypeName(h5native));
+            // Just get the class and size...
+            return h5pp::format("{}:{}",getH5ClassName(h5type), H5Tget_size(h5type));
+        }
         /* clang-format on */
         // Read about the buffer size inconsistency here
         // http://hdf-forum.184993.n3.nabble.com/H5Iget-name-inconsistency-td193143.html
@@ -47,8 +78,8 @@ namespace h5pp::type {
         if(bufSize < 0) throw h5pp::runtime_error("H5Iget_name failed");
 
         if(bufSize > 0) {
-            buf.resize(static_cast<size_t>(bufSize) + 1);                      // We allocate space for the null terminator with +1
-            H5Iget_name(h5type, buf.data(), static_cast<size_t>(bufSize + 1)); // Read name including \0 with +1
+            buf.resize(type::safe_cast<size_t>(bufSize) + 1);                      // We allocate space for the null terminator with +1
+            H5Iget_name(h5type, buf.data(), type::safe_cast<size_t>(bufSize + 1)); // Read name including \0 with +1
         }
         return buf.c_str(); // Use .c_str() to convert to a "standard" std::string, i.e. one where .size() does not include \0
     }
@@ -77,21 +108,19 @@ namespace h5pp::type {
             auto nMembers1 = H5Tget_nmembers(type1);
             auto nMembers2 = H5Tget_nmembers(type2);
             if(nMembers1 != nMembers2) return false;
-            for(auto idx = 0; idx < nMembers1; idx++) {
+            for(int idx = 0; idx < nMembers1; idx++) {
                 hid::h5t t1 = H5Tget_member_type(type1, static_cast<unsigned int>(idx));
                 hid::h5t t2 = H5Tget_member_type(type2, static_cast<unsigned int>(idx));
                 if(not H5Tequal_recurse(t1, t2)) return false;
             }
             return true;
+        } else if constexpr(type::sfinae::is_h5pp_type_id<h5t1> and type::sfinae::is_h5pp_type_id<h5t2>) {
+            return type1 == type2;
         } else {
-            if constexpr(type::sfinae::is_h5pp_type_id<h5t1> and type::sfinae::is_h5pp_type_id<h5t2>) {
-                return type1 == type2;
-            } else {
-                htri_t res = H5Tequal(type1, type2);
-                if(res < 0) throw h5pp::runtime_error("Failed to check type equality");
+            htri_t res = H5Tequal(type1, type2);
+            if(res < 0) throw h5pp::runtime_error("Failed to check type equality");
 
-                return res > 0;
-            }
+            return res > 0;
         }
     }
 
@@ -116,6 +145,9 @@ namespace h5pp::type {
         else if constexpr (std::is_same_v<DecayType, float>)                 return H5Tcopy(H5T_NATIVE_FLOAT);
         else if constexpr (std::is_same_v<DecayType, double>)                return H5Tcopy(H5T_NATIVE_DOUBLE);
         else if constexpr (std::is_same_v<DecayType, long double>)           return H5Tcopy(H5T_NATIVE_LDOUBLE);
+        #if defined(H5PP_USE_FLOAT128)
+        else if constexpr(std::is_same_v<DecayType, __float128>)             return H5Tcopy(type::custom::H5T_FLOAT<__float128>::h5type());
+        #endif
         else if constexpr (std::is_same_v<DecayType, int8_t>)                return H5Tcopy(H5T_NATIVE_INT8);
         else if constexpr (std::is_same_v<DecayType, int16_t>)               return H5Tcopy(H5T_NATIVE_INT16);
         else if constexpr (std::is_same_v<DecayType, int32_t>)               return H5Tcopy(H5T_NATIVE_INT32);
@@ -131,6 +163,7 @@ namespace h5pp::type {
         else if constexpr (std::is_same_v<DecayType, std::byte>)             return H5Tcopy(H5T_NATIVE_UCHAR);
         else if constexpr (tc::is_varr_v<DecayType>)                         return DecayType::get_h5type();
         else if constexpr (tc::is_vstr_v<DecayType>)                         return DecayType::get_h5type();
+        else if constexpr (tc::is_fstr_v<DecayType>)                         return DecayType::get_h5type();
         else if constexpr (tc::is_std_complex_v<DecayType>)                  return H5Tcopy(type::compound::H5T_COMPLEX<typename DecayType::value_type>::h5type());
         else if constexpr (tc::is_Scalar2_v<DecayType>)                      return H5Tcopy(type::compound::H5T_SCALAR2<tc::get_Scalar2_t<DecayType>>::h5type());
         else if constexpr (tc::is_Scalar3_v<DecayType>)                      return H5Tcopy(type::compound::H5T_SCALAR3<tc::get_Scalar3_t<DecayType>>::h5type());
@@ -265,7 +298,7 @@ namespace h5pp::type {
             auto h5type = H5Tget_native_type(type, H5T_direction_t::H5T_DIR_DEFAULT); // Unrolls nested compound types
 
             auto nmembers = H5Tget_nmembers(h5type);
-            auto nmembers_ul = static_cast<unsigned int>(nmembers);
+            auto nmembers_ul = type::safe_cast<unsigned int>(nmembers);
 
             std::vector<std::string> cpptypenames(nmembers_ul);
             for(unsigned int idx = 0; idx < nmembers_ul; idx++ ){
@@ -277,21 +310,7 @@ namespace h5pp::type {
         if(H5Tequal(type, H5T_NATIVE_HBOOL))            return getCppType<hbool_t>();
         if(H5Tequal(type, H5T_NATIVE_B8))               return getCppType<std::byte>();
 
-        std::string name;
-        switch(h5class){
-            case H5T_class_t::H5T_INTEGER:      name = "H5T_INTEGER"; break;
-            case H5T_class_t::H5T_FLOAT:        name = "H5T_FLOAT"; break;
-            case H5T_class_t::H5T_TIME:         name = "H5T_TIME"; break;
-            case H5T_class_t::H5T_STRING:       name = "H5T_STRING"; break;
-            case H5T_class_t::H5T_BITFIELD:     name = "H5T_BITFIELD"; break;
-            case H5T_class_t::H5T_OPAQUE:       name = "H5T_OPAQUE"; break;
-            case H5T_class_t::H5T_COMPOUND:     name = "H5T_COMPOUND"; break;
-            case H5T_class_t::H5T_REFERENCE:    name = "H5T_REFERENCE"; break;
-            case H5T_class_t::H5T_ENUM:         name = "H5T_ENUM"; break;
-            case H5T_class_t::H5T_VLEN:         name = "H5T_VLEN"; break;
-            case H5T_class_t::H5T_ARRAY:        name = "H5T_ARRAY"; break;
-            default: name = "UNKNOWN TYPE";
-        }
+        auto name = getH5ClassName(type);
         /* clang-format on */
         auto h5size = H5Tget_size(type);
         if(H5Tcommitted(type) > 0) {

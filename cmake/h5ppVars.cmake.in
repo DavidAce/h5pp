@@ -4,38 +4,11 @@ option(H5PP_ENABLE_FMT         "Enables the {fmt} formatting library"           
 option(H5PP_ENABLE_SPDLOG      "Enables Spdlog for logging h5pp internal info"    @H5PP_ENABLE_SPDLOG@)
 option(H5PP_ENABLE_MPI         "Enables use of MPI (work in progress)"            @H5PP_ENABLE_MPI@)
 
-set(H5PP_PACKAGE_MANAGER   @H5PP_PACKAGE_MANAGER@  CACHE STRING "Package manager for external dependencies")
-set(H5PP_DEPS_INSTALL_DIR  @H5PP_DEPS_INSTALL_DIR@ CACHE STRING "Install directory for h5pp dependencies")
-list(APPEND CMAKE_PREFIX_PATH @H5PP_DEPS_INSTALL_DIR@ @CMAKE_INSTALL_PREFIX@)
+list(APPEND CMAKE_PREFIX_PATH @CMAKE_INSTALL_PREFIX@)
 list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
 
 if(H5PP_ENABLE_SPDLOG)
     set(H5PP_ENABLE_FMT ON CACHE INTERNAL "H5PP_ENABLE_SPDLOG:ON implies H5PP_ENABLE_FMT:ON)" FORCE)
-endif()
-
-# Make an "enum" for valid package managers: find cmake fetch find-or-cmake conan
-set(H5PP_PACKAGE_MANAGERS_VALID none find fetch cmake cpm find-or-fetch find-or-cmake find-or-cpm conan)
-set_property(CACHE H5PP_PACKAGE_MANAGER PROPERTY STRINGS ${H5PP_PACKAGE_MANAGERS_VALID})
-if (NOT H5PP_PACKAGE_MANAGER IN_LIST H5PP_PACKAGE_MANAGERS_VALID)
-    message(FATAL_ERROR "H5PP_PACKAGE_MANAGER must be one of ${H5PP_PACKAGE_MANAGERS_VALID}")
-endif ()
-
-
-if(H5PP_PACKAGE_MANAGER MATCHES "cmake|cpm|fetch")
-    if(NOT DEFINED HDF5_ROOT)
-        set(HDF5_ROOT @HDF5_ROOT@)
-    endif()
-    if(NOT DEFINED SZIP_ROOT)
-        set(SZIP_ROOT @SZIP_ROOT@)
-    endif()
-    if(NOT DEFINED ZLIB_ROOT)
-        set(ZLIB_ROOT @ZLIB_ROOT@)
-    endif()
-    if(NOT DEFINED ZLIB_LIBRARY)
-        # This is to make sure we find the same library (static/shared) as found during h5pp and hdf5 installation
-        set(ZLIB_LIBRARY @ZLIB_LIBRARY@)
-        set(ZLIB_INCLUDE_DIR @ZLIB_INCLUDE_DIR@)
-    endif()
 endif()
 
 
@@ -43,6 +16,3 @@ mark_as_advanced(H5PP_ENABLE_EIGEN3)
 mark_as_advanced(H5PP_ENABLE_FMT)
 mark_as_advanced(H5PP_ENABLE_SPDLOG)
 mark_as_advanced(H5PP_ENABLE_MPI)
-mark_as_advanced(H5PP_DEPS_INSTALL_DIR)
-mark_as_advanced(H5PP_PACKAGE_MANAGER)
-mark_as_advanced(H5PP_PACKAGE_MANAGERS_VALID)

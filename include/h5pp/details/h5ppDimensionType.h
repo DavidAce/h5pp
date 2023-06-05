@@ -1,6 +1,7 @@
 #pragma once
 #include "h5ppError.h"
 #include "h5ppFormat.h"
+#include "h5ppTypeCast.h"
 #include "h5ppTypeSfinae.h"
 #include <optional>
 #include <utility>
@@ -40,7 +41,7 @@ namespace h5pp {
         template<typename UnknownType>
         DimsType(const UnknownType &dims_) {
             if constexpr(std::is_integral_v<UnknownType>) {
-                dims = std::vector<hsize_t>{static_cast<size_t>(dims_)};
+                dims = std::vector<hsize_t>{type::safe_cast<size_t>(dims_)};
             } else if constexpr(h5pp::type::sfinae::is_iterable_v<UnknownType>) {
                 dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
             } else if constexpr(std::is_same_v<UnknownType, OptDimsType>) {
@@ -84,7 +85,7 @@ namespace h5pp {
         template<typename UnknownType>
         OptDimsType(const UnknownType &dims_) {
             if constexpr(std::is_integral_v<UnknownType>) {
-                dims = std::vector<hsize_t>{static_cast<size_t>(dims_)};
+                dims = std::vector<hsize_t>{type::safe_cast<size_t>(dims_)};
             } else if constexpr(h5pp::type::sfinae::is_iterable_v<UnknownType>) {
                 dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
             } else if constexpr(std::is_assignable_v<UnknownType, OptDimsType> or std::is_assignable_v<UnknownType, DimsType>) {

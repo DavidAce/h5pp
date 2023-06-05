@@ -34,7 +34,7 @@ summary below.
 Install and configure [conan](https://conan.io), then run the following command to install from [conan center](https://conan.io/center/h5pp):
 
 ```bash
-> conan install h5pp/1.10.0@ --build=missing
+> conan install h5pp/1.11.0 --build=missing
 ```
 
 The flag `--build=missing` lets conan install dependencies: `HDF5`, `Eigen` and `fmt` and `spdlog`.
@@ -67,6 +67,21 @@ After cloning this repository, build the library just as any CMake project. For 
 Headers will be installed under `<install-dir>/include` and config files under `<install-dir>/share/h5pp/cmake`. These
 config files allow you to use`find_package(h5pp)` in your own projects, which in turn defines the target `h5pp::h5pp`
 with everything you need to link `h5pp` correctly (including dependencies if you so choose: see below).
+
+#### CMake Presets
+
+Git clone and use one of the bundled CMake Presets to configure and build the project.
+In this case we choose `release-cmake` to install all the dependencies using just CMake. 
+
+```bash
+    git clone https://github.com/DavidAce/h5pp.git
+    cd h5pp
+    cmake --preset=release-cmake         # Configure. Optionally add -DCMAKE_INSTALL_PREFIX=<install-dir>
+    cmake --build --preset=release-cmake # Builds tests and examples. Optionally add --parallel=<num cores>
+    cmake --install build/release-cmake  # Install to <install-dir> (default is ./install)
+    ctest --preset=release-cmake         # Optionally run tests
+```
+
 
 #### Opt-in automatic dependency installation with CMake
 

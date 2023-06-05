@@ -8,16 +8,16 @@
 
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
-#include <h5pp/h5pp.h>
 #include <complex>
+#include <h5pp/h5pp.h>
 
 // Define the main table type that will be written
 struct Particle {
-    double x = 0, y = 1, z = 2, t = 3;
-    double rho[3]   = {20, 3.13, 102.4};
-    char   name[10] = "some name"; // Can be replaced by std::string
-    std::complex<double> cplx = {1,1};
-    void   dummy_function(int) {}
+    double               x = 0, y = 1, z = 2, t = 3;
+    double               rho[3]   = {20, 3.13, 102.4};
+    char                 name[10] = "some name"; // Can be replaced by std::string
+    std::complex<double> cplx     = {1, 1};
+    void                 dummy_function(int) {}
 };
 
 // Define structs that are subsets of a particle
@@ -53,8 +53,8 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
         H5Tset_strpad(MY_HDF5_NAME_TYPE, H5T_STR_NULLTERM);
 
         // Specify the array "rho" as rank-1 array of length 3
-        std::vector<hsize_t> dims             = {3};
-        h5pp::hid::h5t       MY_HDF5_RHO_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE, dims.size(), dims.data());
+        std::vector<hsize_t> dims       = {3};
+        h5pp::hid::h5t MY_HDF5_RHO_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE, h5pp::type::safe_cast<unsigned int>(dims.size()), dims.data());
 
         // Register the compound type
         h5pp::hid::h5t MY_HDF5_PARTICLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Particle));
@@ -98,9 +98,9 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
 
     SECTION("Single struct field by name") {
         h5pp::File file("output/readWriteTableFields.h5", h5pp::FileAccess::READWRITE, 2);
-        auto       rho_field_first = file.readTableField<Rho>("somegroup/particleTable", "rho", 0, 1);
-        auto       rho_field_last  = file.readTableField<Rho>("somegroup/particleTable", "rho", -1ul, 1);
-        auto       cplx_field_first  = file.readTableField<Complex>("somegroup/particleTable", "cplx",  0, 1);
+        auto       rho_field_first  = file.readTableField<Rho>("somegroup/particleTable", "rho", 0, 1);
+        auto       rho_field_last   = file.readTableField<Rho>("somegroup/particleTable", "rho", -1ul, 1);
+        auto       cplx_field_first = file.readTableField<Complex>("somegroup/particleTable", "cplx", 0, 1);
         auto       cplx_field_last  = file.readTableField<Complex>("somegroup/particleTable", "cplx", -1ul, 1);
         CHECK(rho_field_first.rho[0] == 20);
         CHECK(rho_field_first.rho[1] == 3.13);
@@ -108,9 +108,8 @@ TEST_CASE("Test reading columns from table", "[Table fields]") {
         CHECK(rho_field_last.rho[0] == 20);
         CHECK(rho_field_last.rho[1] == 3.13);
         CHECK(rho_field_last.rho[2] == 102.4);
-        CHECK(cplx_field_first.cplx == std::complex<double>(1,1));
-        CHECK(cplx_field_last.cplx == std::complex<double>(1,1));
-
+        CHECK(cplx_field_first.cplx == std::complex<double>(1, 1));
+        CHECK(cplx_field_last.cplx == std::complex<double>(1, 1));
     }
 
     SECTION("Multiple fields by name and index") {

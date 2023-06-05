@@ -545,74 +545,6 @@ function(find_package_hdf5_exec_wrapper)
     endforeach()
 endfunction()
 
-
-
-function(find_package_hdf5_config_wrapper)
-
-    # We unset the specified version because on some installations, hdf5-config.cmake will mark
-    # a new library (like 1.12) as incompatible with an older (like 1.8) even though h5pp is compatible with both.
-    unset(HDF5_FIND_VERSION) # The user has probably installed the latest version
-    unset(HDF5_FIND_VERSION_COMPLETE) # The user has probably installed the latest version
-    unset(HDF5_FIND_REQUIRED) # There is a chance we may find the library using the executable wrappers
-
-    if(HDF5_USE_STATIC_LIBRARIES)
-        list(APPEND HDF5_COMPONENTS_CONFIG static)
-    else()
-        list(APPEND HDF5_COMPONENTS_CONFIG shared)
-    endif()
-    # Honor the HDF5_NO_<option> flags
-    list(APPEND NO_OPTIONS
-            NO_PACKAGE_ROOT_PATH
-            NO_CMAKE_PATH
-            NO_CMAKE_PACKAGE_REGISTRY
-            NO_SYSTEM_ENVIRONMENT_PATH
-            NO_CMAKE_SYSTEM_PATH
-            NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
-            NO_DEFAULT_PATH
-            )
-
-    foreach(opt ${NO_OPTIONS})
-        if(DEFINED HDF5_${opt} AND NOT DEFINED ${opt})
-            set(${opt} ${opt})
-            if(HDF5_FIND_DEBUG)
-                hdf5_message(STATUS "HDF5 find policy: ${${opt}}")
-            endif()
-        endif()
-    endforeach()
-    hdf5_message(TRACE "find_package(HDF5) in CONFIG mode...")
-    find_package(HDF5
-            ${HDF5_FIND_VERSION}
-            COMPONENTS ${HDF5_FIND_COMPONENTS} ${HDF5_COMPONENTS_CONFIG}
-            HINTS  ${HDF5_ROOT}  ${H5PP_DEPS_INSTALL_DIR} ${CMAKE_INSTALL_PREFIX}
-            PATH_SUFFIXES hdf5
-            # The following flags are enabled with HDF5_NO_... before calling find_package(HDF5)
-            ${NO_PACKAGE_ROOT_PATH}
-            ${NO_SYSTEM_ENVIRONMENT_PATH}
-            ${NO_CMAKE_PATH}
-            ${NO_CMAKE_PACKAGE_REGISTRY}
-            ${NO_CMAKE_SYSTEM_PATH}
-            ${NO_CMAKE_SYSTEM_PACKAGE_REGISTRY}
-            ${NO_DEFAULT_PATH} # If enabled, this will ignore HDF5_ROOT
-            CONFIG)
-    hdf5_message(DEBUG "find_package(HDF5) in CONFIG mode... Found ${HDF5_FOUND}: ${HDF5_INCLUDE_DIR}")
-    if(HDF5_FOUND)
-        collect_hdf5_target_names(HDF5_TARGETS)
-        if(NOT HDF5_TARGETS)
-            hdf5_message(WARNING "Found HDF5 installation at ${HDF5_INCLUDE_DIR} but it did not provide any"
-                                 "targets matching components: ${HDF5_FIND_COMPONENTS};${HDF5_COMPONENTS_CONFIG}")
-            set(HDF5_FOUND FALSE)
-        endif()
-    endif()
-
-    if(HDF5_FOUND)
-        define_found_components()
-        return()
-    else()
-        set(HDF5_FOUND FALSE PARENT_SCOPE)
-    endif()
-endfunction()
-
-
 function(find_package_hdf5)
     # Unset cached variables to make sure we end up calling find_package at least once
     foreach(tgt ${HDF5_TARGETS})
@@ -625,18 +557,9 @@ function(find_package_hdf5)
 
     # Configure shared/static linkage
 
-    if(BUILD_SHARED_LIBS AND NOT DEFINED HDF5_USE_STATIC_LIBRARIES)
-        set(HDF5_USE_STATIC_LIBRARIES OFF)
-    elseif(NOT DEFINED HDF5_USE_STATIC_LIBRARIES)
-        set(HDF5_USE_STATIC_LIBRARIES ON)
-    endif()
-
     if(HDF5_USE_STATIC_LIBRARIES)
         set(HDF5_LIBRARY_SUFFIX ${CMAKE_STATIC_LIBRARY_SUFFIX})
         set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
-    else()
-        set(HDF5_LIBRARY_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
-        set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX})
     endif()
 
     # Setup components
@@ -646,11 +569,6 @@ function(find_package_hdf5)
 
     # Find HDF5
     if(NOT HDF5_FOUND)
-        # Try finding HDF5 where it would have been installed previously by h5pp
-        find_package_hdf5_config_wrapper()
-    endif()
-    if(NOT HDF5_FOUND)
-        # Try finding HDF5 using executable wrappers
         find_package_hdf5_exec_wrapper()
     endif()
     define_found_components()

@@ -3,15 +3,16 @@
 #include <h5pp/h5pp.h>
 
 int main() {
-    std::string                       outputFilename = "output/simpleWrite.h5";
-    size_t                            logLevel       = 0;
-    h5pp::File                        file(outputFilename, h5pp::FileAccess::REPLACE, logLevel);
-    bool                              Boolean   = true;
-    std::string                       String    = "This is a string";
-    char                              Char[100] = "This is a char array";
-    double                            Double    = 2.0;
-    std::complex<double>              ComplexDouble(3, 4);
-    int                               arrayInt[5] = {1, 2, 3, 4, 5};
+    std::string          outputFilename = "output/simpleWrite.h5";
+    size_t               logLevel       = 0;
+    h5pp::File           file(outputFilename, h5pp::FileAccess::REPLACE, logLevel);
+    bool                 Boolean   = true;
+    std::string          String    = "This is a string";
+    char                 Char[100] = "This is a char array";
+    double               Double    = 2.0;
+    std::complex<double> ComplexDouble(3, 4);
+    int                  arrayInt[5] = {1, 2, 3, 4, 5};
+
     std::vector<int>                  vectorInt(10, 42);
     std::vector<long>                 vectorLong(10, 42);
     std::vector<unsigned int>         vectorUint(10, 42);
@@ -91,6 +92,11 @@ int main() {
         bigTensor.setConstant(1.0);
         file.writeDataset(bigTensor, "compressedWriteGroup/bigTensor");
     }
+#endif
+
+#if defined(H5PP_USE_FLOAT128)
+    __float128 f128 = 6.28318530717958623199592693708837032318115234375;
+    file.writeDataset(f128, "simpleWriteGroup/f128");
 #endif
 
     return 0;
