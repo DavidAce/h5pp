@@ -78,7 +78,9 @@
       "displayName": "Release|no package manager",
       "description": "Plain release build without dependency handling.",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "H5PP_BUILD_EXAMPLES": "TRUE",
+        "H5PP_ENABLE_TESTS": "TRUE"
       }
     },
     {
