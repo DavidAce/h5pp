@@ -124,16 +124,16 @@ namespace h5pp::type {
         }
     }
 
-    template<typename DataType>
+    template<typename DataType, size_t depth = 0>
     [[nodiscard]] hid::h5t getH5Type() {
         //        if(h5type.has_value()) return h5type.value(); // Intercept
         namespace tc    = h5pp::type::sfinae;
         using DecayType = typename std::decay<DataType>::type;
 
         /* clang-format off */
-        if constexpr      (std::is_pointer_v<DecayType>)                     return getH5Type<typename std::remove_pointer<DecayType>::type>();
-        else if constexpr (std::is_reference_v<DecayType>)                   return getH5Type<typename std::remove_reference<DecayType>::type>();
-        else if constexpr (std::is_array_v<DecayType>)                       return getH5Type<typename std::remove_all_extents<DecayType>::type>();
+        if constexpr      (std::is_pointer_v<DecayType>)                     return getH5Type<typename std::remove_pointer<DecayType>::type, depth+1>();
+        else if constexpr (std::is_reference_v<DecayType>)                   return getH5Type<typename std::remove_reference<DecayType>::type, depth+1>();
+        else if constexpr (std::is_array_v<DecayType>)                       return getH5Type<typename std::remove_all_extents<DecayType>::type, depth+1>();
         else if constexpr (std::is_same_v<DecayType, short>)                 return H5Tcopy(H5T_NATIVE_SHORT);
         else if constexpr (std::is_same_v<DecayType, int>)                   return H5Tcopy(H5T_NATIVE_INT);
         else if constexpr (std::is_same_v<DecayType, long>)                  return H5Tcopy(H5T_NATIVE_LONG);
@@ -167,8 +167,13 @@ namespace h5pp::type {
         else if constexpr (tc::is_std_complex_v<DecayType>)                  return H5Tcopy(type::compound::H5T_COMPLEX<typename DecayType::value_type>::h5type());
         else if constexpr (tc::is_Scalar2_v<DecayType>)                      return H5Tcopy(type::compound::H5T_SCALAR2<tc::get_Scalar2_t<DecayType>>::h5type());
         else if constexpr (tc::is_Scalar3_v<DecayType>)                      return H5Tcopy(type::compound::H5T_SCALAR3<tc::get_Scalar3_t<DecayType>>::h5type());
-        else if constexpr (tc::has_Scalar_v<DecayType>)                      return getH5Type<typename DecayType::Scalar>();
-        else if constexpr (tc::has_value_type_v <DecayType>)                 return getH5Type<typename DataType::value_type>();
+        else if constexpr (tc::is_std_array_v<DecayType> and depth == 0 )      return getH5Type<typename DecayType::value_type, depth+1>();
+        else if constexpr (tc::is_std_array_v<DecayType> and depth == 1 ){
+            constexpr std::array<hsize_t, 1> dims = {std::tuple_size<DecayType>::value};
+            return H5Tarray_create(getH5Type<typename DecayType::value_type, depth+1>(), dims.size(), dims.data()) ;
+        }
+        else if constexpr (tc::has_Scalar_v<DecayType>)                      return getH5Type<typename DecayType::Scalar, depth+1>();
+        else if constexpr (tc::has_value_type_v <DecayType>)                 return getH5Type<typename DecayType::value_type, depth+1>();
         else if constexpr (std::is_same_v<DecayType, hvl_t>)                 return H5Tvlen_create(H5T_NATIVE_OPAQUE); // Last resort ... user should provide a h5 type at runtime
         else if constexpr (std::is_enum_v<DecayType>)                        return getH5Type<std::underlying_type_t<DecayType>>(); // Last resort ... user should provide a h5 type at runtime
         else if constexpr (std::is_class_v<DecayType>)                       return H5Tcreate(H5T_COMPOUND, sizeof(DecayType)); // Last resort ... user should provide a h5 type at runtime
