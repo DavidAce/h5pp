@@ -240,14 +240,12 @@ function(find_filesystem)
     endif()
 
     cmake_pop_check_state()
-
-    set(Filesystem_FOUND ${_found} CACHE BOOL "TRUE if we can compile and link a program using std::filesystem" FORCE)
+    set(_found ${_found} PARENT_SCOPE)
     cmake_policy(POP)
 endfunction()
 
 find_filesystem()
 
-if(Filesystem_FIND_REQUIRED AND NOT Filesystem_FOUND)
-    message(FATAL_ERROR "Cannot Compile simple program using std::filesystem")
-endif()
 
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Filesystem DEFAULT_MSG _found)
