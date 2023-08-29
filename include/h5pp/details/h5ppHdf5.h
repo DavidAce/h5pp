@@ -86,7 +86,7 @@ namespace h5pp::hdf5 {
         // Read about the buffer size inconsistency here
         // http://hdf-forum.184993.n3.nabble.com/H5Iget-name-inconsistency-td193143.html
         std::string buf;
-        ssize_t     bufSize = H5Iget_name(object, nullptr, 0);                     // Size in bytes of the object name (NOT including \0)
+        ssize_t     bufSize = H5Iget_name(object, nullptr, 0); // Size in bytes of the object name (NOT including \0)
         if(bufSize > 0) {
             buf.resize(type::safe_cast<size_t>(bufSize) + 1);                      // We allocate space for the null terminator with +1
             H5Iget_name(object, buf.data(), type::safe_cast<size_t>(bufSize + 1)); // Read name including \0 with +1
@@ -324,7 +324,7 @@ namespace h5pp::hdf5 {
     template<typename DataType>
     void assertWriteBufferIsLargeEnough(const DataType &data, const hid::h5s &space, const hid::h5t &type) {
         if(H5Tget_class(type) == H5T_STRING) {
-            if(H5Tis_variable_str(type)) return;   // This transfers the string from memory until finding a null terminator
+            if(H5Tis_variable_str(type)) return; // This transfers the string from memory until finding a null terminator
             if constexpr(type::sfinae::is_text_v<DataType>) {
                 auto hdf5Byte = H5Tget_size(type); // Chars including null-terminator. The memory buffer must fit this size. Also, these
                                                    // many bytes will participate in IO
@@ -375,7 +375,7 @@ namespace h5pp::hdf5 {
             if(H5Tis_variable_str(type)) return; // These are resized on the fly
             if constexpr(type::sfinae::is_text_v<DataType>) {
                 // The memory buffer must fit hdf5Byte: that's how many bytes will participate in IO
-                auto hdf5Byte = H5Tget_size(type);                      // Chars including null-terminator.
+                auto hdf5Byte = H5Tget_size(type); // Chars including null-terminator.
                 auto hdf5Size = getSizeSelected(space);
                 auto dataByte = h5pp::util::getCharArraySize(data) + 1; // Chars including null terminator
                 auto dataSize = h5pp::util::getSize(data);
@@ -1349,7 +1349,9 @@ namespace h5pp::hdf5 {
     inline void extendDataset(DsetInfo &dsetInfo, const DataInfo &dataInfo, size_t axis) {
         // We use this function to EXTEND the dataset to APPEND given data
         dataInfo.assertWriteReady();
-        extendDataset(dsetInfo, dataInfo.dataDims.value(), axis);
+        if(dataInfo.dataSlab.has_value() and dataInfo.dataSlab->extent.has_value())
+            extendDataset(dsetInfo, dataInfo.dataSlab->extent.value(), axis);
+        else extendDataset(dsetInfo, dataInfo.dataDims.value(), axis);
     }
 
     inline void
@@ -1728,11 +1730,11 @@ namespace h5pp::hdf5 {
                     // It is expensive to use H5Oopen to peek H5O_info_t::type.
                     // It is faster to populate H5O_info_t using
                     H5O_info_t oInfo;
-                    #if defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
+#if defined(H5Oget_info_vers) && H5Oget_info_vers >= 2
                         H5Oget_info_by_name(id, name, &oInfo, H5O_INFO_BASIC, H5P_DEFAULT);
-                    #else
+#else
                         H5Oget_info_by_name(id,name, &oInfo,H5P_DEFAULT);
-                    #endif
+#endif
                     /* clang-format on */
                     if(oInfo.type == ObjType or ObjType == H5O_TYPE_UNKNOWN) {
                         if(searchKey.empty() or linkName.find(searchKey) != std::string::npos) {
@@ -1894,12 +1896,12 @@ namespace h5pp::hdf5 {
         std::vector<const char *> sv;
         if constexpr(type::sfinae::is_text_v<DataType> and type::sfinae::has_data_v<DataType>) { // Takes care of std::string
             sv.push_back(data.data());
-        } else if constexpr(type::sfinae::is_text_v<DataType>) {                                 // Takes care of char pointers and arrays
+        } else if constexpr(type::sfinae::is_text_v<DataType>) { // Takes care of char pointers and arrays
             sv.push_back(data);
-        } else if constexpr(type::sfinae::is_iterable_v<DataType>) {                             // Takes care of containers with text
+        } else if constexpr(type::sfinae::is_iterable_v<DataType>) { // Takes care of containers with text
             for(auto &elem : data) {
                 if constexpr(type::sfinae::is_text_v<decltype(elem)> and
-                             type::sfinae::has_data_v<decltype(elem)>) {       // Takes care of containers with std::string
+                             type::sfinae::has_data_v<decltype(elem)>) { // Takes care of containers with std::string
                     sv.push_back(elem.data());
                 } else if constexpr(type::sfinae::is_text_v<decltype(elem)>) { // Takes care of containers  of char pointers and arrays
                     sv.push_back(elem);
@@ -2097,7 +2099,7 @@ namespace h5pp::hdf5 {
             if(ern < 0) throw h5pp::runtime_error("writeDataset_chunkwise: failed to get number of chunks in dataset");
 
             // Compute the total number of chunks that this dataset has room for
-            std::vector<hsize_t> chunkRoom(rank);                                // counts how many chunks fit in each direction
+            std::vector<hsize_t> chunkRoom(rank); // counts how many chunks fit in each direction
             for(size_t i = 0; i < chunkRoom.size(); i++)
                 chunkRoom[i] = (dims[i] + chunkDims[i] - 1) / chunkDims[i];      // Integral ceil on division
             size_t chunkCapacity = h5pp::util::getSizeFromDimensions(chunkRoom); // The total number of chunks that can fit
