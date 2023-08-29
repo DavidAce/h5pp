@@ -391,7 +391,9 @@ namespace h5pp::util {
         else if constexpr(std::is_arithmetic_v<DecayType>)                 return sizeof(DecayType);
         else if constexpr(sfn::has_Scalar_v<DecayType> )                   return sizeof(typename DecayType::Scalar);
         else if constexpr(sfn::has_value_type_v<DecayType> and depth == 0) return getBytesPerElem<typename DecayType::value_type, depth+1>();
-        else                                                return sizeof(std::remove_all_extents_t<DecayType>);
+        else if constexpr(sfn::has_text_v<DecayType>)                      return 1;
+        else if constexpr(sfn::is_text_v<DecayType>)                       return 1;
+        else                                                               return sizeof(std::remove_all_extents_t<DecayType>);
         /* clang-format on */
     }
 
@@ -535,7 +537,7 @@ namespace h5pp::util {
         auto targetChunkBytes = std::clamp<double>(volumeChunkBytes,
                                                    std::max<double>(static_cast<double>(bytesPerElem), h5pp::constants::minChunkBytes),
                                                    std::max<double>(static_cast<double>(bytesPerElem), h5pp::constants::maxChunkBytes));
-        targetChunkBytes      = std::pow(2, std::ceil(std::log2(targetChunkBytes)));         // Next nearest power of two
+        targetChunkBytes      = std::pow(2, std::ceil(std::log2(targetChunkBytes))); // Next nearest power of two
         auto linearChunkSize  = std::ceil(std::pow(targetChunkBytes / static_cast<double>(bytesPerElem), 1.0 / static_cast<double>(rank)));
         auto chunkSize        = std::max<hsize_t>(1, static_cast<hsize_t>(linearChunkSize)); // Make sure the chunk size is positive
         std::vector<hsize_t> chunkDims(rank, chunkSize);
