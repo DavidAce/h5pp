@@ -377,3 +377,12 @@ namespace h5pp::type::sfinae {
     template<typename T>
     inline constexpr bool is_or_has_fstr_v = is_fstr_v<T> or has_fstr_v<T>;
 }
+
+
+#if defined(H5PP_USE_FMT) && defined(FMT_FORMAT_H_)
+template <size_t N> struct fmt::formatter<h5pp::fstr_t<N>>: formatter<string_view> {
+  auto format(const h5pp::fstr_t<N> &f, format_context& ctx) const{
+        return fmt::formatter<string_view>::format(f.c_str(), ctx);
+  }
+};
+#endif
