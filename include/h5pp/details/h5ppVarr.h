@@ -338,3 +338,17 @@ namespace h5pp::type::sfinae {
     template<typename T>
     inline constexpr bool is_or_has_varr_v = is_varr_v<T> or has_varr_v<T>;
 }
+
+
+#if defined(H5PP_USE_FMT) && defined(FMT_FORMAT_H_)
+
+// Add a custom fmt::formatter for h5pp::varr_t
+template<typename T, typename Char>
+struct fmt::formatter<h5pp::varr_t<T>, Char, typename::std::enable_if_t<std::is_arithmetic_v<T>>::value> : fmt::formatter<std::vector<T>, Char> {
+//template <typename T, typename=std::enable_if_t<std::is_arithmetic_v<T>>::value>
+//struct fmt::formatter<h5pp::varr_t<T>>: formatter<std::vector<T>> {
+  auto format(const h5pp::varr_t<T> & v, format_context& ctx) const{
+        return fmt::formatter<std::vector<T>>::format(std::vector<T>(v.begin(), v.end()), ctx);
+  }
+};
+#endif
