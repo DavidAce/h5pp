@@ -53,7 +53,7 @@ class H5ppConan(ConanFile):
         if self.options.get_safe('with_eigen'):
             self.requires("eigen/3.4.0", transitive_headers=True)
         if self.options.get_safe('with_spdlog'):
-            self.requires("spdlog/1.12.0", transitive_headers=True, transitive_libs=True)
+            self.requires("spdlog/1.11.0", transitive_headers=True, transitive_libs=True)
         if self.options.with_zlib:
             self.requires("zlib/1.2.13", transitive_headers=True, transitive_libs=True)
 
