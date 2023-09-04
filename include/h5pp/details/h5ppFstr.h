@@ -292,8 +292,8 @@ namespace h5pp::type::flen {
     template<size_t N>
     template<typename T, typename>
     T fstr_t<N>::to_floating_point() const {
-        if(ptr == nullptr) return 0;
-        if(size() == 0) return 0;
+        if(ptr == nullptr) return T(0);
+        if(size() == 0) return T(0);
         if constexpr(std::is_same_v<std::decay_t<T>, float>) {
             return strtof(c_str(), nullptr);
         } else if constexpr(std::is_same_v<std::decay_t<T>, double>) {
@@ -333,7 +333,7 @@ namespace h5pp::type::flen {
             }
 #endif
         }
-        return 0;
+        return T(0);
     }
 
     template<size_t N>
