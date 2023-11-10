@@ -335,11 +335,19 @@ namespace h5pp::type::sfinae {
 }
 
 
-#if defined(H5PP_USE_FMT) && defined(FMT_FORMAT_H_)
+#if defined(H5PP_USE_FMT) && defined(FMT_FORMAT_H_) && defined(FMT_VERSION)
 // Add a custom fmt::formatter for h5pp::vstr_t
-template <> struct fmt::formatter<h5pp::vstr_t>: formatter<string_view> {
+#if FMT_VERSION >= 90000
+template <> struct fmt::formatter<const h5pp::vstr_t>: formatter<string_view> {
   auto format(const h5pp::vstr_t &s, format_context& ctx) const{
         return fmt::formatter<string_view>::format(s.c_str(), ctx);
   }
 };
+#else
+template <> struct fmt::formatter<const h5pp::vstr_t>: formatter<string_view> {
+  auto format(const h5pp::vstr_t &s, format_context& ctx){
+        return fmt::formatter<string_view>::format(s.c_str(), ctx);
+  }
+};
+#endif
 #endif
