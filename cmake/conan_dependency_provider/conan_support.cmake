@@ -33,8 +33,7 @@ function(detect_compiler COMPILER COMPILER_VERSION)
         set(_COMPILER_VERSION ${CMAKE_C_COMPILER_VERSION})
     endif ()
 
-    message(STATUS "Conan-cmake: CMake compiler=${_COMPILER}")
-    message(STATUS "Conan-cmake: CMake cmpiler version=${_COMPILER_VERSION}")
+    message(STATUS "Conan-cmake: CMake compiler=${_COMPILER} ${_COMPILER_VERSION}")
 
     if (_COMPILER MATCHES MSVC)
         set(_COMPILER "msvc")
