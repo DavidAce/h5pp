@@ -18,16 +18,16 @@
             #include <spdlog/fmt/bundled/compile.h>
             #include <spdlog/fmt/bundled/ranges.h>
         #endif
-    #elif __has_include(<fmt/core.h>) && __has_include(<fmt/ranges.h>))
+    #elif __has_include(<fmt/core.h>) && __has_include(<fmt/ranges.h>)
         #if defined(SPDLOG_HEADER_ONLY)
-            // Since spdlog is header-only, let's assume fmt is as well
-            // We do this because we have no way of knowing if this is getting linked to libfmt
+        // Since spdlog is header-only, let's assume fmt is as well
+        // We do this because we have no way of knowing if this is getting linked to libfmt
             #define FMT_HEADER_ONLY
         #endif
         #include <fmt/core.h>
         #include <fmt/ranges.h>
     #else
-        // In this case there is no fmt so we make our own simple formatter
+    // In this case there is no fmt so we make our own simple formatter
         #pragma message \
             "h5pp warning: could not find fmt library headers <fmt/core.h> or <spdlog/fmt/fmt.h>: A hand-made formatter will be used instead. Consider using the fmt library for maximum performance"
 
@@ -57,7 +57,8 @@ namespace h5pp {
 }
 #else
 
-    // In this case there is no fmt, so we make our own simple formatter
+// In this case there is no fmt, so we make our own simple formatter
+    #include "h5ppTypeCast.h"
     #include "h5ppTypeSfinae.h"
     #include <algorithm>
     #include <iostream>
@@ -94,7 +95,7 @@ namespace h5pp {
                 sstr << std::boolalpha << "{";
                 for(const auto &elem : first) sstr << elem << ",";
                 //  Laborious casting here to avoid MSVC warnings and errors in std::min()
-                long rewind = -1 * std::min(1l, type::safe_cast<long>(first.size()));
+                long rewind = -1 * std::min(1l, h5pp::type::safe_cast<long>(first.size()));
                 sstr.seekp(rewind, std::ios_base::end);
                 sstr << "}";
                 result.emplace_back(sstr.str());
