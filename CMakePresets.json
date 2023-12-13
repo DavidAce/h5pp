@@ -73,6 +73,23 @@
       }
     },
     {
+      "name": "analyzer-nix",
+      "hidden": true,
+      "description": "Enable -fanalyzer warnings for debug builds linux and osx",
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS_DEBUG": "-fanalyzer",
+        "CMAKE_C_FLAGS_DEBUG": "-fanalyzer"
+      },
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Linux",
+          "Darwin"
+        ]
+      }
+    },
+    {
       "name": "release",
       "hidden": false,
       "displayName": "Release|no package manager",
