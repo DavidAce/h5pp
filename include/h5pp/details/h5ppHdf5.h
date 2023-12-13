@@ -1631,7 +1631,7 @@ namespace h5pp::hdf5 {
         auto dataSelectedSize = getSizeSelected(dataSpace);
         auto dsetSelectedSize = getSizeSelected(dsetSpace);
 
-        if(dataDimensions != dataDimensions) {
+        if(dataDimensions != dsetDimensions) {
             h5pp::logger::log->debug("Spaces have mismatching dimensions:\n"
                                      "\tdata space: {} | {} bytes/elem | {} bytes total\n"
                                      "\tdset space: {} | {} bytes/elem | {} bytes total\n",
