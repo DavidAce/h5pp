@@ -107,7 +107,7 @@ namespace h5pp::type::vlen {
         vl.len = v.size();
         vl.p   = calloc(v.size(), sizeof(T));
         if constexpr(sfinae::is_iterable_v<V>) std::copy(v.begin(), v.end(), begin());
-        if constexpr(sfinae::has_data_v<V>) std::copy(v.data(), v.data() + v.size(), begin());
+        else if constexpr(sfinae::has_data_v<V>) std::copy(v.data(), v.data() + v.size(), begin());
     }
 
     template<typename T>
@@ -159,7 +159,7 @@ namespace h5pp::type::vlen {
         vl.len = v.size();
         vl.p   = calloc(v.size(), sizeof(T));
         if constexpr(sfinae::is_iterable_v<V>) std::copy(v.begin(), v.end(), begin());
-        if constexpr(sfinae::has_data_v<V>) std::copy(v.data(), v.data() + v.size(), begin());
+        else if constexpr(sfinae::has_data_v<V>) std::copy(v.data(), v.data() + v.size(), begin());
         return *this;
     }
     template<typename T>
@@ -250,17 +250,21 @@ namespace h5pp::type::vlen {
     }
     template<typename T>
     void varr_t<T>::clear() noexcept {
-        if(vl.p == nullptr) return;
+        if(vl.p == nullptr){
+          return;
+        }
         if constexpr(std::is_destructible_v<T> and not std::is_trivially_destructible_v<T>)
             for(auto &v : *this) v.~T();
+
+        free(vl.p);
+        vl.p = nullptr;
+        vl.len = 0;
     }
 
     template<typename T>
     varr_t<T>::~varr_t() noexcept {
         if(vl.p == nullptr) return;
         clear();
-        free(vl.p);
-        vl.p = nullptr;
     }
 
     template<typename T>
