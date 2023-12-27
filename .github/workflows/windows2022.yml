@@ -47,8 +47,7 @@ jobs:
       - name: Run CMakePreset
         uses: lukka/run-cmake@v10
         with:
-          configurePreset: 'github-actions-${{ matrix.manager }}'
-          configurePresetAdditionalArgs: "['-DH5PP_ENABLE_ASAN=FALSE']"
+          configurePreset: 'github-actions-${{ matrix.manager }}-win'
           buildPreset: 'github-actions-${{ matrix.manager }}'
           buildPresetAdditionalArgs: "['--config Debug']"
           testPreset: 'github-actions-${{ matrix.manager }}'
