@@ -55,8 +55,8 @@
       "hidden": true,
       "description": "Enable compiler warnings on windows",
       "cacheVariables": {
-        "CMAKE_CXX_FLAGS": "/W4",
-        "CMAKE_C_FLAGS": "/W4"
+        "CMAKE_CXX_FLAGS": "/W3",
+        "CMAKE_C_FLAGS": "/W3"
       }
     },
     {
@@ -65,6 +65,7 @@
       "description": "Set option for CMake configuration on windows",
       "cacheVariables": {
         "H5PP_ENABLE_ASAN": "FALSE",
+        "H5PP_ENABLE_PCH": "FALSE",
         "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/install/${presetName}/bin"
       }
     },

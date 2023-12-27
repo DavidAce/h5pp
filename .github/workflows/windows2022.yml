@@ -48,7 +48,7 @@ jobs:
         uses: lukka/run-cmake@v10
         with:
           configurePreset: 'github-actions-${{ matrix.manager }}-win'
-          buildPreset: 'github-actions-${{ matrix.manager }}'
+          buildPreset: 'github-actions-${{ matrix.manager }}-win'
           buildPresetAdditionalArgs: "['--config Debug']"
-          testPreset: 'github-actions-${{ matrix.manager }}'
+          testPreset: 'github-actions-${{ matrix.manager }}-win'
           testPresetAdditionalArgs: "['--build-config=Debug']"
