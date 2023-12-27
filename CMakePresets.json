@@ -398,7 +398,7 @@
       "name": "github-actions-default",
       "hidden": true,
       "output": {
-        "verbosity": "default",
+        "verbosity": "verbose",
         "outputOnFailure": true
       },
       "execution": {
