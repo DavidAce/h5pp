@@ -2,6 +2,7 @@
 #include "h5ppEnums.h"
 #include "h5ppError.h"
 #include "h5ppHid.h"
+#include "h5ppTypeCast.h"
 #include "h5ppTypeCompound.h"
 #include "h5ppTypeCustom.h"
 #include "h5ppTypeSfinae.h"
