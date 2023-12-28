@@ -23,7 +23,8 @@ function(pkg_install_dependencies  package_name)
         endif()
 
         pkg_install(zlib)
-        pkg_install(szip)
+#        pkg_install(szip)
+        pkg_install(libaec)
         pkg_install(hdf5
             CMAKE_ARGS
             -DHDF5_ENABLE_PARALLEL:BOOL=${H5PP_ENABLE_MPI}
