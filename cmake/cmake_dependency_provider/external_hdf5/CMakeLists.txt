@@ -61,7 +61,6 @@ ExternalProject_Add(external_hdf5
         LIST_SEPARATOR |
         CMAKE_ARGS
         ${INIT_CACHE_ARG}
-        -DINSTALLDIR=<INSTALL_DIR>
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/${CMAKE_INSTALL_LIBDIR}
         -DCMAKE_SKIP_BUILD_RPATH:BOOL=OFF
@@ -83,13 +82,10 @@ ExternalProject_Add(external_hdf5
         -Dlibaec_LIBRARY:PATH=${libaec_LIBRARY} # This is to force FindZLIB.cmake to find and define a target with the correct library
         -DZLIB_LIBRARY:PATH=${ZLIB_LIBRARY} # This is to force FindZLIB.cmake to find and define a target with the correct library
         -DSZIP_LIBRARY:PATH=${SZIP_LIBRARY} #szip-static
-#        -DZLIB_STATIC_LIBRARY:STRING=ZLIB::ZLIB  # This is to use target-based linking instead of hardcoding a path to file
-#        -DSZIP_STATIC_LIBRARY:STRING=szip-static # This is to use target-based linking instead of hardcoding a path to file
         -Dlibaec_INCLUDE_DIR:PATH=${libaec_INCLUDE_DIR}
         -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
         -DSZIP_INCLUDE_DIR:PATH=${SZIP_INCLUDE_DIR}
 
-        -DUSE_LIBAEC:BOOL=ON
         -DUSE_LIBAEC_STATIC:BOOL=${USE_LIBAEC_STATIC}
         -Dlibaec_USE_STATIC_LIBS:BOOL=${libaec_USE_STATIC_LIBS}
         -DZLIB_USE_EXTERNAL:BOOL=OFF
@@ -102,21 +98,10 @@ ExternalProject_Add(external_hdf5
         -DHDF5_BUILD_EXAMPLES:BOOL=OFF
         -DHDF5_DISABLE_COMPILER_WARNINGS:BOOL=ON
         -DALLOW_UNSUPPORTED=ON
-#        --loglevel=DEBUG
-
-        # OLD
-        # -DZLIB_FOUND:BOOL=TRUE
-        # -DSZIP_FOUND:BOOL=TRUE
-        # -DSZIP_LIBRARY:STRING=${SZIP_LIBRARY}
 
         -Dlibaec_ROOT:PATH=${libaec_ROOT}
         -DZLIB_ROOT:PATH=${ZLIB_ROOT}
-        -DSZIP_ROOT:PATH=${SZIP_ROOT}
         -Dlibaec_DIR:PATH=${LIBAEC_ROOT}/share/cmake/zlib
         -DZLIB_DIR:PATH=${ZLIB_ROOT}/share/cmake/zlib
-        -DSZIP_DIR:PATH=${SZIP_ROOT}/share/cmake/szip
-#        -DZLIB_PACKAGE_NAME:STRING=zlib
-#        -DSZIP_PACKAGE_NAME:STRING=szip
-#        -DSZ_PACKAGE_NAME:STRING=szip
         )
 
