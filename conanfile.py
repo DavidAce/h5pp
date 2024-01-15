@@ -11,7 +11,7 @@ required_conan_version = ">=1.45.0"
 
 class H5ppConan(ConanFile):
     name = "h5pp"
-    version = "1.11.1"
+    version = "1.11.2"
     description = "A C++17 wrapper for HDF5 with focus on simplicity"
     homepage = "https://github.com/DavidAce/h5pp"
     author = "DavidAce <aceituno@kth.se>"
@@ -49,12 +49,12 @@ class H5ppConan(ConanFile):
         self.options["hdf5"].with_zlib = self.options.with_zlib
 
     def requirements(self):
-        self.requires("hdf5/[>=1.10.0 <=1.14.3]", transitive_headers=True, transitive_libs=True)
+        self.requires("hdf5/[>=1.10.0 <1.15]", transitive_headers=True, transitive_libs=True)
         if self.options.get_safe('with_eigen'):
             self.requires("eigen/[>=3.3.7 <=3.4.0]", transitive_headers=True)
         if self.options.get_safe('with_spdlog'):
             self.requires("spdlog/[>=1.6.0 <1.14]", transitive_headers=True, transitive_libs=True)
-        if self.options.with_zlib:
+        if self.options.get_safe('with_zlib'):
             self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, transitive_libs=True)
     def layout(self):
         basic_layout(self)
@@ -94,16 +94,16 @@ class H5ppConan(ConanFile):
         self.cpp_info.components["h5pp_flags"].bindirs = []
         self.cpp_info.components["h5pp_flags"].libdirs = []
 
-        if self.options.with_eigen:
+        if self.options.get_safe('with_eigen'):
             self.cpp_info.components["h5pp_deps"].requires.append("eigen::eigen")
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_EIGEN3")
-        if self.options.with_spdlog:
+        if self.options.get_safe('with_spdlog'):
             self.cpp_info.components["h5pp_deps"].requires.append("spdlog::spdlog")
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_SPDLOG")
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_FMT")
-        if self.options.with_zlib:
+        if self.options.get_safe('with_zlib'):
             self.cpp_info.components["h5pp_deps"].requires.append("zlib::zlib")
-        if self.options.with_quadmath:
+        if self.options.get_safe('with_quadmath'):
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_FLOAT128")
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_QUADMATH")
             self.cpp_info.system_libs.append('quadmath')
