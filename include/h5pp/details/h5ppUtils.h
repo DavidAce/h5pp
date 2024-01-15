@@ -104,7 +104,7 @@ namespace h5pp::util {
 
     template<typename DataType, size_t size>
     [[nodiscard]] constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size],
-                                                [[maybe_unused]] bool countChars = false) noexcept
+                                                [[maybe_unused]] bool           countChars = false) noexcept
     /*! Returns the size of a C-style array.
      */
     {
@@ -596,14 +596,15 @@ namespace h5pp::util {
             data.resize(type::safe_cast<Eigen::Index>(newDims[0]), type::safe_cast<Eigen::Index>(newDims[1]));
         } else if constexpr(h5pp::type::sfinae::is_eigen_tensor_v<DataType>) {
             if constexpr(h5pp::type::sfinae::has_resize_v<DataType>) {
-                if(newDims.size() != DataType::NumDimensions) {
-                    throw h5pp::runtime_error("Failed to resize {}-dimensional Eigen tensor: Dataset has dimensions {}",
-                                              DataType::NumDimensions,
-                                              newDims);
+                if constexpr(h5pp::type::sfinae::has_rank_v<DataType>) {
+                    if(newDims.size() != static_cast<size_t>(data.rank())) {
+                        throw h5pp::runtime_error("Failed to resize Eigen tensor with rank {}: Dataset has rank {}",
+                                                  data.rank(),
+                                                  newDims.size());
+                    }
                 }
-                auto eigenDims = eigen::copy_dims<DataType::NumDimensions>(newDims);
                 h5pp::logger::log->debug("Resizing eigen tensor container {} -> {}", data.dimensions(), newDims);
-                data.resize(eigenDims);
+                data.resize(newDims);
             } else {
                 auto newSize = getSizeFromDimensions(newDims);
                 if(data.size() != type::safe_cast<Eigen::Index>(newSize)) {

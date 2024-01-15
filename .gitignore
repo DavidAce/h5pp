@@ -12,6 +12,7 @@ graph.html
 doxygen_log.txt
 *__pycache__/
 package*
+CMakeUserPresets.json
 conan_package.sh
 docs/doc_build/doctrees
 docs/doc_source/doxyoutput

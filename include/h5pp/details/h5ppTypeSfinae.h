@@ -119,9 +119,16 @@ namespace h5pp::type::sfinae {
     template<typename T, typename = std::void_t<>>
     struct has_NumIndices : public std::false_type {};
     template<typename T>
-    struct has_NumIndices<T, std::void_t<decltype(std::declval<T>().NumIndices)>> : public std::true_type {};
+    struct has_NumIndices<T, std::void_t<decltype(T::NumIndices)>> : public std::true_type {};
     template<typename T>
     inline constexpr bool has_NumIndices_v = has_NumIndices<T>::value;
+
+    template<typename T, typename = std::void_t<>>
+    struct has_rank : public std::false_type {};
+    template<typename T>
+    struct has_rank<T, std::void_t<decltype(std::declval<T>().rank())>> : public std::true_type {};
+    template<typename T>
+    inline constexpr bool has_rank_v = has_rank<T>::value;
 
     template<typename T, typename = std::void_t<>>
     struct has_dimensions : public std::false_type {};
