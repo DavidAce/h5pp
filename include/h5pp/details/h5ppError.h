@@ -7,18 +7,18 @@
 #include <stdexcept>
 namespace h5pp {
     template<typename... Args>
-    std::runtime_error runtime_error(Args... args) {
+    std::runtime_error runtime_error(Args&&... args) {
         H5Eprint(H5E_DEFAULT, stderr);
-        return std::runtime_error("h5pp: " + h5pp::format(std::forward<Args>(args)...));
+        return std::runtime_error(h5pp::format("h5pp: {}", std::forward<Args>(args)...));
     }
     template<typename... Args>
-    std::logic_error logic_error(Args... args) {
+    std::logic_error logic_error(Args&&... args) {
         H5Eprint(H5E_DEFAULT, stderr);
-        return std::logic_error("h5pp: " + h5pp::format(std::forward<Args>(args)...));
+        return std::logic_error(h5pp::format("h5pp: {}", std::forward<Args>(args)...));
     }
     template<typename... Args>
-    std::logic_error overflow_error(Args... args) {
+    std::logic_error overflow_error(Args&&... args) {
         H5Eprint(H5E_DEFAULT, stderr);
-        return std::logic_error("h5pp: " + h5pp::format(std::forward<Args>(args)...));
+        return std::logic_error(h5pp::format("h5pp: {}", std::forward<Args>(args)...));
     }
 }

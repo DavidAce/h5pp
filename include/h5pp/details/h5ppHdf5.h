@@ -1631,20 +1631,20 @@ namespace h5pp::hdf5 {
         auto dataSelectedSize = getSizeSelected(dataSpace);
         auto dsetSelectedSize = getSizeSelected(dsetSpace);
 
-        if(dataDimensions != dsetDimensions) {
-            h5pp::logger::log->debug("Spaces have mismatching dimensions:\n"
+        if(dataDimensions != dsetDimensions or dataSelectedSize != dsetSelectedSize) {
+            auto dataBytesPerElem = getBytesSelected(dataSpace, dsetType);
+            auto dsetBytesPerElem = getBytesSelected(dsetSpace, dsetType);
+            auto dataBytesTotal   = getBytesTotal(dataSpace, dsetType);
+            auto dsetBytesTotal   = getBytesTotal(dsetSpace, dsetType);
+            h5pp::logger::log->debug("Spaces have mismatching size or dimensions:\n"
                                      "\tdata space: {} | {} bytes/elem | {} bytes total\n"
                                      "\tdset space: {} | {} bytes/elem | {} bytes total\n",
                                      getSpaceString(dataSpace, h5pp::logger::logIf(LogLevel::debug)),
-                                     getSpaceString(dsetSpace, h5pp::logger::logIf(LogLevel::debug)));
-        }
-
-        if(dataSelectedSize != dsetSelectedSize) {
-            h5pp::logger::log->debug("Spaces have mismatching size:\n"
-                                     "\tdata space: {} | {} bytes/elem | {} bytes total\n"
-                                     "\tdset space: {} | {} bytes/elem | {} bytes total\n",
-                                     getSpaceString(dataSpace, h5pp::logger::logIf(LogLevel::debug)),
-                                     getSpaceString(dsetSpace, h5pp::logger::logIf(LogLevel::debug)));
+                                     dataBytesPerElem,
+                                     dataBytesTotal,
+                                     getSpaceString(dsetSpace, h5pp::logger::logIf(LogLevel::debug)),
+                                     dsetBytesPerElem,
+                                     dsetBytesTotal);
         }
     }
     namespace internal {

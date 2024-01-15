@@ -47,12 +47,12 @@
 
 namespace h5pp {
     template<typename... Args>
-    [[nodiscard]] std::string format(Args... args) {
-        return fmt::format(std::forward<Args>(args)...);
+    [[nodiscard]] std::string format(fmt::format_string<Args...> fs, Args &&...args) {
+        return fmt::format(fs, std::forward<Args>(args)...);
     }
     template<typename... Args>
-    void print(Args... args) {
-        fmt::print(std::forward<Args>(args)...);
+    void print(fmt::format_string<Args...> fs, Args &&...args) {
+        fmt::print(fs, std::forward<Args>(args)...);
     }
 }
 #else
