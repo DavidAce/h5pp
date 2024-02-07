@@ -1,4 +1,3 @@
-[![Ubuntu 18.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2018.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Ubuntu 20.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2020.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Ubuntu 22.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2022.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Windows 2019](https://github.com/DavidAce/h5pp/workflows/Windows%202019/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
