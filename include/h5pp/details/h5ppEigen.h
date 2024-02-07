@@ -325,7 +325,7 @@ namespace h5pp {
         inline constexpr bool is_eigen_any_v = is_eigen_any<T>::value;
         template<typename T>
         struct is_eigen_contiguous {
-            static constexpr bool value = is_eigen_any<T>::value and has_data<T>::value;
+            static constexpr bool value = is_eigen_any<T>::value and has_data_v<T>;
         };
         template<typename T>
         inline constexpr bool is_eigen_contiguous_v = is_eigen_contiguous<T>::value;
@@ -337,7 +337,7 @@ namespace h5pp {
             static constexpr auto test() {
                 if constexpr(is_eigen_map<U>::value) return test<typename U::PlainObject>();
                 else if constexpr(is_eigen_dense<U>::value) return U::RowsAtCompileTime == 1 or U::ColsAtCompileTime == 1;
-                else if constexpr(is_eigen_tensor<U>::value and has_NumIndices<U>::value) return U::NumIndices == 1;
+                else if constexpr(is_eigen_tensor<U>::value and has_NumIndices_v<U>) return U::NumIndices == 1;
                 else return false;
             }
 

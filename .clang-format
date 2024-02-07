@@ -99,4 +99,5 @@ TabWidth: 4
 UseTab:   Never
 InsertBraces: true
 RemoveBracesLLVM: true
+RequiresClausePosition: WithPreceding
 

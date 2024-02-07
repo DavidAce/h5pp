@@ -21,12 +21,17 @@ int main() {
     std::complex<double>              AttributeComplexDouble       = {47.2, -10.2445};
     std::array<long, 4>               AttributeArrayLong           = {1, 2, 3, 4};
     float                             AttributeCArrayFloat[4]      = {1, 2, 3, 4};
-    std::vector<std::complex<double>> AttributeVectorComplexDouble = {{2.0, 5.0}, {3.1, -2.3}, 3.0, {-51.2, 5}};
-    std::vector<double>               AttributeVectorDouble        = {1.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
-                                                                      0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
-                                                                      -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
-    std::string                       AttributeString              = "This is a very long string that I am testing";
-    char                              AttributeCharArray[]         = "This is a char array";
+    std::vector<std::complex<double>> AttributeVectorComplexDouble = {
+        {  2.0,  5.0},
+        {  3.1, -2.3},
+        3.0,
+        {-51.2,    5}
+    };
+    std::vector<double> AttributeVectorDouble = {1.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
+                                                 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
+                                                 -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
+    std::string         AttributeString       = "This is a very long string that I am testing";
+    char                AttributeCharArray[]  = "This is a char array";
 
     // define the file
     std::string outputFilename = "output/readWriteAttributes.h5";
@@ -68,9 +73,8 @@ int main() {
     if(ReadAttributeComplexDouble != AttributeComplexDouble)
         throw std::runtime_error("ReadAttributeComplexDouble != AttributeComplexDouble");
     if(ReadAttributeArrayLong != AttributeArrayLong) throw std::runtime_error("ReadAttributeArrayLong != AttributeArrayLong");
-    if(not std::equal(ReadAttributeCArrayFloat.begin(), ReadAttributeCArrayFloat.end(), std::begin(AttributeCArrayFloat))) {
+    if(not std::equal(ReadAttributeCArrayFloat.begin(), ReadAttributeCArrayFloat.end(), std::begin(AttributeCArrayFloat)))
         throw std::runtime_error("ReadAttributeCArrayFloat                != AttributeCArrayFloat)            ");
-    }
 
     if(ReadAttributeVectorDouble != AttributeVectorDouble) throw std::runtime_error("ReadAttributeVectorDouble != AttributeVectorDouble");
     if(ReadAttributeVectorComplexDouble != AttributeVectorComplexDouble)
@@ -79,7 +83,7 @@ int main() {
     if(ReadAttributeCharArray != AttributeCharArray) throw std::runtime_error("ReadAttributeCharArray != AttributeCharArray");
 
 #ifdef H5PP_USE_EIGEN3
-    static_assert(h5pp::type::sfinae::has_Scalar<Eigen::MatrixXd>() and
+    static_assert(h5pp::type::sfinae::has_Scalar_v<Eigen::MatrixXd> and
                   "Compile time type-checker failed. Could not properly detect class member Scalar. Scan that you are "
                   "using a supported compiler!");
     // Generate dummy data

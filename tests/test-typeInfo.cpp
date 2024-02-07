@@ -3,7 +3,7 @@
 
 int main() {
     static_assert(
-        h5pp::type::sfinae::has_data<std::vector<double>>() and
+        h5pp::type::sfinae::has_data_v<std::vector<double>> and
         "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     // Generate dummy data

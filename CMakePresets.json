@@ -127,6 +127,15 @@
       }
     },
     {
+      "name": "gcc-13",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc-13",
+        "CMAKE_CXX_COMPILER": "g++-13",
+        "H5PP_USE_QUADMATH": "TRUE"
+      }
+    },
+    {
       "name": "clang-14",
       "hidden": true,
       "cacheVariables": {
@@ -245,6 +254,14 @@
       "displayName": "Debug|gcc-12|conan package manager",
       "inherits": [
         "gcc-12",
+        "debug-conan"
+      ]
+    },
+    {
+      "name": "debug-gcc-13-conan",
+      "displayName": "Debug|gcc-13|conan package manager",
+      "inherits": [
+        "gcc-13",
         "debug-conan"
       ]
     },
@@ -431,6 +448,10 @@
     {
       "name": "debug-gcc-12-conan",
       "configurePreset": "debug-gcc-12-conan"
+    },
+    {
+      "name": "debug-gcc-13-conan",
+      "configurePreset": "debug-gcc-13-conan"
     },
     {
       "name": "debug-gcc-12-cmake",

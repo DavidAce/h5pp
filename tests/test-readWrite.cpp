@@ -26,7 +26,7 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
     auto readData = file.readDataset<ReadType>(dsetpath);
     if constexpr(h5pp::type::sfinae::is_ScalarN_v<ReadType>) {
         compareScalar(writeData, readData);
-    } else if constexpr(has_ScalarN_v<ReadType>) {
+    } else if constexpr(h5pp::type::sfinae::has_ScalarN_v<ReadType>) {
         if(writeData.size() != readData.size()) throw std::runtime_error("Size mismatch in ScalarN container");
 #ifdef H5PP_USE_EIGEN3
         if constexpr(h5pp::type::sfinae::is_eigen_matrix_v<ReadType>) {
@@ -128,7 +128,7 @@ int main() {
     using cplx = std::complex<double>;
 
     static_assert(
-        h5pp::type::sfinae::has_data<std::vector<double>>() and
+        h5pp::type::sfinae::has_data_v<std::vector<double>> and
         "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     std::string outputFilename = "output/readWrite.h5";
