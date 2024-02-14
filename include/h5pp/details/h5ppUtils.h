@@ -604,7 +604,9 @@ namespace h5pp::util {
                     }
                 }
                 h5pp::logger::log->debug("Resizing eigen tensor container {} -> {}", data.dimensions(), newDims);
-                data.resize(newDims);
+                // Clang compilers require fixed-size arrays for dimensions so we make a fixed-size copy!
+                auto eigenDims = eigen::copy_dims<DataType::NumDimensions>(newDims);
+                data.resize(eigenDims);
             } else {
                 auto newSize = getSizeFromDimensions(newDims);
                 if(data.size() != type::safe_cast<Eigen::Index>(newSize)) {
