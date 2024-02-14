@@ -46,6 +46,7 @@
 #if defined(FMT_FORMAT_H_) && (defined(H5PP_USE_FMT) || defined(H5PP_USE_SPDLOG))
 
 namespace h5pp {
+    #if defined(FMT_VERSION) && FMT_VERSION >= 80000
     template<typename... Args>
     [[nodiscard]] std::string format(fmt::format_string<Args...> fs, Args &&...args) {
         return fmt::format(fs, std::forward<Args>(args)...);
@@ -54,6 +55,16 @@ namespace h5pp {
     void print(fmt::format_string<Args...> fs, Args &&...args) {
         fmt::print(fs, std::forward<Args>(args)...);
     }
+    #else
+    template<typename... Args>
+    [[nodiscard]] std::string format(Args... args) {
+        return fmt::format(std::forward<Args>(args)...);
+    }
+    template<typename... Args>
+    void print(Args... args) {
+        fmt::print(std::forward<Args>(args)...);
+    }
+    #endif
 }
 #else
 
