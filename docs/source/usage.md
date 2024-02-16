@@ -3,7 +3,9 @@
 Using `h5pp` is intended to be simple. After initializing a file, most of the work can be achieved using just two member
 functions `.writeDataset(...)` and `.readDataset(...)`.
 
-## Example: Write an `std::vector`
+## Examples
+
+### Write an `std::vector`
 
 ```c++
     #include <h5pp/h5pp.h>
@@ -14,15 +16,16 @@ functions `.writeDataset(...)` and `.readDataset(...)`.
     }
 ```
 
-## Example: Read an `std::vector`
+### Read an `std::vector`
 
 ```c++
     #include <h5pp/h5pp.h>
     int main() {
         h5pp::File file("somePath/someFile.h5", h5pp::FileAccess::READWRITE);    // Open (or create) a file
-        auto v = file.readDataset<std::vector<double>>("myStdVector");               // Read the dataset from file
+        auto v = file.readDataset<std::vector<double>>("myStdVector");           // Read the dataset from file
     }
 ```
+
 
 Find more code examples in the [examples directory](https://github.com/DavidAce/h5pp/tree/master/examples).
 

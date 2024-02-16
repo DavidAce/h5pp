@@ -1,0 +1,45 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}"
+    },
+    {
+      "name": "pkg-conan",
+      "hidden": true,
+      "environment": {
+        "PATH": "$env{HOME}/miniconda3/bin:$env{HOME}/anaconda3/bin:$penv{PATH}"
+      },
+      "cacheVariables": {
+        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/conan/conan_provider.cmake",
+        "CMAKE_FIND_PACKAGE_PREFER_CONFIG": "TRUE"
+      }
+    },
+    {
+      "name": "release",
+      "hidden": false,
+      "displayName": "Release | conan package manager",
+      "description": "CMake calls Conan as a dependency provider on the first find_package call",
+      "inherits": [
+        "pkg-conan",
+        "default"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "release",
+      "configurePreset": "release"
+    }
+  ]
+}

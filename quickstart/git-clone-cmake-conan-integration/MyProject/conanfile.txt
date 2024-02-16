@@ -1,5 +1,0 @@
-[requires]
-h5pp/1.10.0@
-
-[generators]
-CMakeDeps

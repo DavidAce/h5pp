@@ -1,6 +1,5 @@
 
 # h5pp
-[![Ubuntu 18.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2018.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Ubuntu 20.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2020.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Ubuntu 22.04](https://github.com/DavidAce/h5pp/workflows/Ubuntu%2022.04/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
 [![Windows 2019](https://github.com/DavidAce/h5pp/workflows/Windows%202019/badge.svg?branch=master)](https://github.com/DavidAce/h5pp/actions)
@@ -12,8 +11,9 @@
 ---
 
 
-`h5pp` is a high-level C++17 interface for the [HDF5](https://www.hdfgroup.org/) C library. With simplicity in mind, `h5pp` lets users store common C++ data types into portable
-binary [HDF5](https://www.hdfgroup.org/) files.
+`h5pp` is a high-level C++17 interface for the [HDF5](https://www.hdfgroup.org/) C library. With simplicity in
+mind, `h5pp` lets users store common C++ data types into portable binary [HDF5](https://www.hdfgroup.org/) files.
+
 
 [Latest release](https://github.com/DavidAce/h5pp/releases)
 

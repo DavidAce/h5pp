@@ -34,7 +34,7 @@ summary below.
 Install and configure [conan](https://conan.io), then run the following command to install from [conan center](https://conan.io/center/h5pp):
 
 ```bash
-> conan install h5pp/1.11.0 --build=missing
+> conan install h5pp/1.11.2
 ```
 
 The flag `--build=missing` lets conan install dependencies: `HDF5`, `Eigen` and `fmt` and `spdlog`.
@@ -207,84 +207,6 @@ From the command-line you can of course link using linker flags such as
 ```
 
 provided these flags make sense on your system.
-
-#### Using CMake
-
-You could also use CMake's `find_package(...)` mechanism. The difficult part is linking to HDF5 libraries and its
-dependencies. A minimal `CMakeLists.txt` could be something like this:
-
-```cmake
-cmake_minimum_required(VERSION 3.15)
-project(myProject)
-
-add_executable(myExecutable main.cpp)
-target_include_directories(myExecutable PRIVATE <path-to-h5pp-headers>)
-# Setup h5pp
-target_compile_features(myExecutable PRIVATE cxx_std_17)
-target_link_libraries(myExecutable PRIVATE stdc++fs) # To get <filesystem> headers working before GCC 9.1 
-
-# For MSVC
-target_compile_options(myExecutable INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) # and/or logical operators on VS
-target_compile_options(myExecutable INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/EHsc>)        # try/catch without warnings on VS
-target_compile_definitions(myExecutable INTERFACE $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX>) # For std::min and std::max
-
-# HDF5 install from source is recommended. In that case append CONFIG to find_package below. 
-# Otherwise read more about this the native find_package module here:
-#     https://cmake.org/cmake/help/latest/module/FindHDF5.html
-find_package(HDF5 1.8 COMPONENTS C HL REQUIRED)  # Note that h5pp only needs the C libs of HDF5.
-
-
-# CMake versions >= 3.19 bundle FindHDF5.cmake module that defines targets to use with find_package.
-# However, these targets are not very helpful since they only define the imported libraries 
-# (libhdf5.<so/a/dll/lib/dylib>), and not the rest of interface libraries such as `zlib, szip, libaec,
-# dl, pthread`. To get these you can either interrogate your HDF5 compiler executable to get the full
-# link line (`h5cc -show`), or just use the defined CMake variables:
-target_link_libraries(myExecutable PRIVATE ${HDF5_LIBRARIES})
-target_compile_definitions(myExecutable PRIVATE ${HDF5_DEFINITIONS})
-target_include_directories(myExecutable PRIVATE ${HDF5_INCLUDE_DIR})
-
-
-# The other dependencies lack find_package modules bundled with CMake, so this can be trickier.
-# You can
-#   1) Use find_package() to find installed packages in config-mode in your system
-#   2) Use find_library() + add_library() to find libfmt, libspdlog in your system.
-#   3) Just link -lfmt, -lspdlog and hope that these libraries are found by the linker.
-target_link_libraries(myExecutable PRIVATE spdlog fmt)
-target_include_directories(myExecutable PRIVATE <path-to-Eigen3-include-dir>)
-target_include_directories(myExecutable PRIVATE <path-to-fmt-include-dir>)
-target_include_directories(myExecutable PRIVATE <path-to-spdlog-include-dir>)
-
-```
-
-
-#### Use the custom FindHDF5.cmake bundled with `h5pp`
-
-When installing `h5pp`, finding HDF5 and setting up the CMake target `HDF5::HDF5` for linking is handled by a custom
-module for finding HDF5, defined in `cmake/modules/FindHDF5.cmake`. This module wraps the default `FindHDF5.cmake` which
-comes with CMake and uses the same call signature, but fixes some annoyances with naming conventions in different
-versions of CMake and HDF5 executables. It reads hints passed through CMake flags to find HDF5 somewhere on your
-system (can be installed via,`apt`,`yum`, `brew`, `Easybuild`, etc) and defines a CMake target `HDF5::HDF5` with
-everything you need to link correctly. Most importantly, it avoids injecting shared versions of libraries (dl, zlib,
-szip, aec) during static builds. You can use the custom module too. Add the path pointing to `FindHDF5.cmake` to the
-variable `CMAKE_MODULE_PATH` from within your own project:
-
-```cmake
-list(APPEND CMAKE_MODULE_PATH path/to/h5pp/cmake/modules/FindHDF5.cmake) # Replaces the bundled FindHDF5.cmake module
-find_package(HDF5 1.10 COMPONENTS C HL REQUIRED)
-if (TARGET HDF5::HDF5)
-    target_link_libraries(myExecutable PRIVATE HDF5::HDF5)
-endif ()
-```
-
-These are variables that can be used to guide the custom `FindHDF5.cmake` module:
-
-| Var                 | Where     | Description                                                                                          |
-|---------------------|-----------|------------------------------------------------------------------------------------------------------|
-| `CMAKE_MODULE_PATH` | CMake     | List of directories where `CMake` should search for find-modules                                     |
-| `CMAKE_PREFIX_PATH` | CMake     | List of directories where `find_package` should look for dependencies                                |
-| `HDF5_ROOT`         | CMake/ENV | Path to HDF5 root install directory                                                                  |
-| `HDF5_FIND_DEBUG`   | CMake     | Prints more information about the search for HDF5. See also `HDF5_FIND_DEBUG` in the original module |
-| `EBROOTHDF5`        | ENV       | Variable defined by Easybuild with `module load HDF5`                                                |
 
 ## Uninstall
 

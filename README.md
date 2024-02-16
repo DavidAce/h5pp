@@ -135,7 +135,7 @@ Install and configure [conan](https://conan.io), then run the following command 
 from [conan center](https://conan.io/center/h5pp):
 
 ```
-> conan install h5pp/1.11.0
+> conan install h5pp/1.11.2
 ```
 
 ### Option 2: Install with CMake Presets
