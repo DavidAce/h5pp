@@ -11,7 +11,7 @@ required_conan_version = ">=1.45.0"
 
 class H5ppConan(ConanFile):
     name = "h5pp"
-    version = "1.11.2"
+    version = "1.11.3"
     description = "A C++17 wrapper for HDF5 with focus on simplicity"
     homepage = "https://github.com/DavidAce/h5pp"
     author = "DavidAce <aceituno@kth.se>"

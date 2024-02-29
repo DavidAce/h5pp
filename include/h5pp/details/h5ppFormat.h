@@ -46,31 +46,14 @@
 #if defined(FMT_FORMAT_H_) && (defined(H5PP_USE_FMT) || defined(H5PP_USE_SPDLOG))
 
 namespace h5pp {
-    #if defined(FMT_VERSION) && FMT_VERSION >= 80000
-    template<typename... Args>
-    [[nodiscard]] std::string format(fmt::format_string<Args...> fs, Args &&...args) {
-        return fmt::format(fs, std::forward<Args>(args)...);
-    }
-    template<typename... Args>
-    void print(fmt::format_string<Args...> fs, Args &&...args) {
-        fmt::print(fs, std::forward<Args>(args)...);
-    }
-    #else
-    template<typename... Args>
-    [[nodiscard]] std::string format(Args... args) {
-        return fmt::format(std::forward<Args>(args)...);
-    }
-    template<typename... Args>
-    void print(Args... args) {
-        fmt::print(std::forward<Args>(args)...);
-    }
-    #endif
+    using fmt::format;
+    using fmt::print;
+    using fmt::runtime;
+    using fmt::vformat;
 }
 #else
 
 // In this case there is no fmt, so we make our own simple formatter
-    #include "h5ppTypeCast.h"
-    #include "h5ppTypeSfinae.h"
     #include <algorithm>
     #include <iostream>
     #include <list>
@@ -79,34 +62,66 @@ namespace h5pp {
     #include <string>
 
 namespace h5pp {
-    namespace type::sfinae {
+
+    namespace formatting {
         template<typename T, typename = std::void_t<> >
         struct is_streamable : std::false_type {};
         template<typename T>
         struct is_streamable<T, std::void_t<decltype(std::declval<std::stringstream &> << std::declval<T>())> > : public std::true_type {};
         template<typename T>
         inline constexpr bool is_streamable_v = is_streamable<T>::value;
-    }
+        template<typename T, typename = std::void_t<> >
+        struct is_iterable : public std::false_type {};
+        template<typename T>
+        struct is_iterable<T, std::void_t<decltype(std::begin(std::declval<T>())), decltype(std::end(std::declval<T>()))> >
+            : public std::true_type {};
+        template<typename T>
+        inline constexpr bool is_iterable_v = is_iterable<T>::value;
+        template<typename T, typename = std::void_t<> >
+        struct has_c_str : public std::false_type {};
+        template<typename T>
+        struct has_c_str<T, std::void_t<decltype(std::declval<T>().c_str())> > : public std::true_type {};
+        template<typename T>
+        inline constexpr bool has_c_str_v = has_c_str<T>::value;
+        template<typename T>
+        struct is_text {
+            private:
+            template<typename U>
+            static constexpr bool test() {
+                using DecayType = typename std::remove_cv_t<std::decay_t<U> >;
+                // No support for wchar_t, char16_t and char32_t
+                if constexpr(has_c_str_v<DecayType>) return true;
+                if constexpr(std::is_same_v<DecayType, std::string>) return true;
+                if constexpr(std::is_same_v<DecayType, std::string_view>) return true;
+                if constexpr(std::is_same_v<DecayType, char *>) return true;
+                if constexpr(std::is_same_v<DecayType, char[]>) return true;
+                if constexpr(std::is_same_v<DecayType, char>) return true;
+                else return false;
+            }
 
-    namespace formatting {
+            public:
+            static constexpr bool value = test<T>();
+        };
 
+        template<typename T>
+        inline constexpr bool is_text_v = is_text<T>::value;
         template<class T, class... Ts>
         std::list<std::string> convert_to_string_list(const T &first, const Ts &...rest) {
             std::list<std::string> result;
-            if constexpr(h5pp::type::sfinae::is_text_v<T>) {
+            if constexpr(formatting::is_text_v<T>) {
                 result.emplace_back(first);
             } else if constexpr(std::is_arithmetic_v<T>) {
                 result.emplace_back(std::to_string(first));
-            } else if constexpr(h5pp::type::sfinae::is_streamable_v<T>) {
+            } else if constexpr(formatting::is_streamable_v<T>) {
                 std::stringstream sstr;
                 sstr << std::boolalpha << first;
                 result.emplace_back(sstr.str());
-            } else if constexpr(h5pp::type::sfinae::is_iterable_v<T>) {
+            } else if constexpr(is_iterable_v<T>) {
                 std::stringstream sstr;
                 sstr << std::boolalpha << "{";
                 for(const auto &elem : first) sstr << elem << ",";
                 //  Laborious casting here to avoid MSVC warnings and errors in std::min()
-                long rewind = -1 * std::min(1l, h5pp::type::safe_cast<long>(first.size()));
+                long rewind = -1 * std::min(1l, static_cast<long>(first.size()));
                 sstr.seekp(rewind, std::ios_base::end);
                 sstr << "}";
                 result.emplace_back(sstr.str());
@@ -117,15 +132,20 @@ namespace h5pp {
         }
     }
 
-    inline std::string format(const std::string &fmtstring) { return fmtstring; }
+    inline std::string format(std::string_view fmtstring) { return std::string(fmtstring); }
+
+    template<typename T>
+    [[nodiscard]] auto runtime(T &&arg) {
+        return std::forward<T>(arg);
+    }
 
     template<typename... Args>
-    [[nodiscard]] std::string format(const std::string &fmtstring, [[maybe_unused]] Args... args) {
+    [[nodiscard]] std::string format(std::string_view fmtstring, [[maybe_unused]] Args... args) {
         auto brackets_left  = std::count(fmtstring.begin(), fmtstring.end(), '{');
         auto brackets_right = std::count(fmtstring.begin(), fmtstring.end(), '}');
-        if(brackets_left != brackets_right) return std::string("FORMATTING ERROR: GOT STRING: " + fmtstring);
+        if(brackets_left != brackets_right) return std::string("FORMATTING ERROR: GOT STRING: ") + std::string(fmtstring);
         auto                   arglist  = formatting::convert_to_string_list(args...);
-        std::string            result   = fmtstring;
+        std::string            result   = std::string(fmtstring);
         std::string::size_type curr_pos = 0;
         while(true) {
             if(arglist.empty()) break;

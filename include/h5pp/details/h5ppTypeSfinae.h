@@ -1,5 +1,4 @@
 #pragma once
-#include "h5ppHid.h"
 #include "h5ppOptional.h"
 #include <array>
 #include <complex>
@@ -8,6 +7,20 @@
 #include <string_view>
 #include <type_traits>
 #include <vector>
+
+namespace h5pp::hid {
+    // Forward declarations
+    class h5d;
+    class h5a;
+    class h5o;
+    class h5t;
+    class h5s;
+    class h5f;
+    class h5e;
+    class h5g;
+    class h5p;
+}
+
 /*!
  * \brief A collection of type-detection utilities using SFINAE
  */
@@ -50,7 +63,7 @@ namespace h5pp::type::sfinae {
     }
 
 #if __cplusplus >= 202002L
-template<typename T1, typename T2>
+    template<typename T1, typename T2>
     concept type_is = std::same_as<std::remove_cvref_t<T1>, T2>;
 
     template<typename T, typename... Ts>
@@ -137,7 +150,7 @@ template<typename T1, typename T2>
     template<typename T>
     concept has_c_str_v = requires(T m) {
         { m.c_str() } -> is_pointer_type;
-        { m.c_str() } -> std::same_as<const char*>;
+        { m.c_str() } -> std::same_as<const char *>;
     };
 
     template<typename T>
@@ -149,7 +162,8 @@ template<typename T1, typename T2>
     concept has_Scalar_v = requires { typename T::Scalar; };
 
     template<typename T>
-    concept has_std_complex_v = (has_value_type_v<T> && is_std_complex_v<typename T::value_type>) || (has_Scalar_v<T> && is_std_complex_v<typename T::Scalar>);
+    concept has_std_complex_v =
+        (has_value_type_v<T> && is_std_complex_v<typename T::value_type>) || (has_Scalar_v<T> && is_std_complex_v<typename T::Scalar>);
     //    static_assert(!has_std_complex_v<std::complex<double>>);
     //    static_assert(has_std_complex_v<std::vector<std::complex<double>>>);
     //    static_assert(has_std_complex_v<Eigen::MatrixXcd>);
@@ -206,8 +220,8 @@ template<typename T1, typename T2>
     //    static_assert(is_text_v<char>);
 
     template<typename T>
-    concept has_text_v = !is_text_v<T> && (is_text_v<typename std::remove_all_extents_t<T>> || is_text_v<typename std::remove_pointer_t<T>> ||
-                                           is_text_v<typename T::value_type>);
+    concept has_text_v = !is_text_v<T> && (is_text_v<typename std::remove_all_extents_t<T>> ||
+                                           is_text_v<typename std::remove_pointer_t<T>> || is_text_v<typename T::value_type>);
     //    static_assert(has_text_v<std::vector<std::string>>);
     //    static_assert(has_text_v<std::array<std::string_view, 0>>);
     //    static_assert(has_text_v<std::string_view[]>);
@@ -462,13 +476,11 @@ template<typename T1, typename T2>
         private:
         template<typename U>
         static constexpr bool test() {
-            using DecayType = typename std::decay<U>::type;
+            using DecayType = typename std::remove_cv_t<std::decay_t<U>>;
             // No support for wchar_t, char16_t and char32_t
             if constexpr(has_c_str_v<DecayType>) return true;
             if constexpr(std::is_same_v<DecayType, std::string>) return true;
             if constexpr(std::is_same_v<DecayType, std::string_view>) return true;
-            if constexpr(std::is_same_v<DecayType, const char *>) return true;
-            if constexpr(std::is_same_v<DecayType, const char[]>) return true;
             if constexpr(std::is_same_v<DecayType, char *>) return true;
             if constexpr(std::is_same_v<DecayType, char[]>) return true;
             if constexpr(std::is_same_v<DecayType, char>) return true;

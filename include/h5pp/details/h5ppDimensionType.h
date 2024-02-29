@@ -3,6 +3,7 @@
 #include "h5ppFormat.h"
 #include "h5ppTypeCast.h"
 #include "h5ppTypeSfinae.h"
+#include <H5Dpublic.h>
 #include <optional>
 #include <utility>
 

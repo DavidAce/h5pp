@@ -1,9 +1,10 @@
 #pragma once
 #include "h5ppDimensionType.h"
 #include "h5ppFormat.h"
+#include "h5ppHid.h"
 #include "h5ppOptional.h"
-#include "h5ppTypeSfinae.h"
 #include "h5ppTypeCast.h"
+#include "h5ppTypeSfinae.h"
 #include <H5Spublic.h>
 #include <type_traits>
 #include <utility>
