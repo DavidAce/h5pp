@@ -86,23 +86,13 @@ namespace h5pp {
         template<typename T>
         struct is_text {
             private:
-            template<typename U>
-            static constexpr bool test() {
-                using DecayType = typename std::remove_cv_t<std::decay_t<U> >;
-                // No support for wchar_t, char16_t and char32_t
-                if constexpr(has_c_str_v<DecayType>) return true;
-                if constexpr(std::is_same_v<DecayType, std::string>) return true;
-                if constexpr(std::is_same_v<DecayType, std::string_view>) return true;
-                if constexpr(std::is_same_v<DecayType, char *>) return true;
-                if constexpr(std::is_same_v<DecayType, char[]>) return true;
-                if constexpr(std::is_same_v<DecayType, char>) return true;
-                else return false;
-            }
+            using DecayType = typename std::remove_cv_t<std::decay_t<T> >;
 
             public:
-            static constexpr bool value = test<T>();
+            static constexpr bool value = std::is_constructible_v<std::string, DecayType> || has_c_str_v<DecayType> ||
+                                          std::is_same_v<DecayType, char *> || std::is_same_v<DecayType, char[]> ||
+                                          std::is_same_v<DecayType, char>;
         };
-
         template<typename T>
         inline constexpr bool is_text_v = is_text<T>::value;
         template<class T, class... Ts>

@@ -474,21 +474,12 @@ namespace h5pp::type::sfinae {
     template<typename T>
     struct is_text {
         private:
-        template<typename U>
-        static constexpr bool test() {
-            using DecayType = typename std::remove_cv_t<std::decay_t<U>>;
-            // No support for wchar_t, char16_t and char32_t
-            if constexpr(has_c_str_v<DecayType>) return true;
-            if constexpr(std::is_same_v<DecayType, std::string>) return true;
-            if constexpr(std::is_same_v<DecayType, std::string_view>) return true;
-            if constexpr(std::is_same_v<DecayType, char *>) return true;
-            if constexpr(std::is_same_v<DecayType, char[]>) return true;
-            if constexpr(std::is_same_v<DecayType, char>) return true;
-            else return false;
-        }
+        using DecayType = typename std::remove_cv_t<std::decay_t<T>>;
 
         public:
-        static constexpr bool value = test<T>();
+        static constexpr bool value = std::is_constructible_v<std::string, DecayType> || has_c_str_v<DecayType> ||
+                                      std::is_same_v<DecayType, char *> || std::is_same_v<DecayType, char[]> ||
+                                      std::is_same_v<DecayType, char>;
     };
 
     template<typename T>
@@ -501,9 +492,9 @@ namespace h5pp::type::sfinae {
         static constexpr bool test() {
             using DecayType = typename std::decay<U>::type;
             if constexpr(is_text_v<U>) return false;
-            if constexpr(std::is_array_v<DecayType>) return is_text_v<typename std::remove_all_extents_t<DecayType>>;
-            if constexpr(std::is_pointer_v<DecayType>) return is_text_v<typename std::remove_pointer_t<DecayType>>;
-            if constexpr(has_value_type_v<DecayType>) return is_text_v<typename DecayType::value_type>;
+            else if constexpr(std::is_array_v<DecayType>) return is_text_v<typename std::remove_all_extents_t<DecayType>>;
+            else if constexpr(std::is_pointer_v<DecayType>) return is_text_v<typename std::remove_pointer_t<DecayType>>;
+            else if constexpr(has_value_type_v<DecayType>) return is_text_v<typename DecayType::value_type>;
             return false;
         }
 

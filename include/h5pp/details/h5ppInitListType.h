@@ -10,10 +10,11 @@ namespace h5pp {
         std::vector<size_t> data;
 
         public:
-        Indices()                              = default;
-        explicit Indices(const char *str)      = delete;
-        explicit Indices(std::string_view str) = delete;
-        explicit Indices(std::string &&str)    = delete;
+        Indices()                          = default;
+        explicit Indices(char)             = delete;
+        explicit Indices(const char *)     = delete;
+        explicit Indices(std::string_view) = delete;
+        explicit Indices(std::string &&)   = delete;
         template<typename U, typename = std::enable_if_t<h5pp::type::sfinae::is_integral_iterable_or_num_v<U>>>
         Indices(const U &num) {
             if constexpr(h5pp::type::sfinae::is_integral_iterable_v<U>) {
@@ -35,6 +36,11 @@ namespace h5pp {
 
         [[nodiscard]] auto empty() const { return data.empty(); }
     };
+#if !defined(NDEBUG)
+    static_assert(std::is_constructible_v<Indices, std::vector<long>>);
+    static_assert(std::is_constructible_v<Indices, std::initializer_list<int>>);
+    static_assert(std::is_constructible_v<Indices, std::array<size_t, 3>>);
+#endif
 
     struct Names {
         private:
@@ -63,10 +69,24 @@ namespace h5pp {
             data = std::vector<std::string>(std::begin(il), std::end(il));
         }
 
-                           operator std::vector<std::string> &() { return data; }
-                           operator const std::vector<std::string> &() const { return data; }
+        operator std::vector<std::string> &() { return data; }
+        operator const std::vector<std::string> &() const { return data; }
         [[nodiscard]] auto empty() const { return data.empty(); }
     };
+
+#if !defined(NDEBUG)
+    static_assert(std::is_constructible_v<Names, std::initializer_list<std::string>>);
+    static_assert(std::is_constructible_v<Names, std::initializer_list<std::string_view>>);
+    static_assert(std::is_constructible_v<Names, std::initializer_list<char *>>);
+    static_assert(std::is_constructible_v<Names, std::initializer_list<const char *>>);
+    static_assert(std::is_constructible_v<Names, std::vector<char *>>);
+    static_assert(std::is_constructible_v<Names, std::vector<const char *>>);
+    static_assert(std::is_constructible_v<Names, std::string>);
+    static_assert(std::is_constructible_v<Names, std::string_view>);
+    static_assert(std::is_constructible_v<Names, const char *>);
+    static_assert(std::is_constructible_v<Names, const char[]>);
+    static_assert(std::is_constructible_v<Names, char>);
+#endif
 
     struct NamesOrIndices {
         private:
@@ -80,7 +100,6 @@ namespace h5pp {
             else if constexpr(std::is_constructible_v<Indices, T>) indices = Indices(data_);
             else static_assert(h5pp::type::sfinae::invalid_type_v<T>, "Unrecognized type for indices or names");
         }
-
         template<typename T>
         NamesOrIndices(const std::initializer_list<T> &data_) {
             if constexpr(std::is_constructible_v<Names, std::initializer_list<T>>) names = Names(data_);
@@ -104,4 +123,17 @@ namespace h5pp {
         [[nodiscard]] const std::vector<size_t>      &get_indices() const { return indices; }
         [[nodiscard]] const std::vector<std::string> &get_names() const { return names; }
     };
+#if !defined(NDEBUG)
+    static_assert(std::is_constructible_v<NamesOrIndices, std::initializer_list<std::string>>);
+    static_assert(std::is_constructible_v<NamesOrIndices, std::initializer_list<std::string_view>>);
+    static_assert(std::is_constructible_v<NamesOrIndices, std::initializer_list<char *>>);
+    static_assert(std::is_constructible_v<NamesOrIndices, std::initializer_list<const char *>>);
+    static_assert(std::is_constructible_v<NamesOrIndices, std::vector<char *>>);
+    static_assert(std::is_constructible_v<NamesOrIndices, std::vector<const char *>>);
+    static_assert(std::is_constructible_v<NamesOrIndices, std::string>);
+    static_assert(std::is_constructible_v<NamesOrIndices, std::string_view>);
+    static_assert(std::is_constructible_v<NamesOrIndices, const char *>);
+    static_assert(std::is_constructible_v<NamesOrIndices, const char[]>);
+    static_assert(std::is_constructible_v<NamesOrIndices, char>);
+#endif
 }

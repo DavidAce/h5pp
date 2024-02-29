@@ -136,11 +136,11 @@
       }
     },
     {
-      "name": "clang-14",
+      "name": "clang-17",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang-14",
-        "CMAKE_CXX_COMPILER": "clang++-14"
+        "CMAKE_C_COMPILER": "clang-17",
+        "CMAKE_CXX_COMPILER": "clang++-17"
       }
     },
     {
@@ -216,18 +216,18 @@
       ]
     },
     {
-      "name": "release-clang-14-conan",
-      "displayName": "Release|clang-14|conan package manager",
+      "name": "release-clang-17-conan",
+      "displayName": "Release|clang-17|conan package manager",
       "inherits": [
-        "clang-14",
+        "clang-17",
         "release-conan"
       ]
     },
     {
-      "name": "release-clang-14-cmake",
-      "displayName": "Release|clang-14|cmake package manager",
+      "name": "release-clang-17-cmake",
+      "displayName": "Release|clang-17|cmake package manager",
       "inherits": [
-        "clang-14",
+        "clang-17",
         "release-cmake"
       ]
     },
@@ -274,18 +274,18 @@
       ]
     },
     {
-      "name": "debug-clang-14-conan",
-      "displayName": "Debug|clang-14|conan package manager",
+      "name": "debug-clang-17-conan",
+      "displayName": "Debug|clang-17|conan package manager",
       "inherits": [
-        "clang-14",
+        "clang-17",
         "debug-conan"
       ]
     },
     {
-      "name": "debug-clang-14-cmake",
-      "displayName": "Debug|clang-14|cmake package manager",
+      "name": "debug-clang-17-cmake",
+      "displayName": "Debug|clang-17|cmake package manager",
       "inherits": [
-        "clang-14",
+        "clang-17",
         "debug-cmake"
       ]
     },
@@ -430,11 +430,11 @@
       "configurePreset": "release-gcc-12-cmake"
     },
     {
-      "name": "release-clang-14-conan",
+      "name": "release-clang-17-conan",
       "configurePreset": "release-gcc-12-conan"
     },
     {
-      "name": "release-clang-14-cmake",
+      "name": "release-clang-17-cmake",
       "configurePreset": "release-gcc-12-cmake"
     },
     {
@@ -458,12 +458,12 @@
       "configurePreset": "debug-gcc-12-cmake"
     },
     {
-      "name": "debug-clang-14-conan",
-      "configurePreset": "debug-clang-14-conan"
+      "name": "debug-clang-17-conan",
+      "configurePreset": "debug-clang-17-conan"
     },
     {
-      "name": "debug-clang-14-cmake",
-      "configurePreset": "debug-clang-14-cmake"
+      "name": "debug-clang-17-cmake",
+      "configurePreset": "debug-clang-17-cmake"
     },
     {
       "name": "github-actions-find",
