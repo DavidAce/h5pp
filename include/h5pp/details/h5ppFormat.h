@@ -46,10 +46,19 @@
 #if defined(FMT_FORMAT_H_) && (defined(H5PP_USE_FMT) || defined(H5PP_USE_SPDLOG))
 
 namespace h5pp {
+    #if defined(FMT_VERSION) && FMT_VERSION >= 81000
     using fmt::format;
     using fmt::print;
     using fmt::runtime;
-    using fmt::vformat;
+    #else
+    using fmt::format;
+    using fmt::print;
+    template<typename... Args>
+    [[nodiscard]] std::string runtime(Args... args) {
+        return fmt::format(std::forward<Args>(args)...);
+    }
+    #endif
+
 }
 #else
 
