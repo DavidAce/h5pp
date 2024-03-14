@@ -63,16 +63,11 @@ if(H5PP_ENABLE_SPDLOG)
     target_compile_definitions(deps INTERFACE H5PP_USE_SPDLOG)
 endif()
 
-# Note that the call below defaults to FindHDF5.cmake bundled with h5pp,
-# because cmake/modules has been added to CMAKE_MODULE_PATH in cmake/SetupPaths.cmake
-# Also, we don't impose any version requirement here: h5pp is compatible with 1.8 to 1.14.
 find_package(ZLIB QUIET)
 find_package(SZIP QUIET)
+
+# We don't impose any version requirement here: h5pp is compatible with 1.8 to 1.14.
 find_package(HDF5 COMPONENTS C HL REQUIRED)
-if(HDF5_VERSION AND HDF5_VERSION VERSION_LESS 1.8)
-    message(FATAL_ERROR "Found version ${HDF5_VERSION} < 1.8 required by h5pp")
-endif()
-include(cmake/HDF5TargetUtils.cmake)
-h5pp_get_modern_hdf5_target_name()
 target_link_libraries(deps INTERFACE HDF5::HDF5)
+
 

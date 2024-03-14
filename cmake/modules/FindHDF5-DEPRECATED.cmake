@@ -1,8 +1,8 @@
 
 # If CMake version >= 3.19 this module will simply pass through to CMake's built-in
 # module FindHDF5.cmake.
-# If CMake version < 3.19 this module replaces CMake's own FindHDF5.cmake module, in an attempt to
-# mimic the
+# If CMake version < 3.19 this module replaces CMake's own FindHDF5.cmake module
+
 
 
 # The motivation for this wrapper module is that the naming conventions of HDF5 targets, variables,
@@ -577,18 +577,19 @@ endfunction()
 
 
 
-find_package_hdf5()
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
     set(HANDLE_VERSION_RANGE HANDLE_VERSION_RANGE)
+    include(FindPackageHandleStandardArgs)
+    find_package_handle_standard_args(HDF5
+            REQUIRED_VARS HDF5_INCLUDE_DIRS HDF5_TARGETS
+            VERSION_VAR HDF5_VERSION
+            HANDLE_COMPONENTS
+            HANDLE_VERSION_RANGE
+            )
+else()
+    find_package_hdf5()
 endif()
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(HDF5
-        REQUIRED_VARS HDF5_INCLUDE_DIRS HDF5_TARGETS
-        VERSION_VAR HDF5_VERSION
-        HANDLE_COMPONENTS
-        ${HANDLE_VERSION_RANGE}
-        )
 
 # To print all variables, use the code below:
 #get_cmake_property(_variableNames VARIABLES)
