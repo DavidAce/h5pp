@@ -69,5 +69,10 @@ find_package(SZIP QUIET)
 # We don't impose any version requirement here: h5pp is compatible with 1.8 to 1.14.
 find_package(HDF5 COMPONENTS C HL REQUIRED)
 target_link_libraries(deps INTERFACE HDF5::HDF5)
-
+if(HDF5_VERSION AND HDF5_VERSION VERSION_LESS 1.8)
+    message(FATAL_ERROR "Found version ${HDF5_VERSION} < 1.8 required by h5pp")
+endif()
+include(cmake/HDF5TargetUtils.cmake)
+h5pp_get_modern_hdf5_target_name()
+target_link_libraries(deps INTERFACE HDF5::HDF5)
 
