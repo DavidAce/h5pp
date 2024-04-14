@@ -1538,7 +1538,7 @@ namespace h5pp {
         }
 
         [[nodiscard]] bool attributeExists(std::string_view linkPath, std::string_view attrName) const {
-            return h5pp::hdf5::checkIfAttrExists(openFileHandle(), linkPath, attrName, plists.linkAccess);
+            return h5pp::hdf5::checkIfAttrExists(openFileHandle(), linkPath, attrName, std::nullopt, plists.linkAccess);
         }
         template<typename h5x>
         [[nodiscard]] bool attributeExists(const h5x &link, std::string_view attrName) const {
