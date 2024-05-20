@@ -1,6 +1,7 @@
 name: Mirror at KTH-condmat
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master

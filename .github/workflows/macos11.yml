@@ -1,6 +1,7 @@
 name: macOS 11
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
