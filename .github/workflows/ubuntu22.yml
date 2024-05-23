@@ -72,7 +72,7 @@ jobs:
 
       - name: Setup apt packages (dependencies)
         if: matrix.manager == 'find'
-        run: sudo apt install libhdf5-dev libfmt-dev libspdlog-dev libeigen3-dev -y
+        run: sudo apt install libhdf5-dev libaec-dev libfmt-dev libspdlog-dev libeigen3-dev -y
 
       - name: Setup conan
         if: matrix.manager == 'conan'
