@@ -76,19 +76,18 @@ namespace h5pp {
         OptDimsType(h5pp::TableInfo)             = delete;
         OptDimsType(h5pp::Hyperslab)             = delete;
 
-        OptDimsType(const std::nullopt_t &nullopt) { dims = nullopt; }
+        OptDimsType(std::nullopt_t nullopt) : dims(nullopt) {}
         OptDimsType(std::initializer_list<hsize_t> &&list) { dims = std::vector<hsize_t>(std::begin(list), std::end(list)); }
-        template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-        OptDimsType(std::initializer_list<T> &&list) {
-            dims = std::vector<hsize_t>(std::begin(list), std::end(list));
-        }
-        OptDimsType(std::optional<std::vector<hsize_t>> otherDims) : dims(std::move(otherDims)) {}
+
         template<typename UnknownType>
         OptDimsType(const UnknownType &dims_) {
             if constexpr(std::is_integral_v<UnknownType>) {
-                dims = std::vector<hsize_t>{type::safe_cast<size_t>(dims_)};
+                dims = std::vector<hsize_t>{type::safe_cast<hsize_t>(dims_)};
             } else if constexpr(h5pp::type::sfinae::is_iterable_v<UnknownType>) {
-                dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
+                dims = std::vector<hsize_t>();
+                for(auto & dim : dims_){ dims->emplace_back(type::safe_cast<hsize_t>(dim));}
+            } else if constexpr (type::sfinae::is_std_optional_v<UnknownType>){
+                if(dims_.has_value()) *this = OptDimsType(dims_.value());
             } else if constexpr(std::is_assignable_v<UnknownType, OptDimsType> or std::is_assignable_v<UnknownType, DimsType>) {
                 dims = dims_;
             } else if constexpr(std::is_array_v<UnknownType> and std::is_integral_v<std::remove_all_extents_t<UnknownType>>) {

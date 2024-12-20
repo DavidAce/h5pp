@@ -54,7 +54,6 @@ namespace h5pp::type::flen {
         char                     *end();
         void                      clear() noexcept;
         [[nodiscard]] bool        empty() const;
-        void                      resize(size_t n);
         void                      erase(const char *b, const char *e);
         void                      erase(std::string::size_type pos, std::string::size_type n);
         void                      append(const char *v);
