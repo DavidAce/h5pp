@@ -7,9 +7,11 @@ include(GNUInstallDirs)
 include(ExternalProject)
 ExternalProject_Add(external_spdlog
 #        URL         https://github.com/gabime/spdlog/archive/refs/tags/v1.11.0.tar.gz
-        URL         https://github.com/gabime/spdlog/archive/refs/tags/v1.12.0.tar.gz
+#        URL         https://github.com/gabime/spdlog/archive/refs/tags/v1.12.0.tar.gz
+        URL         https://github.com/gabime/spdlog/archive/refs/tags/v1.15.0.tar.gz
 #        URL_MD5     287c6492c25044fd2da9947ab120b2bd #1.11.0
-        URL_MD5     6b4446526264c1d1276105482adc18d1 #1.11.0
+#        URL_MD5     6b4446526264c1d1276105482adc18d1 #1.11.0
+        URL_MD5     822878647de9eacfe43695a674fb551f #1.11.0
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         CMAKE_ARGS

@@ -46,11 +46,13 @@ endif()
 ExternalProject_Add(external_hdf5
 #        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/hdf5-1.12.1.tar.gz
 #        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.13/hdf5-1.13.2/src/hdf5-1.13.2.tar.gz
-        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.3/src/hdf5-1.14.3.tar.gz
+#        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.3/src/hdf5-1.14.3.tar.gz
+        URL         https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_5/downloads/hdf5-1.14.5.tar.gz
 #        URL_MD5     e4f057f0a3eb4237c7799605357a584d # 1.12.1
 #        URL_MD5     1daffd4662ba2207a96a93272244bb77  # 1.13.1
 #        URL_MD5     660ecb46a65e455438f7933ed1c6c403  # 1.13.2
-        URL_MD5     075d923171c7785b2ee7d820b0ef8707  # 1.14.3
+#        URL_MD5     075d923171c7785b2ee7d820b0ef8707  # 1.14.3
+        URL_MD5     600d29af6ccb7f1e3401560e1422ba5e  # 1.14.5
         PREFIX      ${CMAKE_BINARY_DIR}
         # We need a patch here to get HDF5 to export zlib and szip as public dependencies on both static and shared targets
 #        PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/hdf5-link-public.patch.cmake
