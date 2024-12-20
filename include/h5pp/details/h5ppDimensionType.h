@@ -62,7 +62,7 @@ namespace h5pp {
     };
 
     struct OptDimsType {
-        std::optional<std::vector<hsize_t>> dims = std::vector<hsize_t>();
+        std::optional<std::vector<hsize_t>> dims = std::nullopt;
         OptDimsType()                            = default;
         explicit OptDimsType(H5D_layout_t)       = delete;
         explicit OptDimsType(hid::h5t)           = delete;
@@ -76,19 +76,18 @@ namespace h5pp {
         OptDimsType(h5pp::TableInfo)             = delete;
         OptDimsType(h5pp::Hyperslab)             = delete;
 
-        OptDimsType(const std::nullopt_t &nullopt) { dims = nullopt; }
+        OptDimsType(std::nullopt_t nullopt) : dims(nullopt) {}
         OptDimsType(std::initializer_list<hsize_t> &&list) { dims = std::vector<hsize_t>(std::begin(list), std::end(list)); }
-        template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-        OptDimsType(std::initializer_list<T> &&list) {
-            dims = std::vector<hsize_t>(std::begin(list), std::end(list));
-        }
-        OptDimsType(std::optional<std::vector<hsize_t>> otherDims) : dims(std::move(otherDims)) {}
+
         template<typename UnknownType>
         OptDimsType(const UnknownType &dims_) {
             if constexpr(std::is_integral_v<UnknownType>) {
-                dims = std::vector<hsize_t>{type::safe_cast<size_t>(dims_)};
+                dims = std::vector<hsize_t>{type::safe_cast<hsize_t>(dims_)};
             } else if constexpr(h5pp::type::sfinae::is_iterable_v<UnknownType>) {
-                dims = std::vector<hsize_t>(std::begin(dims_), std::end(dims_));
+                dims = std::vector<hsize_t>();
+                for(auto &dim : dims_) dims->emplace_back(type::safe_cast<hsize_t>(dim));
+            } else if constexpr(type::sfinae::is_std_optional_v<UnknownType>) {
+                if(dims_.has_value()) *this = OptDimsType(dims_.value());
             } else if constexpr(std::is_assignable_v<UnknownType, OptDimsType> or std::is_assignable_v<UnknownType, DimsType>) {
                 dims = dims_;
             } else if constexpr(std::is_array_v<UnknownType> and std::is_integral_v<std::remove_all_extents_t<UnknownType>>) {
@@ -98,14 +97,14 @@ namespace h5pp {
                 throw h5pp::runtime_error("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>());
             }
         }
-        [[nodiscard]] bool                        has_value() const { return dims.has_value(); }
-                                                  operator bool() const { return dims.has_value(); }
+        [[nodiscard]] bool has_value() const { return dims.has_value(); }
+        operator bool() const { return dims.has_value(); }
         [[nodiscard]] const std::vector<hsize_t> &value() const { return dims.value(); }
         [[nodiscard]] std::vector<hsize_t>       &value() { return dims.value(); }
-        [[nodiscard]]                             operator const std::optional<std::vector<hsize_t>> &() const { return dims; }
-        [[nodiscard]]                             operator std::optional<std::vector<hsize_t>> &() { return dims; }
-        auto                                      operator->() { return dims.operator->(); }
-        auto                                      operator->() const { return dims.operator->(); }
+        [[nodiscard]] operator const std::optional<std::vector<hsize_t>> &() const { return dims; }
+        [[nodiscard]] operator std::optional<std::vector<hsize_t>> &() { return dims; }
+        auto operator->() { return dims.operator->(); }
+        auto operator->() const { return dims.operator->(); }
     };
 
 }

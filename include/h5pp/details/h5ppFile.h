@@ -149,7 +149,7 @@ namespace h5pp {
 
         struct FileHandleToken {
             const h5pp::File &file_;
-            FileHandleToken(const h5pp::File &file) : file_(file) {
+                              FileHandleToken(const h5pp::File &file) : file_(file) {
                 hid::h5f temphandle = file_.openFileHandle();
                 file_.fileHandle    = temphandle;
             }
@@ -1409,11 +1409,11 @@ namespace h5pp {
             if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
                 if(fieldExists(tablePath, fields)) return readTableField<typename DataType::value_type>(tablePath, fields, tableSelection);
                 else return std::nullopt;
+            } else {
+                DataType data;
+                readTableField(data, tablePath, fields, tableSelection);
+                return data;
             }
-
-            DataType data;
-            readTableField(data, tablePath, fields, tableSelection);
-            return data;
         }
         template<typename DataType>
         [[nodiscard]] DataType readTableField(std::string_view tablePath, const NamesOrIndices &fields) const {

@@ -390,6 +390,7 @@ namespace h5pp::util {
         else if constexpr(sfn::is_ScalarN_v<DecayType>)                    return sizeof(DecayType);
         else if constexpr(std::is_arithmetic_v<DecayType>)                 return sizeof(DecayType);
         else if constexpr(sfn::has_Scalar_v<DecayType> )                   return sizeof(typename DecayType::Scalar);
+        else if constexpr(sfn::is_fstr_v<DecayType>)                       return std::extent_v<typename DecayType::value_type>;
         else if constexpr(sfn::has_value_type_v<DecayType> and depth == 0) return getBytesPerElem<typename DecayType::value_type, depth+1>();
         else if constexpr(sfn::has_text_v<DecayType>)                      return 1;
         else if constexpr(sfn::is_text_v<DecayType>)                       return 1;
@@ -492,8 +493,8 @@ namespace h5pp::util {
         return decideLayout(bytes);
     }
 
-    [[nodiscard]] inline std::optional<std::vector<hsize_t>> getChunkDimensions(size_t                              bytesPerElem,
-                                                                                const std::vector<hsize_t>         &dims,
+        [[nodiscard]] inline std::optional<std::vector<hsize_t>> getChunkDimensions(size_t                              bytesPerElem,
+                                                                                std::vector<hsize_t>                dims,
                                                                                 std::optional<std::vector<hsize_t>> dimsMax,
                                                                                 std::optional<H5D_layout_t>         layout) {
         // Here we make a naive guess for chunk dimensions
@@ -507,9 +508,8 @@ namespace h5pp::util {
         if(dims.empty()) return dims; // Scalar
         // We try to compute the maximum dimension to get a good estimate
         // of the data volume
-        std::vector<hsize_t> dims_effective = dims;
         // Make sure the chunk dimensions have strictly nonzero volume
-        for(auto &dim : dims_effective) dim = std::max<hsize_t>(1, dim);
+        for(auto &dim : dims) dim = std::max<hsize_t>(1, dim);
         if(dimsMax) {
             // If max dims are given, dims that are not H5S_UNLIMITED are used as an upper bound
             // for that dimension
@@ -527,12 +527,12 @@ namespace h5pp::util {
                                               dims,
                                               dimsMax.value());
                 }
-                if(dimsMax.value()[idx] != H5S_UNLIMITED) dims_effective[idx] = std::max(dims_effective[idx], dimsMax.value()[idx]);
+                if(dimsMax.value()[idx] != H5S_UNLIMITED) dims[idx] = std::max(dims[idx], dimsMax.value()[idx]);
             }
         }
 
         auto rank             = dims.size();
-        auto maxDimension     = *std::max_element(dims_effective.begin(), dims_effective.end());
+        auto maxDimension     = *std::max_element(dims.begin(), dims.end());
         auto volumeChunkBytes = std::pow(maxDimension, rank) * static_cast<double>(bytesPerElem);
         auto targetChunkBytes = std::clamp<double>(volumeChunkBytes,
                                                    std::max<double>(static_cast<double>(bytesPerElem), h5pp::constants::minChunkBytes),
