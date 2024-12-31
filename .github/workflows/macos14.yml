@@ -1,4 +1,4 @@
-name: macOS 12
+name: macOS 14
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ on:
 jobs:
   ci:
     name: ${{ matrix.compiler }}-${{ matrix.manager }}
-    runs-on: macos-12
+    runs-on: macos-14
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
     strategy:

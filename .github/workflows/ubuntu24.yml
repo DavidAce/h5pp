@@ -1,0 +1,99 @@
+name: Ubuntu 24.04
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+
+jobs:
+  ci:
+    name: ${{ matrix.compiler }}-${{ matrix.manager }}
+    runs-on: ubuntu-24.04
+    env:
+      cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
+    strategy:
+      fail-fast: true # True stops all on first error. Stick to false when debugging
+      matrix:
+        include:
+          - { compiler: gcc,   manager: cmake }
+          - { compiler: gcc,   manager: conan }
+          - { compiler: gcc,   manager: find  }
+          - { compiler: clang, manager: cmake }
+          - { compiler: clang, manager: conan }
+          - { compiler: clang, manager: find  }
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: lukka/get-cmake@latest
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        if: matrix.manager == 'conan'
+        with:
+          python-version: '3.x'
+
+      - name: Update apt
+        run: |
+          sudo apt update
+
+
+      - name: Setup caches
+        id: h5pp-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.ccache
+            ~/.conan2
+            install/github-actions-${{ matrix.manager }}
+          key: ${{ github.workflow }}-${{ env.cache-name }}
+
+      - name: Setup gcc
+        if: matrix.compiler == 'gcc'
+        run: |
+          sudo apt install gcc-14 g++-14 -y
+          echo "FC=gfortran-14" >> $GITHUB_ENV
+          echo "CC=gcc-14"      >> $GITHUB_ENV
+          echo "CXX=g++-14"     >> $GITHUB_ENV
+
+      - name: Setup clang
+        if: matrix.compiler == 'clang'
+        run: |
+          sudo apt install clang-18 libomp-18-dev -y
+          echo "FC=gfortran-14" >> $GITHUB_ENV
+          echo "CC=clang-18"    >> $GITHUB_ENV
+          echo "CXX=clang++-18" >> $GITHUB_ENV
+
+      - name: Setup build tools
+        run: |
+          sudo apt install ccache ninja-build gcovr lcov -y
+          echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
+
+      - name: Setup apt packages (dependencies)
+        if: matrix.manager == 'find'
+        run: sudo apt install libhdf5-dev libaec-dev libfmt-dev libspdlog-dev libeigen3-dev -y
+
+      - name: Setup conan
+        if: matrix.manager == 'conan'
+        run: |
+          pip install conan
+          conan profile detect --force
+
+      - name: Run CMakePreset
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: 'github-actions-${{ matrix.manager }}'
+          configurePresetAdditionalArgs: "['-DH5PP_ENABLE_COVERAGE=TRUE']"
+          buildPreset: 'github-actions-${{ matrix.manager }}'
+          testPreset: 'github-actions-${{ matrix.manager }}'
+
+      - name: Coverage
+        if: matrix.compiler == 'gcc' && matrix.manager == 'find'
+        run: |
+          # Create lcov report
+          lcov --gcov-tool=gcov-12 --capture --directory build/github-actions-find --output-file coverage.info
+          lcov --gcov-tool=gcov-12 --remove coverage.info '*/test-*' '/usr/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info # filter system-files
+          lcov --gcov-tool=gcov-12 --list coverage.info # debug info
+          # Upload report to CodeCov
+          bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
