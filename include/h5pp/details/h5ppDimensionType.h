@@ -97,14 +97,14 @@ namespace h5pp {
                 throw h5pp::runtime_error("Could not identify dimension type: {}", h5pp::type::sfinae::type_name<UnknownType>());
             }
         }
-        [[nodiscard]] bool has_value() const { return dims.has_value(); }
-        operator bool() const { return dims.has_value(); }
+        [[nodiscard]] bool                        has_value() const { return dims.has_value(); }
+                                                  operator bool() const { return dims.has_value(); }
         [[nodiscard]] const std::vector<hsize_t> &value() const { return dims.value(); }
         [[nodiscard]] std::vector<hsize_t>       &value() { return dims.value(); }
-        [[nodiscard]] operator const std::optional<std::vector<hsize_t>> &() const { return dims; }
-        [[nodiscard]] operator std::optional<std::vector<hsize_t>> &() { return dims; }
-        auto operator->() { return dims.operator->(); }
-        auto operator->() const { return dims.operator->(); }
+        [[nodiscard]]                             operator const std::optional<std::vector<hsize_t>> &() const { return dims; }
+        [[nodiscard]]                             operator std::optional<std::vector<hsize_t>> &() { return dims; }
+        auto                                      operator->() { return dims.operator->(); }
+        auto                                      operator->() const { return dims.operator->(); }
     };
 
 }
