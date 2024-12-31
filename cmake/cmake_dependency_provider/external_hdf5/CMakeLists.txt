@@ -101,9 +101,10 @@ ExternalProject_Add(external_hdf5
         -DHDF5_DISABLE_COMPILER_WARNINGS:BOOL=ON
         -DALLOW_UNSUPPORTED=ON
 
-        -Dlibaec_ROOT:PATH=${libaec_ROOT}
         -DZLIB_ROOT:PATH=${ZLIB_ROOT}
-        -Dlibaec_DIR:PATH=${LIBAEC_ROOT}/share/cmake/zlib
         -DZLIB_DIR:PATH=${ZLIB_ROOT}/share/cmake/zlib
+
+        -Dlibaec_ROOT:PATH=${libaec_ROOT}
+        -Dlibaec_DIR:PATH=${libaec_ROOT}/cmake
         )
 
