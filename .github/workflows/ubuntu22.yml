@@ -88,12 +88,3 @@ jobs:
           buildPreset: 'github-actions-${{ matrix.manager }}'
           testPreset: 'github-actions-${{ matrix.manager }}'
 
-      - name: Coverage
-        if: matrix.compiler == 'gcc' && matrix.manager == 'find'
-        run: |
-          # Create lcov report
-          lcov --gcov-tool=gcov-12 --capture --directory build/github-actions-find --output-file coverage.info
-          lcov --gcov-tool=gcov-12 --remove coverage.info '*/test-*' '/usr/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info # filter system-files
-          lcov --gcov-tool=gcov-12 --list coverage.info # debug info
-          # Upload report to CodeCov
-          bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
