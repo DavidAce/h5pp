@@ -81,8 +81,8 @@ void test_h5pp(h5pp::File &file, const WriteType &writeData, std::string_view ds
     else {
         if(writeData != readData) {
 #if H5PP_USE_FMT
-    #if defined(H5PP_USE_FLOAT128)
-            if constexpr(std::is_same_v<ReadType, __float128>) {
+    #if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
+            if constexpr(std::is_same_v<ReadType, h5pp::fp128> || std::is_same_v<ReadType, h5pp::cx128>) {
                 return;
             } else
     #endif
@@ -231,9 +231,11 @@ int main() {
     test_h5pp<Eigen::MatrixXd, Eigen::VectorXd>(file, vectorMatrix, "vectorMatrix");
 #endif
 
-#if defined(H5PP_USE_FLOAT128)
-    __float128 f128 = 6.28318530717958623199592693708837032318115234375;
-    test_h5pp(file, f128, "__float128");
+#if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
+    h5pp::fp128 twopi_fp128 = 6.28318530717958623199592693708837032318115234375;
+    test_h5pp(file, twopi_fp128, "twopi_fp128");
+    h5pp::cx128 twopi_cx128 = 6.28318530717958623199592693708837032318115234375;
+    test_h5pp(file, twopi_cx128, "twopi_cx128");
 #endif
 
     auto foundLinksInRoot = file.findDatasets();

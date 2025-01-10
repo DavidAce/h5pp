@@ -1,6 +1,7 @@
 #pragma once
 #include "h5ppError.h"
 #include "h5ppHid.h"
+#include "h5ppTypeCustom.h"
 #include "h5ppTypeSfinae.h"
 #include <complex>
 #include <H5Tpublic.h>
@@ -14,6 +15,9 @@ namespace h5pp::type::compound {
         if constexpr (std::is_pointer_v<DecayType>)                return getValueType<typename std::remove_pointer<DecayType>::type>();
         else if constexpr (std::is_reference_v<DecayType>)         return getValueType<typename std::remove_reference<DecayType>::type>();
         else if constexpr (std::is_array_v<DecayType>)             return getValueType<typename std::remove_all_extents<DecayType>::type>();
+        #if defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
+        else if constexpr (std::is_same_v<DecayType, h5pp::fp128> )               return H5Tcopy(h5pp::type::custom::H5T_FLOAT128::h5type());
+        #endif
         else if constexpr (std::is_arithmetic_v<DecayType>){
             if constexpr(std::is_same_v<DecayType, short>)                        return H5Tcopy(H5T_NATIVE_SHORT);
             else if constexpr (std::is_same_v<DecayType, int>)                    return H5Tcopy(H5T_NATIVE_INT);
@@ -153,7 +157,7 @@ namespace h5pp::type::compound {
             return std::is_same_v<std::complex<T>, std::decay_t<O>>;
         }
         bool operator==(const hid::h5t &other) { return equal(other); }
-             operator hid::h5t() { return h5type(); }
+        operator hid::h5t() { return h5type(); }
     };
 
     template<typename T>
@@ -199,7 +203,7 @@ namespace h5pp::type::compound {
             return std::is_same_v<h5pp::type::compound::Scalar2<T>, std::decay_t<O>>;
         }
         bool operator==(const hid::h5t &other) { return equal(other); }
-             operator hid::h5t() { return h5type(); }
+        operator hid::h5t() { return h5type(); }
     };
     template<typename T>
     class H5T_SCALAR3 {
@@ -249,7 +253,7 @@ namespace h5pp::type::compound {
             return std::is_same_v<h5pp::type::compound::Scalar2<T>, std::decay_t<O>>;
         }
         bool operator==(const hid::h5t &other) { return equal(other); }
-             operator hid::h5t() { return h5type(); }
+        operator hid::h5t() { return h5type(); }
     };
 
     inline bool is_complex(const hid::h5t &h5type) {

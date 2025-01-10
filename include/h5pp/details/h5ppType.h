@@ -58,8 +58,8 @@ namespace h5pp::type {
         if(H5Tequal(h5type, H5T_NATIVE_UINT64))            return "H5T_NATIVE_UINT64";
         if(H5Tequal(h5type, H5T_NATIVE_UINT8))             return "H5T_NATIVE_UINT8";
         if(H5Tequal(h5type, H5T_C_S1))                     return "H5T_C_S1";
-#if defined(H5PP_USE_FLOAT128)
-        if(type::custom::H5T_FLOAT<__float128>::equal(h5type)) return type::custom::H5T_FLOAT<__float128>::h5name();
+#if defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
+        if(type::custom::H5T_FLOAT128::equal(h5type)) return type::custom::H5T_FLOAT128::h5name();
 #endif
         if(H5Tget_class(h5type) == H5T_class_t::H5T_ENUM)      return h5pp::format("H5T_ENUM{}",H5Tget_size(h5type));
         if(H5Tget_class(h5type) == H5T_class_t::H5T_ARRAY)     return fmt::format("H5T_ARRAY<{}>", getH5TypeName(H5Tget_super(h5type)));
@@ -146,8 +146,9 @@ namespace h5pp::type {
         else if constexpr (std::is_same_v<DecayType, float>)                 return H5Tcopy(H5T_NATIVE_FLOAT);
         else if constexpr (std::is_same_v<DecayType, double>)                return H5Tcopy(H5T_NATIVE_DOUBLE);
         else if constexpr (std::is_same_v<DecayType, long double>)           return H5Tcopy(H5T_NATIVE_LDOUBLE);
-        #if defined(H5PP_USE_FLOAT128)
-        else if constexpr(std::is_same_v<DecayType, __float128>)             return H5Tcopy(type::custom::H5T_FLOAT<__float128>::h5type());
+        #if defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
+        else if constexpr(std::is_same_v<DecayType, h5pp::fp128>)             return H5Tcopy(type::custom::H5T_FLOAT128::h5type());
+        else if constexpr(std::is_same_v<DecayType, h5pp::cx128>)             return H5Tcopy(type::compound::H5T_COMPLEX<h5pp::fp128>::h5type());
         #endif
         else if constexpr (std::is_same_v<DecayType, int8_t>)                return H5Tcopy(H5T_NATIVE_INT8);
         else if constexpr (std::is_same_v<DecayType, int16_t>)               return H5Tcopy(H5T_NATIVE_INT16);
@@ -212,9 +213,12 @@ namespace h5pp::type {
                if(H5Tequal(type, H5T_NATIVE_LLONG))   return getCppType<long long>();
             }
         }else if (h5class == H5T_class_t::H5T_FLOAT){
-            if(H5Tequal(type, H5T_NATIVE_FLOAT))            return getCppType<float>();
-            if(H5Tequal(type, H5T_NATIVE_DOUBLE))           return getCppType<double>();
-            if(H5Tequal(type, H5T_NATIVE_LDOUBLE))          return getCppType<long double>();
+            if(H5Tequal(type, H5T_NATIVE_FLOAT))              return getCppType<float>();
+            if(H5Tequal(type, H5T_NATIVE_DOUBLE))             return getCppType<double>();
+            if(H5Tequal(type, H5T_NATIVE_LDOUBLE))            return getCppType<long double>();
+            #if defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
+            if(h5pp::type::custom::H5T_FLOAT128::equal(type)) return getCppType<h5pp::fp128>();
+            #endif
         }else if  (h5class == H5T_class_t::H5T_STRING){
             if(H5Tequal(type, H5T_NATIVE_CHAR))             return getCppType<char>();
             if(H5Tequal_recurse(type, H5Tcopy(H5T_C_S1)))   return getCppType<std::string>();
@@ -230,6 +234,9 @@ namespace h5pp::type {
                     if (H5T_COMPLEX<float>::equal(type))            return getCppType<std::complex<float>>();
                     if (H5T_COMPLEX<double>::equal(type))           return getCppType<std::complex<double>>();
                     if (H5T_COMPLEX<long double>::equal(type))      return getCppType<std::complex<long double>>();
+                    #if defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
+                    if(H5T_COMPLEX<h5pp::fp128>::equal(type)) return getCppType<std::complex<h5pp::fp128>>();
+                    #endif
                 }
                 if(h5mclass == H5T_class_t::H5T_INTEGER){
                     auto h5msign  = H5Tget_sign(h5mtype);

@@ -27,13 +27,15 @@ class H5ppConan(ConanFile):
         "with_eigen": [True, False],
         "with_spdlog": [True, False],
         "with_zlib" : [True, False],
-        "with_quadmath": [True, False]
+        "with_quadmath": [True, False],
+        "with_float128": [True, False]
     }
     default_options = {
         "with_eigen": True,
         "with_spdlog": True,
         "with_zlib" : True,
-        "with_quadmath": False
+        "with_quadmath": False,
+        "with_float128": False,
     }
 
     @property
@@ -63,14 +65,25 @@ class H5ppConan(ConanFile):
         self.info.clear()
 
     def validate(self):
+        if self.settings.compiler != "gcc":
+            self.options.rm_safe('with_quadmath')
         if self.settings.compiler.get_safe("cppstd"):
-            check_min_cppstd(self, 17)
+            if self.options.get_safe('with_float128'):
+                check_min_cppstd(self, 23)
+            else:
+                check_min_cppstd(self, 17)
+
         minimum_version = self._compilers_minimum_version.get(str(self.settings.compiler), False)
         if minimum_version:
             if Version(self.settings.compiler.version) < minimum_version:
                 raise ConanInvalidConfiguration("h5pp requires C++17, which your compiler does not support.")
         else:
             self.output.warning("h5pp requires C++17. Your compiler is unknown. Assuming it supports C++17.")
+
+        if self.options.get_safe('with_float128') and  self.options.get_safe('with_quadmath'):
+            raise ConanInvalidConfiguration("These are mutually exclusive options: h5pp:with_float128 and h5pp:with_quadmath")
+
+
 
     def package(self):
         includedir = os.path.join(self.source_folder, "include")
@@ -103,7 +116,9 @@ class H5ppConan(ConanFile):
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_FMT")
         if self.options.get_safe('with_zlib'):
             self.cpp_info.components["h5pp_deps"].requires.append("zlib::zlib")
-        if self.options.get_safe('with_quadmath'):
+        if self.options.get_safe('with_float128'):
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_FLOAT128")
+        elif self.options.get_safe('with_quadmath'):
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_QUADMATH")
             self.cpp_info.system_libs.append('quadmath')
+

@@ -141,7 +141,8 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc-14",
         "CMAKE_CXX_COMPILER": "g++-14",
-        "H5PP_USE_QUADMATH": "TRUE"
+        "H5PP_USE_QUADMATH": "TRUE",
+        "H5PP_USE_FLOAT128": "TRUE"
       }
     },
     {

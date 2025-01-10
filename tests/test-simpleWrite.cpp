@@ -94,9 +94,12 @@ int main() {
     }
 #endif
 
-#if defined(H5PP_USE_FLOAT128)
-    __float128 f128 = 6.28318530717958623199592693708837032318115234375;
-    file.writeDataset(f128, "simpleWriteGroup/f128");
+#if defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
+    h5pp::fp128 twopi_real = 6.28318530717958623199592693708837032318115234375;
+    file.writeDataset(twopi_real, "simpleWriteGroup/twopi_real");
+    h5pp::cx128 twopi_cplx;
+    auto twopi_std_cplx = reinterpret_cast<std::complex<h5pp::fp128>*>(&twopi_cplx);
+    file.writeDataset(*twopi_std_cplx, "simpleWriteGroup/twopi_cplx");
 #endif
 
     return 0;

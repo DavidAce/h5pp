@@ -54,14 +54,15 @@ namespace h5pp::type::vlen {
         T                   *end();
         bool                 empty() const;
 
-        template<typename V,
-                 typename = std::enable_if_t<(std::is_constructible_v<T, std::string> || sfinae::is_vstr_v<T> || sfinae::is_fstr_v<T>) &&(
-                     std::is_floating_point_v<V>
-#if defined(H5PP_USE_QUADMATH)
-                     || std::is_same_v<V, __float128> || std::is_same_v<T, __complex128> || std::is_same_v<T, std::complex<__float128>>
-#endif
-                     )>>
-        varr_t<V> to_floating_point() const;
+         template<typename V,
+                  typename = std::enable_if_t<(std::is_constructible_v<T, std::string> || sfinae::is_vstr_v<T> || sfinae::is_fstr_v<T>) &&
+                                              (std::is_floating_point_v<V> || type::sfinae::is_std_complex_v<V>
+ #if   defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
+                                              || std::is_same_v<V, h5pp::fp128> || std::is_same_v<V, h5pp::cx128> ||
+                                            std::is_same_v<V, std::complex<h5pp::fp128>>
+ #endif
+                                               )>>
+         varr_t<V> to_floating_point() const;
 
         static hid::h5t get_h5type();
         void            clear() noexcept;
@@ -299,8 +300,8 @@ namespace h5pp::type::vlen {
         else if constexpr (std::is_same_v<T, bool>)                     return H5Tvlen_create(H5T_NATIVE_UINT8);
         else if constexpr (sfinae::is_vstr_v<T>)                        return H5Tvlen_create(T::get_h5type());
         else if constexpr (sfinae::is_fstr_v<T>)                        return H5Tvlen_create(T::get_h5type());
-        #if defined(H5PP_USE_FLOAT128)
-        else if constexpr (std::is_same_v<T, __float128>)               return type::custom::H5T_FLOAT<__float128>::h5type();
+        #if defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
+        else if constexpr (std::is_same_v<T, h5pp::fp128>)               return type::custom::H5T_FLOAT128::h5type();
         #endif
         else if constexpr (type::sfinae::is_std_complex_v<T>)           return H5Tvlen_create(type::compound::H5T_COMPLEX<typename T::value_type>::h5type());
         else if constexpr (type::sfinae::is_Scalar2_v<T>)               return H5Tvlen_create(type::compound::H5T_SCALAR2<type::sfinae::get_Scalar2_t<T>>::h5type());
