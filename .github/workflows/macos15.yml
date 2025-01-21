@@ -48,7 +48,7 @@ jobs:
 
       - name: Setup brew packages
         if: matrix.manager == 'find'
-        run: brew install hdf5 spdlog fmt eigen
+        run: brew install hdf5 spdlog fmt eigen zlib
 
       - name: Setup conan
         if: matrix.manager == 'conan'
