@@ -19,7 +19,7 @@ int main() {
     //    file.writeDataset(data,{4,1}, "group/VectorDouble2");
     //    file.writeDataset(data,{4,1}, "group/VectorDouble3",{5,100});
     //    file.writeDataset(data,{4,1}, "group/VectorDouble4",{6,100},std::nullopt);
-    file.writeDataset(data, "group/VectorDouble5", {4, 1}, H5D_CHUNKED, {4, 100}, {4ul, H5S_UNLIMITED});
+    file.writeDataset(data, "group/VectorDouble5", {4, 1}, H5D_CHUNKED, {4, 100}, {static_cast<decltype(H5S_UNLIMITED)>(4), H5S_UNLIMITED});
     //    file.writeDataset(data,{4,1}, "group/VectorDouble6",{H5S_UNLIMITED,H5S_UNLIMITED},std::nullopt);
     //    file.writeDataset(data,{4,1}, "group/VectorDouble7",{4,100}, H5D_COMPACT);
     //    file.writeDataset(data,{4,1}, "group/VectorDouble8",{4,100}, H5D_CONTIGUOUS);
