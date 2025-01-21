@@ -37,9 +37,11 @@ namespace h5pp {
         explicit OptDimsType(hid::h5t)     = delete;
         explicit OptDimsType(hid_t)        = delete;
 
-        template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+        template<typename T>
         OptDimsType(std::initializer_list<T> &&list)
-            : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(std::begin(list), std::end(list))) {}
+            : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(std::begin(list), std::end(list))) {
+            static_assert(std::is_integral_v<T>);
+        }
 
         template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
         OptDimsType(T v) : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(1ul, type::safe_cast<hsize_t>(v))) {}
@@ -48,8 +50,10 @@ namespace h5pp {
         OptDimsType(T &&dims_)
             : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(std::begin(dims_), std::end(dims_))) {}
 
-        template<typename T, typename = std::enable_if_t<h5pp::type::sfinae::is_iterable_v<T>>>
+        template<typename T>
         OptDimsType(std::optional<T> &&dims_)
-            : std::optional<std::vector<hsize_t>>(dims_.has_value() ? OptDimsType(dims_.value()) : std::nullopt) {}
+            : std::optional<std::vector<hsize_t>>(dims_.has_value() ? OptDimsType(dims_.value()) : std::nullopt) {
+            static_assert(h5pp::type::sfinae::is_iterable_v<T>);
+        }
     };
 }
