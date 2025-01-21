@@ -268,8 +268,7 @@ namespace h5pp::type::vlen {
         }
 #endif
         else {
-// T is probably complex.
-#if defined(H5PP_USE_QUADMATH)
+            // T is probably complex.
             auto strtocomplex = [](std::string_view s, auto strtox) -> T {
                 auto  pfx  = s.rfind('(', 0) == 0 ? 1ul : 0ul;
                 auto  rstr = s.substr(pfx);
@@ -283,7 +282,6 @@ namespace h5pp::type::vlen {
                 }
                 return T{real, imag};
             };
-#elif defined(H5PP_USE_FLOAT128)
             auto complex_from_chars = [](std::string_view s) -> T {
                 static_assert(sfinae::is_std_complex_v<T>);
                 using V       = typename T::value_type;
@@ -308,7 +306,6 @@ namespace h5pp::type::vlen {
                 }
                 return T{rval, ival};
             };
-#endif
             if constexpr(std::is_same_v<std::decay_t<T>, std::complex<float>>) {
                 return strtocomplex(c_str(), strtof);
             } else if constexpr(std::is_same_v<std::decay_t<T>, std::complex<double>>) {
