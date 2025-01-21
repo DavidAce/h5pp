@@ -154,6 +154,14 @@
       }
     },
     {
+      "name": "clang-18",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-18",
+        "CMAKE_CXX_COMPILER": "clang++-18"
+      }
+    },
+    {
       "name": "pkg-cmake",
       "hidden": true,
       "cacheVariables": {
@@ -242,6 +250,14 @@
       ]
     },
     {
+      "name": "release-clang-18-cmake",
+      "displayName": "Release|clang-18|cmake package manager",
+      "inherits": [
+        "clang-18",
+        "release-cmake"
+      ]
+    },
+    {
       "name": "debug-conan",
       "displayName": "Debug|conan package manager",
       "inherits": [
@@ -313,6 +329,14 @@
       "inherits": [
         "clang-17",
         "debug-cmake"
+      ]
+    },
+    {
+      "name": "debug-clang-18-conan",
+      "displayName": "Debug|clang-18|conan package manager",
+      "inherits": [
+        "clang-18",
+        "debug-conan"
       ]
     },
     {
@@ -457,11 +481,11 @@
     },
     {
       "name": "release-clang-17-conan",
-      "configurePreset": "release-gcc-12-conan"
+      "configurePreset": "release-clang-17-conan"
     },
     {
       "name": "release-clang-17-cmake",
-      "configurePreset": "release-gcc-12-cmake"
+      "configurePreset": "release-clang-17-cmake"
     },
     {
       "name": "debug-conan",
@@ -498,6 +522,10 @@
     {
       "name": "debug-clang-17-cmake",
       "configurePreset": "debug-clang-17-cmake"
+    },
+    {
+      "name": "debug-clang-18-conan",
+      "configurePreset": "debug-clang-18-conan"
     },
     {
       "name": "github-actions-find",

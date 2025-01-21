@@ -25,7 +25,7 @@ namespace h5pp {
         DimsType(std::initializer_list<T> &&list) : std::vector<hsize_t>(std::begin(list), std::end(list)) {}
 
         template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-        DimsType(T v) : std::vector<hsize_t>(1ul, static_cast<hsize_t>(v)) {}
+        DimsType(T v) : std::vector<hsize_t>(1ul, type::safe_cast<hsize_t>(v)) {}
 
         template<typename T, typename = std::enable_if_t<h5pp::type::sfinae::is_iterable_v<T>>>
         DimsType(const T &dims_) : std::vector<hsize_t>(std::begin(dims_), std::end(dims_)) {}
@@ -42,7 +42,7 @@ namespace h5pp {
             : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(std::begin(list), std::end(list))) {}
 
         template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-        OptDimsType(T v) : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(1ul, v)) {}
+        OptDimsType(T v) : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(1ul, type::safe_cast<hsize_t>(v))) {}
 
         template<typename T, typename = std::enable_if_t<h5pp::type::sfinae::is_iterable_v<T>>>
         OptDimsType(T &&dims_)
