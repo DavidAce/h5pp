@@ -268,7 +268,8 @@ namespace h5pp::type::vlen {
         }
 #endif
         else {
-            // T is probably complex.
+// T is probably complex.
+#if defined(H5PP_USE_QUADMATH)
             auto strtocomplex = [](std::string_view s, auto strtox) -> T {
                 auto  pfx  = s.rfind('(', 0) == 0 ? 1ul : 0ul;
                 auto  rstr = s.substr(pfx);
@@ -282,28 +283,32 @@ namespace h5pp::type::vlen {
                 }
                 return T{real, imag};
             };
+#elif defined(H5PP_USE_FLOAT128)
             auto complex_from_chars = [](std::string_view s) -> T {
-                T    rval     = 0.0;
-                T    ival     = 0.0;
+                static_assert(sfinae::is_std_complex_v<T>);
+                using V       = typename T::value_type;
+                V    rval     = std::numeric_limits<V>::quiet_NaN();
+                V    ival     = std::numeric_limits<V>::quiet_NaN();
                 auto pfx      = s.rfind('(', 0) == 0 ? 1ul : 0ul;
                 auto rstr     = s.substr(pfx);
                 auto [rp, re] = std::from_chars(rstr.begin(), rstr.end(), rval);
-                if(re != std::errc()) {
-                    throw h5pp::runtime_error("h5pp::vstr_t::to_floating_point(): std::from_chars(): {}",
-                                              std::make_error_code(re).message());
-                }
+                //  if(re != std::errc()) {
+                //      throw h5pp::runtime_error("h5pp::fstr_t::to_floating_point(): std::from_chars(): {}",
+                //                                std::make_error_code(re).message());
+                // }
 
                 auto dlim = std::string_view(rp).find_first_not_of(",+-");
                 if(dlim != std::string_view::npos) {
                     auto istr     = std::string_view(rp).substr(dlim);
                     auto [ip, ie] = std::from_chars(istr.begin(), istr.end(), ival);
-                    if(re != std::errc()) {
-                        throw h5pp::runtime_error("h5pp::vstr_t::to_floating_point(): std::from_chars(): {}",
-                                                  std::make_error_code(ie).message());
-                    }
+                    // if(re != std::errc()) {
+                    //     throw h5pp::runtime_error("h5pp::fstr_t::to_floating_point(): std::from_chars(): {}",
+                    //                               std::make_error_code(ie).message());
+                    // }
                 }
                 return T{rval, ival};
             };
+#endif
             if constexpr(std::is_same_v<std::decay_t<T>, std::complex<float>>) {
                 return strtocomplex(c_str(), strtof);
             } else if constexpr(std::is_same_v<std::decay_t<T>, std::complex<double>>) {

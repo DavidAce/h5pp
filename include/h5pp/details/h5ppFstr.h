@@ -324,8 +324,10 @@ namespace h5pp::type::flen {
                 return T{real, imag};
             };
             auto complex_from_chars = [](std::string_view s) -> T {
-                T    rval     = std::numeric_limits<T>::quiet_NaN();
-                T    ival     = std::numeric_limits<T>::quiet_NaN();
+                static_assert(sfinae::is_std_complex_v<T>);
+                using V       = typename T::value_type;
+                V    rval     = std::numeric_limits<V>::quiet_NaN();
+                V    ival     = std::numeric_limits<V>::quiet_NaN();
                 auto pfx      = s.rfind('(', 0) == 0 ? 1ul : 0ul;
                 auto rstr     = s.substr(pfx);
                 auto [rp, re] = std::from_chars(rstr.begin(), rstr.end(), rval);
