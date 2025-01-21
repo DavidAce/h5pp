@@ -67,6 +67,9 @@ int main() {
     auto ReadAttributeString    = file.readAttribute<std::string>("testGroup/vectorDouble", "AttributeString");
     auto ReadAttributeCharArray = file.readAttribute<std::string>("testGroup/vectorDouble", "AttributeCharArray");
 
+    auto ReadOptAttributeInt = file.readAttribute<std::optional<int>>("testGroup/vectorDouble", "AttributeInt");
+    auto ReadOptAttributeVectorDouble = file.readAttribute<std::optional<std::vector<double>>>("testGroup/vectorDouble", "AttributeVectorDouble");
+
     if(ReadAttributeInt != AttributeInt) throw std::runtime_error("ReadAttributeInt != AttributeInt");
     if(ReadAttributeDouble != AttributeDouble) throw std::runtime_error("ReadAttributeDouble != AttributeDouble");
     if(ReadAttributeComplexInt != AttributeComplexInt) throw std::runtime_error("ReadAttributeComplexInt != AttributeComplexInt");
@@ -81,6 +84,9 @@ int main() {
         throw std::runtime_error("ReadAttributeVectorComplexDouble != AttributeVectorComplexDouble");
     if(ReadAttributeString != AttributeString) throw std::runtime_error("ReadAttributeString != AttributeString");
     if(ReadAttributeCharArray != AttributeCharArray) throw std::runtime_error("ReadAttributeCharArray != AttributeCharArray");
+
+    if(ReadOptAttributeInt.value() != AttributeInt) throw std::runtime_error("ReadOptAttributeInt != AttributeInt");
+    if(ReadOptAttributeVectorDouble.value() != AttributeVectorDouble) throw std::runtime_error("ReadOptAttributeVectorDouble != AttributeVectorDouble");
 
 #ifdef H5PP_USE_EIGEN3
     static_assert(h5pp::type::sfinae::has_Scalar_v<Eigen::MatrixXd> and
