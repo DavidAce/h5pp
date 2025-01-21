@@ -29,7 +29,7 @@ namespace h5pp::type::custom {
 #if __BYTE_ORDER == LITTLE_ENDIAN
                 if(H5Tset_fields(float_id, 127, 112, 15, 0, 112) < 0) h5pp::runtime_error("H5Tset_fields failed");
 #else
-                if(H5Tset_fields(h5_real_t, 0, 1, 15, 16, 112) < 0) h5pp::runtime_error("H5Tset_fields failed");
+                if(H5Tset_fields(float_id, 0, 1, 15, 16, 112) < 0) h5pp::runtime_error("H5Tset_fields failed");
 #endif
                 if(H5Tset_ebias(float_id, 127) < 0) throw h5pp::runtime_error("H5Tset_ebias failed");
                 if(H5Tset_norm(float_id, H5T_NORM_MSBSET) < 0) throw h5pp::runtime_error("H5Tset_norm failed");
