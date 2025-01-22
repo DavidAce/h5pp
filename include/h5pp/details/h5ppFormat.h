@@ -12,8 +12,14 @@
         // If SPDLOG_HEADER_ONLY is defined this will cause FMT_HEADER_ONLY to also get defined
         #include <spdlog/fmt/fmt.h>
         #if defined(SPDLOG_FMT_EXTERNAL)
-            #include <fmt/core.h>
-            #include <fmt/ranges.h>
+            #if __has_include(<fmt/base.h>) && __has_include(<fmt/format.h>)
+                #include <fmt/base.h>
+                #include <fmt/format.h>
+                #include <fmt/ranges.h>
+            #else
+                #include <fmt/core.h>
+                #include <fmt/ranges.h>
+            #endif
         #else
             #include <spdlog/fmt/bundled/compile.h>
             #include <spdlog/fmt/bundled/ranges.h>

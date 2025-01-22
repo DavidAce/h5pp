@@ -7,7 +7,6 @@
         #define FMT_USE_COMPLEX 1
         #include <complex>
         #include <type_traits>
-
 template<typename T, typename Char>
 struct fmt::formatter<std::complex<T>, Char> : fmt::formatter<T, Char> {
     private:
