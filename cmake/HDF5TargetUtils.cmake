@@ -114,11 +114,12 @@ function(h5pp_get_modern_hdf5_target_name)
 
 
     list(APPEND HDF5_TARGET_NAMES hdf5 hdf5_hl hdf5_cpp hdf5_hl_cpp hdf5_cpp_hl hdf5_fortran hdf5_fortran_hl)
-    if(HDF5_USE_STATIC_LIBRARIES OR "${HDF5_C_LIBRARIES}" MATCHES "static")
-        list(APPEND HDF5_LINK_TYPE static)
-    else()
+    if ((BUILD_SHARED_LIBS OR NOT HDF5_USE_STATIC_LIBRARIES) AND NOT "${HDF5_C_LIBRARIES}" MATCHES "static|.${CMAKE_STATIC_LIBRARY_SUFFIX}")
         list(APPEND HDF5_LINK_TYPE shared)
+    else()
+        list(APPEND HDF5_LINK_TYPE static)
     endif()
+
     foreach(name ${HDF5_TARGET_NAMES})
         foreach(type ${HDF5_LINK_TYPE})
             foreach(tgt ${name} ${name}-${type} hdf5::${name} hdf5::${name}-${type})
