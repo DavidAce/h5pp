@@ -52,4 +52,4 @@ jobs:
           buildPreset: 'github-actions-${{ matrix.manager }}-win'
           buildPresetAdditionalArgs: "['--config Debug']"
           testPreset: 'github-actions-${{ matrix.manager }}-win'
-          testPresetAdditionalArgs: "['--build-config=Debug']"
+          testPresetAdditionalArgs: "['-C Debug']"
