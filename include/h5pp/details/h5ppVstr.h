@@ -126,7 +126,7 @@ namespace h5pp::type::vlen {
 
     inline vstr_t::vstr_t(const vstr_t &v) {
         if(v.ptr == nullptr) return;
-        ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
+        ptr = static_cast<char *>(malloc((v.size() + 1) * sizeof(char)));
         strcpy(ptr, v.ptr);
         ptr[v.size()] = '\0';
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -141,7 +141,7 @@ namespace h5pp::type::vlen {
     }
     inline vstr_t::vstr_t(std::string_view v) {
         if(v.empty()) return;
-        ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
+        ptr = static_cast<char *>(malloc((v.size() + 1) * sizeof(char)));
         strcpy(ptr, v.data());
         ptr[v.size()] = '\0';
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -149,7 +149,7 @@ namespace h5pp::type::vlen {
 
     inline vstr_t::vstr_t(vstr_t &&v) noexcept {
         if(v.ptr == nullptr) return;
-        ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
+        ptr = static_cast<char *>(malloc((v.size() + 1) * sizeof(char)));
         strcpy(ptr, v.ptr);
         ptr[v.size()] = '\0';
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -163,7 +163,7 @@ namespace h5pp::type::vlen {
     inline vstr_t &vstr_t::operator=(const vstr_t &v) noexcept {
         if(this != &v and ptr != v.ptr) {
             clear();
-            ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
+            ptr = static_cast<char *>(malloc((v.size() + 1) * sizeof(char)));
             strcpy(ptr, v.ptr);
             ptr[v.size()] = '\0';
             if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -173,7 +173,7 @@ namespace h5pp::type::vlen {
 
     inline vstr_t &vstr_t::operator=(std::string_view v) {
         clear();
-        ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
+        ptr = static_cast<char *>(malloc((v.size() + 1) * sizeof(char)));
         strcpy(ptr, v.data());
         ptr[v.size()] = '\0';
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
