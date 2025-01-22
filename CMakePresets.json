@@ -373,6 +373,9 @@
           "Linux",
           "Darwin"
         ]
+      },
+      "environment": {
+        "CMAKE_FRAMEWORK_PATH": "/opt/homebrew"
       }
     },
     {
