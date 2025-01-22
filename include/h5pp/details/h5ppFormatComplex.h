@@ -13,15 +13,22 @@ struct fmt::formatter<std::complex<T>, Char> : fmt::formatter<T, Char> {
     typedef fmt::formatter<T, Char>         base;
     fmt::detail::dynamic_format_specs<Char> specs_;
 
+    template<typename S, typename = std::void_t<>>
+    struct has_sign : public std::false_type {};
+    template<typename S>
+    struct has_sign<S, std::void_t<decltype(std::declval<S>().sign())>> : public std::true_type {};
+    template<typename S>
+    static constexpr bool has_sign_v = has_sign<S>::value;
+
     public:
     template<typename FormatCtx>
     auto format(const std::complex<T> &x, FormatCtx &ctx) const -> decltype(ctx.out()) {
         base::format(x.real(), ctx);
-        #if FMT_VERSION >= 110103
-        if(x.imag() >= 0 && specs_.sign() != sign::plus) fmt::format_to(ctx.out(), "+");
-        #else
-        if(x.imag() >= 0 && specs_.sign != sign::plus) fmt::format_to(ctx.out(), "+");
-        #endif
+        if constexpr(has_sign_v<fmt::detail::dynamic_format_specs<Char>>) {
+            if(x.imag() >= 0 && specs_.sign() != sign::plus) fmt::format_to(ctx.out(), "+");
+        } else {
+            if(x.imag() >= 0 && specs_.sign != sign::plus) fmt::format_to(ctx.out(), "+");
+        }
         base::format(x.imag(), ctx);
         return fmt::format_to(ctx.out(), "i");
     }
