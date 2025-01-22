@@ -212,11 +212,13 @@ function(h5pp_get_modern_hdf5_target_name)
 
 
     # Check whether zlib or szip are linked to the targets, and make sure we can find them
+    message(VERBOSE "Checking if the HDF5 targets need zlib ... ")
     foreach (tgt ${HDF5_X_TARGETS};${HDF5_C_TARGET})
         if(NOT TARGET ${tgt})
             continue()
         endif ()
         get_target_property(HDF5_INTERFACE_LINK_LIBRARIES ${tgt} INTERFACE_LINK_LIBRARIES)
+        message(VERBOSE " ${tgt} : ${HDF5_INTERFACE_LINK_LIBRARIES}")
         foreach (ltgt ${HDF5_INTERFACE_LINK_LIBRARIES})
             if(ltgt MATCHES "ZLIB::ZLIB")
                 set(HDF5_ZLIB_REQUIRED REQUIRED)

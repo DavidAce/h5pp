@@ -375,7 +375,7 @@
         ]
       },
       "environment": {
-        "CMAKE_FRAMEWORK_PATH": "/opt/homebrew"
+        "CMAKE_FRAMEWORK_PATH": "/opt/homebrew:/opt/homebrew/opt/zlib"
       }
     },
     {
