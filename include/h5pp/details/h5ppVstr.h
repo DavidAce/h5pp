@@ -19,13 +19,18 @@ namespace h5pp::type::vlen {
         private:
         char *ptr = nullptr;
 
-        template<typename T,
-                 typename = std::enable_if_t<std::is_floating_point_v<T> || type::sfinae::is_std_complex_v<T>
+        template<typename T>
+        static constexpr bool is_float() {
+            return std::is_floating_point_v<T> || type::sfinae::is_std_complex_v<T> //
 #if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
-                                             || std::is_same_v<T, h5pp::fp128> || std::is_same_v<T, h5pp::cx128> ||
-                                             std::is_same_v<T, std::complex<h5pp::fp128>>
+                   || std::is_same_v<T, h5pp::fp128>               //
+                   || std::is_same_v<T, h5pp::cx128>               //
+                   || std::is_same_v<T, std::complex<h5pp::fp128>> //
 #endif
-                                             >>
+                ;
+        }
+
+        template<typename T, typename = std::enable_if_t<is_float<T>>>
         std::string float_to_string(const T &f) const;
 
         public:
@@ -37,15 +42,15 @@ namespace h5pp::type::vlen {
         vstr_t(const char *v);
         vstr_t(std::string_view v);
         vstr_t(vstr_t &&v) noexcept;
-        template<typename T, typename = std::enable_if_t<!std::is_convertible_v<T, std::string>>>
+        template<typename T, typename = std::enable_if_t<is_float<T>>>
         vstr_t(const T &v);
         vstr_t &operator=(const vstr_t &v) noexcept;
         vstr_t &operator=(std::string_view v);
         vstr_t &operator=(const hvl_t &v) = delete; /*!< inherently unsafe to allocate an unknown type */
         vstr_t &operator=(hvl_t &&v)      = delete; /*!< inherently unsafe to allocate an unknown type */
-        template<typename T, typename = std::enable_if_t<!std::is_convertible_v<T, std::string>>>
+        template<typename T, typename = std::enable_if_t<is_float<T>>>
         vstr_t &operator=(const T &v);
-        template<typename T, typename = std::enable_if_t<!std::is_convertible_v<T, std::string>>>
+        template<typename T, typename = std::enable_if_t<is_float<T>>>
         vstr_t                   &operator+=(const T &v);
         bool                      operator==(std::string_view v) const;
         bool                      operator!=(std::string_view v) const;
@@ -126,7 +131,7 @@ namespace h5pp::type::vlen {
 
     inline vstr_t::vstr_t(const vstr_t &v) {
         if(v.ptr == nullptr) return;
-        ptr = static_cast<char *>(malloc((v.size() + 1) * sizeof(char)));
+        ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.ptr);
         ptr[v.size()] = '\0';
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -141,7 +146,7 @@ namespace h5pp::type::vlen {
     }
     inline vstr_t::vstr_t(std::string_view v) {
         if(v.empty()) return;
-        ptr = static_cast<char *>(malloc((v.size() + 1) * sizeof(char)));
+        ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.data());
         ptr[v.size()] = '\0';
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -149,7 +154,7 @@ namespace h5pp::type::vlen {
 
     inline vstr_t::vstr_t(vstr_t &&v) noexcept {
         if(v.ptr == nullptr) return;
-        ptr = static_cast<char *>(malloc((v.size() + 1) * sizeof(char)));
+        ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.ptr);
         ptr[v.size()] = '\0';
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -163,7 +168,7 @@ namespace h5pp::type::vlen {
     inline vstr_t &vstr_t::operator=(const vstr_t &v) noexcept {
         if(this != &v and ptr != v.ptr) {
             clear();
-            ptr = static_cast<char *>(malloc((v.size() + 1) * sizeof(char)));
+            ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
             strcpy(ptr, v.ptr);
             ptr[v.size()] = '\0';
             if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -173,7 +178,7 @@ namespace h5pp::type::vlen {
 
     inline vstr_t &vstr_t::operator=(std::string_view v) {
         clear();
-        ptr = static_cast<char *>(malloc((v.size() + 1) * sizeof(char)));
+        ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
         strcpy(ptr, v.data());
         ptr[v.size()] = '\0';
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);

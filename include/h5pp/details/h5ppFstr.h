@@ -26,6 +26,17 @@ namespace h5pp::type::flen {
         char                     *begin();
         char                     *end();
 
+        template<typename T>
+        static constexpr bool is_float() {
+            return std::is_floating_point_v<T> || type::sfinae::is_std_complex_v<T> //
+#if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
+                   || std::is_same_v<T, h5pp::fp128>               //
+                   || std::is_same_v<T, h5pp::cx128>               //
+                   || std::is_same_v<T, std::complex<h5pp::fp128>> //
+#endif
+                ;
+        }
+
         public:
         using value_type                 = char[N];
         using data_type [[maybe_unused]] = char;
@@ -35,15 +46,15 @@ namespace h5pp::type::flen {
         fstr_t(const char *v);
         fstr_t(std::string_view v);
         fstr_t(fstr_t &&v) noexcept;
-        template<typename T, typename = std::enable_if_t<!std::is_convertible_v<T, std::string>>>
+        template<typename T, typename = std::enable_if_t<is_float<T>()>>
         fstr_t(const T &v);
         fstr_t &operator=(const fstr_t &v) noexcept;
         fstr_t &operator=(std::string_view v);
         fstr_t &operator=(const hvl_t &v) = delete; /*!< inherently unsafe to allocate an unknown type */
         fstr_t &operator=(hvl_t &&v)      = delete; /*!< inherently unsafe to allocate an unknown type */
-        template<typename T, typename = std::enable_if_t<!std::is_convertible_v<T, std::string>>>
+        template<typename T, typename = std::enable_if_t<is_float<T>()>>
         fstr_t &operator=(const T &v);
-        template<typename T, typename = std::enable_if_t<!std::is_convertible_v<T, std::string>>>
+        template<typename T, typename = std::enable_if_t<is_float<T>()>>
         fstr_t                   &operator+=(const T &v);
         bool                      operator==(std::string_view v) const;
         bool                      operator!=(std::string_view v) const;
@@ -60,13 +71,7 @@ namespace h5pp::type::flen {
         void                      append(const std::string &v);
         void                      append(std::string_view v);
 
-        template<typename T,
-                 typename = std::enable_if_t<std::is_floating_point_v<T> || type::sfinae::is_std_complex_v<T>
-#if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
-                                             || std::is_same_v<T, h5pp::fp128> || std::is_same_v<T, h5pp::cx128> ||
-                                             std::is_same_v<T, std::complex<h5pp::fp128>>
-#endif
-                                             >>
+        template<typename T, typename = std::enable_if_t<is_float<T>()>>
         T to_floating_point() const;
 
         static hid::h5t get_h5type();
@@ -375,7 +380,6 @@ namespace h5pp::type::flen {
         H5Tset_cset(h5type, H5T_CSET_UTF8);
         return h5type;
     }
-
 }
 namespace h5pp {
     using h5pp::type::flen::fstr_t;
