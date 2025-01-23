@@ -46,6 +46,7 @@ namespace h5pp::type::vlen {
         vstr_t(const T &v);
         vstr_t &operator=(const vstr_t &v) noexcept;
         vstr_t &operator=(std::string_view v);
+        vstr_t &operator=(const char * v);
         vstr_t &operator=(const hvl_t &v) = delete; /*!< inherently unsafe to allocate an unknown type */
         vstr_t &operator=(hvl_t &&v)      = delete; /*!< inherently unsafe to allocate an unknown type */
         template<typename T, typename = std::enable_if_t<is_float<T>>>
@@ -183,6 +184,9 @@ namespace h5pp::type::vlen {
         ptr[v.size()] = '\0';
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
         return *this;
+    }
+    inline vstr_t &vstr_t::operator=(const char * v) {
+        return this->operator=(std::string_view(v));
     }
     template<typename T, typename>
     vstr_t &vstr_t::operator=(const T &v) {

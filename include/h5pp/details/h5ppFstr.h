@@ -50,6 +50,7 @@ namespace h5pp::type::flen {
         fstr_t(const T &v);
         fstr_t &operator=(const fstr_t &v) noexcept;
         fstr_t &operator=(std::string_view v);
+        fstr_t &operator=(const char *v);
         fstr_t &operator=(const hvl_t &v) = delete; /*!< inherently unsafe to allocate an unknown type */
         fstr_t &operator=(hvl_t &&v)      = delete; /*!< inherently unsafe to allocate an unknown type */
         template<typename T, typename = std::enable_if_t<is_float<T>()>>
@@ -177,6 +178,10 @@ namespace h5pp::type::flen {
         ptr[N - 1] = '\0';
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t assigned into {}: {}", fmt::ptr(ptr), ptr);
         return *this;
+    }
+    template<size_t N>
+    inline fstr_t<N> &fstr_t<N>::operator=(const char *v) {
+        return this->operator=(std::string_view(v));
     }
     template<size_t N>
     template<typename T, typename>
