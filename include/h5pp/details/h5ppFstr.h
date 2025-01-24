@@ -338,22 +338,24 @@ namespace h5pp::type::flen {
                 using V       = typename T::value_type;
                 V    rval     = std::numeric_limits<V>::quiet_NaN();
                 V    ival     = std::numeric_limits<V>::quiet_NaN();
-                auto pfx      = s.rfind('(', 0) == 0 ? 1ul : 0ul;
-                auto rstr     = s.substr(pfx);
-                auto [rp, re] = std::from_chars(rstr.begin(), rstr.end(), rval);
-                //  if(re != std::errc()) {
-                //      throw h5pp::runtime_error("h5pp::fstr_t::to_floating_point(): std::from_chars(): {}",
-                //                                std::make_error_code(re).message());
-                // }
+                if constexpr(std::is_floating_point_v<V>) {
+                    auto pfx      = s.rfind('(', 0) == 0 ? 1ul : 0ul;
+                    auto rstr     = s.substr(pfx);
+                    auto [rp, re] = std::from_chars(rstr.begin(), rstr.end(), rval);
+                    if(re != std::errc()) {
+                        throw h5pp::runtime_error("h5pp::fstr_t::to_floating_point(): std::from_chars(): {}",
+                                                  std::make_error_code(re).message());
+                    }
 
-                auto dlim = std::string_view(rp).find_first_not_of(",+-");
-                if(dlim != std::string_view::npos) {
-                    auto istr     = std::string_view(rp).substr(dlim);
-                    auto [ip, ie] = std::from_chars(istr.begin(), istr.end(), ival);
-                    // if(re != std::errc()) {
-                    //     throw h5pp::runtime_error("h5pp::fstr_t::to_floating_point(): std::from_chars(): {}",
-                    //                               std::make_error_code(ie).message());
-                    // }
+                    auto dlim = std::string_view(rp).find_first_not_of(",+-");
+                    if(dlim != std::string_view::npos) {
+                        auto istr     = std::string_view(rp).substr(dlim);
+                        auto [ip, ie] = std::from_chars(istr.begin(), istr.end(), ival);
+                        if(re != std::errc()) {
+                            throw h5pp::runtime_error("h5pp::fstr_t::to_floating_point(): std::from_chars(): {}",
+                                                      std::make_error_code(ie).message());
+                        }
+                    }
                 }
                 return T{rval, ival};
             };
