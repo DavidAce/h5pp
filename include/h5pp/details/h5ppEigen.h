@@ -1,5 +1,5 @@
 #pragma once
-#include "h5ppError.h"
+#include "h5ppExcept.h"
 #include "h5ppTypeSfinae.h"
 #ifdef H5PP_USE_EIGEN3
     #include <Eigen/Core>

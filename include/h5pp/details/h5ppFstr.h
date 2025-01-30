@@ -335,9 +335,9 @@ namespace h5pp::type::flen {
             };
             auto complex_from_chars = [](std::string_view s) -> T {
                 static_assert(sfinae::is_std_complex_v<T>);
-                using V       = typename T::value_type;
-                V    rval     = std::numeric_limits<V>::quiet_NaN();
-                V    ival     = std::numeric_limits<V>::quiet_NaN();
+                using V = typename T::value_type;
+                V rval  = std::numeric_limits<V>::quiet_NaN();
+                V ival  = std::numeric_limits<V>::quiet_NaN();
                 if constexpr(std::is_floating_point_v<V>) {
                     auto pfx      = s.rfind('(', 0) == 0 ? 1ul : 0ul;
                     auto rstr     = s.substr(pfx);
@@ -427,6 +427,7 @@ template<size_t N>
 struct fmt::formatter<h5pp::fstr_t<N>> : formatter<std::string_view> {
     auto format(const h5pp::fstr_t<N> &f, format_context &ctx) const { return fmt::formatter<string_view>::format(f.c_str(), ctx); }
 };
+
     #else
 template<size_t N>
 struct fmt::formatter<h5pp::fstr_t<N>> : formatter<std::string_view> {

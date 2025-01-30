@@ -2,7 +2,7 @@
 #include "h5ppDebug.h"
 #include "h5ppEigen.h"
 #include "h5ppEnums.h"
-#include "h5ppError.h"
+#include "h5ppExcept.h"
 #include "h5ppFilesystem.h"
 #include "h5ppHyperslab.h"
 #include "h5ppInfo.h"

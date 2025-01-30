@@ -1,5 +1,5 @@
 #pragma once
-#include "h5ppError.h"
+#include "h5ppExcept.h"
 #include "h5ppTypeSfinae.h"
 #include <type_traits>
 

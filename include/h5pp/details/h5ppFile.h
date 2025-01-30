@@ -5,7 +5,7 @@
 #include "h5ppDimensionType.h"
 #include "h5ppEigen.h"
 #include "h5ppEnums.h"
-#include "h5ppError.h"
+#include "h5ppExcept.h"
 #include "h5ppFilesystem.h"
 #include "h5ppHdf5.h"
 #include "h5ppHid.h"
@@ -149,7 +149,7 @@ namespace h5pp {
 
         struct FileHandleToken {
             const h5pp::File &file_;
-                              FileHandleToken(const h5pp::File &file) : file_(file) {
+            FileHandleToken(const h5pp::File &file) : file_(file) {
                 hid::h5f temphandle = file_.openFileHandle();
                 file_.fileHandle    = temphandle;
             }

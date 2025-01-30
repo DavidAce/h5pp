@@ -1,5 +1,5 @@
 #pragma once
-#include "h5ppError.h"
+#include "h5ppExcept.h"
 #include "h5ppFloat128.h"
 #include "h5ppHid.h"
 #include "h5ppLogger.h"
@@ -381,6 +381,7 @@ template<>
 struct fmt::formatter<h5pp::vstr_t> : formatter<std::string_view> {
     auto format(const h5pp::vstr_t &s, format_context &ctx) const { return fmt::formatter<string_view>::format(s.c_str(), ctx); }
 };
+
     #else
 template<>
 struct fmt::formatter<const h5pp::vstr_t> : formatter<std::string_view> {

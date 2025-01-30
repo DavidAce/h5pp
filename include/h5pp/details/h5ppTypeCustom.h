@@ -1,6 +1,6 @@
 #pragma once
 
-#include "h5ppError.h"
+#include "h5ppExcept.h"
 #include "h5ppFloat128.h"
 #include "h5ppFormat.h"
 #include "h5ppHid.h"

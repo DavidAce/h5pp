@@ -1,5 +1,5 @@
 #pragma once
-#include "h5ppError.h"
+#include "h5ppExcept.h"
 #include "h5ppFormat.h"
 #include "h5ppTypeCast.h"
 #include "h5ppTypeSfinae.h"
@@ -42,7 +42,8 @@ namespace h5pp {
             : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(std::begin(list), std::end(list))) {}
 
         template<typename... ARGS, typename = std::enable_if_t<(... && std::is_integral_v<ARGS>)>>
-        OptDimsType(const ARGS &...args) : std::optional<std::vector<hsize_t>>(std::initializer_list<hsize_t>{h5pp::type::safe_cast<hsize_t>(args)...}) {}
+        OptDimsType(const ARGS &...args)
+            : std::optional<std::vector<hsize_t>>(std::initializer_list<hsize_t>{h5pp::type::safe_cast<hsize_t>(args)...}) {}
 
         template<typename T, typename = std::enable_if_t<h5pp::type::sfinae::is_iterable_v<T>>>
         OptDimsType(T &&dims_) : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(std::begin(dims_), std::end(dims_))) {}

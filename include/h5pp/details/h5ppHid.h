@@ -1,5 +1,5 @@
 #pragma once
-#include "h5ppError.h"
+#include "h5ppExcept.h"
 #include <hdf5.h>
 #include <stdexcept>
 #include <string>
