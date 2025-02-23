@@ -123,12 +123,16 @@ namespace h5pp {
                 result.emplace_back(sstr.str());
             } else if constexpr(is_iterable_v<T>) {
                 std::stringstream sstr;
-                sstr << std::boolalpha << "{";
-                for(const auto &elem : first) sstr << elem << ",";
+                sstr << std::boolalpha << "[";
+                for(const auto &elem : first) {
+                    if constexpr(formatting::is_streamable_v<decltype(elem)>) sstr << elem << ",";
+                    else
+                        for(const auto &tmp : convert_to_string_list(elem)) sstr << tmp << ",";
+                }
                 //  Laborious casting here to avoid MSVC warnings and errors in std::min()
                 long rewind = -1 * std::min(1l, static_cast<long>(first.size()));
                 sstr.seekp(rewind, std::ios_base::end);
-                sstr << "}";
+                sstr << "]";
                 result.emplace_back(sstr.str());
             }
             if constexpr(sizeof...(rest) > 0)

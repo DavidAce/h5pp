@@ -657,9 +657,9 @@ namespace h5pp {
             size_t nwidth = 4;
             for(const auto &name : fieldNames.value()) nwidth = std::max(nwidth, 1ul + name.size());
             /* clang-format off */
-            std::string msg = fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth, "idx", "name", "size", "offset", "class", "type");
+            std::string msg = h5pp::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth, "idx", "name", "size", "offset", "class", "type");
             for(size_t m = 0; m < type::safe_cast<size_t>(numFields.value()); ++m) {
-                msg += fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth,
+                msg += h5pp::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth,
                                          m,
                                          fieldNames and fieldNames->size() > m ? fieldNames->at(m) : "",
                                          fieldSizes and fieldSizes->size() > m ? fieldSizes->at(m) : -1ul,
@@ -873,9 +873,9 @@ namespace h5pp {
             size_t nwidth = 4;
             for(const auto &name : memberNames.value()) nwidth = std::max(nwidth, 1ul + name.size());
             /* clang-format off */
-            std::string msg = fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth, "idx", "name", "size", "offset", "class", "type");
+            std::string msg = h5pp::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth, "idx", "name", "size", "offset", "class", "type");
             for(size_t m = 0; m < type::safe_cast<size_t>(numMembers.value()); ++m) {
-                msg += fmt::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth,
+                msg += h5pp::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth,
                                          m,
                                          memberNames and memberNames->size() > m ? memberNames->at(m) : "",
                                          memberSizes and memberSizes->size() > m ? memberSizes->at(m) : -1ul,
