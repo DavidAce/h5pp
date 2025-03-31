@@ -231,6 +231,7 @@ namespace h5pp {
         OptDimsType                    dataDims     = std::nullopt;
         std::optional<int>             dataRank     = std::nullopt;
         std::optional<Hyperslab>       dataSlab     = std::nullopt;
+        std::optional<hid::h5t>        h5Type       = std::nullopt;
         std::optional<hid::h5s>        h5Space      = std::nullopt;
         std::optional<std::string>     cppTypeName  = std::nullopt;
         std::optional<size_t>          cppTypeSize  = std::nullopt;
@@ -246,10 +247,12 @@ namespace h5pp {
         void assertWriteReady() const {
             std::string error_msg;
             /* clang-format off */
+            if(not dataSize) error_msg.append(" | dataType");
             if(not dataSize) error_msg.append(" | dataSize");
             if(not dataByte) error_msg.append(" | dataByte");
             if(not dataDims) error_msg.append(" | dataDims");
             if(not dataRank) error_msg.append(" | dataRank");
+            if(not h5Type)  error_msg.append(" | h5Type");
             if(not h5Space)  error_msg.append(" | h5Space");
             if(not error_msg.empty())
                 throw h5pp::runtime_error("Cannot write from memory. The following fields are undefined:\n{}", error_msg);
@@ -294,6 +297,9 @@ namespace h5pp {
             if(dataByte) msg.append(h5pp::format(" | bytes {}", dataByte.value()));
             if(dataRank) msg.append(h5pp::format(" | rank {}", dataRank.value()));
             if(dataDims) msg.append(h5pp::format(" | dims {}", dataDims.value()));
+            if(h5Type) {
+                msg.append(h5pp::format(" | type {}", h5pp::type::getH5TypeName(h5Type.value())));
+            }
             if(h5Space and H5Sget_select_type(h5Space.value()) == H5S_sel_type::H5S_SEL_HYPERSLABS){
                 Hyperslab slab(h5Space.value());
                 msg.append(h5pp::format(" | [ Hyperslab {} ]", slab.string()));
@@ -439,6 +445,9 @@ namespace h5pp {
             if(dsetByte)    msg.append(h5pp::format(" | bytes {}", dsetByte.value()));
             if(dsetRank)    msg.append(h5pp::format(" | rank {}", dsetRank.value()));
             if(dsetDims)    msg.append(h5pp::format(" | dims {}", dsetDims.value()));
+            if(h5Type) {
+                msg.append(h5pp::format(" | type {}", h5pp::type::getH5TypeName(h5Type.value())));
+            }
             if(h5Layout){
                 msg.append(" | layout ");
                 switch(h5Layout.value()){

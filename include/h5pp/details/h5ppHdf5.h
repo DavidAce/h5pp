@@ -2471,11 +2471,11 @@ namespace h5pp::hdf5 {
             }
         } else {
             retval = H5Dread(dsetInfo.h5Dset.value(),
-                             dsetInfo.h5Type.value(),
-                             dataInfo.h5Space.value(),
-                             dsetInfo.h5Space.value(),
-                             plists.dsetXfer,
-                             dataPtr);
+                (H5Tget_class(dataInfo.h5Type.value()) == H5T_class_t::H5T_OPAQUE ? dsetInfo.h5Type.value() : dataInfo.h5Type.value()),
+                dataInfo.h5Space.value(),
+                dsetInfo.h5Space.value(),
+                plists.dsetXfer,
+                dataPtr);
 
             if(retval < 0) {
                 throw h5pp::runtime_error("Failed to read from dataset \n\t {} \n into memory \n\t {}",

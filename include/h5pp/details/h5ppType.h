@@ -57,6 +57,20 @@ namespace h5pp::type {
         if(H5Tequal(h5type, H5T_NATIVE_UINT32))            return "H5T_NATIVE_UINT32";
         if(H5Tequal(h5type, H5T_NATIVE_UINT64))            return "H5T_NATIVE_UINT64";
         if(H5Tequal(h5type, H5T_NATIVE_UINT8))             return "H5T_NATIVE_UINT8";
+        H5T_order_t byteorder = H5Tget_order(h5type);
+         if(byteorder == H5T_ORDER_BE) {
+            if(H5Tequal(h5type, H5T_STD_U8BE))                 return "H5T_STD_U8BE";
+            if(H5Tequal(h5type, H5T_STD_U16BE))                return "H5T_STD_U16BE";
+            if(H5Tequal(h5type, H5T_STD_U32BE))                return "H5T_STD_U32BE";
+            if(H5Tequal(h5type, H5T_STD_U64BE))                return "H5T_STD_U64BE";
+            if(H5Tequal(h5type, H5T_STD_I8BE))                 return "H5T_STD_I8BE";
+            if(H5Tequal(h5type, H5T_STD_I16BE))                return "H5T_STD_I16BE";
+            if(H5Tequal(h5type, H5T_STD_I32BE))                return "H5T_STD_I32BE";
+            if(H5Tequal(h5type, H5T_STD_I64BE))                return "H5T_STD_I64BE";
+         }
+
+
+
         if(H5Tequal(h5type, H5T_C_S1))                     return "H5T_C_S1";
 #if defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
         if(type::custom::H5T_FLOAT128::equal(h5type)) return type::custom::H5T_FLOAT128::h5name();
@@ -64,20 +78,29 @@ namespace h5pp::type {
         if(H5Tget_class(h5type) == H5T_class_t::H5T_ENUM)      return h5pp::format("H5T_ENUM{}",H5Tget_size(h5type));
         if(H5Tget_class(h5type) == H5T_class_t::H5T_ARRAY)     return h5pp::format("H5T_ARRAY<{}>", getH5TypeName(H5Tget_super(h5type)));
         if(H5Tis_variable_str(h5type))                         return "H5T_VARIABLE";
-        if(H5Tcommitted(h5type) == 0){
-            hid::h5t h5native = H5Tget_native_type(h5type, H5T_direction_t::H5T_DIR_DEFAULT);
-            if(H5Tequal(h5native, h5type) == 0)
-                return h5pp::format("{}<{}>",getH5ClassName(h5type), getH5TypeName(h5native));
+        auto hid_h5native =  H5Tget_native_type(h5type, H5T_direction_t::H5T_DIR_DEFAULT);
+        if(H5Tcommitted(h5type) == 0 and hid_h5native > 0){
+            hid::h5t h5native = hid_h5native; // Copy into raii container to close the identifier automatically
+            std::string msgorder;
+            switch(byteorder) {
+                case H5T_ORDER_ERROR: msgorder = "H5T_ORDER_ERROR"; break;
+                case H5T_ORDER_LE: msgorder = "H5T_ORDER_LE"; break;
+                case H5T_ORDER_BE: msgorder = "H5T_ORDER_BE"; break;
+                case H5T_ORDER_VAX: msgorder = "H5T_ORDER_VAX"; break;
+                case H5T_ORDER_MIXED: msgorder = "H5T_ORDER_MIXED"; break;
+                case H5T_ORDER_NONE: msgorder = "H5T_ORDER_NONE"; break;
+            }
+            if(H5Tequal(h5native, h5type) == 0 /* not equal */ )
+                return h5pp::format("{}<{}> ({})",getH5ClassName(h5type), getH5TypeName(h5native), msgorder);
             // Just get the class and size...
-            return h5pp::format("{}:{}",getH5ClassName(h5type), H5Tget_size(h5type));
+            return h5pp::format("{}:{} ({})",getH5ClassName(h5type), H5Tget_size(h5type), msgorder);
         }
         /* clang-format on */
         // Read about the buffer size inconsistency here
         // http://hdf-forum.184993.n3.nabble.com/H5Iget-name-inconsistency-td193143.html
         std::string buf;
         ssize_t     bufSize = H5Iget_name(h5type, nullptr, 0); // Size in bytes of the object name (NOT including \0)
-        if(bufSize < 0) throw h5pp::runtime_error("H5Iget_name failed");
-
+        if(bufSize <= 0) h5pp::logger::log->debug("H5Iget_name failed: {}", bufSize);
         if(bufSize > 0) {
             buf.resize(type::safe_cast<size_t>(bufSize) + 1);                      // We allocate space for the null terminator with +1
             H5Iget_name(h5type, buf.data(), type::safe_cast<size_t>(bufSize + 1)); // Read name including \0 with +1
@@ -178,7 +201,14 @@ namespace h5pp::type {
         else if constexpr (tc::has_value_type_v <DecayType>)                 return getH5Type<typename DecayType::value_type, depth+1>();
         else if constexpr (std::is_same_v<DecayType, hvl_t>)                 return H5Tvlen_create(H5T_NATIVE_OPAQUE); // Last resort ... user should provide a h5 type at runtime
         else if constexpr (std::is_enum_v<DecayType>)                        return getH5Type<std::underlying_type_t<DecayType>>(); // Last resort ... user should provide a h5 type at runtime
-        else if constexpr (std::is_class_v<DecayType>)                       return H5Tcreate(H5T_COMPOUND, sizeof(DecayType)); // Last resort ... user should provide a h5 type at runtime
+        else if constexpr (std::is_class_v<DecayType>) {
+            // Last resort ... unless the user should provides a h5 type at runtime.
+            // When reading, h5pp will try using the dset type instead.
+            hid::h5t type = H5Tcreate(H5T_OPAQUE, sizeof(DecayType));
+            H5Tset_tag(type, h5pp::format("<{}>", sfinae::type_name<DecayType>()).c_str() );
+            return type;
+
+        }
         else static_assert(type::sfinae::unrecognized_type_v<DecayType> and "h5pp could not match the given C++ type to an HDF5 type.");
         /* clang-format on */
         throw h5pp::runtime_error("getH5Type could not match the type provided [{}] | size {}",

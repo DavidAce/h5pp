@@ -316,10 +316,13 @@ namespace h5pp::scan {
         // The data container should already be resized before entering this function.
 
         // First copy the relevant options
+        if(not info.h5Type) info.h5Type = options.h5Type;
         if(not info.dataDims) info.dataDims = options.dataDims;
         if(not info.dataSlab) info.dataSlab = options.dataSlab;
 
         // Then set the missing information
+        if(not info.h5Type) info.h5Type = h5pp::type::getH5Type<DataType>();
+
         if constexpr(std::is_pointer_v<DataType>) {
             if(not info.dataDims) {
                 throw h5pp::runtime_error(
@@ -405,7 +408,7 @@ namespace h5pp::scan {
         if(not info.attrDims)   info.attrDims       = h5pp::hdf5::getDimensions(info.h5Space.value());
         if(not info.attrRank)   info.attrRank       = h5pp::hdf5::getRank(info.h5Space.value());
         if(not info.h5PlistAttrCreate) info.h5PlistAttrCreate = H5Aget_create_plist(info.h5Attr.value());
-            /* clang-format on */
+        /* clang-format on */
 #if H5_VERSION_GE(1, 10, 0)
         if(not info.h5PlistAttrAccess) info.h5PlistAttrAccess = H5Pcreate(H5P_ATTRIBUTE_ACCESS);
 #else
