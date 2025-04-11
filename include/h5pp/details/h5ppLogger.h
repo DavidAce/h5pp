@@ -74,27 +74,27 @@ namespace h5pp::logger {
         std::string logName;
         template<typename... Args>
         void trace(const std::string &fmtstring, Args... args) const {
-            if(logLevel <= 0) std::cout << h5pp::format(fmt::runtime("[{}][{}] " + fmtstring), logName, " trace  ", args...) << '\n';
+            if(logLevel <= 0) std::cout << h5pp::format(h5pp::runtime("[{}][{}] " + fmtstring), logName, " trace  ", args...) << '\n';
         }
         template<typename... Args>
         void debug(const std::string &fmtstring, Args... args) const {
-            if(logLevel <= 1) std::cout << h5pp::format(fmt::runtime("[{}][{}] " + fmtstring), logName, " debug  ", args...) << '\n';
+            if(logLevel <= 1) std::cout << h5pp::format(h5pp::runtime("[{}][{}] " + fmtstring), logName, " debug  ", args...) << '\n';
         }
         template<typename... Args>
         void info(const std::string &fmtstring, Args... args) const {
-            if(logLevel <= 2) std::cout << h5pp::format(fmt::runtime("[{}][{}] " + fmtstring), logName, " info   ", args...) << '\n';
+            if(logLevel <= 2) std::cout << h5pp::format(h5pp::runtime("[{}][{}] " + fmtstring), logName, " info   ", args...) << '\n';
         }
         template<typename... Args>
         void warn(const std::string &fmtstring, Args... args) const {
-            if(logLevel <= 3) std::cout << h5pp::format(fmt::runtime("[{}][{}] " + fmtstring), logName, " warn   ", args...) << '\n';
+            if(logLevel <= 3) std::cout << h5pp::format(h5pp::runtime("[{}][{}] " + fmtstring), logName, " warn   ", args...) << '\n';
         }
         template<typename... Args>
         void error(const std::string &fmtstring, Args... args) const {
-            if(logLevel <= 4) std::cout << h5pp::format(fmt::runtime("[{}][{}] " + fmtstring), logName, " error  ", args...) << '\n';
+            if(logLevel <= 4) std::cout << h5pp::format(h5pp::runtime("[{}][{}] " + fmtstring), logName, " error  ", args...) << '\n';
         }
         template<typename... Args>
         void critical(const std::string &fmtstring, Args... args) const {
-            if(logLevel <= 5) std::cout << h5pp::format(fmt::runtime("[{}][{}] " + fmtstring), logName, "critical", args...) << '\n';
+            if(logLevel <= 5) std::cout << h5pp::format(h5pp::runtime("[{}][{}] " + fmtstring), logName, "critical", args...) << '\n';
         }
         [[nodiscard]] std::string name() const { return logName; }
         h5pp::LogLevel            level() { return logLevel; }
