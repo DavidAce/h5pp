@@ -162,6 +162,14 @@
       }
     },
     {
+      "name": "clang-19",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-19",
+        "CMAKE_CXX_COMPILER": "clang++-19"
+      }
+    },
+    {
       "name": "pkg-cmake",
       "hidden": true,
       "cacheVariables": {
@@ -336,6 +344,14 @@
       "displayName": "Debug|clang-18|conan package manager",
       "inherits": [
         "clang-18",
+        "debug-conan"
+      ]
+    },
+    {
+      "name": "debug-clang-19-conan",
+      "displayName": "Debug|clang-19|conan package manager",
+      "inherits": [
+        "clang-19",
         "debug-conan"
       ]
     },
