@@ -41,6 +41,12 @@ if(HDF5_ENABLE_SZIP_SUPPORT)
     message(DEBUG "HDF5: Found libaec INCLUDE: ${libaec_INCLUDE_DIR}")
     message(DEBUG "HDF5: Found SZIP   LIBRARY: ${SZIP_LIBRARY}")
     message(DEBUG "HDF5: Found SZIP   INCLUDE: ${SZIP_INCLUDE_DIR}")
+    if(TARGET libaec::sz)
+        message(STATUS "HDF5: Detected target [libaec::sz]")
+    endif()
+    if(TARGET libaec::aec)
+        message(STATUS "HDF5: Detected target [libaec::aec]")
+    endif()
 endif()
 
 ExternalProject_Add(external_hdf5
@@ -83,7 +89,7 @@ ExternalProject_Add(external_hdf5
         -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=${HDF5_ENABLE_SZIP_SUPPORT}
         -DHDF5_ENABLE_SZIP_ENCODING:BOOL=${HDF5_ENABLE_SZIP_ENCODING}
 
-        -Dlibaec_LIBRARY:PATH=${libaec_LIBRARY} # This is to force FindZLIB.cmake to find and define a target with the correct library
+        -Dlibaec_LIBRARY:PATH=${libaec_LIBRARY}
         -DZLIB_LIBRARY:PATH=${ZLIB_LIBRARY} # This is to force FindZLIB.cmake to find and define a target with the correct library
         -DSZIP_LIBRARY:PATH=${SZIP_LIBRARY} #szip-static
         -Dlibaec_INCLUDE_DIR:PATH=${libaec_INCLUDE_DIR}
