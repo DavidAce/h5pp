@@ -18,7 +18,9 @@ option(HDF5_BUILD_FORTRAN           "" OFF)
 option(HDF5_BUILD_JAVA              "" OFF)
 option(HDF5_BUILD_TOOLS             "" ON)
 option(USE_LIBAEC_STATIC            "" ON)
-option(libaec_USE_STATIC_LIBS       "" ON)
+if(NOT BUILD_SHARED_LIBS)
+    option(libaec_USE_STATIC_LIBS       "" ON)
+endif()
 
 set(libaec_ROOT    ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
 set(ZLIB_ROOT      ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
@@ -36,7 +38,7 @@ if(HDF5_ENABLE_Z_LIB_SUPPORT)
     message(DEBUG "HDF5: Found ZLIB INCLUDE: ${ZLIB_INCLUDE_DIR}")
 endif()
 if(HDF5_ENABLE_SZIP_SUPPORT)
-    find_package(libaec 1.1.2 CONFIG REQUIRED)
+    find_package(libaec 1.1.4 CONFIG REQUIRED)
     message(DEBUG "HDF5: Found libaec LIBRARY: ${libaec_LIBRARY}")
     message(DEBUG "HDF5: Found libaec INCLUDE: ${libaec_INCLUDE_DIR}")
     message(DEBUG "HDF5: Found SZIP   LIBRARY: ${SZIP_LIBRARY}")
@@ -113,6 +115,6 @@ ExternalProject_Add(external_hdf5
         -DZLIB_DIR:PATH=${ZLIB_ROOT}/share/cmake/zlib
 
         -Dlibaec_ROOT:PATH=${libaec_ROOT}
-        -Dlibaec_DIR:PATH=${libaec_ROOT}/cmake
+        -Dlibaec_DIR:PATH=${libaec_ROOT}/lib/cmake
         )
 
