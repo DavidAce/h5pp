@@ -2470,12 +2470,16 @@ namespace h5pp::hdf5 {
                 }
             }
         } else {
+            auto isOpaque = H5Tget_class(dataInfo.h5Type.value()) == H5T_class_t::H5T_OPAQUE;
+            auto isStdVectorOfBytes = std::is_same_v<DataType, std::vector<std::byte>>;
+            hid::h5t h5ttype = isOpaque or isStdVectorOfBytes ? dsetInfo.h5Type.value() : dataInfo.h5Type.value();
             retval = H5Dread(dsetInfo.h5Dset.value(),
-                (H5Tget_class(dataInfo.h5Type.value()) == H5T_class_t::H5T_OPAQUE ? dsetInfo.h5Type.value() : dataInfo.h5Type.value()),
+                h5ttype,
                 dataInfo.h5Space.value(),
                 dsetInfo.h5Space.value(),
                 plists.dsetXfer,
                 dataPtr);
+
 
             if(retval < 0) {
                 throw h5pp::runtime_error("Failed to read from dataset \n\t {} \n into memory \n\t {}",
