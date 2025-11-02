@@ -1,4 +1,3 @@
-[![Ubuntu 20.04](https://github.com/DavidAce/h5pp/actions/workflows/ubuntu20.yml/badge.svg)](https://github.com/DavidAce/h5pp/actions/workflows/ubuntu20.yml)
 [![Ubuntu 22.04](https://github.com/DavidAce/h5pp/actions/workflows/ubuntu22.yml/badge.svg)](https://github.com/DavidAce/h5pp/actions/workflows/ubuntu22.yml)
 [![Ubuntu 24.04](https://github.com/DavidAce/h5pp/actions/workflows/ubuntu24.yml/badge.svg)](https://github.com/DavidAce/h5pp/actions/workflows/ubuntu24.yml)
 [![Windows 2022](https://github.com/DavidAce/h5pp/actions/workflows/windows2022.yml/badge.svg)](https://github.com/DavidAce/h5pp/actions/workflows/windows2022.yml)
