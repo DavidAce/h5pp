@@ -10,7 +10,8 @@ ExternalProject_Add(external_fmt
 #        URL         https://github.com/fmtlib/fmt/archive/10.1.0.tar.gz
 #        URL         https://github.com/fmtlib/fmt/archive/11.0.2.tar.gz
 #        URL         https://github.com/fmtlib/fmt/archive/11.1.2.tar.gz
-        URL         https://github.com/fmtlib/fmt/archive/11.2.0.tar.gz
+#        URL         https://github.com/fmtlib/fmt/archive/11.2.0.tar.gz
+        URL         https://github.com/fmtlib/fmt/archive/12.1.0.tar.gz
 #        URL_MD5     2914e3ac33595103d6b27c87364b034f #6.1.2
 #        URL_MD5     370757a0bae552679b6481d24d768ece #7.0.0
 #        URL_MD5     7d5af964c6633ef90cd6a47be3afe6a0 #8.0.1
@@ -19,7 +20,9 @@ ExternalProject_Add(external_fmt
 #        URL_MD5     a2704b768020b5e02bcb72cb65be60cc #10.1.0
 #        URL_MD5     3fe10c5184c8ecd0d2f9536c1b1ae95c #11.0.2
 #        URL_MD5     186f3378c5c9eb4c1d704dbc2359a759 #11.1.2
-        URL_MD5     2f3701cada629ca455c3388d1089f5bd #11.2.0
+#        URL_MD5     2f3701cada629ca455c3388d1089f5bd #11.2.0
+#        URL_MD5     26b069b5ef0c33eff04c5dc42a209544 #12.0.0
+        URL_MD5     92eb6f492e4838e5f024ce5207beafc7 #12.1.0
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         CMAKE_ARGS
