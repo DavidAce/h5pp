@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.15)
+project(external-catch2)
+if(INIT_CACHE_FILE)
+    set(INIT_CACHE_ARG -C${INIT_CACHE_FILE})
+endif()
+include(GNUInstallDirs)
+include(ExternalProject)
+
+ExternalProject_Add(external_catch2
+        URL         https://github.com/catchorg/Catch2/archive/refs/tags/v3.13.0.tar.gz
+        URL_HASH    SHA256=650795f6501af514f806e78c554729847b98db6935e69076f36bb03ed2e985ef
+        PREFIX      ${CMAKE_BINARY_DIR}
+        INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+        CMAKE_ARGS
+        ${INIT_CACHE_ARG}
+        -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+        -DCMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/${CMAKE_INSTALL_LIBDIR}
+        -DCMAKE_SKIP_BUILD_RPATH:BOOL=OFF
+        -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=OFF
+        -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON
+        -DCMAKE_INSTALL_MESSAGE=LAZY
+        -DBUILD_TESTING:BOOL=OFF
+        -DCATCH_BUILD_TESTING:BOOL=OFF
+        -DCATCH_INSTALL_DOCS:BOOL=OFF
+        -DCATCH_INSTALL_EXTRAS:BOOL=ON
+        -DCATCH_DEVELOPMENT_BUILD:BOOL=OFF
+        )

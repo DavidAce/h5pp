@@ -21,6 +21,9 @@ function(pkg_install_dependencies  package_name)
                     -Dfmt_ROOT:PATH=${CMAKE_PREFIX_PATH}
             )
         endif()
+        if(H5PP_ENABLE_TESTS)
+            pkg_install(Catch2)
+        endif()
 
         pkg_install(zlib)
 #        pkg_install(szip)

@@ -27,6 +27,7 @@ class H5ppConan(ConanFile):
         "with_eigen": [True, False],
         "with_spdlog": [True, False],
         "with_zlib" : [True, False],
+        "with_tests": [True, False],
         "with_quadmath": [True, False],
         "with_float128": [True, False]
     }
@@ -34,6 +35,7 @@ class H5ppConan(ConanFile):
         "with_eigen": True,
         "with_spdlog": True,
         "with_zlib" : True,
+        "with_tests": False,
         "with_quadmath": False,
         "with_float128": False,
     }
@@ -58,6 +60,11 @@ class H5ppConan(ConanFile):
             self.requires("spdlog/[>=1.6.0 <1.17]", transitive_headers=True, transitive_libs=True)
         if self.options.get_safe('with_zlib'):
             self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, transitive_libs=True)
+
+    def build_requirements(self):
+        if self.options.get_safe('with_tests'):
+            self.test_requires("catch2/3.13.0")
+
     def layout(self):
         basic_layout(self)
 
@@ -121,4 +128,3 @@ class H5ppConan(ConanFile):
         elif self.options.get_safe('with_quadmath'):
             self.cpp_info.components["h5pp_flags"].defines.append("H5PP_USE_QUADMATH")
             self.cpp_info.system_libs.append('quadmath')
-

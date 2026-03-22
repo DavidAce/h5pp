@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 3.15)
 project(h5pp-tests CXX)
+
+find_package(Catch2 3.13 REQUIRED)
+
 file(GLOB TESTS "*.cpp")
 add_custom_target(h5pp-test-all)
 foreach (test ${TESTS})
     get_filename_component(test_src ${test} NAME)
     get_filename_component(test_nwe ${test} NAME_WE)
     add_executable(h5pp-${test_nwe} ${test_src})
-    target_link_libraries(h5pp-${test_nwe} PRIVATE h5pp)
+    target_link_libraries(h5pp-${test_nwe} PRIVATE h5pp Catch2::Catch2)
     add_test(NAME h5pp-${test_nwe} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND h5pp-${test_nwe})
     if (MSVC)
         set_target_properties(h5pp-${test_nwe} PROPERTIES LINK_FLAGS "/ignore:4099")
