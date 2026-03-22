@@ -24,7 +24,9 @@ int main() {
      *       file size found at levels around 2 to 5.
      */
 
-    // Set a default compression level
+    // Set a default compression level.
+    // Note: This does not force chunked layout on its own, so small/medium datasets may still
+    // end up as compact or contiguous unless H5D_CHUNKED is selected explicitly.
     file.setCompressionLevel(3);
 
     // Initialize a vector of doubles

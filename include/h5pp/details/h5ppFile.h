@@ -431,8 +431,11 @@ namespace h5pp {
 
         /*! Set compression level
          *
-         * Uses ZLIB compression level 0 (off) to 9 (highest)
-         * Levels 2 to 5 are recommended for good performance/compression ratio
+         * Uses ZLIB compression level 0 (off) to 9 (highest).
+         * This sets the default compression level used for future dataset creations, but it only
+         * takes effect when the resulting dataset layout is H5D_CHUNKED. It does not force
+         * chunked layout by itself.
+         * Levels 2 to 5 are recommended for good performance/compression ratio.
          */
         void setCompressionLevel(unsigned int compressionZeroToNine /*!< Compression level */
         ) {
