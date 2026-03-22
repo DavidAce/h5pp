@@ -1,5 +1,4 @@
-#define CATCH_CONFIG_RUNNER
-#include "catch.hpp"
+#include <catch2/catch_all.hpp>
 #include <h5pp/h5pp.h>
 
 namespace {
@@ -10,8 +9,8 @@ namespace {
 }
 
 TEST_CASE("hid wrapper move constructor transfers ownership without increasing refcount", "[hid]") {
-    auto path = make_file_path("test-hid-move-ctor");
-    hid_t raw = H5Fcreate(path.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    auto  path = make_file_path("test-hid-move-ctor");
+    hid_t raw  = H5Fcreate(path.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     REQUIRE(raw > 0);
 
     h5pp::hid::h5f src(raw);
@@ -25,8 +24,8 @@ TEST_CASE("hid wrapper move constructor transfers ownership without increasing r
 }
 
 TEST_CASE("hid wrapper move assignment transfers ownership without increasing refcount", "[hid]") {
-    auto path = make_file_path("test-hid-move-assign");
-    hid_t raw = H5Fcreate(path.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    auto  path = make_file_path("test-hid-move-assign");
+    hid_t raw  = H5Fcreate(path.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     REQUIRE(raw > 0);
 
     h5pp::hid::h5f src(raw);
@@ -37,6 +36,24 @@ TEST_CASE("hid wrapper move assignment transfers ownership without increasing re
     REQUIRE_FALSE(static_cast<bool>(src));
     REQUIRE(static_cast<bool>(dst));
     REQUIRE(dst.refcount() == 1);
+}
+
+TEST_CASE("hid wrapper copy semantics increment and decrement refcounts correctly", "[hid]") {
+    auto  path = make_file_path("test-hid-copy-semantics");
+    hid_t raw  = H5Fcreate(path.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    REQUIRE(raw > 0);
+
+    h5pp::hid::h5f first(raw);
+    REQUIRE(first.refcount() == 1);
+
+    h5pp::hid::h5f second(first);
+    REQUIRE(first.refcount() == 2);
+    REQUIRE(second.refcount() == 2);
+
+    second.close();
+    REQUIRE_FALSE(static_cast<bool>(second));
+    REQUIRE(first.refcount() == 1);
+    REQUIRE(H5Iis_valid(first.value()) > 0);
 }
 
 TEST_CASE("hid wrapper destructor releases the owned identifier", "[hid]") {
@@ -62,9 +79,25 @@ TEST_CASE("hid wrapper rejects wrong raw identifier types", "[hid]") {
     REQUIRE(H5Tclose(transient_type) >= 0);
 }
 
+TEST_CASE("hid wrapper release detaches ownership without invalidating surviving copies", "[hid]") {
+    auto  path = make_file_path("test-hid-release");
+    hid_t raw  = H5Fcreate(path.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    REQUIRE(raw > 0);
+
+    h5pp::hid::h5f first(raw);
+    h5pp::hid::h5f second(first);
+    REQUIRE(first.refcount() == 2);
+
+    REQUIRE(first.release() >= 0);
+    REQUIRE_FALSE(static_cast<bool>(first));
+    REQUIRE(static_cast<bool>(second));
+    REQUIRE(second.refcount() == 1);
+    REQUIRE(H5Iis_valid(second.value()) > 0);
+}
+
 TEST_CASE("h5o accepts object ids and datatype ids", "[hid]") {
-    auto path = make_file_path("test-hid-h5o-validation");
-    hid_t raw = H5Fcreate(path.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    auto  path = make_file_path("test-hid-h5o-validation");
+    hid_t raw  = H5Fcreate(path.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     REQUIRE(raw > 0);
     h5pp::hid::h5f file(raw);
 

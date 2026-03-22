@@ -11,7 +11,7 @@ foreach (test ${TESTS})
     add_executable(h5pp-${test_nwe} ${test_src})
     target_link_libraries(h5pp-${test_nwe} PRIVATE h5pp Catch2::Catch2)
     add_test(NAME h5pp-${test_nwe} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND h5pp-${test_nwe})
-    if (MSVC)
+    if(MSVC)
         set_target_properties(h5pp-${test_nwe} PROPERTIES LINK_FLAGS "/ignore:4099")
     endif()
     if(H5PP_ENABLE_COVERAGE)
@@ -20,7 +20,7 @@ foreach (test ${TESTS})
     endif()
     add_dependencies(h5pp-test-all h5pp-${test_nwe})
     list(APPEND test_tgt_list h5pp-${test_nwe})
-endforeach ()
+endforeach()
 
 
 # Speed up compilation with precompiled headers

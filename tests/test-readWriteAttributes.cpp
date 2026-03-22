@@ -1,119 +1,101 @@
-
+#include <catch2/catch_all.hpp>
 #include <complex>
 #include <h5pp/h5pp.h>
 
-/*! \brief Prints the content of a vector nicely */
-template<typename T>
-std::ostream &operator<<(std::ostream &out, const std::vector<T> &v) {
-    if(!v.empty()) {
-        out << "[ ";
-        std::copy(v.begin(), v.end(), std::ostream_iterator<T>(out, " "));
-        out << "]";
+namespace {
+    std::string make_path(const char *name) {
+        h5pp::fs::create_directories("output");
+        return h5pp::format("output/{}.h5", name);
     }
-    return out;
 }
 
-int main() {
-    // Generate dummy data
-    int                               AttributeInt                 = 7;
-    double                            AttributeDouble              = 47.4;
-    std::complex<int>                 AttributeComplexInt          = {47, -10};
-    std::complex<double>              AttributeComplexDouble       = {47.2, -10.2445};
-    std::array<long, 4>               AttributeArrayLong           = {1, 2, 3, 4};
-    float                             AttributeCArrayFloat[4]      = {1, 2, 3, 4};
-    std::vector<std::complex<double>> AttributeVectorComplexDouble = {
+TEST_CASE("Attributes round-trip for scalar, array, vector and string types", "[attributes]") {
+    int                               attribute_int              = 7;
+    double                            attribute_double           = 47.4;
+    std::complex<int>                 attribute_complex_int      = {47, -10};
+    std::complex<double>              attribute_complex_double   = {47.2, -10.2445};
+    std::array<long, 4>               attribute_array_long       = {1, 2, 3, 4};
+    float                             attribute_c_array_float[4] = {1, 2, 3, 4};
+    std::vector<std::complex<double>> attribute_vector_complex   = {
         {  2.0,  5.0},
         {  3.1, -2.3},
         3.0,
-        {-51.2,    5}
+        {-51.2,  5.0}
     };
-    std::vector<double> AttributeVectorDouble = {1.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
-                                                 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
-                                                 -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
-    std::string         AttributeString       = "This is a very long string that I am testing";
-    char                AttributeCharArray[]  = "This is a char array";
+    std::vector<double> attribute_vector_double = {1.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
+                                                   0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
+                                                   -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
+    std::string         attribute_string        = "This is a very long string that I am testing";
+    char                attribute_char_array[]  = "This is a char array";
 
-    // define the file
-    std::string outputFilename = "output/readWriteAttributes.h5";
-    size_t      logLevel       = 0;
-    h5pp::File  file(outputFilename, h5pp::FileAccess::REPLACE, logLevel);
-
-    // Write dataset
+    h5pp::File file(make_path("readWriteAttributes"), h5pp::FileAccess::REPLACE, 0);
     file.writeDataset(std::vector<double>(10, 5), "testGroup/vectorDouble");
-    // Write attributes
 
-    file.writeAttribute(AttributeInt, "testGroup/vectorDouble", "AttributeInt");
-    file.writeAttribute(AttributeDouble, "testGroup/vectorDouble", "AttributeDouble");
-    file.writeAttribute(AttributeComplexInt, "testGroup/vectorDouble", "AttributeComplexInt");
-    file.writeAttribute(AttributeComplexDouble, "testGroup/vectorDouble", "AttributeComplexDouble");
-    file.writeAttribute(AttributeArrayLong, "testGroup/vectorDouble", "AttributeArrayLong");
-    file.writeAttribute(AttributeCArrayFloat, "testGroup/vectorDouble", "AttributeCArrayFloat");
-    file.writeAttribute(AttributeVectorDouble, "testGroup/vectorDouble", "AttributeVectorDouble");
-    file.writeAttribute(AttributeVectorDouble, "testGroup/vectorDouble", "AttributeVectorDouble"); // Try overwrite
-    file.writeAttribute(AttributeVectorComplexDouble, "testGroup/vectorDouble", "AttributeVectorComplexDouble");
-    file.writeAttribute(AttributeString, "testGroup/vectorDouble", "AttributeString");
-    file.writeAttribute(AttributeString, "testGroup/vectorDouble", "AttributeString"); // Try overwrite
-    file.writeAttribute(AttributeCharArray, "testGroup/vectorDouble", "AttributeCharArray");
-    // Read the data back
-    auto ReadAttributeInt           = file.readAttribute<int>("testGroup/vectorDouble", "AttributeInt");
-    auto ReadAttributeDouble        = file.readAttribute<double>("testGroup/vectorDouble", "AttributeDouble");
-    auto ReadAttributeComplexInt    = file.readAttribute<std::complex<int>>("testGroup/vectorDouble", "AttributeComplexInt");
-    auto ReadAttributeComplexDouble = file.readAttribute<std::complex<double>>("testGroup/vectorDouble", "AttributeComplexDouble");
-    auto ReadAttributeArrayLong     = file.readAttribute<std::array<long, 4>>("testGroup/vectorDouble", "AttributeArrayLong");
-    auto ReadAttributeCArrayFloat   = file.readAttribute<std::vector<float>>("testGroup/vectorDouble", "AttributeCArrayFloat");
-    auto ReadAttributeVectorDouble  = file.readAttribute<std::vector<double>>("testGroup/vectorDouble", "AttributeVectorDouble");
-    auto ReadAttributeVectorComplexDouble =
-        file.readAttribute<std::vector<std::complex<double>>>("testGroup/vectorDouble", "AttributeVectorComplexDouble");
-    auto ReadAttributeString    = file.readAttribute<std::string>("testGroup/vectorDouble", "AttributeString");
-    auto ReadAttributeCharArray = file.readAttribute<std::string>("testGroup/vectorDouble", "AttributeCharArray");
+    file.writeAttribute(attribute_int, "testGroup/vectorDouble", "AttributeInt");
+    file.writeAttribute(attribute_double, "testGroup/vectorDouble", "AttributeDouble");
+    file.writeAttribute(attribute_complex_int, "testGroup/vectorDouble", "AttributeComplexInt");
+    file.writeAttribute(attribute_complex_double, "testGroup/vectorDouble", "AttributeComplexDouble");
+    file.writeAttribute(attribute_array_long, "testGroup/vectorDouble", "AttributeArrayLong");
+    file.writeAttribute(attribute_c_array_float, "testGroup/vectorDouble", "AttributeCArrayFloat");
+    file.writeAttribute(attribute_vector_double, "testGroup/vectorDouble", "AttributeVectorDouble");
+    file.writeAttribute(attribute_vector_double, "testGroup/vectorDouble", "AttributeVectorDouble");
+    file.writeAttribute(attribute_vector_complex, "testGroup/vectorDouble", "AttributeVectorComplexDouble");
+    file.writeAttribute(attribute_string, "testGroup/vectorDouble", "AttributeString");
+    file.writeAttribute(attribute_string, "testGroup/vectorDouble", "AttributeString");
+    file.writeAttribute(attribute_char_array, "testGroup/vectorDouble", "AttributeCharArray");
 
-    auto ReadOptAttributeInt = file.readAttribute<std::optional<int>>("testGroup/vectorDouble", "AttributeInt");
-    auto ReadOptAttributeVectorDouble = file.readAttribute<std::optional<std::vector<double>>>("testGroup/vectorDouble", "AttributeVectorDouble");
+    REQUIRE(file.readAttribute<int>("testGroup/vectorDouble", "AttributeInt") == attribute_int);
+    REQUIRE(file.readAttribute<double>("testGroup/vectorDouble", "AttributeDouble") == attribute_double);
+    REQUIRE(file.readAttribute<std::complex<int>>("testGroup/vectorDouble", "AttributeComplexInt") == attribute_complex_int);
+    REQUIRE(file.readAttribute<std::complex<double>>("testGroup/vectorDouble", "AttributeComplexDouble") == attribute_complex_double);
+    REQUIRE(file.readAttribute<std::array<long, 4>>("testGroup/vectorDouble", "AttributeArrayLong") == attribute_array_long);
+    REQUIRE(file.readAttribute<std::vector<float>>("testGroup/vectorDouble", "AttributeCArrayFloat") == std::vector<float>{1, 2, 3, 4});
+    REQUIRE(file.readAttribute<std::vector<double>>("testGroup/vectorDouble", "AttributeVectorDouble") == attribute_vector_double);
+    REQUIRE(file.readAttribute<std::vector<std::complex<double>>>("testGroup/vectorDouble", "AttributeVectorComplexDouble") ==
+            attribute_vector_complex);
+    REQUIRE(file.readAttribute<std::string>("testGroup/vectorDouble", "AttributeString") == attribute_string);
+    REQUIRE(file.readAttribute<std::string>("testGroup/vectorDouble", "AttributeCharArray") == attribute_char_array);
 
-    if(ReadAttributeInt != AttributeInt) throw std::runtime_error("ReadAttributeInt != AttributeInt");
-    if(ReadAttributeDouble != AttributeDouble) throw std::runtime_error("ReadAttributeDouble != AttributeDouble");
-    if(ReadAttributeComplexInt != AttributeComplexInt) throw std::runtime_error("ReadAttributeComplexInt != AttributeComplexInt");
-    if(ReadAttributeComplexDouble != AttributeComplexDouble)
-        throw std::runtime_error("ReadAttributeComplexDouble != AttributeComplexDouble");
-    if(ReadAttributeArrayLong != AttributeArrayLong) throw std::runtime_error("ReadAttributeArrayLong != AttributeArrayLong");
-    if(not std::equal(ReadAttributeCArrayFloat.begin(), ReadAttributeCArrayFloat.end(), std::begin(AttributeCArrayFloat)))
-        throw std::runtime_error("ReadAttributeCArrayFloat                != AttributeCArrayFloat)            ");
+    auto opt_int     = file.readAttribute<std::optional<int>>("testGroup/vectorDouble", "AttributeInt");
+    auto opt_vector  = file.readAttribute<std::optional<std::vector<double>>>("testGroup/vectorDouble", "AttributeVectorDouble");
+    auto opt_missing = file.readAttribute<std::optional<std::string>>("testGroup/vectorDouble", "MissingAttribute");
 
-    if(ReadAttributeVectorDouble != AttributeVectorDouble) throw std::runtime_error("ReadAttributeVectorDouble != AttributeVectorDouble");
-    if(ReadAttributeVectorComplexDouble != AttributeVectorComplexDouble)
-        throw std::runtime_error("ReadAttributeVectorComplexDouble != AttributeVectorComplexDouble");
-    if(ReadAttributeString != AttributeString) throw std::runtime_error("ReadAttributeString != AttributeString");
-    if(ReadAttributeCharArray != AttributeCharArray) throw std::runtime_error("ReadAttributeCharArray != AttributeCharArray");
+    REQUIRE(opt_int.has_value());
+    REQUIRE(opt_vector.has_value());
+    REQUIRE_FALSE(opt_missing.has_value());
+    REQUIRE(opt_int.value() == attribute_int);
+    REQUIRE(opt_vector.value() == attribute_vector_double);
 
-    if(ReadOptAttributeInt.value() != AttributeInt) throw std::runtime_error("ReadOptAttributeInt != AttributeInt");
-    if(ReadOptAttributeVectorDouble.value() != AttributeVectorDouble) throw std::runtime_error("ReadOptAttributeVectorDouble != AttributeVectorDouble");
+    auto all_attributes = file.getAttributeNames("testGroup/vectorDouble");
+    REQUIRE(all_attributes.size() == 10);
+    REQUIRE(std::find(all_attributes.begin(), all_attributes.end(), "AttributeString") != all_attributes.end());
+    REQUIRE(std::find(all_attributes.begin(), all_attributes.end(), "AttributeVectorComplexDouble") != all_attributes.end());
+}
 
 #ifdef H5PP_USE_EIGEN3
-    static_assert(h5pp::type::sfinae::has_Scalar_v<Eigen::MatrixXd> and
-                  "Compile time type-checker failed. Could not properly detect class member Scalar. Scan that you are "
-                  "using a supported compiler!");
-    // Generate dummy data
-    Eigen::MatrixXd  AttributeEigenMatrixDouble(10, 10);
-    Eigen::MatrixXcd AttributeEigenMatrixComplexDouble(10, 10);
-    AttributeEigenMatrixDouble.setRandom();
-    AttributeEigenMatrixComplexDouble.setRandom();
+TEST_CASE("Eigen-valued attributes round-trip", "[attributes][eigen]") {
+    h5pp::File file(make_path("readWriteAttributes-eigen"), h5pp::FileAccess::REPLACE, 0);
+    file.writeDataset(std::vector<double>(4, 1.0), "testGroup/vectorDouble");
 
-    // Write attributes
-    file.writeAttribute(AttributeEigenMatrixDouble, "testGroup/vectorDouble", "AttributeEigenMatrixDouble");
-    file.writeAttribute(AttributeEigenMatrixComplexDouble, "testGroup/vectorDouble", "AttributeEigenMatrixComplexDouble");
+    Eigen::MatrixXd  matrix_double(6, 4);
+    Eigen::MatrixXcd matrix_complex(5, 3);
+    for(Eigen::Index row = 0; row < matrix_double.rows(); ++row)
+        for(Eigen::Index col = 0; col < matrix_double.cols(); ++col) matrix_double(row, col) = static_cast<double>(row * 10 + col);
+    for(Eigen::Index row = 0; row < matrix_complex.rows(); ++row)
+        for(Eigen::Index col = 0; col < matrix_complex.cols(); ++col)
+            matrix_complex(row, col) = {static_cast<double>(row + col), static_cast<double>(row - col)};
 
-    // Read the data back
-    auto ReadAttributeEigenMatrixDouble = file.readAttribute<Eigen::MatrixXd>("testGroup/vectorDouble", "AttributeEigenMatrixDouble");
-    auto ReadAttributeEigenMatrixComplexDouble =
-        file.readAttribute<Eigen::MatrixXcd>("testGroup/vectorDouble", "AttributeEigenMatrixComplexDouble");
+    file.writeAttribute(matrix_double, "testGroup/vectorDouble", "AttributeEigenMatrixDouble");
+    file.writeAttribute(matrix_complex, "testGroup/vectorDouble", "AttributeEigenMatrixComplexDouble");
 
-    if(ReadAttributeEigenMatrixDouble != AttributeEigenMatrixDouble)
-        throw std::runtime_error("ReadAttributeEigenMatrixDouble != AttributeEigenMatrixDouble");
-    if(ReadAttributeEigenMatrixComplexDouble != AttributeEigenMatrixComplexDouble)
-        throw std::runtime_error("ReadAttributeEigenMatrixComplexDouble != AttributeEigenMatrixComplexDouble");
+    REQUIRE(file.readAttribute<Eigen::MatrixXd>("testGroup/vectorDouble", "AttributeEigenMatrixDouble") == matrix_double);
+    REQUIRE(file.readAttribute<Eigen::MatrixXcd>("testGroup/vectorDouble", "AttributeEigenMatrixComplexDouble") == matrix_complex);
+}
 #endif
 
-    auto allAttributes = file.getAttributeNames("testGroup/vectorDouble");
-    h5pp::print("{}\n", allAttributes);
-    return 0;
+int main(int argc, char *argv[]) {
+    Catch::Session session;
+    int            returnCode = session.applyCommandLine(argc, argv);
+    if(returnCode != 0) return returnCode;
+    return session.run();
 }

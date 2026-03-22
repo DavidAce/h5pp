@@ -1,42 +1,53 @@
-#define CATCH_CONFIG_RUNNER
-#include "catch.hpp"
+#include <catch2/catch_all.hpp>
 #include <h5pp/h5pp.h>
 
-TEST_CASE("Test reading into std::optional", "[Optional]") {
-    SECTION("Create a file and add some dummy data") {
-        h5pp::File file("output/readOptional.h5", h5pp::FileAccess::REPLACE, 2);
-        REQUIRE_NOTHROW(file.writeDataset(42.0, "someGroup/someNumber"));
-        REQUIRE_NOTHROW(file.writeAttribute("My favorite number", "someGroup/someNumber", "someComment"));
-    }
-    SECTION("Read an existing dataset into std::optional") {
-        h5pp::File                 file("output/readOptional.h5", h5pp::FileAccess::READWRITE, 2);
-        std::optional<double>      dset;
-        std::optional<std::string> attr;
-        REQUIRE_NOTHROW(dset = file.readDataset<std::optional<double>>("someGroup/someNumber"));
-        REQUIRE_NOTHROW(attr = file.readAttribute<std::optional<std::string>>("someGroup/someNumber", "someComment"));
-        REQUIRE(dset.has_value());
-        REQUIRE(attr.has_value());
-
-        REQUIRE(dset.value() == 42.0);
-        REQUIRE(attr.value() == "My favorite number");
-    }
-    SECTION("Read an existing dataset into std::optional") {
-        h5pp::File                 file("output/readOptional.h5", h5pp::FileAccess::READWRITE, 2);
-        std::optional<double>      dset;
-        std::optional<std::string> attr;
-        REQUIRE_NOTHROW(dset = file.readDataset<std::optional<double>>("someGroup/anotherNumber"));
-        REQUIRE_NOTHROW(attr = file.readAttribute<std::optional<std::string>>("someGroup/someNumber", "anotherComment"));
-        REQUIRE(not dset.has_value());
-        REQUIRE(not attr.has_value());
+namespace {
+    std::string make_path(const char *name) {
+        h5pp::fs::create_directories("output");
+        return h5pp::format("output/{}.h5", name);
     }
 }
 
+TEST_CASE("Optional reads return values for existing objects and nullopt for missing ones", "[optional]") {
+    auto path = make_path("readOptional");
+
+    h5pp::File writer(path, h5pp::FileAccess::REPLACE, 0);
+    REQUIRE_NOTHROW(writer.writeDataset(42.0, "someGroup/someNumber"));
+    REQUIRE_NOTHROW(writer.writeDataset(std::vector<int>{1, 2, 3}, "someGroup/vector"));
+    REQUIRE_NOTHROW(writer.writeAttribute("My favorite number", "someGroup/someNumber", "someComment"));
+    REQUIRE_NOTHROW(writer.writeAttribute(std::vector<std::string>{"alpha", "beta"}, "someGroup/vector", "labels"));
+
+    h5pp::File file(path, h5pp::FileAccess::READWRITE, 0);
+
+    auto number  = file.readDataset<std::optional<double>>("someGroup/someNumber");
+    auto vector  = file.readDataset<std::optional<std::vector<int>>>("someGroup/vector");
+    auto comment = file.readAttribute<std::optional<std::string>>("someGroup/someNumber", "someComment");
+    auto labels  = file.readAttribute<std::optional<std::vector<std::string>>>("someGroup/vector", "labels");
+
+    REQUIRE(number.has_value());
+    REQUIRE(vector.has_value());
+    REQUIRE(comment.has_value());
+    REQUIRE(labels.has_value());
+
+    REQUIRE(number.value() == 42.0);
+    REQUIRE(vector.value() == std::vector<int>{1, 2, 3});
+    REQUIRE(comment.value() == "My favorite number");
+    REQUIRE(labels.value() == std::vector<std::string>{"alpha", "beta"});
+
+    auto missing_number  = file.readDataset<std::optional<double>>("someGroup/anotherNumber");
+    auto missing_vector  = file.readDataset<std::optional<std::vector<int>>>("someGroup/missingVector");
+    auto missing_comment = file.readAttribute<std::optional<std::string>>("someGroup/someNumber", "anotherComment");
+    auto missing_labels  = file.readAttribute<std::optional<std::vector<std::string>>>("someGroup/vector", "missingLabels");
+
+    REQUIRE_FALSE(missing_number.has_value());
+    REQUIRE_FALSE(missing_vector.has_value());
+    REQUIRE_FALSE(missing_comment.has_value());
+    REQUIRE_FALSE(missing_labels.has_value());
+}
+
 int main(int argc, char *argv[]) {
-    Catch::Session session; // There must be exactly one instance
+    Catch::Session session;
     int            returnCode = session.applyCommandLine(argc, argv);
-    if(returnCode != 0) // Indicates a command line error
-        return returnCode;
-    //    session.configData().showSuccessfulTests = true;
-    //    session.configData().reporterName = "compact";
+    if(returnCode != 0) return returnCode;
     return session.run();
 }

@@ -1,201 +1,194 @@
-#define CATCH_CONFIG_RUNNER
-#include "catch.hpp"
+#include <algorithm>
+#include <array>
+#include <catch2/catch_all.hpp>
+#include <cstring>
 #include <h5pp/h5pp.h>
+#include <string>
+#include <string_view>
+#include <vector>
 
-// Size (members packed): 31.
-// Size (member aligned): 31.
-// Stride in array such that each member is aligned: 32
-struct ParticleV1 {
-    double x = 0, y = 0;
-    int    id       = 0;
-    char   name[11] = ""; // Can't be replaced by std::string, or anything resizeable?
-    bool operator==(const ParticleV1 &p) const { return x == p.x and y == p.y and strncmp(name, p.name, sizeof(name)) == 0 and id == p.id; }
-    bool operator!=(const ParticleV1 &p) const { return not(*this == p); }
-};
+namespace {
+    struct ParticleV1 {
+        double x        = 0;
+        double y        = 0;
+        int    id       = 0;
+        char   name[11] = "";
 
-// Size (members packed): 52
-// Size (member aligned): 54
-// Stride in array such that each member is aligned: 56
-struct ParticleV2 {
-    double x = 0, y = 0;
-    double z        = 3.1415;
-    short  t        = 1;
-    int    id       = 0;
-    char   name[22] = ""; // Can't be replaced by std::string, or anything resizeable?
-                          // size of name can be safely increased and decreased
+        bool operator==(const ParticleV1 &other) const {
+            return x == other.x && y == other.y && id == other.id && std::strncmp(name, other.name, sizeof(name)) == 0;
+        }
+    };
 
-    bool operator==(const ParticleV2 &p) const {
-        return x == p.x and y == p.y and z == p.z and t == p.t and strncmp(name, p.name, sizeof(name)) == 0 and id == p.id;
-    }
-    bool operator!=(const ParticleV2 &p) const { return not(*this == p); }
-};
+    struct ParticleV2 {
+        double x        = 0;
+        double y        = 0;
+        double z        = 3.1415;
+        short  t        = 1;
+        int    id       = 0;
+        char   name[22] = "";
 
-bool are_common_members_equal(const ParticleV1 &p1, const ParticleV2 &p2) {
-    constexpr auto compare_len = sizeof(ParticleV1::name) == sizeof(ParticleV2::name)
-                                     ? sizeof(ParticleV1::name)
-                                     : std::min(sizeof(ParticleV1::name), sizeof(ParticleV2::name)) - 1;
-    return p1.x == p2.x and p1.y == p2.y and strncmp(p1.name, p2.name, compare_len) == 0 and
-           p1.id == p2.id; // ignore 11th char - null for v1, but can be real character in v2.
-}
+        bool operator==(const ParticleV2 &other) const {
+            return x == other.x && y == other.y && z == other.z && t == other.t && id == other.id &&
+                   std::strncmp(name, other.name, sizeof(name)) == 0;
+        }
+    };
 
-bool are_common_members_equal_with_defaults(const ParticleV1 &p1, const ParticleV2 &p2) {
-    const auto def = ParticleV2{};
-    return are_common_members_equal(p1, p2) and p2.z == def.z and p2.t == def.t;
-}
+    struct RegisteredTypes {
+        h5pp::hid::h5t name_type;
+        h5pp::hid::h5t particle_v1;
+        h5pp::hid::h5t particle_v2;
+    };
 
-auto create_unique_v1(int i) { return ParticleV1{100.0 + i, 200.0 + i, 1000 + i, "v1-123456"}; }
+    RegisteredTypes register_types() {
+        RegisteredTypes types;
+        types.name_type = H5Tcopy(H5T_C_S1);
+        H5Tset_size(types.name_type, 10);
+        H5Tset_strpad(types.name_type, H5T_STR_NULLTERM);
 
-auto create_unique_v2(int i) { return ParticleV2{100.0 + i, 200.0 + i, 300.0 + i, static_cast<short>(400 + i), 1000 + i, "v2-1234567890123"}; }
+        types.particle_v1 = H5Tcreate(H5T_COMPOUND, sizeof(ParticleV1));
+        H5Tinsert(types.particle_v1, "x", HOFFSET(ParticleV1, x), H5T_NATIVE_DOUBLE);
+        H5Tinsert(types.particle_v1, "y", HOFFSET(ParticleV1, y), H5T_NATIVE_DOUBLE);
+        H5Tinsert(types.particle_v1, "id", HOFFSET(ParticleV1, id), H5T_NATIVE_INT);
+        H5Tinsert(types.particle_v1, "name", HOFFSET(ParticleV1, name), types.name_type);
 
-void print_particle(const ParticleV1 &p, const std::string &msg = "") {
-    h5pp::print("{} \t x: {} \t y: {} \t id: {}  \t name: {}\n", msg, p.x, p.y, p.id, p.name);
-}
-void print_particle(const ParticleV2 &p, const std::string &msg = "") {
-    h5pp::print("{} \t x: {} \t y: {} \t z: {} \t t: {} \t id: {}  \t name: {}\n", msg, p.x, p.y, p.z, p.t, p.id, p.name);
-}
-
-h5pp::hid::h5t H5_NAME_TYPE;
-h5pp::hid::h5t H5_PARTICLE_V1;
-h5pp::hid::h5t H5_PARTICLE_V2;
-
-void register_types() {
-    // Create a type for the char array from the template H5T_C_S1
-    // The template describes a string with a single char.
-    // Set the size with H5Tset_size.
-    H5_NAME_TYPE = H5Tcopy(H5T_C_S1);
-    H5Tset_size(H5_NAME_TYPE, 10);
-    // Optionally set the null terminator '\0' and possibly padding.
-    H5Tset_strpad(H5_NAME_TYPE, H5T_STR_NULLTERM);
-
-    // Register the compound type
-    H5_PARTICLE_V1 = H5Tcreate(H5T_COMPOUND, sizeof(ParticleV1));
-    H5Tinsert(H5_PARTICLE_V1, "x", HOFFSET(ParticleV1, x), H5T_NATIVE_DOUBLE);
-    H5Tinsert(H5_PARTICLE_V1, "y", HOFFSET(ParticleV1, y), H5T_NATIVE_DOUBLE);
-    H5Tinsert(H5_PARTICLE_V1, "id", HOFFSET(ParticleV1, id), H5T_NATIVE_INT);
-    H5Tinsert(H5_PARTICLE_V1, "name", HOFFSET(ParticleV1, name), H5_NAME_TYPE);
-
-    // Register the compound type
-    H5_PARTICLE_V2 = H5Tcreate(H5T_COMPOUND, sizeof(ParticleV2));
-    H5Tinsert(H5_PARTICLE_V2, "x", HOFFSET(ParticleV2, x), H5T_NATIVE_DOUBLE);
-    H5Tinsert(H5_PARTICLE_V2, "y", HOFFSET(ParticleV2, y), H5T_NATIVE_DOUBLE);
-    H5Tinsert(H5_PARTICLE_V2, "z", HOFFSET(ParticleV2, z), H5T_NATIVE_DOUBLE);
-    H5Tinsert(H5_PARTICLE_V2, "t", HOFFSET(ParticleV2, t), H5T_NATIVE_SHORT);
-    H5Tinsert(H5_PARTICLE_V2, "id", HOFFSET(ParticleV2, id), H5T_NATIVE_INT);
-    H5Tinsert(H5_PARTICLE_V2, "name", HOFFSET(ParticleV2, name), H5_NAME_TYPE);
-}
-
-TEST_CASE("Single particles are compatible", "[single-particles]") {
-    h5pp::File file("output/userTypeVers.h5", h5pp::FileAccess::REPLACE, 2);
-
-    // Create a single particle version 1
-    ParticleV1 p1 = create_unique_v1(5);
-
-    // Create a single particle version 2
-    ParticleV2 p2 = create_unique_v2(7);
-
-    // Write both particles
-    file.writeDataset(p1, "singleParticle1", H5_PARTICLE_V1);
-    file.writeDataset(p2, "singleParticle2", H5_PARTICLE_V2);
-
-    SECTION("p1 as v1|h1") {
-        auto p1_as_v1_h1 = file.readDataset<ParticleV1>("singleParticle1", std::nullopt, H5_PARTICLE_V1);
-        print_particle(p1_as_v1_h1, "p1 as v1|h1: Should work:");
-        REQUIRE(p1_as_v1_h1 == p1);
+        types.particle_v2 = H5Tcreate(H5T_COMPOUND, sizeof(ParticleV2));
+        H5Tinsert(types.particle_v2, "x", HOFFSET(ParticleV2, x), H5T_NATIVE_DOUBLE);
+        H5Tinsert(types.particle_v2, "y", HOFFSET(ParticleV2, y), H5T_NATIVE_DOUBLE);
+        H5Tinsert(types.particle_v2, "z", HOFFSET(ParticleV2, z), H5T_NATIVE_DOUBLE);
+        H5Tinsert(types.particle_v2, "t", HOFFSET(ParticleV2, t), H5T_NATIVE_SHORT);
+        H5Tinsert(types.particle_v2, "id", HOFFSET(ParticleV2, id), H5T_NATIVE_INT);
+        H5Tinsert(types.particle_v2, "name", HOFFSET(ParticleV2, name), types.name_type);
+        return types;
     }
 
-    SECTION("p1 as v1|h2") { REQUIRE_THROWS(file.readDataset<ParticleV1>("singleParticle1", std::nullopt, H5_PARTICLE_V2)); }
+    std::string make_path(std::string_view name) {
+        h5pp::fs::create_directories("output");
+        return h5pp::format("output/{}.h5", name);
+    }
 
-    SECTION("p1 as v2|h1") {
-        auto p1_as_v2_h1 = file.readDataset<ParticleV2>("singleParticle1", std::nullopt, H5_PARTICLE_V1);
-        print_particle(p1_as_v2_h1, "p1 as v2|h1: Should fail:");
+    bool are_common_members_equal(const ParticleV1 &lhs, const ParticleV2 &rhs) {
+        constexpr auto compare_len = sizeof(ParticleV1::name) == sizeof(ParticleV2::name)
+                                         ? sizeof(ParticleV1::name)
+                                         : std::min(sizeof(ParticleV1::name), sizeof(ParticleV2::name)) - 1;
+        return lhs.x == rhs.x && lhs.y == rhs.y && lhs.id == rhs.id && std::strncmp(lhs.name, rhs.name, compare_len) == 0;
+    }
+
+    bool are_common_members_equal_with_defaults(const ParticleV1 &lhs, const ParticleV2 &rhs) {
+        const auto def = ParticleV2{};
+        return are_common_members_equal(lhs, rhs) && rhs.z == def.z && rhs.t == def.t;
+    }
+
+    ParticleV1 create_unique_v1(int i) { return ParticleV1{100.0 + i, 200.0 + i, 1000 + i, "v1-123456"}; }
+
+    ParticleV2 create_unique_v2(int i) {
+        return ParticleV2{100.0 + i, 200.0 + i, 300.0 + i, static_cast<short>(400 + i), 1000 + i, "v2-1234567890123"};
+    }
+}
+
+TEST_CASE("Single versioned compound datasets remain forward and backward compatible", "[user-type-vers][single]") {
+    auto       path  = make_path("userTypeVers-single");
+    auto       types = register_types();
+    h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
+
+    auto p1 = create_unique_v1(5);
+    auto p2 = create_unique_v2(7);
+
+    file.writeDataset(p1, "singleParticle1", types.particle_v1);
+    file.writeDataset(p2, "singleParticle2", types.particle_v2);
+
+    SECTION("Exact reads with matching memory and file types") {
+        REQUIRE(file.readDataset<ParticleV1>("singleParticle1", std::nullopt, types.particle_v1) == p1);
+        REQUIRE(file.readDataset<ParticleV2>("singleParticle2", std::nullopt, types.particle_v2) == p2);
+    }
+
+    SECTION("Mismatched memory type with matching file type fails") {
+        REQUIRE_THROWS(file.readDataset<ParticleV1>("singleParticle1", std::nullopt, types.particle_v2));
+        REQUIRE_THROWS(file.readDataset<ParticleV1>("singleParticle2", std::nullopt, types.particle_v2));
+    }
+
+    SECTION("Forward compatibility populates missing members with defaults") {
+        auto p1_as_v2 = file.readDataset<ParticleV2>("singleParticle1", std::nullopt, types.particle_v2);
+        REQUIRE(are_common_members_equal_with_defaults(p1, p1_as_v2));
+        REQUIRE(p1_as_v2.z == ParticleV2{}.z);
+        REQUIRE(p1_as_v2.t == ParticleV2{}.t);
+    }
+
+    SECTION("Backward compatibility ignores unknown members") {
+        auto p2_as_v1 = file.readDataset<ParticleV1>("singleParticle2", std::nullopt, types.particle_v1);
+        REQUIRE(are_common_members_equal(p2_as_v1, p2));
+    }
+
+    SECTION("Using the old file type to read into the new memory type is not a compatibility path") {
+        auto p1_as_v2_h1 = file.readDataset<ParticleV2>("singleParticle1", std::nullopt, types.particle_v1);
+        auto p2_as_v2_h1 = file.readDataset<ParticleV2>("singleParticle2", std::nullopt, types.particle_v1);
         REQUIRE_FALSE(are_common_members_equal_with_defaults(p1, p1_as_v2_h1));
-    }
-
-    //
-    // Forward compatibility: p1 written by v1 software is forward compatible with p2 read by v2 software
-    // with missing members initialized to the default value.
-    //
-    SECTION("p1 as v2|h2") {
-        auto p1_as_v2_h2 = file.readDataset<ParticleV2>("singleParticle1", std::nullopt, H5_PARTICLE_V2);
-        print_particle(p1_as_v2_h2, "p1 as v2|h2: Should work:");
-        REQUIRE(are_common_members_equal_with_defaults(p1, p1_as_v2_h2));
-    }
-
-    //
-    // Backward compatibility: p2 written by v2 software is backward compatible with p1 read by v1 software
-    // with new v2 members being ignored.
-    //
-    SECTION("p2 as v1|h1") {
-        auto p2_as_v1_h1 = file.readDataset<ParticleV1>("singleParticle2", std::nullopt, H5_PARTICLE_V1);
-        print_particle(p2_as_v1_h1, "p2 as v1|h1: Should work:");
-        REQUIRE(are_common_members_equal(p2_as_v1_h1, p2));
-    }
-
-    SECTION("p2 as v1|h2") { REQUIRE_THROWS(file.readDataset<ParticleV1>("singleParticle2", std::nullopt, H5_PARTICLE_V2)); }
-
-    SECTION("p2 as v2|h1") {
-        auto p2_as_v2_h1 = file.readDataset<ParticleV2>("singleParticle2", std::nullopt, H5_PARTICLE_V1);
-        print_particle(p2_as_v2_h1, "p2 as v2|h1: Should fail:");
-        REQUIRE_FALSE(are_common_members_equal_with_defaults(p1, p2_as_v2_h1));
-    }
-
-    SECTION("p2 as v2|h2") {
-        auto p2_as_v2_h2 = file.readDataset<ParticleV2>("singleParticle2", std::nullopt, H5_PARTICLE_V2);
-        print_particle(p2_as_v2_h2, "p2 as v2|h2: Should work:");
-        REQUIRE(p2_as_v2_h2 == p2);
+        REQUIRE_FALSE(are_common_members_equal_with_defaults(create_unique_v1(7), p2_as_v2_h1));
     }
 }
 
-TEST_CASE("Vector of versioned structs is compatible") {
-    auto layout = GENERATE(values({H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED}));
+TEST_CASE("Vectors of versioned compound datasets remain compatible across layouts", "[user-type-vers][vector]") {
+    auto       layout = GENERATE(values({H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED}));
+    auto       path   = make_path(h5pp::format("userTypeVers-vector-{}", static_cast<int>(layout)));
+    auto       types  = register_types();
+    h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
 
-    std::string layout_str = std::array<std::string, 3>{"H5D_COMPACT", "H5D_CONTIGUOUS", "H5D_CHUNKED"}[static_cast<size_t>(layout)];
-
-    h5pp::File file("output/userTypeVers.h5", h5pp::FileAccess::REPLACE, 2);
-
-    // Create vectors of version 1 and 2 particles.
     std::vector<ParticleV1> vp1;
     std::vector<ParticleV2> vp2;
-
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < 10; ++i) {
         vp1.push_back(create_unique_v1(i));
         vp2.push_back(create_unique_v2(i + 10));
     }
 
-    // Write both particle vectors.
-    file.writeDataset(vp1, "vectorParticle1", layout, std::nullopt, std::nullopt, std::nullopt, H5_PARTICLE_V1);
-    file.writeDataset(vp2, "vectorParticle2", layout, std::nullopt, std::nullopt, std::nullopt, H5_PARTICLE_V2);
+    file.writeDataset(vp1, "vectorParticle1", layout, std::nullopt, std::nullopt, std::nullopt, types.particle_v1);
+    file.writeDataset(vp2, "vectorParticle2", layout, std::nullopt, std::nullopt, std::nullopt, types.particle_v2);
 
-    SECTION("file(vp1) is readable by v1 - " + layout_str) {
-        auto vp1_as_v1_h1 = file.readDataset<std::vector<ParticleV1>>("vectorParticle1", std::nullopt, H5_PARTICLE_V1);
-        REQUIRE(std::equal(vp1.begin(), vp1.end(), vp1_as_v1_h1.begin()));
+    auto info_v1 = file.getDatasetInfo("vectorParticle1");
+    auto info_v2 = file.getDatasetInfo("vectorParticle2");
+    REQUIRE(info_v1.dsetDims);
+    REQUIRE(info_v2.dsetDims);
+    REQUIRE(info_v1.dsetDims.value() == std::vector<hsize_t>{vp1.size()});
+    REQUIRE(info_v2.dsetDims.value() == std::vector<hsize_t>{vp2.size()});
+
+    SECTION("Matching versions round-trip exactly") {
+        REQUIRE(file.readDataset<std::vector<ParticleV1>>("vectorParticle1", std::nullopt, types.particle_v1) == vp1);
+        REQUIRE(file.readDataset<std::vector<ParticleV2>>("vectorParticle2", std::nullopt, types.particle_v2) == vp2);
     }
 
-    SECTION("file(vp2) is readable by v2 - " + layout_str) {
-        auto vp2_as_v2_h2 = file.readDataset<std::vector<ParticleV2>>("vectorParticle2", std::nullopt, H5_PARTICLE_V2);
-        REQUIRE(std::equal(vp2.begin(), vp2.end(), vp2_as_v2_h2.begin()));
+    SECTION("Old files are readable by new software with defaults") {
+        auto vp1_as_v2 = file.readDataset<std::vector<ParticleV2>>("vectorParticle1", std::nullopt, types.particle_v2);
+        REQUIRE(std::equal(vp1.begin(), vp1.end(), vp1_as_v2.begin(), are_common_members_equal_with_defaults));
     }
 
-    SECTION("file(vp1) is readable by v2 with zero init missing members - " + layout_str) {
-        auto vp1_as_v2_h2 = file.readDataset<std::vector<ParticleV2>>("vectorParticle1", std::nullopt, H5_PARTICLE_V2);
-        REQUIRE(std::equal(vp1.begin(), vp1.end(), vp1_as_v2_h2.begin(), are_common_members_equal_with_defaults));
-    }
-
-    SECTION("file(vp2) is readable by v1 ignoring unknown members - " + layout_str) {
-        auto vp2_as_v1_h1 = file.readDataset<std::vector<ParticleV1>>("vectorParticle2", std::nullopt, H5_PARTICLE_V1);
-        REQUIRE(std::equal(vp2_as_v1_h1.begin(), vp2_as_v1_h1.end(), vp2.begin(), are_common_members_equal));
+    SECTION("New files are readable by old software by ignoring unknown members") {
+        auto vp2_as_v1 = file.readDataset<std::vector<ParticleV1>>("vectorParticle2", std::nullopt, types.particle_v1);
+        REQUIRE(std::equal(vp2_as_v1.begin(), vp2_as_v1.end(), vp2.begin(), are_common_members_equal));
     }
 }
 
+TEST_CASE("Versioned compound attributes follow the same compatibility rules", "[user-type-vers][attribute]") {
+    auto       path  = make_path("userTypeVers-attr");
+    auto       types = register_types();
+    h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
+
+    auto p1 = create_unique_v1(1);
+    auto p2 = create_unique_v2(2);
+    file.writeDataset(std::vector<int>{1, 2, 3}, "holder");
+    file.writeAttribute(p1, "holder", "attr_v1", std::nullopt, types.particle_v1);
+    file.writeAttribute(p2, "holder", "attr_v2", std::nullopt, types.particle_v2);
+
+    REQUIRE(file.readAttribute<ParticleV1>("holder", "attr_v1", std::nullopt, types.particle_v1) == p1);
+    REQUIRE(file.readAttribute<ParticleV2>("holder", "attr_v2", std::nullopt, types.particle_v2) == p2);
+
+    auto attr_v1_as_v2 = file.readAttribute<ParticleV2>("holder", "attr_v1", std::nullopt, types.particle_v2);
+    auto attr_v2_as_v1 = file.readAttribute<ParticleV1>("holder", "attr_v2", std::nullopt, types.particle_v1);
+
+    REQUIRE(are_common_members_equal_with_defaults(p1, attr_v1_as_v2));
+    REQUIRE(are_common_members_equal(attr_v2_as_v1, p2));
+}
+
 int main(int argc, char *argv[]) {
-    register_types();
-
-    Catch::Session session; // There must be exactly one instance
-    int            returnCode = session.applyCommandLine(argc, argv);
-    if(returnCode != 0) // Indicates a command line error
-        return returnCode;
-
-    //    session.configData().showSuccessfulTests = true;
-    //    session.configData().reporterName = "compact";
+    Catch::Session session;
+    int            return_code = session.applyCommandLine(argc, argv);
+    if(return_code != 0) return return_code;
     return session.run();
 }

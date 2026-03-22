@@ -1,79 +1,106 @@
+#include <catch2/catch_all.hpp>
 #include <h5pp/h5pp.h>
 #include <vector>
 
 struct Table {
-    double x = 0, y = 0;
+    double x = 0;
+    double y = 0;
+
+    bool operator==(const Table &other) const { return x == other.x and y == other.y; }
 };
 
-int main() {
-    if constexpr(h5pp::has_direct_chunk) {
-        /* Create the data space */
-        auto file = h5pp::File("output/directWrite.h5", h5pp::FileAccess::REPLACE, 0);
+namespace {
+    h5pp::File make_file() { return h5pp::File("output/directWrite.h5", h5pp::FileAccess::REPLACE, 0); }
+}
 
-        auto coord5 = h5pp::util::ind2sub({3, 4}, 5);
-        auto coord7 = h5pp::util::ind2sub({3, 4}, 7);
+TEST_CASE("Direct-write helpers keep index and overlap calculations consistent", "[direct-write][helpers]") {
+    REQUIRE(h5pp::util::ind2sub({3, 4}, 5) == std::vector<hsize_t>{1, 1});
+    REQUIRE(h5pp::util::ind2sub({3, 4}, 7) == std::vector<hsize_t>{1, 3});
+    REQUIRE(h5pp::util::sub2ind({3, 4}, {1, 1}) == 5);
+    REQUIRE(h5pp::util::sub2ind({3, 4}, {1, 3}) == 7);
 
-        if(std::vector<hsize_t>{1, 1} != coord5) throw std::logic_error(h5pp::format("ind2sub not working [1,1] != {}", coord5));
-        if(std::vector<hsize_t>{1, 3} != coord7) throw std::logic_error(h5pp::format("ind2sub not working [1,3] != {}", coord7));
+    auto slab1 = h5pp::Hyperslab({1, 1}, {3, 3});
+    auto slab2 = h5pp::Hyperslab({3, 1}, {3, 3});
+    auto slab3 = h5pp::Hyperslab({0, 5}, {3, 3});
 
-        auto index5 = h5pp::util::sub2ind({3, 4}, {1, 1});
-        auto index7 = h5pp::util::sub2ind({3, 4}, {1, 3});
-        if(5 != index5) throw std::logic_error(h5pp::format("sub2ind not working 5 != {}", index5));
-        if(7 != index7) throw std::logic_error(h5pp::format("sub2ind not working 7 != {}", index7));
+    auto overlap12 = h5pp::hdf5::getSlabOverlap(slab1, slab2);
+    auto overlap13 = h5pp::hdf5::getSlabOverlap(slab1, slab3);
 
-        auto slab1 = h5pp::Hyperslab({1, 1}, {3, 3});
-        auto slab2 = h5pp::Hyperslab({3, 1}, {3, 3});
-        auto slab3 = h5pp::Hyperslab({0, 5}, {3, 3});
+    REQUIRE(overlap12.offset.value() == std::vector<hsize_t>{3, 1});
+    REQUIRE(overlap12.extent.value() == std::vector<hsize_t>{1, 3});
+    REQUIRE(overlap13.extent.value() == std::vector<hsize_t>{2, 0});
+}
 
-        auto slab12_check = h5pp::Hyperslab({3, 1}, {1, 3});
-        auto slab12_compt = h5pp::hdf5::getSlabOverlap(slab1, slab2);
-        if(slab12_check.offset.value() != slab12_compt.offset.value())
-            throw std::runtime_error(
-                h5pp::format("slabs are not the same <slab1|slab2> {} | slab12 {}", slab12_check.string(), slab12_compt.string()));
-        if(slab12_check.extent.value() != slab12_compt.extent.value())
-            throw std::runtime_error(
-                h5pp::format("slabs are not the same <slab1|slab2> {} | slab12 {}", slab12_check.string(), slab12_compt.string()));
+TEST_CASE("Chunkwise writes update only the selected slab and table appends still work", "[direct-write][chunkwise]") {
+    if constexpr(not h5pp::has_direct_chunk) {
+        SUCCEED("Direct chunk writing is unavailable in this HDF5 build");
+        return;
+    } else {
+        auto file = make_file();
 
-        //    h5pp::hid::h5t type = H5Tcopy(H5T_NATIVE_INT);
-        //        auto           dsetInfo = file.createDataset(type, "dset_direct", {12, 12}, H5D_CHUNKED, {3, 3}, {12, 12}, 9);
+        std::vector<int> fill(12 * 12, 1);
+        auto dset_info = file.writeDataset(fill, "dset_direct", H5D_CHUNKED, {12, 12}, {12, 12}, {90, 90}, std::nullopt, std::nullopt, 0);
 
-        std::vector<int> fill(144, 1);
-        //    auto dsetInfo = file.createDataset("dset_direct", H5T_NATIVE_INT , H5D_CHUNKED, {0,0});
-        auto             dsetInfo =
-            file.writeDataset(fill, "dset_direct", H5D_CHUNKED, {12, 12}, {90, 90}, std::nullopt, std::nullopt, std::nullopt, 0);
+        std::vector<int> block(6 * 6);
+        for(size_t idx = 0; idx < block.size(); idx++) block[idx] = static_cast<int>(idx);
 
-        /* Initialize data to write */
-        std::vector<int> data(36, 0);
-        for(size_t i = 0; i < data.size(); i++) data[i] = static_cast<int>(i);
+        dset_info.dsetSlab = h5pp::Hyperslab({4, 4}, {6, 6});
+        h5pp::hdf5::selectHyperslab(dset_info.h5Space.value(), dset_info.dsetSlab.value());
 
-        dsetInfo.dsetSlab = h5pp::Hyperslab({4, 4}, {6, 6});
-        h5pp::hdf5::selectHyperslab(dsetInfo.h5Space.value(), h5pp::Hyperslab({4, 4}, {6, 6}));
         h5pp::Options options;
         options.dataDims = {6, 6};
-        auto dataInfo    = h5pp::scan::scanDataInfo(data, options);
+        auto data_info   = h5pp::scan::scanDataInfo(block, options);
+        h5pp::hdf5::writeDataset_chunkwise(block, data_info, dset_info, file.plists);
 
-        h5pp::hdf5::writeDataset_chunkwise(data, dataInfo, dsetInfo, file.plists);
-        //    h5pp::hdf5::writeDataset(data,dataInfo,dsetInfo, file.plists);
-#ifdef H5PP_USE_EIGEN3
-        auto matrix = file.readDataset<Eigen::MatrixXi>("dset_direct");
-#endif
-        // Register the compound type
-        h5pp::hid::h5t MY_HDF5_TABLE_TYPE;
-        MY_HDF5_TABLE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Table));
-        H5Tinsert(MY_HDF5_TABLE_TYPE, "x", HOFFSET(Table, x), H5T_NATIVE_DOUBLE);
-        H5Tinsert(MY_HDF5_TABLE_TYPE, "y", HOFFSET(Table, y), H5T_NATIVE_DOUBLE);
-        auto tableInfo = file.createTable(MY_HDF5_TABLE_TYPE, "somegroup/someTable", "someTable", std::nullopt, true);
+        auto written = file.readDataset<std::vector<int>>("dset_direct");
+        REQUIRE(written.size() == fill.size());
+        REQUIRE(file.getDatasetInfo("dset_direct").dsetDims.value() == std::vector<hsize_t>{12, 12});
 
-        std::vector<Table> elems = {{1, 1}, {2, 2}};
-        tableInfo                = file.appendTableRecords(elems, "somegroup/someTable");
+        for(size_t row = 0; row < 12; row++) {
+            for(size_t col = 0; col < 12; col++) {
+                auto flat_index = row * 12 + col;
+                if(row >= 4 and row < 10 and col >= 4 and col < 10) {
+                    auto block_index = (row - 4) * 6 + (col - 4);
+                    REQUIRE(written[flat_index] == block[block_index]);
+                } else {
+                    REQUIRE(written[flat_index] == 1);
+                }
+            }
+        }
 
-        auto table = file.readTableRecords<std::vector<Table>>("somegroup/someTable");
-        for(auto &t : table) h5pp::logger::log->info("table: {} {}", t.x, t.y);
+        h5pp::hid::h5t table_type = H5Tcreate(H5T_COMPOUND, sizeof(Table));
+        REQUIRE(H5Tinsert(table_type, "x", HOFFSET(Table, x), H5T_NATIVE_DOUBLE) >= 0);
+        REQUIRE(H5Tinsert(table_type, "y", HOFFSET(Table, y), H5T_NATIVE_DOUBLE) >= 0);
 
-        std::vector<Table> more_elems = {{3, 3}, {4, 4}};
-        file.appendTableRecords(more_elems, "somegroup/someTable");
-        table = file.readTableRecords<std::vector<Table>>("somegroup/someTable", 0);
+        auto table_info = file.createTable(table_type, "somegroup/someTable", "someTable", std::nullopt, true);
+        REQUIRE(table_info.tablePath.value() == "somegroup/someTable");
 
-        for(auto &t : table) h5pp::logger::log->info("table: {} {}", t.x, t.y);
+        std::vector<Table> first = {
+            {1, 1},
+            {2, 2}
+        };
+        std::vector<Table> more = {
+            {3, 3},
+            {4, 4}
+        };
+        file.appendTableRecords(first, "somegroup/someTable");
+        file.appendTableRecords(more, "somegroup/someTable");
+
+        REQUIRE(file.readTableRecords<std::vector<Table>>("somegroup/someTable") == std::vector<Table>{
+                                                                                        {1, 1},
+                                                                                        {2, 2},
+                                                                                        {3, 3},
+                                                                                        {4, 4}
+        });
+        REQUIRE(file.readTableRecords<std::vector<Table>>("somegroup/someTable", 2) == more);
     }
+}
+
+int main(int argc, char *argv[]) {
+    Catch::Session session;
+    int            return_code = session.applyCommandLine(argc, argv);
+    if(return_code != 0) return return_code;
+
+    session.configData().shouldDebugBreak = true;
+    return session.run();
 }
