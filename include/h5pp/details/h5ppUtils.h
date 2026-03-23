@@ -579,7 +579,7 @@ namespace h5pp::util {
         if constexpr(h5pp::type::sfinae::is_eigen_dense_v<DataType> and h5pp::type::sfinae::is_eigen_1d_v<DataType>) {
             auto newSize = getSizeFromDimensions(newDims);
             if(newDims.size() != 1) {
-                h5pp::logger::log->debug("Resizing given 1-dimensional Eigen type [{}] to fit dataset dimensions {}",
+                h5pp::logger::log->debug("Flattening 1-dimensional Eigen container [{}] to read dataset dimensions {}",
                                          type::sfinae::type_name<DataType>(),
                                          newDims);
             }
@@ -619,13 +619,14 @@ namespace h5pp::util {
 #endif // H5PP_USE_EIGEN3
             if constexpr(h5pp::type::sfinae::has_size_v<DataType> and h5pp::type::sfinae::has_resize_v<DataType>) {
                 if(newDims.size() > 1) {
-                    h5pp::logger::log->debug(
-                        "Given data container is 1-dimensional but the desired dimensions are {}. Resizing to fit all the data",
-                        newDims);
+                    h5pp::logger::log->debug("Flattening 1-dimensional container [{}] to read dataset dimensions {}",
+                                             h5pp::type::sfinae::type_name<DataType>(),
+                                             newDims);
                 }
                 auto newSize = getSizeFromDimensions(newDims);
-                h5pp::logger::log->debug("Resizing 1d container {} -> {} of type [{}]",
-                                         std::initializer_list<size_t>{type::safe_cast<size_t>(data.size())},
+                h5pp::logger::log->debug("Resizing flat container from {} element(s) to {} element(s) for dataset dimensions {} [type {}]",
+                                         type::safe_cast<size_t>(data.size()),
+                                         newSize,
                                          newDims,
                                          h5pp::type::sfinae::type_name<DataType>());
                 data.resize(newSize);

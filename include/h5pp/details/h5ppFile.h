@@ -44,7 +44,7 @@ namespace h5pp {
         mutable std::vector<ReclaimInfo::Reclaim> reclaimStack;            /*!< Stores alloc metadata from variable-length reads to free */
         void                                      init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
-            h5pp::logger::log->debug("Accessing file: [{}]", filePath.string());
+            h5pp::logger::log->debug("Initializing file object for [{}]", filePath.string());
 
             /* Set default error print output */
             error_stack                          = H5Eget_current_stack();
@@ -124,12 +124,12 @@ namespace h5pp {
             // When a file handle is closed, the default in h5pp is to first close all associated id's, and then close the file
             // (H5F_CLOSE_STRONG) Setting H5F_CLOSE_WEAK keeps the file handle alive until associated id's are closed.
             if(fileAccess == h5pp::FileAccess::READONLY) {
-                h5pp::logger::log->trace("Opening file with READONLY access");
+                h5pp::logger::log->trace("Opening file [{}] with READONLY access", filePath.string());
                 hid_t fid = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
                 if(fid < 0) throw h5pp::runtime_error("Failed to open file with read-only access [{}]", filePath.string());
                 else return fid;
             } else {
-                h5pp::logger::log->trace("Opening file with READWRITE access");
+                h5pp::logger::log->trace("Opening file [{}] with READWRITE access", filePath.string());
                 hid_t fid = H5Fopen(filePath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
                 if(fid < 0) throw h5pp::runtime_error("Failed to open file with read-write access [{}]", filePath.string());
                 else return fid;
@@ -1496,8 +1496,10 @@ namespace h5pp {
             if(fs::path(targetFilePath).is_relative()) {
                 auto prox = fs::proximate(targetFilePath, filePath);
                 if(prox != targetFilePath) {
-                    h5pp::logger::log->debug("External link [{}] is not relative to the current file [{}]."
-                                             "This can cause a dangling soft link");
+                    h5pp::logger::log->debug(
+                        "External link target [{}] is not relative to current file [{}]. This may create a dangling external link",
+                        targetFilePath,
+                        filePath.string());
                 }
             }
 #endif

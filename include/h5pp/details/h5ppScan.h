@@ -502,7 +502,7 @@ namespace h5pp::scan {
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
             std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::type::getCppType(info.h5Type.value());
 
-        h5pp::logger::log->trace("Created  metadata  {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
+        h5pp::logger::log->trace("Created metadata {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
     }
 
     /*! \brief Creates and returns a populated AttrInfo object.
@@ -561,7 +561,7 @@ namespace h5pp::scan {
         if(not info.cppTypeIndex or not info.cppTypeName or not info.cppTypeSize)
             std::tie(info.cppTypeIndex, info.cppTypeName, info.cppTypeSize) = h5pp::type::getCppType(info.h5Type.value());
 
-        h5pp::logger::log->trace("Created  metadata  {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
+        h5pp::logger::log->trace("Created metadata {}", info.string(h5pp::logger::logIf(LogLevel::trace)));
     }
 
     /*! \brief Creates and returns a populated AttrInfo object based entirely on given options */

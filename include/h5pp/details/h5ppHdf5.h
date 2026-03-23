@@ -657,9 +657,9 @@ namespace h5pp::hdf5 {
                       "Template function [h5pp::hdf5::checkIfAttrExists<h5x>(const h5x & link, ...) requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         //        if(attrExists and attrExists.value()) return true;
-        h5pp::logger::log->trace("Checking if attribute [{}] exitst in link ...", attrName);
+        h5pp::logger::log->trace("Checking whether attribute [{}] exists on the current link", attrName);
         bool exists = H5Aexists_by_name(link, std::string(".").c_str(), util::safe_str(attrName).c_str(), linkAccess) > 0;
-        h5pp::logger::log->trace("Checking if attribute [{}] exitst in link ... {}", attrName, exists);
+        h5pp::logger::log->trace("Attribute [{}] exists on the current link: {}", attrName, exists);
         return exists;
     }
 
@@ -677,9 +677,9 @@ namespace h5pp::hdf5 {
         if(not linkExists.value()) return false;
         // Otherwise, we open the link and check
         auto link = openLink<hid::h5o>(loc, linkPath, linkExists, linkAccess);
-        h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}] ...", attrName, linkPath);
+        h5pp::logger::log->trace("Checking whether attribute [{}] exists in link [{}]", attrName, linkPath);
         bool exists = H5Aexists_by_name(link, std::string(".").c_str(), util::safe_str(attrName).c_str(), linkAccess) > 0;
-        h5pp::logger::log->trace("Checking if attribute [{}] exitst in link [{}] ... {}", attrName, linkPath, exists);
+        h5pp::logger::log->trace("Attribute [{}] exists in link [{}]: {}", attrName, linkPath, exists);
         return exists;
     }
 
@@ -707,7 +707,8 @@ namespace h5pp::hdf5 {
                 if(compressionLevel.value() < 10) {
                     return compressionLevel.value();
                 } else {
-                    h5pp::logger::log->debug("Given compression level {} is too high. Expected value 0 (min) to 9 (max). Returning 9");
+                    h5pp::logger::log->warn("Compression level {} is out of range [0, 9]. Clamping to 9",
+                                            compressionLevel.value());
                     return 9;
                 }
             } else {
@@ -1148,12 +1149,12 @@ namespace h5pp::hdf5 {
 
             if constexpr(not h5pp::ndebug) {
                 if(olap.extent.value()[i] > (std::numeric_limits<hsize_t>::max() - (1ull << 32))) {
-                    h5pp::logger::log->warn("olap extent in dim {} is {}: this is likely error to do with overflow/unsigned wrap",
+                    h5pp::logger::log->warn("Overlap extent in dimension {} is {}. This suggests unsigned overflow/wraparound",
                                             i,
                                             olap.extent.value()[i]);
 
                     if(olap.offset.value()[i] > (std::numeric_limits<hsize_t>::max() - (1ull << 32))) {
-                        h5pp::logger::log->warn("olap offset in dim {} is {}: this is likely error to do with overflow/unsigned wrap",
+                        h5pp::logger::log->warn("Overlap offset in dimension {} is {}. This suggests unsigned overflow/wraparound",
                                                 i,
                                                 olap.offset.value()[i]);
                     }
@@ -1375,9 +1376,8 @@ namespace h5pp::hdf5 {
                 }
             }
             if(outofbounds) {
-                h5pp::logger::log->warn("A hyperslab selection was made on the dataset [{}{}]. "
-                                        "However, resize policy [FIT] will resize this dataset to dimensions {}. "
-                                        "This is likely an error.",
+                h5pp::logger::log->warn("Dataset [{}{}] has a hyperslab selection, but resize policy [FIT] will resize it to {}. "
+                                        "This is likely unintended.",
                                         info.dsetPath.value(),
                                         info.dsetSlab->string(),
                                         newDimensions);
@@ -1795,10 +1795,10 @@ namespace h5pp::hdf5 {
                                                             long                 maxDepth       = -1,
                                                             bool                 followSymlinks = false,
                                                             const PropertyLists &plists         = PropertyLists()) {
-        h5pp::logger::log->trace("search key: {} | root: {} | type: {} | max hits {} | max depth {}",
-                                 searchKey,
-                                 searchRoot,
+        h5pp::logger::log->trace("Searching {} links under [{}] for key [{}] (max hits: {}, max depth: {})",
                                  internal::getObjTypeName<ObjType>(),
+                                 searchRoot,
+                                 searchKey,
                                  maxHits,
                                  maxDepth);
 
@@ -1991,14 +1991,13 @@ namespace h5pp::hdf5 {
             if(eci < 0) h5pp::runtime_error("Failed to get chunk info for offset {}", chunkOffset);
 
             if(chsize == 0 or chaddr == HADDR_UNDEF) {
-                h5pp::logger::log->trace(
-                    h5pp::format("H5Dread_single_chunk: chunk at offset {} is not yet allocated. Clearing", chunkOffset));
+                h5pp::logger::log->trace("Reading chunk at offset {}: chunk is not allocated yet, clearing output buffer", chunkOffset);
                 std::fill(chunkBuffer.begin(), chunkBuffer.end(), static_cast<std::byte>(0));
                 return;
             }
 
             size_t chunkByte = h5pp::util::getBytesTotal(chunkBuffer);
-            h5pp::logger::log->trace("H5Dread_single_chunk: offset {}", chunkOffset);
+            h5pp::logger::log->trace("Reading dataset chunk at offset {}", chunkOffset);
 
             hsize_t chunkByteStorage = 0; // Size of the chunk on disk
             herr_t  erc              = H5Dget_chunk_storage_size(h5dset, chunkOffset.data(), &chunkByteStorage);
@@ -2011,7 +2010,7 @@ namespace h5pp::hdf5 {
 
             if constexpr(not h5pp::ndebug) {
                 h5pp::logger::log->trace(
-                    "H5Dread_single_chunk: chunk buffer size {} | {} bytes | offset {} | storage {} bytes | chaddr {} | "
+                    "Chunk read details: chunk buffer size {} | {} bytes | offset {} | storage {} bytes | chaddr {} | "
                     "chsize {} | mask {:b} | skipDeflate {} | isOnDeflate {}",
                     chunkBuffer.size(),
                     chunkByte,
@@ -2049,8 +2048,8 @@ namespace h5pp::hdf5 {
     #endif
             {
                 if(chunkByte != chunkByteStorage) {
-                    h5pp::logger::log->warn("H5Dread_single_chunk: Size mismatch: "
-                                            "given chunk buffer and chunk on file have different sizes: "
+                    h5pp::logger::log->warn("Chunk size mismatch while reading dataset chunk: "
+                                            "the given chunk buffer and chunk on file have different sizes: "
                                             "buffer {} bytes | disk {} bytes | mask {:b}",
                                             chunkByte,
                                             chunkByteStorage,
@@ -2106,10 +2105,10 @@ namespace h5pp::hdf5 {
 
             if constexpr(not h5pp::ndebug) {
                 if(h5pp::logger::log->level() == 0) {
-                    h5pp::logger::log->info(
-                        "writeDataset_chunkwise: data [type {} | size {} | {} bytes/item | {} bytes{}] dset [size {} | {} "
-                        "bytes/item | storage {} bytes | deflate {} | dims {}{}]  "
-                        "chunk [size {} | {} bytes | dims {} | count {} | capacity {} | room {}]",
+                    h5pp::logger::log->trace(
+                        "Chunk-wise write details: data [type {} | size {} | {} bytes/item | {} bytes{}] dset [size {} | {} "
+                        "bytes/item | storage {} bytes | deflate {} | dims {}{}] chunk [size {} | {} bytes | dims {} | count {} | "
+                        "capacity {} | room {}]",
                         type::sfinae::type_name<DataType>(),
                         h5pp::util::getSize(data),
                         h5pp::util::getBytesPerElem<DataType>(),
@@ -2295,11 +2294,11 @@ namespace h5pp::hdf5 {
                                 [[maybe_unused]] DsetInfo                  &dsetInfo,
                                 [[maybe_unused]] const h5pp::PropertyLists &plists = PropertyLists()) {
         if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
-            h5pp::logger::log->warn("writeDataset_chunkwise: text data is not supported, defaulting to normal writeDataset");
+            h5pp::logger::log->warn("Chunk-wise write fallback: text data is not supported; using regular dataset write");
             writeDataset(data, dataInfo, dsetInfo, plists);
             return;
         } else if constexpr(not compile) {
-            h5pp::logger::log->warn("writeDataset_chunkwise is not available in " H5_VERS_INFO ": defaulting to writeDataset");
+            h5pp::logger::log->warn("Chunk-wise write fallback: unavailable in " H5_VERS_INFO "; using regular dataset write");
             writeDataset(data, dataInfo, dsetInfo, plists);
             return;
         } else {
