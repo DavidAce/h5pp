@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tuple>
+
 #if !defined(SPDLOG_COMPILED_LIB)
     #if !defined(SPDLOG_HEADER_ONLY)
         #define SPDLOG_HEADER_ONLY
@@ -56,12 +58,25 @@ namespace h5pp {
     using fmt::format;
     using fmt::print;
     using fmt::runtime;
+    template<typename S, typename... Args>
+    [[nodiscard]] std::string format_runtime(S &&fmtstring, Args &&...args) {
+        auto fmtview = fmt::string_view(std::forward<S>(fmtstring));
+        auto stored  = std::tuple<std::decay_t<Args>...>(std::forward<Args>(args)...);
+        return std::apply(
+            [&](auto &...vals) { return fmt::vformat(fmtview, fmt::make_format_args(vals...)); },
+            stored
+        );
+    }
     #else
     using fmt::format;
     using fmt::print;
     template<typename... Args>
     [[nodiscard]] std::string runtime(Args... args) {
         return fmt::format(std::forward<Args>(args)...);
+    }
+    template<typename S, typename... Args>
+    [[nodiscard]] std::string format_runtime(S &&fmtstring, Args &&...args) {
+        return fmt::format(std::forward<S>(fmtstring), std::forward<Args>(args)...);
     }
     #endif
 
@@ -166,6 +181,11 @@ namespace h5pp {
             arglist.pop_front();
         }
         return result;
+    }
+
+    template<typename S, typename... Args>
+    [[nodiscard]] std::string format_runtime(S &&fmtstring, Args &&...args) {
+        return format(std::forward<S>(fmtstring), std::forward<Args>(args)...);
     }
 
     template<typename... Args>

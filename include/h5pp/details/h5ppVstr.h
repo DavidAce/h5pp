@@ -53,7 +53,9 @@ namespace h5pp::type::vlen {
         vstr_t &operator=(const T &v);
         template<typename T, typename = std::enable_if_t<is_float<T>>>
         vstr_t                   &operator+=(const T &v);
+        bool                      operator==(const vstr_t &v) const;
         bool                      operator==(std::string_view v) const;
+        bool                      operator!=(const vstr_t &v) const;
         bool                      operator!=(std::string_view v) const;
         char                     *data();
         [[nodiscard]] const char *data() const;
@@ -208,10 +210,14 @@ namespace h5pp::type::vlen {
         *this = to_floating_point<T>() + v;
         return *this;
     }
+    inline bool vstr_t::operator==(const vstr_t &v) const { return static_cast<const vstr_t &>(*this) == std::string_view(v); }
+
     inline bool vstr_t::operator==(std::string_view v) const {
         if(size() != v.size()) return false;
         return std::equal(begin(), end(), v.begin());
     }
+
+    inline bool vstr_t::operator!=(const vstr_t &v) const { return !(static_cast<const vstr_t &>(*this) == v); }
 
     inline bool vstr_t::operator!=(std::string_view v) const { return !(static_cast<const vstr_t &>(*this) == v); }
 

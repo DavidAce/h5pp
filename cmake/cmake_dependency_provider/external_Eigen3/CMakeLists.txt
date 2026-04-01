@@ -3,6 +3,9 @@ project(external-eigen3)
 if(INIT_CACHE_FILE)
     set(INIT_CACHE_ARG -C${INIT_CACHE_FILE})
 endif()
+if(WIN32)
+    set(EIGEN3_BIGOBJ_ARG -DCMAKE_CXX_FLAGS:STRING=/bigobj)
+endif()
 include(ExternalProject)
 ExternalProject_Add(external_eigen3
         URL  https://gitlab.com/libeigen/eigen/-/archive/5.0.1/eigen-5.0.1.tar.bz2
@@ -13,8 +16,11 @@ ExternalProject_Add(external_eigen3
         ${INIT_CACHE_ARG}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         -DCMAKE_INSTALL_MESSAGE=NEVER
+        ${EIGEN3_BIGOBJ_ARG}
         # Eigen3 flags
         -DBUILD_TESTING:BOOL=OFF
         -DEIGEN_BUILD_DOC:BOOL=OFF
         -DEIGEN_BUILD_PKGCONFIG:BOOL=OFF
+        -DEIGEN_BUILD_BLAS:BOOL=OFF
+        -DEIGEN_BUILD_LAPACK:BOOL=OFF
         )
