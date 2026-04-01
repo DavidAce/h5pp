@@ -12,6 +12,9 @@ jobs:
   ci:
     name: ${{ matrix.compiler }}-${{ matrix.manager }}
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
     strategy:
@@ -26,10 +29,10 @@ jobs:
           - { compiler: clang, manager: find  }
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: lukka/get-cmake@latest
+      - uses: actions/checkout@v6.0.1
+      - uses: lukka/get-cmake@v4.2.0
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6.1.0
         if: matrix.manager == 'conan'
         with:
           python-version: '3.x'
@@ -41,7 +44,7 @@ jobs:
 
       - name: Setup caches
         id: h5pp-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4.2.0
         with:
           path: |
             ~/.ccache
@@ -88,12 +91,19 @@ jobs:
           buildPreset: 'github-actions-${{ matrix.manager }}'
           testPreset: 'github-actions-${{ matrix.manager }}'
 
-      - name: Coverage
+      - name: Generate coverage report
         if: matrix.compiler == 'gcc' && matrix.manager == 'find'
         run: |
-          # Create lcov report
           lcov --gcov-tool=gcov-14 --capture --directory build/github-actions-find --output-file coverage.info
-          lcov --gcov-tool=gcov-14 --ignore-errors unused --remove coverage.info '*/test-*' '/usr/*' 'include/c++/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info # filter system-files
-          lcov --gcov-tool=gcov-14 --list coverage.info # debug info
-          # Upload report to CodeCov
-          bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
+          lcov --gcov-tool=gcov-14 --ignore-errors unused --remove coverage.info '*/test-*' '/usr/*' 'include/c++/*' '*include/fmt/*' '*include/spdlog/*' '*/Eigen/*' '*/hdf5/*' '*catch.hpp' --output-file coverage.info
+          lcov --gcov-tool=gcov-14 --list coverage.info
+
+      - name: Upload coverage to Codecov
+        if: matrix.compiler == 'gcc' && matrix.manager == 'find'
+        uses: codecov/codecov-action@v5.5.1
+        with:
+          use_oidc: true
+          files: coverage.info
+          disable_search: true
+          fail_ci_if_error: true
+          verbose: true

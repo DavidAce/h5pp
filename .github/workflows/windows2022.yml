@@ -12,6 +12,8 @@ jobs:
   ci:
     name: ${{ matrix.compiler }}-${{ matrix.manager }}
     runs-on: windows-2022
+    permissions:
+      contents: read
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
     strategy:
@@ -22,17 +24,17 @@ jobs:
           - { compiler: cl, manager: cmake }
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: lukka/get-cmake@latest
+      - uses: actions/checkout@v6.0.1
+      - uses: lukka/get-cmake@v4.2.0
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6.1.0
         if: contains(matrix.manager, 'conan')
         with:
           python-version: '3.x'
 
       - name: Setup caches
         id: h5pp-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4.2.0
         with:
           path: |
             ~/.conan2
