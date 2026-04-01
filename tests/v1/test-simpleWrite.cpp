@@ -2,7 +2,7 @@
 #include <catch2/catch_all.hpp>
 #include <complex>
 #include <cstring>
-#include <h5pp/h5pp.h>
+#include <h5pp/v1/h5pp.h>
 #include <numeric>
 #include <string>
 #include <string_view>
@@ -26,7 +26,7 @@ namespace {
 
     std::string make_path(std::string_view name) {
         h5pp::fs::create_directories("output");
-        return h5pp::format("output/{}.h5", name);
+        return h5pp::format(H5PP_TEST_DIR "{}.h5", name);
     }
 
     template<typename L, typename R>
@@ -45,7 +45,7 @@ namespace {
 
 TEST_CASE("Simple writes cover scalars, containers, pointers, vlen data and user structs", "[simple-write]") {
     auto       path = make_path("simpleWrite");
-    h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
+    h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
 
     bool                 boolean_value   = true;
     std::string          string_value    = "This is a string";
@@ -126,7 +126,12 @@ TEST_CASE("Simple writes cover scalars, containers, pointers, vlen data and user
     REQUIRE(file.readDataset<std::vector<Field2>>("simpleWriteGroup/field2array") == field2_array);
     REQUIRE(file.readDataset<std::vector<Field3>>("simpleWriteGroup/field3array") == field3_array);
     REQUIRE(file.readDataset<h5pp::varr_t<double>>("simpleWriteGroup/vlenDouble") == vlen_double);
-    REQUIRE(file.readDataset<std::vector<h5pp::varr_t<double>>>("simpleWriteGroup/vectorVlenDouble") == vector_vlen_double);
+    auto vector_vlen_double_read = file.readDataset<std::vector<h5pp::varr_t<double>>>("simpleWriteGroup/vectorVlenDouble");
+    REQUIRE(vector_vlen_double_read.size() == vector_vlen_double.size());
+    for(size_t idx = 0; idx < vector_vlen_double.size(); idx++) {
+        REQUIRE(std::vector<double>(vector_vlen_double_read[idx].begin(), vector_vlen_double_read[idx].end()) ==
+                std::vector<double>(vector_vlen_double[idx].begin(), vector_vlen_double[idx].end()));
+    }
 
     auto vector_int_info = file.getDatasetInfo("simpleWriteGroup/vectorInt");
     REQUIRE(vector_int_info.dsetDims);

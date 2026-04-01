@@ -39,7 +39,7 @@ PACK(struct RhoName {
 namespace {
     std::string make_path(const char *name) {
         h5pp::fs::create_directories("output");
-        return h5pp::format("output/{}.h5", name);
+        return h5pp::format(H5PP_TEST_DIR "{}.h5", name);
     }
 
     h5pp::hid::h5t make_particle_type() {
@@ -65,48 +65,45 @@ namespace {
         auto       path = make_path("readWriteTableFields");
         h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
         auto       type = make_particle_type();
-        file.createTable(type, "somegroup/particleTable", "particleTable", {5}, true);
-        file.appendTableRecords(std::vector<Particle>(10), "somegroup/particleTable");
+        h5pp::TableCreateOptions create;
+        create.dimsChunk   = std::vector<hsize_t>{5};
+        create.compression = 1;
+        auto table = file.table("somegroup/particleTable").create(type, "particleTable", create);
+        table.appendRecords(std::vector<Particle>(10));
         return path;
     }
 }
 
 TEST_CASE("Single table fields can be addressed through all supported selector overloads", "[table-fields]") {
-    h5pp::File        file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
+    h5pp::File          file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
+    auto                table = file.table("somegroup/particleTable");
     std::vector<Axis> axis_fields;
 
-    axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", "y", h5pp::TableSelection::FIRST));
-    axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", std::string("y"), h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", std::string_view("y"), h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", {"y"}, h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(
-        file.readTableField<Axis>("somegroup/particleTable", std::initializer_list<std::string>{"y"}, h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(
-        file.readTableField<Axis>("somegroup/particleTable", std::initializer_list<std::string_view>{"y"}, h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(
-        file.readTableField<Axis>("somegroup/particleTable", std::vector<std::string>{"y"}, h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(
-        file.readTableField<Axis>("somegroup/particleTable", std::vector<std::string_view>{"y"}, h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(
-        file.readTableField<Axis>("somegroup/particleTable", std::array<std::string, 1>{"y"}, h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(
-        file.readTableField<Axis>("somegroup/particleTable", std::array<std::string_view, 1>{"y"}, h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", 1, h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", {1}, h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", std::vector<size_t>{1}, h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", std::vector<long>{1}, h5pp::TableSelection::LAST));
-    axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", std::array<size_t, 1>{1}, h5pp::TableSelection::LAST));
+    axis_fields.emplace_back(table.readField<Axis>("y", h5pp::TableSelection::FIRST));
+    axis_fields.emplace_back(table.readField<Axis>(std::string("y"), h5pp::TableSelection::LAST));
+    axis_fields.emplace_back(table.readField<Axis>(std::string_view("y"), h5pp::TableSelection::LAST));
+    axis_fields.emplace_back(table.readField<Axis>(std::initializer_list<std::string>{"y"}, h5pp::TableSelection::LAST));
+    axis_fields.emplace_back(table.readField<Axis>(std::initializer_list<std::string_view>{"y"}, h5pp::TableSelection::LAST));
+    axis_fields.emplace_back(table.readField<Axis>(std::vector<std::string>{"y"}, h5pp::TableSelection::LAST));
+    axis_fields.emplace_back(table.readField<Axis>(std::vector<std::string_view>{"y"}, h5pp::TableSelection::LAST));
+    axis_fields.emplace_back(table.readField<Axis>(std::array<std::string, 1>{"y"}, h5pp::TableSelection::LAST));
+    axis_fields.emplace_back(table.readField<Axis>(std::array<std::string_view, 1>{"y"}, h5pp::TableSelection::LAST));
+    axis_fields.emplace_back(table.readField<Axis>(1, h5pp::TableSelection::LAST));
+    axis_fields.emplace_back(table.readField<Axis>(std::vector<size_t>{1}, h5pp::TableSelection::LAST));
+    axis_fields.emplace_back(table.readField<Axis>(std::vector<long>{1}, h5pp::TableSelection::LAST));
+    axis_fields.emplace_back(table.readField<Axis>(std::array<size_t, 1>{1}, h5pp::TableSelection::LAST));
 
     for(const auto &axis : axis_fields) CHECK(axis.axis == 1.0);
 }
 
 TEST_CASE("Compound sub-fields and mixed field selections round-trip correctly", "[table-fields]") {
     h5pp::File file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
+    auto       table = file.table("somegroup/particleTable");
 
-    auto rho_first  = file.readTableField<Rho>("somegroup/particleTable", "rho", 0, 1);
-    auto rho_last   = file.readTableField<Rho>("somegroup/particleTable", "rho", -1ul, 1);
-    auto cplx_first = file.readTableField<Complex>("somegroup/particleTable", "cplx", 0, 1);
-    auto cplx_last  = file.readTableField<Complex>("somegroup/particleTable", "cplx", -1ul, 1);
+    auto rho_first  = table.readField<Rho>("rho", 0, 1);
+    auto rho_last   = table.readField<Rho>("rho", -1ul, 1);
+    auto cplx_first = table.readField<Complex>("cplx", 0, 1);
+    auto cplx_last  = table.readField<Complex>("cplx", -1ul, 1);
 
     CHECK(rho_first.rho[0] == 20);
     CHECK(rho_first.rho[1] == 3.13);
@@ -118,21 +115,13 @@ TEST_CASE("Compound sub-fields and mixed field selections round-trip correctly",
     CHECK(cplx_last.cplx == std::complex<double>(1, 1));
 
     std::vector<Coords> coords_fields;
-    coords_fields.emplace_back(file.readTableField<Coords>("somegroup/particleTable", {"x", "y", "z", "t"}, h5pp::TableSelection::LAST));
-    coords_fields.emplace_back(
-        file.readTableField<Coords>("somegroup/particleTable", std::vector<std::string>{"x", "y", "z", "t"}, h5pp::TableSelection::LAST));
-    coords_fields.emplace_back(file.readTableField<Coords>("somegroup/particleTable",
-                                                           std::vector<std::string_view>{"x", "y", "z", "t"},
-                                                           h5pp::TableSelection::LAST));
-    coords_fields.emplace_back(
-        file.readTableField<Coords>("somegroup/particleTable", std::array<std::string, 4>{"x", "y", "z", "t"}, h5pp::TableSelection::LAST));
-    coords_fields.emplace_back(file.readTableField<Coords>("somegroup/particleTable", {0, 1, 2, 3}, h5pp::TableSelection::LAST));
-    coords_fields.emplace_back(
-        file.readTableField<Coords>("somegroup/particleTable", std::initializer_list<size_t>{0, 1, 2, 3}, h5pp::TableSelection::LAST));
-    coords_fields.emplace_back(
-        file.readTableField<Coords>("somegroup/particleTable", std::vector<size_t>{0, 1, 2, 3}, h5pp::TableSelection::LAST));
-    coords_fields.emplace_back(
-        file.readTableField<Coords>("somegroup/particleTable", std::array<size_t, 4>{0, 1, 2, 3}, h5pp::TableSelection::LAST));
+    coords_fields.emplace_back(table.readField<Coords>(std::initializer_list<std::string>{"x", "y", "z", "t"}, h5pp::TableSelection::LAST));
+    coords_fields.emplace_back(table.readField<Coords>(std::vector<std::string>{"x", "y", "z", "t"}, h5pp::TableSelection::LAST));
+    coords_fields.emplace_back(table.readField<Coords>(std::vector<std::string_view>{"x", "y", "z", "t"}, h5pp::TableSelection::LAST));
+    coords_fields.emplace_back(table.readField<Coords>(std::array<std::string, 4>{"x", "y", "z", "t"}, h5pp::TableSelection::LAST));
+    coords_fields.emplace_back(table.readField<Coords>(std::initializer_list<size_t>{0, 1, 2, 3}, h5pp::TableSelection::LAST));
+    coords_fields.emplace_back(table.readField<Coords>(std::vector<size_t>{0, 1, 2, 3}, h5pp::TableSelection::LAST));
+    coords_fields.emplace_back(table.readField<Coords>(std::array<size_t, 4>{0, 1, 2, 3}, h5pp::TableSelection::LAST));
 
     for(const auto &coords : coords_fields) {
         CHECK(coords.x == 0.0);
@@ -142,20 +131,13 @@ TEST_CASE("Compound sub-fields and mixed field selections round-trip correctly",
     }
 
     std::vector<RhoName> rho_name_fields;
-    rho_name_fields.emplace_back(file.readTableField<RhoName>("somegroup/particleTable", {"rho", "name"}, h5pp::TableSelection::LAST));
-    rho_name_fields.emplace_back(
-        file.readTableField<RhoName>("somegroup/particleTable", std::vector<std::string>{"rho", "name"}, h5pp::TableSelection::LAST));
-    rho_name_fields.emplace_back(
-        file.readTableField<RhoName>("somegroup/particleTable", std::vector<std::string_view>{"rho", "name"}, h5pp::TableSelection::LAST));
-    rho_name_fields.emplace_back(
-        file.readTableField<RhoName>("somegroup/particleTable", std::array<std::string, 2>{"rho", "name"}, h5pp::TableSelection::LAST));
-    rho_name_fields.emplace_back(file.readTableField<RhoName>("somegroup/particleTable", {4, 5}, h5pp::TableSelection::LAST));
-    rho_name_fields.emplace_back(
-        file.readTableField<RhoName>("somegroup/particleTable", std::initializer_list<size_t>{4, 5}, h5pp::TableSelection::LAST));
-    rho_name_fields.emplace_back(
-        file.readTableField<RhoName>("somegroup/particleTable", std::vector<size_t>{4, 5}, h5pp::TableSelection::LAST));
-    rho_name_fields.emplace_back(
-        file.readTableField<RhoName>("somegroup/particleTable", std::array<size_t, 2>{4, 5}, h5pp::TableSelection::LAST));
+    rho_name_fields.emplace_back(table.readField<RhoName>(std::initializer_list<std::string>{"rho", "name"}, h5pp::TableSelection::LAST));
+    rho_name_fields.emplace_back(table.readField<RhoName>(std::vector<std::string>{"rho", "name"}, h5pp::TableSelection::LAST));
+    rho_name_fields.emplace_back(table.readField<RhoName>(std::vector<std::string_view>{"rho", "name"}, h5pp::TableSelection::LAST));
+    rho_name_fields.emplace_back(table.readField<RhoName>(std::array<std::string, 2>{"rho", "name"}, h5pp::TableSelection::LAST));
+    rho_name_fields.emplace_back(table.readField<RhoName>(std::initializer_list<size_t>{4, 5}, h5pp::TableSelection::LAST));
+    rho_name_fields.emplace_back(table.readField<RhoName>(std::vector<size_t>{4, 5}, h5pp::TableSelection::LAST));
+    rho_name_fields.emplace_back(table.readField<RhoName>(std::array<size_t, 2>{4, 5}, h5pp::TableSelection::LAST));
 
     for(const auto &rho_name : rho_name_fields) {
         CHECK(rho_name.rho[0] == 20);

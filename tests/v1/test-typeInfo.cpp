@@ -2,7 +2,7 @@
 #include <array>
 #include <catch2/catch_all.hpp>
 #include <complex>
-#include <h5pp/h5pp.h>
+#include <h5pp/v1/h5pp.h>
 #include <string>
 #include <string_view>
 #include <typeindex>
@@ -21,26 +21,31 @@ namespace {
         std::complex<double>              attribute_complex_double        = {47.2, -10.2445};
         std::array<long, 4>               attribute_array_long            = {1, 2, 3, 4};
         float                             attribute_carray_float[4]       = {1, 2, 3, 4};
-        std::vector<std::complex<double>> attribute_vector_complex_double = {{2.0, 5.0}, {3.1, -2.3}, {3.0, 0.0}, {-51.2, 5.0}};
-        std::vector<double>               attribute_vector_double         = {1.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
-                                                                             0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
-                                                                             -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
-        std::string                       attribute_string               = "This is a very long string that I am testing";
-        char                              attribute_char_array[]         = "This is a char array";
+        std::vector<std::complex<double>> attribute_vector_complex_double = {
+            {  2.0,  5.0},
+            {  3.1, -2.3},
+            {  3.0,  0.0},
+            {-51.2,  5.0}
+        };
+        std::vector<double> attribute_vector_double = {1.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
+                                                       0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
+                                                       -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
+        std::string         attribute_string        = "This is a very long string that I am testing";
+        char                attribute_char_array[]  = "This is a char array";
 
-        h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
+        h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
         file.writeDataset(std::vector<double>(10, 5.0), "testGroup/vectorDouble");
 
-        file.writeAttribute("testGroup/vectorDouble", "AttributeInt", attribute_int);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeDouble", attribute_double);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeComplexInt", attribute_complex_int);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeComplexDouble", attribute_complex_double);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeArrayLong", attribute_array_long);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeCArrayFloat", attribute_carray_float);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeVectorDouble", attribute_vector_double);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeVectorComplexDouble", attribute_vector_complex_double);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeString", attribute_string);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeCharArray", attribute_char_array);
+        file.writeAttribute(attribute_int, "testGroup/vectorDouble", "AttributeInt");
+        file.writeAttribute(attribute_double, "testGroup/vectorDouble", "AttributeDouble");
+        file.writeAttribute(attribute_complex_int, "testGroup/vectorDouble", "AttributeComplexInt");
+        file.writeAttribute(attribute_complex_double, "testGroup/vectorDouble", "AttributeComplexDouble");
+        file.writeAttribute(attribute_array_long, "testGroup/vectorDouble", "AttributeArrayLong");
+        file.writeAttribute(attribute_carray_float, "testGroup/vectorDouble", "AttributeCArrayFloat");
+        file.writeAttribute(attribute_vector_double, "testGroup/vectorDouble", "AttributeVectorDouble");
+        file.writeAttribute(attribute_vector_complex_double, "testGroup/vectorDouble", "AttributeVectorComplexDouble");
+        file.writeAttribute(attribute_string, "testGroup/vectorDouble", "AttributeString");
+        file.writeAttribute(attribute_char_array, "testGroup/vectorDouble", "AttributeCharArray");
     }
 }
 
@@ -51,9 +56,9 @@ TEST_CASE("Type info exposes dataset metadata for stored objects", "[type-info]"
 
     auto path = make_path("typeInfo");
     seed_type_info_file(path);
-    h5pp::File file(path, h5pp::FileAccess::READONLY, 0);
+    h5pp::v1::File file(path, h5pp::FileAccess::READONLY, 0);
 
-    auto info = file.dataset("testGroup/vectorDouble").getTypeInfo();
+    auto info = file.getTypeInfoDataset("testGroup/vectorDouble");
     REQUIRE(info.cppTypeIndex);
     REQUIRE(info.cppTypeIndex.value() == std::type_index(typeid(double)));
     REQUIRE(info.cppTypeBytes);
@@ -70,14 +75,17 @@ TEST_CASE("Type info exposes dataset metadata for stored objects", "[type-info]"
     REQUIRE(info.h5Dims.value() == std::vector<hsize_t>{10});
     REQUIRE(H5Tget_class(info.h5Type.value()) == H5T_FLOAT);
     REQUIRE_FALSE(info.string().empty());
+
+    auto via_generic = file.getInfo<h5pp::TypeInfo>("testGroup/vectorDouble");
+    REQUIRE(via_generic.h5Dims == info.h5Dims);
 }
 
 TEST_CASE("Type info exposes per-attribute metadata across scalar, array and string attributes", "[type-info]") {
     auto path = make_path("typeInfo-attrs");
     seed_type_info_file(path);
-    h5pp::File file(path, h5pp::FileAccess::READONLY, 0);
+    h5pp::v1::File file(path, h5pp::FileAccess::READONLY, 0);
 
-    auto infos = file.dataset("testGroup/vectorDouble").getTypeInfoAttributes();
+    auto infos = file.getTypeInfoAttributes("testGroup/vectorDouble");
     REQUIRE(infos.size() == 10);
 
     std::vector<std::string> names;
@@ -101,14 +109,14 @@ TEST_CASE("Type info exposes per-attribute metadata across scalar, array and str
                                               "AttributeVectorComplexDouble",
                                               "AttributeVectorDouble"});
 
-    auto attr_int = file.attribute("testGroup/vectorDouble", "AttributeInt").getTypeInfo();
+    auto attr_int = file.getTypeInfoAttribute("testGroup/vectorDouble", "AttributeInt");
     REQUIRE(attr_int.cppTypeIndex);
     REQUIRE(attr_int.cppTypeIndex.value() == std::type_index(typeid(int)));
     REQUIRE(attr_int.h5Rank);
     REQUIRE(attr_int.h5Rank.value() == 0);
     REQUIRE(H5Tget_class(attr_int.h5Type.value()) == H5T_INTEGER);
 
-    auto attr_vector = file.attribute("testGroup/vectorDouble", "AttributeVectorComplexDouble").getTypeInfo();
+    auto attr_vector = file.getTypeInfoAttribute("testGroup/vectorDouble", "AttributeVectorComplexDouble");
     REQUIRE(attr_vector.cppTypeIndex);
     REQUIRE(attr_vector.cppTypeIndex.value() == std::type_index(typeid(std::complex<double>)));
     REQUIRE(attr_vector.cppTypeBytes);
@@ -119,7 +127,7 @@ TEST_CASE("Type info exposes per-attribute metadata across scalar, array and str
     REQUIRE(attr_vector.h5Rank.value() == 1);
     REQUIRE(H5Tget_class(attr_vector.h5Type.value()) == H5T_COMPOUND);
 
-    auto attr_string = file.attribute("testGroup/vectorDouble", "AttributeString").getTypeInfo();
+    auto attr_string = file.getInfo<h5pp::TypeInfo>("testGroup/vectorDouble", "AttributeString");
     REQUIRE(attr_string.h5Name);
     REQUIRE(attr_string.h5Name.value() == "AttributeString");
     REQUIRE(H5Tis_variable_str(attr_string.h5Type.value()) > 0);

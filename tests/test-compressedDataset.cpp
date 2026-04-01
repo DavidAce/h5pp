@@ -6,13 +6,12 @@
 #include <vector>
 
 namespace {
-    h5pp::File make_file(std::string_view name) { return h5pp::File(h5pp::format("output/{}.h5", name), h5pp::FileAccess::REPLACE, 0); }
+    h5pp::File make_file(std::string_view name) {
+        h5pp::fs::create_directories("output");
+        return h5pp::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0);
+    }
 
     bool compression_available() { return h5pp::hdf5::isCompressionAvaliable(); }
-
-    bool has_deflate_filter(const h5pp::DsetInfo &info) {
-        return info.h5Filters.has_value() and (info.h5Filters.value() & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
-    }
 
     void require_dims(const h5pp::DsetInfo &info, const std::vector<hsize_t> &expected) {
         REQUIRE(info.dsetDims.has_value());
@@ -30,76 +29,71 @@ namespace {
         REQUIRE(info.h5Layout.value() == H5D_CONTIGUOUS);
     }
 
-    void require_deflate_level(const h5pp::DsetInfo &info, int expected_level) {
+    void require_compression(const h5pp::DsetInfo &info, int expected) {
         REQUIRE(info.compression.has_value());
-        REQUIRE(info.compression.value() == expected_level);
-        REQUIRE(has_deflate_filter(info));
-    }
-
-    void require_no_deflate(const h5pp::DsetInfo &info) {
-        REQUIRE(info.compression.has_value());
-        REQUIRE(info.compression.value() == -1);
-        REQUIRE_FALSE(has_deflate_filter(info));
+        REQUIRE(info.compression.value() == expected);
     }
 }
 
 TEST_CASE("Default compression applies to chunked writes but does not force chunking", "[compression][default]") {
     auto file = make_file("compressedDataset-default");
 
-    std::vector<double> big_data(10000 * 1024, 2.3);
-    std::vector<double> medium_data(10000, 2.3);
+    std::vector<double> bigData(10000 * 1024, 2.3);
+    std::vector<double> mediumData(10000, 2.3);
     file.setCompressionLevel(9);
     REQUIRE(file.getCompressionLevel() == (compression_available() ? 9 : 0));
 
-    file.writeDataset(big_data, "compressedWriteGroup/bigVector");
-    auto big_info = file.getDatasetInfo("compressedWriteGroup/bigVector");
+    file.writeDataset(bigData, "compressedWriteGroup/bigVector");
+    auto bigInfo = file.dataset("compressedWriteGroup/bigVector").getInfo();
 
-    require_dims(big_info, {big_data.size()});
-    require_chunked(big_info);
-    if(compression_available()) require_deflate_level(big_info, 9);
-    else require_no_deflate(big_info);
+    require_dims(bigInfo, {bigData.size()});
+    require_chunked(bigInfo);
+    REQUIRE(bigInfo.compression.has_value());
+    REQUIRE(bigInfo.compression.value() == (compression_available() ? 9 : -1));
 
-    file.writeDataset(medium_data, "compressedWriteGroup/mediumVector");
-    auto medium_info = file.getDatasetInfo("compressedWriteGroup/mediumVector");
+    file.writeDataset(mediumData, "compressedWriteGroup/mediumVector");
+    auto mediumInfo = file.dataset("compressedWriteGroup/mediumVector").getInfo();
 
-    require_dims(medium_info, {medium_data.size()});
-    require_contiguous(medium_info);
-    require_no_deflate(medium_info);
+    require_dims(mediumInfo, {mediumData.size()});
+    require_contiguous(mediumInfo);
+    require_compression(mediumInfo, -1);
 
-    REQUIRE(file.readDataset<std::vector<double>>("compressedWriteGroup/mediumVector") == medium_data);
+    REQUIRE(file.readDataset<std::vector<double>>("compressedWriteGroup/mediumVector") == mediumData);
 }
 
-TEST_CASE("Compression helpers cover overrides, clamping and ignored requests", "[compression][apis]") {
+TEST_CASE("Compression settings cover overrides, clamping and ignored requests", "[compression][apis]") {
     auto file = make_file("compressedDataset-apis");
 
     std::vector<double> data(10000, 2.3);
     file.setCompressionLevel(2);
     REQUIRE(file.getCompressionLevel() == (compression_available() ? 2 : 0));
 
-    file.writeDataset_chunked(data, "compressedWriteGroup/overrideLevel", std::nullopt, std::nullopt, std::nullopt, std::nullopt, 7);
-    auto override_info = file.getDatasetInfo("compressedWriteGroup/overrideLevel");
-    require_chunked(override_info);
-    if(compression_available()) require_deflate_level(override_info, 7);
-    else require_no_deflate(override_info);
+    h5pp::DatasetCreateOptions overrideCreate;
+    overrideCreate.h5Layout    = H5D_CHUNKED;
+    overrideCreate.compression = 7;
+    file.writeDataset(data, "compressedWriteGroup/overrideLevel", overrideCreate);
+    auto overrideInfo = file.dataset("compressedWriteGroup/overrideLevel").getInfo();
+    require_chunked(overrideInfo);
+    REQUIRE(overrideInfo.compression.has_value());
+    REQUIRE(overrideInfo.compression.value() == (compression_available() ? 7 : -1));
 
-    file.writeDataset_compressed(data, "compressedWriteGroup/clampedLevel", 42);
-    auto clamped_info = file.getDatasetInfo("compressedWriteGroup/clampedLevel");
-    require_chunked(clamped_info);
-    if(compression_available()) require_deflate_level(clamped_info, 9);
-    else require_no_deflate(clamped_info);
+    h5pp::DatasetCreateOptions clampedCreate;
+    clampedCreate.h5Layout    = H5D_CHUNKED;
+    clampedCreate.compression = 42;
+    file.writeDataset(data, "compressedWriteGroup/clampedLevel", clampedCreate);
+    auto clampedInfo = file.dataset("compressedWriteGroup/clampedLevel").getInfo();
+    require_chunked(clampedInfo);
+    REQUIRE(clampedInfo.compression.has_value());
+    REQUIRE(clampedInfo.compression.value() == (compression_available() ? 9 : -1));
 
-    file.writeDataset(data,
-                      "compressedWriteGroup/explicitContiguous",
-                      {data.size()},
-                      H5D_CONTIGUOUS,
-                      std::nullopt,
-                      std::nullopt,
-                      std::nullopt,
-                      std::nullopt,
-                      7);
-    auto ignored_info = file.getDatasetInfo("compressedWriteGroup/explicitContiguous");
-    require_contiguous(ignored_info);
-    require_no_deflate(ignored_info);
+    h5pp::DatasetCreateOptions contiguousCreate;
+    contiguousCreate.dims        = std::vector<hsize_t>{data.size()};
+    contiguousCreate.h5Layout    = H5D_CONTIGUOUS;
+    contiguousCreate.compression = 7;
+    file.writeDataset(data, "compressedWriteGroup/explicitContiguous", contiguousCreate);
+    auto ignoredInfo = file.dataset("compressedWriteGroup/explicitContiguous").getInfo();
+    require_contiguous(ignoredInfo);
+    require_compression(ignoredInfo, -1);
 
     REQUIRE(file.readDataset<std::vector<double>>("compressedWriteGroup/overrideLevel") == data);
     REQUIRE(file.readDataset<std::vector<double>>("compressedWriteGroup/clampedLevel") == data);
@@ -120,11 +114,11 @@ TEST_CASE("Eigen tensors still write through the compression path", "[compressio
     bigTensor.setConstant(1.0);
 
     file.writeDataset(bigTensor, "compressedWriteGroup/bigTensor");
-    auto info = file.getDatasetInfo("compressedWriteGroup/bigTensor");
+    auto info = file.dataset("compressedWriteGroup/bigTensor").getInfo();
 
     require_chunked(info);
     require_dims(info, {40, 180, 40, 5});
-    require_deflate_level(info, 9);
+    require_compression(info, 9);
 
     auto readback = file.readDataset<Eigen::Tensor<double, 4>>("compressedWriteGroup/bigTensor");
     REQUIRE(readback.size() == bigTensor.size());
@@ -134,8 +128,8 @@ TEST_CASE("Eigen tensors still write through the compression path", "[compressio
 
 int main(int argc, char *argv[]) {
     Catch::Session session;
-    int            return_code = session.applyCommandLine(argc, argv);
-    if(return_code != 0) return return_code;
+    int            returnCode = session.applyCommandLine(argc, argv);
+    if(returnCode != 0) return returnCode;
 
     session.configData().shouldDebugBreak = true;
     return session.run();

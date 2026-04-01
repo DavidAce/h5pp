@@ -2,11 +2,12 @@
 #include <cstring>
 #include <h5pp/details/h5ppFormatComplex.h>
 #include <h5pp/h5pp.h>
+#include <string>
 
 namespace {
     std::string make_path(const char *name) {
-        h5pp::fs::create_directories("output");
-        return h5pp::format("output/{}.h5", name);
+        h5pp::fs::create_directories(H5PP_TEST_DIR);
+        return h5pp::format(H5PP_TEST_DIR "{}.h5", name);
     }
 
     template<typename L, typename R>
@@ -20,6 +21,13 @@ namespace {
         {
             return lhs == rhs;
         }
+    }
+
+    const std::vector<std::optional<H5D_layout_t>> layouts      = {std::nullopt, H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED};
+    const std::vector<std::string>                 layout_names = {"auto", "compact", "contiguous", "chunked"};
+
+    void require_zero_vector(h5pp::File &file, std::string_view path) {
+        REQUIRE(file.readDataset<std::vector<double>>(path) == std::vector<double>{0, 0, 0, 0});
     }
 }
 
@@ -38,10 +46,11 @@ void require_scalar_equal(const T &lhs, const T &rhs) {
 }
 
 template<typename WriteType, typename ReadType = WriteType>
-void require_roundtrip(h5pp::File &file, const WriteType &writeData, std::string_view dsetpath) {
+void require_roundtrip(h5pp::File &file, const WriteType &writeData, std::string_view dsetPath) {
     using namespace h5pp::type::sfinae;
-    file.writeDataset(writeData, dsetpath);
-    auto readData = file.readDataset<ReadType>(dsetpath);
+    auto dset     = file.dataset(dsetPath);
+    dset.write(writeData);
+    auto readData = dset.read<ReadType>();
 
     if constexpr(is_ScalarN_v<ReadType>) {
         require_scalar_equal(writeData, readData);
@@ -65,16 +74,22 @@ void require_roundtrip(h5pp::File &file, const WriteType &writeData, std::string
     }
 }
 
-template<size_t Size, typename WriteType, typename ReadType = WriteType, typename DimsType = int>
-void require_roundtrip(h5pp::File &file, const WriteType *writeData, const DimsType &dims, std::string_view dsetpath) {
-    file.writeDataset(writeData, dsetpath, dims);
-    auto  readData = std::make_unique<ReadType[]>(Size);
-    auto *readPtr  = readData.get();
-    file.readDataset(readPtr, dsetpath, dims);
+template<size_t Size, typename WriteType, typename ReadType = WriteType>
+void require_roundtrip(h5pp::File &file, const WriteType *writeData, hsize_t dims, std::string_view dsetPath) {
+    auto                      dset = file.dataset(dsetPath);
+    h5pp::DatasetWriteOptions writeOptions;
+    writeOptions.dims = std::vector<hsize_t>{dims};
+    dset.write(writeData, writeOptions);
+
+    auto readData = std::make_unique<ReadType[]>(Size);
+    auto *readPtr = readData.get();
+    h5pp::DatasetReadOptions readOptions;
+    readOptions.dims = std::vector<hsize_t>{dims};
+    dset.readInto(readPtr, readOptions);
     for(size_t idx = 0; idx < Size; ++idx) REQUIRE(require_equal_value(writeData[idx], readData[idx]));
 }
 
-TEST_CASE("Generic read/write round-trips cover scalars, STL containers, compounds and raw arrays", "[read-write]") {
+TEST_CASE("Datasets round-trip representative containers and expose basic handle queries", "[dataset]") {
     using cplx = std::complex<double>;
 
     static_assert(
@@ -91,7 +106,7 @@ TEST_CASE("Generic read/write round-trips cover scalars, STL containers, compoun
         double z;
     };
 
-    h5pp::File file(make_path("readWrite"), H5F_ACC_TRUNC | H5F_ACC_RDWR, 0);
+    h5pp::File file(make_path("dataset"), H5F_ACC_TRUNC | H5F_ACC_RDWR, 0);
 
     std::vector<int>    emptyVector;
     std::string         stringDummy = "Dummy string with spaces";
@@ -99,10 +114,10 @@ TEST_CASE("Generic read/write round-trips cover scalars, STL containers, compoun
     std::vector<double> vectorDouble  = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
                                          1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
     std::vector<cplx>   vectorComplex = {
-        { -0.191154,  0.326211},
-        {  0.964728, -0.712335},
-        {-0.0351791,  -0.10264},
-        {  0.177544,   0.99999}
+        {-0.191154, 0.326211},
+        {0.964728, -0.712335},
+        {-0.0351791, -0.10264},
+        {0.177544, 0.99999}
     };
     std::array<double, 10> cStyleDoubleArray{};
     for(size_t i = 0; i < cStyleDoubleArray.size(); ++i) cStyleDoubleArray[i] = static_cast<double>(i);
@@ -118,12 +133,7 @@ TEST_CASE("Generic read/write round-trips cover scalars, STL containers, compoun
     }
 
     h5pp::varr_t<double>              vlenDouble       = {1.0, 2.0, 3.0, 4.0};
-    std::vector<h5pp::varr_t<double>> vectorVlenDouble = {
-        {1.0},
-        {2.0, 3.0},
-        {4.0, 5.0, 6.0},
-        {7.0, 8.0, 9.0, 10.0}
-    };
+    std::vector<h5pp::varr_t<double>> vectorVlenDouble = {{1.0}, {2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0, 10.0}};
 
     require_roundtrip(file, emptyVector, "emptyVector");
     require_roundtrip(file, stringDummy, "stringDummy");
@@ -141,7 +151,9 @@ TEST_CASE("Generic read/write round-trips cover scalars, STL containers, compoun
     auto vectorReadBytes = file.readDataset<std::vector<std::byte>>("vectorDouble");
     REQUIRE(vectorReadBytes.size() == vectorDouble.size() * sizeof(double));
 
-    auto info = file.getDatasetInfo("vectorDouble");
+    auto dset = file.dataset("vectorDouble");
+    REQUIRE(dset.exists());
+    auto info = dset.getInfo();
     REQUIRE(info.dsetDims);
     REQUIRE(info.dsetDims.value() == std::vector<hsize_t>{vectorDouble.size()});
 
@@ -187,17 +199,54 @@ TEST_CASE("Generic read/write round-trips cover scalars, STL containers, compoun
     require_roundtrip<Eigen::TensorMap<Eigen::Tensor<double, 2>>, Eigen::Tensor<double, 2>>(file, tensorMapDouble, "tensorMapDouble");
     require_roundtrip<Eigen::MatrixXd, Eigen::VectorXd>(file, vectorMatrix, "vectorMatrix");
 #endif
+}
 
-#if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
-    h5pp::fp128 twopi_fp128 = 6.28318530717958623199592693708837032318115234375;
-    h5pp::cx128 twopi_cx128 = 6.28318530717958623199592693708837032318115234375;
-    require_roundtrip(file, twopi_fp128, "twopi_fp128");
-    require_roundtrip(file, twopi_cx128, "twopi_cx128");
-#endif
+TEST_CASE("Dataset API covers canonical create and write flows across layouts", "[dataset][api]") {
+    auto file = h5pp::File(make_path("datasetApi"), h5pp::FileAccess::REPLACE, 0);
 
-    auto found_links = file.findDatasets();
-    REQUIRE(std::find(found_links.begin(), found_links.end(), "vectorDouble") != found_links.end());
-    REQUIRE(std::find(found_links.begin(), found_links.end(), "vectorComplex") != found_links.end());
+    for(size_t idx = 0; idx < layouts.size(); ++idx) {
+        SECTION(h5pp::format("handle create: {}", layout_names[idx])) {
+            h5pp::DatasetCreateOptions create;
+            create.h5Type   = H5Tcopy(H5T_NATIVE_DOUBLE);
+            create.dims     = {4};
+            create.h5Layout = layouts[idx];
+
+            auto path         = h5pp::format("createGroup/vectorDouble_{}", layout_names[idx]);
+            auto created_info = file.dataset(path).create(create);
+            REQUIRE(created_info.dsetPath.value() == path);
+            require_zero_vector(file, path);
+        }
+    }
+
+    std::vector<double> data = {1, 2, 3, 4};
+
+    h5pp::DatasetCreateOptions chunked_create;
+    chunked_create.h5Type    = H5Tcopy(H5T_NATIVE_DOUBLE);
+    chunked_create.dims      = {4};
+    chunked_create.h5Layout  = H5D_CHUNKED;
+    chunked_create.dimsChunk = {2};
+    chunked_create.dimsMax   = {H5S_UNLIMITED};
+
+    file.writeDataset(data, "manual/writeShort", chunked_create);
+    auto short_info = file.dataset("manual/writeShort").getInfo();
+    REQUIRE(short_info.h5Layout.value() == H5D_CHUNKED);
+    REQUIRE(short_info.dsetChunk.value() == std::vector<hsize_t>{2});
+    REQUIRE(short_info.dsetDimsMax.value() == std::vector<hsize_t>{H5S_UNLIMITED});
+    REQUIRE(file.readDataset<std::vector<double>>("manual/writeShort") == data);
+
+    h5pp::DatasetCreateOptions typed_create;
+    typed_create.h5Type   = H5Tcopy(H5T_NATIVE_DOUBLE);
+    typed_create.dims     = {4};
+    typed_create.h5Layout = H5D_CONTIGUOUS;
+    file.dataset("manual/writeLong").ensure(typed_create).write(data);
+    REQUIRE(file.dataset("manual/writeLong").getInfo().h5Layout.value() == H5D_CONTIGUOUS);
+    REQUIRE(file.readDataset<std::vector<double>>("manual/writeLong") == data);
+
+    h5pp::DatasetWriteOptions write;
+    write.resizePolicy = h5pp::ResizePolicy::FIT;
+    file.writeDataset(std::vector<double>{5, 6}, "manual/writeShort", write);
+    REQUIRE(file.readDataset<std::vector<double>>("manual/writeShort") == std::vector<double>{5, 6});
+    REQUIRE(file.dataset("manual/writeShort").getInfo().dsetDims.value() == std::vector<hsize_t>{2});
 }
 
 int main(int argc, char *argv[]) {

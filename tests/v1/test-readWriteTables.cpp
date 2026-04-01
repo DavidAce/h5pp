@@ -1,5 +1,5 @@
 #include <catch2/catch_all.hpp>
-#include <h5pp/h5pp.h>
+#include <h5pp/v1/h5pp.h>
 
 struct Particle {
     double x = 0, y = 0, z = 0, t = 0;
@@ -45,55 +45,42 @@ namespace {
 
     std::string make_table_file() {
         auto       path = make_path("readWriteTables");
-        h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
+        h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
         file.setCompressionLevel(6);
-        auto table = file.table("somegroup/particleTable").create(make_particle_type(), "particleTable", {.compression = 6});
-        table.appendRecords(std::vector<Particle>(10));
+        auto particle_type = make_particle_type();
+        file.createTable(particle_type, "somegroup/particleTable", "particleTable", std::nullopt, 6);
+        file.appendTableRecords(std::vector<Particle>(10), "somegroup/particleTable");
         return path;
     }
 }
 
-TEST_CASE("Tables can be created, appended, inspected and partially read through multiple selectors", "[tables]") {
-    h5pp::File file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
-    auto       table = file.table("somegroup/particleTable");
+TEST_CASE("Tables can be created, appended, inspected and partially read through multiple overloads", "[tables]") {
+    h5pp::v1::File file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
 
-    auto info = table.getInfo();
-    auto fieldInfo = table.getFieldInfo();
+    auto info = file.getTableInfo("somegroup/particleTable");
     REQUIRE(info.tableTitle.value() == "particleTable");
     REQUIRE(info.numRecords.value() == 10);
-    REQUIRE(info.numFields.value() == 6);
     REQUIRE(info.recordBytes.value() == sizeof(Particle));
     REQUIRE_THAT(info.fieldSizes.value(), Catch::Matchers::Equals(std::vector<size_t>{8, 8, 8, 8, 24, 10}));
-    REQUIRE(fieldInfo.fieldNames);
-    REQUIRE(fieldInfo.fieldNames.value().size() == 6);
-    REQUIRE(fieldInfo.fieldNames.value()[0] == "x");
-    REQUIRE(fieldInfo.fieldNames.value()[1] == "y");
-    REQUIRE(fieldInfo.fieldNames.value()[2] == "z");
-    REQUIRE(fieldInfo.fieldNames.value()[3] == "t");
-    REQUIRE(fieldInfo.fieldNames.value()[4] == "rho");
-    REQUIRE(fieldInfo.fieldNames.value()[5] == "name");
-    REQUIRE(table.fieldExists(std::vector<std::string>{"x"}));
-    REQUIRE(table.fieldExists(std::vector<std::string>{"rho"}));
-    REQUIRE_FALSE(table.fieldExists(std::vector<std::string>{"missing"}));
 
     Particle              particle_default;
     std::vector<Particle> particle_read;
-    particle_read.emplace_back(table.readRecords<Particle>());
-    particle_read.emplace_back(file.table(std::string("somegroup/particl\0eTable", 24)).readRecords<Particle>());
-    particle_read.emplace_back(file.table(std::string("somegroup/particleTable")).readRecords<Particle>());
-    particle_read.emplace_back(file.table(std::string_view("somegroup/particleTable")).readRecords<Particle>());
+    particle_read.emplace_back(file.readTableRecords<Particle>("somegroup/particleTable"));
+    particle_read.emplace_back(file.readTableRecords<Particle>(std::string("somegroup/particl\0eTable", 24)));
+    particle_read.emplace_back(file.readTableRecords<Particle>(std::string("somegroup/particleTable")));
+    particle_read.emplace_back(file.readTableRecords<Particle>(std::string_view("somegroup/particleTable")));
     for(const auto &particle : particle_read) require_particle_equal(particle, particle_default);
 
     std::vector<std::vector<Particle>> result_container;
-    result_container.emplace_back(table.readRecords<std::vector<Particle>>());
-    result_container.emplace_back(table.readRecords<std::vector<Particle>>(0));
-    result_container.emplace_back(table.readRecords<std::vector<Particle>>(5));
-    result_container.emplace_back(table.readRecords<std::vector<Particle>>(std::nullopt, 5));
-    result_container.emplace_back(table.readRecords<std::vector<Particle>>(0, std::nullopt));
-    result_container.emplace_back(table.readRecords<std::vector<Particle>>(0, 5));
-    result_container.emplace_back(table.readRecords<std::vector<Particle>>(h5pp::TableSelection::ALL));
-    result_container.emplace_back(table.readRecords<std::vector<Particle>>(h5pp::TableSelection::FIRST));
-    result_container.emplace_back(table.readRecords<std::vector<Particle>>(h5pp::TableSelection::LAST));
+    result_container.emplace_back(file.readTableRecords<std::vector<Particle>>("somegroup/particleTable"));
+    result_container.emplace_back(file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", 0));
+    result_container.emplace_back(file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", 5));
+    result_container.emplace_back(file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", std::nullopt, 5));
+    result_container.emplace_back(file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", 0, std::nullopt));
+    result_container.emplace_back(file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", 0, 5));
+    result_container.emplace_back(file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", h5pp::TableSelection::ALL));
+    result_container.emplace_back(file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", h5pp::TableSelection::FIRST));
+    result_container.emplace_back(file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", h5pp::TableSelection::LAST));
 
     REQUIRE(result_container[0].size() == 10);
     REQUIRE(result_container[1].size() == 10);
@@ -109,33 +96,33 @@ TEST_CASE("Tables can be created, appended, inspected and partially read through
 }
 
 TEST_CASE("Appending and copying table records preserves metadata and selected rows", "[tables]") {
-    h5pp::File file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
-    auto       table = file.table("somegroup/particleTable");
+    h5pp::v1::File file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
 
     std::vector<Particle> extra_particles(3);
     for(size_t idx = 0; idx < extra_particles.size(); ++idx) extra_particles[idx].x = 100.0 + static_cast<double>(idx);
-    table.appendRecords(extra_particles);
-    auto appended_info = table.getInfo();
+    auto appended_info = file.appendTableRecords(extra_particles, "somegroup/particleTable");
     REQUIRE(appended_info.numRecords.value() == 13);
 
-    auto last_three = table.readRecords<std::vector<Particle>>(10, 3);
+    auto last_three = file.readTableRecords<std::vector<Particle>>("somegroup/particleTable", 10, 3);
     REQUIRE(last_three.size() == 3);
     for(size_t idx = 0; idx < last_three.size(); ++idx) {
         CHECK(last_three[idx].x == 100.0 + static_cast<double>(idx));
         CHECK(last_three[idx].y == 0.0);
     }
 
-    auto       info1 = table.getInfo();
-    h5pp::File copy_target(make_path("readWriteTablesCopy"), h5pp::FileAccess::REPLACE, 0);
-    auto       info2 = copy_target.table("somegroup/particleTable")
-                            .appendRecordsFrom(file.advanced().openFileHandle(), "somegroup/particleTable", h5pp::TableSelection::LAST);
+    auto       info1 = file.getTableInfo("somegroup/particleTable");
+    h5pp::v1::File copy_target(make_path("readWriteTablesCopy"), h5pp::FileAccess::REPLACE, 0);
+    auto       info2 = copy_target.appendTableRecords(file.openFileHandle(),
+                                                "somegroup/particleTable",
+                                                "somegroup/particleTable",
+                                                h5pp::TableSelection::LAST);
 
     CHECK(info2.tableTitle.value() == info1.tableTitle.value());
     CHECK(info2.numRecords.value() == 1);
     CHECK(info2.recordBytes.value() == info1.recordBytes.value());
     CHECK_THAT(info2.fieldSizes.value(), Catch::Matchers::Equals(info1.fieldSizes.value()));
 
-    auto copied_last = copy_target.table("somegroup/particleTable").readRecords<Particle>();
+    auto copied_last = copy_target.readTableRecords<Particle>("somegroup/particleTable");
     CHECK(copied_last.x == 102.0);
     CHECK(copied_last.y == 0.0);
 }

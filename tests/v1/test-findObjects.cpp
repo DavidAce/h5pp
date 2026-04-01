@@ -1,16 +1,12 @@
-#include <algorithm>
 #include <catch2/catch_all.hpp>
-#include <h5pp/h5pp.h>
+#include <h5pp/v1/h5pp.h>
 #include <string_view>
 #include <vector>
 
 namespace {
-    h5pp::File make_file() {
-        h5pp::fs::create_directories(H5PP_TEST_DIR);
-        return h5pp::File(H5PP_TEST_DIR "findObjects.h5", h5pp::FileAccess::REPLACE, 0);
-    }
+    h5pp::v1::File make_file() { return h5pp::v1::File(H5PP_TEST_DIR "findObjects.h5", h5pp::FileAccess::REPLACE, 0); }
 
-    void write_tree(h5pp::File &file) {
+    void write_tree(h5pp::v1::File &file) {
         file.writeDataset(0.0, "dsetA");
         file.writeDataset(0.1, "group1/dsetB2");
         file.writeDataset(0.1, "group1/dsetB1");
@@ -38,10 +34,6 @@ TEST_CASE("findDatasets locates datasets across roots, depths and hit limits", "
 
     REQUIRE(file.findDatasets("", "/").size() == 7);
     REQUIRE(file.findDatasets("does-not-exist").empty());
-
-    auto group = file.group("group3/group4");
-    REQUIRE(group.findDatasets("dset").size() == 2);
-    REQUIRE(group.findDatasets("dset", 1, 1) == std::vector<std::string>{"group5/dsetD"});
 }
 
 TEST_CASE("findGroups and findLinks include groups and optionally symlinked datasets", "[find][groups]") {
@@ -60,16 +52,13 @@ TEST_CASE("findGroups and findLinks include groups and optionally symlinked data
     REQUIRE(with_symlinks.size() >= without_symlinks.size());
     REQUIRE(std::find(without_symlinks.begin(), without_symlinks.end(), "links/toC") == without_symlinks.end());
     REQUIRE(symlink_hits == std::vector<std::string>{"links/toC"});
-
-    auto root = file.group();
-    REQUIRE(root.findGroups("group1") == std::vector<std::string>{"group1"});
-    REQUIRE(root.findLinks("toC", -1, -1, true) == std::vector<std::string>{"links/toC"});
 }
 
 int main(int argc, char *argv[]) {
     Catch::Session session;
     int            return_code = session.applyCommandLine(argc, argv);
     if(return_code != 0) return return_code;
+
     session.configData().shouldDebugBreak = true;
     return session.run();
 }

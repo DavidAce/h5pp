@@ -1,15 +1,15 @@
 #include <catch2/catch_all.hpp>
-#include <h5pp/h5pp.h>
+#include <h5pp/v1/h5pp.h>
 #include <string_view>
 #include <vector>
 
 namespace {
-    h5pp::File make_file() { return h5pp::File("output/functionCalls.h5", h5pp::FileAccess::REPLACE, 0); }
+    h5pp::v1::File make_file() { return h5pp::v1::File(H5PP_TEST_DIR "functionCalls.h5", h5pp::FileAccess::REPLACE, 0); }
 
     const std::vector<std::optional<H5D_layout_t>> layouts      = {std::nullopt, H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED};
     const std::vector<std::string>                 layout_names = {"auto", "compact", "contiguous", "chunked"};
 
-    void require_zero_vector(h5pp::File &file, std::string_view path) {
+    void require_zero_vector(h5pp::v1::File &file, std::string_view path) {
         REQUIRE(file.readDataset<std::vector<double>>(path) == std::vector<double>{0, 0, 0, 0});
     }
 }

@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <catch2/catch_all.hpp>
 #include <cstring>
-#include <h5pp/h5pp.h>
+#include <h5pp/v1/h5pp.h>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -63,25 +63,14 @@ namespace {
 TEST_CASE("Explicit compound user types round-trip as datasets and attributes", "[user-type]") {
     auto       path  = make_path("userType");
     auto       types = register_types();
-    h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
+    h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
 
     auto particle = make_particle(0, "new name");
+    file.writeDataset(particle, "singleParticle", types.particle_type);
+    file.writeAttribute(particle, "singleParticle", "particleAttr", std::nullopt, types.particle_type);
 
-    h5pp::DatasetCreateOptions dset_create;
-    dset_create.h5Type = types.particle_type;
-    file.writeDataset(particle, "singleParticle", dset_create);
-
-    h5pp::AttributeWriteOptions attr_write;
-    attr_write.h5Type = types.particle_type;
-    file.writeAttribute("singleParticle", "particleAttr", particle, attr_write);
-
-    h5pp::DatasetReadOptions dset_read;
-    dset_read.h5Type = types.particle_type;
-    h5pp::AttributeReadOptions attr_read_opts;
-    attr_read_opts.h5Type = types.particle_type;
-
-    auto particle_read = file.readDataset<Particle>("singleParticle", dset_read);
-    auto attr_read     = file.readAttribute<Particle>("singleParticle", "particleAttr", attr_read_opts);
+    auto particle_read = file.readDataset<Particle>("singleParticle", std::nullopt, types.particle_type);
+    auto attr_read     = file.readAttribute<Particle>("singleParticle", "particleAttr", std::nullopt, types.particle_type);
 
     REQUIRE(particle_read == particle);
     REQUIRE(attr_read == particle);
@@ -94,18 +83,13 @@ TEST_CASE("Explicit compound user types round-trip as datasets and attributes", 
 TEST_CASE("Vectors of explicit compound user types preserve record order and fields", "[user-type]") {
     auto       path  = make_path("userType-vector");
     auto       types = register_types();
-    h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
+    h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
 
     std::vector<Particle> particles;
     for(int idx = 0; idx < 10; ++idx) particles.emplace_back(make_particle(idx, h5pp::format("p-{}", idx)));
 
-    h5pp::DatasetCreateOptions create;
-    create.h5Type = types.particle_type;
-    file.writeDataset(particles, "particles", create);
-
-    h5pp::DatasetReadOptions read;
-    read.h5Type = types.particle_type;
-    auto particles_read = file.readDataset<std::vector<Particle>>("particles", read);
+    file.writeDataset(particles, "particles", types.particle_type);
+    auto particles_read = file.readDataset<std::vector<Particle>>("particles", std::nullopt, types.particle_type);
 
     REQUIRE(particles_read == particles);
 
@@ -117,28 +101,26 @@ TEST_CASE("Vectors of explicit compound user types preserve record order and fie
 TEST_CASE("Resizable compound datasets accept appends when created with an explicit HDF5 type", "[user-type]") {
     auto       path  = make_path("userType-append");
     auto       types = register_types();
-    h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
+    h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
 
     std::vector<Particle> first_batch;
     std::vector<Particle> second_batch;
     for(int idx = 0; idx < 4; ++idx) first_batch.emplace_back(make_particle(idx, h5pp::format("a-{}", idx)));
     for(int idx = 0; idx < 3; ++idx) second_batch.emplace_back(make_particle(idx + 10, h5pp::format("b-{}", idx)));
 
-    h5pp::DatasetCreateOptions create;
-    create.dims      = {first_batch.size()};
-    create.dimsChunk = {first_batch.size()};
-    create.dimsMax   = {H5S_UNLIMITED};
-    create.h5Layout  = H5D_CHUNKED;
-    create.h5Type    = types.particle_type;
-    file.writeDataset(first_batch, "particles", create);
+    file.writeDataset_chunked(first_batch,
+                              "particles",
+                              std::vector<hsize_t>{first_batch.size()},
+                              std::vector<hsize_t>{first_batch.size()},
+                              std::vector<hsize_t>{H5S_UNLIMITED},
+                              types.particle_type);
 
-    h5pp::DatasetAppendOptions append;
-    append.h5Type = types.particle_type;
-    [[maybe_unused]] auto info = file.dataset("particles").append(second_batch, 0, append);
+    h5pp::Options options;
+    options.linkPath = "particles";
+    options.h5Type   = types.particle_type;
+    file.appendToDataset(second_batch, 0, options);
 
-    h5pp::DatasetReadOptions read;
-    read.h5Type = types.particle_type;
-    auto combined = file.readDataset<std::vector<Particle>>("particles", read);
+    auto combined = file.readDataset<std::vector<Particle>>("particles", std::nullopt, types.particle_type);
     REQUIRE(combined.size() == first_batch.size() + second_batch.size());
     REQUIRE(std::equal(first_batch.begin(), first_batch.end(), combined.begin()));
     REQUIRE(std::equal(second_batch.begin(), second_batch.end(), combined.begin() + static_cast<long>(first_batch.size())));

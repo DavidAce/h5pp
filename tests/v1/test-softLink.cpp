@@ -1,5 +1,5 @@
 #include <catch2/catch_all.hpp>
-#include <h5pp/h5pp.h>
+#include <h5pp/v1/h5pp.h>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -11,10 +11,10 @@ namespace {
     }
 
     void seed_file(const std::string &path) {
-        h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
+        h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
         file.writeDataset(42.0, "realgroup1/realgroup2/dsetA");
         file.writeDataset(43.0, "realgroup1/realgroup2/realgroup3/dsetB");
-        file.writeAttribute("realgroup1/realgroup2/dsetA", "note", std::string("through-soft-link"));
+        file.writeAttribute(std::string("through-soft-link"), "realgroup1/realgroup2/dsetA", "note");
     }
 }
 
@@ -22,10 +22,10 @@ TEST_CASE("Soft links expose target datasets and attributes", "[soft-link]") {
     auto path = make_path("softLink");
     seed_file(path);
 
-    h5pp::File file(path, h5pp::FileAccess::READWRITE, 0);
-    REQUIRE_NOTHROW(file.link("realgroup1/realgroup2").createSoftLink("softlinks/realgroup2"));
-    REQUIRE_NOTHROW(file.link("realgroup1/realgroup2/realgroup3").createSoftLink("softlinks/realgroup3"));
-    REQUIRE_NOTHROW(file.link("realgroup1/realgroup2/dsetA").createSoftLink("softlinks/dsetA"));
+    h5pp::v1::File file(path, h5pp::FileAccess::READWRITE, 0);
+    REQUIRE_NOTHROW(file.createSoftLink("realgroup1/realgroup2", "softlinks/realgroup2"));
+    REQUIRE_NOTHROW(file.createSoftLink("realgroup1/realgroup2/realgroup3", "softlinks/realgroup3"));
+    REQUIRE_NOTHROW(file.createSoftLink("realgroup1/realgroup2/dsetA", "softlinks/dsetA"));
 
     REQUIRE(file.linkExists("softlinks/realgroup2/dsetA"));
     REQUIRE(file.linkExists("softlinks/realgroup3/dsetB"));
@@ -43,13 +43,13 @@ TEST_CASE("Writing through soft links mutates the target object graph", "[soft-l
     auto path = make_path("softLink-write");
     seed_file(path);
 
-    h5pp::File file(path, h5pp::FileAccess::READWRITE, 0);
-    file.link("realgroup1/realgroup2").createSoftLink("softlinks/realgroup2");
-    file.link("realgroup1/realgroup2/realgroup3").createSoftLink("softlinks/realgroup3");
+    h5pp::v1::File file(path, h5pp::FileAccess::READWRITE, 0);
+    file.createSoftLink("realgroup1/realgroup2", "softlinks/realgroup2");
+    file.createSoftLink("realgroup1/realgroup2/realgroup3", "softlinks/realgroup3");
 
     REQUIRE_NOTHROW(file.writeDataset(44.0, "softlinks/realgroup2/dsetC"));
     REQUIRE_NOTHROW(file.writeDataset(45.0, "softlinks/realgroup3/dsetD"));
-    REQUIRE_NOTHROW(file.writeAttribute("softlinks/realgroup2/dsetC", "values", std::vector<int>{1, 2, 3}));
+    REQUIRE_NOTHROW(file.writeAttribute(std::vector<int>{1, 2, 3}, "softlinks/realgroup2/dsetC", "values"));
 
     REQUIRE(file.linkExists("softlinks/realgroup2/dsetC"));
     REQUIRE(file.linkExists("softlinks/realgroup3/dsetD"));
@@ -65,17 +65,17 @@ TEST_CASE("Deleting soft links leaves the underlying targets intact", "[soft-lin
     seed_file(path);
 
     {
-        h5pp::File file(path, h5pp::FileAccess::READWRITE, 0);
-        file.link("realgroup1/realgroup2").createSoftLink("softlinks/realgroup2");
-        file.link("realgroup1/realgroup2/realgroup3").createSoftLink("softlinks/realgroup3");
+        h5pp::v1::File file(path, h5pp::FileAccess::READWRITE, 0);
+        file.createSoftLink("realgroup1/realgroup2", "softlinks/realgroup2");
+        file.createSoftLink("realgroup1/realgroup2/realgroup3", "softlinks/realgroup3");
 
         REQUIRE(file.linkExists("softlinks/realgroup3/dsetB"));
-        REQUIRE_NOTHROW(file.link("softlinks/realgroup3").deleteLink());
+        REQUIRE_NOTHROW(file.deleteLink("softlinks/realgroup3"));
         REQUIRE_FALSE(file.linkExists("softlinks/realgroup3"));
         REQUIRE(file.linkExists("realgroup1/realgroup2/realgroup3/dsetB"));
     }
 
-    h5pp::File reopened(path, h5pp::FileAccess::READONLY, 0);
+    h5pp::v1::File reopened(path, h5pp::FileAccess::READONLY, 0);
     REQUIRE(reopened.readDataset<double>("realgroup1/realgroup2/dsetA") == 42.0);
     REQUIRE(reopened.readDataset<double>("realgroup1/realgroup2/realgroup3/dsetB") == 43.0);
 }

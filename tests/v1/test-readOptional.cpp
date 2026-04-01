@@ -1,5 +1,5 @@
 #include <catch2/catch_all.hpp>
-#include <h5pp/h5pp.h>
+#include <h5pp/v1/h5pp.h>
 
 namespace {
     std::string make_path(const char *name) {
@@ -11,13 +11,13 @@ namespace {
 TEST_CASE("Optional reads return values for existing objects and nullopt for missing ones", "[optional]") {
     auto path = make_path("readOptional");
 
-    h5pp::File writer(path, h5pp::FileAccess::REPLACE, 0);
+    h5pp::v1::File writer(path, h5pp::FileAccess::REPLACE, 0);
     REQUIRE_NOTHROW(writer.writeDataset(42.0, "someGroup/someNumber"));
     REQUIRE_NOTHROW(writer.writeDataset(std::vector<int>{1, 2, 3}, "someGroup/vector"));
-    REQUIRE_NOTHROW(writer.writeAttribute("someGroup/someNumber", "someComment", std::string("My favorite number")));
-    REQUIRE_NOTHROW(writer.writeAttribute("someGroup/vector", "labels", std::vector<std::string>{"alpha", "beta"}));
+    REQUIRE_NOTHROW(writer.writeAttribute("My favorite number", "someGroup/someNumber", "someComment"));
+    REQUIRE_NOTHROW(writer.writeAttribute(std::vector<std::string>{"alpha", "beta"}, "someGroup/vector", "labels"));
 
-    h5pp::File file(path, h5pp::FileAccess::READWRITE, 0);
+    h5pp::v1::File file(path, h5pp::FileAccess::READWRITE, 0);
 
     auto number  = file.readDataset<std::optional<double>>("someGroup/someNumber");
     auto vector  = file.readDataset<std::optional<std::vector<int>>>("someGroup/vector");

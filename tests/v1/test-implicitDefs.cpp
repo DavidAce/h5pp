@@ -1,12 +1,12 @@
 #include <catch2/catch_all.hpp>
-#include <h5pp/h5pp.h>
+#include <h5pp/v1/h5pp.h>
 
-static_assert(std::is_destructible_v<h5pp::File>);
-static_assert(std::is_default_constructible_v<h5pp::File>);
-static_assert(std::is_copy_constructible_v<h5pp::File>);
-static_assert(std::is_copy_assignable_v<h5pp::File>);
-static_assert(std::is_move_constructible_v<h5pp::File>);
-static_assert(std::is_move_assignable_v<h5pp::File>);
+static_assert(std::is_destructible_v<h5pp::v1::File>);
+static_assert(std::is_default_constructible_v<h5pp::v1::File>);
+static_assert(std::is_copy_constructible_v<h5pp::v1::File>);
+static_assert(std::is_copy_assignable_v<h5pp::v1::File>);
+static_assert(std::is_move_constructible_v<h5pp::v1::File>);
+static_assert(std::is_move_assignable_v<h5pp::v1::File>);
 
 static_assert(std::is_destructible_v<h5pp::hid::h5f>);
 static_assert(std::is_default_constructible_v<h5pp::hid::h5f>);
@@ -72,7 +72,7 @@ static_assert(std::is_move_constructible_v<h5pp::hid::h5t>);
 static_assert(std::is_move_assignable_v<h5pp::hid::h5t>);
 
 TEST_CASE("Implicitly defined special members remain available for file and hid wrappers", "[implicit-defs]") {
-    h5pp::File file;
+    h5pp::v1::File file;
     REQUIRE(file.getFilePath().empty());
 
     h5pp::hid::h5f file_handle;

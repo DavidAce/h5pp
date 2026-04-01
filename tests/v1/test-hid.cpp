@@ -1,5 +1,5 @@
 #include <catch2/catch_all.hpp>
-#include <h5pp/h5pp.h>
+#include <h5pp/v1/h5pp.h>
 
 namespace {
     std::string make_file_path(const char *name) {
