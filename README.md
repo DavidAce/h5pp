@@ -150,13 +150,15 @@ There are currently 2 ways to obtain `h5pp`:
 
 * C++20 capable compiler
 * CMake version >= 3.15
-* [**HDF5**](https://support.hdfgroup.org/HDF5/)  library, version >= 1.8
+* [**HDF5**](https://support.hdfgroup.org/HDF5/) library, version >= 1.10.10
+
+The packaged dependency baseline for `h5pp` 2.x is aligned with Ubuntu 24.04 LTS and newer.
 
 ### Optional dependencies
 
-* [**Eigen**](http://eigen.tuxfamily.org) >= 3.3.4: Store Eigen containers. Enable with `#define H5PP_USE_EIGEN3`.
-* [**spdlog**](https://github.com/gabime/spdlog) >= 1.5.0: Logging library. Enable with `#define H5PP_USE_SPDLOG`.
-* [**fmt**](https://github.com/fmtlib/fmt) >= 6.1.2: String formatting (used in `spdlog`). Enable with `#define H5PP_USE_FMT`.
+* [**Eigen**](http://eigen.tuxfamily.org) >= 3.4.0: Store Eigen containers. Enable with `#define H5PP_USE_EIGEN3`.
+* [**spdlog**](https://github.com/gabime/spdlog) >= 1.12.0: Logging library. Enable with `#define H5PP_USE_SPDLOG`.
+* [**fmt**](https://github.com/fmtlib/fmt) >= 9.1.0: String formatting (used in `spdlog`). Enable with `#define H5PP_USE_FMT`.
 
 **NOTE:** Logging works the same with or without [Spdlog](https://github.com/gabime/spdlog) enabled. When Spdlog is *
 not* found, a hand-crafted logger is used in its place to give identical output but without any performance

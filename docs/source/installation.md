@@ -10,15 +10,17 @@ There are currently 3 ways to obtain `h5pp`:
 
 ## Requirements
 
-* C++17 capable compiler. GCC version >= 7 or Clang version >= 7.0
+* C++20 capable compiler
 * CMake version >= 3.15
-* [**HDF5**](https://support.hdfgroup.org/HDF5/)  library, version >= 1.8
+* [**HDF5**](https://support.hdfgroup.org/HDF5/) library, version >= 1.10.10
+
+The packaged dependency baseline for `h5pp` 2.x is aligned with Ubuntu 24.04 LTS and newer.
 
 ### Optional dependencies
 
-* [**Eigen**](http://eigen.tuxfamily.org) >= 3.3.4: Store Eigen containers. Enable with `#define H5PP_USE_EIGEN3`.
-* [**spdlog**](https://github.com/gabime/spdlog) >= 1.3.1: Logging library. Enable with `#define H5PP_USE_SPDLOG`.
-* [**fmt**](https://github.com/fmtlib/fmt) >= 6.1.2: String formatting (used in `spdlog`). Enable with `#define H5PP_USE_FMT`.
+* [**Eigen**](http://eigen.tuxfamily.org) >= 3.4.0: Store Eigen containers. Enable with `#define H5PP_USE_EIGEN3`.
+* [**spdlog**](https://github.com/gabime/spdlog) >= 1.12.0: Logging library. Enable with `#define H5PP_USE_SPDLOG`.
+* [**fmt**](https://github.com/fmtlib/fmt) >= 9.1.0: String formatting (used in `spdlog`). Enable with `#define H5PP_USE_FMT`.
 
 **NOTE:** Logging works the same with or without [Spdlog](https://github.com/gabime/spdlog) enabled. When Spdlog is *
 not* found, a hand-crafted logger is used in its place to give identical output but without any performance
@@ -148,7 +150,7 @@ CMake's `find_package` calls:
 ### Option 3: Copy the headers
 
 Copy the files under `h5pp/source/include` and add `#include<h5pp/h5pp.h>`. Make sure to compile
-with `-std=c++17 -lstdc++fs` and link the dependencies `HDF5`, `Eigen3`, `fmt`, and `spdlog`. The actual linking is a
+with `-std=c++20` and link the dependencies `HDF5`, `Eigen3`, `fmt`, and `spdlog`. The actual linking is a
 non-trivial step, see [linking](https://github.com/DavidAce/h5pp/wiki/Link-to-h5pp#link-using-cmake-targets-easy).
 
 #### Compiler flags for Windows / MSVC
@@ -188,8 +190,7 @@ target_link_libraries(myExecutable PRIVATE h5pp::h5pp)
   can of course be used independently.
    * If `H5PP_PACKAGE_MANAGER==find|cmake|fetch|cmp|conan` the targets are `Eigen3::Eigen`,`fmt::fmt`, `spdlog::spdlog`
      and `HDF5::HDF5`
-* `h5pp::flags` sets compile and linker flags to enable C++17 and std::filesystem library, i.e. `-std=c++17`
-  and `-lstdc++fs` (only needed on some compilers).
+* `h5pp::flags` sets compile and linker flags to enable C++20 and std::filesystem support.
 
   Additionally, on MSVC:
    * `/permissive-`  to enable logical `and`/`or` in C++.
@@ -203,7 +204,7 @@ target_link_libraries(myExecutable PRIVATE h5pp::h5pp)
 From the command-line you can of course link using linker flags such as
 
 ```bash
- `g++ ... -std=c++17 -leigen3 -lspdlog  -lfmt -lhdf5_hl -lhdf5 -lstdc++fs  -pthread -lz -lsz -laec -lm -ldl  ...` 
+ `g++ ... -std=c++20 -leigen3 -lspdlog -lfmt -lhdf5_hl -lhdf5 -pthread -lz -lsz -laec -lm -ldl ...`
 ```
 
 provided these flags make sense on your system.

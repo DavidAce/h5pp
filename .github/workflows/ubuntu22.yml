@@ -22,10 +22,8 @@ jobs:
         include:
           - { compiler: gcc,   manager: cmake }
           - { compiler: gcc,   manager: conan }
-          - { compiler: gcc,   manager: find  }
           - { compiler: clang, manager: cmake }
           - { compiler: clang, manager: conan }
-          - { compiler: clang, manager: find  }
 
     steps:
       - uses: actions/checkout@v6.0.1
@@ -71,18 +69,6 @@ jobs:
         run: |
           sudo apt install ccache ninja-build gcovr lcov -y
           echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
-
-      - name: Setup apt packages (dependencies)
-        if: matrix.manager == 'find'
-        run: sudo apt install libhdf5-dev libaec-dev libfmt-dev libspdlog-dev libeigen3-dev -y
-
-      - name: Setup Catch2
-        if: matrix.manager == 'find'
-        run: |
-          curl -L https://github.com/catchorg/Catch2/archive/refs/tags/v3.13.0.tar.gz -o catch2.tar.gz
-          tar -xzf catch2.tar.gz
-          cmake -S Catch2-3.13.0 -B Catch2-3.13.0/build -DBUILD_TESTING=OFF
-          sudo cmake --build Catch2-3.13.0/build --target install
 
       - name: Setup conan
         if: matrix.manager == 'conan'
