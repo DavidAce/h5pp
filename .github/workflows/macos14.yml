@@ -33,6 +33,10 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Prepare cache directories
+        run: |
+          mkdir -p ~/.ccache ~/.conan2 install/github-actions-${{ matrix.manager }}
+
       - name: Setup caches
         id: h5pp-cache
         uses: actions/cache@v4.2.0

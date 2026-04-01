@@ -32,6 +32,12 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Prepare cache directories
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "$HOME\\.conan2" | Out-Null
+          New-Item -ItemType Directory -Force -Path "install/github-actions-${{ matrix.manager }}" | Out-Null
+
       - name: Setup caches
         id: h5pp-cache
         uses: actions/cache@v4.2.0

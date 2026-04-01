@@ -13,6 +13,11 @@
 namespace h5pp::type::vlen {
     namespace internal {
         static constexpr bool debug_vstr_t = false;
+
+        inline void copy_bytes(char *dst, const char *src, size_t len) {
+            if(len == 0) return;
+            std::memcpy(dst, src, len);
+        }
     }
 
     struct vstr_t {
@@ -135,7 +140,7 @@ namespace h5pp::type::vlen {
     inline vstr_t::vstr_t(const vstr_t &v) {
         if(v.ptr == nullptr) return;
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
-        strcpy(ptr, v.ptr);
+        internal::copy_bytes(ptr, v.ptr, v.size() + 1);
         ptr[v.size()] = '\0';
 #if defined(H5PP_USE_FMT)
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -145,7 +150,7 @@ namespace h5pp::type::vlen {
         if(v == nullptr) return;
         size_t len = strlen(v);
         ptr        = static_cast<char *>(malloc(len + 1 * sizeof(char)));
-        strcpy(ptr, v);
+        internal::copy_bytes(ptr, v, len + 1);
         ptr[len] = '\0';
 #if defined(H5PP_USE_FMT)
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -154,7 +159,7 @@ namespace h5pp::type::vlen {
     inline vstr_t::vstr_t(std::string_view v) {
         if(v.empty()) return;
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
-        strcpy(ptr, v.data());
+        internal::copy_bytes(ptr, v.data(), v.size());
         ptr[v.size()] = '\0';
 #if defined(H5PP_USE_FMT)
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -164,7 +169,7 @@ namespace h5pp::type::vlen {
     inline vstr_t::vstr_t(vstr_t &&v) noexcept {
         if(v.ptr == nullptr) return;
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
-        strcpy(ptr, v.ptr);
+        internal::copy_bytes(ptr, v.ptr, v.size() + 1);
         ptr[v.size()] = '\0';
 #if defined(H5PP_USE_FMT)
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -180,7 +185,7 @@ namespace h5pp::type::vlen {
         if(this != &v and ptr != v.ptr) {
             clear();
             ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
-            strcpy(ptr, v.ptr);
+            internal::copy_bytes(ptr, v.ptr, v.size() + 1);
             ptr[v.size()] = '\0';
 #if defined(H5PP_USE_FMT)
             if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -192,7 +197,7 @@ namespace h5pp::type::vlen {
     inline vstr_t &vstr_t::operator=(std::string_view v) {
         clear();
         ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
-        strcpy(ptr, v.data());
+        internal::copy_bytes(ptr, v.data(), v.size());
         ptr[v.size()] = '\0';
 #if defined(H5PP_USE_FMT)
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
@@ -271,15 +276,25 @@ namespace h5pp::type::vlen {
     inline void vstr_t::append(const char *v) {
         if(v == nullptr) return;
         size_t oldlen = size();
-        resize(oldlen + strlen(v));
-        strcpy(ptr + oldlen, v);
-        ptr[size()] = '\0';
+        size_t len    = strlen(v);
+        resize(oldlen + len);
+        internal::copy_bytes(ptr + oldlen, v, len + 1);
+        ptr[oldlen + len] = '\0';
 #if defined(H5PP_USE_FMT)
         if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t appended to {} | {} -> {}", fmt::ptr(ptr), v, ptr);
 #endif
     }
     inline void vstr_t::append(const std::string &v) { append(v.c_str()); }
-    inline void vstr_t::append(std::string_view v) { append(v.data()); }
+    inline void vstr_t::append(std::string_view v) {
+        if(v.empty()) return;
+        size_t oldlen = size();
+        resize(oldlen + v.size());
+        internal::copy_bytes(ptr + oldlen, v.data(), v.size());
+        ptr[oldlen + v.size()] = '\0';
+#if defined(H5PP_USE_FMT)
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t appended to {} | {} -> {}", fmt::ptr(ptr), v, ptr);
+#endif
+    }
     inline bool vstr_t::empty() const { return size() == 0; }
 
     template<typename T, typename>

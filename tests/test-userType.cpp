@@ -54,7 +54,7 @@ namespace {
         particle.z  = 3.0 + seed;
         particle.t  = 4.0 + seed;
         particle.id = 5 + seed;
-        std::strncpy(particle.name, name.data(), sizeof(particle.name));
+        std::memcpy(particle.name, name.data(), std::min(name.size(), sizeof(particle.name) - 1));
         particle.name[sizeof(particle.name) - 1] = '\0';
         return particle;
     }

@@ -5,15 +5,13 @@
 #include <typeindex>
 #include <vector>
 
+#if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
 namespace {
     std::string make_path(std::string_view name) {
         h5pp::fs::create_directories(H5PP_TEST_DIR);
         return h5pp::format(H5PP_TEST_DIR "{}.h5", name);
     }
-}
 
-#if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
-namespace {
     struct QuadRecord {
         h5pp::fp128 scalar;
         h5pp::cx128 complex;

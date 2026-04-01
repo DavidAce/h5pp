@@ -12,10 +12,10 @@ required_conan_version = ">=1.45.0"
 class H5ppConan(ConanFile):
     name = "h5pp"
     version = "2.0.0"
-    description = "A C++17 wrapper for HDF5 with focus on simplicity"
+    description = "A C++20 wrapper for HDF5 with focus on simplicity"
     homepage = "https://github.com/DavidAce/h5pp"
     author = "DavidAce <aceituno@kth.se>"
-    topics = ("hdf5", "binary", "storage", "header-only", "cpp17")
+    topics = ("hdf5", "binary", "storage", "header-only", "cpp20")
     url = "https://github.com/DavidAce/h5pp"
     license = "MIT"
     settings = "os", "compiler", "build_type", "arch"
@@ -47,6 +47,7 @@ class H5ppConan(ConanFile):
             "Visual Studio": "15.7",
             "clang": "6",
             "apple-clang": "10",
+            "msvc": "193",
         }
 
     def config_options(self):
@@ -78,14 +79,12 @@ class H5ppConan(ConanFile):
             if self.options.get_safe('with_float128'):
                 check_min_cppstd(self, 23)
             else:
-                check_min_cppstd(self, 17)
+                check_min_cppstd(self, 20)
 
         minimum_version = self._compilers_minimum_version.get(str(self.settings.compiler), False)
         if minimum_version:
             if Version(self.settings.compiler.version) < minimum_version:
-                raise ConanInvalidConfiguration("h5pp requires C++17, which your compiler does not support.")
-        else:
-            self.output.warning("h5pp requires C++17. Your compiler is unknown. Assuming it supports C++17.")
+                raise ConanInvalidConfiguration("h5pp requires C++20, which your compiler does not support.")
 
         if self.options.get_safe('with_float128') and  self.options.get_safe('with_quadmath'):
             raise ConanInvalidConfiguration("These are mutually exclusive options: h5pp:with_float128 and h5pp:with_quadmath")
