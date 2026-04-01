@@ -50,7 +50,7 @@ jobs:
 
       - name: Setup brew packages
         if: matrix.manager == 'find'
-        run: brew install hdf5 spdlog fmt eigen zlib
+        run: brew install hdf5 spdlog fmt eigen zlib catch2
 
       - name: Setup conan
         if: matrix.manager == 'conan'
@@ -64,4 +64,3 @@ jobs:
           configurePreset: 'github-actions-${{ matrix.manager }}'
           buildPreset: 'github-actions-${{ matrix.manager }}'
           testPreset: 'github-actions-${{ matrix.manager }}'
-
