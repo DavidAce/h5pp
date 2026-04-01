@@ -91,6 +91,26 @@ jobs:
           buildPreset: 'github-actions-${{ matrix.manager }}'
           testPreset: 'github-actions-${{ matrix.manager }}'
 
+      - name: Install h5pp
+        if: matrix.compiler == 'gcc' && matrix.manager == 'cmake'
+        run: cmake --install build/github-actions-cmake
+
+      - name: Configure installed-package tester
+        if: matrix.compiler == 'gcc' && matrix.manager == 'cmake'
+        run: >
+          cmake
+          -S tests/install/find-package
+          -B "${RUNNER_TEMP}/h5pp-install-find-package"
+          -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/install/github-actions-cmake"
+
+      - name: Build installed-package tester
+        if: matrix.compiler == 'gcc' && matrix.manager == 'cmake'
+        run: cmake --build "${RUNNER_TEMP}/h5pp-install-find-package"
+
+      - name: Run installed-package tester
+        if: matrix.compiler == 'gcc' && matrix.manager == 'cmake'
+        run: ctest --test-dir "${RUNNER_TEMP}/h5pp-install-find-package" --output-on-failure
+
       - name: Generate coverage report
         if: matrix.compiler == 'gcc' && matrix.manager == 'find'
         run: |

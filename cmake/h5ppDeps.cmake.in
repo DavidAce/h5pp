@@ -2,9 +2,15 @@
 
 include(CMakeFindDependencyMacro)
 
-
 # Make sure we use the bundled find modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+
+macro(h5pp_find_dependency_with_config_fallback _dep)
+    find_dependency(${_dep} CONFIG QUIET ${ARGN})
+    if(NOT ${_dep}_FOUND)
+        find_dependency(${_dep} REQUIRED ${ARGN})
+    endif()
+endmacro()
 
 # Determine which dependencies to look for
 get_target_property(H5PP_LINK_LIBRARIES h5pp::deps INTERFACE_LINK_LIBRARIES)
@@ -21,7 +27,7 @@ if(std::filesystem IN_LIST H5PP_LINK_LIBRARIES)
 endif()
 
 if (H5PP_ENABLE_EIGEN3 OR Eigen3::Eigen IN_LIST H5PP_LINK_LIBRARIES)
-    find_dependency(Eigen3 REQUIRED)
+    h5pp_find_dependency_with_config_fallback(Eigen3)
     if(TARGET Eigen3 AND NOT TARGET Eigen3::Eigen)
         add_library(Eigen3::Eigen ALIAS Eigen3)
     endif()
@@ -32,7 +38,7 @@ if (H5PP_ENABLE_EIGEN3 OR Eigen3::Eigen IN_LIST H5PP_LINK_LIBRARIES)
 endif()
 
 if (H5PP_ENABLE_FMT OR fmt::fmt IN_LIST H5PP_LINK_LIBRARIES)
-    find_dependency(fmt REQUIRED)
+    h5pp_find_dependency_with_config_fallback(fmt)
     if(TARGET fmt AND NOT TARGET fmt::fmt)
         add_library(fmt::fmt ALIAS fmt)
     endif()
@@ -43,7 +49,7 @@ if (H5PP_ENABLE_FMT OR fmt::fmt IN_LIST H5PP_LINK_LIBRARIES)
 endif()
 
 if (H5PP_ENABLE_SPDLOG OR spdlog::spdlog IN_LIST H5PP_LINK_LIBRARIES)
-    find_dependency(spdlog REQUIRED)
+    h5pp_find_dependency_with_config_fallback(spdlog)
     if(TARGET spdlog AND NOT TARGET spdlog::spdlog)
         add_library(spdlog::spdlog ALIAS spdlog)
     endif()
@@ -55,7 +61,7 @@ endif()
 
 # HDF5 must be found either way, so set it to required
 # Also, we don't impose any version requirement here: h5pp is compatible with 1.8 to 1.14.
-find_dependency(HDF5 COMPONENTS C HL REQUIRED)
+h5pp_find_dependency_with_config_fallback(HDF5 COMPONENTS C HL)
 
 if(HDF5_FOUND AND HDF5::HDF5 IN_LIST H5PP_LINK_LIBRARIES)
     include(${CMAKE_CURRENT_LIST_DIR}/HDF5TargetUtils.cmake)
@@ -82,4 +88,3 @@ if(HDF5_FOUND AND HDF5::HDF5 IN_LIST H5PP_LINK_LIBRARIES)
         endforeach()
     endforeach()
 endif()
-

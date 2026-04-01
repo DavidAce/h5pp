@@ -46,9 +46,9 @@ function(find_spdlog)
     if(SPDLOG_INCLUDE_DIR)
         # There may o compiled library to go with the headers
         find_library(SPDLOG_LIBRARY
-                NAMES spdlog
+                NAMES spdlog spdlogd
                 HINTS ${SPDLOG_INCLUDE_DIR} ${SPDLOG_INCLUDE_DIR}../ ${CMAKE_PREFIX_PATH} ${CMAKE_INSTALL_PREFIX}
-                PATH_SUFFIXES spdlog/lib
+                PATH_SUFFIXES lib spdlog/lib
                 )
         spdlog_check_version_include(SPDLOG_INCLUDE_DIR)
     endif()

@@ -1,5 +1,9 @@
 cmake-build*/
 install/
+!tests/install/
+!tests/install/find-package/
+!tests/install/find-package/CMakeLists.txt
+!tests/install/find-package/main.cpp
 .idea/
 .vs/
 output/
