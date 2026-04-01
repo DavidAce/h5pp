@@ -1,7 +1,7 @@
  
 cmake_minimum_required(VERSION 3.15)
 project(h5pp VERSION 2.0.0
-        DESCRIPTION "A C++17 wrapper for HDF5"
+        DESCRIPTION "A C++20 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
         LANGUAGES C CXX
         )
@@ -61,7 +61,7 @@ add_library(deps INTERFACE)
 add_library(flags INTERFACE)
 
 # Required compiler features
-target_compile_features(flags INTERFACE cxx_std_17)
+target_compile_features(flags INTERFACE cxx_std_20)
 target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/permissive->) # Need this for and/or logical operators on VS
 target_compile_options(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/EHsc>)        # Need this for try/catch without warnings on VS
 target_compile_definitions(flags INTERFACE $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX>) # Otherwise std::min and std::max will not work as expected
@@ -194,5 +194,4 @@ set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_GENERATOR "DEB")
 include(CPack)
-
 

@@ -23,10 +23,10 @@
 #include <string>
 #include <utility>
 
-/*! \namespace h5pp
+/*! \namespace h5pp::v1
  * \brief A simple C++17 wrapper for the HDF5 library
  */
-namespace h5pp {
+namespace h5pp::v1 {
 
     /*!
      \brief Writes and reads data to a binary hdf5-file.
@@ -114,7 +114,7 @@ namespace h5pp {
 
         /*! Returns an HDF5 file handle
          *
-         * - The file permission is set when initializing h5pp::File.
+         * - The file permission is set when initializing h5pp::v1::File.
          * - Use `h5pp::setKeepFileOpened()` to keep a cached handle. Use `h5pp::setKeepFileClosed()` to close the cached handle.
          */
         [[nodiscard]] hid::h5f openFileHandle() const {
@@ -148,8 +148,8 @@ namespace h5pp {
          */
 
         struct FileHandleToken {
-            const h5pp::File &file_;
-            FileHandleToken(const h5pp::File &file) : file_(file) {
+            const File &file_;
+            FileHandleToken(const File &file) : file_(file) {
                 hid::h5f temphandle = file_.openFileHandle();
                 file_.fileHandle    = temphandle;
             }
@@ -502,7 +502,7 @@ namespace h5pp {
             if(not options.h5Type)
                 throw h5pp::runtime_error("Error creating dataset [{}]: HDF5 type not specified", options.linkPath.value());
             auto dsetInfo = h5pp::scan::makeDsetInfo(openFileHandle(), options, plists);
-            h5pp::File::createDataset(dsetInfo);
+            File::createDataset(dsetInfo);
             return dsetInfo;
         }
 
@@ -532,7 +532,7 @@ namespace h5pp {
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to create dataset on read-only file [{}]", filePath.string());
             auto dsetInfo = h5pp::scan::inferDsetInfo(openFileHandle(), data, options, plists);
-            h5pp::File::createDataset(dsetInfo);
+            File::createDataset(dsetInfo);
             return dsetInfo;
         }
 
@@ -1648,7 +1648,7 @@ namespace h5pp {
                 return getLinkInfo(linkPath);
             } else {
                 static_assert(type::sfinae::invalid_type_v<InfoType>,
-                              "Template function 'h5pp::File::getInfo<InfoType>(std::string_view linkPath)' "
+                              "Template function 'h5pp::v1::File::getInfo<InfoType>(std::string_view linkPath)' "
                               "requires template type 'InfoType' to be one of "
                               "[h5pp::DsetInfo], [h5pp::TableInfo], [h5pp::TableFieldInfo], [h5pp::TypeInfo] or [h5pp::LinkInfo]");
             }
@@ -1662,7 +1662,7 @@ namespace h5pp {
                 return getTypeInfoAttribute(linkPath, attrName);
             } else {
                 static_assert(type::sfinae::invalid_type_v<InfoType>,
-                              "Template function 'h5pp::File::getInfo<InfoType>(std::string_view linkPath, std::string_view attrName)' "
+                              "Template function 'h5pp::v1::File::getInfo<InfoType>(std::string_view linkPath, std::string_view attrName)' "
                               "requires template type 'InfoType' to be either "
                               "[h5pp::AttrInfo] or [h5pp::TypeInfo]");
             }
