@@ -57,6 +57,35 @@ namespace h5pp {
  */
 namespace h5pp::hdf5 {
 
+    inline herr_t H5Dread_chunk_compat_impl(herr_t (*fn)(hid_t, hid_t, const hsize_t *, uint32_t *, void *),
+                                            hid_t         dset_id,
+                                            hid_t         dxpl_id,
+                                            const hsize_t *offset,
+                                            uint32_t      *filters,
+                                            void          *buf,
+                                            [[maybe_unused]] size_t *buf_size) {
+        return fn(dset_id, dxpl_id, offset, filters, buf);
+    }
+
+    inline herr_t H5Dread_chunk_compat_impl(herr_t (*fn)(hid_t, hid_t, const hsize_t *, uint32_t *, void *, size_t *),
+                                            hid_t         dset_id,
+                                            hid_t         dxpl_id,
+                                            const hsize_t *offset,
+                                            uint32_t      *filters,
+                                            void          *buf,
+                                            size_t        *buf_size) {
+        return fn(dset_id, dxpl_id, offset, filters, buf, buf_size);
+    }
+
+    inline herr_t H5Dread_chunk_compat(hid_t         dset_id,
+                                       hid_t         dxpl_id,
+                                       const hsize_t *offset,
+                                       uint32_t      *filters,
+                                       void          *buf,
+                                       size_t        *buf_size = nullptr) {
+        return H5Dread_chunk_compat_impl(&H5Dread_chunk, dset_id, dxpl_id, offset, filters, buf, buf_size);
+    }
+
     [[nodiscard]] inline std::vector<std::string_view> pathCumulativeSplit(std::string_view path, std::string_view delim) {
         // Here the resulting vector "output" will contain increasingly longer string_views, that are subsets of the path.
         // Note that no string data is allocated here, these are simply views into a string allocated elsewhere.
@@ -2033,7 +2062,18 @@ namespace h5pp::hdf5 {
     #if H5PP_HAS_FILTER_DEFLATE && H5PP_HAS_ZLIB_H
             if(isOnDeflate and not skipDeflate) {
                 std::vector<std::byte> chunkZBuffer(chunkByteStorage);
-                herr_t                 err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, chunkZBuffer.data());
+                size_t chunkZBufferSize = chunkZBuffer.size();
+                herr_t err              = H5Dread_chunk_compat(h5dset,
+                                                  h5dxpl,
+                                                  chunkOffset.data(),
+                                                  &mask,
+                                                  chunkZBuffer.data(),
+                                                  &chunkZBufferSize);
+                if(chunkZBufferSize > chunkZBuffer.size())
+                    throw h5pp::runtime_error("Failed to read compressed chunk at offset {}: required {} bytes, buffer has {} bytes",
+                                              chunkOffset,
+                                              chunkZBufferSize,
+                                              chunkZBuffer.size());
                 if(err < 0) throw h5pp::runtime_error("Failed to read compressed chunk at offset {}", chunkOffset);
 
                 int z_err = uncompress(reinterpret_cast<Bytef *>(chunkBuffer.data()),
@@ -2057,7 +2097,18 @@ namespace h5pp::hdf5 {
                     //                chunkBuffer.resize(read_chunk_nbytes);
                 }
 
-                herr_t err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, chunkBuffer.data());
+                size_t chunkBufferSize = chunkBuffer.size();
+                herr_t err             = H5Dread_chunk_compat(h5dset,
+                                                  h5dxpl,
+                                                  chunkOffset.data(),
+                                                  &mask,
+                                                  chunkBuffer.data(),
+                                                  &chunkBufferSize);
+                if(chunkBufferSize > chunkBuffer.size())
+                    throw h5pp::runtime_error("Failed to read uncompressed chunk at offset {}: required {} bytes, buffer has {} bytes",
+                                              chunkOffset,
+                                              chunkBufferSize,
+                                              chunkBuffer.size());
                 if(err < 0) throw h5pp::runtime_error("Failed to read uncompressed chunk at offset {}", chunkOffset);
             }
 #endif

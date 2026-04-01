@@ -76,7 +76,12 @@ namespace h5pp {
     }
     template<typename S, typename... Args>
     [[nodiscard]] std::string format_runtime(S &&fmtstring, Args &&...args) {
-        return fmt::format(std::forward<S>(fmtstring), std::forward<Args>(args)...);
+        auto fmtview = fmt::string_view(std::forward<S>(fmtstring));
+        auto stored  = std::tuple<std::decay_t<Args>...>(std::forward<Args>(args)...);
+        return std::apply(
+            [&](auto &...vals) { return fmt::vformat(fmtview, fmt::make_format_args(vals...)); },
+            stored
+        );
     }
     #endif
 
