@@ -1,9 +1,10 @@
-#include <h5pp/h5pp.h>
+#include <h5pp/v1/h5pp.h>
 #include <iostream>
 
 // This example shows how to write data into a portion of a dataset, a so-called "hyperslab".
-// This time we will use a metadata object of type "h5pp::DsetInfo" which is normally returned from .writeDataset(...).
-// The main motivation is that reusing the h5pp::DsetInfo object in repeated operations (e.g. for loops) avoids costly metadata analysis.
+// This time we will populate the h5pp::Options object to pass custom metadata information to .writeDataset(...)
+// The main motivation for using h5pp::Options is that it allows fine-grained control with more explicit syntax.
+// In addition, it allows reading/writing between hyperslab selections on both memory and dataset spaces.
 
 /********************************************************************
    Note that the HDF5 C-API uses row-major layout!
@@ -11,7 +12,7 @@
 
 int main() {
     // Initialize a file
-    h5pp::File file("exampledir/example-08d-write-hyperslab-using-dsetinfo.h5", h5pp::FileAccess::REPLACE);
+    h5pp::v1::File file(H5PP_EXAMPLE_DIR "example-08d-write-hyperslab-using-options.h5", h5pp::FileAccess::REPLACE);
 
     // Initialize a vector with size 25 filled with zeros
     std::vector<double> data5x5(25, 0);
@@ -22,7 +23,7 @@ int main() {
     // 0  0  0  0  0
     // 0  0  0  0  0
     // 0  0  0  0  0
-    h5pp::DsetInfo dsetInfo = file.writeDataset(data5x5, "data5x5", {5, 5}); // Store the generated metadata about data5x5 in dsetInfo
+    file.writeDataset(data5x5, "data5x5", {5, 5});
 
     // In this example we would like to write a 2x2 matrix
     //
@@ -45,21 +46,24 @@ int main() {
     // 2) Define a hyperslab in an instance of "h5pp::DsetInfo" corresponding to data5x5, and pass to .writeDataset(...) (see example 08d)
     // 3) Define a hyperslab in an instance of "h5pp::Options" and pass that to .writeDataset(...). (see example 08e)
 
-    // Let's try 2) here:
+    // Let's try 3) here:
     // NOTE: Internally h5pp populates instances of type h5pp::DsetInfo and h5pp::DataInfo with metadata about
-    //       the dataset on file and the given data buffer, respectively. When updating a dataset, it pays to reuse
-    //       these metadata objects to avoid repeated analysis of the dataset.
-    //       In the following, we make use of the h5pp::DsetInfo object that we just obtained, and make a hyperslab
-    //       selection on it before passing it to .writeDataset(...) again.
+    //       the dataset on file and the given data buffer, respectively. The h5pp::Options object let's the user
+    //       override properties such as dimensions or hyperslab selection, during the process of
+    //       populating h5pp::DsetInfo and h5pp::DataInfo. Most of the entries in h5pp::Options are only useful
+    //       during dataset creation, but some, such as hyperslabs and dataDims can be used when updating a dataset.
 
-    // The following three lines below can be replaced by dsetInfo.dsetSlab = h5pp::Hyperslab({1,2},{2,2})
-    dsetInfo.dsetSlab         = h5pp::Hyperslab();
-    dsetInfo.dsetSlab->offset = {1, 2}; // The starting point (top left corner of the slab)
-    dsetInfo.dsetSlab->extent = {2, 2}; // The dimensions of data2x2
+    h5pp::Options options;
+    options.linkPath = "data5x5"; // HDF5 path to the target dataset (Required)
+    options.dataDims = {2, 2};    // Interpret the given data, i.e. data2x2 as a 2x2 matrix. Not strictly required as it can be guessed from
+                                  // the shape of the hyperslab
 
-    // The shape of data2x2 can be inferred from the shape of the hyperslab, or be specified in
-    // an optional "h5pp::Options" (as in example 08b) given as the third argument to writeDataset below
-    file.writeDataset(data2x2, dsetInfo);
+    // The following three lines below can be replaced by options.dsetSlab = h5pp::Hyperslab({1,2},{2,2})
+    options.dsetSlab         = h5pp::Hyperslab(); // options.dsetSlab is std::optional, so we initialize it first
+    options.dsetSlab->offset = {1, 2};            // The starting point
+    options.dsetSlab->extent = {2, 2};            // The dimensions of data2x2
+
+    file.writeDataset(data2x2, options);
 
     // Print the result
     auto read5x5 = file.readDataset<std::vector<double>>("data5x5");

@@ -1,82 +1,63 @@
 #include <h5pp/h5pp.h>
+#include <vector>
 
 /*
- * This example shows how to use a DsetInfo object.
+ * This example shows how to inspect datasets through the rich DsetInfo returned by getInfo().
  *
- * When transferring a dataset to/from file h5pp scans its type, shape, link path
- * and many other properties. The results from a scan populates a struct of type "DsetInfo".
- *
- * The DsetInfo of a dataset can be obtained with h5pp::File::getDatasetInfo(<dataset path>),
- * but is also returned from a h5pp::File::writeDataset(...) operation.
- *
- * The scanning process introduces some overhead, which is why reusing the
- * struct can be desirable, in particular to speed up repeated operations.
- *
- * Three different datasets are written to file and some DsetInfo fields are printed.
- *
- * The third dataset is written with a chunked layout, meaning that it can make use
- * of advanced operations such as resizing and compression.
- * The last part of this example reuses the info struct for a resize operation.
- *
+ * In v2, dataset metadata is no longer the main write path.
+ * Instead, you keep reusing the dataset handle itself and ask it for fresh DsetInfo snapshots when needed.
  */
-
 int main() {
-    // Initialize a file
-    h5pp::File file("exampledir/example-05a-dataset-info.h5", h5pp::FileAccess::REPLACE);
+    // Initialize a file.
+    h5pp::File file(H5PP_EXAMPLE_DIR "example-05a-dataset-info.h5", h5pp::FileAccess::REPLACE);
 
-    // Write some datasets to file. Note the H5D_CHUNKED parameter on the third dataset.
-    file.writeDataset(std::vector<int>{1, 2, 3, 4}, "group/intVector");
-    file.writeDataset(std::vector<std::string>{"hello", "world"}, "group/stringVector");
-    file.writeDataset(std::vector<double>(20, 3.14), "group/doubleVector", H5D_CHUNKED);
+    // Write two simple datasets.
+    file.dataset("group/intVector").write(std::vector<int>{1, 2, 3, 4});
+    file.dataset("group/stringVector").write(std::vector<std::string>{"hello", "world"});
 
-    // Get a struct populated with information about the dataset
-    auto dsetInfo = file.getDatasetInfo("group/intVector");
+    // Create a chunked dataset handle that we can reuse later.
+    h5pp::DatasetCreateOptions createOptions;
+    createOptions.h5Layout  = H5D_CHUNKED; // Chunked layout enables resizing
+    createOptions.dimsChunk = {20};        // One chunk with 20 elements
 
-    // Print the members of the info struct
-    if(dsetInfo.dsetPath) h5pp::print("Int vector path : {}\n", dsetInfo.dsetPath.value());
-    if(dsetInfo.dsetSize) h5pp::print("Int vector size : {}\n", dsetInfo.dsetSize.value());
-    if(dsetInfo.dsetByte) h5pp::print("Int vector bytes: {}\n", dsetInfo.dsetByte.value());
-    if(dsetInfo.dsetRank) h5pp::print("Int vector rank : {}\n", dsetInfo.dsetRank.value());
-    if(dsetInfo.dsetDims) h5pp::print("Int vector dims : {}\n", dsetInfo.dsetDims.value());
+    auto doubleVector = file.dataset("group/doubleVector").ensure(createOptions);
+    doubleVector.write(std::vector<double>(20, 3.14));
 
-    // And so on... OR, just use .string()
-    h5pp::print("dsetInfo.string(): {}\n", dsetInfo.string());
+    // Get a DsetInfo object with information about the integer dataset.
+    auto datasetInfo = file.dataset("group/intVector").getInfo();
+    if(datasetInfo.dsetPath) h5pp::print("Int vector path : {}\n", datasetInfo.dsetPath.value());
+    if(datasetInfo.dsetSize) h5pp::print("Int vector size : {}\n", datasetInfo.dsetSize.value());
+    if(datasetInfo.dsetByte) h5pp::print("Int vector bytes: {}\n", datasetInfo.dsetByte.value());
+    if(datasetInfo.dsetRank) h5pp::print("Int vector rank : {}\n", datasetInfo.dsetRank.value());
+    if(datasetInfo.dsetDims) h5pp::print("Int vector dims : {}\n", datasetInfo.dsetDims.value());
 
-    // Get a struct populated with information about the dataset
-    dsetInfo = file.getDatasetInfo("group/stringVector");
+    // Inspect the string dataset in the same way.
+    datasetInfo = file.dataset("group/stringVector").getInfo();
+    if(datasetInfo.dsetPath) h5pp::print("String vector path : {}\n", datasetInfo.dsetPath.value());
+    if(datasetInfo.dsetSize) h5pp::print("String vector size : {}\n", datasetInfo.dsetSize.value());
+    if(datasetInfo.dsetByte) h5pp::print("String vector bytes: {}\n", datasetInfo.dsetByte.value());
+    if(datasetInfo.dsetRank) h5pp::print("String vector rank : {}\n", datasetInfo.dsetRank.value());
+    if(datasetInfo.dsetDims) h5pp::print("String vector dims : {}\n", datasetInfo.dsetDims.value());
 
-    // Print the members of the info struct
-    if(dsetInfo.dsetPath) h5pp::print("String vector path : {}\n", dsetInfo.dsetPath.value());
-    if(dsetInfo.dsetSize) h5pp::print("String vector size : {}\n", dsetInfo.dsetSize.value());
-    if(dsetInfo.dsetByte) h5pp::print("String vector bytes: {}\n", dsetInfo.dsetByte.value());
-    if(dsetInfo.dsetRank) h5pp::print("String vector rank : {}\n", dsetInfo.dsetRank.value());
-    if(dsetInfo.dsetDims) h5pp::print("String vector dims : {}\n", dsetInfo.dsetDims.value());
+    // Compare that with the chunked dataset.
+    datasetInfo = doubleVector.getInfo();
+    if(datasetInfo.dsetPath) h5pp::print("Double vector path : {}\n", datasetInfo.dsetPath.value());
+    if(datasetInfo.dsetSize) h5pp::print("Double vector size : {}\n", datasetInfo.dsetSize.value());
+    if(datasetInfo.dsetByte) h5pp::print("Double vector bytes: {}\n", datasetInfo.dsetByte.value());
+    if(datasetInfo.dsetRank) h5pp::print("Double vector rank : {}\n", datasetInfo.dsetRank.value());
+    if(datasetInfo.dsetDims) h5pp::print("Double vector dims : {}\n", datasetInfo.dsetDims.value());
+    if(datasetInfo.dsetChunk) h5pp::print("Double vector chunk: {}\n", datasetInfo.dsetChunk.value());
 
-    // And so on... OR, just use .string()
-    h5pp::print("dsetInfo.string(): {}\n", dsetInfo.string());
+    // Resize the chunked dataset by overwriting it with a larger vector through the same handle.
+    doubleVector.write(std::vector<double>(150, 2.71));
 
-    // Compare the output this time with a chunked dataset
-    // Get a struct populated with information about the dataset
-    dsetInfo = file.getDatasetInfo("group/doubleVector");
-
-    // Print the members of the info struct
-    if(dsetInfo.dsetPath) h5pp::print("Double vector path : {}\n", dsetInfo.dsetPath.value());
-    if(dsetInfo.dsetSize) h5pp::print("Double vector size : {}\n", dsetInfo.dsetSize.value());
-    if(dsetInfo.dsetByte) h5pp::print("Double vector bytes: {}\n", dsetInfo.dsetByte.value());
-    if(dsetInfo.dsetRank) h5pp::print("Double vector rank : {}\n", dsetInfo.dsetRank.value());
-    if(dsetInfo.dsetDims) h5pp::print("Double vector dims : {}\n", dsetInfo.dsetDims.value());
-
-    // And so on... OR, just use .string()
-    h5pp::print("dsetInfo.string(): {}\n", dsetInfo.string());
-
-    // Finally we resize the chunked dataset by simply overwriting it with a larger vector,
-    // while reusing the metadata struct. Note that the rank and layout are static properties
-    // and cannot be changed on an existing dataset. Therefore there is no need to specify H5D_CHUNKED again.
-
-    file.writeDataset(std::vector<double>(150, 2.71), dsetInfo);
-
-    // The fields in the info struct should have been updated during the previous overwrite
-    h5pp::print("After resize\ndsetInfo.string(): {}\n", dsetInfo.string());
+    // Then fetch a fresh DsetInfo object to inspect the updated metadata.
+    datasetInfo = doubleVector.getInfo();
+    h5pp::print("After resize\n");
+    if(datasetInfo.dsetSize) h5pp::print("Double vector size : {}\n", datasetInfo.dsetSize.value());
+    if(datasetInfo.dsetByte) h5pp::print("Double vector bytes: {}\n", datasetInfo.dsetByte.value());
+    if(datasetInfo.dsetRank) h5pp::print("Double vector rank : {}\n", datasetInfo.dsetRank.value());
+    if(datasetInfo.dsetDims) h5pp::print("Double vector dims : {}\n", datasetInfo.dsetDims.value());
 
     return 0;
 }

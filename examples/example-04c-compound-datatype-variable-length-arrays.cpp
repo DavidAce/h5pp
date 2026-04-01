@@ -1,64 +1,68 @@
 #include <h5pp/h5pp.h>
+#include <vector>
 
-// In this example we want to treat a whole struct as a single writeable unit, a so-called compound data type.
+// In this example we want to treat a whole struct as a single writable unit, a so-called compound data type.
 // To achieve this, the memory layout of the struct has to be registered with HDF5 in advance.
 
 // This time we consider the case where the struct data members are variable-length arrays.
-// Since the memory layout of this struct must be known at compile-time, the struct members need to be pointers to
-// dynamically allocated data.
+// Since the memory layout of this struct must be known at compile-time, the struct members need to be wrappers
+// over dynamically allocated data.
 
-// for numeric types, h5pp provides h5pp::vlen_t<> which is a wrapper for HDF5's hvl_t with automatic memory management. It can be for
-// writing variable-length elements in datasets or table fields.
-
+// For numeric types, h5pp provides h5pp::varr_t<> which is a wrapper for HDF5's hvl_t with automatic memory management.
+// It can be used for writing variable-length elements in datasets or table fields.
 struct Volcano {
     h5pp::vstr_t      name; // Name of the volcano
-    h5pp::varr_t<int> year; // Year of eruption events. vlen_t is t with a wich a struct with void* p and size_t length to describe the data
+    h5pp::varr_t<int> year; // Year of eruption events
 
-    // This is a sentinel telling h5pp to expect a vlen type in this struct.
+    // This is a sentinel telling h5pp to expect a variable-length type in this struct.
     // Note that "vlen_type" must be spelled exactly like this, and a single "using vlen_type" is enough,
-    // even if there are multiple vlen_t members. The purpose of it is to disable any tracking of variable-length allocations
-    // when reading this type of data. To disable tracking completely, use h5pp::File::vlenDisableReclaimsTracking() instead.
+    // even if there are multiple variable-length members. The purpose of it is to disable tracking of
+    // variable-length allocations when reading this type of data. To disable reclaim tracking completely,
+    // use file.advanced().vlenDisableReclaimsTracking().
     using vlen_type = h5pp::varr_t<int>;
 };
 
-// Helper functions to print volcano events to terminal
-void print_event(const Volcano &v, const std::string &msg = "") {
-    if(not msg.empty()) h5pp::print("{}\n", msg);
-    h5pp::print("-- {:<32}: {}\n", v.name, v.year);
+void printEvent(const Volcano &volcano, const std::string &message = "") {
+    if(not message.empty()) h5pp::print("{}\n", message);
+    h5pp::print("-- {:<32}: {}\n", volcano.name, volcano.year);
 }
-void print_events(const std::vector<Volcano> &vs, const std::string &msg = "") {
-    if(not msg.empty()) h5pp::print("{}\n", msg);
-    for(const auto &v : vs) h5pp::print("-- {:<32}: {}\n", v.name, v.year);
+
+void printEvents(const std::vector<Volcano> &volcanoes, const std::string &message = "") {
+    if(not message.empty()) h5pp::print("{}\n", message);
+    for(const auto &volcano : volcanoes) h5pp::print("-- {:<32}: {}\n", volcano.name, volcano.year);
 }
 
 int main() {
     size_t     logLevel = 2; // Default log level is 2: "info"
-    h5pp::File file("exampledir/example-04c-compound-datatype-variable-length-arrays.h5", h5pp::FileAccess::REPLACE, logLevel);
+    h5pp::File file(H5PP_EXAMPLE_DIR "example-04c-compound-datatype-variable-length-arrays.h5", h5pp::FileAccess::REPLACE, logLevel);
 
     // Register the compound datatype and its members
     h5pp::hid::h5t H5_VOLCANO_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Volcano));
     H5Tinsert(H5_VOLCANO_TYPE, "name", HOFFSET(Volcano, name), h5pp::vstr_t::get_h5type());
     H5Tinsert(H5_VOLCANO_TYPE, "year", HOFFSET(Volcano, year), h5pp::varr_t<int>::get_h5type());
 
-    // We can now write single volcano dataests ...
+    // Tell h5pp to use the registered HDF5 type when creating the dataset.
+    h5pp::DatasetCreateOptions createOptions;
+    createOptions.h5Type = H5_VOLCANO_TYPE;
 
-    Volcano volcano_single{"Mount Vesuvius", {1906, 1944}};
-    print_event(volcano_single, "Writing to file:");
-    file.writeDataset(volcano_single, "volcano_single", H5_VOLCANO_TYPE);
+    // We can now write single volcano datasets ...
+    Volcano volcanoSingle{"Mount Vesuvius", {1906, 1944}};
+    printEvent(volcanoSingle, "Writing to file:");
+    file.dataset("volcano_single").ensure(createOptions).write(volcanoSingle);
 
-    // Or even containers of volcanos
-    std::vector<Volcano> volcano_vector{{"Mount Vesuvius", {1906, 1944}},
-                                        {"Mount Spurr", {1953, 1992}},
-                                        {"Kelud", {1919, 1951, 1966, 1990}}};
-    print_events(volcano_vector, "Writing to file:");
-    file.writeDataset(volcano_vector, "volcano_vector", H5_VOLCANO_TYPE);
+    // ... or even containers of volcanoes.
+    std::vector<Volcano> volcanoVector{{"Mount Vesuvius", {1906, 1944}},
+                                       {"Mount Spurr", {1953, 1992}},
+                                       {"Kelud", {1919, 1951, 1966, 1990}}};
+    printEvents(volcanoVector, "Writing to file:");
+    file.dataset("volcano_vector").ensure(createOptions).write(volcanoVector);
 
     // Now we can read the data back
-    auto volcano_single_read = file.readDataset<Volcano>("volcano_single");
-    print_event(volcano_single, "Read from file:");
+    auto volcanoSingleRead = file.dataset("volcano_single").read<Volcano>();
+    printEvent(volcanoSingleRead, "Read from file:");
 
-    auto volcano_vector_read = file.readDataset<std::vector<Volcano>>("volcano_vector");
-    print_events(volcano_vector, "Read from file:");
+    auto volcanoVectorRead = file.dataset("volcano_vector").read<std::vector<Volcano>>();
+    printEvents(volcanoVectorRead, "Read from file:");
 
     return 0;
 }
@@ -66,16 +70,16 @@ int main() {
 /* Console output:
 
 Writing to file:
-    -- Mount Vesuvius                  : 1906 1944
-    Writing to file:
-    -- Mount Vesuvius                  : 1906 1944
-    -- Mount Spurr                     : 1953 1992
-    -- Kelud                           : 1919 1951 1966 1990
-    Read from file:
-    -- Mount Vesuvius                  : 1906 1944
-    Read from file:
-    -- Mount Vesuvius                  : 1906 1944
-    -- Mount Spurr                     : 1953 1992
-    -- Kelud                           : 1919 1951 1966 1990
+-- Mount Vesuvius                  : 1906 1944
+Writing to file:
+-- Mount Vesuvius                  : 1906 1944
+-- Mount Spurr                     : 1953 1992
+-- Kelud                           : 1919 1951 1966 1990
+Read from file:
+-- Mount Vesuvius                  : 1906 1944
+Read from file:
+-- Mount Vesuvius                  : 1906 1944
+-- Mount Spurr                     : 1953 1992
+-- Kelud                           : 1919 1951 1966 1990
 
 */

@@ -1,24 +1,11 @@
 #include <h5pp/h5pp.h>
+#include <vector>
 
 /*
- * This example shows how to use a TableInfo object.
+ * This example shows how to inspect a table through the rich TableInfo returned by getInfo().
  *
- * When creating a table or transferring a table record to/from file, h5pp scans its type, shape, link path
- * and many other properties. The results from a scan populates a struct of type "TableInfo".
- *
- * The TableInfo of a dataset can be obtained with h5pp::File::getTableInfo(<table path>),
- * but is also returned from a h5pp::File::createTable(...) operation, or a
- * h5pp::File::appendTableRecords operations
- *
- * The scanning process introduces some overhead, which is why reusing the
- * struct can be desirable, in particular to speed up repeated operations.
- *
- *
+ * In v2, you keep reusing the table handle itself and ask it for updated TableInfo objects after each operation.
  */
-
-// First define a typical struct.
-// Note that it cannot have dynamically sized members (such as std::vector or std::string)
-
 struct Stats {
     char   city[32];
     int    population;
@@ -26,28 +13,24 @@ struct Stats {
 };
 
 int main() {
-    // Initialize a file
-    h5pp::File file("exampledir/example-05c-table-info.h5", h5pp::FileAccess::REPLACE);
+    // Initialize a file.
+    h5pp::File file(H5PP_EXAMPLE_DIR "example-05c-table-info.h5", h5pp::FileAccess::REPLACE);
 
-    // Create a type for the char array from the template H5T_C_S1
-    // The template describes a string with a single char.
+    // Register a fixed-length string type for the city field.
     h5pp::hid::h5t H5_CITY_TYPE = H5Tcopy(H5T_C_S1);
-    // Set the size with H5Tset_size.
-    // Remember to add at least 1 extra char to leave space for the null terminator '\0'
-    H5Tset_size(H5_CITY_TYPE, 32);
-    // Optionally set the null terminator '\0' and possibly padding.
+    H5Tset_size(H5_CITY_TYPE, 32);             // Leave room for the null terminator
     H5Tset_strpad(H5_CITY_TYPE, H5T_STR_NULLTERM);
 
-    // Register the compound type
+    // Register the compound type used by each table record.
     h5pp::hid::h5t H5_STATS_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(Stats));
     H5Tinsert(H5_STATS_TYPE, "city", HOFFSET(Stats, city), H5_CITY_TYPE);
     H5Tinsert(H5_STATS_TYPE, "population", HOFFSET(Stats, population), H5T_NATIVE_INT);
-    H5Tinsert(H5_STATS_TYPE, "area [km²]", HOFFSET(Stats, area), H5T_NATIVE_DOUBLE);
+    H5Tinsert(H5_STATS_TYPE, "area [km^2]", HOFFSET(Stats, area), H5T_NATIVE_DOUBLE);
 
-    // Create an empty table
-    auto tableInfo = file.createTable(H5_STATS_TYPE, "tables/cityStats", "City Stats");
+    // Create an empty table and query its metadata.
+    auto table     = file.table("tables/cityStats").create(H5_STATS_TYPE, "City Stats");
+    auto tableInfo = table.getInfo();
 
-    // We now have a tableInfo object with meta information about our table
     h5pp::print("Table info before appending records\n");
     if(tableInfo.tablePath) h5pp::print("Table path    : {}\n", tableInfo.tablePath.value());
     if(tableInfo.tableTitle) h5pp::print("Table title   : {}\n", tableInfo.tableTitle.value());
@@ -59,16 +42,17 @@ int main() {
                         tableInfo.fieldSizes.value()[idx],
                         tableInfo.cppTypeName.value()[idx]);
 
-    // Or get a preformated string with .string()
-    h5pp::print("TableInfo::string(): {}\n", tableInfo.string());
+    // Prepare a few table records.
+    std::vector<Stats> cityStats = {
+        Stats{"London", 9787426, 1737},
+        Stats{"Stockholm", 1605030, 382},
+        Stats{"Santiago", 5220161, 641},
+    };
 
-    // Initialize a table in a vector
-    std::vector<Stats> cityStats{Stats{"London", 9787426, 1737}, Stats{"Stockholm", 1605030, 382}, Stats{"Santiago", 5220161, 641}};
+    // Append the records, then ask the same handle for a fresh metadata snapshot.
+    table.appendRecords(cityStats);
+    tableInfo = table.getInfo();
 
-    // Write the table to file, which updates tableInfo
-    tableInfo = file.appendTableRecords(cityStats, "tables/cityStats");
-
-    // Compare the new output
     h5pp::print("Table info after appending records\n");
     if(tableInfo.tablePath) h5pp::print("Table path    : {}\n", tableInfo.tablePath.value());
     if(tableInfo.tableTitle) h5pp::print("Table title   : {}\n", tableInfo.tableTitle.value());
@@ -79,6 +63,6 @@ int main() {
                         tableInfo.fieldNames.value()[idx],
                         tableInfo.fieldSizes.value()[idx],
                         tableInfo.cppTypeName.value()[idx]);
-    h5pp::print("TableInfo::string(): {}\n", tableInfo.string());
+
     return 0;
 }

@@ -1,64 +1,40 @@
 #include <h5pp/h5pp.h>
+#include <vector>
 
 /*
+ * This example introduces the rich AttrInfo returned by getInfo().
  *
- * This example introduces the AttrInfo struct.
- *
- * An attribute is similar to a dataset, but can be appended to other HDF5 objects like datasets, groups or files.
- * Users can append any number of attributes to a given HDF5 object. A common use case for attributes
- * is to add descriptive metadata to an HDF5 object.
- *
- * When transferring attribute data to/from file h5pp scans the attribute type, shape, link path
- * and many other such properties. The results from a scan populates a struct of type "AttrInfo".
-
- * The AttrInfo of an attribute can be obtained with h5pp::File::getAttributeInfo(<link path>,<attr name>),
- * but is also returned from a h5pp::File::writeAttribute(...) operation.
- *
- * The scanning process introduces some overhead, which is why reusing the
- * struct can be desirable, in particular to speed up repeated operations.
- *
+ * Attributes are small pieces of metadata attached to datasets, groups, or files.
+ * In v2, you inspect them through an attribute handle rather than using AttrInfo as the main write path.
  */
-
 int main() {
-    // Initialize a file
-    h5pp::File file("exampledir/example-05b-attribute-info.h5", h5pp::FileAccess::REPLACE);
+    // Initialize a file.
+    h5pp::File file(H5PP_EXAMPLE_DIR "example-05b-attribute-info.h5", h5pp::FileAccess::REPLACE);
 
-    // Write a dataset to file
-    file.writeDataset(42, "group/dataset");
+    // Write a dataset and attach two attributes to it.
+    file.dataset("group/dataset").write(42);
+    file.attribute("group/dataset", "stringAttribute").write(std::string("this is some dummy string"));
+    file.attribute("group/dataset", "vectorAttribute").write(std::vector<int>{1, 2, 3, 4});
 
-    // Write some attributes into the dataset
-    file.writeAttribute("this a some dummy string", "stringAttribute", "group/dataset");
-    file.writeAttribute(std::vector<int>{1, 2, 3, 4}, "vectorAttribute", "group/dataset");
+    // Start with the string attribute.
+    auto stringAttribute = file.attribute("group/dataset", "stringAttribute");
+    auto attributeInfo   = stringAttribute.getInfo();
+    if(attributeInfo.linkPath) h5pp::print("String attribute link : {}\n", attributeInfo.linkPath.value());
+    if(attributeInfo.attrName) h5pp::print("String attribute name : {}\n", attributeInfo.attrName.value());
+    if(attributeInfo.attrSize) h5pp::print("String attribute size : {}\n", attributeInfo.attrSize.value());
+    if(attributeInfo.attrByte) h5pp::print("String attribute bytes: {}\n", attributeInfo.attrByte.value());
+    if(attributeInfo.attrRank) h5pp::print("String attribute rank : {}\n", attributeInfo.attrRank.value());
+    if(attributeInfo.attrDims) h5pp::print("String attribute dims : {}\n", attributeInfo.attrDims.value());
 
-    // Let's start with the string attribute
-    // Get a struct populated with information about the attribute
-    auto attrInfo = file.getAttributeInfo("group/dataset", "stringAttribute");
-
-    // Access the properties of the attribute
-    if(attrInfo.linkPath) h5pp::print("String attribute link : {}\n", attrInfo.linkPath.value());
-    if(attrInfo.attrName) h5pp::print("String attribute name : {}\n", attrInfo.attrName.value());
-    if(attrInfo.attrSize) h5pp::print("String attribute size : {}\n", attrInfo.attrSize.value());
-    if(attrInfo.attrByte) h5pp::print("String attribute bytes: {}\n", attrInfo.attrByte.value());
-    if(attrInfo.attrRank) h5pp::print("String attribute rank : {}\n", attrInfo.attrRank.value());
-    if(attrInfo.attrDims) h5pp::print("String attribute dims : {}\n", attrInfo.attrDims.value()); // A string is scalar: should print "{}"
-
-    // And so on... OR, just use .string()
-    h5pp::print("attrInfo.string(): {}\n", attrInfo.string());
-
-    // The second attribute is treated similarly
-    // Get a struct populated with information about the attribute
-    attrInfo = file.getAttributeInfo("group/dataset", "vectorAttribute");
-
-    // Access the properties of the attribute
-    if(attrInfo.linkPath) h5pp::print("Vector attribute link : {}\n", attrInfo.linkPath.value());
-    if(attrInfo.attrName) h5pp::print("Vector attribute name : {}\n", attrInfo.attrName.value());
-    if(attrInfo.attrSize) h5pp::print("Vector attribute size : {}\n", attrInfo.attrSize.value());
-    if(attrInfo.attrByte) h5pp::print("Vector attribute bytes: {}\n", attrInfo.attrByte.value());
-    if(attrInfo.attrRank) h5pp::print("Vector attribute rank : {}\n", attrInfo.attrRank.value());
-    if(attrInfo.attrDims) h5pp::print("Vector attribute dims : {}\n", attrInfo.attrDims.value());
-
-    // And so on... OR, just use .string()
-    h5pp::print("attrInfo.string(): {}\n", attrInfo.string());
+    // Then inspect the vector attribute.
+    auto vectorAttribute = file.attribute("group/dataset", "vectorAttribute");
+    attributeInfo        = vectorAttribute.getInfo();
+    if(attributeInfo.linkPath) h5pp::print("Vector attribute link : {}\n", attributeInfo.linkPath.value());
+    if(attributeInfo.attrName) h5pp::print("Vector attribute name : {}\n", attributeInfo.attrName.value());
+    if(attributeInfo.attrSize) h5pp::print("Vector attribute size : {}\n", attributeInfo.attrSize.value());
+    if(attributeInfo.attrByte) h5pp::print("Vector attribute bytes: {}\n", attributeInfo.attrByte.value());
+    if(attributeInfo.attrRank) h5pp::print("Vector attribute rank : {}\n", attributeInfo.attrRank.value());
+    if(attributeInfo.attrDims) h5pp::print("Vector attribute dims : {}\n", attributeInfo.attrDims.value());
 
     return 0;
 }
