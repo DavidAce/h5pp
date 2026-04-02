@@ -118,8 +118,8 @@ jobs:
       - name: Generate coverage report
         if: matrix.compiler == 'gcc' && matrix.manager == 'find'
         run: |
-          lcov --gcov-tool=gcov-14 --capture --rc geninfo_unexecuted_blocks=1 --no-external --directory build/github-actions-find --output-file coverage.info
-          lcov --gcov-tool=gcov-14 --ignore-errors unused --remove coverage.info '*/test-*' '*catch.hpp' --output-file coverage.info
+          lcov --gcov-tool=gcov-14 --capture --rc geninfo_unexecuted_blocks=1 --directory build/github-actions-find --output-file coverage.info
+          lcov --gcov-tool=gcov-14 --extract coverage.info "${GITHUB_WORKSPACE}/include/*" --output-file coverage.info
           lcov --gcov-tool=gcov-14 --list coverage.info
 
       - name: Upload coverage to Codecov
