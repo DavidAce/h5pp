@@ -356,7 +356,7 @@
       ]
     },
     {
-      "name": "github-actions",
+      "name": "github-actions-common",
       "hidden": true,
       "displayName": "Default configuration for github-actions",
       "inherits": [
@@ -364,15 +364,38 @@
       ],
       "cacheVariables": {
         "H5PP_BUILD_DOCS": "FALSE",
-        "H5PP_ENABLE_ASAN": "TRUE",
+        "H5PP_ENABLE_ASAN": "FALSE",
         "H5PP_ENABLE_TESTS": "TRUE",
         "H5PP_BUILD_EXAMPLES": "TRUE",
         "H5PP_ENABLE_CCACHE": "TRUE",
         "H5PP_ENABLE_PCH": "TRUE",
-        "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_VERBOSE_MAKEFILE": "TRUE",
         "CMAKE_MESSAGE_LOG_LEVEL": "VERBOSE",
         "CMAKE_COMPILE_WARNING_AS_ERROR": "FALSE"
+      }
+    },
+    {
+      "name": "github-actions-unix",
+      "hidden": true,
+      "inherits": [
+        "github-actions-common"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS_DEBUG": "-O0",
+        "CMAKE_CXX_FLAGS_DEBUG": "-O0"
+      }
+    },
+    {
+      "name": "github-actions-win",
+      "hidden": true,
+      "inherits": [
+        "github-actions-common"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS_DEBUG": "/Od",
+        "CMAKE_CXX_FLAGS_DEBUG": "/Od"
       }
     },
     {
@@ -380,7 +403,7 @@
       "displayName": "github-actions using plain find_package",
       "inherits": [
         "warnings",
-        "github-actions"
+        "github-actions-unix"
       ],
       "condition": {
         "type": "inList",
@@ -400,7 +423,7 @@
       "inherits": [
         "warnings",
         "pkg-conan",
-        "github-actions"
+        "github-actions-unix"
       ],
       "condition": {
         "type": "inList",
@@ -417,7 +440,7 @@
       "inherits": [
         "warnings",
         "pkg-cmake",
-        "github-actions"
+        "github-actions-unix"
       ],
       "condition": {
         "type": "inList",
@@ -434,7 +457,7 @@
       "inherits": [
         "warnings-win",
         "options-win",
-        "github-actions"
+        "github-actions-win"
       ],
       "condition": {
         "type": "equals",
@@ -449,7 +472,7 @@
         "warnings-win",
         "options-win",
         "pkg-conan-win",
-        "github-actions"
+        "github-actions-win"
       ],
       "condition": {
         "type": "equals",
@@ -464,7 +487,7 @@
         "warnings-win",
         "options-win",
         "pkg-cmake",
-        "github-actions"
+        "github-actions-win"
       ],
       "condition": {
         "type": "equals",

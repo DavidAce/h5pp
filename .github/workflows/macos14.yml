@@ -16,13 +16,16 @@ jobs:
       contents: read
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_SLOPPINESS: include_file_mtime,pch_defines,time_macros
+      CCACHE_MAXSIZE: 384M
     strategy:
       fail-fast: false # True stops all on first error. Stick to false when debugging
       matrix:
         include:
-          - { compiler: cl,   manager: cmake }
-          - { compiler: cl,   manager: conan }
-          - { compiler: cl,   manager: find }
+          - { compiler: cl,   manager: cmake, asan: true  }
+          - { compiler: cl,   manager: conan, asan: false }
 
     steps:
       - uses: actions/checkout@v6.0.1
@@ -35,22 +38,35 @@ jobs:
 
       - name: Prepare cache directories
         run: |
-          mkdir -p ~/.ccache ~/.conan2 install/github-actions-${{ matrix.manager }}
+          mkdir -p "$CCACHE_DIR" ~/.conan2 install/github-actions-${{ matrix.manager }}
 
-      - name: Setup caches
-        id: h5pp-cache
+      - name: Setup ccache + dependency-provider cache
         uses: actions/cache@v4.2.0
+        if: matrix.manager == 'cmake'
         with:
           path: |
-            ~/.ccache
-            ~/.conan2
+            ${{ env.CCACHE_DIR }}
             install/github-actions-${{ matrix.manager }}
+          key: ${{ github.workflow }}-${{ env.cache-name }}
+
+      - name: Setup ccache + conan cache
+        uses: actions/cache@v4.2.0
+        if: matrix.manager == 'conan'
+        with:
+          path: |
+            ${{ env.CCACHE_DIR }}
+            ~/.conan2
           key: ${{ github.workflow }}-${{ env.cache-name }}
 
       - name: Setup build tools
         run: |
           brew install ccache ninja
           echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
+
+      - name: Configure ccache
+        run: |
+          ccache --set-config=max_size=${CCACHE_MAXSIZE}
+          ccache --show-config
 
       - name: Setup brew packages
         if: matrix.manager == 'find'
@@ -66,5 +82,9 @@ jobs:
         uses: lukka/run-cmake@v10
         with:
           configurePreset: 'github-actions-${{ matrix.manager }}'
+          configurePresetAdditionalArgs: "['-DH5PP_ENABLE_ASAN=${{ matrix.asan && 'TRUE' || 'FALSE' }}']"
           buildPreset: 'github-actions-${{ matrix.manager }}'
           testPreset: 'github-actions-${{ matrix.manager }}'
+
+      - name: Show ccache stats
+        run: ccache --show-stats
