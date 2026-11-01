@@ -1988,7 +1988,7 @@ namespace h5pp::hdf5 {
             haddr_t chaddr = 0;
             hsize_t chsize = 0;
             herr_t  eci    = H5Dget_chunk_info_by_coord(h5dset, chunkOffset.data(), &mask, &chaddr, &chsize);
-            if(eci < 0) h5pp::runtime_error("Failed to get chunk info for offset {}", chunkOffset);
+            if(eci < 0) throw h5pp::runtime_error("Failed to get chunk info for offset {}", chunkOffset);
 
             if(chsize == 0 or chaddr == HADDR_UNDEF) {
                 h5pp::logger::log->trace("Reading chunk at offset {}: chunk is not allocated yet, clearing output buffer", chunkOffset);
@@ -2004,6 +2004,31 @@ namespace h5pp::hdf5 {
             if(erc < 0)
                 throw h5pp::runtime_error("H5Dread_single_chunk: failed to get chunk storage size for chunk offset {}", chunkOffset);
             if(chunkByteStorage == 0) return; // There is probably no chunk yet
+
+            // Read the stored bytes before applying any decompression ourselves.
+            // Check the buffer on both API versions: HDF5 1.x cannot check its size.
+            auto readRawChunk = [&](std::vector<std::byte> &rawBuffer) {
+                if(chunkByteStorage > rawBuffer.size())
+                    throw h5pp::runtime_error(
+                        "Failed to read chunk at offset {}: buffer has {} bytes, but the stored chunk needs {} bytes",
+                        chunkOffset, rawBuffer.size(), chunkByteStorage);
+
+    #if H5_VERSION_GE(2, 0, 0)
+                size_t requiredBytes = rawBuffer.size();
+                herr_t err = H5Dread_chunk2(h5dset, h5dxpl, chunkOffset.data(), &mask, rawBuffer.data(), &requiredBytes);
+    #else
+                herr_t err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, rawBuffer.data());
+    #endif
+                if(err < 0) throw h5pp::runtime_error("Failed to read raw chunk at offset {}", chunkOffset);
+    #if H5_VERSION_GE(2, 0, 0)
+                // An undersized buffer can leave err nonnegative without reading
+                // any data. HDF5 reports the required size through requiredBytes.
+                if(requiredBytes > rawBuffer.size())
+                    throw h5pp::runtime_error(
+                        "Failed to read chunk at offset {}: buffer has {} bytes, but HDF5 requires {} bytes",
+                        chunkOffset, rawBuffer.size(), requiredBytes);
+    #endif
+            };
 
             bool skipDeflate = (mask & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
             bool isOnDeflate = (filters & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
@@ -2032,9 +2057,8 @@ namespace h5pp::hdf5 {
 
     #if H5PP_HAS_FILTER_DEFLATE && H5PP_HAS_ZLIB_H
             if(isOnDeflate and not skipDeflate) {
-                std::vector<std::byte> chunkZBuffer(chunkByteStorage);
-                herr_t                 err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, chunkZBuffer.data());
-                if(err < 0) throw h5pp::runtime_error("Failed to read compressed chunk at offset {}", chunkOffset);
+                std::vector<std::byte> chunkZBuffer(h5pp::type::safe_cast<size_t>(chunkByteStorage));
+                readRawChunk(chunkZBuffer);
 
                 int z_err = uncompress(reinterpret_cast<Bytef *>(chunkBuffer.data()),
                                        reinterpret_cast<uLongf *>(&chunkByte),
@@ -2054,11 +2078,9 @@ namespace h5pp::hdf5 {
                                             chunkByte,
                                             chunkByteStorage,
                                             mask);
-                    //                chunkBuffer.resize(read_chunk_nbytes);
                 }
 
-                herr_t err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, chunkBuffer.data());
-                if(err < 0) throw h5pp::runtime_error("Failed to read uncompressed chunk at offset {}", chunkOffset);
+                readRawChunk(chunkBuffer);
             }
 #endif
         } else {
