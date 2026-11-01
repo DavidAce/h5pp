@@ -10,7 +10,6 @@ git clone -b dev https://github.com/DavidAce/h5pp.git h5pp-source
 
 cmake -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=h5pp-install \
-      -DBUILD_SHARED_LIBS=OFF \
       -DH5PP_PACKAGE_MANAGER=none \
       -DH5PP_ENABLE_EIGEN3=ON \
       -DH5PP_ENABLE_SPDLOG=ON \

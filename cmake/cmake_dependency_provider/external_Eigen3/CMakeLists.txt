@@ -17,4 +17,6 @@ ExternalProject_Add(external_eigen3
         -DBUILD_TESTING:BOOL=OFF
         -DEIGEN_BUILD_DOC:BOOL=OFF
         -DEIGEN_BUILD_PKGCONFIG:BOOL=OFF
+        -DEIGEN_BUILD_BLAS:BOOL=OFF
+        -DEIGEN_BUILD_LAPACK:BOOL=OFF
         )

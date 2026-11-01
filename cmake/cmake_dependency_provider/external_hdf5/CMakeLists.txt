@@ -9,7 +9,7 @@ include(GNUInstallDirs)
 include(ExternalProject)
 
 option(HDF5_ENABLE_PARALLEL         "" OFF)
-option(HDF5_ENABLE_Z_LIB_SUPPORT    "" ON)
+option(HDF5_ENABLE_ZLIB_SUPPORT     "" ON)
 option(HDF5_ENABLE_SZIP_SUPPORT     "" ON)
 option(HDF5_ENABLE_SZIP_ENCODING    "" ON)
 option(HDF5_BUILD_HL_LIB            "" ON)
@@ -17,57 +17,16 @@ option(HDF5_BUILD_CPP_LIB           "" OFF)
 option(HDF5_BUILD_FORTRAN           "" OFF)
 option(HDF5_BUILD_JAVA              "" OFF)
 option(HDF5_BUILD_TOOLS             "" ON)
-option(USE_LIBAEC_STATIC            "" ON)
-if(NOT BUILD_SHARED_LIBS)
-    option(libaec_USE_STATIC_LIBS       "" ON)
-endif()
+#
+#set(libaec_ROOT    ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
+#set(ZLIB_ROOT      ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
+#set(SZIP_ROOT      ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
 
-set(libaec_ROOT    ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
-set(ZLIB_ROOT      ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
-set(SZIP_ROOT      ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
-
-if (HDF5_ENABLE_PARALLEL AND NOT WIN32)
-    find_package(MPI COMPONENTS C CXX REQUIRED)
-endif ()
-
-if(HDF5_ENABLE_Z_LIB_SUPPORT)
-    find_package(ZLIB REQUIRED)
-    get_target_property(ZLIB_LIBRARY     ZLIB::ZLIB LOCATION )
-    get_target_property(ZLIB_INCLUDE_DIR ZLIB::ZLIB INTERFACE_INCLUDE_DIRECTORIES)
-    message(DEBUG "HDF5: Found ZLIB LIBRARY: ${ZLIB_LIBRARY}")
-    message(DEBUG "HDF5: Found ZLIB INCLUDE: ${ZLIB_INCLUDE_DIR}")
-endif()
-if(HDF5_ENABLE_SZIP_SUPPORT)
-    find_package(libaec 1.1.4 CONFIG REQUIRED)
-    message(DEBUG "HDF5: Found libaec LIBRARY: ${libaec_LIBRARY}")
-    message(DEBUG "HDF5: Found libaec INCLUDE: ${libaec_INCLUDE_DIR}")
-    message(DEBUG "HDF5: Found SZIP   LIBRARY: ${SZIP_LIBRARY}")
-    message(DEBUG "HDF5: Found SZIP   INCLUDE: ${SZIP_INCLUDE_DIR}")
-    if(TARGET libaec::sz)
-        message(STATUS "HDF5: Detected target [libaec::sz]")
-    endif()
-    if(TARGET libaec::aec)
-        message(STATUS "HDF5: Detected target [libaec::aec]")
-    endif()
-endif()
 
 ExternalProject_Add(external_hdf5
-#        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.1/src/hdf5-1.12.1.tar.gz
-#        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.13/hdf5-1.13.2/src/hdf5-1.13.2.tar.gz
-#        URL         https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.14/hdf5-1.14.3/src/hdf5-1.14.3.tar.gz
-#        URL         https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_5/downloads/hdf5-1.14.5.tar.gz
-        URL         https://support.hdfgroup.org/releases/hdf5/v1_14/v1_14_6/downloads/hdf5-1.14.6.tar.gz
-#        URL_MD5     e4f057f0a3eb4237c7799605357a584d # 1.12.1
-#        URL_MD5     1daffd4662ba2207a96a93272244bb77  # 1.13.1
-#        URL_MD5     660ecb46a65e455438f7933ed1c6c403  # 1.13.2
-#        URL_MD5     075d923171c7785b2ee7d820b0ef8707  # 1.14.3
-#        URL_MD5     600d29af6ccb7f1e3401560e1422ba5e  # 1.14.5
-        URL_MD5     63426c8e24086634eaf9179a8c5fe9e5  # 1.14.6
+        URL         https://support.hdfgroup.org/releases/hdf5/2.1.1/downloads/hdf5-2.1.1.tar.gz
+        URL_MD5     105d909d2d11374c6e78fda414802e93 # 2.1.1
         PREFIX      ${CMAKE_BINARY_DIR}
-        # We need a patch here to get HDF5 to export zlib and szip as public dependencies on both static and shared targets
-#        PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/hdf5-link-public.patch.cmake
-        # We need another patch to force HDF5 to link ZLIB::ZLIB and szip-static targets rather than full paths to libraries
-#        PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/hdf5-link-target.patch.cmake
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         BUILD_ALWAYS TRUE
         LIST_SEPARATOR |
@@ -79,6 +38,7 @@ ExternalProject_Add(external_hdf5
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=OFF
         -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON
         -DCMAKE_INSTALL_MESSAGE=LAZY
+        -DCMAKE_FIND_PACKAGE_PREFER_CONFIG:BOOL=OFF
         # HDF5 flags
         -DBUILD_TESTING:BOOL=OFF
         -DHDF_PACKAGE_NAMESPACE:STRING=hdf5::
@@ -87,21 +47,20 @@ ExternalProject_Add(external_hdf5
         -DHDF5_ENABLE_PARALLEL:BOOL=${HDF5_ENABLE_PARALLEL}
         -DHDF5_ENABLE_COVERAGE:BOOL=OFF
         -DHDF5_ENABLE_TRACE:BOOL=OFF
-        -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=${HDF5_ENABLE_Z_LIB_SUPPORT}
+        -DHDF5_ENABLE_ZLIB_SUPPORT:BOOL=${HDF5_ENABLE_ZLIB_SUPPORT}
         -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=${HDF5_ENABLE_SZIP_SUPPORT}
         -DHDF5_ENABLE_SZIP_ENCODING:BOOL=${HDF5_ENABLE_SZIP_ENCODING}
 
-        -Dlibaec_LIBRARY:PATH=${libaec_LIBRARY}
-        -DZLIB_LIBRARY:PATH=${ZLIB_LIBRARY} # This is to force FindZLIB.cmake to find and define a target with the correct library
-        -DSZIP_LIBRARY:PATH=${SZIP_LIBRARY} #szip-static
-        -Dlibaec_INCLUDE_DIR:PATH=${libaec_INCLUDE_DIR}
-        -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
-        -DSZIP_INCLUDE_DIR:PATH=${SZIP_INCLUDE_DIR}
+#        -Dlibaec_LIBRARY:PATH=${libaec_LIBRARY}
+#        -DZLIB_LIBRARY:PATH=${ZLIB_LIBRARY}
+#        -DSZIP_LIBRARY:PATH=${SZIP_LIBRARY}
+#        -Dlibaec_INCLUDE_DIR:PATH=${libaec_INCLUDE_DIR}
+#        -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
+#        -DSZIP_INCLUDE_DIR:PATH=${SZIP_INCLUDE_DIR}
 
-        -DUSE_LIBAEC_STATIC:BOOL=${USE_LIBAEC_STATIC}
-        -Dlibaec_USE_STATIC_LIBS:BOOL=${libaec_USE_STATIC_LIBS}
         -DZLIB_USE_EXTERNAL:BOOL=OFF
         -DSZIP_USE_EXTERNAL:BOOL=OFF
+        -DHDF5_ALLOW_EXTERNAL_SUPPORT:STRING=NO
         -DHDF5_BUILD_TOOLS:BOOL=${HDF5_BUILD_TOOLS}
         -DHDF5_BUILD_HL_LIB:BOOL=${HDF5_BUILD_HL_LIB}
         -DHDF5_BUILD_CPP_LIB:BOOL=${HDF5_BUILD_CPP_LIB}
@@ -109,12 +68,12 @@ ExternalProject_Add(external_hdf5
         -DHDF5_BUILD_JAVA:BOOL=${HDF5_BUILD_JAVA}
         -DHDF5_BUILD_EXAMPLES:BOOL=OFF
         -DHDF5_DISABLE_COMPILER_WARNINGS:BOOL=ON
-        -DALLOW_UNSUPPORTED=ON
+        -DHDF5_ALLOW_UNSUPPORTED=ON
 
-        -DZLIB_ROOT:PATH=${ZLIB_ROOT}
-        -DZLIB_DIR:PATH=${ZLIB_ROOT}/share/cmake/zlib
-
-        -Dlibaec_ROOT:PATH=${libaec_ROOT}
-        -Dlibaec_DIR:PATH=${libaec_ROOT}/lib/cmake
+#        -DZLIB_ROOT:PATH=${ZLIB_ROOT}
+#        -DZLIB_DIR:PATH=${ZLIB_ROOT}/share/cmake/zlib
+#
+#        -Dlibaec_ROOT:PATH=${libaec_ROOT}
+#        -Dlibaec_DIR:PATH=${libaec_ROOT}/lib/cmake
         )
 

@@ -63,23 +63,18 @@ if(H5PP_ENABLE_SPDLOG)
     target_compile_definitions(deps INTERFACE H5PP_USE_SPDLOG)
 endif()
 
-find_package(ZLIB QUIET)
-find_package(SZIP QUIET)
 
-# We don't impose any version requirement here: h5pp is compatible with 1.8 to 1.14.
+# h5pp needs the C and high-level C APIs
 find_package(HDF5 COMPONENTS C HL REQUIRED)
-target_link_libraries(deps INTERFACE HDF5::HDF5)
 if(HDF5_VERSION AND HDF5_VERSION VERSION_LESS 1.8)
-    message(FATAL_ERROR "Found version ${HDF5_VERSION} < 1.8 required by h5pp")
+    message(FATAL_ERROR "Found version ${HDF5_VERSION}, but h5pp requires HDF5 version >= 1.8")
 endif()
 include(cmake/HDF5TargetUtils.cmake)
 h5pp_get_modern_hdf5_target_name()
+target_link_libraries(deps INTERFACE h5pp::hdf5)
+
+# h5pp uses zlib directly for raw chunk compression/decompression.
+find_package(ZLIB QUIET)
 if(TARGET ZLIB::ZLIB)
-    target_link_libraries(HDF5::HDF5 INTERFACE ZLIB::ZLIB)
+    target_link_libraries(deps INTERFACE ZLIB::ZLIB)
 endif()
-if(TARGET SZIP::SZIP)
-    target_link_libraries(HDF5::HDF5 INTERFACE SZIP::SZIP)
-endif()
-target_link_libraries(deps INTERFACE HDF5::HDF5)
-
-

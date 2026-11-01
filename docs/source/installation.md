@@ -129,7 +129,6 @@ The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
 | `H5PP_ENABLE_FMT`         | `OFF`                  | Enables `{fmt}` string formatting library                                                                                              |
 | `H5PP_ENABLE_SPDLOG`      | `OFF`                  | Enables `spdlog` support for logging `h5pp` internal info to stdout (implies fmt)                                                      |
 | `H5PP_PACKAGE_MANAGER`    | `find`                 | Download method for dependencies, select, `find`, `cmake`,`fetch`, `cpm`, `find-or-cmake`, `find-or-fetch` or `conan`                  |
-| `BUILD_SHARED_LIBS`       | `OFF`                  | Link dependencies with static or shared libraries                                                                                      |
 | `CMAKE_INSTALL_PREFIX`    | None                   | Install directory for `h5pp` and dependencies                                                                                          |
 | `H5PP_DEPS_INSTALL_DIR`   | `CMAKE_INSTALL_PREFIX` | Install directory for dependencies only (if a different one is desired)                                                                |
 | `H5PP_PREFIX_ADD_PKGNAME` | `OFF`                  | Appends `<PackageName>` to install location of dependencies, i.e. `${H5PP_DEPS_INSTALL_DIR}/<PackageName>`. This allows simple removal |

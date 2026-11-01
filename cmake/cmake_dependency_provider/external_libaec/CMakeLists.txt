@@ -8,10 +8,8 @@ include(ExternalProject)
 
 
 ExternalProject_Add(external_aec
-#        URL         https://gitlab.dkrz.de/k202009/libaec/-/archive/v1.1.2/libaec-v1.1.2.tar.gz
-        URL         https://gitlab.dkrz.de/k202009/libaec/-/archive/v1.1.4/libaec-v1.1.4.tar.gz
-#        URL_MD5     efc656b501fe832fc18fa464ca4b93c8 #v1.1.2
-        URL_MD5     76dba21f3bd6c233bf8a7f65f710ca67 #v1.1.4
+        URL         https://github.com/Deutsches-Klimarechenzentrum/libaec/releases/download/v1.1.7/libaec-1.1.7.tar.gz
+        URL_MD5     14dc76315b49b949c8882ead3a984fc9 #v1.1.7
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         CMAKE_ARGS

@@ -31,7 +31,7 @@ function(pkg_install_dependencies  package_name)
         pkg_install(hdf5
             CMAKE_ARGS
             -DHDF5_ENABLE_PARALLEL:BOOL=${H5PP_ENABLE_MPI}
-            -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON
+            -DHDF5_ENABLE_ZLIB_SUPPORT:BOOL=ON
             -DHDF5_ENABLE_SZIP_SUPPORT:BOOL=ON
         )
 
