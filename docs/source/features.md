@@ -1,5 +1,5 @@
 # Features
-* Header-only C++17 template library.
+* Header-only C++20 template library.
 * High-level front-end to the C API of the HDF5 library.
 * Type support:
     * all numeric types: `(u)int#_t`, `float`, `double`, `long double`.

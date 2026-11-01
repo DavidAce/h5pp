@@ -2,7 +2,7 @@
 #include "h5ppTypeSfinae.h"
 #include <H5Tpublic.h>
 /*! \namespace h5pp
- * \brief A simple C++17 wrapper for the HDF5 library
+ * \brief A simple C++20 wrapper for the HDF5 library
  */
 
 namespace h5pp {

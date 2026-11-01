@@ -1,10 +1,9 @@
 #!/bin/bash
+set -euo pipefail
+cd "$(dirname "$0")"
 
-# Make sure to install the latest version of conan and configure your profile before continuing
-# For instance, you may need to add `compiler.cppstd=17` under [settings] in ~/.conan/profile/default
-
-
-git clone https://github.com/DavidAce/h5pp.git
-
-cd h5pp
-conan create . --profile=default --build=missing
+# Requires Conan >= 2.0.5 and a configured default profile.
+# Run `conan profile detect` first if no default profile exists.
+git clone --branch v2 https://github.com/DavidAce/h5pp.git h5pp-source
+cd h5pp-source
+conan create . --profile=default --build=missing -s:h compiler.cppstd=20

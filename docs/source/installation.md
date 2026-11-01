@@ -1,217 +1,217 @@
 # Installation
 
-## Get h5pp
-
-There are currently 3 ways to obtain `h5pp`:
-
-* From [conan-center](https://conan.io/center/h5pp).
-* From [GitHub](https://github.com/DavidAce/h5pp).
-* As a `.deb` package from [latest release](https://github.com/DavidAce/h5pp/releases) (Ubuntu/Debian only).
+These instructions describe h5pp 2.0.0 on the `v2` branch. The version in
+ConanCenter or an older release archive may differ; the commands below use
+this checkout rather than assume that h5pp 2.0.0 has been published.
 
 ## Requirements
 
-* C++17 capable compiler. GCC version >= 7 or Clang version >= 7.0
-* CMake version >= 3.15
-* [**HDF5**](https://support.hdfgroup.org/HDF5/)  library, version >= 1.8
+* A C++20 compiler and standard library. `H5PP_USE_FLOAT128` requires C++23.
+* CMake 3.24 or newer. The bundled CMake dependency provider requires 3.26
+  because it builds HDF5 2.1.1, whose own minimum is CMake 3.26.
+* HDF5 1.8 or newer, including the C and high-level C libraries. Older HDF5
+  installations remain supported; direct chunk I/O requires HDF5 1.10.5 or newer.
+* Conan 2.0.5 or newer, only when using the Conan recipe or dependency provider.
 
 ### Optional dependencies
 
-* [**Eigen**](http://eigen.tuxfamily.org) >= 3.3.4: Store Eigen containers. Enable with `#define H5PP_USE_EIGEN3`.
-* [**spdlog**](https://github.com/gabime/spdlog) >= 1.3.1: Logging library. Enable with `#define H5PP_USE_SPDLOG`.
-* [**fmt**](https://github.com/fmtlib/fmt) >= 6.1.2: String formatting (used in `spdlog`). Enable with `#define H5PP_USE_FMT`.
+| Dependency | Minimum supported version | Enable with CMake |
+|------------|---------------------------|-------------------|
+| Eigen | 3.4.0 | `H5PP_ENABLE_EIGEN3=ON` |
+| fmt | 9.1.0 | `H5PP_ENABLE_FMT=ON` |
+| spdlog | 1.12.0 | `H5PP_ENABLE_SPDLOG=ON` (also enables fmt) |
+| Catch2 | 3 | `H5PP_ENABLE_TESTS=ON` (development only) |
 
-**NOTE:** Logging works the same with or without [Spdlog](https://github.com/gabime/spdlog) enabled. When Spdlog is *
-not* found, a hand-crafted logger is used in its place to give identical output but without any performance
-considerations (implemented with STL lists, strings and streams).
+The minimum supported version is different from the version selected by a
+provider. The bundled CMake provider currently downloads Eigen 5.0.1, fmt
+12.1.0, spdlog 1.17.0, HDF5 2.1.1, zlib 1.3.1, libaec 1.1.7, and Catch2
+3.13.0 when tests are enabled. Those download choices do not raise the library
+minimums above. For example, an existing Eigen 3.4.0 installation can be used
+without the provider even though the provider downloads Eigen 5.0.1.
 
-## Install
+The Conan recipe selects Eigen 5.0.1, spdlog in `[>=1.17.0 <1.18]`, HDF5 in
+`[>=1.10.0 <1.15]`, and zlib in `[>=1.2.11 <2]`. It requests Catch2 3.13.0
+when tests are enabled; fmt and libaec are resolved through its dependencies.
+These recipe constraints describe the Conan installation path, not every
+version usable with manually installed dependencies. In particular, the
+current Conan path selects HDF5 1.x, while the CMake provider selects HDF5 2.x.
 
-See full installation examples under [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart). Find a
-summary below.
+Without fmt or spdlog enabled, h5pp uses its built-in formatting and logging.
+Header-only users can enable optional integrations with `H5PP_USE_EIGEN3`,
+`H5PP_USE_FMT`, and `H5PP_USE_SPDLOG` preprocessor definitions and supply the
+corresponding headers and libraries themselves.
 
-### Option 1: Install with Conan (Recommended)
+### 128-bit floating-point options
 
-Install and configure [conan](https://conan.io), then run the following command to install from [conan center](https://conan.io/center/h5pp):
+Both options are off by default. Choose at most one:
 
-```bash
-> conan install h5pp/1.11.2
-```
+* `H5PP_USE_QUADMATH=ON` uses GCC's `__float128` and `__complex128` with
+  libquadmath. It keeps h5pp's C++20 minimum. Configuration checks that the
+  type, header, and library can be used together.
+* `H5PP_USE_FLOAT128=ON` uses `std::float128_t` from `<stdfloat>` and
+  `std::complex<std::float128_t>`. It raises the h5pp target's minimum to C++23.
+  Configuration compiles h5pp's float128 header and fails immediately if the
+  selected compiler and standard library do not provide the required types.
 
-The flag `--build=missing` lets conan install dependencies: `HDF5`, `Eigen` and `fmt` and `spdlog`.
+No compiler-version table is used to decide whether these types are available.
+Header-only users who do not use CMake select the implementation with the
+corresponding preprocessor definition.
 
-Note that you can also (as an alternative) use the file `conanfile.py` bundled with h5pp to create and install directly
-after cloning this git repo
-
-```bash
-> git clone https://github.com/DavidAce/h5pp.git
-> cd h5pp
-> conan create . davidace/stable --build=missing
-```
-
-After installation, use `h5pp` like any other conan package. For more information refer to
-the [conan docs](https://docs.conan.io/en/latest/getting_started.html) or have a look
-at [quickstart](https://github.com/DavidAce/h5pp/tree/master/quickstart).
-
-### Option 2: Install with CMake
-
-After cloning this repository, build the library just as any CMake project. For example, run the following commands:
-
-```bash
-    mkdir build
-    cd build
-    cmake -DCMAKE_INSTALL_PREFIX=<install-dir>  <source-dir>
-    make
-    make install
-```
-
-Headers will be installed under `<install-dir>/include` and config files under `<install-dir>/share/h5pp/cmake`. These
-config files allow you to use`find_package(h5pp)` in your own projects, which in turn defines the target `h5pp::h5pp`
-with everything you need to link `h5pp` correctly (including dependencies if you so choose: see below).
-
-#### CMake Presets
-
-Git clone and use one of the bundled CMake Presets to configure and build the project.
-In this case we choose `release-cmake` to install all the dependencies using just CMake. 
+## Install from this checkout
 
 ```bash
-    git clone https://github.com/DavidAce/h5pp.git
-    cd h5pp
-    cmake --preset=release-cmake         # Configure. Optionally add -DCMAKE_INSTALL_PREFIX=<install-dir>
-    cmake --build --preset=release-cmake # Builds tests and examples. Optionally add --parallel=<num cores>
-    cmake --install build/release-cmake  # Install to <install-dir> (default is ./install)
-    ctest --preset=release-cmake         # Optionally run tests
+git clone --branch v2 https://github.com/DavidAce/h5pp.git
+cd h5pp
 ```
 
+### Use dependencies already installed on your system
 
-#### Opt-in automatic dependency installation with CMake
+Without a dependency provider, h5pp uses `find_package` to locate dependencies.
+Use `CMAKE_PREFIX_PATH` or package-specific hints such as `HDF5_ROOT`,
+`Eigen3_DIR`, `fmt_DIR`, and `spdlog_DIR` for installations outside the usual
+search paths.
 
-The CMake flag `H5PP_PACKAGE_MANAGER` controls the automated behavior for finding or installing dependencies. It can
-take one of these string values:
+```bash
+cmake -S . -B build/local \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$PWD/install/local" \
+    -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
+    -DH5PP_ENABLE_EIGEN3=ON \
+    -DH5PP_ENABLE_SPDLOG=ON
+cmake --build build/local --parallel 6
+cmake --install build/local
+```
 
-| Value                | Description                                                                                                                                          |
-|----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `none`               | Skip handling dependencies                                                                                                                           |
-| `find` **(default)** | Use CMake's `find_package` to find dependencies                                                                                                     |
-| `cmake` **¹**        | Use isolated CMake instances to download and install dependencies during configure. Disregards pre-installed dependencies on your system             |
-| `fetch` **²**        | Use FetchContent to download and install dependencies. Disregards pre-installed dependencies on your system                                          |
-| `cpm` **³**          | Use [CPM](https://github.com/cpm-cmake/CPM.cmake)to download and install dependencies. Disregards pre-installed dependencies on your system          |
-| `find-or-cmake`      | Start with `find` and then go to `cmake` if not found                                                                                                |
-| `find-or-fetch`      | Start with `find` and then go to `fetch` if not found                                                                                                |
-| `find-or-cpm`        | Start with `find` and then go to `cpm` if not found                                                                                                  |
-| `conan` **⁴**        | Use the [Conan package manager](https://conan.io/) to download and install dependencies automatically. Disregards libraries elsewhere on your system |
+Optional integrations are off by default in a plain configuration; enable
+only the ones your project needs. HDF5 is always required. The library is
+header-only, so a build without tests, examples, or documentation has no h5pp
+source files to compile.
 
-There are several variables you can pass to CMake to guide `find_package` calls and install location,
-see [CMake options](#cmake-options) below.
+### Let CMake download and build dependencies
 
-**¹** Dependencies are installed into `${H5PP_DEPS_INSTALL_DIR}[/<PackageName>]`, where `H5PP_DEPS_INSTALL_DIR` defaults
-to `CMAKE_INSTALL_PREFIX` and optionally `/<PackageName>` is added if `H5PP_PREFIX_ADD_PKGNAME=TRUE`
+With CMake 3.26 or newer, use the bundled provider through a preset:
 
-**²** Dependencies are installed into `${CMAKE_INSTALL_PREFIX}[/<PackageName>]`.
+```bash
+cmake --preset release-cmake
+cmake --build --preset release-cmake --parallel 6
+cmake --install build/release-cmake
+```
 
-**³** Dependencies are installed into `${CMAKE_INSTALL_PREFIX}`.
+This preset enables optional integrations, tests, and examples. Its installation
+prefix is `install/release-cmake` under the source directory. To register the
+provider without a preset, pass it on the first configuration of a new build:
 
-**⁴** Conan is guided by `conanfile.txt` found in this project's root directory. This method requires conan to be
-installed prior (for instance through `pip`, `conda`, `apt`, etc). To let CMake find conan you have three options:
+```bash
+cmake -S . -B build/provider \
+    -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="$PWD/cmake/cmake_dependency_provider/cmake_provider.cmake" \
+    -DCMAKE_INSTALL_PREFIX="$PWD/install/provider" \
+    -DH5PP_ENABLE_EIGEN3=ON \
+    -DH5PP_ENABLE_SPDLOG=ON
+```
 
-* Add Conan install (or bin) directory to the environment variable `PATH`.
-* Export Conan install (or bin) directory in the environment variable `CONAN_PREFIX`, i.e. from command
-  line: `export CONAN_PREFIX=<path-to-conan>`
-* Give the variable `CONAN_PREFIX` directly to CMake, i.e. from command
-  line: `cmake -DCONAN_PREFIX:PATH=<path-to-conan> ...`
+The provider builds dependencies during configuration and installs them under
+`CMAKE_INSTALL_PREFIX`. It reuses installations recorded by its success
+manifests. Use a separate build and installation prefix when changing dependency
+providers or configurations.
 
-#### CMake options
+### Let Conan install dependencies
 
-The `cmake` step above takes several options, `cmake [-DOPTIONS=var] ../ `:
+Install Conan 2.0.5 or newer and put `conan` on `PATH`. If you have no default
+profile yet, create one with `conan profile detect`. Then use the bundled preset:
 
-| Option                    | Default                | Description                                                                                                                            |
-|---------------------------|------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| `H5PP_ENABLE_EIGEN3`      | `OFF`                  | Enables `Eigen` linear algebra library support                                                                                         |
-| `H5PP_ENABLE_FMT`         | `OFF`                  | Enables `{fmt}` string formatting library                                                                                              |
-| `H5PP_ENABLE_SPDLOG`      | `OFF`                  | Enables `spdlog` support for logging `h5pp` internal info to stdout (implies fmt)                                                      |
-| `H5PP_PACKAGE_MANAGER`    | `find`                 | Download method for dependencies, select, `find`, `cmake`,`fetch`, `cpm`, `find-or-cmake`, `find-or-fetch` or `conan`                  |
-| `CMAKE_INSTALL_PREFIX`    | None                   | Install directory for `h5pp` and dependencies                                                                                          |
-| `H5PP_DEPS_INSTALL_DIR`   | `CMAKE_INSTALL_PREFIX` | Install directory for dependencies only (if a different one is desired)                                                                |
-| `H5PP_PREFIX_ADD_PKGNAME` | `OFF`                  | Appends `<PackageName>` to install location of dependencies, i.e. `${H5PP_DEPS_INSTALL_DIR}/<PackageName>`. This allows simple removal |
-| `H5PP_ENABLE_PCH`         | `OFF`                  | Use precompiled headers to speed up compilation of tests and examples                                                                  |
-| `H5PP_ENABLE_CCACHE`      | `OFF`                  | Use ccache to speed up compilation of tests and examples                                                                               |
-| `H5PP_ENABLE_TESTS`       | `OFF`                  | Build tests (recommended!)                                                                                                             |
-| `H5PP_BUILD_EXAMPLES`     | `OFF`                  | Build example programs                                                                                                                 |
-| `H5PP_IS_SUBPROJECT`      | `OFF`                  | Use `h5pp` with add_subdirectory(). Skips installation of targets if true. Automatic detection if not set                              |
-| `CONAN_PREFIX`            | None                   | conan install directory                                                                                                                |
+```bash
+cmake --preset release-conan
+cmake --build --preset release-conan --parallel 6
+cmake --install build/release-conan
+```
 
-In addition, variables such
-as [`<PackageName>_ROOT`](https://cmake.org/cmake/help/latest/variable/PackageName_ROOT.html)
-and [`<PackageName>_DIR`](https://cmake.org/cmake/help/latest/command/find_package.html) can be set to help guide
-CMake's `find_package` calls:
+The preset registers `cmake/conan_dependency_provider/conan_provider.cmake`
+through `CMAKE_PROJECT_TOP_LEVEL_INCLUDES`. The provider reads this checkout's
+`conanfile.py` and generates dependency targets. It does not download h5pp itself
+from ConanCenter.
 
-### Option 3: Copy the headers
+To package this checkout into your local Conan cache instead:
 
-Copy the files under `h5pp/source/include` and add `#include<h5pp/h5pp.h>`. Make sure to compile
-with `-std=c++17 -lstdc++fs` and link the dependencies `HDF5`, `Eigen3`, `fmt`, and `spdlog`. The actual linking is a
-non-trivial step, see [linking](https://github.com/DavidAce/h5pp/wiki/Link-to-h5pp#link-using-cmake-targets-easy).
+```bash
+conan create . --build=missing -s:h compiler.cppstd=20
+```
 
-#### Compiler flags for Windows / MSVC
+Use `compiler.cppstd=23` when selecting the recipe's `with_float128=True` option.
+A project can then require `h5pp/2.0.0` from that local cache. The
+[cmake-conan quickstart](https://github.com/DavidAce/h5pp/tree/v2/quickstart/cmake-conan-integration)
+lets CMake call Conan automatically to install the packages listed in its
+`conanfile.txt`, using configured remotes or the local cache.
 
-To get h5pp working in MSVC the following compiler flags and definitions are recommended
+`H5PP_PACKAGE_MANAGER` and `H5PP_DOWNLOAD_METHOD` are deprecated. Select a
+provider with a preset or `CMAKE_PROJECT_TOP_LEVEL_INCLUDES`; omit a provider
+to use dependencies you have installed yourself. The old `none`, `fetch`,
+`cpm`, and `find-or-*` settings are not installation modes in v2.
 
-* `/permissive-`
-* `/EHsc`
-* `/D NOMINMAX`
+### Copy the headers
 
-If you use CMake to install/find`h5pp`, then no action is required since these are added automatically to the CMake
-target `h5pp::h5pp`.
+Copy the `include/h5pp` directory into your project's include path and include
+`<h5pp/h5pp.h>`. Compile as C++20 or newer, or C++23 for `H5PP_USE_FLOAT128`.
+Supply HDF5's C and high-level C libraries and their dependencies. Eigen is
+header-only; fmt and spdlog may require libraries depending on their own build
+configuration. CMake targets are recommended for handling these link details.
 
+## CMake options
 
-## Link
+| Option | Default | Description |
+|--------|---------|-------------|
+| `H5PP_ENABLE_EIGEN3` | `OFF` | Enable Eigen integration |
+| `H5PP_ENABLE_FMT` | `OFF` | Enable fmt formatting |
+| `H5PP_ENABLE_SPDLOG` | `OFF` | Enable spdlog logging and fmt |
+| `H5PP_USE_QUADMATH` | `OFF` | Use GCC 128-bit types with libquadmath |
+| `H5PP_USE_FLOAT128` | `OFF` | Use C++23 `std::float128_t` |
+| `H5PP_ENABLE_TESTS` | `OFF` | Build the existing Catch2 tests |
+| `H5PP_BUILD_EXAMPLES` | `OFF` | Build examples |
+| `H5PP_BUILD_DOCS` | `OFF` | Build documentation with Doxygen and Sphinx |
+| `H5PP_ENABLE_PCH` | `OFF` | Use precompiled headers for tests/examples |
+| `H5PP_ENABLE_CCACHE` | `OFF` | Use ccache for development builds |
+| `H5PP_ENABLE_ASAN` | `OFF` | Enable AddressSanitizer |
+| `H5PP_ENABLE_COVERAGE` | `OFF` | Enable coverage instrumentation for tests |
+| `H5PP_ENABLE_MPI` | `OFF` | Enable experimental MPI support; requires parallel HDF5 |
+| `H5PP_IS_SUBPROJECT` | Automatically detected | Use h5pp with `add_subdirectory`; skip installation rules |
+| `CMAKE_INSTALL_PREFIX` | CMake's default | Install h5pp, and dependencies built by the CMake provider |
 
-### Link using CMake targets (easy)
+Presets override several defaults. Run `cmake --list-presets` to see available
+configurations. h5pp does not impose one static/shared choice on all dependencies;
+use the options supported by the selected packages and provider.
 
-`h5pp` is easily imported into your project using CMake's `find_package`. Just point it to the `h5pp` install directory.
-When found, targets are made available to compile and link to dependencies correctly. A minimal `CMakeLists.txt` to
-use `h5pp` would look like:
+## Link from a CMake project
 
 ```cmake
-cmake_minimum_required(VERSION 3.15)
-project(myProject)
+cmake_minimum_required(VERSION 3.24)
+project(myProject LANGUAGES C CXX)
+find_package(h5pp 2.0.0 REQUIRED)
 add_executable(myExecutable main.cpp)
-find_package(h5pp REQUIRED)                              # Define H5PP_ROOT to guide this search
 target_link_libraries(myExecutable PRIVATE h5pp::h5pp)
 ```
 
-#### Targets explained
+Configure your project with `-DCMAKE_PREFIX_PATH=/path/to/h5pp/install/prefix`.
+The installed package finds HDF5 and the optional dependencies enabled when h5pp
+was installed. Their headers and libraries must still be available.
 
-* `h5pp::h5pp` is the main target including "everything" and should normally be the only target that you need --
-  headers,flags and (if enabled) the found/downloaded dependencies.
-* `h5pp::headers` links the `h5pp` headers only.
-* `h5pp::deps` collects targets to link all the dependencies that were found/downloaded when `h5pp` was installed. These
-  can of course be used independently.
-   * If `H5PP_PACKAGE_MANAGER==find|cmake|fetch|cmp|conan` the targets are `Eigen3::Eigen`,`fmt::fmt`, `spdlog::spdlog`
-     and `HDF5::HDF5`
-* `h5pp::flags` sets compile and linker flags to enable C++17 and std::filesystem library, i.e. `-std=c++17`
-  and `-lstdc++fs` (only needed on some compilers).
+* `h5pp::h5pp` supplies the headers, dependencies, and compiler requirements.
+  This is normally the only target your executable needs.
+* `h5pp::headers` supplies the h5pp include directory.
+* `h5pp::deps` supplies HDF5 and enabled optional integrations. `h5pp::hdf5`
+  supplies h5pp's self-contained HDF5 target, including the C and high-level APIs.
+* `h5pp::flags` supplies the C++20 requirement, or C++23 in standard float128
+  mode, and enabled compiler options and definitions. On MSVC this includes
+  `/permissive-`, `/EHsc`, and `NOMINMAX`.
 
-  Additionally, on MSVC:
-   * `/permissive-`  to enable logical `and`/`or` in C++.
-   * `/EHsc`
-   * `/D NOMINMAX`
-
-### Link manually (not as easy)
-
-#### Using command line
-
-From the command-line you can of course link using linker flags such as
-
-```bash
- `g++ ... -std=c++17 -leigen3 -lspdlog  -lfmt -lhdf5_hl -lhdf5 -lstdc++fs  -pthread -lz -lsz -laec -lm -ldl  ...` 
-```
-
-provided these flags make sense on your system.
+Eigen is header-only: do not add `-leigen3`. HDF5's extra link libraries depend
+on how it was built; use its package targets rather than copying a fixed list
+of `-lz`, `-lsz`, `-ldl`, and similar flags from another system.
 
 ## Uninstall
 
-The target `uninstall` is defined by `h5pp` which removes installed headers and dependencies using their respective
-install manifests. From the build directory, run the following in the command-line to uninstall:
+To remove files listed in h5pp's installation manifest:
 
+```bash
+cmake --build build/local --target h5pp-uninstall
 ```
-    cmake --build .  --target uninstall
-```
+
+This does not uninstall separately managed system or Conan dependencies.

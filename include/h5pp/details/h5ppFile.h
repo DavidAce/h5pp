@@ -24,7 +24,7 @@
 #include <utility>
 
 /*! \namespace h5pp::v1
- * \brief A simple C++17 wrapper for the HDF5 library
+ * \brief A simple C++20 wrapper for the HDF5 library
  */
 namespace h5pp::v1 {
 

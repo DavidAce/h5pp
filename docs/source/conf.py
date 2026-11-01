@@ -29,6 +29,8 @@ if on_rtd:
 # -- Project information -----------------------------------------------------
 
 project = 'h5pp'
+version = '2.0'
+release = '2.0.0'
 copyright = '2021, David Aceituno'
 author = 'David Aceituno'
 

@@ -1,7 +1,7 @@
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "h5pp"
-PROJECT_NUMBER         = 1.9.1
-PROJECT_BRIEF          = "A C++17 wrapper for HDF5"
+PROJECT_NUMBER         = 2.0.0
+PROJECT_BRIEF          = "A C++20 wrapper for HDF5"
 PROJECT_LOGO           = 
 OUTPUT_DIRECTORY       =
 CREATE_SUBDIRS         = NO

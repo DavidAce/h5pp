@@ -11,7 +11,7 @@
 ---
 
 
-`h5pp` is a high-level C++17 interface for the [HDF5](https://www.hdfgroup.org/) C library. With simplicity in
+`h5pp` is a high-level C++20 interface for the [HDF5](https://www.hdfgroup.org/) C library. With simplicity in
 mind, `h5pp` lets users store common C++ data types into portable binary [HDF5](https://www.hdfgroup.org/) files.
 
 

@@ -1,14 +1,10 @@
 #!/bin/bash
+set -euo pipefail
+cd "$(dirname "$0")"
 
-# Run CMake configure (optionally do this with cmake-gui)
-cmake -DCMAKE_BUILD_TYPE=Release \
-      -Dh5pp_ROOT:PATH=h5pp-install \
-      -S MyProject \
-      -B MyProject-build
-
-
-# Build the executable
-cmake --build MyProject-build --parallel 4
-
-# Run the executable
+cmake -S MyProject -B MyProject-build \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
+      -Dh5pp_ROOT:PATH="$PWD/h5pp-install"
+cmake --build MyProject-build --parallel 6 --config Release
 ./MyProject-build/MyProjectExecutable
