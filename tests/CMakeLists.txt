@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.24)
 project(h5pp-tests CXX)
 
 find_package(Catch2 3 REQUIRED)

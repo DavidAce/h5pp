@@ -14,14 +14,8 @@
         // If SPDLOG_HEADER_ONLY is defined this will cause FMT_HEADER_ONLY to also get defined
         #include <spdlog/fmt/fmt.h>
         #if defined(SPDLOG_FMT_EXTERNAL)
-            #if __has_include(<fmt/base.h>) && __has_include(<fmt/format.h>)
-                #include <fmt/base.h>
-                #include <fmt/format.h>
-                #include <fmt/ranges.h>
-            #else
-                #include <fmt/core.h>
-                #include <fmt/ranges.h>
-            #endif
+            #include <fmt/format.h>
+            #include <fmt/ranges.h>
         #else
             #include <spdlog/fmt/bundled/compile.h>
             #include <spdlog/fmt/bundled/ranges.h>
@@ -41,20 +35,14 @@
 
     #endif
 
-    #if !defined(H5PP_NAME_VAL)
-        #define H5PP_VAL_TO_STR(x) #x
-        #define H5PP_VAL(x)        H5PP_VAL_TO_STR(x)
-        #define H5PP_NAME_VAL(var) #var "=" H5PP_VAL(var)
-    #endif
-    #if defined(FMT_VERSION) && FMT_VERSION < 60000
-        #pragma message("h5pp: fmt version unsupported: " H5PP_NAME_VAL(FMT_VERSION) ". Compilation may fail.")
+    #if defined(FMT_VERSION) && FMT_VERSION < 90100
+        #error "h5pp requires fmt >= 9.1.0"
     #endif
 #endif
 
 #if defined(FMT_FORMAT_H_) && (defined(H5PP_USE_FMT) || defined(H5PP_USE_SPDLOG))
 
 namespace h5pp {
-    #if defined(FMT_VERSION) && FMT_VERSION >= 81000
     using fmt::format;
     using fmt::print;
     using fmt::runtime;
@@ -67,23 +55,6 @@ namespace h5pp {
             stored
         );
     }
-    #else
-    using fmt::format;
-    using fmt::print;
-    template<typename... Args>
-    [[nodiscard]] std::string runtime(Args... args) {
-        return fmt::format(std::forward<Args>(args)...);
-    }
-    template<typename S, typename... Args>
-    [[nodiscard]] std::string format_runtime(S &&fmtstring, Args &&...args) {
-        auto fmtview = fmt::string_view(std::forward<S>(fmtstring));
-        auto stored  = std::tuple<std::decay_t<Args>...>(std::forward<Args>(args)...);
-        return std::apply(
-            [&](auto &...vals) { return fmt::vformat(fmtview, fmt::make_format_args(vals...)); },
-            stored
-        );
-    }
-    #endif
 
 }
 #else

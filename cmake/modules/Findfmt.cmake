@@ -77,10 +77,6 @@ function(set_fmt_version tgt_name vers)
         if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
             set_target_properties(${tgt} PROPERTIES VERSION ${${vers}})
         endif()
-        if(${${vers}} VERSION_LESS 7.0.0)
-            # Fix bug with ambiguous resolution of fmt::format_to which is used in spdlog 1.5.0
-            target_compile_definitions(${tgt} INTERFACE FMT_USE_CONSTEXPR=0)
-        endif()
     endif()
 endfunction()
 

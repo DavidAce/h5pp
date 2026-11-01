@@ -1,5 +1,5 @@
  
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.24)
 project(h5pp VERSION 2.0.0
         DESCRIPTION "A C++20 wrapper for HDF5"
         HOMEPAGE_URL "https://github.com/DavidAce/h5pp"
@@ -28,8 +28,8 @@ option(H5PP_ENABLE_ASAN                 "Enable runtime address sanitizer -fsani
 option(H5PP_ENABLE_PCH                  "Enable precompiled headers (if supported) to speed up test compilation"  OFF)
 option(H5PP_ENABLE_CCACHE               "Enable ccache (if available) to speed up test compilation"               OFF)
 option(H5PP_ENABLE_COVERAGE             "Enable test coverage"                                                    OFF)
-option(H5PP_USE_FLOAT128                "Add support for __float128 if the compiler supports it"                  OFF)
-option(H5PP_USE_QUADMATH                "Link the quadmath library for more advanced use of __float128"           OFF)
+option(H5PP_USE_FLOAT128                "Use C++23 std::float128_t (requires <stdfloat> and compiler support)"                  OFF)
+option(H5PP_USE_QUADMATH                "Use GCC __float128 and __complex128 with libquadmath (C++20)"           OFF)
 option(H5PP_BUILD_EXAMPLES              "Builds examples"                                                         OFF)
 option(H5PP_BUILD_DOCS                  "Builds documentation (Requires doxygen, sphinx and breathe)"             OFF)
 option(H5PP_ENABLE_TESTS                "Enable testing"                                                          OFF)
@@ -40,7 +40,6 @@ option(CMAKE_POSITION_INDEPENDENT_CODE  "Use -fPIC when compiling shared librari
 if(H5PP_ENABLE_SPDLOG)
     set(H5PP_ENABLE_FMT ON CACHE INTERNAL "H5PP_ENABLE_SPDLOG:ON implies H5PP_ENABLE_FMT:ON)" FORCE)
 endif()
-
 
 include(cmake/SetupCcache.cmake)
 
@@ -103,7 +102,7 @@ if(H5PP_IS_SUBPROJECT)
 else()
 
     # Install library
-    # Read about this share path here https://cmake.org/cmake/help/v3.12/command/find_package.html
+    # Read about this share path here https://cmake.org/cmake/help/latest/command/find_package.html
     include(GNUInstallDirs)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT h5pp-include)
     install(TARGETS h5pp headers deps flags EXPORT h5ppTargets)
@@ -191,7 +190,7 @@ set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_ALL h5pp-include h5pp-config)
 
 # Define apt dependencies that work with this library
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libhdf5-dev (>=1.10), libeigen3-dev (>=3.3.4), libspdlog-dev (>=1.3)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libhdf5-dev (>=1.8), libeigen3-dev (>=3.4.0), libfmt-dev (>=9.1.0), libspdlog-dev (>=1.12.0)")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "A C++ wrapper for HDF5")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/DavidAce/h5pp")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "DavidAce <aceituno@kth.se>")
@@ -200,4 +199,3 @@ set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_GENERATOR "DEB")
 include(CPack)
-

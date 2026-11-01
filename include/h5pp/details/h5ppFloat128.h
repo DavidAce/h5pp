@@ -11,7 +11,7 @@ namespace h5pp {
 }
 
 #elif defined(H5PP_USE_FLOAT128)
-    #if __cplusplus < 202302L
+    #if __cplusplus <= 202002L
         #error "H5PP_USE_FLOAT128: std::float128_t requires C++23"
     #endif
     #if !__has_include(<stdfloat>)
