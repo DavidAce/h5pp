@@ -120,7 +120,7 @@ namespace h5pp::hdf5 {
 
     [[nodiscard]] inline hsize_t getSizeSelected(const hid::h5s &space) {
         hssize_t size = H5Sget_select_npoints(space);
-        if(size < 0) h5pp::runtime_error("getSizeSelected: H5Sget_select_npoints failed");
+        if(size < 0) throw h5pp::runtime_error("getSizeSelected: H5Sget_select_npoints failed");
         return type::safe_cast<hsize_t>(size);
     }
 
@@ -1473,9 +1473,9 @@ namespace h5pp::hdf5 {
             auto newDimensions = dataInfo.dataDims.value();
             if(dataInfo.dataSlab and dataInfo.dataSlab->extent) {
                 if(dataInfo.dataDims->size() != dataInfo.dataSlab->extent->size()) {
-                    h5pp::runtime_error("rank mismatch: \n data dims {}\n data slab {}",
-                                        dataInfo.dataDims.value(),
-                                        dataInfo.dataSlab->string());
+                    throw h5pp::runtime_error("rank mismatch: \n data dims {}\n data slab {}",
+                                              dataInfo.dataDims.value(),
+                                              dataInfo.dataSlab->string());
                 }
                 newDimensions = dataInfo.dataSlab->extent.value();
             }
@@ -1483,7 +1483,7 @@ namespace h5pp::hdf5 {
                 const auto &offset = dsetInfo.dsetSlab->offset.value();
                 const auto &extent = dsetInfo.dsetSlab->extent.value();
                 if(newDimensions.size() != offset.size() or newDimensions.size() != extent.size())
-                    h5pp::runtime_error("rank mismatch: \n data dims {}\n dset slab {}", newDimensions, dsetInfo.dsetSlab->string());
+                    throw h5pp::runtime_error("rank mismatch: \n data dims {}\n dset slab {}", newDimensions, dsetInfo.dsetSlab->string());
                 for(size_t idx = 0; idx < newDimensions.size(); idx++)
                     newDimensions[idx] = std::max(newDimensions[idx], offset[idx] + extent[idx]);
             }
@@ -2635,7 +2635,7 @@ namespace h5pp::hdf5 {
 #else
                 herr_t reclaim_err = H5Dvlen_reclaim(attrInfo.h5Type.value(), attrInfo.h5Space.value(), H5P_DEFAULT, vdata.data());
 #endif
-                if(reclaim_err < 0) h5pp::runtime_error("readAttribute: failed to reclaim variable-length array buffer");
+                if(reclaim_err < 0) throw h5pp::runtime_error("readAttribute: failed to reclaim variable-length array buffer");
             } else {
                 // All the elements in the dataset have the same string size
                 // The whole dataset is read into a contiguous block of memory.
@@ -2915,7 +2915,7 @@ namespace h5pp::hdf5 {
         /* Step 1: Get the dataset and memory spaces */
         std::array<hsize_t, 1> dataDims  = {extent.value()};                  /* create a simple memory data space */
         hid::h5s               dsetSpace = H5Dget_space(info.h5Dset.value()); /* get a copy of the new file data space for writing */
-        hid::h5s               dataSpace = H5Screate_simple(dataDims.size(), dataDims.data(), nullptr);
+        hid::h5s               dataSpace = H5Screate_simple(type::safe_cast<int>(dataDims.size()), dataDims.data(), nullptr);
 
         /* Step 2: draw a region in the dataset */
         std::array<hsize_t, 1> dsetOffset = {offset.value()};
@@ -3296,12 +3296,12 @@ namespace h5pp::hdf5 {
             herr_t             retval = H5Dread(info.h5Dset.value(), h5t_fields, dataSpace, dsetSpace, plists.dsetXfer, vdata.data());
             if(retval < 0) {
                 auto h5t_info = getH5TInfo(h5t_fields);
-                h5pp::runtime_error("readTableField: H5Dread failed for variable-length field data\n"
-                                    "table [{}] | {}{}{}",
-                                    info.tablePath.value(),
-                                    h5t_info.string(),
-                                    h5t_info.numMembers ? "\n" : "",
-                                    h5t_info.string_members());
+                throw h5pp::runtime_error("readTableField: H5Dread failed for variable-length field data\n"
+                                          "table [{}] | {}{}{}",
+                                          info.tablePath.value(),
+                                          h5t_info.string(),
+                                          h5t_info.numMembers ? "\n" : "",
+                                          h5t_info.string_members());
             }
 
             // Now vdata contains the dataset selection, and we need to put the data into the user-given container.
@@ -3357,12 +3357,12 @@ namespace h5pp::hdf5 {
 
             if(reclaim_err) {
                 auto h5t_info = getH5TInfo(h5t_fields);
-                h5pp::runtime_error("readTableField: H5Dvlen_reclaim failed when reading variable-length field data\n"
-                                    "table [{}] | {}{}{}",
-                                    info.tablePath.value(),
-                                    h5t_info.string(),
-                                    h5t_info.numMembers ? "\n" : "",
-                                    h5t_info.string_members());
+                throw h5pp::runtime_error("readTableField: H5Dvlen_reclaim failed when reading variable-length field data\n"
+                                          "table [{}] | {}{}{}",
+                                          info.tablePath.value(),
+                                          h5t_info.string(),
+                                          h5t_info.numMembers ? "\n" : "",
+                                          h5t_info.string_members());
             }
             return;
         } else if constexpr(std::is_same_v<DataType, std::vector<std::byte>>) {

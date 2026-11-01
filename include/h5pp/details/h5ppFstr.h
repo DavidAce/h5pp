@@ -3,6 +3,7 @@
 #include "h5ppHid.h"
 #include "h5ppLogger.h"
 #include "h5ppTypeSfinae.h"
+#include <algorithm>
 #include <charconv>
 #include <cstdlib>
 #include <cstring>
@@ -13,6 +14,11 @@
 namespace h5pp::type::flen {
     namespace internal {
         static constexpr bool debug_fstr_t = false;
+
+        inline void copy_bytes(char *dst, const char *src, size_t len) {
+            if(len == 0) return;
+            std::memcpy(dst, src, len);
+        }
     }
 
     template<size_t N>
@@ -130,7 +136,7 @@ namespace h5pp::type::flen {
     template<size_t N>
     inline fstr_t<N>::fstr_t(const fstr_t &v) {
         if(v.ptr == nullptr) return;
-        strncpy(ptr, v.ptr, N);
+        internal::copy_bytes(ptr, v.ptr, N - 1);
         ptr[N - 1] = '\0';
 #if defined(H5PP_USE_FMT)
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t copied into {}: {}", fmt::ptr(ptr), ptr);
@@ -139,7 +145,7 @@ namespace h5pp::type::flen {
     template<size_t N>
     inline fstr_t<N>::fstr_t(const char *v) {
         if(v == nullptr) return;
-        strncpy(ptr, v, N);
+        internal::copy_bytes(ptr, v, std::min(strlen(v), N - 1));
         ptr[N - 1] = '\0';
 #if defined(H5PP_USE_FMT)
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t copied into {}: {}", fmt::ptr(ptr), ptr);
@@ -148,7 +154,7 @@ namespace h5pp::type::flen {
     template<size_t N>
     inline fstr_t<N>::fstr_t(std::string_view v) {
         if(v.empty()) return;
-        strncpy(ptr, v.data(), N);
+        internal::copy_bytes(ptr, v.data(), std::min(v.size(), N - 1));
         ptr[N - 1] = '\0';
 #if defined(H5PP_USE_FMT)
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t copied into {}: {}", fmt::ptr(ptr), ptr);
@@ -158,7 +164,7 @@ namespace h5pp::type::flen {
     template<size_t N>
     inline fstr_t<N>::fstr_t(fstr_t &&v) noexcept {
         if(v.ptr == nullptr) return;
-        strncpy(ptr, v.ptr, N);
+        internal::copy_bytes(ptr, v.ptr, N - 1);
         ptr[N - 1] = '\0';
 #if defined(H5PP_USE_FMT)
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t copied into {}: {}", fmt::ptr(ptr), ptr);
@@ -173,7 +179,7 @@ namespace h5pp::type::flen {
     inline fstr_t<N> &fstr_t<N>::operator=(const fstr_t &v) noexcept {
         if(this != &v and ptr != v.ptr) {
             clear();
-            strncpy(ptr, v.ptr, N);
+            internal::copy_bytes(ptr, v.ptr, N - 1);
             ptr[N - 1] = '\0';
 #if defined(H5PP_USE_FMT)
             if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t assigned into {}: {}", fmt::ptr(ptr), ptr);
@@ -184,7 +190,7 @@ namespace h5pp::type::flen {
     template<size_t N>
     inline fstr_t<N> &fstr_t<N>::operator=(std::string_view v) {
         clear();
-        strncpy(ptr, v.data(), N);
+        internal::copy_bytes(ptr, v.data(), std::min(v.size(), N - 1));
         ptr[N - 1] = '\0';
 #if defined(H5PP_USE_FMT)
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t assigned into {}: {}", fmt::ptr(ptr), ptr);
@@ -285,7 +291,7 @@ namespace h5pp::type::flen {
     inline void fstr_t<N>::append(const char *v) {
         if(v == nullptr) return;
         size_t oldlen = size();
-        strncpy(ptr + oldlen, v, N - oldlen);
+        internal::copy_bytes(ptr + oldlen, v, std::min(strlen(v), N - oldlen - 1));
         ptr[N - 1] = '\0';
 #if defined(H5PP_USE_FMT)
         if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t appended to {} | {} -> {}", fmt::ptr(ptr), v, ptr);
@@ -299,7 +305,13 @@ namespace h5pp::type::flen {
 
     template<size_t N>
     inline void fstr_t<N>::append(std::string_view v) {
-        append(v.data());
+        if(v.empty()) return;
+        size_t oldlen = size();
+        internal::copy_bytes(ptr + oldlen, v.data(), std::min(v.size(), N - oldlen - 1));
+        ptr[N - 1] = '\0';
+#if defined(H5PP_USE_FMT)
+        if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t appended to {} | {} -> {}", fmt::ptr(ptr), v, ptr);
+#endif
     }
 
     template<size_t N>

@@ -12,31 +12,39 @@ jobs:
   ci:
     name: ${{ matrix.compiler }}-${{ matrix.manager }}
     runs-on: windows-2022
+    permissions:
+      contents: read
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
     strategy:
-      fail-fast: true # True stops all on first error. Stick to false when debugging
+      fail-fast: false # Keep matrix jobs running so failures are easier to inspect
       matrix:
         include:
-          - { compiler: cl, manager: conan }
-          - { compiler: cl, manager: cmake }
+          - { compiler: cl, manager: conan, asan: true  }
+          - { compiler: cl, manager: cmake, asan: false }
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: lukka/get-cmake@latest
+      - uses: actions/checkout@v6.0.1
+      - uses: lukka/get-cmake@v4.2.0
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6.1.0
         if: contains(matrix.manager, 'conan')
         with:
           python-version: '3.x'
 
+      - name: Prepare cache directories
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "$HOME\\.conan2" | Out-Null
+          New-Item -ItemType Directory -Force -Path "install/github-actions-${{ matrix.manager }}-win" | Out-Null
+
       - name: Setup caches
         id: h5pp-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4.2.0
         with:
           path: |
             ~/.conan2
-            install/github-actions-${{ matrix.manager }}
+            install/github-actions-${{ matrix.manager }}-win
           key: ${{ github.workflow }}-${{ env.cache-name }}
 
       - name: Setup conan
@@ -49,6 +57,7 @@ jobs:
         uses: lukka/run-cmake@v10
         with:
           configurePreset: 'github-actions-${{ matrix.manager }}-win'
+          configurePresetAdditionalArgs: "['-DH5PP_ENABLE_ASAN=${{ matrix.asan && 'TRUE' || 'FALSE' }}']"
           buildPreset: 'github-actions-${{ matrix.manager }}-win'
           buildPresetAdditionalArgs: "['--config Debug']"
           testPreset: 'github-actions-${{ matrix.manager }}-win'

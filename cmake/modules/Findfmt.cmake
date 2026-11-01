@@ -55,7 +55,7 @@ function(find_fmt)
                 )
     if(FMT_INCLUDE_DIR)
         find_library(FMT_LIBRARY
-                NAMES fmt
+                NAMES fmt fmtd
                 HINTS ${FMT_INCLUDE_DIR} ${FMT_INCLUDE_DIR}../ ${CMAKE_PREFIX_PATH} ${CMAKE_INSTALL_PREFIX}
                 PATH_SUFFIXES lib fmt fmt/lib
                 )

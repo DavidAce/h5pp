@@ -162,7 +162,7 @@ namespace h5pp {
 #else
                     herr_t err = H5Dvlen_reclaim(type.value(), space.value(), plist.value(), buf);
 #endif
-                    if(err < 0) h5pp::runtime_error("H5Treclaim: failed to deallocate after reading []: {}", tag, buf);
+                    if(err < 0) throw h5pp::runtime_error("H5Treclaim: failed to deallocate after reading []: {}", tag, buf);
                 }
                 drop();
             }
@@ -665,14 +665,15 @@ namespace h5pp {
             if(not numFields) return {};
             size_t nwidth = 4;
             for(const auto &name : fieldNames.value()) nwidth = std::max(nwidth, 1ul + name.size());
+            constexpr size_t missing = std::numeric_limits<size_t>::max();
             /* clang-format off */
             std::string msg = h5pp::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth, "idx", "name", "size", "offset", "class", "type");
             for(size_t m = 0; m < type::safe_cast<size_t>(numFields.value()); ++m) {
                 msg += h5pp::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth,
                                          m,
                                          fieldNames and fieldNames->size() > m ? fieldNames->at(m) : "",
-                                         fieldSizes and fieldSizes->size() > m ? fieldSizes->at(m) : -1ul,
-                                         fieldOffsets and fieldOffsets->size() > m ? fieldOffsets->at(m) : -1ul,
+                                         fieldSizes and fieldSizes->size() > m ? fieldSizes->at(m) : missing,
+                                         fieldOffsets and fieldOffsets->size() > m ? fieldOffsets->at(m) : missing,
                                          fieldClasses and fieldClasses->size() > m ? h5pp::type::getH5ClassName(fieldClasses->at(m)) : "",
                                          fieldTypes and fieldTypes->size() > m ? h5pp::type::getH5TypeName(fieldTypes->at(m)) : ""
                                          );
@@ -881,14 +882,15 @@ namespace h5pp {
             if(not numMembers) return {};
             size_t nwidth = 4;
             for(const auto &name : memberNames.value()) nwidth = std::max(nwidth, 1ul + name.size());
+            constexpr size_t missing = std::numeric_limits<size_t>::max();
             /* clang-format off */
             std::string msg = h5pp::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth, "idx", "name", "size", "offset", "class", "type");
             for(size_t m = 0; m < type::safe_cast<size_t>(numMembers.value()); ++m) {
                 msg += h5pp::format("{1:4}: {2:{0}} | {3:6} | {4:6} | {5:16} | {6:24}\n", nwidth,
                                          m,
                                          memberNames and memberNames->size() > m ? memberNames->at(m) : "",
-                                         memberSizes and memberSizes->size() > m ? memberSizes->at(m) : -1ul,
-                                         memberOffset and memberOffset->size() > m ? memberOffset->at(m) : -1ul,
+                                         memberSizes and memberSizes->size() > m ? memberSizes->at(m) : missing,
+                                         memberOffset and memberOffset->size() > m ? memberOffset->at(m) : missing,
                                          memberClass and memberClass->size() > m ? h5pp::type::getH5ClassName(memberClass->at(m)) : "",
                                          memberTypes and memberTypes->size() > m ? h5pp::type::getH5TypeName(memberTypes->at(m)) : ""
                                          );

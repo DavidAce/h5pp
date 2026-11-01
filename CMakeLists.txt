@@ -42,6 +42,8 @@ if(H5PP_ENABLE_SPDLOG)
 endif()
 
 
+include(cmake/SetupCcache.cmake)
+
 # Setup paths that find_package should search, or where to find the conan executable
 include(cmake/SetupPaths.cmake)
 
@@ -70,8 +72,13 @@ target_include_directories(headers SYSTEM INTERFACE $<INSTALL_INTERFACE:include>
 
 # Setup sanitizer
 if(H5PP_ENABLE_ASAN)
-    target_compile_options(flags INTERFACE -fsanitize=address $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fno-omit-frame-pointer>)
-    target_link_libraries(flags INTERFACE -fsanitize=address)
+    target_compile_options(flags INTERFACE
+                           $<$<CXX_COMPILER_ID:MSVC>:/fsanitize=address>
+                           $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=address>
+                           $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fno-omit-frame-pointer>)
+    target_link_options(flags INTERFACE
+                        $<$<CXX_COMPILER_ID:MSVC>:/fsanitize=address>
+                        $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=address>)
 endif()
 
 

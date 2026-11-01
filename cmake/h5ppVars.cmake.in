@@ -4,7 +4,7 @@ option(H5PP_ENABLE_FMT         "Enables the {fmt} formatting library"           
 option(H5PP_ENABLE_SPDLOG      "Enables Spdlog for logging h5pp internal info"    @H5PP_ENABLE_SPDLOG@)
 option(H5PP_ENABLE_MPI         "Enables use of MPI (work in progress)"            @H5PP_ENABLE_MPI@)
 
-list(APPEND CMAKE_PREFIX_PATH @CMAKE_INSTALL_PREFIX@)
+list(APPEND CMAKE_PREFIX_PATH ${PACKAGE_PREFIX_DIR})
 list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
 
 if(H5PP_ENABLE_SPDLOG)
