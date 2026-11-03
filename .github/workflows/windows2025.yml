@@ -1,4 +1,4 @@
-name: Windows 2022
+name: Windows 2025
 
 on:
   workflow_dispatch:
@@ -7,11 +7,12 @@ on:
     branches:
       - master
       - dev
+      - v2
 
 jobs:
   ci:
     name: ${{ matrix.compiler }}-${{ matrix.manager }}
-    runs-on: windows-2022
+    runs-on: windows-2025
     permissions:
       contents: read
     env:
@@ -24,10 +25,10 @@ jobs:
           - { compiler: cl, manager: cmake, asan: false }
 
     steps:
-      - uses: actions/checkout@v6.0.1
-      - uses: lukka/get-cmake@v4.2.0
+      - uses: actions/checkout@v7.0.1
+      - uses: lukka/get-cmake@v4.4.5
       - name: Setup Python
-        uses: actions/setup-python@v6.1.0
+        uses: actions/setup-python@v7.1.0
         if: contains(matrix.manager, 'conan')
         with:
           python-version: '3.x'
@@ -38,14 +39,26 @@ jobs:
           New-Item -ItemType Directory -Force -Path "$HOME\\.conan2" | Out-Null
           New-Item -ItemType Directory -Force -Path "install/github-actions-${{ matrix.manager }}-win" | Out-Null
 
+      # Recipes, build settings, and the runner image must match before restoring dependencies.
+      - name: Choose cache key
+        id: cache-environment
+        env:
+          CACHE_INPUT_HASH: ${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'conanfile.py', 'cmake/**', '.github/workflows/windows2025.yml') }}
+          CACHE_WORKFLOW: ${{ github.workflow }}
+          CACHE_JOB: ${{ env.cache-name }}
+        shell: pwsh
+        run: '"prefix=h5pp-${env:CACHE_WORKFLOW}-${env:RUNNER_OS}-${env:RUNNER_ARCH}-${env:ImageOS}-${env:ImageVersion}-${env:CACHE_JOB}-${env:CACHE_INPUT_HASH}" >> $env:GITHUB_OUTPUT'
+
       - name: Setup caches
         id: h5pp-cache
-        uses: actions/cache@v4.2.0
+        uses: actions/cache@v6.1.0
         with:
           path: |
             ~/.conan2
             install/github-actions-${{ matrix.manager }}-win
-          key: ${{ github.workflow }}-${{ env.cache-name }}
+          key: ${{ steps.cache-environment.outputs.prefix }}-${{ github.sha }}
+          restore-keys: |
+            ${{ steps.cache-environment.outputs.prefix }}-
 
       - name: Setup conan
         if: matrix.manager == 'conan'
@@ -54,7 +67,7 @@ jobs:
           conan profile detect --force
 
       - name: Run CMakePreset
-        uses: lukka/run-cmake@v10
+        uses: lukka/run-cmake@v10.9
         with:
           configurePreset: 'github-actions-${{ matrix.manager }}-win'
           configurePresetAdditionalArgs: "['-DH5PP_ENABLE_ASAN=${{ matrix.asan && 'TRUE' || 'FALSE' }}']"

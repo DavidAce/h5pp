@@ -1,4 +1,4 @@
-name: macOS 14
+name: macOS 26
 
 on:
   workflow_dispatch:
@@ -7,11 +7,12 @@ on:
     branches:
       - master
       - dev
+      - v2
 
 jobs:
   ci:
     name: ${{ matrix.compiler }}-${{ matrix.manager }}
-    runs-on: macos-14
+    runs-on: macos-26
     permissions:
       contents: read
     env:
@@ -21,17 +22,18 @@ jobs:
       CCACHE_SLOPPINESS: include_file_mtime,pch_defines,time_macros
       CCACHE_MAXSIZE: 384M
     strategy:
-      fail-fast: false # True stops all on first error. Stick to false when debugging
+      fail-fast: false # Keep other jobs running when one fails
       matrix:
         include:
           - { compiler: cl,   manager: cmake, asan: true  }
           - { compiler: cl,   manager: conan, asan: false }
+          - { compiler: cl,   manager: find,  asan: false }
 
     steps:
-      - uses: actions/checkout@v6.0.1
-      - uses: lukka/get-cmake@v4.2.0
+      - uses: actions/checkout@v7.0.1
+      - uses: lukka/get-cmake@v4.4.5
       - name: Setup Python
-        uses: actions/setup-python@v6.1.0
+        uses: actions/setup-python@v7.1.0
         if: matrix.manager == 'conan'
         with:
           python-version: '3.x'
@@ -40,23 +42,46 @@ jobs:
         run: |
           mkdir -p "$CCACHE_DIR" ~/.conan2 install/github-actions-${{ matrix.manager }}
 
+      # Recipes, build settings, and the runner image must match before restoring dependencies.
+      - name: Choose cache key
+        id: cache-environment
+        env:
+          CACHE_INPUT_HASH: ${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'conanfile.py', 'cmake/**', '.github/workflows/macos26.yml') }}
+          CACHE_WORKFLOW: ${{ github.workflow }}
+          CACHE_JOB: ${{ env.cache-name }}
+        run: echo "prefix=h5pp-${CACHE_WORKFLOW}-${RUNNER_OS}-${RUNNER_ARCH}-${ImageOS}-${ImageVersion}-${CACHE_JOB}-${CACHE_INPUT_HASH}" >> "$GITHUB_OUTPUT"
+
       - name: Setup ccache + dependency-provider cache
-        uses: actions/cache@v4.2.0
+        uses: actions/cache@v6.1.0
         if: matrix.manager == 'cmake'
         with:
           path: |
             ${{ env.CCACHE_DIR }}
             install/github-actions-${{ matrix.manager }}
-          key: ${{ github.workflow }}-${{ env.cache-name }}
+          key: ${{ steps.cache-environment.outputs.prefix }}-${{ github.sha }}
+          restore-keys: |
+            ${{ steps.cache-environment.outputs.prefix }}-
 
       - name: Setup ccache + conan cache
-        uses: actions/cache@v4.2.0
+        uses: actions/cache@v6.1.0
         if: matrix.manager == 'conan'
         with:
           path: |
             ${{ env.CCACHE_DIR }}
             ~/.conan2
-          key: ${{ github.workflow }}-${{ env.cache-name }}
+          key: ${{ steps.cache-environment.outputs.prefix }}-${{ github.sha }}
+          restore-keys: |
+            ${{ steps.cache-environment.outputs.prefix }}-
+
+      - name: Setup ccache cache
+        uses: actions/cache@v6.1.0
+        if: matrix.manager == 'find'
+        with:
+          path: |
+            ${{ env.CCACHE_DIR }}
+          key: ${{ steps.cache-environment.outputs.prefix }}-${{ github.sha }}
+          restore-keys: |
+            ${{ steps.cache-environment.outputs.prefix }}-
 
       - name: Setup build tools
         run: |
@@ -79,7 +104,7 @@ jobs:
           conan profile detect --force
 
       - name: Run CMakePreset
-        uses: lukka/run-cmake@v10
+        uses: lukka/run-cmake@v10.9
         with:
           configurePreset: 'github-actions-${{ matrix.manager }}'
           configurePresetAdditionalArgs: "['-DH5PP_ENABLE_ASAN=${{ matrix.asan && 'TRUE' || 'FALSE' }}']"

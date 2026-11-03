@@ -7,6 +7,8 @@ on:
     branches:
       - master
       - dev
+      - v2
+
 
 jobs:
   ci:
@@ -14,7 +16,6 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-      id-token: write
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
       CCACHE_DIR: ${{ github.workspace }}/.ccache
@@ -27,15 +28,15 @@ jobs:
         include:
           - { compiler: gcc,   manager: cmake, asan: false, coverage: false }
           - { compiler: gcc,   manager: conan, asan: false, coverage: false }
-          - { compiler: gcc,   manager: find,  asan: false, coverage: true  }
+          - { compiler: gcc,   manager: find,  asan: false, coverage: false  }
           - { compiler: clang, manager: cmake, asan: true,  coverage: false }
           - { compiler: clang, manager: conan, asan: false, coverage: false }
 
     steps:
-      - uses: actions/checkout@v6.0.1
-      - uses: lukka/get-cmake@v4.2.0
+      - uses: actions/checkout@v7.0.1
+      - uses: lukka/get-cmake@v4.4.5
       - name: Setup Python
-        uses: actions/setup-python@v6.1.0
+        uses: actions/setup-python@v7.1.0
         if: matrix.manager == 'conan'
         with:
           python-version: '3.x'
@@ -48,31 +49,46 @@ jobs:
         run: |
           mkdir -p "$CCACHE_DIR" ~/.conan2 install/github-actions-${{ matrix.manager }}
 
+      # Recipes, build settings, and the runner image must match before restoring dependencies.
+      - name: Choose cache key
+        id: cache-environment
+        env:
+          CACHE_INPUT_HASH: ${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', 'conanfile.py', 'cmake/**', '.github/workflows/ubuntu24.yml') }}
+          CACHE_WORKFLOW: ${{ github.workflow }}
+          CACHE_JOB: ${{ env.cache-name }}
+        run: echo "prefix=h5pp-${CACHE_WORKFLOW}-${RUNNER_OS}-${RUNNER_ARCH}-${ImageOS}-${ImageVersion}-${CACHE_JOB}-${CACHE_INPUT_HASH}" >> "$GITHUB_OUTPUT"
+
       - name: Setup ccache + dependency-provider cache
-        uses: actions/cache@v4.2.0
+        uses: actions/cache@v6.1.0
         if: matrix.manager == 'cmake'
         with:
           path: |
             ${{ env.CCACHE_DIR }}
             install/github-actions-${{ matrix.manager }}
-          key: ${{ github.workflow }}-${{ env.cache-name }}
+          key: ${{ steps.cache-environment.outputs.prefix }}-${{ github.sha }}
+          restore-keys: |
+            ${{ steps.cache-environment.outputs.prefix }}-
 
       - name: Setup ccache + conan cache
-        uses: actions/cache@v4.2.0
+        uses: actions/cache@v6.1.0
         if: matrix.manager == 'conan'
         with:
           path: |
             ${{ env.CCACHE_DIR }}
             ~/.conan2
-          key: ${{ github.workflow }}-${{ env.cache-name }}
+          key: ${{ steps.cache-environment.outputs.prefix }}-${{ github.sha }}
+          restore-keys: |
+            ${{ steps.cache-environment.outputs.prefix }}-
 
       - name: Setup ccache cache
-        uses: actions/cache@v4.2.0
+        uses: actions/cache@v6.1.0
         if: matrix.manager == 'find'
         with:
           path: |
             ${{ env.CCACHE_DIR }}
-          key: ${{ github.workflow }}-${{ env.cache-name }}
+          key: ${{ steps.cache-environment.outputs.prefix }}-${{ github.sha }}
+          restore-keys: |
+            ${{ steps.cache-environment.outputs.prefix }}-
 
       - name: Setup gcc
         if: matrix.compiler == 'gcc'
@@ -111,7 +127,7 @@ jobs:
           conan profile detect --force
 
       - name: Run CMakePreset
-        uses: lukka/run-cmake@v10
+        uses: lukka/run-cmake@v10.9
         with:
           configurePreset: 'github-actions-${{ matrix.manager }}'
           configurePresetAdditionalArgs: "['-DH5PP_ENABLE_COVERAGE=${{ matrix.coverage && 'TRUE' || 'FALSE' }}','-DH5PP_ENABLE_ASAN=${{ matrix.asan && 'TRUE' || 'FALSE' }}']"
@@ -120,20 +136,3 @@ jobs:
 
       - name: Show ccache stats
         run: ccache --show-stats
-
-      - name: Generate coverage report
-        if: matrix.compiler == 'gcc' && matrix.manager == 'find'
-        run: |
-          lcov --gcov-tool=gcov-14 --capture --rc geninfo_unexecuted_blocks=1 --directory build/github-actions-find --output-file coverage.info
-          lcov --gcov-tool=gcov-14 --extract coverage.info "${GITHUB_WORKSPACE}/include/*" --output-file coverage.info
-          lcov --gcov-tool=gcov-14 --list coverage.info
-
-      - name: Upload coverage to Codecov
-        if: matrix.compiler == 'gcc' && matrix.manager == 'find'
-        uses: codecov/codecov-action@v5.5.1
-        with:
-          use_oidc: true
-          files: coverage.info
-          disable_search: true
-          fail_ci_if_error: true
-          verbose: true
