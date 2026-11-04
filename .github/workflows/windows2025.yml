@@ -70,7 +70,11 @@ jobs:
         uses: lukka/run-cmake@v10.9
         with:
           configurePreset: 'github-actions-${{ matrix.manager }}-win'
-          configurePresetAdditionalArgs: "['-DH5PP_ENABLE_ASAN=${{ matrix.asan && 'TRUE' || 'FALSE' }}']"
+          # Conan libraries lack MSVC's STL annotations. Keep ASan enabled, but
+          # disable those extra checks so the examples and tests can link to them.
+          configurePresetAdditionalArgs: >-
+            ['-DH5PP_ENABLE_ASAN=${{ matrix.asan && 'TRUE' || 'FALSE' }}'
+            ${{ matrix.manager == 'conan' && matrix.asan && ', "-DCMAKE_CXX_FLAGS:STRING=/D_DISABLE_STL_ANNOTATION"' || '' }}]
           buildPreset: 'github-actions-${{ matrix.manager }}-win'
           buildPresetAdditionalArgs: "['--config Debug']"
           testPreset: 'github-actions-${{ matrix.manager }}-win'

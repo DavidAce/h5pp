@@ -104,7 +104,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         auto file = make_file("chunkDimension-nonchunked");
 
         std::vector<int> compact_data = {1, 2, 3, 4};
-        auto             compact_info = file.writeDataset(compact_data, "layout/compact", {}, H5D_COMPACT);
+        auto             compact_info = file.writeDataset(compact_data, "layout/compact", std::nullopt, H5D_COMPACT);
         REQUIRE(compact_info.h5Layout.has_value());
         REQUIRE(compact_info.h5Layout.value() == H5D_COMPACT);
         require_no_chunk_dims(file.getDatasetChunkDimensions("layout/compact"));
