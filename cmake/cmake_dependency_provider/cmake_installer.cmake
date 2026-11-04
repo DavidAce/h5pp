@@ -1,5 +1,6 @@
 
 unset(PKG_IS_RUNNING CACHE) # Remove from cache when this file is included
+unset(PKG_INSTALL_SUCCESS CACHE) # Check dependency inputs on each configuration.
 
 function(pkg_install_dependencies  package_name)
     if(NOT PKG_INSTALL_SUCCESS AND NOT PKG_IS_RUNNING)
@@ -18,7 +19,7 @@ function(pkg_install_dependencies  package_name)
             pkg_install(spdlog
                     CMAKE_ARGS
                     -DSPDLOG_FMT_EXTERNAL:BOOL=TRUE
-                    -Dfmt_ROOT:PATH=${CMAKE_PREFIX_PATH}
+                    "-Dfmt_ROOT:PATH=${CMAKE_PREFIX_PATH}"
             )
         endif()
         if(H5PP_ENABLE_TESTS)
