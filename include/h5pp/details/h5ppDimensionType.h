@@ -16,7 +16,7 @@ namespace h5pp {
     class Hyperslab;
 
     struct DimsType : std::vector<hsize_t> {
-        using std::vector<hsize_t>::vector;
+        DimsType() = default;
         explicit DimsType(H5D_layout_t) = delete;
         explicit DimsType(hid::h5t)     = delete;
         explicit DimsType(hid_t)        = delete;
@@ -32,7 +32,8 @@ namespace h5pp {
     };
 
     struct OptDimsType : std::optional<std::vector<hsize_t>> {
-        using std::optional<std::vector<hsize_t>>::optional;
+        OptDimsType() = default;
+        OptDimsType(std::nullopt_t) : std::optional<std::vector<hsize_t>>(std::nullopt) {}
         explicit OptDimsType(H5D_layout_t) = delete;
         explicit OptDimsType(hid::h5t)     = delete;
         explicit OptDimsType(hid_t)        = delete;
@@ -43,13 +44,13 @@ namespace h5pp {
 
         template<typename... ARGS, typename = std::enable_if_t<(... && std::is_integral_v<ARGS>)>>
         OptDimsType(const ARGS &...args)
-            : std::optional<std::vector<hsize_t>>(std::initializer_list<hsize_t>{h5pp::type::safe_cast<hsize_t>(args)...}) {}
+            : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>{h5pp::type::safe_cast<hsize_t>(args)...}) {}
 
         template<typename T, typename = std::enable_if_t<h5pp::type::sfinae::is_iterable_v<T>>>
         OptDimsType(T &&dims_) : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(std::begin(dims_), std::end(dims_))) {}
 
         template<typename T, typename = std::enable_if_t<h5pp::type::sfinae::is_iterable_v<T>>>
-        OptDimsType(std::optional<T> &&dims_)
+        OptDimsType(const std::optional<T> &dims_)
             : std::optional<std::vector<hsize_t>>(dims_.has_value() ? OptDimsType(dims_.value()) : std::nullopt) {}
     };
 
