@@ -76,7 +76,6 @@ if(H5PP_ENABLE_ASAN)
                            $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=address>
                            $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fno-omit-frame-pointer>)
     target_link_options(flags INTERFACE
-                        $<$<CXX_COMPILER_ID:MSVC>:/fsanitize=address>
                         $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-fsanitize=address>)
 endif()
 
