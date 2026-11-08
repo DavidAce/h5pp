@@ -1,33 +1,14 @@
 # Usage
 
-Using `h5pp` is intended to be simple. After initializing a file, most of the work can be achieved using just two member
-functions `.writeDataset(...)` and `.readDataset(...)`.
+Using `h5pp` is intended to be simple. After initializing a file, most of the work can be done with
+`file.dataset("path").write(data)` and `file.dataset("path").read<T>()`.
 
 ## Examples
 
-### Write an `std::vector`
-
-```c++
-    #include <h5pp/h5pp.h>
-    int main() {
-        std::vector<double> v = {1.0, 2.0, 3.0};    // Define a vector
-        h5pp::File file("somePath/someFile.h5");    // Create a file 
-        file.writeDataset(v, "myStdVector");        // Write the vector into a new dataset "myStdVector"
-    }
+```{include} ../../README.md
+:start-after: "## Examples"
+:end-before: "## Migration"
 ```
-
-### Read an `std::vector`
-
-```c++
-    #include <h5pp/h5pp.h>
-    int main() {
-        h5pp::File file("somePath/someFile.h5", h5pp::FileAccess::READWRITE);    // Open (or create) a file
-        auto v = file.readDataset<std::vector<double>>("myStdVector");           // Read the dataset from file
-    }
-```
-
-
-Find more code examples in the [examples directory](https://github.com/DavidAce/h5pp/tree/master/examples).
 
 ## File Access
 
@@ -62,44 +43,44 @@ HDF5 offers three [storage layouts](https://support.hdfgroup.org/HDF5/Tutor/layo
   KB.
 * `H5D_CONTIGUOUS`: For medium size datasets. Default on datasets smaller than 512 KB.
 * `H5D_CHUNKED`: For large datasets. Default on datasets larger than 512 KB. This layout has some additional features:
-  * Chunking, portioning of the data to improve IO performance by caching more efficiently. Chunk dimensions are
-    calculated by `h5pp` if not given by the user.
-  * Compression, disabled by default, and only available if HDF5 was built with zlib enabled.
-  * Resize datasets. Note that the file size never decreases, for instance after overwriting with a smaller dataset.
+    * Chunking, portioning of the data to improve IO performance by caching more efficiently. Chunk dimensions are
+      calculated by `h5pp` if not given by the user.
+    * Compression, disabled by default, and only available if HDF5 was built with zlib enabled.
+    * Resize datasets. Note that the file size never decreases, for instance after overwriting with a smaller dataset.
 
-`h5pp` can automatically determine the storage layout for each new dataset. To specify the layout manually, pass it as a
-third argument when writing a new dataset, for instance:
+`h5pp` can automatically determine the storage layout for each new dataset. To specify the layout when
+creating a dataset, use `DatasetCreateOptions`:
 
 ```c++
-    file.writeDataset(myData, "science/myChunkedData", H5D_CHUNKED);      // Creates a chunked dataset
+    h5pp::DatasetCreateOptions create;
+    create.h5Layout = H5D_CHUNKED;
+    file.dataset("science/myChunkedData").ensure(create).write(myData);
 ```
 
 ## Compression
 
 Chunked datasets can be compressed if HDF5 was built with zlib support. Use these functions to set or check the
-compression level:
+default compression level for new chunked datasets:
 
 ```c++
-    file.setCompressionLevel(3);            // 0 to 9: 0 to disable compression, 9 for maximum compression. Recommended 2 to 5
-    file.getCompressionLevel();             // Gets the current compression level
-    h5pp::hdf5::isCompressionAvaliable();   // True if your installation of HDF5 has zlib support 
+    file.setCompressionLevel(3); // 0 disables compression; 1 to 9 enables it
+    int compressionLevel = file.getCompressionLevel();
+    bool compressionAvailable = h5pp::hdf5::isCompressionAvaliable();
 ```
 
-or pass a temporary compression level as the fifth argument when writing a dataset:
+To set the compression level when creating a particular dataset, use `DatasetCreateOptions`:
 
 ```c++
-    file.writeDataset(myData, "science/myCompressedData", H5D_CHUNKED, std::nullopt, 3); // Creates a chunked dataset with compression level 3.
-```
-
-or use the special member function for this task:
-
-```c++
-   file.writeDataset_compressed(myData, "science/myCompressedData", 3) // // Creates a chunked dataset with compression level 3 (default).
+    h5pp::DatasetCreateOptions create;
+    create.h5Layout = H5D_CHUNKED;
+    create.compression = 3;
+    file.dataset("science/myCompressedData").ensure(create).write(myData);
 ```
 
 ## Debug and logging
 
-`h5pp` uses [spdlog](https://github.com/gabime/spdlog) to emits messages to stdout about its internal state during read/write operatios.
+`h5pp` uses [spdlog](https://github.com/gabime/spdlog) to emit messages to stdout about its internal state during
+read/write operations.
 There are 7 levels of verbosity:
 
 * `0: trace` (highest)
@@ -110,19 +91,15 @@ There are 7 levels of verbosity:
 * `5: critical` (lowest)
 * `6: off`
 
-Set the level when constructing a h5pp::File or by calling the function `.setLogLevel(...)`:
+Set the level when constructing `h5pp::File`:
 
 ```c++
-    // This way...
-    h5pp::File file("myDir/someFile.h5", h5pp::FileAccess::REPLACE, h5pp::LogLevel::debug); 
-    // or this way
-    file.setLogLevel(h5pp::LogLevel::trace);                                                                       
+    h5pp::File file("myDir/someFile.h5", h5pp::FileAccess::REPLACE, h5pp::LogLevel::debug);
 ```
 
 **NOTE:** Logging works the same with or without [spdlog](https://github.com/gabime/spdlog) enabled. When spdlog is *
 not* found, a hand-crafted logger is used in its place to give identical output but without any performance
 considerations (implemented with STL lists, strings and streams).
-
 
 ## Tips
 
@@ -145,15 +122,16 @@ and `imag` fields. Here is a python example which uses [h5py](https://docs.h5py.
 HDF5 file generated with `h5pp`:
 
 ```python
-    import h5py
-    import numpy as np
-    file  = h5py.File('myFile.h5', 'r')
-    
-    # previously written as std::vector<double> in h5pp
-    myDoubleArray = file['double-array-dataset'][()]                                     
-    
-    # previously written as std::vector<std::complex<double>> in h5pp
-    myComplexArray = file['complex-double-array-dataset'][()].view(dtype=np.complex128)
+import h5py
+import numpy as np
+
+file = h5py.File('myFile.h5', 'r')
+
+# previously written as std::vector<double> in h5pp
+myDoubleArray = file['double-array-dataset'][()]
+
+# previously written as std::vector<std::complex<double>> in h5pp
+myComplexArray = file['complex-double-array-dataset'][()].view(dtype=np.complex128)
 ```
 
 Notice the cast to `dtype=np.complex128` which interprets each element of the array as two `doubles`, i.e. the real and

@@ -8,34 +8,34 @@ void printComplex(std::string_view message, const std::vector<std::complex<doubl
     h5pp::print("\n");
 }
 
-void longForm(h5pp::File &file) {
+void v2Api(h5pp::File &file) {
     // Initialize a vector of complex doubles.
     std::vector<std::complex<double>> vWrite(10, {3.14, -2.71});
 
-    // Write and read data using the long-form dataset handle.
-    file.dataset("longForm/myStdVectorComplex").write(vWrite);
-    auto vRead = file.dataset("longForm/myStdVectorComplex").read<std::vector<std::complex<double>>>();
+    // Write and read data using the v2 API.
+    file.dataset("v2Api/myStdVectorComplex").write(vWrite);
+    auto vRead = file.dataset("v2Api/myStdVectorComplex").read<std::vector<std::complex<double>>>();
 
-    printComplex("Long form wrote dataset:", vWrite);
-    printComplex("Long form read  dataset:", vRead);
+    printComplex("v2 API wrote dataset:", vWrite);
+    printComplex("v2 API read  dataset:", vRead);
 }
 
-void shortForm(h5pp::File &file) {
+void v1Api(h5pp::File &file) {
     // Initialize a vector of complex doubles.
     std::vector<std::complex<double>> vWrite(10, {3.14, -2.71});
 
-    // Write and read data using the explicit File short form.
-    file.writeDataset(vWrite, "shortForm/myStdVectorComplex");
-    auto vRead = file.readDataset<std::vector<std::complex<double>>>("shortForm/myStdVectorComplex");
+    // Write and read data using the v1 API.
+    file.writeDataset(vWrite, "v1Api/myStdVectorComplex");
+    auto vRead = file.readDataset<std::vector<std::complex<double>>>("v1Api/myStdVectorComplex");
 
-    printComplex("Short form wrote dataset:", vWrite);
-    printComplex("Short form read  dataset:", vRead);
+    printComplex("v1 API wrote dataset:", vWrite);
+    printComplex("v1 API read  dataset:", vRead);
 }
 
 int main() {
     // Initialize a file
     h5pp::File file(H5PP_EXAMPLE_DIR "example-02c-stdvector-complex.h5", h5pp::FileAccess::REPLACE);
-    longForm(file);  // Show the canonical handle-based API
-    shortForm(file); // Show the compatibility short form
+    v2Api(file);  // Show the v2 API
+    v1Api(file); // Show the v1 API
     return 0;
 }

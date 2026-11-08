@@ -29,7 +29,7 @@
 namespace h5pp::v1 {
 
     /*!
-     \brief Writes and reads data to a binary hdf5-file.
+     \brief The v1 API for writing and reading data in an HDF5 file.
     */
 
     class File {

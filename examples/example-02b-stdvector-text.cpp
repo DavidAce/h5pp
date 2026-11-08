@@ -18,54 +18,54 @@ namespace {
     }
 }
 
-void longForm(h5pp::File &file) {
+void v2Api(h5pp::File &file) {
     // Write and read a single string.
     std::string singleString = "This is a dummy string";
-    file.dataset("longForm/example-group/mySingleString").write(singleString);
-    auto singleStringRead = file.dataset("longForm/example-group/mySingleString").read<std::string>();
+    file.dataset("v2Api/example-group/mySingleString").write(singleString);
+    auto singleStringRead = file.dataset("v2Api/example-group/mySingleString").read<std::string>();
 
     // We can write multiple strings at a time ...
     auto multipleStrings = makeMultipleStrings();
-    file.dataset("longForm/example-group/multipleStrings").write(multipleStrings);
+    file.dataset("v2Api/example-group/multipleStrings").write(multipleStrings);
 
     // ... and read them back in one go.
-    auto multipleStringsRead = file.dataset("longForm/example-group/multipleStrings").read<std::vector<std::string>>();
+    auto multipleStringsRead = file.dataset("v2Api/example-group/multipleStrings").read<std::vector<std::string>>();
 
     // Or read them all into a single string, using \n as separator for each element.
-    auto multipleStringsAsString = file.dataset("longForm/example-group/multipleStrings").read<std::string>();
+    auto multipleStringsAsString = file.dataset("v2Api/example-group/multipleStrings").read<std::string>();
 
-    h5pp::print("Long form wrote: {}\n", singleString);
-    h5pp::print("Long form read : {}\n", singleStringRead);
-    h5pp::print("Long form multiple strings as vector of strings: \n{}\n", multipleStringsRead);
-    h5pp::print("Long form multiple strings as string separated by \\n: \n{}\n", multipleStringsAsString);
+    h5pp::print("v2 API wrote: {}\n", singleString);
+    h5pp::print("v2 API read : {}\n", singleStringRead);
+    h5pp::print("v2 API multiple strings as vector of strings: \n{}\n", multipleStringsRead);
+    h5pp::print("v2 API multiple strings as string separated by \\n: \n{}\n", multipleStringsAsString);
 }
 
-void shortForm(h5pp::File &file) {
+void v1Api(h5pp::File &file) {
     // Write and read a single string.
     std::string singleString = "This is a dummy string";
-    file.writeDataset(singleString, "shortForm/example-group/mySingleString");
-    auto singleStringRead = file.readDataset<std::string>("shortForm/example-group/mySingleString");
+    file.writeDataset(singleString, "v1Api/example-group/mySingleString");
+    auto singleStringRead = file.readDataset<std::string>("v1Api/example-group/mySingleString");
 
     // We can write multiple strings at a time ...
     auto multipleStrings = makeMultipleStrings();
-    file.writeDataset(multipleStrings, "shortForm/example-group/multipleStrings");
+    file.writeDataset(multipleStrings, "v1Api/example-group/multipleStrings");
 
     // ... and read them back in one go.
-    auto multipleStringsRead = file.readDataset<std::vector<std::string>>("shortForm/example-group/multipleStrings");
+    auto multipleStringsRead = file.readDataset<std::vector<std::string>>("v1Api/example-group/multipleStrings");
 
     // Or read them all into a single string, using \n as separator for each element.
-    auto multipleStringsAsString = file.readDataset<std::string>("shortForm/example-group/multipleStrings");
+    auto multipleStringsAsString = file.readDataset<std::string>("v1Api/example-group/multipleStrings");
 
-    h5pp::print("Short form wrote: {}\n", singleString);
-    h5pp::print("Short form read : {}\n", singleStringRead);
-    h5pp::print("Short form multiple strings as vector of strings: \n{}\n", multipleStringsRead);
-    h5pp::print("Short form multiple strings as string separated by \\n: \n{}\n", multipleStringsAsString);
+    h5pp::print("v1 API wrote: {}\n", singleString);
+    h5pp::print("v1 API read : {}\n", singleStringRead);
+    h5pp::print("v1 API multiple strings as vector of strings: \n{}\n", multipleStringsRead);
+    h5pp::print("v1 API multiple strings as string separated by \\n: \n{}\n", multipleStringsAsString);
 }
 
 int main() {
     // Initialize a file
     h5pp::File file(H5PP_EXAMPLE_DIR "example-02b-stdvector-text.h5", h5pp::FileAccess::REPLACE, 2);
-    longForm(file);  // Show the canonical handle-based API
-    shortForm(file); // Show the compatibility short form
+    v2Api(file);  // Show the v2 API
+    v1Api(file); // Show the v1 API
     return 0;
 }

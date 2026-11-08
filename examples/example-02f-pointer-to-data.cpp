@@ -25,7 +25,7 @@ void printBuffer(std::string_view message, const double *buffer, size_t size) {
     for(size_t idx = 0; idx < size; idx++) h5pp::print("{}\n", buffer[idx]);
 }
 
-void longForm(h5pp::File &file) {
+void v2Api(h5pp::File &file) {
     // Initialize a dummy array buffer for writing.
     std::vector<double> writeBuffer(10, 3.14);
     auto               *writePtr = writeBuffer.data();
@@ -33,8 +33,8 @@ void longForm(h5pp::File &file) {
     h5pp::DatasetWriteOptions writeOptions;
     writeOptions.dims = {writeBuffer.size()}; // Size information can be a scalar "10" or a list "{10}"
 
-    // Write data using the long-form dataset handle.
-    file.dataset("longForm/myArrayDouble").write(writePtr, writeOptions);
+    // Write data using the v2 API.
+    file.dataset("v2Api/myArrayDouble").write(writePtr, writeOptions);
 
     // Initialize a dummy array buffer for reading.
     std::vector<double> readBuffer(10, 0.0);
@@ -43,14 +43,14 @@ void longForm(h5pp::File &file) {
     h5pp::DatasetReadOptions readOptions;
     readOptions.dims = {readBuffer.size()};
 
-    // Read data using the long-form dataset handle.
+    // Read data using the v2 API.
     // Note that h5pp will only resize containers with a ".resize()" member,
     // and therefore does not resize pointer buffers.
-    file.dataset("longForm/myArrayDouble").readInto(readPtr, readOptions);
-    printBuffer("Long form read dataset:", readPtr, readBuffer.size());
+    file.dataset("v2Api/myArrayDouble").readInto(readPtr, readOptions);
+    printBuffer("v2 API read dataset:", readPtr, readBuffer.size());
 }
 
-void shortForm(h5pp::File &file) {
+void v1Api(h5pp::File &file) {
     // Initialize a dummy array buffer for writing.
     std::vector<double> writeBuffer(10, 3.14);
     auto               *writePtr = writeBuffer.data();
@@ -58,8 +58,8 @@ void shortForm(h5pp::File &file) {
     h5pp::DatasetWriteOptions writeOptions;
     writeOptions.dims = {writeBuffer.size()}; // Size information can be a scalar "10" or a list "{10}"
 
-    // Write data using the explicit File short form.
-    file.writeDataset(writePtr, "shortForm/myArrayDouble", writeOptions);
+    // Write data using the v1 API.
+    file.writeDataset(writePtr, "v1Api/myArrayDouble", writeOptions);
 
     // Initialize a dummy array buffer for reading.
     std::vector<double> readBuffer(10, 0.0);
@@ -68,15 +68,15 @@ void shortForm(h5pp::File &file) {
     h5pp::DatasetReadOptions readOptions;
     readOptions.dims = {readBuffer.size()};
 
-    // Read data using the explicit File short form.
-    file.readDataset(readPtr, "shortForm/myArrayDouble", readOptions);
-    printBuffer("Short form read dataset:", readPtr, readBuffer.size());
+    // Read data using the v1 API.
+    file.readDataset(readPtr, "v1Api/myArrayDouble", readOptions);
+    printBuffer("v1 API read dataset:", readPtr, readBuffer.size());
 }
 
 int main() {
     // Initialize a file
     h5pp::File file(H5PP_EXAMPLE_DIR "example-02f-pointer-to-data.h5", h5pp::FileAccess::REPLACE);
-    longForm(file);  // Show the canonical handle-based API
-    shortForm(file); // Show the compatibility short form
+    v2Api(file);  // Show the v2 API
+    v1Api(file); // Show the v1 API
     return 0;
 }

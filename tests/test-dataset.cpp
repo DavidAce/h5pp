@@ -201,11 +201,11 @@ TEST_CASE("Datasets round-trip representative containers and expose basic handle
 #endif
 }
 
-TEST_CASE("Dataset API covers canonical create and write flows across layouts", "[dataset][api]") {
+TEST_CASE("v1 API and v2 API create and write datasets across layouts", "[dataset][api]") {
     auto file = h5pp::File(make_path("datasetApi"), h5pp::FileAccess::REPLACE, 0);
 
     for(size_t idx = 0; idx < layouts.size(); ++idx) {
-        SECTION(h5pp::format("handle create: {}", layout_names[idx])) {
+        SECTION(h5pp::format("v2 API create: {}", layout_names[idx])) {
             h5pp::DatasetCreateOptions create;
             create.h5Type   = H5Tcopy(H5T_NATIVE_DOUBLE);
             create.dims     = {4};
@@ -227,26 +227,26 @@ TEST_CASE("Dataset API covers canonical create and write flows across layouts", 
     chunked_create.dimsChunk = {2};
     chunked_create.dimsMax   = {H5S_UNLIMITED};
 
-    file.writeDataset(data, "manual/writeShort", chunked_create);
-    auto short_info = file.dataset("manual/writeShort").getInfo();
-    REQUIRE(short_info.h5Layout.value() == H5D_CHUNKED);
-    REQUIRE(short_info.dsetChunk.value() == std::vector<hsize_t>{2});
-    REQUIRE(short_info.dsetDimsMax.value() == std::vector<hsize_t>{H5S_UNLIMITED});
-    REQUIRE(file.readDataset<std::vector<double>>("manual/writeShort") == data);
+    file.writeDataset(data, "manual/writeV1Api", chunked_create);
+    auto v1_info = file.dataset("manual/writeV1Api").getInfo();
+    REQUIRE(v1_info.h5Layout.value() == H5D_CHUNKED);
+    REQUIRE(v1_info.dsetChunk.value() == std::vector<hsize_t>{2});
+    REQUIRE(v1_info.dsetDimsMax.value() == std::vector<hsize_t>{H5S_UNLIMITED});
+    REQUIRE(file.readDataset<std::vector<double>>("manual/writeV1Api") == data);
 
     h5pp::DatasetCreateOptions typed_create;
     typed_create.h5Type   = H5Tcopy(H5T_NATIVE_DOUBLE);
     typed_create.dims     = {4};
     typed_create.h5Layout = H5D_CONTIGUOUS;
-    file.dataset("manual/writeLong").ensure(typed_create).write(data);
-    REQUIRE(file.dataset("manual/writeLong").getInfo().h5Layout.value() == H5D_CONTIGUOUS);
-    REQUIRE(file.readDataset<std::vector<double>>("manual/writeLong") == data);
+    file.dataset("manual/writeV2Api").ensure(typed_create).write(data);
+    REQUIRE(file.dataset("manual/writeV2Api").getInfo().h5Layout.value() == H5D_CONTIGUOUS);
+    REQUIRE(file.readDataset<std::vector<double>>("manual/writeV2Api") == data);
 
     h5pp::DatasetWriteOptions write;
     write.resizePolicy = h5pp::ResizePolicy::FIT;
-    file.writeDataset(std::vector<double>{5, 6}, "manual/writeShort", write);
-    REQUIRE(file.readDataset<std::vector<double>>("manual/writeShort") == std::vector<double>{5, 6});
-    REQUIRE(file.dataset("manual/writeShort").getInfo().dsetDims.value() == std::vector<hsize_t>{2});
+    file.writeDataset(std::vector<double>{5, 6}, "manual/writeV1Api", write);
+    REQUIRE(file.readDataset<std::vector<double>>("manual/writeV1Api") == std::vector<double>{5, 6});
+    REQUIRE(file.dataset("manual/writeV1Api").getInfo().dsetDims.value() == std::vector<hsize_t>{2});
 }
 
 int main(int argc, char *argv[]) {

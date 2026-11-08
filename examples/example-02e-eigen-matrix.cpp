@@ -2,29 +2,29 @@
 #include <iostream>
 
 #ifdef H5PP_USE_EIGEN3
-void longForm(h5pp::File &file) {
+void v2Api(h5pp::File &file) {
     // Initialize a 5x5 Eigen matrix with random complex entries.
     Eigen::MatrixXcd matrixWrite = Eigen::MatrixXcd::Random(5, 5);
 
-    // Write the matrix using the long-form dataset handle.
+    // Write the matrix using the v2 API.
     // Inside the file, the data will be stored in a dataset named "myEigenMatrix" under the group "myGroup".
-    file.dataset("longForm/myGroup/myEigenMatrix").write(matrixWrite);
+    file.dataset("v2Api/myGroup/myEigenMatrix").write(matrixWrite);
 
     // Read it back in one line.
-    auto matrixRead = file.dataset("longForm/myGroup/myEigenMatrix").read<Eigen::MatrixXcd>();
-    std::cout << "Long form matrix:\n" << matrixRead << std::endl;
+    auto matrixRead = file.dataset("v2Api/myGroup/myEigenMatrix").read<Eigen::MatrixXcd>();
+    std::cout << "v2 API matrix:\n" << matrixRead << std::endl;
 }
 
-void shortForm(h5pp::File &file) {
+void v1Api(h5pp::File &file) {
     // Initialize a 5x5 Eigen matrix with random complex entries.
     Eigen::MatrixXcd matrixWrite = Eigen::MatrixXcd::Random(5, 5);
 
-    // Write the matrix using the explicit File short form.
-    file.writeDataset(matrixWrite, "shortForm/myGroup/myEigenMatrix");
+    // Write the matrix using the v1 API.
+    file.writeDataset(matrixWrite, "v1Api/myGroup/myEigenMatrix");
 
     // Read it back in one line.
-    auto matrixRead = file.readDataset<Eigen::MatrixXcd>("shortForm/myGroup/myEigenMatrix");
-    std::cout << "Short form matrix:\n" << matrixRead << std::endl;
+    auto matrixRead = file.readDataset<Eigen::MatrixXcd>("v1Api/myGroup/myEigenMatrix");
+    std::cout << "v1 API matrix:\n" << matrixRead << std::endl;
 }
 #endif
 
@@ -33,8 +33,8 @@ int main() {
     h5pp::File file(H5PP_EXAMPLE_DIR "example-02e-eigen-matrix.h5", h5pp::FileAccess::REPLACE, 0);
 
 #ifdef H5PP_USE_EIGEN3
-    longForm(file);  // Show the canonical handle-based API
-    shortForm(file); // Show the compatibility short form
+    v2Api(file);  // Show the v2 API
+    v1Api(file); // Show the v1 API
 #endif
     return 0;
 }

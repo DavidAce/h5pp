@@ -8,50 +8,50 @@
  * This example shows how to add a couple of attributes to a dataset "intGroup/myInt".
  */
 
-void longForm(h5pp::File &file) {
+void v2Api(h5pp::File &file) {
     // Write an integer to file.
-    file.dataset("longForm/intGroup/myInt").write(42);
+    file.dataset("v2Api/intGroup/myInt").write(42);
 
     // We can now add attributes to the dataset.
-    file.dataset("longForm/intGroup/myInt").attribute("myInt_stringAttribute").write(std::string("this is some info about my int"));
-    file.dataset("longForm/intGroup/myInt").attribute("myInt_doubleAttribute").write(3.14);
+    file.dataset("v2Api/intGroup/myInt").attribute("myInt_stringAttribute").write(std::string("this is some info about my int"));
+    file.dataset("v2Api/intGroup/myInt").attribute("myInt_doubleAttribute").write(3.14);
 
     // List all attributes associated with our dataset.
-    h5pp::print("Long form attribute names: {}\n", file.link("longForm/intGroup/myInt").getAttributeNames());
+    h5pp::print("v2 API attribute names: {}\n", file.link("v2Api/intGroup/myInt").getAttributeNames());
 
     // Read the attribute data back.
-    auto stringAttribute = file.dataset("longForm/intGroup/myInt").attribute("myInt_stringAttribute").read<std::string>();
-    auto doubleAttribute = file.dataset("longForm/intGroup/myInt").attribute("myInt_doubleAttribute").read<double>();
+    auto stringAttribute = file.dataset("v2Api/intGroup/myInt").attribute("myInt_stringAttribute").read<std::string>();
+    auto doubleAttribute = file.dataset("v2Api/intGroup/myInt").attribute("myInt_doubleAttribute").read<double>();
 
     // Print the data.
-    h5pp::print("Long form stringAttribute read: {}\n", stringAttribute);
-    h5pp::print("Long form doubleAttribute read: {}\n", doubleAttribute);
+    h5pp::print("v2 API stringAttribute read: {}\n", stringAttribute);
+    h5pp::print("v2 API doubleAttribute read: {}\n", doubleAttribute);
 }
 
-void shortForm(h5pp::File &file) {
+void v1Api(h5pp::File &file) {
     // Write an integer to file.
-    file.writeDataset(42, "shortForm/intGroup/myInt");
+    file.writeDataset(42, "v1Api/intGroup/myInt");
 
     // We can now add attributes to the dataset.
-    file.writeAttribute("shortForm/intGroup/myInt", "myInt_stringAttribute", std::string("this is some info about my int"));
-    file.writeAttribute("shortForm/intGroup/myInt", "myInt_doubleAttribute", 3.14);
+    file.writeAttribute("v1Api/intGroup/myInt", "myInt_stringAttribute", std::string("this is some info about my int"));
+    file.writeAttribute("v1Api/intGroup/myInt", "myInt_doubleAttribute", 3.14);
 
     // List all attributes associated with our dataset.
-    h5pp::print("Short form attribute names: {}\n", file.link("shortForm/intGroup/myInt").getAttributeNames());
+    h5pp::print("v1 API attribute names: {}\n", file.link("v1Api/intGroup/myInt").getAttributeNames());
 
     // Read the attribute data back.
-    auto stringAttribute = file.readAttribute<std::string>("shortForm/intGroup/myInt", "myInt_stringAttribute");
-    auto doubleAttribute = file.readAttribute<double>("shortForm/intGroup/myInt", "myInt_doubleAttribute");
+    auto stringAttribute = file.readAttribute<std::string>("v1Api/intGroup/myInt", "myInt_stringAttribute");
+    auto doubleAttribute = file.readAttribute<double>("v1Api/intGroup/myInt", "myInt_doubleAttribute");
 
     // Print the data.
-    h5pp::print("Short form stringAttribute read: {}\n", stringAttribute);
-    h5pp::print("Short form doubleAttribute read: {}\n", doubleAttribute);
+    h5pp::print("v1 API stringAttribute read: {}\n", stringAttribute);
+    h5pp::print("v1 API doubleAttribute read: {}\n", doubleAttribute);
 }
 
 int main() {
     // Initialize a file
     h5pp::File file(H5PP_EXAMPLE_DIR "example-03a-attributes-readwrite.h5", h5pp::FileAccess::REPLACE);
-    longForm(file);  // Show the canonical handle-based API
-    shortForm(file); // Show the compatibility short form
+    v2Api(file);  // Show the v2 API
+    v1Api(file); // Show the v1 API
     return 0;
 }

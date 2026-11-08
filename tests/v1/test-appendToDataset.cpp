@@ -23,8 +23,8 @@ namespace {
     h5pp::v1::File make_file(std::string_view name) { return h5pp::v1::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0); }
 }
 
-TEST_CASE("Legacy append smoke test now checks behavior", "[append][legacy]") {
-    auto file = make_file("appendToDataset-legacy");
+TEST_CASE("v1 API append preserves dataset growth", "[append][v1]") {
+    auto file = make_file("appendToDataset-v1");
 
     std::vector<double> data = {1, 2, 3, 4};
     file.writeDataset(data, "group/VectorDoubletemp", {4, 1}, H5D_CHUNKED, {4, 100});

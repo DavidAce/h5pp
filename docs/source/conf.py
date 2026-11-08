@@ -55,7 +55,11 @@ extensions = [
     'sphinx_rtd_theme',
 ]
 
+# Qualify section labels by page because the overview shares README sections with the guides.
+autosectionlabel_prefix_document = True
+
 # Myst configuration
+myst_heading_anchors = 3
 myst_enable_extensions = [
     "deflist",
 ]

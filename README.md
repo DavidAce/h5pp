@@ -5,6 +5,7 @@
 [![Documentation Status](https://readthedocs.org/projects/h5pp/badge/?version=latest)](https://h5pp.readthedocs.io/en/latest/?badge=latest)
 [![Conan](https://img.shields.io/badge/Install%20with-conan-green)](https://conan.io/center/h5pp)
 [![codecov](https://codecov.io/gh/davidace/h5pp/branch/dev/graph/badge.svg)](https://codecov.io/gh/davidace/h5pp)
+
 ---
 
 # h5pp
@@ -16,7 +17,7 @@ mind, `h5pp` lets users store common C++ data types into portable binary [HDF5](
 
 [Documentation](https://h5pp.readthedocs.io)
 
-Go to [examples](https://github.com/DavidAce/h5pp/tree/master/examples) to learn how to use `h5pp`.
+Go to [examples](https://github.com/DavidAce/h5pp/tree/v2/examples) to learn how to use `h5pp`.
 
 Go to [quickstart](https://github.com/DavidAce/h5pp/tree/v2/quickstart) to see ways of installing `h5pp`.
 
@@ -27,7 +28,7 @@ Go to [quickstart](https://github.com/DavidAce/h5pp/tree/v2/quickstart) to see w
 * [Introduction](#introduction)
 * [Features](#features)
 * [Examples](#examples)
-* [Migrating from v1](#migrating-from-v1)
+* [Migration](#migration)
 * [Get h5pp](#get-h5pp)
 * [Requirements](#requirements)
 * [Install](#install)
@@ -57,9 +58,6 @@ high-level wrappers already that help the user experience, but as a matter of op
 
 * Header-only C++20 library.
 * High-level front-end to the C API of the HDF5 library.
-* Two complementary public API styles:
-    * A handle API such as `file.dataset("path").write(data)` and `file.attribute("path", "name").read<T>()`.
-    * A file-level API such as `file.writeDataset(data, "path")` and `file.readAttribute<T>("path", "name")`.
 * Type support:
     * all numeric types: `(u)int#_t`, `float`, `double`, `long double`.
     * **`std::complex<>`** with any of the types above.
@@ -85,9 +83,7 @@ high-level wrappers already that help the user experience, but as a matter of op
     int main() {
         std::vector<double> v = {1.0, 2.0, 3.0};      // Define some data
         h5pp::File file("somePath/someFile.h5");      // Create or open a file
-
-        file.dataset("myStdVector").write(v);         // Handle API
-        // file.writeDataset(v, "myStdVector");       // Equivalent file-level API
+        file.dataset("myStdVector").write(v);         // Write the vector to a dataset
     }
 ```
 
@@ -96,26 +92,25 @@ high-level wrappers already that help the user experience, but as a matter of op
 ```c++
     #include <h5pp/h5pp.h>
     int main() {
-        h5pp::File file("somePath/someFile.h5", h5pp::FileAccess::READONLY);      // Open an existing file
-
-        auto v = file.dataset("myStdVector").read<std::vector<double>>();         // Handle API
-        // auto v = file.readDataset<std::vector<double>>("myStdVector");         // Equivalent file-level API
+        h5pp::File file("somePath/someFile.h5", h5pp::FileAccess::READONLY);    // Open an existing file
+        auto v = file.dataset("myStdVector").read<std::vector<double>>();       // Read the vector from the dataset
     }
 ```
 
-Find more code examples in the [examples directory](https://github.com/DavidAce/h5pp/tree/master/examples).
+Find more examples in the [examples directory](https://github.com/DavidAce/h5pp/tree/v2/examples).
 
-## Migrating from v1
+## Migration from h5pp v1 to v2
 
-For `h5pp` 2.x, `#include <h5pp/h5pp.h>` gives the new v2 API by default.
+For `h5pp` 2.x, `#include <h5pp/h5pp.h>` provides the v2 API through `h5pp::File`.
+Several v1 API calls are also retained on this class so existing code can be migrated gradually.
 
-If you want to keep using the legacy API while migrating, include:
+For the v1 API, use `h5pp::v1::File` and include:
 
 ```c++
     #include <h5pp/v1/h5pp.h>
 ```
 
-The most common dataset and attribute calls still work in the file-level API:
+These common v1 API calls remain available on `h5pp::File`:
 
 ```c++
     file.writeDataset(data, "group/dataset");
@@ -125,7 +120,7 @@ The most common dataset and attribute calls still work in the file-level API:
     auto unit = file.readAttribute<std::string>("group/dataset", "unit");
 ```
 
-The canonical v2 style is the handle API:
+The equivalent v2 API calls are:
 
 ```c++
     file.dataset("group/dataset").write(data);
@@ -135,7 +130,7 @@ The canonical v2 style is the handle API:
     auto unit = file.attribute("group/dataset", "unit").read<std::string>();
 ```
 
-Advanced file-level wrappers remain available during migration, but many of them are deprecated in v2 and emit compiler warnings with the recommended handle-based replacement.
+Some other v1 API calls retained on `h5pp::File` are already deprecated and emit compiler warnings showing the corresponding v2 API call.
 
 
 ## Get h5pp

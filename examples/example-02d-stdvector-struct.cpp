@@ -25,45 +25,45 @@ void printDataset(std::string_view message, std::string_view dsetName, const std
 }
 
 template<typename ScalarN>
-void writeThenReadLong(h5pp::File &file, const std::vector<ScalarN> &dataset, std::string_view dsetName) {
-    file.dataset(dsetName).write(dataset); // Write data using the long-form dataset handle
-    printDataset("Long form wrote dataset", dsetName, dataset);
+void writeThenReadV2Api(h5pp::File &file, const std::vector<ScalarN> &dataset, std::string_view dsetName) {
+    file.dataset(dsetName).write(dataset); // Write data using the v2 API
+    printDataset("v2 API wrote dataset", dsetName, dataset);
 
     auto datasetRead = file.dataset(dsetName).read<std::vector<ScalarN>>();
-    printDataset("Long form read  dataset", dsetName, datasetRead);
+    printDataset("v2 API read  dataset", dsetName, datasetRead);
 }
 
 template<typename ScalarN>
-void writeThenReadShort(h5pp::File &file, const std::vector<ScalarN> &dataset, std::string_view dsetName) {
-    file.writeDataset(dataset, dsetName); // Write data using the explicit File short form
-    printDataset("Short form wrote dataset", dsetName, dataset);
+void writeThenReadV1Api(h5pp::File &file, const std::vector<ScalarN> &dataset, std::string_view dsetName) {
+    file.writeDataset(dataset, dsetName); // Write data using the v1 API
+    printDataset("v1 API wrote dataset", dsetName, dataset);
 
     auto datasetRead = file.readDataset<std::vector<ScalarN>>(dsetName);
-    printDataset("Short form read  dataset", dsetName, datasetRead);
+    printDataset("v1 API read  dataset", dsetName, datasetRead);
 }
 
-void longForm(h5pp::File &file) {
+void v2Api(h5pp::File &file) {
     // Initialize vectors with struct-type dummy data.
     std::vector<Int2>    coord2d = {{1, 2}, {3, 4}, {5, 6}};
     std::vector<Double3> coord3d = {{10.0, 20.0, 30.0}, {40.0, 50.0, 60.0}, {70.0, 80.0, 90.0}};
 
-    writeThenReadLong(file, coord2d, "longForm/CoordinatesInTwoDimensions");
-    writeThenReadLong(file, coord3d, "longForm/CoordinatesInThreeDimensions");
+    writeThenReadV2Api(file, coord2d, "v2Api/CoordinatesInTwoDimensions");
+    writeThenReadV2Api(file, coord3d, "v2Api/CoordinatesInThreeDimensions");
 }
 
-void shortForm(h5pp::File &file) {
+void v1Api(h5pp::File &file) {
     // Initialize vectors with struct-type dummy data.
     std::vector<Int2>    coord2d = {{1, 2}, {3, 4}, {5, 6}};
     std::vector<Double3> coord3d = {{10.0, 20.0, 30.0}, {40.0, 50.0, 60.0}, {70.0, 80.0, 90.0}};
 
-    writeThenReadShort(file, coord2d, "shortForm/CoordinatesInTwoDimensions");
-    writeThenReadShort(file, coord3d, "shortForm/CoordinatesInThreeDimensions");
+    writeThenReadV1Api(file, coord2d, "v1Api/CoordinatesInTwoDimensions");
+    writeThenReadV1Api(file, coord3d, "v1Api/CoordinatesInThreeDimensions");
 }
 
 int main() {
     // Initialize a file
     h5pp::File file(H5PP_EXAMPLE_DIR "example-02d-stdvector-struct.h5", h5pp::FileAccess::REPLACE);
-    longForm(file);  // Show the canonical handle-based API
-    shortForm(file); // Show the compatibility short form
+    v2Api(file);  // Show the v2 API
+    v1Api(file); // Show the v1 API
     return 0;
 }

@@ -17,7 +17,7 @@ size_t getSizeFromDims(const h5pp::v2::OptDims &dims) {
     return size;
 }
 
-struct LongFormAttributeReader {
+struct V2ApiAttributeReader {
     h5pp::File       &file;
     std::string_view  linkPath;
 
@@ -27,7 +27,7 @@ struct LongFormAttributeReader {
     }
 };
 
-struct ShortFormAttributeReader {
+struct V1ApiAttributeReader {
     h5pp::File       &file;
     std::string_view  linkPath;
 
@@ -63,49 +63,49 @@ void traverseAttributes(h5pp::File &file, std::string_view linkPath, ReadAttribu
     }
 }
 
-void longForm(h5pp::File &file) {
+void v2Api(h5pp::File &file) {
     // Write a dummy integer to file.
-    file.dataset("longForm/intGroup/myInt").write(42);
+    file.dataset("v2Api/intGroup/myInt").write(42);
 
     // Write some attributes to the dataset.
-    file.dataset("longForm/intGroup/myInt").attribute("myInt_stringAttribute").write(std::string("this is some info about my int"));
-    file.dataset("longForm/intGroup/myInt").attribute("myInt_doubleAttribute").write(3.14);
-    file.dataset("longForm/intGroup/myInt").attribute("myInt_vectorAttribute").write(std::vector<int>{1, 2, 3, 4});
+    file.dataset("v2Api/intGroup/myInt").attribute("myInt_stringAttribute").write(std::string("this is some info about my int"));
+    file.dataset("v2Api/intGroup/myInt").attribute("myInt_doubleAttribute").write(3.14);
+    file.dataset("v2Api/intGroup/myInt").attribute("myInt_vectorAttribute").write(std::vector<int>{1, 2, 3, 4});
 
-    // Now we imagine wanting to iterate through all attributes of "longForm/intGroup/myInt" and print their contents.
+    // Now we imagine wanting to iterate through all attributes of "v2Api/intGroup/myInt" and print their contents.
     // The most pressing concern is that we may not know beforehand what type we should read data into.
     // This has no simple solution, since C++ is statically typed. We have to check a list of types during runtime.
-    traverseAttributes(file, "longForm/intGroup/myInt", LongFormAttributeReader{file, "longForm/intGroup/myInt"});
+    traverseAttributes(file, "v2Api/intGroup/myInt", V2ApiAttributeReader{file, "v2Api/intGroup/myInt"});
 }
 
-void shortForm(h5pp::File &file) {
+void v1Api(h5pp::File &file) {
     // Write a dummy integer to file.
-    file.writeDataset(42, "shortForm/intGroup/myInt");
+    file.writeDataset(42, "v1Api/intGroup/myInt");
 
     // Write some attributes to the dataset.
-    file.writeAttribute("shortForm/intGroup/myInt", "myInt_stringAttribute", std::string("this is some info about my int"));
-    file.writeAttribute("shortForm/intGroup/myInt", "myInt_doubleAttribute", 3.14);
-    file.writeAttribute("shortForm/intGroup/myInt", "myInt_vectorAttribute", std::vector<int>{1, 2, 3, 4});
+    file.writeAttribute("v1Api/intGroup/myInt", "myInt_stringAttribute", std::string("this is some info about my int"));
+    file.writeAttribute("v1Api/intGroup/myInt", "myInt_doubleAttribute", 3.14);
+    file.writeAttribute("v1Api/intGroup/myInt", "myInt_vectorAttribute", std::vector<int>{1, 2, 3, 4});
 
-    traverseAttributes(file, "shortForm/intGroup/myInt", ShortFormAttributeReader{file, "shortForm/intGroup/myInt"});
+    traverseAttributes(file, "v1Api/intGroup/myInt", V1ApiAttributeReader{file, "v1Api/intGroup/myInt"});
 }
 
 int main() {
     // Initialize a file
     h5pp::File file(H5PP_EXAMPLE_DIR "example-03b-attributes-traverse.h5", h5pp::FileAccess::REPLACE);
-    longForm(file);  // Show the canonical handle-based API
-    shortForm(file); // Show the compatibility short form
+    v2Api(file);  // Show the v2 API
+    v1Api(file); // Show the v1 API
     return 0;
 }
 
 /* Program output:
 
-Attribute longForm/intGroup/myInt::myInt_stringAttribute [std::__cxx11::basic_string<char> | size 1] = this is some info about my int
-Attribute longForm/intGroup/myInt::myInt_doubleAttribute [double | size 1] = 3.14
-Attribute longForm/intGroup/myInt::myInt_vectorAttribute [int | size 4] = [1, 2, 3, 4]
+Attribute v2Api/intGroup/myInt::myInt_stringAttribute [std::__cxx11::basic_string<char> | size 1] = this is some info about my int
+Attribute v2Api/intGroup/myInt::myInt_doubleAttribute [double | size 1] = 3.14
+Attribute v2Api/intGroup/myInt::myInt_vectorAttribute [int | size 4] = [1, 2, 3, 4]
 
-Attribute shortForm/intGroup/myInt::myInt_stringAttribute [std::__cxx11::basic_string<char> | size 1] = this is some info about my int
-Attribute shortForm/intGroup/myInt::myInt_doubleAttribute [double | size 1] = 3.14
-Attribute shortForm/intGroup/myInt::myInt_vectorAttribute [int | size 4] = [1, 2, 3, 4]
+Attribute v1Api/intGroup/myInt::myInt_stringAttribute [std::__cxx11::basic_string<char> | size 1] = this is some info about my int
+Attribute v1Api/intGroup/myInt::myInt_doubleAttribute [double | size 1] = 3.14
+Attribute v1Api/intGroup/myInt::myInt_vectorAttribute [int | size 4] = [1, 2, 3, 4]
 
 */

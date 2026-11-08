@@ -288,6 +288,7 @@ namespace h5pp::v2 {
             return info;
         }
 
+        // Widely used v1 API calls remain available to ease migration to the v2 API.
         template<typename DataType>
         void writeDataset(const DataType &data, std::string_view dsetPath, const DatasetWriteOptions &options = DatasetWriteOptions()) {
             dataset(dsetPath).write(data, options);
