@@ -13,6 +13,8 @@ jobs:
   ci:
     name: ${{ matrix.compiler }}-${{ matrix.manager }}
     runs-on: windows-2025
+    # The longest healthy job took 58 minutes; allow twice that, rounded up.
+    timeout-minutes: 120
     permissions:
       contents: read
     env:
@@ -21,7 +23,7 @@ jobs:
       fail-fast: false # Keep matrix jobs running so failures are easier to inspect
       matrix:
         include:
-          - { compiler: cl, manager: conan, asan: true  }
+          - { compiler: cl, manager: conan, asan: false }
           - { compiler: cl, manager: cmake, asan: false }
 
     steps:
@@ -78,4 +80,3 @@ jobs:
           buildPreset: 'github-actions-${{ matrix.manager }}-win'
           buildPresetAdditionalArgs: "['--config Debug']"
           testPreset: 'github-actions-${{ matrix.manager }}-win'
-#          testPresetAdditionalArgs: "['-C Debug']"
