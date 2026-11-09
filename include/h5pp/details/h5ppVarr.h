@@ -4,11 +4,19 @@
 #include "h5ppTypeCompound.h"
 #include "h5ppTypeCustom.h"
 #include "h5ppVstr.h"
+#include <algorithm>
 #include <complex>
 #include <cstdlib>
 #include <cstring>
 #include <H5Tpublic.h>
+#include <initializer_list>
+#include <string>
+#include <type_traits>
 #include <vector>
+
+#if !defined(FMT_FORMAT_H_) || !defined(H5PP_USE_FMT)
+    #include <ostream>
+#endif
 
 namespace h5pp::type::vlen {
     template<typename T>
@@ -70,14 +78,12 @@ namespace h5pp::type::vlen {
 
 #if !defined(FMT_FORMAT_H_) || !defined(H5PP_USE_FMT)
         friend auto operator<<(std::ostream &os, const varr_t &v) -> std::ostream & {
-            if(v.empty()) {
-                os << "[]";
-            } else {
-                os << "[";
-                std::copy(v.begin(), v.end(), std::ostream_iterator<T>(os, ", "));
-                os << "\b\b]";
+            os << '[';
+            for(size_t i = 0; i < v.size(); ++i) {
+                if(i != 0) os << ", ";
+                os << v[i];
             }
-            return os;
+            return os << ']';
         }
 #endif
     };

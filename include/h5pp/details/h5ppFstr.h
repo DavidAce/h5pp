@@ -5,11 +5,20 @@
 #include "h5ppTypeSfinae.h"
 #include <algorithm>
 #include <charconv>
+#include <complex>
 #include <cstdlib>
 #include <cstring>
 #include <H5Tpublic.h>
+#include <limits>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <system_error>
+#include <type_traits>
+
+#if !defined(FMT_FORMAT_H_) || !defined(H5PP_USE_FMT)
+    #include <ostream>
+#endif
 
 namespace h5pp::type::flen {
     namespace internal {
@@ -84,7 +93,7 @@ namespace h5pp::type::flen {
         static hid::h5t get_h5type();
 #if !defined(FMT_FORMAT_H_) || !defined(H5PP_USE_FMT)
         friend auto operator<<(std::ostream &os, const fstr_t &v) -> std::ostream & {
-            std::copy(v.begin(), v.end(), std::ostream_iterator<char>(os, ", "));
+            if(!v.empty()) os << std::string_view(v);
             return os;
         }
 #endif
