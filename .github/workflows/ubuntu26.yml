@@ -18,6 +18,9 @@ jobs:
       id-token: write
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
+      H5PP_CMAKE_PRESET: ${{ matrix.manager == 'find' && 'github-actions-find' || format('github-actions-pkg-{0}', matrix.manager) }}
+      CFLAGS: -Wall -Wextra -Wpedantic -Wconversion -Wunused
+      CXXFLAGS: -Wall -Wextra -Wpedantic -Wconversion -Wunused
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CCACHE_BASEDIR: ${{ github.workspace }}
       CCACHE_SLOPPINESS: include_file_mtime,pch_defines,time_macros
@@ -47,7 +50,7 @@ jobs:
 
       - name: Prepare cache directories
         run: |
-          mkdir -p "$CCACHE_DIR" ~/.conan2 install/github-actions-${{ matrix.manager }}
+          mkdir -p "$CCACHE_DIR" ~/.conan2 install/${{ env.H5PP_CMAKE_PRESET }}
 
       # Recipes, build settings, and the runner image must match before restoring dependencies.
       - name: Choose cache key
@@ -64,7 +67,7 @@ jobs:
         with:
           path: |
             ${{ env.CCACHE_DIR }}
-            install/github-actions-${{ matrix.manager }}
+            install/${{ env.H5PP_CMAKE_PRESET }}
           key: ${{ steps.cache-environment.outputs.prefix }}-${{ github.sha }}
           restore-keys: |
             ${{ steps.cache-environment.outputs.prefix }}-
@@ -109,7 +112,7 @@ jobs:
       - name: Setup build tools
         run: |
           sudo apt-get install ccache ninja-build gcovr lcov -y
-          echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
+          echo "CMAKE_GENERATOR=Ninja Multi-Config" >> $GITHUB_ENV
 
       - name: Configure ccache
         run: |
@@ -129,10 +132,10 @@ jobs:
       - name: Run CMakePreset
         uses: lukka/run-cmake@v10.9
         with:
-          configurePreset: 'github-actions-${{ matrix.manager }}'
+          configurePreset: '${{ env.H5PP_CMAKE_PRESET }}'
           configurePresetAdditionalArgs: "['-DH5PP_ENABLE_COVERAGE=${{ matrix.coverage && 'TRUE' || 'FALSE' }}','-DH5PP_ENABLE_ASAN=${{ matrix.asan && 'TRUE' || 'FALSE' }}']"
-          buildPreset: 'github-actions-${{ matrix.manager }}'
-          testPreset: 'github-actions-${{ matrix.manager }}'
+          buildPreset: '${{ env.H5PP_CMAKE_PRESET }}'
+          testPreset: '${{ env.H5PP_CMAKE_PRESET }}'
 
       - name: Show ccache stats
         run: ccache --show-stats

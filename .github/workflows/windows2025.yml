@@ -19,6 +19,9 @@ jobs:
       contents: read
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
+      H5PP_CMAKE_PRESET: ${{ format('github-actions-windows-pkg-{0}', matrix.manager) }}
+      CFLAGS: /W3
+      CXXFLAGS: /W3
     strategy:
       fail-fast: false # Keep matrix jobs running so failures are easier to inspect
       matrix:
@@ -39,7 +42,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path "$HOME\\.conan2" | Out-Null
-          New-Item -ItemType Directory -Force -Path "install/github-actions-${{ matrix.manager }}-win" | Out-Null
+          New-Item -ItemType Directory -Force -Path "install/${{ env.H5PP_CMAKE_PRESET }}" | Out-Null
 
       # Recipes, build settings, and the runner image must match before restoring dependencies.
       - name: Choose cache key
@@ -57,7 +60,7 @@ jobs:
         with:
           path: |
             ~/.conan2
-            install/github-actions-${{ matrix.manager }}-win
+            install/${{ env.H5PP_CMAKE_PRESET }}
           key: ${{ steps.cache-environment.outputs.prefix }}-${{ github.sha }}
           restore-keys: |
             ${{ steps.cache-environment.outputs.prefix }}-
@@ -71,12 +74,12 @@ jobs:
       - name: Run CMakePreset
         uses: lukka/run-cmake@v10.9
         with:
-          configurePreset: 'github-actions-${{ matrix.manager }}-win'
+          configurePreset: '${{ env.H5PP_CMAKE_PRESET }}'
           # Conan libraries lack MSVC's STL annotations. Keep ASan enabled, but
           # disable those extra checks so the examples and tests can link to them.
           configurePresetAdditionalArgs: >-
             ['-DH5PP_ENABLE_ASAN=${{ matrix.asan && 'TRUE' || 'FALSE' }}'
             ${{ matrix.manager == 'conan' && matrix.asan && ', "-DCMAKE_CXX_FLAGS:STRING=/D_DISABLE_STL_ANNOTATION"' || '' }}]
-          buildPreset: 'github-actions-${{ matrix.manager }}-win'
+          buildPreset: '${{ env.H5PP_CMAKE_PRESET }}'
           buildPresetAdditionalArgs: "['--config Debug']"
-          testPreset: 'github-actions-${{ matrix.manager }}-win'
+          testPreset: '${{ env.H5PP_CMAKE_PRESET }}'

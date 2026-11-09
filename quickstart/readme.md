@@ -25,5 +25,5 @@ Run `conan profile detect` if you do not yet have a default Conan profile.
 The Conan examples explicitly select C++20. For custom dependency locations,
 set `CMAKE_PREFIX_PATH` before running the CMake example scripts.
 
-To build h5pp itself with the bundled CMake provider, use `release-cmake` from
+To build h5pp itself with the bundled CMake provider, use `ninja-pkg-cmake` from
 the repository root with CMake >= 3.26; that provider builds HDF5 2.1.1.

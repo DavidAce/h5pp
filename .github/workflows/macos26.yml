@@ -17,6 +17,9 @@ jobs:
       contents: read
     env:
       cache-name: cache-${{ matrix.compiler }}-${{ matrix.manager }}
+      H5PP_CMAKE_PRESET: ${{ matrix.manager == 'find' && 'github-actions-find' || format('github-actions-pkg-{0}', matrix.manager) }}
+      CFLAGS: -Wall -Wextra -Wpedantic -Wconversion -Wunused
+      CXXFLAGS: -Wall -Wextra -Wpedantic -Wconversion -Wunused
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CCACHE_BASEDIR: ${{ github.workspace }}
       CCACHE_SLOPPINESS: include_file_mtime,pch_defines,time_macros
@@ -40,7 +43,7 @@ jobs:
 
       - name: Prepare cache directories
         run: |
-          mkdir -p "$CCACHE_DIR" ~/.conan2 install/github-actions-${{ matrix.manager }}
+          mkdir -p "$CCACHE_DIR" ~/.conan2 install/${{ env.H5PP_CMAKE_PRESET }}
 
       # Recipes, build settings, and the runner image must match before restoring dependencies.
       - name: Choose cache key
@@ -57,7 +60,7 @@ jobs:
         with:
           path: |
             ${{ env.CCACHE_DIR }}
-            install/github-actions-${{ matrix.manager }}
+            install/${{ env.H5PP_CMAKE_PRESET }}
           key: ${{ steps.cache-environment.outputs.prefix }}-${{ github.sha }}
           restore-keys: |
             ${{ steps.cache-environment.outputs.prefix }}-
@@ -86,7 +89,7 @@ jobs:
       - name: Setup build tools
         run: |
           brew install ccache ninja
-          echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
+          echo "CMAKE_GENERATOR=Ninja Multi-Config" >> $GITHUB_ENV
 
       - name: Configure ccache
         run: |
@@ -95,7 +98,9 @@ jobs:
 
       - name: Setup brew packages
         if: matrix.manager == 'find'
-        run: brew install hdf5 spdlog fmt eigen zlib catch2
+        run: |
+          brew install hdf5 spdlog fmt eigen zlib catch2
+          echo "CMAKE_FRAMEWORK_PATH=/opt/homebrew:/opt/homebrew/opt/zlib" >> "$GITHUB_ENV"
 
       - name: Setup conan
         if: matrix.manager == 'conan'
@@ -106,10 +111,10 @@ jobs:
       - name: Run CMakePreset
         uses: lukka/run-cmake@v10.9
         with:
-          configurePreset: 'github-actions-${{ matrix.manager }}'
+          configurePreset: '${{ env.H5PP_CMAKE_PRESET }}'
           configurePresetAdditionalArgs: "['-DH5PP_ENABLE_ASAN=${{ matrix.asan && 'TRUE' || 'FALSE' }}']"
-          buildPreset: 'github-actions-${{ matrix.manager }}'
-          testPreset: 'github-actions-${{ matrix.manager }}'
+          buildPreset: '${{ env.H5PP_CMAKE_PRESET }}'
+          testPreset: '${{ env.H5PP_CMAKE_PRESET }}'
 
       - name: Show ccache stats
         run: ccache --show-stats

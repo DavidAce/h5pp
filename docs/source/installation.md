@@ -91,14 +91,15 @@ source files to compile.
 With CMake 3.26 or newer, use the bundled provider through a preset:
 
 ```bash
-cmake --preset release-cmake
-cmake --build --preset release-cmake --parallel 6
-cmake --install build/release-cmake
+cmake --preset ninja-pkg-cmake
+cmake --build --preset ninja-pkg-cmake --parallel 6
+cmake --install build/ninja-pkg-cmake --config Release
 ```
 
-This preset enables optional integrations, tests, and examples. Its installation
-prefix is `install/release-cmake` under the source directory. To register the
-provider without a preset, pass it on the first configuration of a new build:
+This preset leaves optional integrations, tests, and examples off by default.
+Its installation prefix is `install/ninja-pkg-cmake` under the source directory.
+To register the provider without a preset, pass it on the first configuration
+of a new build:
 
 ```bash
 cmake -S . -B build/provider \
@@ -119,9 +120,9 @@ Install Conan 2.0.5 or newer and put `conan` on `PATH`. If you have no default
 profile yet, create one with `conan profile detect`. Then use the bundled preset:
 
 ```bash
-cmake --preset release-conan
-cmake --build --preset release-conan --parallel 6
-cmake --install build/release-conan
+cmake --preset ninja-pkg-conan -DCMAKE_INSTALL_PREFIX="$PWD/install/ninja-pkg-conan"
+cmake --build --preset ninja-pkg-conan --parallel 6
+cmake --install build/ninja-pkg-conan --config Release
 ```
 
 The preset registers `cmake/conan_dependency_provider/conan_provider.cmake`
@@ -174,9 +175,13 @@ configuration. CMake targets are recommended for handling these link details.
 | `H5PP_IS_SUBPROJECT` | Automatically detected | Use h5pp with `add_subdirectory`; skip installation rules |
 | `CMAKE_INSTALL_PREFIX` | CMake's default | Install h5pp, and dependencies built by the CMake provider |
 
-Presets override several defaults. Run `cmake --list-presets` to see available
-configurations. h5pp does not impose one static/shared choice on all dependencies;
-use the options supported by the selected packages and provider.
+The configure presets use multi-config generators. The supplied build and test
+presets select Release for users and Debug for GitHub Actions. User workflow
+presets configure and build; they do not run tests. CI presets enable tests,
+examples, optional integrations, and diagnostics, while leaving PCH off.
+Run `cmake --list-presets` to see available configurations. h5pp does not impose
+one static/shared choice on all dependencies; use the options supported by the
+selected packages and provider.
 
 ## Link from a CMake project
 

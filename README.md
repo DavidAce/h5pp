@@ -177,15 +177,17 @@ cd h5pp
 With CMake 3.26 or newer, the bundled CMake provider downloads and builds dependencies:
 
 ```bash
-cmake --preset release-cmake
-cmake --build --preset release-cmake --parallel 6
-cmake --install build/release-cmake
+cmake --preset ninja-pkg-cmake
+cmake --build --preset ninja-pkg-cmake --parallel 6
+cmake --install build/ninja-pkg-cmake --config Release
 ```
 
-This preset installs under `install/release-cmake`. Alternatively, use
-`release-conan` with CMake >= 3.26 and Conan >= 2.0.5 on `PATH`; it installs h5pp
-under `install/release-conan` and uses Conan to resolve dependencies.
-Both presets enable optional integrations, tests, and examples.
+This preset installs under `install/ninja-pkg-cmake`. Alternatively, use
+`ninja-pkg-conan` with Conan >= 2.0.5 on `PATH` to resolve dependencies with Conan.
+Set `CMAKE_INSTALL_PREFIX` when configuring to choose where h5pp is installed.
+Both presets leave optional integrations, tests, and examples off by default.
+The supplied build presets select Release; the configure presets support
+multiple configurations.
 
 ### Use dependencies you installed yourself
 
