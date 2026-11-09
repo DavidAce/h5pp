@@ -91,7 +91,7 @@ target_link_libraries(h5pp INTERFACE h5pp_headers h5pp_deps h5pp_flags)
 
 
 # Print summary of CMake configuration
-include(cmake/PrintTargetInfo.cmake)
+include(cmake/PrintTargetSummary.cmake)
 print_target_summary(h5pp)
 
 
