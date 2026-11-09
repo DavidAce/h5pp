@@ -2,9 +2,9 @@
 unset(PKG_IS_RUNNING CACHE) # Remove from cache when this file is included
 unset(PKG_INSTALL_SUCCESS CACHE) # Check dependency inputs on each configuration.
 
-function(pkg_install_dependencies  package_name)
+function(pkg_install_dependencies method)
     if(NOT PKG_INSTALL_SUCCESS AND NOT PKG_IS_RUNNING)
-        message(STATUS "pkg_install_dependencies running with package_name: ${package_name}")
+        message(STATUS "Preparing dependencies for find_package(${ARGV1})")
         unset(PKG_INSTALL_SUCCESS CACHE)
         set(PKG_IS_RUNNING TRUE CACHE INTERNAL "" FORCE)
         include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/PKGInstall.cmake)

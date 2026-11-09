@@ -103,12 +103,16 @@ function(pkg_install pkg_name)
     # All projects use the same lock to avoid building packages at the same time.
     # Check the installation after acquiring it: another process may just have finished.
     if(DEFINED ENV{HOME})
+        pkg_message(STATUS "Waiting for lock: $ENV{HOME}/cmake.pkg-install.lock")
         file(LOCK "$ENV{HOME}/cmake.pkg-install.lock" GUARD FUNCTION TIMEOUT 600)
     elseif(DEFINED ENV{USERPROFILE})
+        pkg_message(STATUS "Waiting for lock: $ENV{USERPROFILE}/cmake.pkg-install.lock")
         file(LOCK "$ENV{USERPROFILE}/cmake.pkg-install.lock" GUARD FUNCTION TIMEOUT 600)
     else()
         pkg_message(FATAL_ERROR "Cannot determine a home directory for the package-build lock")
     endif()
+
+    pkg_message(STATUS "Checking existing installation: ${PKG_INSTALL_DIR}")
 
     # Generate an init cache to propagate the current configuration
     generate_init_cache()
@@ -161,6 +165,7 @@ function(pkg_install pkg_name)
     pkg_message(STATUS "${pkg_name} will be installed into ${PKG_INSTALL_DIR}")
 
     # Configure the package
+    pkg_message(STATUS "Configuring in ${PKG_BUILD_DIR}")
     execute_process(COMMAND  ${CMAKE_COMMAND} -E make_directory ${PKG_BUILD_DIR})
     execute_process(COMMAND  ${CMAKE_COMMAND} -E remove ${PKG_BUILD_DIR}/CMakeCache.txt)
     execute_process(
@@ -200,6 +205,7 @@ function(pkg_install pkg_name)
     if(multi_config)
         # This branch is for multi-config generators such as Visual Studio 16 2019
         foreach(config ${CMAKE_CONFIGURATION_TYPES})
+            pkg_message(STATUS "Building and installing ${config} in ${PKG_BUILD_DIR}")
             execute_process(COMMAND  ${CMAKE_COMMAND} --build . --parallel ${num_threads} --config ${config}
                     WORKING_DIRECTORY "${PKG_BUILD_DIR}"
                     RESULT_VARIABLE build_result
@@ -225,6 +231,7 @@ function(pkg_install pkg_name)
         endforeach()
     else()
         # This is for single-config generators such as Unix Makefiles and Ninja
+        pkg_message(STATUS "Building and installing in ${PKG_BUILD_DIR}")
         execute_process(COMMAND  ${CMAKE_COMMAND} --build . --parallel ${num_threads}
                 WORKING_DIRECTORY "${PKG_BUILD_DIR}"
                 RESULT_VARIABLE build_result
