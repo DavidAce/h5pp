@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 function(try_compile_std_optional)
     if(NOT OPTIONAL_COMPILES)
-        file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/check-std-optional.cpp
+        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CMakeTmp/check-std-optional.cpp
             "
             // Include optional or experimental/optional
             namespace h5pp{}
@@ -28,17 +28,17 @@ function(try_compile_std_optional)
             ")
         message(STATUS "Performing Test has_std_optional")
         try_compile(OPTIONAL_COMPILES
-                ${CMAKE_BINARY_DIR}
-                ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/check-std-optional.cpp
+                ${CMAKE_CURRENT_BINARY_DIR}
+                ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CMakeTmp/check-std-optional.cpp
                 OUTPUT_VARIABLE OPTIONAL_COMPILES_OUT
                 CXX_STANDARD 20
                 CXX_EXTENSIONS OFF
                 )
         if(OPTIONAL_COMPILES)
-            file(APPEND ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeOutput.log "${OPTIONAL_COMPILES_OUT}")
+            file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CMakeOutput.log "${OPTIONAL_COMPILES_OUT}")
             message(STATUS "Performing Test has_std_optional - Success")
         else()
-            file(APPEND ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeError.log "${OPTIONAL_COMPILES_OUT}")
+            file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CMakeError.log "${OPTIONAL_COMPILES_OUT}")
             message(STATUS "Performing Test has_std_optional - Failed")
         endif()
         set(OPTIONAL_COMPILES ${OPTIONAL_COMPILES} PARENT_SCOPE)

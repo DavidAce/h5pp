@@ -18,7 +18,7 @@ function(check_compile pkg tgt file)
         endif()
         message(STATUS "Performing Test check_compile_${pkg}")
         try_compile(check_compile_${pkg}
-                ${CMAKE_BINARY_DIR}
+                ${CMAKE_CURRENT_BINARY_DIR}
                 ${file}
                 CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${CHECK_INCLUDE_DIRECTORIES}"
                 COMPILE_DEFINITIONS ${CHECK_COMPILE_DEFINITIONS}
@@ -29,11 +29,11 @@ function(check_compile pkg tgt file)
                 CXX_EXTENSIONS OFF
                 )
         if(check_compile_${pkg})
-            file(APPEND ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeOutput.log "${compile_out}")
+            file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CMakeOutput.log "${compile_out}")
             message(STATUS "Performing Test check_compile_${pkg} - Success")
             set(check_compile_${pkg} ${check_compile_${pkg}} CACHE BOOL "")
         else()
-            file(APPEND ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeError.log "${compile_out}")
+            file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CMakeError.log "${compile_out}")
             message(STATUS "Performing Test check_compile_${pkg} - Failed")
         endif()
         mark_as_advanced(check_compile_${pkg})
