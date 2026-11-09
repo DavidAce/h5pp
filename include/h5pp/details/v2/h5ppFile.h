@@ -233,38 +233,46 @@ namespace h5pp::v2 {
             return newPath;
         }
 
+        [[deprecated("Use file.link(localLinkPath).copyToFile(targetFilePath, targetLinkPath, perm) instead")]]
         void copyLinkToFile(std::string_view localLinkPath, const h5pp::fs::path &targetFilePath, std::string_view targetLinkPath, const FileAccess &perm = FileAccess::READWRITE) const {
             link(localLinkPath).copyToFile(targetFilePath, targetLinkPath, perm);
         }
 
+        [[deprecated("Use file.link(localLinkPath).copyFromFile(sourceFilePath, sourceLinkPath) instead")]]
         void copyLinkFromFile(std::string_view localLinkPath, const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath) {
             link(localLinkPath).copyFromFile(sourceFilePath, sourceLinkPath);
         }
 
         template<typename h5x_tgt>
+        [[deprecated("Use file.link(localLinkPath).copyToLocation(targetLocationId, targetLinkPath) instead")]]
         void copyLinkToLocation(std::string_view localLinkPath, const h5x_tgt &targetLocationId, std::string_view targetLinkPath) const {
             link(localLinkPath).copyToLocation(targetLocationId, targetLinkPath);
         }
 
         template<typename h5x_src>
+        [[deprecated("Use file.link(localLinkPath).copyFromLocation(sourceLocationId, sourceLinkPath) instead")]]
         void copyLinkFromLocation(std::string_view localLinkPath, const h5x_src &sourceLocationId, std::string_view sourceLinkPath) {
             link(localLinkPath).copyFromLocation(sourceLocationId, sourceLinkPath);
         }
 
+        [[deprecated("Use file.link(localLinkPath).moveToFile(targetFilePath, targetLinkPath, perm) instead")]]
         void moveLinkToFile(std::string_view localLinkPath, const h5pp::fs::path &targetFilePath, std::string_view targetLinkPath, const FileAccess &perm = FileAccess::READWRITE) {
             link(localLinkPath).moveToFile(targetFilePath, targetLinkPath, perm);
         }
 
+        [[deprecated("Use file.link(localLinkPath).moveFromFile(sourceFilePath, sourceLinkPath) instead")]]
         void moveLinkFromFile(std::string_view localLinkPath, const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath) {
             link(localLinkPath).moveFromFile(sourceFilePath, sourceLinkPath);
         }
 
         template<typename h5x_tgt>
+        [[deprecated("Use file.link(localLinkPath).moveToLocation(targetLocationId, targetLinkPath, locMode) instead")]]
         void moveLinkToLocation(std::string_view localLinkPath, const h5x_tgt &targetLocationId, std::string_view targetLinkPath, LocationMode locMode = LocationMode::DETECT) {
             link(localLinkPath).moveToLocation(targetLocationId, targetLinkPath, locMode);
         }
 
         template<typename h5x_src>
+        [[deprecated("Use file.link(localLinkPath).moveFromLocation(sourceLocationId, sourceLinkPath, locMode) instead")]]
         void moveLinkFromLocation(std::string_view localLinkPath, const h5x_src &sourceLocationId, std::string_view sourceLinkPath, LocationMode locMode = LocationMode::DETECT) {
             link(localLinkPath).moveFromLocation(sourceLocationId, sourceLinkPath, locMode);
         }
@@ -290,6 +298,7 @@ namespace h5pp::v2 {
 
         // Widely used v1 API calls remain available to ease migration to the v2 API.
         template<typename DataType>
+        [[deprecated("Use file.dataset(path).write(data, options) instead")]]
         void writeDataset(const DataType &data, std::string_view dsetPath, const DatasetWriteOptions &options = DatasetWriteOptions()) {
             dataset(dsetPath).write(data, options);
         }
@@ -300,6 +309,7 @@ namespace h5pp::v2 {
         }
 
         template<typename DataType>
+        [[deprecated("Use file.dataset(path).ensure(createOptions).write(data, writeOptions) instead")]]
         void writeDataset(const DataType &data,
                           std::string_view dsetPath,
                           const DatasetCreateOptions &createOptions,
@@ -314,21 +324,25 @@ namespace h5pp::v2 {
         }
 
         template<typename DataType>
+        [[deprecated("Use file.dataset(path).readInto(data, options) instead")]]
         void readDataset(DataType &data, std::string_view dsetPath, const DatasetReadOptions &options = DatasetReadOptions()) const {
             dataset(dsetPath).readInto(data, options);
         }
 
         template<typename DataType>
+        [[deprecated("Use file.dataset(path).read<DataType>(options) instead")]]
         [[nodiscard]] DataType readDataset(std::string_view dsetPath, const DatasetReadOptions &options = DatasetReadOptions()) const {
             return dataset(dsetPath).template read<DataType>(options);
         }
 
         template<typename DataType>
+        [[deprecated("Use file.attribute(linkPath, attrName).write(data, options) instead")]]
         void writeAttribute(std::string_view linkPath, std::string_view attrName, const DataType &data, const AttributeWriteOptions &options = AttributeWriteOptions()) {
             attribute(linkPath, attrName).write(data, options);
         }
 
         template<typename DataType>
+        [[deprecated("Use file.attribute(linkPath, attrName).read<DataType>(options) instead")]]
         [[nodiscard]] DataType readAttribute(std::string_view linkPath, std::string_view attrName, const AttributeReadOptions &options = AttributeReadOptions()) const {
             return attribute(linkPath, attrName).template read<DataType>(options);
         }
@@ -340,11 +354,15 @@ namespace h5pp::v2 {
             H5Eprint(H5E_DEFAULT, stderr);
         }
 
+        [[deprecated("Use file.group(groupPath).create() instead")]]
         void createGroup(std::string_view groupPath) { group(groupPath).create(); }
+        [[deprecated("Use file.link(linkPath).deleteLink() instead")]]
         void deleteLink(std::string_view linkPath) { link(linkPath).deleteLink(); }
 
+        [[deprecated("Use file.link(targetLinkPath).createSoftLink(softLinkPath) instead")]]
         void createSoftLink(std::string_view targetLinkPath, std::string_view softLinkPath) { link(targetLinkPath).createSoftLink(softLinkPath); }
 
+        [[deprecated("Use file.link(softLinkPath).createExternalLink(targetFilePath, targetLinkPath) instead")]]
         void createExternalLink(std::string_view targetFilePath, std::string_view targetLinkPath, std::string_view softLinkPath) {
             link(softLinkPath).createExternalLink(targetFilePath, targetLinkPath);
         }
@@ -373,14 +391,17 @@ namespace h5pp::v2 {
         [[nodiscard]] std::string getFileName() const { return filePath.filename().string(); }
         [[nodiscard]] std::string getFilePath() const { return filePath.string(); }
         [[nodiscard]] LogLevel getLogLevel() const { return logLevel; }
+        [[deprecated("Use file.link(linkPath).exists() instead")]]
         [[nodiscard]] bool linkExists(std::string_view linkPath) const {
             return h5pp::hdf5::checkIfLinkExists(openFileHandle(), linkPath, plists.linkAccess);
         }
+        [[deprecated("Use file.attribute(linkPath, attrName).exists() instead")]]
         [[nodiscard]] bool attributeExists(std::string_view linkPath, std::string_view attrName) const {
             return h5pp::hdf5::checkIfAttrExists(openFileHandle(), linkPath, attrName, std::nullopt, plists.linkAccess);
         }
 
         template<typename Fields>
+        [[deprecated("Use file.table(tablePath).fieldExists(fields) instead")]]
         [[nodiscard]] bool fieldExists(std::string_view tablePath, const Fields &fields) const {
             return table(tablePath).fieldExists(fields);
         }
@@ -402,38 +423,47 @@ namespace h5pp::v2 {
             return link(linkPath).getAttributeNames();
         }
 
+        [[deprecated("Use file.dataset(path).getInfo() instead")]]
         [[nodiscard]] DsetInfo getDatasetInfo(std::string_view dsetPath) const {
             return dataset(dsetPath).getInfo();
         }
 
+        [[deprecated("Use file.attribute(linkPath, attrName).getInfo() instead")]]
         [[nodiscard]] AttrInfo getAttributeInfo(std::string_view linkPath, std::string_view attrName) const {
             return attribute(linkPath, attrName).getInfo();
         }
 
+        [[deprecated("Use file.table(path).getInfo() instead")]]
         [[nodiscard]] TableInfo getTableInfo(std::string_view tablePath) const {
             return table(tablePath).getInfo();
         }
 
+        [[deprecated("Use file.dataset(path).getChunkDimensions() instead")]]
         [[nodiscard]] std::optional<std::vector<hsize_t>> getDatasetChunkDimensions(std::string_view datasetPath) const {
             return dataset(datasetPath).getChunkDimensions();
         }
 
+        [[deprecated("Use file.table(path).getFieldInfo() instead")]]
         [[nodiscard]] TableFieldInfo getTableFieldInfo(std::string_view tablePath) const {
             return table(tablePath).getFieldInfo();
         }
 
+        [[deprecated("Use file.dataset(path).getTypeInfo() instead")]]
         [[nodiscard]] TypeInfo getTypeInfoDataset(std::string_view dsetPath) const {
             return dataset(dsetPath).getTypeInfo();
         }
 
+        [[deprecated("Use file.attribute(linkPath, attrName).getTypeInfo() instead")]]
         [[nodiscard]] TypeInfo getTypeInfoAttribute(std::string_view linkPath, std::string_view attrName) const {
             return attribute(linkPath, attrName).getTypeInfo();
         }
 
+        [[deprecated("Use file.link(path).getTypeInfoAttributes() instead")]]
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes(std::string_view linkPath) const {
             return link(linkPath).getTypeInfoAttributes();
         }
 
+        [[deprecated("Use file.link(path).getInfo() instead")]]
         [[nodiscard]] LinkInfo getLinkInfo(std::string_view linkPath) const {
             return link(linkPath).getInfo();
         }
@@ -470,11 +500,13 @@ namespace h5pp::v2 {
         }
 
         template<typename DataType>
+        [[deprecated("Use file.table(path).readRecords<DataType>(offset, extent) instead")]]
         [[nodiscard]] DataType readTableRecords(std::string_view tablePath, std::optional<hsize_t> offset = std::nullopt, std::optional<hsize_t> extent = std::nullopt) const {
             return table(tablePath).template readRecords<DataType>(offset, extent);
         }
 
         template<typename DataType>
+        [[deprecated("Use file.table(path).readRecords<DataType>(selection) instead")]]
         [[nodiscard]] DataType readTableRecords(std::string_view tablePath, TableSelection selection) const {
             return table(tablePath).template readRecords<DataType>(selection);
         }

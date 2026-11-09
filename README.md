@@ -130,7 +130,7 @@ The equivalent v2 API calls are:
     auto unit = file.attribute("group/dataset", "unit").read<std::string>();
 ```
 
-Some other v1 API calls retained on `h5pp::File` are already deprecated and emit compiler warnings showing the corresponding v2 API call.
+These retained v1 API calls are deprecated. Compiler warnings show the corresponding v2 API call.
 
 
 ## Get h5pp
