@@ -29,6 +29,9 @@ endfunction()
 # Dumps cached variables to PKG_INIT_CACHE_FILE so that we can propagate
 # the current build configuration to dependencies
 function(generate_init_cache)
+    # Initialize installation-directory defaults before collecting build settings.
+    include(GNUInstallDirs)
+    set(PKG_INPUTS "")
     set(PKG_INIT_CACHE_FILE ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeTmp/init-cache.cmake)
     set(PKG_INIT_CACHE_FILE ${PKG_INIT_CACHE_FILE} PARENT_SCOPE)
     file(WRITE  ${PKG_INIT_CACHE_FILE} "# These variables will initialize the CMake cache for subprocesses.\n")
@@ -42,6 +45,14 @@ function(generate_init_cache)
         get_property(type CACHE "${var}" PROPERTY TYPE)
         get_property(value CACHE "${var}" PROPERTY VALUE)
         pkg_cache_entry("${PKG_INIT_CACHE_FILE}" "${var}" "${value}" "${type}" "${help}")
+        # Search results and cache metadata appear during configuration. They do
+        # not change the build settings and must not force another installation.
+        if(NOT type MATCHES "^(INTERNAL|STATIC)$"
+                AND NOT var MATCHES "^(CPACK_|CXX_FILESYSTEM_)"
+                AND NOT help MATCHES "^(Path to a (file|library)\\.|The directory containing a CMake configuration file)")
+            string(SHA256 input_hash "${var}=${value}")
+            string(APPEND PKG_INPUTS "${input_hash}\n")
+        endif()
     endforeach()
     # Apply package overrides last, without changing the outer project's cache.
     foreach(arg IN LISTS PKG_CMAKE_ARGS)
@@ -58,7 +69,13 @@ function(generate_init_cache)
             endif()
         endif()
         pkg_cache_entry("${PKG_INIT_CACHE_FILE}" "${var}" "${value}" "${type}" "Package override")
+        string(SHA256 input_hash "${var}=${value}")
+        string(APPEND PKG_INPUTS "${input_hash}\n")
     endforeach()
+    # Generator selection is stored as INTERNAL cache entries, but affects builds.
+    string(APPEND PKG_INPUTS "${CMAKE_GENERATOR};${CMAKE_GENERATOR_PLATFORM};${CMAKE_GENERATOR_TOOLSET};${CMAKE_GENERATOR_INSTANCE}\n")
+    string(APPEND PKG_INPUTS "${CMAKE_COMMAND};${CMAKE_VERSION}\n")
+    set(PKG_INPUTS "${PKG_INPUTS}" PARENT_SCOPE)
 endfunction()
 
 
@@ -119,7 +136,6 @@ function(pkg_install pkg_name)
 
     # The success file records the build inputs and the files that were installed.
     # Include all package recipes so changes to zlib/libaec also rebuild HDF5.
-    file(SHA256 "${PKG_INIT_CACHE_FILE}" PKG_INPUTS)
     file(GLOB_RECURSE PKG_RECIPES LIST_DIRECTORIES FALSE "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/external_*/*")
     list(APPEND PKG_RECIPES "${CMAKE_CURRENT_FUNCTION_LIST_FILE}" "${CMAKE_TOOLCHAIN_FILE}")
     list(SORT PKG_RECIPES)
@@ -148,7 +164,7 @@ function(pkg_install pkg_name)
                 endif()
             endforeach()
             if(installed_hash STREQUAL PKG_INPUT_HASH AND installed_files_exist)
-                pkg_message(DEBUG "Already installed: ${pkg_name} (found manifest: ${PKG_SUCCESS_FILE})")
+                pkg_message(VERBOSE "Already installed: ${pkg_name} (found manifest: ${PKG_SUCCESS_FILE})")
                 return()
             endif()
         endif()
