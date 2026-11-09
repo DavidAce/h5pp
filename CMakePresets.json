@@ -15,10 +15,9 @@
     {
       "name": "pkg-cmake",
       "hidden": true,
-      "description": "Build dependencies with ExternalProject through the bundled CMake provider. Install them in a local directory.",
+      "description": "Build dependencies with ExternalProject through the bundled CMake provider. Default installation stays inside the build directory.",
       "cacheVariables": {
         "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${sourceDir}/cmake/cmake_dependency_provider/cmake_provider.cmake",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
         "CMAKE_FIND_PACKAGE_PREFER_CONFIG": true
       }
     },

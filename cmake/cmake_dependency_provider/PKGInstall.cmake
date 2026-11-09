@@ -80,8 +80,13 @@ function(pkg_install pkg_name)
         set(PKG_BUILD_DIR ${CMAKE_BINARY_DIR}/pkg-build/${pkg_name})
     endif()
 
+    # INSTALL_DIR overrides the shared dependency prefix for this package only.
+    # Without a separate dependency prefix, follow the current installation prefix
+    # rather than caching a copy that would become stale when it changes.
     if(NOT PKG_INSTALL_DIR)
-        if(NOT CMAKE_INSTALL_PREFIX)
+        if(PKG_INSTALL_PREFIX)
+            set(PKG_INSTALL_DIR "${PKG_INSTALL_PREFIX}")
+        elseif(NOT CMAKE_INSTALL_PREFIX)
             set(PKG_INSTALL_DIR ${CMAKE_BINARY_DIR}/pkg-install)
         else()
             set(PKG_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})

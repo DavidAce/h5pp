@@ -71,14 +71,8 @@ Use `CMAKE_PREFIX_PATH` or package-specific hints such as `HDF5_ROOT`,
 search paths.
 
 ```bash
-cmake -S . -B build/local \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX="$PWD/install/local" \
-    -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
-    -DH5PP_ENABLE_EIGEN3=ON \
-    -DH5PP_ENABLE_SPDLOG=ON
-cmake --build build/local --parallel 6
-cmake --install build/local
+cmake --workflow --preset ninja
+cmake --install build/ninja --config Release
 ```
 
 Optional integrations are off by default in a plain configuration; enable
@@ -91,15 +85,12 @@ source files to compile.
 With CMake 3.26 or newer, use the bundled provider through a preset:
 
 ```bash
-cmake --preset ninja-pkg-cmake
-cmake --build --preset ninja-pkg-cmake --parallel 6
+cmake --workflow --preset ninja-pkg-cmake
 cmake --install build/ninja-pkg-cmake --config Release
 ```
 
-This preset leaves optional integrations, tests, and examples off by default.
-Its installation prefix is `install/ninja-pkg-cmake` under the source directory.
-To register the provider without a preset, pass it on the first configuration
-of a new build:
+Optional integrations, tests, and examples are off by default. To use the
+provider without a preset, pass it when configuring a new build:
 
 ```bash
 cmake -S . -B build/provider \
@@ -109,10 +100,16 @@ cmake -S . -B build/provider \
     -DH5PP_ENABLE_SPDLOG=ON
 ```
 
-The provider builds dependencies during configuration and installs them under
-`CMAKE_INSTALL_PREFIX`. It reuses installations recorded by its success
-manifests. Use a separate build and installation prefix when changing dependency
-providers or configurations.
+Dependencies are installed during configuration. `cmake --install` installs h5pp.
+
+With this provider, both go into `<build>/pkg-install` by default. Set
+`CMAKE_INSTALL_PREFIX` during configuration to choose another directory. Set
+`PKG_INSTALL_PREFIX` only if dependencies should go elsewhere.
+
+Keep the dependency directory available after installing h5pp. If it is separate,
+add it to `CMAKE_PREFIX_PATH` in projects using h5pp. Deleting the build directory
+also deletes any dependencies installed inside it. `cmake --install --prefix`
+changes only where h5pp is installed.
 
 ### Let Conan install dependencies
 
@@ -120,8 +117,7 @@ Install Conan 2.0.5 or newer and put `conan` on `PATH`. If you have no default
 profile yet, create one with `conan profile detect`. Then use the bundled preset:
 
 ```bash
-cmake --preset ninja-pkg-conan -DCMAKE_INSTALL_PREFIX="$PWD/install/ninja-pkg-conan"
-cmake --build --preset ninja-pkg-conan --parallel 6
+cmake --workflow --preset ninja-pkg-conan
 cmake --install build/ninja-pkg-conan --config Release
 ```
 
@@ -173,7 +169,8 @@ configuration. CMake targets are recommended for handling these link details.
 | `H5PP_ENABLE_COVERAGE` | `OFF` | Enable coverage instrumentation for tests |
 | `H5PP_ENABLE_MPI` | `OFF` | Enable experimental MPI support; requires parallel HDF5 |
 | `H5PP_IS_SUBPROJECT` | Automatically detected | Use h5pp with `add_subdirectory`; skip installation rules |
-| `CMAKE_INSTALL_PREFIX` | CMake's default | Install h5pp, and dependencies built by the CMake provider |
+| `CMAKE_INSTALL_PREFIX` | `<build>/pkg-install` with the CMake provider | Where h5pp is installed. Dependencies use the same directory unless overridden. Other installation methods keep CMake's default. |
+| `PKG_INSTALL_PREFIX` | `CMAKE_INSTALL_PREFIX` | Where the CMake provider installs dependencies |
 
 The configure presets use multi-config generators. The supplied build and test
 presets select Release for users and Debug for GitHub Actions. User workflow

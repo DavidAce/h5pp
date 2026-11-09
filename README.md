@@ -177,14 +177,17 @@ cd h5pp
 With CMake 3.26 or newer, the bundled CMake provider downloads and builds dependencies:
 
 ```bash
-cmake --preset ninja-pkg-cmake
-cmake --build --preset ninja-pkg-cmake --parallel 6
+cmake --workflow --preset ninja-pkg-cmake
 cmake --install build/ninja-pkg-cmake --config Release
 ```
 
-This preset installs under `install/ninja-pkg-cmake`. Alternatively, use
-`ninja-pkg-conan` with Conan >= 2.0.5 on `PATH` to resolve dependencies with Conan.
-Set `CMAKE_INSTALL_PREFIX` when configuring to choose where h5pp is installed.
+The CMake provider defaults to installing h5pp and its dependencies under
+`build/ninja-pkg-cmake/pkg-install`. Set `CMAKE_INSTALL_PREFIX` when configuring
+to choose a different location for both; set `PKG_INSTALL_PREFIX` only if the
+dependencies should go elsewhere. Dependencies are installed during configuration;
+h5pp is installed by `cmake --install`.
+Alternatively, use `ninja-pkg-conan` with Conan >= 2.0.5 on `PATH` to resolve
+dependencies with Conan. Its dependencies remain in Conan's cache.
 Both presets leave optional integrations, tests, and examples off by default.
 The supplied build presets select Release; the configure presets support
 multiple configurations.
@@ -194,12 +197,8 @@ multiple configurations.
 Without a provider, CMake finds existing dependencies:
 
 ```bash
-cmake -S . -B build/local \
-    -DCMAKE_INSTALL_PREFIX="$PWD/install/local" \
-    -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
-    -DH5PP_ENABLE_EIGEN3=ON -DH5PP_ENABLE_SPDLOG=ON
-cmake --build build/local --parallel 6
-cmake --install build/local
+cmake --workflow --preset ninja
+cmake --install build/ninja --config Release
 ```
 
 Use `CMAKE_PREFIX_PATH` to point to dependencies installed outside standard locations.
