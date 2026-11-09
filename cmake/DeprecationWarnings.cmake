@@ -4,7 +4,7 @@ if(H5PP_PACKAGE_MANAGER STREQUAL "find")
 elseif(H5PP_PACKAGE_MANAGER)
     message(FATAL_ERROR
             "The variable [H5PP_PACKAGE_MANAGER=${H5PP_PACKAGE_MANAGER}] has been deprecated.\n"
-            "Instead use the CMake dependency provider mechanism (requires at least CMake 3.24):\n"
+            "Instead use the CMake dependency provider mechanism (requires at least CMake 3.26):\n"
             "   https://cmake.org/cmake/help/latest/guide/using-dependencies/index.html#dependency-providers \n"
             "To enable, run \n"
             "   cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES= ... \n"

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.26)
 
 function(pkg_message lvl msg)
     message(${lvl} "PkgInstall [${pkg_name}]: ${msg} ${ARGN}")

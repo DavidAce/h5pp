@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.26)
 project(external-spdlog)
 if(INIT_CACHE_FILE)
     set(INIT_CACHE_ARG -C${INIT_CACHE_FILE})

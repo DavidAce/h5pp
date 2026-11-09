@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.26)
 project(MyProject VERSION 0.0.1 LANGUAGES C CXX)
 
 # h5pp was installed against dependencies supplied by the user. Its installed

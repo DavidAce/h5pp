@@ -143,7 +143,7 @@ There are currently 2 ways to obtain `h5pp`:
 ## Requirements
 
 * C++20 capable compiler
-* CMake version >= 3.24 (>= 3.26 for the bundled CMake dependency provider)
+* CMake version >= 3.26
 * [**HDF5**](https://support.hdfgroup.org/HDF5/)  library, version >= 1.8
 
 ### Optional dependencies
@@ -183,7 +183,7 @@ cmake --install build/release-cmake
 ```
 
 This preset installs under `install/release-cmake`. Alternatively, use
-`release-conan` with CMake >= 3.24 and Conan >= 2.0.5 on `PATH`; it installs h5pp
+`release-conan` with CMake >= 3.26 and Conan >= 2.0.5 on `PATH`; it installs h5pp
 under `install/release-conan` and uses Conan to resolve dependencies.
 Both presets enable optional integrations, tests, and examples.
 

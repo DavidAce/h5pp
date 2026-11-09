@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.26)
 # Taken from
 # https://stackoverflow.com/questions/32183975/how-to-print-all-the-properties-of-a-target-in-cmake
 

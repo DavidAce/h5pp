@@ -7,8 +7,7 @@ this checkout rather than assume that h5pp 2.0.0 has been published.
 ## Requirements
 
 * A C++20 compiler and standard library. `H5PP_USE_FLOAT128` requires C++23.
-* CMake 3.24 or newer. The bundled CMake dependency provider requires 3.26
-  because it builds HDF5 2.1.1, whose own minimum is CMake 3.26.
+* CMake 3.26 or newer.
 * HDF5 1.8 or newer, including the C and high-level C libraries. Older HDF5
   installations remain supported; direct chunk I/O requires HDF5 1.10.5 or newer.
 * Conan 2.0.5 or newer, only when using the Conan recipe or dependency provider.
@@ -182,7 +181,7 @@ use the options supported by the selected packages and provider.
 ## Link from a CMake project
 
 ```cmake
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.26)
 project(myProject LANGUAGES C CXX)
 find_package(h5pp 2.0.0 REQUIRED)
 add_executable(myExecutable main.cpp)

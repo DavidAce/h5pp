@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# Requires CMake >= 3.24 and preinstalled HDF5 C/HL, Eigen >= 3.4.0,
+# Requires CMake >= 3.26 and preinstalled HDF5 C/HL, Eigen >= 3.4.0,
 # fmt >= 9.1.0, and spdlog >= 1.12.0. Use CMAKE_PREFIX_PATH for custom prefixes.
 git clone --branch v2 https://github.com/DavidAce/h5pp.git h5pp-source
 

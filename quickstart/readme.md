@@ -5,14 +5,14 @@ The standard float128 option requires C++23 instead. See the
 [installation guide](../docs/source/installation.md) for dependency minimums
 and the different versions selected by each provider.
 
-* `git-clone-cmake-link-deps-manually`: requires CMake >= 3.24 and preinstalled
+* `git-clone-cmake-link-deps-manually`: requires CMake >= 3.26 and preinstalled
   HDF5, Eigen >= 3.4.0, fmt >= 9.1.0, and spdlog >= 1.12.0. Run
   `step1-install-h5pp.sh`, then `step2-build-run-project.sh`. The installed
   h5pp targets supply the dependency links; no deprecated package-manager
   setting is needed.
 * `git-clone-install-with-conanfile.py`: requires Conan >= 2.0.5 and a default
   profile. `install-h5pp.sh` creates a local Conan package from the v2 checkout.
-* `cmake-conan-integration`: requires CMake >= 3.24 and Conan >= 2.0.5 on `PATH`.
+* `cmake-conan-integration`: requires CMake >= 3.26 and Conan >= 2.0.5 on `PATH`.
   `build-and-run-project.sh` configures the project with CMake; the bundled
   [cmake-conan](https://github.com/conan-io/cmake-conan/) provider calls Conan
   automatically on the first `find_package()`. The script then builds and

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.26)
 project(h5pp-examples CXX)
 file(GLOB_RECURSE EXAMPLES CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp")
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/output)
