@@ -23,7 +23,7 @@ this checkout rather than assume that h5pp 2.0.0 has been published.
 
 The minimum supported version is different from the version selected by a
 provider. The bundled CMake provider currently downloads Eigen 5.0.1, fmt
-12.1.0, spdlog 1.17.0, HDF5 2.1.1, zlib 1.3.1, libaec 1.1.7, and Catch2
+12.1.0, spdlog 1.17.0, HDF5 2.1.1, zlib 1.4, libaec 1.1.7, and Catch2
 3.13.0 when tests are enabled. Those download choices do not raise the library
 minimums above. For example, an existing Eigen 3.4.0 installation can be used
 without the provider even though the provider downloads Eigen 5.0.1.
