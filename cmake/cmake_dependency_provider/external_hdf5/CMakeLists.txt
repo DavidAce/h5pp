@@ -8,6 +8,9 @@ endif()
 include(GNUInstallDirs)
 include(ExternalProject)
 
+# Debug and Release must coexist when installed into the same prefix.
+set(CMAKE_DEBUG_POSTFIX "_debug" CACHE STRING "Debug library postfix")
+
 option(HDF5_ENABLE_PARALLEL         "" OFF)
 option(HDF5_ENABLE_ZLIB_SUPPORT     "" ON)
 option(HDF5_ENABLE_SZIP_SUPPORT     "" ON)
@@ -37,6 +40,7 @@ ExternalProject_Add(external_hdf5
         CMAKE_ARGS
         ${INIT_CACHE_ARG}
         -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+        -DCMAKE_DEBUG_POSTFIX:STRING=${CMAKE_DEBUG_POSTFIX}
         -DCMAKE_INSTALL_RPATH:PATH=<INSTALL_DIR>/${CMAKE_INSTALL_LIBDIR}
         -DCMAKE_SKIP_BUILD_RPATH:BOOL=OFF
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=OFF
