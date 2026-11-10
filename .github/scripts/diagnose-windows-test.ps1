@@ -6,7 +6,7 @@ $out = Join-Path $build 'hang-diagnostics'
 New-Item -ItemType Directory -Force $out | Out-Null
 Start-Transcript -Path "$out/diagnostics.txt"
 $env:H5PP_DIAGNOSE_HANG = '1'
-$exe = Join-Path $build 'bin/Debug/h5pp-test-appendToDataset.exe'
+$exe = Join-Path $build 'tests/Debug/h5pp-test-appendToDataset.exe'
 $toolsDir = Join-Path $env:RUNNER_TEMP 'procdump'
 New-Item -ItemType Directory -Force $toolsDir | Out-Null
 Invoke-WebRequest https://download.sysinternals.com/files/Procdump.zip -OutFile "$toolsDir/procdump.zip" -TimeoutSec 60
@@ -77,7 +77,7 @@ try {
     if (Get-ChildItem $out -Filter '*.dmp') {
         $files = Get-ChildItem "$build/pkg-build", "$root/install/$Preset" -Recurse -File |
             Where-Object { $_.Extension -in '.pdb', '.dll' -and $_.Name -notmatch '^vc\d+\.pdb$' }
-        $files += Get-Item $exe, "$build/bin/Debug/h5pp-test-appendToDataset.pdb"
+        $files += Get-Item $exe, "$build/tests/Debug/h5pp-test-appendToDataset.pdb"
         foreach ($file in $files) {
             $dest = Join-Path "$out/symbols" ([IO.Path]::GetRelativePath($root, $file.FullName))
             New-Item -ItemType Directory -Force (Split-Path $dest) | Out-Null
@@ -85,7 +85,7 @@ try {
         }
         if ($cdb) {
             foreach ($dump in (Get-ChildItem $out -Filter '*.dmp')) {
-                $args = "-z `"$($dump.FullName)`" -y `"$build/bin/Debug;$root/install/$Preset/bin`" -c `".reload; ~* kv; !runaway; lm; q`""
+                $args = "-z `"$($dump.FullName)`" -y `"$build/tests/Debug;$root/install/$Preset/bin`" -c `".reload; ~* kv; !runaway; lm; q`""
                 $debugger = Start-Process $cdb.FullName -ArgumentList $args -PassThru -NoNewWindow `
                     -RedirectStandardOutput "$($dump.FullName).stacks.txt" -RedirectStandardError "$($dump.FullName).debugger-errors.txt"
                 if (-not $debugger.WaitForExit(60000)) { $debugger.Kill() }

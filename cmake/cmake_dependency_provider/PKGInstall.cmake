@@ -152,6 +152,8 @@ function(pkg_install pkg_name)
     file(RENAME "${PKG_INIT_CACHE_FILE}" "${PKG_CACHE_FILE}")
     set(PKG_INIT_CACHE_FILE "${PKG_CACHE_FILE}")
     set(PKG_SUCCESS_FILE "${PKG_INSTALL_DIR}/.pkg_install_success_${pkg_name}")
+    # Record this package on both fresh installs and reuse of an existing install.
+    set_property(GLOBAL APPEND PROPERTY PKG_INSTALL_MANIFESTS "${PKG_SUCCESS_FILE}")
     if(EXISTS "${PKG_SUCCESS_FILE}")
         file(STRINGS "${PKG_SUCCESS_FILE}" INSTALLED_FILES)
         if(INSTALLED_FILES)

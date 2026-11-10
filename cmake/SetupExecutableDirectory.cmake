@@ -1,0 +1,30 @@
+# Tests and examples share DLLs within each group and build configuration.
+function(h5pp_setup_executable_directory)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" PARENT_SCOPE)
+
+    if(NOT WIN32 OR NOT PKG_INSTALL_SUCCESS)
+        return()
+    endif()
+
+    get_property(manifests GLOBAL PROPERTY PKG_INSTALL_MANIFESTS)
+    set(dependency_dlls)
+    foreach(manifest IN LISTS manifests)
+        file(STRINGS "${manifest}" installed_dlls REGEX "[.][dD][lL][lL]$")
+        list(APPEND dependency_dlls ${installed_dlls})
+    endforeach()
+    list(REMOVE_DUPLICATES dependency_dlls)
+
+    # Match CMake's output directories for single- and multi-config generators.
+    set(configurations ${CMAKE_CONFIGURATION_TYPES})
+    if(NOT configurations)
+        set(configurations ".")
+    endif()
+    foreach(config IN LISTS configurations)
+        set(output_dir "${CMAKE_CURRENT_BINARY_DIR}/${config}")
+        file(MAKE_DIRECTORY "${output_dir}")
+        foreach(dll IN LISTS dependency_dlls)
+            get_filename_component(dll_name "${dll}" NAME)
+            file(COPY_FILE "${dll}" "${output_dir}/${dll_name}" ONLY_IF_DIFFERENT)
+        endforeach()
+    endforeach()
+endfunction()

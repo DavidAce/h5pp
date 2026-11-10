@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 project(h5pp-examples CXX)
+include(../cmake/SetupExecutableDirectory.cmake)
+h5pp_setup_executable_directory()
 file(GLOB_RECURSE EXAMPLES CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp")
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/output)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/v1/output)

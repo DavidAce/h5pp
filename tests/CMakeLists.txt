@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 project(h5pp-tests CXX)
+include(../cmake/SetupExecutableDirectory.cmake)
+h5pp_setup_executable_directory()
 
 find_package(Catch2 3 REQUIRED)
 
