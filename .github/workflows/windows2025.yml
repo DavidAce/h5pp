@@ -82,4 +82,21 @@ jobs:
             ${{ matrix.manager == 'conan' && matrix.asan && ', "-DCMAKE_CXX_FLAGS:STRING=/D_DISABLE_STL_ANNOTATION"' || '' }}]
           buildPreset: '${{ env.H5PP_CMAKE_PRESET }}'
           buildPresetAdditionalArgs: "['--config Debug']"
-          testPreset: '${{ env.H5PP_CMAKE_PRESET }}'
+
+      - name: Diagnose Windows test startup
+        timeout-minutes: 20
+        shell: pwsh
+        run: ./.github/scripts/diagnose-windows-test.ps1 -Preset $env:H5PP_CMAKE_PRESET
+
+      - name: Save Windows test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: windows-test-diagnostics-${{ matrix.manager }}
+          path: build/${{ env.H5PP_CMAKE_PRESET }}/hang-diagnostics
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Run tests
+        shell: pwsh
+        run: ctest --preset "$env:H5PP_CMAKE_PRESET" --timeout 600
