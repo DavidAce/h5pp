@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace h5pp::v2 {
+namespace h5pp::inline v2 {
     class File;
 
     template<typename FileType>

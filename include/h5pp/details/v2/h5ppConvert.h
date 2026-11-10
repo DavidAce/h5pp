@@ -4,11 +4,11 @@
 #include "h5ppConcepts.h"
 #include "h5ppOptions.h"
 
-namespace h5pp::v2 {
+namespace h5pp::inline v2 {
     class File;
 }
 
-namespace h5pp::v2::detail {
+namespace h5pp::inline v2::detail {
     [[nodiscard]] inline std::string normalizeLinkPath(std::string_view linkPath) {
         auto path = h5pp::util::safe_str(linkPath);
         if(path.empty()) return "/";

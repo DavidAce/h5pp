@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace h5pp::v2 {
+namespace h5pp::inline v2 {
     inline constexpr hsize_t unlimited = H5S_UNLIMITED;
     using Dims                        = std::vector<hsize_t>;
     using OptDims                     = std::optional<Dims>;

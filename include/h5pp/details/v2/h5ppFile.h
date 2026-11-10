@@ -3,7 +3,7 @@
 #include "../h5ppFile.h"
 #include "h5ppGroup.h"
 
-namespace h5pp::v2 {
+namespace h5pp::inline v2 {
     class File {
         private:
         fs::path                                  filePath;                                      /*!< Full path to the file */

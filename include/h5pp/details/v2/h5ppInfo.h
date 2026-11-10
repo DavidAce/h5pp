@@ -2,7 +2,7 @@
 
 #include "../h5ppInfo.h"
 
-namespace h5pp::v2 {
+namespace h5pp::inline v2 {
     using h5pp::AttrInfo;
     using h5pp::DataInfo;
     using h5pp::DsetInfo;
