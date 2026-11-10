@@ -1,20 +1,10 @@
 #include <array>
 #include <catch2/catch_all.hpp>
 #include <complex>
-#include <cstdio>
-#include <cstdlib>
 #include <h5pp/h5pp.h>
 #include <string_view>
 
 namespace {
-    // Temporary CI markers: flush each message so a hang cannot hide it in a buffer.
-    void trace_startup(const char *message) {
-        if(std::getenv("H5PP_DIAGNOSE_HANG")) {
-            std::fprintf(stderr, "[startup] %s\n", message);
-            std::fflush(stderr);
-        }
-    }
-
     void require_dims(const h5pp::DsetInfo &info, const std::vector<hsize_t> &expected) {
         REQUIRE(info.dsetDims);
         REQUIRE(info.dsetDims.value() == expected);
@@ -30,12 +20,7 @@ namespace {
         REQUIRE(info.h5Layout.value() == H5D_CHUNKED);
     }
 
-    h5pp::File make_file(std::string_view name) {
-        trace_startup("Creating HDF5 file");
-        auto file = h5pp::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0);
-        trace_startup("Created HDF5 file");
-        return file;
-    }
+    h5pp::File make_file(std::string_view name) { return h5pp::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0); }
 }
 
 TEST_CASE("Dataset append preserves growth semantics across explicit creations", "[append]") {
@@ -195,14 +180,8 @@ TEST_CASE("Append rejects invalid resize scenarios", "[append]") {
 }
 
 int main(int argc, char *argv[]) {
-    trace_startup("Entered main");
     Catch::Session session;
-    trace_startup("Constructed Catch session");
     int            return_code = session.applyCommandLine(argc, argv);
-    trace_startup("Parsed command line");
     if(return_code != 0) return return_code;
-    trace_startup("Running Catch session");
-    return_code = session.run();
-    trace_startup("Catch session returned");
-    return return_code;
+    return session.run();
 }
