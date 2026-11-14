@@ -28,7 +28,7 @@ Go to [quickstart](https://github.com/DavidAce/h5pp/tree/v2/quickstart) to see w
 * [Introduction](#introduction)
 * [Features](#features)
 * [Examples](#examples)
-* [Migration](#migration)
+* [Migration](#migration-from-h5pp-v1-to-v2)
 * [Get h5pp](#get-h5pp)
 * [Requirements](#requirements)
 * [Install](#install)

@@ -147,6 +147,8 @@ to use dependencies you have installed yourself. The old `none`, `fetch`,
 
 Copy the `include/h5pp` directory into your project's include path and include
 `<h5pp/h5pp.h>`. Compile as C++20 or newer, or C++23 for `H5PP_USE_FLOAT128`.
+The v1 API is available through `<h5pp/v1/h5pp.h>` and `h5pp::v1::File`.
+
 Supply HDF5's C and high-level C libraries and their dependencies. Eigen is
 header-only; fmt and spdlog may require libraries depending on their own build
 configuration. CMake targets are recommended for handling these link details.
@@ -189,6 +191,9 @@ find_package(h5pp 2.0.0 REQUIRED)
 add_executable(myExecutable main.cpp)
 target_link_libraries(myExecutable PRIVATE h5pp::h5pp)
 ```
+
+The installed package accepts compatible version requests within the same major
+version. h5pp 2.0.0 satisfies a request for 2.0, but not a request for 1.x.
 
 Configure your project with `-DCMAKE_PREFIX_PATH=/path/to/h5pp/install/prefix`.
 The installed package finds HDF5 and the optional dependencies enabled when h5pp
