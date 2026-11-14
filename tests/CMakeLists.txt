@@ -6,6 +6,7 @@ h5pp_setup_executable_directory()
 find_package(Catch2 3 REQUIRED)
 
 file(GLOB_RECURSE TESTS CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp")
+list(FILTER TESTS EXCLUDE REGEX "^install/")
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/output)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/v1/output)
 add_custom_target(h5pp-test-all)

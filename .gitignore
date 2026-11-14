@@ -1,5 +1,5 @@
 cmake-build*/
-install/
+/install/
 .idea/
 .vs/
 output/
