@@ -134,7 +134,7 @@ else()
     write_basic_package_version_file(
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
             VERSION ${PROJECT_VERSION}
-            COMPATIBILITY AnyNewerVersion
+            COMPATIBILITY SameMajorVersion
     )
 
     #Install the config, configversion and custom find modules
