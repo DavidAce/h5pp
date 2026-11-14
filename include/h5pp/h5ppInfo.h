@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../h5ppInfo.h"
+#include "h5ppInfoTypes.h"
 
 namespace h5pp::inline v2 {
     using h5pp::AttrInfo;

@@ -433,7 +433,6 @@ namespace h5pp::type::sfinae {
     template<typename T>
     inline constexpr bool is_std_optional_v = is_std_optional<T>::value;
 
-
     template<typename T, typename = std::void_t<>>
     struct is_iterable : public std::false_type {};
     template<typename T>

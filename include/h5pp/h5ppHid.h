@@ -66,7 +66,7 @@ namespace h5pp::hid {
         }
 
         public:
-        ~hid_base() noexcept { (void)release(); }
+        ~hid_base() noexcept { (void) release(); }
         hid_base() = default;
         // Use enable_if to avoid implicit conversion from hid_h5x and still have a non-explicit hid_t constructor
         template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
@@ -97,7 +97,7 @@ namespace h5pp::hid {
 
         hid_base &operator=(hid_base &&other) noexcept {
             if(this != &other) {
-                (void)release();
+                (void) release();
                 val = std::exchange(other.val, 0);
             }
             return *this;
@@ -121,7 +121,7 @@ namespace h5pp::hid {
         }
         void close() {
             hid_t id  = val;
-            auto err = release();
+            auto  err = release();
             if(err < 0) throw h5pp::runtime_error("Failed to close id {} id: {}", hid_h5x::tag, id);
         }
 
@@ -234,42 +234,42 @@ namespace h5pp::hid {
         public:
         using hid_base::hid_base;
         static bool                       accepts(H5I_type_t type, hid_t) noexcept { return type == H5I_DATASPACE; }
-        static constexpr std::string_view tag     = "h5s";
+        static constexpr std::string_view tag = "h5s";
     };
 
     class h5t final : public hid_base<h5t> {
         public:
         using hid_base::hid_base;
         static bool                       accepts(H5I_type_t type, hid_t) noexcept { return type == H5I_DATATYPE; }
-        static constexpr std::string_view tag     = "h5t";
+        static constexpr std::string_view tag = "h5t";
     };
 
     class h5d final : public hid_base<h5d> {
         public:
         using hid_base::hid_base;
         static bool                       accepts(H5I_type_t type, hid_t) noexcept { return type == H5I_DATASET; }
-        static constexpr std::string_view tag     = "h5d";
+        static constexpr std::string_view tag = "h5d";
     };
 
     class h5g final : public hid_base<h5g> {
         public:
         using hid_base::hid_base;
         static bool                       accepts(H5I_type_t type, hid_t) noexcept { return type == H5I_GROUP; }
-        static constexpr std::string_view tag     = "h5g";
+        static constexpr std::string_view tag = "h5g";
     };
 
     class h5a final : public hid_base<h5a> {
         public:
         using hid_base::hid_base;
         static bool                       accepts(H5I_type_t type, hid_t) noexcept { return type == H5I_ATTR; }
-        static constexpr std::string_view tag     = "h5a";
+        static constexpr std::string_view tag = "h5a";
     };
 
     class h5o final : public hid_base<h5o> {
         public:
         using hid_base::hid_base;
         static bool accepts(H5I_type_t type, hid_t id) noexcept {
-            (void)id;
+            (void) id;
             return type == H5I_GROUP or type == H5I_DATASET or type == H5I_DATATYPE;
         }
         static constexpr std::string_view tag = "h5o";
@@ -279,13 +279,13 @@ namespace h5pp::hid {
         public:
         using hid_base::hid_base;
         static bool                       accepts(H5I_type_t type, hid_t) noexcept { return type == H5I_FILE; }
-        static constexpr std::string_view tag     = "h5f";
+        static constexpr std::string_view tag = "h5f";
     };
 
     class h5e final : public hid_base<h5e, true> {
         public:
         using hid_base::hid_base;
         static bool                       accepts(H5I_type_t type, hid_t) noexcept { return type == H5I_ERROR_STACK; }
-        static constexpr std::string_view tag     = "h5e";
+        static constexpr std::string_view tag = "h5e";
     };
 }

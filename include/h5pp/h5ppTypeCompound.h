@@ -157,7 +157,7 @@ namespace h5pp::type::compound {
             return std::is_same_v<std::complex<T>, std::decay_t<O>>;
         }
         bool operator==(const hid::h5t &other) { return equal(other); }
-        operator hid::h5t() { return h5type(); }
+             operator hid::h5t() { return h5type(); }
     };
 
     template<typename T>
@@ -203,7 +203,7 @@ namespace h5pp::type::compound {
             return std::is_same_v<h5pp::type::compound::Scalar2<T>, std::decay_t<O>>;
         }
         bool operator==(const hid::h5t &other) { return equal(other); }
-        operator hid::h5t() { return h5type(); }
+             operator hid::h5t() { return h5type(); }
     };
     template<typename T>
     class H5T_SCALAR3 {
@@ -253,7 +253,7 @@ namespace h5pp::type::compound {
             return std::is_same_v<h5pp::type::compound::Scalar2<T>, std::decay_t<O>>;
         }
         bool operator==(const hid::h5t &other) { return equal(other); }
-        operator hid::h5t() { return h5type(); }
+             operator hid::h5t() { return h5type(); }
     };
 
     inline bool is_complex(const hid::h5t &h5type) {

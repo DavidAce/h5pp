@@ -16,7 +16,7 @@ namespace h5pp {
     class Hyperslab;
 
     struct DimsType : std::vector<hsize_t> {
-        DimsType() = default;
+        DimsType()                      = default;
         explicit DimsType(H5D_layout_t) = delete;
         explicit DimsType(hid::h5t)     = delete;
         explicit DimsType(hid_t)        = delete;

@@ -62,15 +62,15 @@ namespace h5pp::type::vlen {
         T                   *end();
         bool                 empty() const;
 
-         template<typename V,
-                  typename = std::enable_if_t<(std::is_constructible_v<T, std::string> || sfinae::is_vstr_v<T> || sfinae::is_fstr_v<T>) &&
-                                              (std::is_floating_point_v<V> || type::sfinae::is_std_complex_v<V>
- #if   defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
+        template<typename V,
+                 typename = std::enable_if_t<(std::is_constructible_v<T, std::string> || sfinae::is_vstr_v<T> || sfinae::is_fstr_v<T>) &&
+                                             (std::is_floating_point_v<V> || type::sfinae::is_std_complex_v<V>
+#if defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
                                               || std::is_same_v<V, h5pp::fp128> || std::is_same_v<V, h5pp::cx128> ||
-                                            std::is_same_v<V, std::complex<h5pp::fp128>>
- #endif
-                                               )>>
-         varr_t<V> to_floating_point() const;
+                                              std::is_same_v<V, std::complex<h5pp::fp128>>
+#endif
+                                              )>>
+        varr_t<V> to_floating_point() const;
 
         static hid::h5t get_h5type();
         void            clear() noexcept;

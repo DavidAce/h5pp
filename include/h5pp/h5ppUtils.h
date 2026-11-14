@@ -1,7 +1,7 @@
 #pragma once
 #include "h5ppConstants.h"
 #include "h5ppEigen.h"
-#include "h5ppInfo.h"
+#include "h5ppInfoTypes.h"
 #include "h5ppOptional.h"
 #include "h5ppType.h"
 #include "h5ppTypeCast.h"
@@ -104,7 +104,7 @@ namespace h5pp::util {
 
     template<typename DataType, size_t size>
     [[nodiscard]] constexpr size_t getArraySize([[maybe_unused]] const DataType (&arr)[size],
-                                                [[maybe_unused]] bool           countChars = false) noexcept
+                                                [[maybe_unused]] bool countChars = false) noexcept
     /*! Returns the size of a C-style array.
      */
     {
@@ -493,7 +493,7 @@ namespace h5pp::util {
         return decideLayout(bytes);
     }
 
-        [[nodiscard]] inline std::optional<std::vector<hsize_t>> getChunkDimensions(size_t                              bytesPerElem,
+    [[nodiscard]] inline std::optional<std::vector<hsize_t>> getChunkDimensions(size_t                              bytesPerElem,
                                                                                 std::vector<hsize_t>                dims,
                                                                                 std::optional<std::vector<hsize_t>> dimsMax,
                                                                                 std::optional<H5D_layout_t>         layout) {

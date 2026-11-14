@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
 #include <cstring>
-#include <h5pp/details/h5ppFormatComplex.h>
+#include <h5pp/h5ppFormatComplex.h>
 #include <h5pp/v1/h5pp.h>
 
 namespace {

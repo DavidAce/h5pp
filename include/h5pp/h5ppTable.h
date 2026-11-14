@@ -8,11 +8,11 @@ namespace h5pp::inline v2 {
     class File;
 
     template<typename FileType>
-        requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
+    requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
     class BasicTable {
         private:
-        FileType                        &file_;
-        std::string                      tablePath_;
+        FileType                         &file_;
+        std::string                       tablePath_;
         std::optional<TableCreateOptions> createOptions_ = std::nullopt;
 
         [[nodiscard]] Options tableCreateOptions_() const {
@@ -24,11 +24,11 @@ namespace h5pp::inline v2 {
             return options;
         }
 
-        void createIfMissing_()
-            requires detail::MutableFile<FileType>
+        void createIfMissing_() requires detail::MutableFile<FileType>
         {
             if(h5pp::hdf5::checkIfLinkExists(file_.openFileHandle(), tablePath_, file_.plists.linkAccess)) return;
-            if(not createOptions_) throw h5pp::runtime_error("Cannot create missing table [{}]: no creation options were provided", tablePath_);
+            if(not createOptions_)
+                throw h5pp::runtime_error("Cannot create missing table [{}]: no creation options were provided", tablePath_);
             if(not createOptions_->h5Type) throw h5pp::runtime_error("Cannot create missing table [{}]: h5Type is not set", tablePath_);
             if(not createOptions_->title) throw h5pp::runtime_error("Cannot create missing table [{}]: title is not set", tablePath_);
 
@@ -45,7 +45,9 @@ namespace h5pp::inline v2 {
         BasicTable(FileType &file, std::string_view tablePath, std::optional<TableCreateOptions> createOptions = std::nullopt)
             : file_(file), tablePath_(tablePath), createOptions_(std::move(createOptions)) {}
 
-        [[nodiscard]] bool exists() const { return h5pp::hdf5::checkIfLinkExists(file_.openFileHandle(), tablePath_, file_.plists.linkAccess); }
+        [[nodiscard]] bool exists() const {
+            return h5pp::hdf5::checkIfLinkExists(file_.openFileHandle(), tablePath_, file_.plists.linkAccess);
+        }
         [[nodiscard]] TableInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
@@ -78,8 +80,7 @@ namespace h5pp::inline v2 {
             return false;
         }
 
-        [[nodiscard]] BasicTable ensure(const TableCreateOptions &createOptions)
-            requires detail::MutableFile<FileType>
+        [[nodiscard]] BasicTable ensure(const TableCreateOptions &createOptions) requires detail::MutableFile<FileType>
         {
             auto copy           = *this;
             copy.createOptions_ = createOptions;
@@ -89,14 +90,13 @@ namespace h5pp::inline v2 {
         [[nodiscard]] BasicTable ensure(const hid::h5t &h5Type, std::string_view title, const TableCreateOptions &createOptions = {})
             requires detail::MutableFile<FileType>
         {
-            auto copy               = ensure(createOptions);
+            auto copy                   = ensure(createOptions);
             copy.createOptions_->h5Type = h5Type;
             copy.createOptions_->title  = h5pp::util::safe_str(title);
             return copy;
         }
 
-        [[nodiscard]] BasicTable create(const TableCreateOptions &createOptions)
-            requires detail::MutableFile<FileType>
+        [[nodiscard]] BasicTable create(const TableCreateOptions &createOptions) requires detail::MutableFile<FileType>
         {
             auto copy = ensure(createOptions);
             copy.createIfMissing_();
@@ -112,7 +112,7 @@ namespace h5pp::inline v2 {
         }
 
         template<typename DataType>
-            requires detail::MutableFile<FileType>
+        requires detail::MutableFile<FileType>
         void appendRecords(const DataType &data, std::optional<hsize_t> extent = std::nullopt) {
             createIfMissing_();
             Options options;
@@ -123,7 +123,7 @@ namespace h5pp::inline v2 {
         }
 
         template<typename DataType>
-            requires detail::MutableFile<FileType>
+        requires detail::MutableFile<FileType>
         void writeRecords(const DataType &data, hsize_t offset = 0, std::optional<hsize_t> extent = std::nullopt) {
             createIfMissing_();
             Options options;
@@ -135,9 +135,9 @@ namespace h5pp::inline v2 {
         [[nodiscard]] TableInfo appendRecordsFrom(const h5pp::TableInfo &srcInfo, TableSelection selection = TableSelection::ALL)
             requires detail::MutableFile<FileType>
         {
-            Options options = tableCreateOptions_();
+            Options options  = tableCreateOptions_();
             options.linkPath = h5pp::util::safe_str(tablePath_);
-            auto tgtInfo = h5pp::scan::readTableInfo(file_.openFileHandle(), options, file_.plists);
+            auto tgtInfo     = h5pp::scan::readTableInfo(file_.openFileHandle(), options, file_.plists);
             if(not tgtInfo.tableExists or not tgtInfo.tableExists.value()) {
                 srcInfo.assertCreateReady();
                 if(not options.h5Type) options.h5Type = srcInfo.h5Type;
@@ -151,12 +151,11 @@ namespace h5pp::inline v2 {
         }
 
         template<typename h5x_src>
-        [[nodiscard]] TableInfo appendRecordsFrom(const h5x_src &srcLocation,
+        [[nodiscard]] TableInfo appendRecordsFrom(const h5x_src   &srcLocation,
                                                   std::string_view srcTablePath,
-                                                  TableSelection selection = TableSelection::ALL)
-            requires detail::MutableFile<FileType>
+                                                  TableSelection   selection = TableSelection::ALL) requires detail::MutableFile<FileType>
         {
-            Options options = tableCreateOptions_();
+            Options options  = tableCreateOptions_();
             options.linkPath = h5pp::util::safe_str(srcTablePath);
             auto srcInfo     = h5pp::scan::readTableInfo(srcLocation, options, file_.plists);
             options.linkPath = h5pp::util::safe_str(tablePath_);
@@ -174,13 +173,14 @@ namespace h5pp::inline v2 {
         }
 
         template<typename DataType>
-        [[nodiscard]] DataType readRecords(std::optional<hsize_t> offset = std::nullopt, std::optional<hsize_t> extent = std::nullopt) const {
+        [[nodiscard]] DataType readRecords(std::optional<hsize_t> offset = std::nullopt,
+                                           std::optional<hsize_t> extent = std::nullopt) const {
             if constexpr(h5pp::type::sfinae::is_specialization_v<DataType, std::optional>) {
                 if(not exists()) return std::nullopt;
                 return readRecords<typename DataType::value_type>(offset, extent);
             }
             DataType data;
-            Options options;
+            Options  options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto info        = h5pp::scan::readTableInfo(file_.openFileHandle(), options, file_.plists);
             h5pp::hdf5::readTableRecords(data, info, offset, extent, file_.plists);
@@ -195,7 +195,7 @@ namespace h5pp::inline v2 {
                 return readRecords<typename DataType::value_type>(selection);
             }
             DataType data;
-            Options options;
+            Options  options;
             options.linkPath      = h5pp::util::safe_str(tablePath_);
             auto info             = h5pp::scan::readTableInfo(file_.openFileHandle(), options, file_.plists);
             auto [offset, extent] = util::parseTableSelection(data, selection, info.numRecords, info.recordBytes);
@@ -205,7 +205,9 @@ namespace h5pp::inline v2 {
         }
 
         template<typename DataType>
-        void readRecordsInto(DataType &data, std::optional<hsize_t> offset = std::nullopt, std::optional<hsize_t> extent = std::nullopt) const {
+        void readRecordsInto(DataType              &data,
+                             std::optional<hsize_t> offset = std::nullopt,
+                             std::optional<hsize_t> extent = std::nullopt) const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto info        = h5pp::scan::readTableInfo(file_.openFileHandle(), options, file_.plists);
@@ -222,18 +224,22 @@ namespace h5pp::inline v2 {
         }
 
         template<typename DataType, typename Fields>
-        [[nodiscard]] DataType readField(const Fields &fields, std::optional<hsize_t> offset = std::nullopt, std::optional<hsize_t> extent = std::nullopt) const {
+        [[nodiscard]] DataType readField(const Fields          &fields,
+                                         std::optional<hsize_t> offset = std::nullopt,
+                                         std::optional<hsize_t> extent = std::nullopt) const {
             h5pp::NamesOrIndices fieldSelection(fields);
             if constexpr(h5pp::type::sfinae::is_specialization_v<DataType, std::optional>) {
                 if(not fieldExists(fieldSelection)) return std::nullopt;
                 return readField<typename DataType::value_type>(fieldSelection, offset, extent);
             }
             DataType data;
-            Options options;
+            Options  options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto info        = h5pp::scan::readTableInfo(file_.openFileHandle(), options, file_.plists);
-            if(fieldSelection.has_indices()) h5pp::hdf5::readTableField(data, info, fieldSelection.get_indices(), offset, extent, file_.plists);
-            else if(fieldSelection.has_names()) h5pp::hdf5::readTableField(data, info, fieldSelection.get_names(), offset, extent, file_.plists);
+            if(fieldSelection.has_indices())
+                h5pp::hdf5::readTableField(data, info, fieldSelection.get_indices(), offset, extent, file_.plists);
+            else if(fieldSelection.has_names())
+                h5pp::hdf5::readTableField(data, info, fieldSelection.get_names(), offset, extent, file_.plists);
             else throw h5pp::runtime_error("No field names or indices have been specified");
             if(info.reclaimInfo) file_.reclaimStack.emplace_back(info.reclaimInfo.value());
             return data;
@@ -252,16 +258,18 @@ namespace h5pp::inline v2 {
         }
 
         template<typename DataType, typename Fields>
-        void readFieldInto(DataType &data,
-                           const Fields &fields,
+        void readFieldInto(DataType              &data,
+                           const Fields          &fields,
                            std::optional<hsize_t> offset = std::nullopt,
                            std::optional<hsize_t> extent = std::nullopt) const {
             h5pp::NamesOrIndices fieldSelection(fields);
-            Options options;
+            Options              options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto info        = h5pp::scan::readTableInfo(file_.openFileHandle(), options, file_.plists);
-            if(fieldSelection.has_indices()) h5pp::hdf5::readTableField(data, info, fieldSelection.get_indices(), offset, extent, file_.plists);
-            else if(fieldSelection.has_names()) h5pp::hdf5::readTableField(data, info, fieldSelection.get_names(), offset, extent, file_.plists);
+            if(fieldSelection.has_indices())
+                h5pp::hdf5::readTableField(data, info, fieldSelection.get_indices(), offset, extent, file_.plists);
+            else if(fieldSelection.has_names())
+                h5pp::hdf5::readTableField(data, info, fieldSelection.get_names(), offset, extent, file_.plists);
             else throw h5pp::runtime_error("No field names or indices have been specified");
         }
 

@@ -5,7 +5,7 @@
 #include "h5ppExcept.h"
 #include "h5ppFilesystem.h"
 #include "h5ppHyperslab.h"
-#include "h5ppInfo.h"
+#include "h5ppInfoTypes.h"
 #include "h5ppLogger.h"
 #include "h5ppPropertyLists.h"
 #include "h5ppTypeCast.h"
@@ -707,8 +707,7 @@ namespace h5pp::hdf5 {
                 if(compressionLevel.value() < 10) {
                     return compressionLevel.value();
                 } else {
-                    h5pp::logger::log->warn("Compression level {} is out of range [0, 9]. Clamping to 9",
-                                            compressionLevel.value());
+                    h5pp::logger::log->warn("Compression level {} is out of range [0, 9]. Clamping to 9", compressionLevel.value());
                     return 9;
                 }
             } else {
@@ -2009,13 +2008,14 @@ namespace h5pp::hdf5 {
             // Check the buffer on both API versions: HDF5 1.x cannot check its size.
             auto readRawChunk = [&](std::vector<std::byte> &rawBuffer) {
                 if(chunkByteStorage > rawBuffer.size())
-                    throw h5pp::runtime_error(
-                        "Failed to read chunk at offset {}: buffer has {} bytes, but the stored chunk needs {} bytes",
-                        chunkOffset, rawBuffer.size(), chunkByteStorage);
+                    throw h5pp::runtime_error("Failed to read chunk at offset {}: buffer has {} bytes, but the stored chunk needs {} bytes",
+                                              chunkOffset,
+                                              rawBuffer.size(),
+                                              chunkByteStorage);
 
     #if H5_VERSION_GE(2, 0, 0)
                 size_t requiredBytes = rawBuffer.size();
-                herr_t err = H5Dread_chunk2(h5dset, h5dxpl, chunkOffset.data(), &mask, rawBuffer.data(), &requiredBytes);
+                herr_t err           = H5Dread_chunk2(h5dset, h5dxpl, chunkOffset.data(), &mask, rawBuffer.data(), &requiredBytes);
     #else
                 herr_t err = H5Dread_chunk(h5dset, h5dxpl, chunkOffset.data(), &mask, rawBuffer.data());
     #endif
@@ -2024,9 +2024,10 @@ namespace h5pp::hdf5 {
                 // An undersized buffer can leave err nonnegative without reading
                 // any data. HDF5 reports the required size through requiredBytes.
                 if(requiredBytes > rawBuffer.size())
-                    throw h5pp::runtime_error(
-                        "Failed to read chunk at offset {}: buffer has {} bytes, but HDF5 requires {} bytes",
-                        chunkOffset, rawBuffer.size(), requiredBytes);
+                    throw h5pp::runtime_error("Failed to read chunk at offset {}: buffer has {} bytes, but HDF5 requires {} bytes",
+                                              chunkOffset,
+                                              rawBuffer.size(),
+                                              requiredBytes);
     #endif
             };
 
@@ -2034,18 +2035,17 @@ namespace h5pp::hdf5 {
             bool isOnDeflate = (filters & H5Z_FILTER_DEFLATE) == H5Z_FILTER_DEFLATE;
 
             if constexpr(not h5pp::ndebug) {
-                h5pp::logger::log->trace(
-                    "Chunk read details: chunk buffer size {} | {} bytes | offset {} | storage {} bytes | chaddr {} | "
-                    "chsize {} | mask {:b} | skipDeflate {} | isOnDeflate {}",
-                    chunkBuffer.size(),
-                    chunkByte,
-                    chunkOffset,
-                    chunkByteStorage,
-                    chaddr,
-                    chsize,
-                    mask,
-                    skipDeflate,
-                    isOnDeflate);
+                h5pp::logger::log->trace("Chunk read details: chunk buffer size {} | {} bytes | offset {} | storage {} bytes | chaddr {} | "
+                                         "chsize {} | mask {:b} | skipDeflate {} | isOnDeflate {}",
+                                         chunkBuffer.size(),
+                                         chunkByte,
+                                         chunkOffset,
+                                         chunkByteStorage,
+                                         chaddr,
+                                         chsize,
+                                         mask,
+                                         skipDeflate,
+                                         isOnDeflate);
             }
             if constexpr(not has_filter_deflate) {
                 if(isOnDeflate and not skipDeflate) {
@@ -2491,16 +2491,11 @@ namespace h5pp::hdf5 {
                 }
             }
         } else {
-            auto isOpaque = H5Tget_class(dataInfo.h5Type.value()) == H5T_class_t::H5T_OPAQUE;
-            auto isStdVectorOfBytes = std::is_same_v<DataType, std::vector<std::byte>>;
-            hid::h5t h5ttype = isOpaque or isStdVectorOfBytes ? dsetInfo.h5Type.value() : dataInfo.h5Type.value();
-            retval = H5Dread(dsetInfo.h5Dset.value(),
-                h5ttype,
-                dataInfo.h5Space.value(),
-                dsetInfo.h5Space.value(),
-                plists.dsetXfer,
-                dataPtr);
-
+            auto     isOpaque           = H5Tget_class(dataInfo.h5Type.value()) == H5T_class_t::H5T_OPAQUE;
+            auto     isStdVectorOfBytes = std::is_same_v<DataType, std::vector<std::byte>>;
+            hid::h5t h5ttype            = isOpaque or isStdVectorOfBytes ? dsetInfo.h5Type.value() : dataInfo.h5Type.value();
+            retval =
+                H5Dread(dsetInfo.h5Dset.value(), h5ttype, dataInfo.h5Space.value(), dsetInfo.h5Space.value(), plists.dsetXfer, dataPtr);
 
             if(retval < 0) {
                 throw h5pp::runtime_error("Failed to read from dataset \n\t {} \n into memory \n\t {}",

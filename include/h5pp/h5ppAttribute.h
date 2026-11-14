@@ -8,7 +8,7 @@ namespace h5pp::inline v2 {
     class File;
 
     template<typename FileType>
-        requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
+    requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
     class BasicAttribute {
         private:
         FileType   &file_;
@@ -34,11 +34,16 @@ namespace h5pp::inline v2 {
             return h5pp::scan::readAttrInfo(file_.openFileHandle(), options, file_.plists);
         }
         [[nodiscard]] TypeInfo getTypeInfo() const {
-            return h5pp::hdf5::getTypeInfo(file_.openFileHandle(), linkPath_, attrName_, std::nullopt, std::nullopt, file_.plists.linkAccess);
+            return h5pp::hdf5::getTypeInfo(file_.openFileHandle(),
+                                           linkPath_,
+                                           attrName_,
+                                           std::nullopt,
+                                           std::nullopt,
+                                           file_.plists.linkAccess);
         }
 
         template<typename DataType>
-            requires detail::MutableFile<FileType>
+        requires detail::MutableFile<FileType>
         void write(const DataType &data, const AttributeWriteOptions &options = AttributeWriteOptions()) {
             requireWritable_("write");
             auto legacyOptions = detail::makeLegacyOptions(linkPath_, attrName_, options);

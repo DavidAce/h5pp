@@ -1,4 +1,5 @@
 #pragma once
+#include "h5ppExcept.h"
 #include "h5ppFloat128.h"
 #include "h5ppHid.h"
 #include "h5ppLogger.h"
@@ -6,6 +7,7 @@
 #include <algorithm>
 #include <charconv>
 #include <complex>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <H5Tpublic.h>
@@ -20,9 +22,9 @@
     #include <ostream>
 #endif
 
-namespace h5pp::type::flen {
+namespace h5pp::type::vlen {
     namespace internal {
-        static constexpr bool debug_fstr_t = false;
+        static constexpr bool debug_vstr_t = false;
 
         inline void copy_bytes(char *dst, const char *src, size_t len) {
             if(len == 0) return;
@@ -30,16 +32,9 @@ namespace h5pp::type::flen {
         }
     }
 
-    template<size_t N>
-    struct fstr_t {
+    struct vstr_t {
         private:
-        template<typename T>
-        std::string               float_to_string(const T &f);
-        char                      ptr[N] = {'\0'};
-        [[nodiscard]] const char *begin() const;
-        [[nodiscard]] const char *end() const;
-        char                     *begin();
-        char                     *end();
+        char *ptr = nullptr;
 
         template<typename T>
         static constexpr bool is_float() {
@@ -52,57 +47,72 @@ namespace h5pp::type::flen {
                 ;
         }
 
+        template<typename T, typename = std::enable_if_t<is_float<T>>>
+        std::string float_to_string(const T &f) const;
+
         public:
-        using value_type                 = char[N];
+        using value_type                 = char *;
         using data_type [[maybe_unused]] = char;
         operator std::string_view() const; // Can be read as std::string_view on-the-fly
-        fstr_t() = default;
-        fstr_t(const fstr_t &v);
-        fstr_t(const char *v);
-        fstr_t(std::string_view v);
-        fstr_t(fstr_t &&v) noexcept;
-        template<typename T, typename = std::enable_if_t<is_float<T>()>>
-        fstr_t(const T &v);
-        fstr_t &operator=(const fstr_t &v) noexcept;
-        fstr_t &operator=(std::string_view v);
-        fstr_t &operator=(const char *v);
-        fstr_t &operator=(const hvl_t &v) = delete; /*!< inherently unsafe to allocate an unknown type */
-        fstr_t &operator=(hvl_t &&v)      = delete; /*!< inherently unsafe to allocate an unknown type */
-        template<typename T, typename = std::enable_if_t<is_float<T>()>>
-        fstr_t &operator=(const T &v);
-        template<typename T, typename = std::enable_if_t<is_float<T>()>>
-        fstr_t                   &operator+=(const T &v);
+        vstr_t() = default;
+        vstr_t(const vstr_t &v);
+        vstr_t(const char *v);
+        vstr_t(std::string_view v);
+        vstr_t(vstr_t &&v) noexcept;
+        template<typename T, typename = std::enable_if_t<is_float<T>>>
+        vstr_t(const T &v);
+        vstr_t &operator=(const vstr_t &v) noexcept;
+        vstr_t &operator=(std::string_view v);
+        vstr_t &operator=(const char *v);
+        vstr_t &operator=(const hvl_t &v) = delete; /*!< inherently unsafe to allocate an unknown type */
+        vstr_t &operator=(hvl_t &&v)      = delete; /*!< inherently unsafe to allocate an unknown type */
+        template<typename T, typename = std::enable_if_t<is_float<T>>>
+        vstr_t &operator=(const T &v);
+        template<typename T, typename = std::enable_if_t<is_float<T>>>
+        vstr_t                   &operator+=(const T &v);
+        bool                      operator==(const vstr_t &v) const;
         bool                      operator==(std::string_view v) const;
+        bool                      operator!=(const vstr_t &v) const;
         bool                      operator!=(std::string_view v) const;
         char                     *data();
         [[nodiscard]] const char *data() const;
+        [[nodiscard]] const char *begin() const;
+        [[nodiscard]] const char *end() const;
+        char                     *begin();
+        char                     *end();
         char                     *c_str();
         [[nodiscard]] const char *c_str() const;
         [[nodiscard]] size_t      size() const;
         void                      clear() noexcept;
         [[nodiscard]] bool        empty() const;
+        void                      resize(size_t n);
         void                      erase(const char *b, const char *e);
         void                      erase(std::string::size_type pos, std::string::size_type n);
         void                      append(const char *v);
         void                      append(const std::string &v);
         void                      append(std::string_view v);
 
-        template<typename T, typename = std::enable_if_t<is_float<T>()>>
+        template<typename T,
+                 typename = std::enable_if_t<std::is_floating_point_v<T> || type::sfinae::is_std_complex_v<T>
+#if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
+                                             || std::is_same_v<T, h5pp::fp128> || std::is_same_v<T, h5pp::cx128> ||
+                                             std::is_same_v<T, std::complex<h5pp::fp128>>
+#endif
+                                             >>
         T to_floating_point() const;
 
         static hid::h5t get_h5type();
+        ~vstr_t() noexcept;
 #if !defined(FMT_FORMAT_H_) || !defined(H5PP_USE_FMT)
-        friend auto operator<<(std::ostream &os, const fstr_t &v) -> std::ostream & {
+        friend auto operator<<(std::ostream &os, const vstr_t &v) -> std::ostream & {
             if(!v.empty()) os << std::string_view(v);
             return os;
         }
 #endif
-
-        static constexpr bool is_h5pp_fstr_t() { return true; };
     };
-    template<size_t N>
-    template<typename T>
-    std::string fstr_t<N>::float_to_string(const T &val) {
+
+    template<typename T, typename>
+    std::string vstr_t::float_to_string(const T &val) const {
 #if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
         if constexpr(std::is_same_v<T, h5pp::fp128>) {
     #if defined(H5PP_USE_QUADMATH)
@@ -137,200 +147,170 @@ namespace h5pp::type::flen {
         }
     }
 
-    template<size_t N>
-    inline fstr_t<N>::operator std::string_view() const {
-        return {begin(), size()};
-    }
+    inline vstr_t::operator std::string_view() const { return {begin(), size()}; }
 
-    template<size_t N>
-    inline fstr_t<N>::fstr_t(const fstr_t &v) {
+    inline vstr_t::vstr_t(const vstr_t &v) {
         if(v.ptr == nullptr) return;
-        internal::copy_bytes(ptr, v.ptr, N - 1);
-        ptr[N - 1] = '\0';
+        ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
+        internal::copy_bytes(ptr, v.ptr, v.size() + 1);
+        ptr[v.size()] = '\0';
 #if defined(H5PP_USE_FMT)
-        if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t copied into {}: {}", fmt::ptr(ptr), ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
 #endif
     }
-    template<size_t N>
-    inline fstr_t<N>::fstr_t(const char *v) {
+    inline vstr_t::vstr_t(const char *v) {
         if(v == nullptr) return;
-        internal::copy_bytes(ptr, v, std::min(strlen(v), N - 1));
-        ptr[N - 1] = '\0';
+        size_t len = strlen(v);
+        ptr        = static_cast<char *>(malloc(len + 1 * sizeof(char)));
+        internal::copy_bytes(ptr, v, len + 1);
+        ptr[len] = '\0';
 #if defined(H5PP_USE_FMT)
-        if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t copied into {}: {}", fmt::ptr(ptr), ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
 #endif
     }
-    template<size_t N>
-    inline fstr_t<N>::fstr_t(std::string_view v) {
+    inline vstr_t::vstr_t(std::string_view v) {
         if(v.empty()) return;
-        internal::copy_bytes(ptr, v.data(), std::min(v.size(), N - 1));
-        ptr[N - 1] = '\0';
+        ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
+        internal::copy_bytes(ptr, v.data(), v.size());
+        ptr[v.size()] = '\0';
 #if defined(H5PP_USE_FMT)
-        if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t copied into {}: {}", fmt::ptr(ptr), ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
 #endif
     }
 
-    template<size_t N>
-    inline fstr_t<N>::fstr_t(fstr_t &&v) noexcept {
+    inline vstr_t::vstr_t(vstr_t &&v) noexcept {
         if(v.ptr == nullptr) return;
-        internal::copy_bytes(ptr, v.ptr, N - 1);
-        ptr[N - 1] = '\0';
+        ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
+        internal::copy_bytes(ptr, v.ptr, v.size() + 1);
+        ptr[v.size()] = '\0';
 #if defined(H5PP_USE_FMT)
-        if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t copied into {}: {}", fmt::ptr(ptr), ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
 #endif
     }
-    template<size_t N>
+
     template<typename T, typename>
-    fstr_t<N>::fstr_t(const T &v) {
+    vstr_t::vstr_t(const T &v) {
         *this = float_to_string(v);
     }
-    template<size_t N>
-    inline fstr_t<N> &fstr_t<N>::operator=(const fstr_t &v) noexcept {
+
+    inline vstr_t &vstr_t::operator=(const vstr_t &v) noexcept {
         if(this != &v and ptr != v.ptr) {
             clear();
-            internal::copy_bytes(ptr, v.ptr, N - 1);
-            ptr[N - 1] = '\0';
+            ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
+            internal::copy_bytes(ptr, v.ptr, v.size() + 1);
+            ptr[v.size()] = '\0';
 #if defined(H5PP_USE_FMT)
-            if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t assigned into {}: {}", fmt::ptr(ptr), ptr);
+            if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
 #endif
         }
         return *this;
     }
-    template<size_t N>
-    inline fstr_t<N> &fstr_t<N>::operator=(std::string_view v) {
+
+    inline vstr_t &vstr_t::operator=(std::string_view v) {
         clear();
-        internal::copy_bytes(ptr, v.data(), std::min(v.size(), N - 1));
-        ptr[N - 1] = '\0';
+        ptr = static_cast<char *>(malloc(v.size() + 1 * sizeof(char)));
+        internal::copy_bytes(ptr, v.data(), v.size());
+        ptr[v.size()] = '\0';
 #if defined(H5PP_USE_FMT)
-        if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t assigned into {}: {}", fmt::ptr(ptr), ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t allocated {}: {}", fmt::ptr(ptr), ptr);
 #endif
         return *this;
     }
-    template<size_t N>
-    inline fstr_t<N> &fstr_t<N>::operator=(const char *v) {
-        return this->operator=(std::string_view(v));
-    }
-    template<size_t N>
+    inline vstr_t &vstr_t::operator=(const char *v) { return this->operator=(std::string_view(v)); }
     template<typename T, typename>
-    fstr_t<N> &fstr_t<N>::operator=(const T &v) {
+    vstr_t &vstr_t::operator=(const T &v) {
         *this = float_to_string(v);
         return *this;
     }
-
-    template<size_t N>
     template<typename T, typename>
-    fstr_t<N> &fstr_t<N>::operator+=(const T &v) {
+    vstr_t &vstr_t::operator+=(const T &v) {
         *this = to_floating_point<T>() + v;
         return *this;
     }
-    template<size_t N>
-    inline bool fstr_t<N>::operator==(std::string_view v) const {
+    inline bool vstr_t::operator==(const vstr_t &v) const { return static_cast<const vstr_t &>(*this) == std::string_view(v); }
+
+    inline bool vstr_t::operator==(std::string_view v) const {
         if(size() != v.size()) return false;
         return std::equal(begin(), end(), v.begin());
     }
 
-    template<size_t N>
-    inline bool fstr_t<N>::operator!=(std::string_view v) const {
-        return !(static_cast<const fstr_t &>(*this) == v);
+    inline bool vstr_t::operator!=(const vstr_t &v) const { return !(static_cast<const vstr_t &>(*this) == v); }
+
+    inline bool vstr_t::operator!=(std::string_view v) const { return !(static_cast<const vstr_t &>(*this) == v); }
+
+    inline const char *vstr_t::data() const { return ptr; }
+
+    inline char *vstr_t::data() { return ptr; }
+
+    inline const char *vstr_t::c_str() const { return ptr; }
+
+    inline char *vstr_t::c_str() { return ptr; }
+
+    inline size_t vstr_t::size() const {
+        if(ptr != nullptr) return strlen(ptr);
+        else return 0;
     }
 
-    template<size_t N>
-    inline const char *fstr_t<N>::data() const {
-        return ptr;
-    }
+    inline const char *vstr_t::begin() const { return ptr; }
 
-    template<size_t N>
-    inline char *fstr_t<N>::data() {
-        return ptr;
-    }
+    inline const char *vstr_t::end() const { return ptr + size(); }
 
-    template<size_t N>
-    inline const char *fstr_t<N>::c_str() const {
-        return ptr;
-    }
+    inline char *vstr_t::begin() { return ptr; }
 
-    template<size_t N>
-    inline char *fstr_t<N>::c_str() {
-        return ptr;
-    }
+    inline char *vstr_t::end() { return ptr + size(); }
 
-    template<size_t N>
-    inline size_t fstr_t<N>::size() const {
-        return strnlen(ptr, N);
+    inline void vstr_t::clear() noexcept {
+        if constexpr(internal::debug_vstr_t) {
+#if defined(H5PP_USE_FMT)
+            if(ptr != nullptr) h5pp::logger::log->info("vstr_t clearing {} | {}", fmt::ptr(ptr), ptr);
+#endif
+        }
+        free(ptr);
+        ptr = nullptr;
     }
-
-    template<size_t N>
-    inline const char *fstr_t<N>::begin() const {
-        return ptr;
+    inline void vstr_t::resize(size_t newlen) {
+        char *newptr = static_cast<char *>(realloc(ptr, newlen + 1 * sizeof(char)));
+        if(newptr == nullptr) {
+            std::fprintf(stderr, "vstr_t: failed to resize");
+            throw;
+        }
+        ptr = newptr;
+#if defined(H5PP_USE_FMT)
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t realloc {} | {}", fmt::ptr(ptr), ptr);
+#endif
     }
-
-    template<size_t N>
-    inline const char *fstr_t<N>::end() const {
-        return ptr + size();
-    }
-
-    template<size_t N>
-    inline char *fstr_t<N>::begin() {
-        return ptr;
-    }
-
-    template<size_t N>
-    inline char *fstr_t<N>::end() {
-        return ptr + size();
-    }
-
-    template<size_t N>
-    inline void fstr_t<N>::clear() noexcept {
-        memset(ptr, 0, sizeof(ptr));
-    }
-
-    template<size_t N>
-    inline void fstr_t<N>::erase(std::string::size_type pos, std::string::size_type n) {
-        *this = std::string(*this).erase(pos, n);
-    }
-
-    template<size_t N>
-    inline void fstr_t<N>::erase(const char *b, const char *e) {
+    inline void vstr_t::erase(std::string::size_type pos, std::string::size_type n) { *this = std::string(*this).erase(pos, n); }
+    inline void vstr_t::erase(const char *b, const char *e) {
         auto pos = static_cast<std::string::size_type>(b - ptr);
         auto n   = static_cast<std::string::size_type>(e - ptr);
         erase(pos, n);
     }
-
-    template<size_t N>
-    inline void fstr_t<N>::append(const char *v) {
+    inline void vstr_t::append(const char *v) {
         if(v == nullptr) return;
         size_t oldlen = size();
-        internal::copy_bytes(ptr + oldlen, v, std::min(strlen(v), N - oldlen - 1));
-        ptr[N - 1] = '\0';
+        size_t len    = strlen(v);
+        resize(oldlen + len);
+        internal::copy_bytes(ptr + oldlen, v, len + 1);
+        ptr[oldlen + len] = '\0';
 #if defined(H5PP_USE_FMT)
-        if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t appended to {} | {} -> {}", fmt::ptr(ptr), v, ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t appended to {} | {} -> {}", fmt::ptr(ptr), v, ptr);
 #endif
     }
-
-    template<size_t N>
-    inline void fstr_t<N>::append(const std::string &v) {
-        append(v.c_str());
-    }
-
-    template<size_t N>
-    inline void fstr_t<N>::append(std::string_view v) {
+    inline void vstr_t::append(const std::string &v) { append(v.c_str()); }
+    inline void vstr_t::append(std::string_view v) {
         if(v.empty()) return;
         size_t oldlen = size();
-        internal::copy_bytes(ptr + oldlen, v.data(), std::min(v.size(), N - oldlen - 1));
-        ptr[N - 1] = '\0';
+        resize(oldlen + v.size());
+        internal::copy_bytes(ptr + oldlen, v.data(), v.size());
+        ptr[oldlen + v.size()] = '\0';
 #if defined(H5PP_USE_FMT)
-        if constexpr(internal::debug_fstr_t) h5pp::logger::log->info("fstr_t appended to {} | {} -> {}", fmt::ptr(ptr), v, ptr);
+        if constexpr(internal::debug_vstr_t) h5pp::logger::log->info("vstr_t appended to {} | {} -> {}", fmt::ptr(ptr), v, ptr);
 #endif
     }
+    inline bool vstr_t::empty() const { return size() == 0; }
 
-    template<size_t N>
-    inline bool fstr_t<N>::empty() const {
-        return size() == 0;
-    }
-
-    template<size_t N>
     template<typename T, typename>
-    T fstr_t<N>::to_floating_point() const {
+    T vstr_t::to_floating_point() const {
         if(ptr == nullptr) return 0;
         if(size() == 0) return 0;
         if constexpr(std::is_same_v<std::decay_t<T>, float>) {
@@ -343,14 +323,6 @@ namespace h5pp::type::flen {
 #if defined(H5PP_USE_QUADMATH)
         else if constexpr(std::is_same_v<std::decay_t<T>, h5pp::fp128>) {
             return strtoflt128(c_str(), nullptr);
-        }
-#elif defined(H5PP_USE_FLOAT128)
-        else if constexpr(std::is_same_v<std::decay_t<T>, h5pp::fp128>) {
-            T    rval     = std::numeric_limits<T>::quiet_NaN();
-            auto s        = std::string_view(c_str(), N);
-            auto pfx      = s.rfind('(', 0) == 0 ? 1ul : 0ul;
-            auto rstr     = s.substr(pfx);
-            auto [rp, re] = std::from_chars(rstr.begin(), rstr.end(), rval);
         }
 #endif
         else {
@@ -414,34 +386,32 @@ namespace h5pp::type::flen {
         return T(0);
     }
 
-    template<size_t N>
-    inline hid::h5t fstr_t<N>::get_h5type() {
+    inline hid::h5t vstr_t::get_h5type() {
         hid::h5t h5type = H5Tcopy(H5T_C_S1);
-        H5Tset_size(h5type, N);
+        H5Tset_size(h5type, H5T_VARIABLE);
         H5Tset_strpad(h5type, H5T_STR_NULLTERM);
         H5Tset_cset(h5type, H5T_CSET_UTF8);
         return h5type;
     }
+
+    inline vstr_t::~vstr_t() noexcept { clear(); }
+
 }
 namespace h5pp {
-    using h5pp::type::flen::fstr_t;
+    using h5pp::type::vlen::vstr_t;
 }
 
 namespace h5pp::type::sfinae {
 
-    template<typename T, typename = std::void_t<>>
-    struct is_fstr_t : public std::false_type {};
     template<typename T>
-    struct is_fstr_t<T, std::void_t<decltype(T::is_h5pp_fstr_t())>> : public std::true_type {};
+    constexpr bool is_vstr_v = std::is_same_v<T, h5pp::vstr_t>;
     template<typename T>
-    inline constexpr bool is_fstr_v = is_fstr_t<T>::value;
-
-    template<typename T>
-    struct has_fstr_t {
+    struct has_vstr_t {
         private:
         static constexpr bool test() {
-            if constexpr(is_iterable_v<T> and has_value_type_v<T>) return is_fstr_v<typename T::value_type>;
-            return false;
+            if constexpr(is_iterable_v<T> and has_value_type_v<T>)
+                return is_vstr_v<typename T::value_type> or has_vlen_type_v<typename T::value_type>;
+            return has_vlen_type_v<T>;
         }
 
         public:
@@ -449,17 +419,17 @@ namespace h5pp::type::sfinae {
     };
 
     template<typename T>
-    inline constexpr bool has_fstr_v = has_fstr_t<T>::value;
+    inline constexpr bool has_vstr_v = has_vstr_t<T>::value;
 
     template<typename T>
-    inline constexpr bool is_or_has_fstr_v = is_fstr_v<T> or has_fstr_v<T>;
+    inline constexpr bool is_or_has_vstr_v = is_vstr_v<T> or has_vstr_v<T>;
 }
 
 #if defined(H5PP_USE_FMT) && defined(FMT_FORMAT_H_) && defined(FMT_VERSION)
-    // Add a custom fmt::formatter for h5pp::fstr_t
-template<size_t N>
-struct fmt::formatter<h5pp::fstr_t<N>> : formatter<std::string_view> {
-    auto format(const h5pp::fstr_t<N> &f, format_context &ctx) const { return fmt::formatter<string_view>::format(f.c_str(), ctx); }
+// Add a custom fmt::formatter for h5pp::vstr_t
+template<>
+struct fmt::formatter<h5pp::vstr_t> : formatter<std::string_view> {
+    auto format(const h5pp::vstr_t &s, format_context &ctx) const { return fmt::formatter<string_view>::format(s.c_str(), ctx); }
 };
 
 #endif

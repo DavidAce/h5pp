@@ -1,7 +1,7 @@
 #include <catch2/catch_all.hpp>
 #include <cstring>
-#include <h5pp/details/h5ppFormatComplex.h>
 #include <h5pp/h5pp.h>
+#include <h5pp/h5ppFormatComplex.h>
 #include <string>
 
 namespace {
@@ -48,7 +48,7 @@ void require_scalar_equal(const T &lhs, const T &rhs) {
 template<typename WriteType, typename ReadType = WriteType>
 void require_roundtrip(h5pp::File &file, const WriteType &writeData, std::string_view dsetPath) {
     using namespace h5pp::type::sfinae;
-    auto dset     = file.dataset(dsetPath);
+    auto dset = file.dataset(dsetPath);
     dset.write(writeData);
     auto readData = dset.read<ReadType>();
 
@@ -81,8 +81,8 @@ void require_roundtrip(h5pp::File &file, const WriteType *writeData, hsize_t dim
     writeOptions.dims = std::vector<hsize_t>{dims};
     dset.write(writeData, writeOptions);
 
-    auto readData = std::make_unique<ReadType[]>(Size);
-    auto *readPtr = readData.get();
+    auto                     readData = std::make_unique<ReadType[]>(Size);
+    auto                    *readPtr  = readData.get();
     h5pp::DatasetReadOptions readOptions;
     readOptions.dims = std::vector<hsize_t>{dims};
     dset.readInto(readPtr, readOptions);
@@ -114,10 +114,10 @@ TEST_CASE("Datasets round-trip representative containers and expose basic handle
     std::vector<double> vectorDouble  = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
                                          1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
     std::vector<cplx>   vectorComplex = {
-        {-0.191154, 0.326211},
-        {0.964728, -0.712335},
-        {-0.0351791, -0.10264},
-        {0.177544, 0.99999}
+        { -0.191154,  0.326211},
+        {  0.964728, -0.712335},
+        {-0.0351791,  -0.10264},
+        {  0.177544,   0.99999}
     };
     std::array<double, 10> cStyleDoubleArray{};
     for(size_t i = 0; i < cStyleDoubleArray.size(); ++i) cStyleDoubleArray[i] = static_cast<double>(i);
@@ -133,7 +133,12 @@ TEST_CASE("Datasets round-trip representative containers and expose basic handle
     }
 
     h5pp::varr_t<double>              vlenDouble       = {1.0, 2.0, 3.0, 4.0};
-    std::vector<h5pp::varr_t<double>> vectorVlenDouble = {{1.0}, {2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0, 10.0}};
+    std::vector<h5pp::varr_t<double>> vectorVlenDouble = {
+        {1.0},
+        {2.0, 3.0},
+        {4.0, 5.0, 6.0},
+        {7.0, 8.0, 9.0, 10.0}
+    };
 
     require_roundtrip(file, emptyVector, "emptyVector");
     require_roundtrip(file, stringDummy, "stringDummy");

@@ -10,7 +10,7 @@ namespace h5pp::inline v2 {
     class File;
 
     template<typename FileType>
-        requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
+    requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
     class BasicDataset {
         private:
         FileType                           &file_;
@@ -24,13 +24,15 @@ namespace h5pp::inline v2 {
         }
 
         public:
-        BasicDataset(FileType                        &file,
-                     std::string_view                 dsetPath,
-                     std::optional<Hyperslab>         dsetSlab      = std::nullopt,
-                std::optional<DatasetCreateOptions> createOptions = std::nullopt)
+        BasicDataset(FileType                           &file,
+                     std::string_view                    dsetPath,
+                     std::optional<Hyperslab>            dsetSlab      = std::nullopt,
+                     std::optional<DatasetCreateOptions> createOptions = std::nullopt)
             : file_(file), dsetPath_(dsetPath), dsetSlab_(std::move(dsetSlab)), createOptions_(std::move(createOptions)) {}
 
-        [[nodiscard]] bool exists() const { return h5pp::hdf5::checkIfLinkExists(file_.openFileHandle(), dsetPath_, file_.plists.linkAccess); }
+        [[nodiscard]] bool exists() const {
+            return h5pp::hdf5::checkIfLinkExists(file_.openFileHandle(), dsetPath_, file_.plists.linkAccess);
+        }
         [[nodiscard]] DsetInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(dsetPath_);
@@ -58,16 +60,14 @@ namespace h5pp::inline v2 {
             return matches;
         }
 
-        [[nodiscard]] BasicDataset ensure(const DatasetCreateOptions &createOptions)
-            requires detail::MutableFile<FileType>
+        [[nodiscard]] BasicDataset ensure(const DatasetCreateOptions &createOptions) requires detail::MutableFile<FileType>
         {
-            auto copy          = *this;
+            auto copy           = *this;
             copy.createOptions_ = createOptions;
             return copy;
         }
 
-        [[nodiscard]] DsetInfo create(const DatasetCreateOptions &createOptions)
-            requires detail::MutableFile<FileType>
+        [[nodiscard]] DsetInfo create(const DatasetCreateOptions &createOptions) requires detail::MutableFile<FileType>
         {
             requireWritable_("create dataset");
             auto options = detail::makeLegacyOptions(file_, dsetPath_, createOptions);
@@ -84,7 +84,7 @@ namespace h5pp::inline v2 {
         }
 
         [[nodiscard]] BasicDataset select(const Hyperslab &dsetSlab) const {
-            auto copy     = *this;
+            auto copy      = *this;
             copy.dsetSlab_ = dsetSlab;
             return copy;
         }
@@ -110,9 +110,7 @@ namespace h5pp::inline v2 {
         }
 
         template<typename DataType>
-        [[nodiscard]] DsetInfo append(const DataType &data,
-                                      size_t          axis,
-                                      const DatasetAppendOptions &options = DatasetAppendOptions())
+        [[nodiscard]] DsetInfo append(const DataType &data, size_t axis, const DatasetAppendOptions &options = DatasetAppendOptions())
             requires detail::MutableFile<FileType>
         {
             if(dsetSlab_) throw h5pp::runtime_error("Cannot append through a selected dataset view [{}]", dsetPath_);
@@ -127,7 +125,7 @@ namespace h5pp::inline v2 {
         }
 
         template<typename DataType>
-            requires detail::MutableFile<FileType>
+        requires detail::MutableFile<FileType>
         void write(const DataType &data, const DatasetWriteOptions &options = DatasetWriteOptions()) {
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
             requireWritable_("write");

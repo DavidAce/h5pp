@@ -50,10 +50,7 @@ namespace h5pp {
     [[nodiscard]] std::string format_runtime(S &&fmtstring, Args &&...args) {
         auto fmtview = fmt::string_view(std::forward<S>(fmtstring));
         auto stored  = std::tuple<std::decay_t<Args>...>(std::forward<Args>(args)...);
-        return std::apply(
-            [&](auto &...vals) { return fmt::vformat(fmtview, fmt::make_format_args(vals...)); },
-            stored
-        );
+        return std::apply([&](auto &...vals) { return fmt::vformat(fmtview, fmt::make_format_args(vals...)); }, stored);
     }
 
 }

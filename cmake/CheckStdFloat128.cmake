@@ -5,7 +5,7 @@ function(CheckStdFloat128)
     # Compile h5pp's own header to check both std::float128_t and its complex type.
     set(probe_source "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CMakeTmp/check-std-float128.cpp")
     file(WRITE "${probe_source}" "
-        #include <h5pp/details/h5ppFloat128.h>
+        #include <h5pp/h5ppFloat128.h>
         static_assert(sizeof(h5pp::fp128) == 16);
         int main() {
             h5pp::fp128 value = 1;

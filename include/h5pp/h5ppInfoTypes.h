@@ -156,7 +156,8 @@ namespace h5pp {
             }
             void reclaim() {
                 if(buf != nullptr and type and space and plist) {
-                    if constexpr(debug_reclaim) h5pp::logger::log->trace("Reclaiming vlen buffer from reading [{}] (counter {}) {}", tag, counter, buf);
+                    if constexpr(debug_reclaim)
+                        h5pp::logger::log->trace("Reclaiming vlen buffer from reading [{}] (counter {}) {}", tag, counter, buf);
 #if H5_VERSION_GE(1, 12, 0)
                     herr_t err = H5Treclaim(type.value(), space.value(), plist.value(), buf);
 #else

@@ -9,11 +9,11 @@ namespace h5pp::inline v2 {
     class File;
 
     template<typename FileType>
-        requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
+    requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
     class BasicGroup;
 
     template<typename FileType>
-        requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
+    requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
     class BasicLink {
         private:
         FileType   &file_;
@@ -23,7 +23,9 @@ namespace h5pp::inline v2 {
         BasicLink(FileType &file, std::string_view linkPath) : file_(file), linkPath_(linkPath) {}
 
         [[nodiscard]] const std::string &getPath() const { return linkPath_; }
-        [[nodiscard]] bool exists() const { return h5pp::hdf5::checkIfLinkExists(file_.openFileHandle(), linkPath_, file_.plists.linkAccess); }
+        [[nodiscard]] bool               exists() const {
+            return h5pp::hdf5::checkIfLinkExists(file_.openFileHandle(), linkPath_, file_.plists.linkAccess);
+        }
         [[nodiscard]] LinkInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(linkPath_);
@@ -47,11 +49,10 @@ namespace h5pp::inline v2 {
         }
 
         [[nodiscard]] BasicDataset<FileType> asDataset() const { return BasicDataset<FileType>(file_, linkPath_); }
-        [[nodiscard]] BasicTable<FileType> asTable() const { return BasicTable<FileType>(file_, linkPath_); }
-        [[nodiscard]] BasicGroup<FileType> asGroup() const;
+        [[nodiscard]] BasicTable<FileType>   asTable() const { return BasicTable<FileType>(file_, linkPath_); }
+        [[nodiscard]] BasicGroup<FileType>   asGroup() const;
 
-        void deleteLink()
-            requires detail::MutableFile<FileType>
+        void deleteLink() requires detail::MutableFile<FileType>
         {
             h5pp::hdf5::deleteLink(file_.openFileHandle(), linkPath_, file_.plists.linkAccess);
         }
@@ -83,23 +84,25 @@ namespace h5pp::inline v2 {
 
         void moveToFile(const h5pp::fs::path &targetFilePath,
                         std::string_view      targetLinkPath,
-                        const FileAccess     &perm = FileAccess::READWRITE)
-            requires detail::MutableFile<FileType>
+                        const FileAccess     &perm = FileAccess::READWRITE) requires detail::MutableFile<FileType>
         {
             h5pp::hdf5::moveLink(file_.getFilePath(), linkPath_, targetFilePath, targetLinkPath, perm, file_.plists);
         }
 
-        void moveFromFile(const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath)
-            requires detail::MutableFile<FileType>
+        void moveFromFile(const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath) requires detail::MutableFile<FileType>
         {
             h5pp::hdf5::moveLink(sourceFilePath, sourceLinkPath, file_.getFilePath(), linkPath_, h5pp::FileAccess::READWRITE, file_.plists);
         }
 
-        void moveTo(std::string_view targetLinkPath, const FileAccess &perm = FileAccess::READWRITE)
-            requires detail::MutableFile<FileType>
+        void moveTo(std::string_view targetLinkPath, const FileAccess &perm = FileAccess::READWRITE) requires detail::MutableFile<FileType>
         {
             static_cast<void>(perm);
-            h5pp::hdf5::moveLink(file_.openFileHandle(), linkPath_, file_.openFileHandle(), targetLinkPath, LocationMode::DETECT, file_.plists);
+            h5pp::hdf5::moveLink(file_.openFileHandle(),
+                                 linkPath_,
+                                 file_.openFileHandle(),
+                                 targetLinkPath,
+                                 LocationMode::DETECT,
+                                 file_.plists);
         }
 
         template<typename h5x_tgt>
@@ -116,15 +119,13 @@ namespace h5pp::inline v2 {
             h5pp::hdf5::moveLink(sourceLocationId, sourceLinkPath, file_.openFileHandle(), linkPath_, locMode, file_.plists);
         }
 
-        void createSoftLink(std::string_view softLinkPath)
-            requires detail::MutableFile<FileType>
+        void createSoftLink(std::string_view softLinkPath) requires detail::MutableFile<FileType>
         {
             std::string targetLinkFullPath = linkPath_.front() == '/' ? linkPath_ : h5pp::format("/{}", linkPath_);
             h5pp::hdf5::createSoftLink(targetLinkFullPath, file_.openFileHandle(), softLinkPath, file_.plists);
         }
 
-        void createExternalLink(std::string_view targetFilePath, std::string_view targetLinkPath)
-            requires detail::MutableFile<FileType>
+        void createExternalLink(std::string_view targetFilePath, std::string_view targetLinkPath) requires detail::MutableFile<FileType>
         {
 #if __cplusplus > 201703L
             if(fs::path(targetFilePath).is_relative()) {

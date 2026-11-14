@@ -7,7 +7,7 @@ namespace h5pp::inline v2 {
     class File;
 
     template<typename FileType>
-        requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
+    requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
     class BasicGroup {
         private:
         FileType   &file_;
@@ -17,7 +17,9 @@ namespace h5pp::inline v2 {
         BasicGroup(FileType &file, std::string_view groupPath) : file_(file), groupPath_(detail::normalizeLinkPath(groupPath)) {}
 
         [[nodiscard]] const std::string &getPath() const { return groupPath_; }
-        [[nodiscard]] bool exists() const { return h5pp::hdf5::checkIfLinkExists(file_.openFileHandle(), groupPath_, file_.plists.linkAccess); }
+        [[nodiscard]] bool               exists() const {
+            return h5pp::hdf5::checkIfLinkExists(file_.openFileHandle(), groupPath_, file_.plists.linkAccess);
+        }
         [[nodiscard]] LinkInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(groupPath_);
@@ -38,10 +40,10 @@ namespace h5pp::inline v2 {
         [[nodiscard]] AttrInfo getAttributeInfo(std::string_view childPath, std::string_view attrName) const {
             return link(childPath).attribute(attrName).getInfo();
         }
-        [[nodiscard]] TableInfo getTableInfo(std::string_view tablePath) const { return table(tablePath).getInfo(); }
+        [[nodiscard]] TableInfo      getTableInfo(std::string_view tablePath) const { return table(tablePath).getInfo(); }
         [[nodiscard]] TableFieldInfo getTableFieldInfo(std::string_view tablePath) const { return table(tablePath).getFieldInfo(); }
-        [[nodiscard]] TypeInfo getTypeInfoDataset(std::string_view dsetPath) const { return dataset(dsetPath).getTypeInfo(); }
-        [[nodiscard]] TypeInfo getTypeInfoAttribute(std::string_view childPath, std::string_view attrName) const {
+        [[nodiscard]] TypeInfo       getTypeInfoDataset(std::string_view dsetPath) const { return dataset(dsetPath).getTypeInfo(); }
+        [[nodiscard]] TypeInfo       getTypeInfoAttribute(std::string_view childPath, std::string_view attrName) const {
             return link(childPath).attribute(attrName).getTypeInfo();
         }
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes(std::string_view childPath) const {
@@ -77,47 +79,55 @@ namespace h5pp::inline v2 {
             return BasicTable<FileType>(file_, detail::joinLinkPath(groupPath_, tablePath));
         }
 
-        [[nodiscard]] std::vector<std::string> findLinks(std::string_view searchKey = "",
-                                                         long             maxHits = -1,
-                                                         long             maxDepth = -1,
-                                                         bool             followSymlinks = false) const {
-            return h5pp::hdf5::findLinks<H5O_TYPE_UNKNOWN>(file_.openFileHandle(), searchKey, groupPath_, maxHits, maxDepth, followSymlinks, file_.plists);
+        [[nodiscard]] std::vector<std::string>
+            findLinks(std::string_view searchKey = "", long maxHits = -1, long maxDepth = -1, bool followSymlinks = false) const {
+            return h5pp::hdf5::findLinks<H5O_TYPE_UNKNOWN>(file_.openFileHandle(),
+                                                           searchKey,
+                                                           groupPath_,
+                                                           maxHits,
+                                                           maxDepth,
+                                                           followSymlinks,
+                                                           file_.plists);
         }
 
-        [[nodiscard]] std::vector<std::string> findDatasets(std::string_view searchKey = "",
-                                                            long             maxHits = -1,
-                                                            long             maxDepth = -1,
-                                                            bool             followSymlinks = false) const {
-            return h5pp::hdf5::findLinks<H5O_TYPE_DATASET>(file_.openFileHandle(), searchKey, groupPath_, maxHits, maxDepth, followSymlinks, file_.plists);
+        [[nodiscard]] std::vector<std::string>
+            findDatasets(std::string_view searchKey = "", long maxHits = -1, long maxDepth = -1, bool followSymlinks = false) const {
+            return h5pp::hdf5::findLinks<H5O_TYPE_DATASET>(file_.openFileHandle(),
+                                                           searchKey,
+                                                           groupPath_,
+                                                           maxHits,
+                                                           maxDepth,
+                                                           followSymlinks,
+                                                           file_.plists);
         }
 
-        [[nodiscard]] std::vector<std::string> findGroups(std::string_view searchKey = "",
-                                                          long             maxHits = -1,
-                                                          long             maxDepth = -1,
-                                                          bool             followSymlinks = false) const {
-            return h5pp::hdf5::findLinks<H5O_TYPE_GROUP>(file_.openFileHandle(), searchKey, groupPath_, maxHits, maxDepth, followSymlinks, file_.plists);
+        [[nodiscard]] std::vector<std::string>
+            findGroups(std::string_view searchKey = "", long maxHits = -1, long maxDepth = -1, bool followSymlinks = false) const {
+            return h5pp::hdf5::findLinks<H5O_TYPE_GROUP>(file_.openFileHandle(),
+                                                         searchKey,
+                                                         groupPath_,
+                                                         maxHits,
+                                                         maxDepth,
+                                                         followSymlinks,
+                                                         file_.plists);
         }
 
-        void create()
-            requires detail::MutableFile<FileType>
+        void create() requires detail::MutableFile<FileType>
         {
             h5pp::hdf5::createGroup(file_.openFileHandle(), groupPath_, std::nullopt, file_.plists);
         }
 
-        void createGroup(std::string_view childPath)
-            requires detail::MutableFile<FileType>
+        void createGroup(std::string_view childPath) requires detail::MutableFile<FileType>
         {
             group(childPath).create();
         }
 
-        void deleteLink(std::string_view childPath)
-            requires detail::MutableFile<FileType>
+        void deleteLink(std::string_view childPath) requires detail::MutableFile<FileType>
         {
             link(childPath).deleteLink();
         }
 
-        void createSoftLink(std::string_view targetChildPath, std::string_view softChildPath)
-            requires detail::MutableFile<FileType>
+        void createSoftLink(std::string_view targetChildPath, std::string_view softChildPath) requires detail::MutableFile<FileType>
         {
             link(targetChildPath).createSoftLink(detail::joinLinkPath(groupPath_, softChildPath));
         }
@@ -135,7 +145,7 @@ namespace h5pp::inline v2 {
     };
 
     template<typename FileType>
-        requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
+    requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
     [[nodiscard]] inline BasicGroup<FileType> BasicLink<FileType>::asGroup() const {
         return BasicGroup<FileType>(file_, linkPath_);
     }
