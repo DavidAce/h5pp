@@ -143,9 +143,7 @@ jobs:
       - name: Generate coverage report
         if: matrix.compiler == 'gcc' && matrix.manager == 'find'
         run: |
-          # Skip unrelated headers and compiler-generated branches without source conditions.
-          lcov --branch-coverage --filter branch --gcov-tool=gcov-15 --capture --rc geninfo_unexecuted_blocks=1 --directory build/github-actions-find --include "${GITHUB_WORKSPACE}/include/*" --output-file coverage.info
-          lcov --branch-coverage --gcov-tool=gcov-15 --list coverage.info
+          gcovr --gcov-executable gcov-15 --root . --filter include/ --exclude-throw-branches --exclude-unreachable-branches --lcov coverage.info --print-summary build/github-actions-find
 
       - name: Upload coverage to Codecov
         if: matrix.compiler == 'gcc' && matrix.manager == 'find'
