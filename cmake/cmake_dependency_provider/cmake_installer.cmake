@@ -1,3 +1,4 @@
+include(FindPackageMessage)
 
 unset(PKG_IS_RUNNING CACHE) # Remove from cache when this file is included
 unset(PKG_INSTALL_SUCCESS CACHE) # Check dependency inputs on each configuration.
@@ -41,4 +42,13 @@ function(pkg_install_dependencies method)
     endif()
 
     find_package(${ARGN} BYPASS_PROVIDER)
+    set(pkg_name "${ARGV1}")
+    if(${pkg_name}_FOUND AND ${pkg_name}_CONFIG AND NOT "QUIET" IN_LIST ARGN)
+        # Strip the trailing space when the package does not provide a version.
+        string(STRIP "Found ${${pkg_name}_VERSION}" found_with_version)
+        set(found_message "PkgInstall [${pkg_name}]: ${found_with_version}: ${${pkg_name}_CONFIG}")
+        # CMake remembers these details and prints again only if the version or config path changes.
+        set(found_details "[${${pkg_name}_VERSION}][${${pkg_name}_CONFIG}]")
+        find_package_message(${pkg_name} "${found_message}" "${found_details}")
+    endif()
 endfunction()
