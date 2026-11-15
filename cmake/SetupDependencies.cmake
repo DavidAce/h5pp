@@ -62,9 +62,12 @@ endif()
 
 
 # h5pp needs the C and high-level C APIs
+# Check versions after discovery to allow HDF5 1.x and 2.x configs.
 find_package(HDF5 COMPONENTS C HL REQUIRED)
 if(HDF5_VERSION AND HDF5_VERSION VERSION_LESS 1.8)
-    message(FATAL_ERROR "Found version ${HDF5_VERSION}, but h5pp requires HDF5 version >= 1.8")
+    message(FATAL_ERROR "Found HDF5 ${HDF5_VERSION}, but h5pp requires HDF5 >= 1.8")
+elseif(HDF5_VERSION AND HDF5_VERSION VERSION_LESS 1.10.10)
+    message(WARNING "HDF5 ${HDF5_VERSION} is older than the tested baseline 1.10.10; h5pp may not work correctly with this version.")
 endif()
 include(cmake/HDF5TargetUtils.cmake)
 h5pp_get_modern_hdf5_target_name()

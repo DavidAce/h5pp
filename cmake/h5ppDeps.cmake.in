@@ -59,7 +59,15 @@ endif()
 
 # HDF5 must be found either way, so set it to required here.
 # h5pp needs the C and high-level C APIs.
+# Check versions after discovery to allow HDF5 1.x and 2.x configs.
 find_dependency(HDF5 COMPONENTS C HL REQUIRED)
+if(HDF5_VERSION AND HDF5_VERSION VERSION_LESS 1.8)
+    set(h5pp_FOUND FALSE)
+    set(h5pp_NOT_FOUND_MESSAGE "Found HDF5 ${HDF5_VERSION}, but h5pp requires HDF5 >= 1.8")
+    return()
+elseif(HDF5_VERSION AND HDF5_VERSION VERSION_LESS 1.10.10)
+    message(WARNING "HDF5 ${HDF5_VERSION} is older than the tested baseline 1.10.10; h5pp may not work correctly with this version.")
+endif()
 
 # Recreate h5pp's adapter in the consumer's dependency environment.
 include(${CMAKE_CURRENT_LIST_DIR}/HDF5TargetUtils.cmake)

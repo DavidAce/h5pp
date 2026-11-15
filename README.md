@@ -144,7 +144,7 @@ There are currently 2 ways to obtain `h5pp`:
 
 * C++20 capable compiler
 * CMake version >= 3.26
-* [**HDF5**](https://support.hdfgroup.org/HDF5/)  library, version >= 1.8
+* [**HDF5**](https://support.hdfgroup.org/HDF5/) library. Tested with HDF5 1.10.10 and newer, including HDF5 2.x.
 
 ### Optional dependencies
 
