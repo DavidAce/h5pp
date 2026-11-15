@@ -143,9 +143,9 @@ jobs:
       - name: Generate coverage report
         if: matrix.compiler == 'gcc' && matrix.manager == 'find'
         run: |
-          lcov --gcov-tool=gcov-15 --capture --rc geninfo_unexecuted_blocks=1 --directory build/github-actions-find --output-file coverage.info
-          lcov --gcov-tool=gcov-15 --extract coverage.info "${GITHUB_WORKSPACE}/include/*" --output-file coverage.info
-          lcov --gcov-tool=gcov-15 --list coverage.info
+          lcov --branch-coverage --gcov-tool=gcov-15 --capture --rc geninfo_unexecuted_blocks=1 --directory build/github-actions-find --output-file coverage.info
+          lcov --branch-coverage --gcov-tool=gcov-15 --extract coverage.info "${GITHUB_WORKSPACE}/include/*" --output-file coverage.info
+          lcov --branch-coverage --gcov-tool=gcov-15 --list coverage.info
 
       - name: Upload coverage to Codecov
         if: matrix.compiler == 'gcc' && matrix.manager == 'find'
