@@ -186,19 +186,18 @@ if(H5PP_BUILD_DOCS)
     add_subdirectory(docs)
 endif()
 
-if(NOT H5PP_IS_SUBPROJECT)
+if(NOT H5PP_IS_SUBPROJECT AND H5PP_ENABLE_FMT AND H5PP_ENABLE_SPDLOG AND H5PP_ENABLE_EIGEN3)
     # Use CPACK to generate .deb install file
     set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
     set(CPACK_COMPONENTS_ALL h5pp-include h5pp-config)
 
-    # Define apt dependencies that work with this library
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libhdf5-dev (>=1.8), libeigen3-dev (>=3.4.0), libfmt-dev (>=9.1.0), libspdlog-dev (>=1.12.0)")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libhdf5-dev (>= 1.8), libeigen3-dev (>= 3.4.0), libfmt-dev (>= 9.1.0), libspdlog-dev (>= 1:1.12.0), zlib1g-dev")
     set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "A C++ wrapper for HDF5")
     set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/DavidAce/h5pp")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "DavidAce <aceituno@kth.se>")
     set(CPACK_DEBIAN_PACKAGE_NAME "h5pp")
     set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
-    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "all")
     set(CPACK_GENERATOR "DEB")
     include(CPack)
 
