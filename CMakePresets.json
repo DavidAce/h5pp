@@ -10,7 +10,12 @@
       "name": "default",
       "hidden": true,
       "description": "Build directory shared by the generator presets.",
-      "binaryDir": "${sourceDir}/build/${presetName}"
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "H5PP_ENABLE_EIGEN3": true,
+        "H5PP_ENABLE_FMT": true,
+        "H5PP_ENABLE_SPDLOG": true
+      }
     },
     {
       "name": "pkg-cmake",
