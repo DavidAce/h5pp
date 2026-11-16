@@ -2689,7 +2689,10 @@ namespace h5pp::hdf5 {
     [[nodiscard]] inline fs::path getBackupFileName(const fs::path &filePath) {
         int      i           = 1;
         fs::path newFilePath = filePath;
-        while(fs::exists(newFilePath)) newFilePath.replace_extension(filePath.extension().string() + ".bak_" + std::to_string(i++));
+        while(fs::exists(newFilePath)) {
+            newFilePath = filePath;
+            newFilePath += ".bak_" + std::to_string(i++);
+        }
         return newFilePath;
     }
 
