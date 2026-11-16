@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <typeindex>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -123,6 +124,56 @@ TEST_CASE("Type info exposes per-attribute metadata across scalar, array and str
     REQUIRE(attr_string.h5Name);
     REQUIRE(attr_string.h5Name.value() == "AttributeString");
     REQUIRE(H5Tis_variable_str(attr_string.h5Type.value()) > 0);
+}
+
+TEST_CASE("Datatype class names describe the standard HDF5 classes", "[type-info]") {
+    const std::pair<H5T_class_t, const char *> classes[] = {
+        {  H5T_INTEGER,       "H5T_INTEGER"},
+        {    H5T_FLOAT,         "H5T_FLOAT"},
+        {     H5T_TIME,          "H5T_TIME"},
+        {   H5T_STRING,        "H5T_STRING"},
+        { H5T_BITFIELD,      "H5T_BITFIELD"},
+        {   H5T_OPAQUE,        "H5T_OPAQUE"},
+        { H5T_COMPOUND,      "H5T_COMPOUND"},
+        {H5T_REFERENCE,     "H5T_REFERENCE"},
+        {     H5T_ENUM,          "H5T_ENUM"},
+        {     H5T_VLEN,          "H5T_VLEN"},
+        {    H5T_ARRAY,         "H5T_ARRAY"},
+        { H5T_NO_CLASS, "H5T_UNKNOWN_CLASS"}
+    };
+    for(const auto &[typeClass, expected] : classes) {
+        CAPTURE(expected);
+        CHECK(h5pp::type::getH5ClassName(typeClass) == expected);
+    }
+}
+
+TEST_CASE("Big-endian integer descriptions retain their stored representation", "[type-info]") {
+    const std::pair<hid_t, const char *> types[] = {
+        {H5T_STD_I16BE, "H5T_STD_I16BE"},
+        {H5T_STD_I32BE, "H5T_STD_I32BE"},
+        {H5T_STD_I64BE, "H5T_STD_I64BE"},
+        {H5T_STD_U16BE, "H5T_STD_U16BE"},
+        {H5T_STD_U32BE, "H5T_STD_U32BE"},
+        {H5T_STD_U64BE, "H5T_STD_U64BE"}
+    };
+    for(const auto &[rawType, expected] : types) {
+        CAPTURE(expected);
+        h5pp::hid::h5t type   = H5Tcopy(rawType);
+        h5pp::hid::h5t native = H5Tget_native_type(type, H5T_DIR_DEFAULT);
+        CHECK(h5pp::type::getH5ClassName(type) == "H5T_INTEGER");
+        // On a big-endian host the stored type may also be a native type.
+        if(H5Tequal(type, native) > 0) CHECK_THAT(h5pp::type::getH5TypeName(type), Catch::Matchers::StartsWith("H5T_NATIVE_"));
+        else CHECK(h5pp::type::getH5TypeName(type) == expected);
+    }
+}
+
+TEST_CASE("Committed datatype descriptions report the name in the file", "[type-info]") {
+    h5pp::File     file(make_path("namedTypeInfo"), h5pp::FileAccess::REPLACE, 0);
+    auto           fileHandle = file.advanced().openFileHandle();
+    h5pp::hid::h5t type       = H5Tcreate(H5T_OPAQUE, 7);
+    REQUIRE(H5Tset_tag(type, "payload") >= 0);
+    REQUIRE(H5Tcommit2(fileHandle, "payload", type, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT) >= 0);
+    CHECK(h5pp::type::getH5TypeName(type) == "/payload");
 }
 
 int main(int argc, char *argv[]) {

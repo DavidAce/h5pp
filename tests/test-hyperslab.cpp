@@ -71,6 +71,94 @@ TEST_CASE("hyperslab write with explicit data slab", "[hyperslab][data-slab]") {
     REQUIRE(readBack[13] == Catch::Approx(4.0));
 }
 
+TEST_CASE("Hyperslabs describe scalar, all and empty dataspace selections", "[hyperslab]") {
+    SECTION("scalar") {
+        h5pp::hid::h5s  space = H5Screate(H5S_SCALAR);
+        h5pp::Hyperslab slab(space);
+        CHECK(slab.empty());
+        CHECK(slab.string().empty());
+    }
+    SECTION("all elements") {
+        const hsize_t   dims[] = {4, 6};
+        h5pp::hid::h5s  space  = H5Screate_simple(2, dims, nullptr);
+        h5pp::Hyperslab slab(space);
+        CHECK(slab.select_type == H5S_SEL_ALL);
+        REQUIRE(slab.offset);
+        REQUIRE(slab.extent);
+        CHECK(slab.offset.value() == std::vector<hsize_t>{0, 0});
+        CHECK(slab.extent.value() == std::vector<hsize_t>{4, 6});
+        CHECK_FALSE(slab.empty());
+        CHECK(slab.string(false).empty());
+    }
+    SECTION("no elements") {
+        const hsize_t  dims[] = {4, 6};
+        h5pp::hid::h5s space  = H5Screate_simple(2, dims, nullptr);
+        REQUIRE(H5Sselect_none(space) >= 0);
+        h5pp::Hyperslab slab(space);
+        CHECK(slab.select_type == H5S_SEL_NONE);
+        CHECK(slab.empty());
+    }
+}
+
+#if H5_VERSION_GE(1, 10, 0)
+TEST_CASE("Regular hyperslabs preserve offsets, counts, strides and blocks", "[hyperslab]") {
+    const hsize_t  dims[]   = {8, 10};
+    const hsize_t  offset[] = {1, 1};
+    const hsize_t  stride[] = {3, 4};
+    const hsize_t  count[]  = {2, 2};
+    const hsize_t  blocks[] = {2, 3};
+    h5pp::hid::h5s space    = H5Screate_simple(2, dims, nullptr);
+    REQUIRE(H5Sselect_hyperslab(space, H5S_SELECT_SET, offset, stride, count, blocks) >= 0);
+    h5pp::Hyperslab slab(space);
+    CHECK(slab.select_type == H5S_SEL_HYPERSLABS);
+    REQUIRE(slab.offset);
+    REQUIRE(slab.extent);
+    REQUIRE(slab.stride);
+    REQUIRE(slab.blocks);
+    CHECK(slab.offset.value() == std::vector<hsize_t>{1, 1});
+    CHECK(slab.extent.value() == std::vector<hsize_t>{2, 2});
+    CHECK(slab.stride.value() == std::vector<hsize_t>{3, 4});
+    CHECK(slab.blocks.value() == std::vector<hsize_t>{2, 3});
+    CHECK_THAT(slab.string(), Catch::Matchers::ContainsSubstring("stride"));
+    CHECK_THAT(slab.string(), Catch::Matchers::ContainsSubstring("blocks"));
+
+    h5pp::hid::h5s restored = H5Screate_simple(2, dims, nullptr);
+    slab.select_oper        = H5S_SELECT_OR;
+    slab.applySelection(restored);
+    CHECK(H5Sget_select_npoints(restored) == 24);
+    CHECK(H5Sselect_shape_same(space, restored) > 0);
+    hsize_t first[2], last[2];
+    REQUIRE(H5Sget_select_bounds(restored, first, last) >= 0);
+    CHECK(std::vector<hsize_t>(first, first + 2) == std::vector<hsize_t>{1, 1});
+    CHECK(std::vector<hsize_t>(last, last + 2) == std::vector<hsize_t>{5, 7});
+}
+
+#endif
+
+TEST_CASE("Hyperslabs reject point and irregular selections", "[hyperslab][validation]") {
+    const hsize_t  dims[] = {8, 10};
+    h5pp::hid::h5s space  = H5Screate_simple(2, dims, nullptr);
+    SECTION("point selection") {
+        const hsize_t points[][2] = {
+            {0, 0},
+            {2, 3}
+        };
+        REQUIRE(H5Sselect_elements(space, H5S_SELECT_SET, 2, points[0]) >= 0);
+        REQUIRE_THROWS_WITH(h5pp::Hyperslab(space), Catch::Matchers::ContainsSubstring("Unsupported selection type"));
+    }
+#if H5_VERSION_GE(1, 10, 0)
+    SECTION("irregular hyperslab") {
+        const hsize_t first[]  = {0, 0};
+        const hsize_t second[] = {2, 3};
+        const hsize_t count[]  = {1, 1};
+        REQUIRE(H5Sselect_hyperslab(space, H5S_SELECT_SET, first, nullptr, count, nullptr) >= 0);
+        REQUIRE(H5Sselect_hyperslab(space, H5S_SELECT_OR, second, nullptr, count, nullptr) >= 0);
+        REQUIRE(H5Sis_regular_hyperslab(space) == 0);
+        REQUIRE_THROWS_WITH(h5pp::Hyperslab(space), Catch::Matchers::ContainsSubstring("irregular"));
+    }
+#endif
+}
+
 int main(int argc, char *argv[]) {
     Catch::Session session;
     return session.run(argc, argv);
