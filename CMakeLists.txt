@@ -145,7 +145,7 @@ else()
             ${CMAKE_CURRENT_BINARY_DIR}/h5ppConfigVersion.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/HDF5TargetUtils.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/FindEigen3.cmake
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/FindFilesystem.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckFilesystem.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/Findfmt.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/Findspdlog.cmake
             DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/h5pp

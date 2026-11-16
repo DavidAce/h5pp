@@ -15,10 +15,8 @@ if (H5PP_ENABLE_MPI OR MPI::MPI_CXX IN_LIST H5PP_LINK_LIBRARIES)
     endif()
 endif ()
 
-# h5pp requires the filesystem header (and possibly stdc++fs library)
-if(std::filesystem IN_LIST H5PP_LINK_LIBRARIES)
-    find_package(Filesystem COMPONENTS Final Experimental REQUIRED)
-endif()
+include("${CMAKE_CURRENT_LIST_DIR}/CheckFilesystem.cmake")
+CheckFilesystem()
 
 if (H5PP_ENABLE_EIGEN3 OR Eigen3::Eigen IN_LIST H5PP_LINK_LIBRARIES)
     # A failed find_dependency returns immediately, so use find_package for the first probe.

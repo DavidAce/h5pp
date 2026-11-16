@@ -7,9 +7,8 @@ endif()
 find_package(Threads)
 
 
-# h5pp requires the filesystem header (and possibly stdc++fs library)
-find_package(Filesystem COMPONENTS Final Experimental REQUIRED)
-target_link_libraries(h5pp_deps INTERFACE std::filesystem)
+include("${CMAKE_CURRENT_LIST_DIR}/CheckFilesystem.cmake")
+CheckFilesystem()
 
 
 # Detect MPI if requested (we expect the HDF5 library to also be built with support for MPI)
