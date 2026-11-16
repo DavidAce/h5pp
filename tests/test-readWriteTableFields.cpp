@@ -147,6 +147,29 @@ TEST_CASE("Compound sub-fields and mixed field selections round-trip correctly",
     }
 }
 
+TEST_CASE("Table field queries and reads support indices and reject empty selections", "[table-fields][validation]") {
+    h5pp::File file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
+    auto       table = file.table("somegroup/particleTable");
+    CHECK(table.fieldExists(std::vector<size_t>{0, 1}));
+    CHECK_FALSE(table.fieldExists(std::vector<size_t>{100}));
+    CHECK_FALSE(table.fieldExists(std::vector<size_t>{}));
+    CHECK_FALSE(table.fieldExists(std::vector<std::string>{}));
+
+    auto fields = table.readField<std::vector<Axis>>(std::vector<size_t>{1}, 2, 3);
+    REQUIRE(fields.size() == 3);
+    for(const auto &field : fields) CHECK(field.axis == 1.0);
+
+    SECTION("read with empty indices") {
+        REQUIRE_THROWS_WITH(table.readField<std::vector<Axis>>(std::vector<size_t>{}),
+                            Catch::Matchers::ContainsSubstring("No field names or indices"));
+    }
+    SECTION("read into a buffer with empty names") {
+        std::vector<Axis> data;
+        REQUIRE_THROWS_WITH(table.readFieldInto(data, std::vector<std::string>{}),
+                            Catch::Matchers::ContainsSubstring("No field names or indices"));
+    }
+}
+
 int main(int argc, char *argv[]) {
     Catch::Session session;
     int            returnCode = session.applyCommandLine(argc, argv);

@@ -95,6 +95,25 @@ TEST_CASE("Eigen-valued attributes round-trip", "[attributes][eigen]") {
 }
 #endif
 
+TEST_CASE("Read-only files reject attribute creation and replacement", "[attributes][file-access]") {
+    auto path = make_path("attributesReadOnly");
+    {
+        h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
+        file.dataset("values").write(42);
+        file.dataset("values").attribute("existing").write(7);
+    }
+    h5pp::File file(path, h5pp::FileAccess::READONLY, 0);
+    SECTION("creation") {
+        REQUIRE_THROWS_WITH(file.dataset("values").attribute("new").write(9), Catch::Matchers::ContainsSubstring("read-only"));
+        CHECK_FALSE(file.dataset("values").attribute("new").exists());
+    }
+    SECTION("replacement") {
+        REQUIRE_THROWS_WITH(file.dataset("values").attribute("existing").write(9), Catch::Matchers::ContainsSubstring("read-only"));
+    }
+    CHECK(file.dataset("values").attribute("existing").read<int>() == 7);
+    CHECK(file.dataset("values").read<int>() == 42);
+}
+
 int main(int argc, char *argv[]) {
     Catch::Session session;
     int            returnCode = session.applyCommandLine(argc, argv);

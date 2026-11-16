@@ -2,6 +2,7 @@
 #include <cstring>
 #include <h5pp/h5pp.h>
 #include <h5pp/h5ppFormatComplex.h>
+#include <stdexcept>
 #include <string>
 
 namespace {
@@ -252,6 +253,69 @@ TEST_CASE("v1 API and v2 API create and write datasets across layouts", "[datase
     file.writeDataset(std::vector<double>{5, 6}, "manual/writeV1Api", write);
     REQUIRE(file.readDataset<std::vector<double>>("manual/writeV1Api") == std::vector<double>{5, 6});
     REQUIRE(file.dataset("manual/writeV1Api").getInfo().dsetDims.value() == std::vector<hsize_t>{2});
+}
+
+TEST_CASE("Dataset creation rejects incomplete options without creating a link", "[dataset][validation]") {
+    h5pp::File                 file(make_path("datasetInvalidCreate"), h5pp::FileAccess::REPLACE, 0);
+    auto                       dataset = file.dataset("invalid");
+    h5pp::DatasetCreateOptions options;
+    SECTION("missing dimensions") {
+        options.h5Type = H5Tcopy(H5T_NATIVE_INT);
+        REQUIRE_THROWS_WITH(dataset.create(options), Catch::Matchers::ContainsSubstring("Dimensions or size not specified"));
+    }
+    SECTION("missing datatype") {
+        options.dims = {3};
+        REQUIRE_THROWS_WITH(dataset.create(options), Catch::Matchers::ContainsSubstring("HDF5 type not specified"));
+    }
+    CHECK_FALSE(dataset.exists());
+}
+
+TEST_CASE("Reading a missing dataset fails with and without a selection", "[dataset][validation]") {
+    h5pp::File file(make_path("datasetMissing"), h5pp::FileAccess::REPLACE, 0);
+    auto       dataset = file.dataset("missing");
+    SECTION("whole dataset") { REQUIRE_THROWS_AS(dataset.read<std::vector<int>>(), std::runtime_error); }
+    SECTION("selected dataset") {
+        REQUIRE_THROWS_WITH(dataset.select({0}, {1}).read<std::vector<int>>(), Catch::Matchers::ContainsSubstring("does not exist"));
+    }
+    CHECK_FALSE(dataset.exists());
+}
+
+TEST_CASE("Read-only files reject dataset creation and writing", "[dataset][file-access]") {
+    auto path = make_path("datasetReadOnly");
+    {
+        h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
+        file.dataset("values").write(std::vector<int>{1, 2, 3});
+    }
+    h5pp::File file(path, h5pp::FileAccess::READONLY, 0);
+    SECTION("creation") {
+        h5pp::DatasetCreateOptions options;
+        options.dims   = {3};
+        options.h5Type = H5Tcopy(H5T_NATIVE_INT);
+        REQUIRE_THROWS_WITH(file.dataset("new").create(options), Catch::Matchers::ContainsSubstring("read-only"));
+        CHECK_FALSE(file.dataset("new").exists());
+    }
+    SECTION("writing") {
+        REQUIRE_THROWS_WITH(file.dataset("values").write(std::vector<int>{4, 5, 6}), Catch::Matchers::ContainsSubstring("read-only"));
+    }
+    CHECK(file.dataset("values").read<std::vector<int>>() == std::vector<int>{1, 2, 3});
+}
+
+TEST_CASE("Dataset descriptions include stored dimensions and creation properties", "[dataset][metadata]") {
+    h5pp::File                 file(make_path("datasetDescription"), h5pp::FileAccess::REPLACE, 0);
+    h5pp::DatasetCreateOptions options;
+    options.dims      = {4, 3};
+    options.dimsMax   = {H5S_UNLIMITED, 3};
+    options.dimsChunk = {2, 3};
+    options.h5Layout  = H5D_CHUNKED;
+    options.h5Type    = H5Tcopy(H5T_NATIVE_INT);
+    auto info         = file.dataset("diagnostics/values").create(options);
+    auto description  = info.string();
+    CHECK_THAT(description, Catch::Matchers::ContainsSubstring("diagnostics/values"));
+    CHECK_THAT(description, Catch::Matchers::ContainsSubstring("H5D_CHUNKED"));
+    CHECK_THAT(description, Catch::Matchers::ContainsSubstring(h5pp::format("dims {}", std::vector<hsize_t>{4, 3})));
+    CHECK_THAT(description, Catch::Matchers::ContainsSubstring(h5pp::format("chunk dims {}", std::vector<hsize_t>{2, 3})));
+    CHECK_THAT(description, Catch::Matchers::ContainsSubstring(h5pp::format("max dims {}", std::vector<long>{-1, 3})));
+    CHECK(info.string(false).empty());
 }
 
 int main(int argc, char *argv[]) {
