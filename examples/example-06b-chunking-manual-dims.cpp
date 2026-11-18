@@ -59,7 +59,7 @@ int main() {
     createOptions.dimsChunk = {10000};
 
     // Write data.
-    auto dataset = file.dataset("myStdVectorDouble").ensure(createOptions);
+    auto dataset = file.dataset("myStdVectorDouble").create(vWrite, createOptions);
     dataset.write(vWrite);
 
     // Print selected dataset metadata.

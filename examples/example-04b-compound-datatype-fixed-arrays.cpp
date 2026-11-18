@@ -56,7 +56,7 @@ int main() {
 
     // Write a single point to file
     SpaceTimePoint point{{1, 2, 3, 0}, "space"};
-    file.dataset("point").ensure(createOptions).write(point);
+    file.dataset("point").create(point, createOptions).write(point);
 
     // Read a single point back from file and print it
     auto pointRead = file.dataset("point").read<SpaceTimePoint>();
@@ -77,7 +77,7 @@ int main() {
     }
 
     // Write them all at once
-    file.dataset("points").ensure(createOptions).write(points);
+    file.dataset("points").create(points, createOptions).write(points);
 
     // Now let's read them back into a new vector and print
     auto pointsRead = file.dataset("points").read<std::vector<SpaceTimePoint>>();

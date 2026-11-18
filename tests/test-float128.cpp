@@ -149,8 +149,8 @@ TEST_CASE("float128 compound records round-trip with explicit HDF5 types", "[flo
 
     h5pp::DatasetCreateOptions create;
     create.h5Type = recordType;
-    file.dataset("quad/record").ensure(create).write(singleRecord);
-    file.dataset("quad/records").ensure(create).write(recordVector);
+    file.dataset("quad/record").create(singleRecord, create).write(singleRecord);
+    file.dataset("quad/records").create(recordVector, create).write(recordVector);
 
     h5pp::AttributeWriteOptions attrWrite;
     attrWrite.h5Type = recordType;

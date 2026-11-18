@@ -35,6 +35,19 @@ To give a concrete example, the syntax works as follows
     h5pp::File file("somePath/someFile.h5", h5pp::FileAccess::REPLACE);
 ```
 
+## Creating datasets
+
+`write(data)` creates a missing dataset with default creation options:
+
+```c++
+    file.dataset("values").write(myData);
+```
+
+Use `create(data, options)` to create a dataset immediately, inferring its shape and type
+from the data without writing the values. Use `create(options)` to supply the dimensions
+and HDF5 type explicitly. Both return the dataset object for subsequent operations.
+An existing dataset is left unchanged by `create()`.
+
 ## Storage Layout
 
 HDF5 offers three [storage layouts](https://support.hdfgroup.org/HDF5/Tutor/layout.html#lo-define):
@@ -54,7 +67,7 @@ creating a dataset, use `DatasetCreateOptions`:
 ```c++
     h5pp::DatasetCreateOptions create;
     create.h5Layout = H5D_CHUNKED;
-    file.dataset("science/myChunkedData").ensure(create).write(myData);
+    file.dataset("science/myChunkedData").create(myData, create).write(myData);
 ```
 
 ## Compression
@@ -74,7 +87,7 @@ To set the compression level when creating a particular dataset, use `DatasetCre
     h5pp::DatasetCreateOptions create;
     create.h5Layout = H5D_CHUNKED;
     create.compression = 3;
-    file.dataset("science/myCompressedData").ensure(create).write(myData);
+    file.dataset("science/myCompressedData").create(myData, create).write(myData);
 ```
 
 ## Debug and logging

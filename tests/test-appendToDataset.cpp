@@ -32,7 +32,7 @@ TEST_CASE("Dataset append preserves growth semantics across explicit creations",
     seed.dims      = {4, 1};
     seed.h5Layout  = H5D_CHUNKED;
     seed.dimsChunk = {4, 100};
-    file.dataset("group/VectorDoubletemp").ensure(seed).write(data);
+    file.dataset("group/VectorDoubletemp").create(data, seed).write(data, {.dims = seed.dims});
 
     file.dataset("group/VectorDoubletemp2").write(data);
     file.dataset("group/VectorDouble0").write(data);
@@ -46,7 +46,7 @@ TEST_CASE("Dataset append preserves growth semantics across explicit creations",
     extensible.h5Layout  = H5D_CHUNKED;
     extensible.dimsChunk = {4, 100};
     extensible.dimsMax   = {4, H5S_UNLIMITED};
-    file.dataset("group/VectorDouble5").ensure(extensible).write(data);
+    file.dataset("group/VectorDouble5").create(data, extensible).write(data, {.dims = extensible.dims});
 
     file.dataset("group/VectorDouble6").write(data);
     file.dataset("group/VectorDouble7").write(data);
@@ -122,7 +122,7 @@ TEST_CASE("Append handles more types and more contrived growth patterns", "[appe
         create.dimsChunk = {initial.size()};
         create.dimsMax   = {H5S_UNLIMITED};
         create.h5Layout  = H5D_CHUNKED;
-        file.dataset("group/complex").ensure(create).write(initial);
+        file.dataset("group/complex").create(initial, create).write(initial);
 
         auto info = file.dataset("group/complex").append(more, 0);
         require_dims(info, {expect.size()});
@@ -143,7 +143,7 @@ TEST_CASE("Append handles more types and more contrived growth patterns", "[appe
         create.dimsChunk = {initial.size()};
         create.dimsMax   = {H5S_UNLIMITED};
         create.h5Layout  = H5D_CHUNKED;
-        file.dataset("group/integers").ensure(create).write(initial);
+        file.dataset("group/integers").create(initial, create).write(initial);
 
         h5pp::DatasetAppendOptions append;
         append.dims = {more.size()};
@@ -160,7 +160,7 @@ TEST_CASE("Append rejects invalid resize scenarios", "[append]") {
     h5pp::DatasetCreateOptions fixed;
     fixed.dims     = {4};
     fixed.h5Layout = H5D_CONTIGUOUS;
-    file.dataset("group/fixed").ensure(fixed).write(std::vector<double>{1, 2, 3, 4});
+    file.dataset("group/fixed").create(std::vector<double>{1, 2, 3, 4}, fixed).write(std::vector<double>{1, 2, 3, 4});
     REQUIRE_THROWS(file.dataset("group/fixed").append(std::vector<double>{5, 6}, 0));
 
     h5pp::DatasetCreateOptions columns;
@@ -168,7 +168,9 @@ TEST_CASE("Append rejects invalid resize scenarios", "[append]") {
     columns.h5Layout  = H5D_CHUNKED;
     columns.dimsChunk = {4, 1};
     columns.dimsMax   = {4, H5S_UNLIMITED};
-    file.dataset("group/columns").ensure(columns).write(std::vector<double>{1, 2, 3, 4});
+    file.dataset("group/columns")
+        .create(std::vector<double>{1, 2, 3, 4}, columns)
+        .write(std::vector<double>{1, 2, 3, 4}, {.dims = columns.dims});
 
     h5pp::DatasetAppendOptions wrongCols;
     wrongCols.dims = {5, 1};

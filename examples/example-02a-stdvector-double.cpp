@@ -19,7 +19,7 @@ int main() {
     auto                createOptions = makeCreateOptions(vWrite.size());
 
     // Write data using the v2 API and explicit creation options.
-    file.dataset("v2Api/myStdVectorDouble").ensure(createOptions).write(vWrite);
+    file.dataset("v2Api/myStdVectorDouble").create(vWrite, createOptions).write(vWrite);
     auto vRead = file.dataset("v2Api/myStdVectorDouble").read<std::vector<double>>();
 
     h5pp::print("v2 API wrote dataset: {}\n", vWrite);

@@ -98,8 +98,8 @@ TEST_CASE("Single versioned compound datasets remain forward and backward compat
     h5pp::DatasetCreateOptions createV2;
     createV2.h5Type = types.particle_v2;
 
-    file.dataset("singleParticle1").ensure(createV1).write(p1);
-    file.dataset("singleParticle2").ensure(createV2).write(p2);
+    file.dataset("singleParticle1").create(p1, createV1).write(p1);
+    file.dataset("singleParticle2").create(p2, createV2).write(p2);
 
     h5pp::DatasetReadOptions readV1;
     readV1.h5Type = types.particle_v1;
@@ -156,8 +156,8 @@ TEST_CASE("Vectors of versioned compound datasets remain compatible across layou
     createV2.h5Layout = layout;
     createV2.h5Type   = types.particle_v2;
 
-    file.dataset("vectorParticle1").ensure(createV1).write(vp1);
-    file.dataset("vectorParticle2").ensure(createV2).write(vp2);
+    file.dataset("vectorParticle1").create(vp1, createV1).write(vp1);
+    file.dataset("vectorParticle2").create(vp2, createV2).write(vp2);
 
     auto info_v1 = file.dataset("vectorParticle1").getInfo();
     auto info_v2 = file.dataset("vectorParticle2").getInfo();

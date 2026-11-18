@@ -48,14 +48,14 @@ int main() {
     // We can now write single volcano datasets ...
     Volcano volcanoSingle{"Mount Vesuvius", {1906, 1944}};
     printEvent(volcanoSingle, "Writing to file:");
-    file.dataset("volcano_single").ensure(createOptions).write(volcanoSingle);
+    file.dataset("volcano_single").create(volcanoSingle, createOptions).write(volcanoSingle);
 
     // ... or even containers of volcanoes.
     std::vector<Volcano> volcanoVector{{"Mount Vesuvius", {1906, 1944}},
                                        {"Mount Spurr", {1953, 1992}},
                                        {"Kelud", {1919, 1951, 1966, 1990}}};
     printEvents(volcanoVector, "Writing to file:");
-    file.dataset("volcano_vector").ensure(createOptions).write(volcanoVector);
+    file.dataset("volcano_vector").create(volcanoVector, createOptions).write(volcanoVector);
 
     // Now we can read the data back
     auto volcanoSingleRead = file.dataset("volcano_single").read<Volcano>();

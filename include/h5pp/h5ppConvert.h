@@ -34,30 +34,19 @@ namespace h5pp::inline v2::detail {
         return std::nullopt;
     }
 
-    [[nodiscard]] inline Options makeOptions(int                                        compression,
-                                             std::string_view                           dsetPath,
-                                             const std::optional<Hyperslab>            &dsetSlab,
-                                             const std::optional<DatasetCreateOptions> &createOptions,
-                                             const DatasetWriteOptions                 &writeOptions) {
+    [[nodiscard]] inline Options makeOptions(int                             compression,
+                                             std::string_view                dsetPath,
+                                             const std::optional<Hyperslab> &dsetSlab,
+                                             const DatasetWriteOptions      &writeOptions) {
         Options options;
         options.linkPath = h5pp::util::safe_str(dsetPath);
         if(writeOptions.dims.has_value()) options.dataDims = toOptDimsType(writeOptions.dims);
         else if(dsetSlab.has_value() and dsetSlab->extent.has_value()) options.dataDims = h5pp::OptDimsType(dsetSlab->extent.value());
-        else if(createOptions.has_value() and createOptions->dims.has_value()) options.dataDims = toOptDimsType(createOptions->dims);
         options.dataSlab     = writeOptions.dataSlab;
         options.dsetSlab     = dsetSlab;
         options.h5Type       = writeOptions.h5Type;
         options.resizePolicy = writeOptions.resizePolicy;
-        if(createOptions.has_value()) {
-            options.dsetChunkDims = toOptDimsType(createOptions->dimsChunk);
-            options.dsetMaxDims   = toOptDimsType(createOptions->dimsMax);
-            options.h5Layout      = createOptions->h5Layout;
-            if(not options.h5Type.has_value()) options.h5Type = createOptions->h5Type;
-            options.compression =
-                createOptions->compression.has_value() ? hdf5::getValidCompressionLevel(createOptions->compression) : compression;
-        } else {
-            options.compression = compression;
-        }
+        options.compression  = compression;
         return options;
     }
 

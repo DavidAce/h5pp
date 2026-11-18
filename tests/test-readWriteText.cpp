@@ -81,7 +81,7 @@ TEST_CASE("Vector-of-strings datasets and attributes preserve expected text sema
     std::vector<std::string> fixedExpected = {"this", "is", "a va", "leng", "vect", "with", "fixe", "uppe"};
     h5pp::DatasetCreateOptions fixedCreateOptions;
     fixedCreateOptions.h5Type = customString;
-    file.dataset("vecStringFixed").ensure(fixedCreateOptions).write(fixedUpper);
+    file.dataset("vecStringFixed").create(fixedUpper, fixedCreateOptions).write(fixedUpper);
 
     auto fixedRead = file.dataset("vecStringFixed").read<std::vector<std::string>>();
     REQUIRE(fixedRead == fixedExpected);

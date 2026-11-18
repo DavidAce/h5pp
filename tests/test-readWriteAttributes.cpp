@@ -69,7 +69,9 @@ TEST_CASE("Attributes round-trip for scalar, array, vector and string types", "[
     h5pp::DatasetCreateOptions chunkedCreate;
     chunkedCreate.h5Layout  = H5D_CHUNKED;
     chunkedCreate.dimsChunk = {4};
-    file.dataset("testGroup/chunkedVector").ensure(chunkedCreate).write(std::vector<double>{1.0, 2.0, 3.0, 4.0});
+    file.dataset("testGroup/chunkedVector")
+        .create(std::vector<double>{1.0, 2.0, 3.0, 4.0}, chunkedCreate)
+        .write(std::vector<double>{1.0, 2.0, 3.0, 4.0});
     file.attribute("testGroup/chunkedVector", "unit").write(std::string("arb"));
     REQUIRE(file.attribute("testGroup/chunkedVector", "unit").read<std::string>() == "arb");
 }

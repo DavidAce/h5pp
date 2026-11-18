@@ -19,7 +19,6 @@ namespace h5pp::inline v2 {
         int                                 compression_;
         std::string                         dsetPath_;
         std::optional<Hyperslab>            dsetSlab_      = std::nullopt;
-        std::optional<DatasetCreateOptions> createOptions_ = std::nullopt;
 
         void requireWritable_(std::string_view operation) const {
             if(fileAccess_ == h5pp::FileAccess::READONLY)
@@ -27,17 +26,13 @@ namespace h5pp::inline v2 {
         }
 
         public:
-        BasicDataset(FileType                           &file,
-                     std::string_view                    dsetPath,
-                     std::optional<Hyperslab>            dsetSlab      = std::nullopt,
-                     std::optional<DatasetCreateOptions> createOptions = std::nullopt)
+        BasicDataset(FileType &file, std::string_view dsetPath, std::optional<Hyperslab> dsetSlab = std::nullopt)
             : BasicDataset(file.openFileHandle(),
                            file.plists,
                            file.getFileAccess(),
                            file.getCompressionLevel(),
                            dsetPath,
-                           std::move(dsetSlab),
-                           std::move(createOptions)) {}
+                           std::move(dsetSlab)) {}
 
         private:
         template<typename OtherFileType>
@@ -47,15 +42,14 @@ namespace h5pp::inline v2 {
         requires(std::is_same_v<std::remove_cv_t<OtherFileType>, h5pp::v2::File>)
         friend class BasicLink;
 
-        BasicDataset(const hid::h5f                     &fileHandle,
-                     const PropertyLists                &plists,
-                     FileAccess                          fileAccess,
-                     int                                 compression,
-                     std::string_view                    dsetPath,
-                     std::optional<Hyperslab>            dsetSlab      = std::nullopt,
-                     std::optional<DatasetCreateOptions> createOptions = std::nullopt)
+        BasicDataset(const hid::h5f          &fileHandle,
+                     const PropertyLists     &plists,
+                     FileAccess               fileAccess,
+                     int                      compression,
+                     std::string_view         dsetPath,
+                     std::optional<Hyperslab> dsetSlab = std::nullopt)
             : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess), compression_(compression), dsetPath_(dsetPath),
-              dsetSlab_(std::move(dsetSlab)), createOptions_(std::move(createOptions)) {}
+              dsetSlab_(std::move(dsetSlab)) {}
 
         public:
         [[nodiscard]] bool     exists() const { return h5pp::hdf5::checkIfLinkExists(fileHandle_, dsetPath_, plists_.linkAccess); }
@@ -86,14 +80,7 @@ namespace h5pp::inline v2 {
             return matches;
         }
 
-        [[nodiscard]] BasicDataset ensure(const DatasetCreateOptions &createOptions) requires detail::MutableFile<FileType>
-        {
-            auto copy           = *this;
-            copy.createOptions_ = createOptions;
-            return copy;
-        }
-
-        [[nodiscard]] DsetInfo create(const DatasetCreateOptions &createOptions) requires detail::MutableFile<FileType>
+        [[nodiscard]] BasicDataset create(const DatasetCreateOptions &createOptions) requires detail::MutableFile<FileType>
         {
             requireWritable_("create dataset");
             auto options = detail::makeOptions(compression_, dsetPath_, createOptions);
@@ -106,7 +93,20 @@ namespace h5pp::inline v2 {
             auto fileHandle = fileHandle_;
             auto dsetInfo   = h5pp::scan::makeDsetInfo(fileHandle, options, plists_);
             h5pp::hdf5::createDataset(dsetInfo, plists_);
-            return dsetInfo;
+            return *this;
+        }
+
+        // Infer missing creation properties from data without writing its values.
+        template<typename DataType>
+        [[nodiscard]] BasicDataset create(const DataType &data, const DatasetCreateOptions &createOptions = {})
+            requires detail::MutableFile<FileType>
+        {
+            requireWritable_("create dataset");
+            auto options = detail::makeOptions(compression_, dsetPath_, createOptions);
+            options.assertWellDefined();
+            auto dsetInfo = h5pp::scan::inferDsetInfo(fileHandle_, data, options, plists_);
+            h5pp::hdf5::createDataset(dsetInfo, plists_);
+            return *this;
         }
 
         [[nodiscard]] BasicDataset select(const Hyperslab &dsetSlab) const {
@@ -155,7 +155,7 @@ namespace h5pp::inline v2 {
         void write(const DataType &data, const DatasetWriteOptions &options = DatasetWriteOptions()) {
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
             requireWritable_("write");
-            auto ioOptions = detail::makeOptions(compression_, dsetPath_, dsetSlab_, createOptions_, options);
+            auto ioOptions = detail::makeOptions(compression_, dsetPath_, dsetSlab_, options);
             ioOptions.assertWellDefined();
             auto dataInfo   = h5pp::scan::scanDataInfo(data, ioOptions);
             auto fileHandle = fileHandle_;

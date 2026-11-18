@@ -69,7 +69,7 @@ TEST_CASE("Explicit compound user types round-trip as datasets and attributes", 
 
     h5pp::DatasetCreateOptions dset_create;
     dset_create.h5Type = types.particle_type;
-    file.dataset("singleParticle").ensure(dset_create).write(particle);
+    file.dataset("singleParticle").create(particle, dset_create).write(particle);
 
     h5pp::AttributeWriteOptions attr_write;
     attr_write.h5Type = types.particle_type;
@@ -101,7 +101,7 @@ TEST_CASE("Vectors of explicit compound user types preserve record order and fie
 
     h5pp::DatasetCreateOptions create;
     create.h5Type = types.particle_type;
-    file.dataset("particles").ensure(create).write(particles);
+    file.dataset("particles").create(particles, create).write(particles);
 
     h5pp::DatasetReadOptions read;
     read.h5Type = types.particle_type;
@@ -130,7 +130,7 @@ TEST_CASE("Resizable compound datasets accept appends when created with an expli
     create.dimsMax   = {H5S_UNLIMITED};
     create.h5Layout  = H5D_CHUNKED;
     create.h5Type    = types.particle_type;
-    file.dataset("particles").ensure(create).write(first_batch);
+    file.dataset("particles").create(first_batch, create).write(first_batch);
 
     h5pp::DatasetAppendOptions append;
     append.h5Type = types.particle_type;

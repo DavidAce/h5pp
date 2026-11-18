@@ -28,7 +28,7 @@ TEST_CASE("v1 dataset calls work alongside the v2 API", "[v1][v2][dataset]") {
             create.h5Layout = layouts[idx];
 
             auto path         = h5pp::format("createGroup/vectorDouble_{}", layout_names[idx]);
-            auto created_info = file.dataset(path).create(create);
+            auto created_info = file.dataset(path).create(create).getInfo();
             REQUIRE(created_info.dsetPath.value() == path);
             require_zero_vector(file, path);
         }
@@ -54,7 +54,7 @@ TEST_CASE("v1 dataset calls work alongside the v2 API", "[v1][v2][dataset]") {
     typed_create.h5Type   = H5Tcopy(H5T_NATIVE_DOUBLE);
     typed_create.dims     = {4};
     typed_create.h5Layout = H5D_CONTIGUOUS;
-    file.dataset("manual/writeV2Api").ensure(typed_create).write(data);
+    file.dataset("manual/writeV2Api").create(data, typed_create).write(data);
     REQUIRE(file.dataset("manual/writeV2Api").getInfo().h5Layout.value() == H5D_CONTIGUOUS);
     REQUIRE(file.readDataset<std::vector<double>>("manual/writeV2Api") == data);
 

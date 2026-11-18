@@ -23,7 +23,7 @@ TEST_CASE("Contiguous datasets support slab updates and same-sized overwrites", 
 
     h5pp::DatasetCreateOptions contiguousCreate;
     contiguousCreate.h5Layout = H5D_CONTIGUOUS;
-    file.dataset("overWriteGroup_contiguous/vectorComplexDouble").ensure(contiguousCreate).write(original);
+    file.dataset("overWriteGroup_contiguous/vectorComplexDouble").create(original, contiguousCreate).write(original);
 
     h5pp::DatasetWriteOptions partialWrite;
     partialWrite.dims = std::vector<hsize_t>{partial.size()};
@@ -48,14 +48,16 @@ TEST_CASE("Chunked datasets overwrite, grow and shrink cleanly", "[overwrite][ch
     auto initial = make_complex_series(5, 1.0);
     h5pp::DatasetCreateOptions chunkedCreate;
     chunkedCreate.h5Layout = H5D_CHUNKED;
-    file.dataset("overWriteGroup_chunked/vectorComplexDouble").ensure(chunkedCreate).write(initial);
+    file.dataset("overWriteGroup_chunked/vectorComplexDouble").create(initial, chunkedCreate).write(initial);
     REQUIRE(file.dataset("overWriteGroup_chunked/vectorComplexDouble").read<std::vector<std::complex<double>>>() == initial);
 
     auto grown = make_complex_series(150, 2.0);
     REQUIRE_NOTHROW(file.dataset("overWriteGroup_chunked/vectorComplexDouble").write(grown));
     REQUIRE(file.dataset("overWriteGroup_chunked/vectorComplexDouble").read<std::vector<std::complex<double>>>() == grown);
 
-    file.dataset("overWriteGroup_chunked/somestring").ensure(chunkedCreate).write(std::string("this is a teststring"));
+    file.dataset("overWriteGroup_chunked/somestring")
+        .create(std::string("this is a teststring"), chunkedCreate)
+        .write(std::string("this is a teststring"));
     file.dataset("overWriteGroup_chunked/somestring").write(std::string("this is a slightly longer string"));
     REQUIRE(file.dataset("overWriteGroup_chunked/somestring").read<std::string>() == "this is a slightly longer string");
 
@@ -102,9 +104,9 @@ TEST_CASE("Chunked Eigen datasets can be overwritten across shape changes", "[ov
 
     h5pp::DatasetCreateOptions chunkedCreate;
     chunkedCreate.h5Layout = H5D_CHUNKED;
-    file.dataset("overWriteGroup_chunked/matrixInt").ensure(chunkedCreate).write(matrixInt);
-    file.dataset("overWriteGroup_chunked/matrixDouble").ensure(chunkedCreate).write(matrixDouble);
-    file.dataset("overWriteGroup_chunked/matrixComplexDouble").ensure(chunkedCreate).write(matrixComplex);
+    file.dataset("overWriteGroup_chunked/matrixInt").create(matrixInt, chunkedCreate).write(matrixInt);
+    file.dataset("overWriteGroup_chunked/matrixDouble").create(matrixDouble, chunkedCreate).write(matrixDouble);
+    file.dataset("overWriteGroup_chunked/matrixComplexDouble").create(matrixComplex, chunkedCreate).write(matrixComplex);
 
     matrixInt.resize(60, 60);
     matrixDouble.resize(60, 60);

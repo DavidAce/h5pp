@@ -36,7 +36,7 @@ int main() {
 
     // Write a single particle
     Particle particle;
-    file.dataset("particle").ensure(createOptions).write(particle);
+    file.dataset("particle").create(particle, createOptions).write(particle);
 
     // Now read a single particle back from file
     auto particleRead = file.dataset("particle").read<Particle>();
@@ -57,7 +57,7 @@ int main() {
     }
 
     // Write them all at once
-    file.dataset("particles").ensure(createOptions).write(particles);
+    file.dataset("particles").create(particles, createOptions).write(particles);
 
     // Now let's read them all back
     auto particlesRead = file.dataset("particles").read<std::vector<Particle>>();

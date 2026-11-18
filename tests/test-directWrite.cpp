@@ -39,7 +39,7 @@ TEST_CASE("Chunkwise writes update only the selected slab", "[direct-write][chun
         createOptions.dimsChunk  = {12, 12};
         createOptions.dimsMax    = {90, 90};
         createOptions.compression = 0;
-        low.dataset("dset_direct").ensure(createOptions).write(fill);
+        low.dataset("dset_direct").create(fill, createOptions).write(fill, {.dims = createOptions.dims});
         [[maybe_unused]] auto dsetInfo = low.dataset("dset_direct").getInfo();
 
         std::vector<int> block(6 * 6);

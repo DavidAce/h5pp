@@ -20,7 +20,7 @@ int main() {
     createOptions.h5Layout  = H5D_CHUNKED; // Chunked layout enables resizing
     createOptions.dimsChunk = {20};        // One chunk with 20 elements
 
-    auto doubleVector = file.dataset("group/doubleVector").ensure(createOptions);
+    auto doubleVector = file.dataset("group/doubleVector").create(std::vector<double>(20), createOptions);
     doubleVector.write(std::vector<double>(20, 3.14));
 
     // Get a DsetInfo object with information about the integer dataset.

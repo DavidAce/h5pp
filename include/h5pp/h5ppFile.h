@@ -291,16 +291,21 @@ namespace h5pp::inline v2 {
 
         [[deprecated("Use file.dataset(path).create(createOptions) instead")]] [[nodiscard]] DsetInfo
             createDataset(std::string_view dsetPath, const DatasetCreateOptions &createOptions) {
-            return dataset(dsetPath).create(createOptions);
+            return dataset(dsetPath).create(createOptions).getInfo();
         }
 
         template<typename DataType>
-        [[deprecated("Use file.dataset(path).ensure(createOptions).write(data, writeOptions) instead")]]
+        [[deprecated("Use file.dataset(path).create(data, createOptions).write(data, writeOptions) instead")]]
         void writeDataset(const DataType             &data,
                           std::string_view            dsetPath,
                           const DatasetCreateOptions &createOptions,
                           const DatasetWriteOptions  &writeOptions = DatasetWriteOptions()) {
-            dataset(dsetPath).ensure(createOptions).write(data, writeOptions);
+            auto creation = createOptions;
+            if(writeOptions.dims.has_value()) creation.dims = writeOptions.dims;
+            if(writeOptions.h5Type.has_value()) creation.h5Type = writeOptions.h5Type;
+            auto options = writeOptions;
+            if(not options.dims.has_value()) options.dims = creation.dims;
+            dataset(dsetPath).create(data, creation).write(data, options);
         }
 
         template<typename DataType>

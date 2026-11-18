@@ -86,12 +86,12 @@ TEST_CASE("Automatic layout selection forces chunking for extensible datasets re
     h5pp::DatasetCreateOptions unlimited_create;
     unlimited_create.dims    = {data.size()};
     unlimited_create.dimsMax = {H5S_UNLIMITED};
-    file.dataset("layout/unlimited").ensure(unlimited_create).write(data);
+    file.dataset("layout/unlimited").create(data, unlimited_create).write(data);
 
     h5pp::DatasetCreateOptions capped_create;
     capped_create.dims    = {data.size()};
     capped_create.dimsMax = {4};
-    file.dataset("layout/capped").ensure(capped_create).write(data);
+    file.dataset("layout/capped").create(data, capped_create).write(data);
 
     auto unlimited_info = file.dataset("layout/unlimited").getInfo();
     auto capped_info    = file.dataset("layout/capped").getInfo();

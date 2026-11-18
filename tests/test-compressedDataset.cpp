@@ -71,7 +71,7 @@ TEST_CASE("Compression settings cover overrides, clamping and ignored requests",
     h5pp::DatasetCreateOptions overrideCreate;
     overrideCreate.h5Layout    = H5D_CHUNKED;
     overrideCreate.compression = 7;
-    file.dataset("compressedWriteGroup/overrideLevel").ensure(overrideCreate).write(data);
+    file.dataset("compressedWriteGroup/overrideLevel").create(data, overrideCreate).write(data);
     auto overrideInfo = file.dataset("compressedWriteGroup/overrideLevel").getInfo();
     require_chunked(overrideInfo);
     REQUIRE(overrideInfo.compression.has_value());
@@ -80,7 +80,7 @@ TEST_CASE("Compression settings cover overrides, clamping and ignored requests",
     h5pp::DatasetCreateOptions clampedCreate;
     clampedCreate.h5Layout    = H5D_CHUNKED;
     clampedCreate.compression = 42;
-    file.dataset("compressedWriteGroup/clampedLevel").ensure(clampedCreate).write(data);
+    file.dataset("compressedWriteGroup/clampedLevel").create(data, clampedCreate).write(data);
     auto clampedInfo = file.dataset("compressedWriteGroup/clampedLevel").getInfo();
     require_chunked(clampedInfo);
     REQUIRE(clampedInfo.compression.has_value());
@@ -90,7 +90,7 @@ TEST_CASE("Compression settings cover overrides, clamping and ignored requests",
     contiguousCreate.dims        = std::vector<hsize_t>{data.size()};
     contiguousCreate.h5Layout    = H5D_CONTIGUOUS;
     contiguousCreate.compression = 7;
-    file.dataset("compressedWriteGroup/explicitContiguous").ensure(contiguousCreate).write(data);
+    file.dataset("compressedWriteGroup/explicitContiguous").create(data, contiguousCreate).write(data);
     auto ignoredInfo = file.dataset("compressedWriteGroup/explicitContiguous").getInfo();
     require_contiguous(ignoredInfo);
     require_compression(ignoredInfo, -1);

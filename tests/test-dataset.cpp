@@ -201,6 +201,58 @@ TEST_CASE("Datasets round-trip representative containers and expose basic handle
 #endif
 }
 
+TEST_CASE("Dataset creation is immediate and separate from writing", "[dataset][creation]") {
+    h5pp::File             file(make_path("datasetCreation"), h5pp::FileAccess::REPLACE, 0);
+    const std::vector<int> values  = {11, 22, 33, 44};
+    auto                   dataset = file.dataset("values");
+    REQUIRE_FALSE(dataset.exists());
+
+    SECTION("write creates a missing dataset with defaults") {
+        dataset.write(values);
+        REQUIRE(dataset.exists());
+        CHECK(dataset.read<std::vector<int>>() == values);
+    }
+    SECTION("create infers shape and type without writing values") {
+        auto created = dataset.create(values, {.dimsChunk = std::vector<hsize_t>{2}});
+        REQUIRE(created.exists());
+        CHECK(created.getInfo().dsetDims.value() == std::vector<hsize_t>{4});
+        CHECK(created.getChunkDimensions().value() == std::vector<hsize_t>{2});
+        CHECK(H5Tequal(created.getInfo().h5Type.value(), H5T_NATIVE_INT) > 0);
+        CHECK(created.read<std::vector<int>>() == std::vector<int>{0, 0, 0, 0});
+        created.write(values);
+        CHECK(dataset.read<std::vector<int>>() == values);
+    }
+    SECTION("create accepts explicit shape and type without data") {
+        auto created = dataset.create({.dims = std::vector<hsize_t>{4}, .h5Type = H5Tcopy(H5T_NATIVE_INT)});
+        REQUIRE(created.exists());
+        CHECK(created.read<std::vector<int>>() == std::vector<int>{0, 0, 0, 0});
+        created.write(values);
+        CHECK(created.read<std::vector<int>>() == values);
+    }
+    SECTION("create accepts shape and type overrides when given data") {
+        auto created = dataset.create(values.data(),
+                                      {
+                                          .dims   = std::vector<hsize_t>{2, 2},
+                                          .h5Type = H5Tcopy(H5T_NATIVE_INT)
+        });
+        REQUIRE(created.exists());
+        CHECK(created.getInfo().dsetDims.value() == std::vector<hsize_t>{2, 2});
+        CHECK(created.read<std::vector<int>>() == std::vector<int>{0, 0, 0, 0});
+        created.write(values,
+                      {
+                          .dims = std::vector<hsize_t>{2, 2}
+        });
+        CHECK(created.read<std::vector<int>>() == values);
+    }
+    SECTION("create preserves an existing dataset and its values") {
+        dataset.write(values);
+        auto existing = dataset.create(std::vector<int>{99}, {.h5Layout = H5D_CHUNKED});
+        CHECK(existing.read<std::vector<int>>() == values);
+        CHECK(existing.getInfo().dsetDims.value() == std::vector<hsize_t>{4});
+        CHECK(existing.getInfo().h5Layout.value() != H5D_CHUNKED);
+    }
+}
+
 TEST_CASE("Dataset creation rejects incomplete options without creating a link", "[dataset][validation]") {
     h5pp::File                 file(make_path("datasetInvalidCreate"), h5pp::FileAccess::REPLACE, 0);
     auto                       dataset = file.dataset("invalid");
@@ -240,6 +292,10 @@ TEST_CASE("Read-only files reject dataset creation and writing", "[dataset][file
         REQUIRE_THROWS_WITH(file.dataset("new").create(options), Catch::Matchers::ContainsSubstring("read-only"));
         CHECK_FALSE(file.dataset("new").exists());
     }
+    SECTION("creation inferred from data") {
+        REQUIRE_THROWS_WITH(file.dataset("new").create(std::vector<int>{1, 2, 3}), Catch::Matchers::ContainsSubstring("read-only"));
+        CHECK_FALSE(file.dataset("new").exists());
+    }
     SECTION("writing") {
         REQUIRE_THROWS_WITH(file.dataset("values").write(std::vector<int>{4, 5, 6}), Catch::Matchers::ContainsSubstring("read-only"));
     }
@@ -254,7 +310,7 @@ TEST_CASE("Dataset descriptions include stored dimensions and creation propertie
     options.dimsChunk = {2, 3};
     options.h5Layout  = H5D_CHUNKED;
     options.h5Type    = H5Tcopy(H5T_NATIVE_INT);
-    auto info         = file.dataset("diagnostics/values").create(options);
+    auto info         = file.dataset("diagnostics/values").create(options).getInfo();
     auto description  = info.string();
     CHECK_THAT(description, Catch::Matchers::ContainsSubstring("diagnostics/values"));
     CHECK_THAT(description, Catch::Matchers::ContainsSubstring("H5D_CHUNKED"));

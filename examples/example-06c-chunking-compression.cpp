@@ -23,8 +23,8 @@ int main() {
     createOptions.dimsChunk   = {1000};      // Use one chunk with 1000 elements
     createOptions.compression = 3;           // Override the default compression level for this dataset
 
-    // Ensure the dataset exists with the requested creation properties, then write the data.
-    auto dataset = file.dataset("myStdVectorDouble").ensure(createOptions);
+    // Create the dataset with the requested properties, then write the data.
+    auto dataset = file.dataset("myStdVectorDouble").create(vWrite, createOptions);
     dataset.write(vWrite);
 
     // Read the data back using the dataset handle.

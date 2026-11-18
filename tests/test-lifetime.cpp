@@ -79,7 +79,7 @@ TEST_CASE("Objects capture compression defaults and preserve read-only access", 
         file.setCompressionLevel(9);
         return dataset;
     }();
-    dataset.ensure({.dimsChunk = std::vector<hsize_t>{2}}).write(std::vector<int>{1, 2});
+    dataset.create(std::vector<int>{1, 2}, {.dimsChunk = std::vector<hsize_t>{2}}).write(std::vector<int>{1, 2});
     CHECK(h5pp::hdf5::getDeflateLevel(dataset.getInfo().h5DsetCreate.value()) == 1);
     auto readonly = h5pp::File(make_path("settings"), h5pp::FileAccess::READONLY, 0).dataset("values");
     REQUIRE_THROWS(readonly.write(0));
