@@ -28,9 +28,15 @@ int main() {
     //
     // The centered 2x2 block should end up in the 5x5 dataset with top left corner at position (1,2).
     std::vector<double> data3x3 = {
-        0.0, 0.0, 0.0,
-        0.0, 1.0, 2.0,
-        0.0, 3.0, 4.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        2.0,
+        0.0,
+        3.0,
+        4.0,
     };
 
     h5pp::DatasetWriteOptions options;
@@ -44,9 +50,7 @@ int main() {
     auto read5x5 = file.dataset("data5x5").read<std::vector<double>>();
     h5pp::print("Read 5x5 matrix:\n");
     for(size_t row = 0; row < 5ul; row++) {
-        for(size_t col = 0; col < 5ul; col++) {
-            h5pp::print("{} ", read5x5[row * 5 + col]);
-        }
+        for(size_t col = 0; col < 5ul; col++) h5pp::print("{} ", read5x5[row * 5 + col]);
         h5pp::print("\n");
     }
 

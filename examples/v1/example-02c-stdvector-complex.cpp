@@ -1,8 +1,8 @@
 #include <h5pp/v1/h5pp.h>
 
-template<typename ...Args>
+template<typename... Args>
 void print_complex(std::string_view msg, const std::vector<std::complex<double>> &v) {
-    h5pp::print("{}\n",msg);
+    h5pp::print("{}\n", msg);
     for(const auto &c : v) h5pp::print("{} + i{}\n, ", std::real(c), std::imag(c));
     h5pp::print("\n");
 }

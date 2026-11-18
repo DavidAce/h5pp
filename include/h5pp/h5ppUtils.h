@@ -416,7 +416,7 @@ namespace h5pp::util {
                 num             = type::safe_cast<size_t>(data.size()) + nullterm; // Static cast because Eigen uses long
                 return num * h5pp::util::getBytesPerElem<value_type>();
             }
-        } else if constexpr(h5pp::type::sfinae::is_text_v<DataType>) { // E.g. char[n]
+        } else if constexpr(h5pp::type::sfinae::is_text_v<DataType>) {  // E.g. char[n]
             if(not size.has_value()) size = getCharArraySize(data) + 1; // Add null terminator
             return size.value() * h5pp::util::getBytesPerElem<DataType>();
         } else if constexpr(std::is_array_v<DataType>) {

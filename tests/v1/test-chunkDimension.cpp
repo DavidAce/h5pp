@@ -5,7 +5,9 @@
 #include <vector>
 
 namespace {
-    h5pp::v1::File make_file(std::string_view name) { return h5pp::v1::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0); }
+    h5pp::v1::File make_file(std::string_view name) {
+        return h5pp::v1::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0);
+    }
 
     void require_dims(const h5pp::DsetInfo &info, const std::vector<hsize_t> &expected) {
         REQUIRE(info.dsetDims.has_value());

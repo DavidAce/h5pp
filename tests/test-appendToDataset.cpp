@@ -20,7 +20,9 @@ namespace {
         REQUIRE(info.h5Layout.value() == H5D_CHUNKED);
     }
 
-    h5pp::File make_file(std::string_view name) { return h5pp::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0); }
+    h5pp::File make_file(std::string_view name) {
+        return h5pp::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0);
+    }
 }
 
 TEST_CASE("Dataset append preserves growth semantics across explicit creations", "[append]") {
@@ -71,8 +73,8 @@ TEST_CASE("Dataset append preserves growth semantics across explicit creations",
     REQUIRE(file.dataset("group/VectorDouble5").read<std::vector<double>>() == std::vector<double>{1, 5, 9, 2, 6, 10, 3, 7, 11, 4, 8, 12});
 
     h5pp::DatasetCreateOptions emptyColumns;
-    emptyColumns.dims      = {data.size(), 0};
-    emptyColumns.h5Layout  = H5D_CHUNKED;
+    emptyColumns.dims           = {data.size(), 0};
+    emptyColumns.h5Layout       = H5D_CHUNKED;
     emptyColumns.h5Type         = file.dataset("group/VectorDouble5").getInfo().h5Type;
     [[maybe_unused]] auto info0 = file.dataset("group/VectorDouble8").create(emptyColumns);
     [[maybe_unused]] auto info1 = file.dataset("group/VectorDouble8_alt").create(emptyColumns);
@@ -92,11 +94,11 @@ TEST_CASE("Append handles more types and more contrived growth patterns", "[appe
         auto file = make_file("appendToDataset-rows");
 
         h5pp::DatasetCreateOptions create;
-        create.dims      = {0, 3};
-        create.dimsChunk = {1, 3};
-        create.dimsMax   = {H5S_UNLIMITED, 3};
-        create.h5Layout  = H5D_CHUNKED;
-        create.h5Type    = H5Tcopy(H5T_NATIVE_DOUBLE);
+        create.dims                 = {0, 3};
+        create.dimsChunk            = {1, 3};
+        create.dimsMax              = {H5S_UNLIMITED, 3};
+        create.h5Layout             = H5D_CHUNKED;
+        create.h5Type               = H5Tcopy(H5T_NATIVE_DOUBLE);
         [[maybe_unused]] auto info0 = file.dataset("group/rows").create(create);
 
         h5pp::DatasetAppendOptions append;
@@ -112,9 +114,15 @@ TEST_CASE("Append handles more types and more contrived growth patterns", "[appe
     SECTION("Append complex values into a 1d unlimited dataset") {
         auto file = make_file("appendToDataset-complex");
 
-        std::vector<std::complex<double>> initial = {{1.0, 2.0}, {3.0, 4.0}};
-        std::vector<std::complex<double>> more    = {{5.0, -1.0}, {-2.0, 8.0}};
-        std::vector<std::complex<double>> expect  = initial;
+        std::vector<std::complex<double>> initial = {
+            {1.0, 2.0},
+            {3.0, 4.0}
+        };
+        std::vector<std::complex<double>> more = {
+            { 5.0, -1.0},
+            {-2.0,  8.0}
+        };
+        std::vector<std::complex<double>> expect = initial;
         expect.insert(expect.end(), more.begin(), more.end());
 
         h5pp::DatasetCreateOptions create;

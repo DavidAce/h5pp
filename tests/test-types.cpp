@@ -32,7 +32,7 @@ namespace {
     template<typename T>
     bool equal_value(const T &lhs, const T &rhs) {
 #if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
-        if constexpr((std::is_same_v<std::decay_t<T>, h5pp::fp128>) || (std::is_same_v<std::decay_t<T>, h5pp::cx128>)) {
+        if constexpr((std::is_same_v<std::decay_t<T>, h5pp::fp128>) || (std::is_same_v<std::decay_t<T>, h5pp::cx128>) ) {
             return std::memcmp(&lhs, &rhs, sizeof(lhs)) == 0;
         } else
 #endif
@@ -63,7 +63,7 @@ namespace {
     T sample_scalar() {
         using D = std::decay_t<T>;
         if constexpr(std::is_same_v<D, bool>) return true;
-        else if constexpr(std::is_same_v<D, std::byte>) return std::byte {0x5a};
+        else if constexpr(std::is_same_v<D, std::byte>) return std::byte{0x5a};
         else if constexpr(std::is_floating_point_v<D>) return static_cast<D>(-355.0L / 113.0L);
         else if constexpr(std::is_signed_v<D>) return static_cast<D>(-42);
         else return static_cast<D>(42);
@@ -148,12 +148,12 @@ TEST_CASE("Datasets accept common contiguous buffer adapters and text-like views
     file.dataset("buffer/stdArray").write(intArray);
     REQUIRE(file.dataset("buffer/stdArray").read<std::vector<int>>() == std::vector<int>{1, 2, 3, 4, 5});
 
-    std::vector<double> spanBacking = {1.0, -2.0, 3.5, 4.25};
+    std::vector<double>     spanBacking = {1.0, -2.0, 3.5, 4.25};
     std::span<const double> spanView(spanBacking.data(), spanBacking.size());
     file.dataset("buffer/span").write(spanView);
     REQUIRE(file.dataset("buffer/span").read<std::vector<double>>() == spanBacking);
 
-    std::vector<std::byte> byteBuffer = {std::byte {0x00}, std::byte {0x7f}, std::byte {0xaa}, std::byte {0xff}};
+    std::vector<std::byte> byteBuffer = {std::byte{0x00}, std::byte{0x7f}, std::byte{0xaa}, std::byte{0xff}};
     file.dataset("buffer/bytes").write(byteBuffer);
     REQUIRE(file.dataset("buffer/bytes").read<std::vector<std::byte>>() == byteBuffer);
 }
@@ -161,15 +161,15 @@ TEST_CASE("Datasets accept common contiguous buffer adapters and text-like views
 TEST_CASE("Datasets support CUDA-style x-y and x-y-z POD structs and vectors thereof", "[types][scalarn]") {
     h5pp::File file(make_path("types-scalarn"), h5pp::FileAccess::REPLACE, 0);
 
-    Vec2<double> vec2 = {1.25, -2.5};
-    Vec3<int>    vec3 = {3, -4, 5};
+    Vec2<double>             vec2       = {1.25, -2.5};
+    Vec3<int>                vec3       = {3, -4, 5};
     std::vector<Vec2<float>> vec2Vector = {
-        {1.0f, 2.0f},
-        {-3.0f, 4.5f},
-        {6.0f, -7.25f},
+        { 1.0f,   2.0f},
+        {-3.0f,   4.5f},
+        { 6.0f, -7.25f},
     };
     std::vector<Vec3<double>> vec3Vector = {
-        {1.0, 2.0, 3.0},
+        { 1.0, 2.0,  3.0},
         {-4.0, 5.5, -6.5},
     };
 

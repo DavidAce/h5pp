@@ -86,8 +86,8 @@ namespace {
 }
 
 TEST_CASE("Single versioned compound datasets remain forward and backward compatible", "[user-type-vers][single]") {
-    auto       path  = make_path("userTypeVers-single");
-    auto       types = register_types();
+    auto           path  = make_path("userTypeVers-single");
+    auto           types = register_types();
     h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
 
     auto p1 = create_unique_v1(5);
@@ -127,9 +127,9 @@ TEST_CASE("Single versioned compound datasets remain forward and backward compat
 }
 
 TEST_CASE("Vectors of versioned compound datasets remain compatible across layouts", "[user-type-vers][vector]") {
-    auto       layout = GENERATE(values({H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED}));
-    auto       path   = make_path(h5pp::format("userTypeVers-vector-{}", static_cast<int>(layout)));
-    auto       types  = register_types();
+    auto           layout = GENERATE(values({H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED}));
+    auto           path   = make_path(h5pp::format("userTypeVers-vector-{}", static_cast<int>(layout)));
+    auto           types  = register_types();
     h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
 
     std::vector<ParticleV1> vp1;
@@ -166,8 +166,8 @@ TEST_CASE("Vectors of versioned compound datasets remain compatible across layou
 }
 
 TEST_CASE("Versioned compound attributes follow the same compatibility rules", "[user-type-vers][attribute]") {
-    auto       path  = make_path("userTypeVers-attr");
-    auto       types = register_types();
+    auto           path  = make_path("userTypeVers-attr");
+    auto           types = register_types();
     h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
 
     auto p1 = create_unique_v1(1);

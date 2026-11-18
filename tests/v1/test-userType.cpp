@@ -61,8 +61,8 @@ namespace {
 }
 
 TEST_CASE("Explicit compound user types round-trip as datasets and attributes", "[user-type]") {
-    auto       path  = make_path("userType");
-    auto       types = register_types();
+    auto           path  = make_path("userType");
+    auto           types = register_types();
     h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
 
     auto particle = make_particle(0, "new name");
@@ -81,8 +81,8 @@ TEST_CASE("Explicit compound user types round-trip as datasets and attributes", 
 }
 
 TEST_CASE("Vectors of explicit compound user types preserve record order and fields", "[user-type]") {
-    auto       path  = make_path("userType-vector");
-    auto       types = register_types();
+    auto           path  = make_path("userType-vector");
+    auto           types = register_types();
     h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
 
     std::vector<Particle> particles;
@@ -99,8 +99,8 @@ TEST_CASE("Vectors of explicit compound user types preserve record order and fie
 }
 
 TEST_CASE("Resizable compound datasets accept appends when created with an explicit HDF5 type", "[user-type]") {
-    auto       path  = make_path("userType-append");
-    auto       types = register_types();
+    auto           path  = make_path("userType-append");
+    auto           types = register_types();
     h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
 
     std::vector<Particle> first_batch;

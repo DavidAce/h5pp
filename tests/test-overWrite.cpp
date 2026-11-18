@@ -45,7 +45,7 @@ TEST_CASE("Contiguous datasets support slab updates and same-sized overwrites", 
 TEST_CASE("Chunked datasets overwrite, grow and shrink cleanly", "[overwrite][chunked]") {
     h5pp::File file(make_path("overWrite-chunked"), h5pp::FileAccess::REPLACE, 0);
 
-    auto initial = make_complex_series(5, 1.0);
+    auto                       initial = make_complex_series(5, 1.0);
     h5pp::DatasetCreateOptions chunkedCreate;
     chunkedCreate.h5Layout = H5D_CHUNKED;
     file.dataset("overWriteGroup_chunked/vectorComplexDouble").create(initial, chunkedCreate).write(initial);
@@ -96,8 +96,8 @@ TEST_CASE("Chunked Eigen datasets can be overwritten across shape changes", "[ov
 
     for(Eigen::Index row = 0; row < matrixInt.rows(); ++row) {
         for(Eigen::Index col = 0; col < matrixInt.cols(); ++col) {
-            matrixInt(row, col)    = static_cast<int>(row * 100 + col);
-            matrixDouble(row, col) = static_cast<double>(row) + static_cast<double>(col) / 100.0;
+            matrixInt(row, col)     = static_cast<int>(row * 100 + col);
+            matrixDouble(row, col)  = static_cast<double>(row) + static_cast<double>(col) / 100.0;
             matrixComplex(row, col) = {static_cast<double>(row + col), static_cast<double>(row - col)};
         }
     }
@@ -113,8 +113,8 @@ TEST_CASE("Chunked Eigen datasets can be overwritten across shape changes", "[ov
     matrixComplex.resize(60, 60);
     for(Eigen::Index row = 0; row < matrixInt.rows(); ++row) {
         for(Eigen::Index col = 0; col < matrixInt.cols(); ++col) {
-            matrixInt(row, col)    = static_cast<int>(row * 1000 + col);
-            matrixDouble(row, col) = static_cast<double>(row * col) / 10.0;
+            matrixInt(row, col)     = static_cast<int>(row * 1000 + col);
+            matrixDouble(row, col)  = static_cast<double>(row * col) / 10.0;
             matrixComplex(row, col) = {static_cast<double>(row), static_cast<double>(-col)};
         }
     }

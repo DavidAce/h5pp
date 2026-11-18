@@ -20,7 +20,7 @@ void print_point(const SpaceTimePoint &p) {
 }
 
 int main() {
-    size_t     logLevel = 2; // Default log level is 2: "info"
+    size_t         logLevel = 2; // Default log level is 2: "info"
     h5pp::v1::File file(H5PP_EXAMPLE_DIR "example-04b-custom-struct-advanced.h5", h5pp::FileAccess::REPLACE, logLevel);
 
     // We can create a custom HDF5 type for multi-dimensional arrays using H5Tarray_create. It takes the
@@ -47,7 +47,10 @@ int main() {
     // Now we can write single points or even containers with points.
 
     // Write a single point to file
-    SpaceTimePoint point{{1, 2, 3, 0}, "space"};
+    SpaceTimePoint point{
+        {1, 2, 3, 0},
+        "space"
+    };
     file.writeDataset(point, "point", H5_POINT_TYPE);
 
     // Read a single point back from file and print

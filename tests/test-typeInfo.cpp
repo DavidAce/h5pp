@@ -22,12 +22,17 @@ namespace {
         std::complex<double>              attribute_complex_double        = {47.2, -10.2445};
         std::array<long, 4>               attribute_array_long            = {1, 2, 3, 4};
         float                             attribute_carray_float[4]       = {1, 2, 3, 4};
-        std::vector<std::complex<double>> attribute_vector_complex_double = {{2.0, 5.0}, {3.1, -2.3}, {3.0, 0.0}, {-51.2, 5.0}};
-        std::vector<double>               attribute_vector_double         = {1.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
-                                                                             0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
-                                                                             -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
-        std::string                       attribute_string               = "This is a very long string that I am testing";
-        char                              attribute_char_array[]         = "This is a char array";
+        std::vector<std::complex<double>> attribute_vector_complex_double = {
+            {  2.0,  5.0},
+            {  3.1, -2.3},
+            {  3.0,  0.0},
+            {-51.2,  5.0}
+        };
+        std::vector<double> attribute_vector_double = {1.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0, 0.0, 0.0,
+                                                       0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 0.0, 0.0,
+                                                       -1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0};
+        std::string         attribute_string        = "This is a very long string that I am testing";
+        char                attribute_char_array[]  = "This is a char array";
 
         h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
         file.dataset("testGroup/vectorDouble").write(std::vector<double>(10, 5.0));

@@ -5,7 +5,9 @@
 #include <vector>
 
 namespace {
-    h5pp::File make_file(std::string_view name) { return h5pp::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0); }
+    h5pp::File make_file(std::string_view name) {
+        return h5pp::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0);
+    }
 
     void require_dims(const h5pp::DsetInfo &info, const std::vector<hsize_t> &expected) {
         REQUIRE(info.dsetDims.has_value());
@@ -58,7 +60,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
     SECTION("Manual chunk dimensions are preserved exactly") {
         auto file = make_file("chunkDimension-manual");
 
-        auto data = make_linear_data(1000, 1.0);
+        auto                       data = make_linear_data(1000, 1.0);
         h5pp::DatasetCreateOptions create;
         create.dims      = {1000};
         create.h5Layout  = H5D_CHUNKED;
@@ -77,7 +79,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
     SECTION("Automatic chunk dimensions respect fixed max dimensions") {
         auto file = make_file("chunkDimension-fixed-max");
 
-        auto data = make_linear_data(100, 1.0);
+        auto                       data = make_linear_data(100, 1.0);
         h5pp::DatasetCreateOptions create;
         create.dims     = {10, 10};
         create.h5Layout = H5D_CHUNKED;
@@ -112,8 +114,8 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         require_chunk_dims(file.dataset("chunked/extensible").getChunkDimensions(), {46, 2});
 
         h5pp::DatasetAppendOptions append;
-        append.dims      = {1, 2};
-        auto appended    = file.dataset("chunked/extensible").append(std::vector<double>{1.0, 2.0}, 0, append);
+        append.dims   = {1, 2};
+        auto appended = file.dataset("chunked/extensible").append(std::vector<double>{1.0, 2.0}, 0, append);
         require_dims(appended, {1, 2});
         require_chunk_dims(file.dataset("chunked/extensible").getChunkDimensions(), {46, 2});
         REQUIRE(file.dataset("chunked/extensible").read<std::vector<double>>() == std::vector<double>{1.0, 2.0});
@@ -122,7 +124,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
     SECTION("Contiguous and compact datasets report no chunk dimensions") {
         auto file = make_file("chunkDimension-nonchunked");
 
-        std::vector<int> compact_data = {1, 2, 3, 4};
+        std::vector<int>           compact_data = {1, 2, 3, 4};
         h5pp::DatasetCreateOptions compact_create;
         compact_create.h5Layout = H5D_COMPACT;
         file.dataset("layout/compact").create(compact_data, compact_create).write(compact_data);
@@ -131,7 +133,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         REQUIRE(compact_info.h5Layout.value() == H5D_COMPACT);
         require_no_chunk_dims(file.dataset("layout/compact").getChunkDimensions());
 
-        auto contiguous_data = make_linear_data(128, 5.0);
+        auto                       contiguous_data = make_linear_data(128, 5.0);
         h5pp::DatasetCreateOptions contiguous_create;
         contiguous_create.h5Layout = H5D_CONTIGUOUS;
         file.dataset("layout/contiguous").create(contiguous_data, contiguous_create).write(contiguous_data);

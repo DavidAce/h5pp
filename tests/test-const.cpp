@@ -5,24 +5,16 @@
 #include <vector>
 
 template<typename Handle>
-concept CanWriteDatasetHandle = requires(Handle handle) {
-    handle.write(1);
-};
+concept CanWriteDatasetHandle = requires(Handle handle) { handle.write(1); };
 
 template<typename Handle>
-concept CanReadDatasetHandle = requires(Handle handle) {
-    handle.template read<int>();
-};
+concept CanReadDatasetHandle = requires(Handle handle) { handle.template read<int>(); };
 
 template<typename Handle>
-concept CanWriteAttributeHandle = requires(Handle handle) {
-    handle.write(1);
-};
+concept CanWriteAttributeHandle = requires(Handle handle) { handle.write(1); };
 
 template<typename Handle>
-concept CanReadAttributeHandle = requires(Handle handle) {
-    handle.template read<int>();
-};
+concept CanReadAttributeHandle = requires(Handle handle) { handle.template read<int>(); };
 
 namespace {
     struct Record {
@@ -31,9 +23,7 @@ namespace {
     };
 
     template<typename Handle>
-    concept CanAppendTableHandle = requires(Handle handle, const std::vector<Record> &records) {
-        handle.appendRecords(records);
-    };
+    concept CanAppendTableHandle = requires(Handle handle, const std::vector<Record> &records) { handle.appendRecords(records); };
 
     template<typename Handle>
     concept CanReadTableHandle = requires(Handle handle) {
@@ -98,7 +88,11 @@ TEST_CASE("const file exposes read-only table handles", "[const][table]") {
     h5pp::File file(make_path("const-table"), h5pp::FileAccess::REPLACE, 0);
 
     auto table = file.table("tables/records").create(makeRecordType(), "Records");
-    table.appendRecords(std::vector<Record>{{1, 1.5}, {2, 2.5}, {3, 3.5}});
+    table.appendRecords(std::vector<Record>{
+        {1, 1.5},
+        {2, 2.5},
+        {3, 3.5}
+    });
 
     const h5pp::File &constFile = file;
     auto              constInfo = constFile.table("tables/records").getInfo();

@@ -32,7 +32,7 @@ void print_events(const std::vector<Volcano> &vs, const std::string &msg = "") {
 }
 
 int main() {
-    size_t     logLevel = 2; // Default log level is 2: "info"
+    size_t         logLevel = 2; // Default log level is 2: "info"
     h5pp::v1::File file(H5PP_EXAMPLE_DIR "example-04c-compound-datatype-variable-length-arrays.h5", h5pp::FileAccess::REPLACE, logLevel);
 
     // Register the compound datatype and its members
@@ -42,14 +42,19 @@ int main() {
 
     // We can now write single volcano datasets ...
 
-    Volcano volcano_single{"Mount Vesuvius", {1906, 1944}};
+    Volcano volcano_single{
+        "Mount Vesuvius",
+        {1906, 1944}
+    };
     print_event(volcano_single, "Writing to file:");
     file.writeDataset(volcano_single, "volcano_single", H5_VOLCANO_TYPE);
 
     // Or even containers of volcanos
-    std::vector<Volcano> volcano_vector{{"Mount Vesuvius", {1906, 1944}},
-                                        {"Mount Spurr", {1953, 1992}},
-                                        {"Kelud", {1919, 1951, 1966, 1990}}};
+    std::vector<Volcano> volcano_vector{
+        {"Mount Vesuvius",             {1906, 1944}},
+        {   "Mount Spurr",             {1953, 1992}},
+        {         "Kelud", {1919, 1951, 1966, 1990}}
+    };
     print_events(volcano_vector, "Writing to file:");
     file.writeDataset(volcano_vector, "volcano_vector", H5_VOLCANO_TYPE);
 

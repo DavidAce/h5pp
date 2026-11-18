@@ -33,7 +33,8 @@ int main() {
             // cppTypeIndex.value() is an object of type std::type_index which can be compared against typeid(T).
             // Here we will simply test each type and print the name and contents of the attribute if there is a match
 
-            // WARNING: The type in cppTypeIndex always refers to the innermost scalar type, or "atomic" type. E.g. an array of 4 ints on file
+            // WARNING: The type in cppTypeIndex always refers to the innermost scalar type, or "atomic" type. E.g. an array of 4 ints on
+            // file
             //          will have cppTypeIndex.value() == typeid(int), and dimension 4. This allows h5pp to be agnostic
             //          to which container the data is read into.
 

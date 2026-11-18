@@ -24,9 +24,9 @@ void traverseAttributes(h5pp::File &file, std::string_view linkPath) {
         if(not info.h5Type.has_value()) continue;
 
         auto [cppTypeIndex, cppTypeName, cppTypeBytes] = h5pp::type::getCppType(info.h5Type.value());
-        auto h5Size = getSizeFromDims(info.attrDims);
-        auto message = h5pp::format("Attribute {}::{} [{} | size {}]", linkPath, attrName, cppTypeName, h5Size);
-        [[maybe_unused]] auto bytes = cppTypeBytes;
+        auto                  h5Size                   = getSizeFromDims(info.attrDims);
+        auto                  message = h5pp::format("Attribute {}::{} [{} | size {}]", linkPath, attrName, cppTypeName, h5Size);
+        [[maybe_unused]] auto bytes   = cppTypeBytes;
 
         if(cppTypeIndex == typeid(std::string) and h5Size == 1) h5pp::print("{} = {}\n", message, attribute.read<std::string>());
         if(cppTypeIndex == typeid(int) and h5Size == 1) h5pp::print("{} = {}\n", message, attribute.read<int>());

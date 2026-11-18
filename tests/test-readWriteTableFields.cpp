@@ -62,21 +62,21 @@ namespace {
     }
 
     std::string make_table_file() {
-        auto       path = make_path("readWriteTableFields");
-        h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
-        auto       type = make_particle_type();
+        auto                     path = make_path("readWriteTableFields");
+        h5pp::File               file(path, h5pp::FileAccess::REPLACE, 0);
+        auto                     type = make_particle_type();
         h5pp::TableCreateOptions create;
         create.dimsChunk   = std::vector<hsize_t>{5};
         create.compression = 1;
-        auto table = file.table("somegroup/particleTable").create(type, "particleTable", create);
+        auto table         = file.table("somegroup/particleTable").create(type, "particleTable", create);
         table.appendRecords(std::vector<Particle>(10));
         return path;
     }
 }
 
 TEST_CASE("Single table fields can be addressed through all supported selector overloads", "[table-fields]") {
-    h5pp::File          file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
-    auto                table = file.table("somegroup/particleTable");
+    h5pp::File        file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
+    auto              table = file.table("somegroup/particleTable");
     std::vector<Axis> axis_fields;
 
     axis_fields.emplace_back(table.readField<Axis>("y", h5pp::TableSelection::FIRST));

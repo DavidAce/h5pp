@@ -26,7 +26,7 @@ int main() {
     h5pp::v1::File file(H5PP_EXAMPLE_DIR "example-04e-tables-variable-length-arrays.h5", h5pp::FileAccess::REPLACE, 2);
 
     // Register the compound and the inner VLA data type
-    h5pp::hid::h5t H5T_SCIENCE_TYPE  = H5Tcreate(H5T_COMPOUND, sizeof(ScienceEntry));
+    h5pp::hid::h5t H5T_SCIENCE_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(ScienceEntry));
     H5Tinsert(H5T_SCIENCE_TYPE, "index", HOFFSET(ScienceEntry, index), H5T_NATIVE_UINT64);
     H5Tinsert(H5T_SCIENCE_TYPE, "data", HOFFSET(ScienceEntry, data), h5pp::varr_t<double>::get_h5type());
 
@@ -34,12 +34,13 @@ int main() {
     file.createTable(H5T_SCIENCE_TYPE, "somegroup/scienceTable", "ScienceTitle");
 
     // Create ragged data
-    std::vector<ScienceEntry> scienceEntry = {{0, {1.0, 2.0}},
-                                              {1, {3.5, 4.0, 4.5}},
-                                              {2, {5.0}},
-                                              {3, {6.2, 6.3, 6.4}},
-                                              {4, {7.2, 7.6, 8.3, 8.55}}};
-
+    std::vector<ScienceEntry> scienceEntry = {
+        {0,            {1.0, 2.0}},
+        {1,       {3.5, 4.0, 4.5}},
+        {2,                 {5.0}},
+        {3,       {6.2, 6.3, 6.4}},
+        {4, {7.2, 7.6, 8.3, 8.55}}
+    };
 
     file.appendTableRecords(scienceEntry, "somegroup/scienceTable");
 

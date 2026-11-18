@@ -57,7 +57,7 @@ TEST_CASE("Tables can be created, appended, inspected and partially read through
     h5pp::File file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
     auto       table = file.table("somegroup/particleTable");
 
-    auto info = table.getInfo();
+    auto info      = table.getInfo();
     auto fieldInfo = table.getFieldInfo();
     REQUIRE(info.tableTitle.value() == "particleTable");
     REQUIRE(info.numRecords.value() == 10);
@@ -128,7 +128,7 @@ TEST_CASE("Appending and copying table records preserves metadata and selected r
     auto       info1 = table.getInfo();
     h5pp::File copy_target(make_path("readWriteTablesCopy"), h5pp::FileAccess::REPLACE, 0);
     auto       info2 = copy_target.table("somegroup/particleTable")
-                            .appendRecordsFrom(file.advanced().openFileHandle(), "somegroup/particleTable", h5pp::TableSelection::LAST);
+                           .appendRecordsFrom(file.advanced().openFileHandle(), "somegroup/particleTable", h5pp::TableSelection::LAST);
 
     CHECK(info2.tableTitle.value() == info1.tableTitle.value());
     CHECK(info2.numRecords.value() == 1);

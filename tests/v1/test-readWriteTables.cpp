@@ -44,7 +44,7 @@ namespace {
     }
 
     std::string make_table_file() {
-        auto       path = make_path("readWriteTables");
+        auto           path = make_path("readWriteTables");
         h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
         file.setCompressionLevel(6);
         auto particle_type = make_particle_type();
@@ -110,12 +110,12 @@ TEST_CASE("Appending and copying table records preserves metadata and selected r
         CHECK(last_three[idx].y == 0.0);
     }
 
-    auto       info1 = file.getTableInfo("somegroup/particleTable");
+    auto           info1 = file.getTableInfo("somegroup/particleTable");
     h5pp::v1::File copy_target(make_path("readWriteTablesCopy"), h5pp::FileAccess::REPLACE, 0);
-    auto       info2 = copy_target.appendTableRecords(file.openFileHandle(),
-                                                "somegroup/particleTable",
-                                                "somegroup/particleTable",
-                                                h5pp::TableSelection::LAST);
+    auto           info2 = copy_target.appendTableRecords(file.openFileHandle(),
+                                                          "somegroup/particleTable",
+                                                          "somegroup/particleTable",
+                                                          h5pp::TableSelection::LAST);
 
     CHECK(info2.tableTitle.value() == info1.tableTitle.value());
     CHECK(info2.numRecords.value() == 1);

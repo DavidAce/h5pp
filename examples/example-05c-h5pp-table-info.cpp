@@ -18,7 +18,7 @@ int main() {
 
     // Register a fixed-length string type for the city field.
     h5pp::hid::h5t H5_CITY_TYPE = H5Tcopy(H5T_C_S1);
-    H5Tset_size(H5_CITY_TYPE, 32);             // Leave room for the null terminator
+    H5Tset_size(H5_CITY_TYPE, 32); // Leave room for the null terminator
     H5Tset_strpad(H5_CITY_TYPE, H5T_STR_NULLTERM);
 
     // Register the compound type used by each table record.
@@ -36,18 +36,20 @@ int main() {
     if(tableInfo.tableTitle.has_value()) h5pp::print("Table title   : {}\n", tableInfo.tableTitle.value());
     if(tableInfo.numRecords.has_value()) h5pp::print("Table records : {}\n", tableInfo.numRecords.value());
     if(tableInfo.numFields.has_value() and tableInfo.fieldNames.has_value() and tableInfo.fieldSizes.has_value() and
-       tableInfo.cppTypeName.has_value())
-        for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++)
+       tableInfo.cppTypeName.has_value()) {
+        for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++) {
             h5pp::print("-- Field name [{}] | Size [{}] bytes | Type [{}]\n",
                         tableInfo.fieldNames.value()[idx],
                         tableInfo.fieldSizes.value()[idx],
                         tableInfo.cppTypeName.value()[idx]);
+        }
+    }
 
     // Prepare a few table records.
     std::vector<Stats> cityStats = {
-        Stats{"London", 9787426, 1737},
-        Stats{"Stockholm", 1605030, 382},
-        Stats{"Santiago", 5220161, 641},
+        Stats{   "London", 9787426, 1737},
+        Stats{"Stockholm", 1605030,  382},
+        Stats{ "Santiago", 5220161,  641},
     };
 
     // Append the records, then ask the same handle for a fresh metadata snapshot.
@@ -59,12 +61,14 @@ int main() {
     if(tableInfo.tableTitle.has_value()) h5pp::print("Table title   : {}\n", tableInfo.tableTitle.value());
     if(tableInfo.numRecords.has_value()) h5pp::print("Table records : {}\n", tableInfo.numRecords.value());
     if(tableInfo.numFields.has_value() and tableInfo.fieldNames.has_value() and tableInfo.fieldSizes.has_value() and
-       tableInfo.cppTypeName.has_value())
-        for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++)
+       tableInfo.cppTypeName.has_value()) {
+        for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++) {
             h5pp::print("-- Field name [{}] | Size [{}] bytes | Type [{}]\n",
                         tableInfo.fieldNames.value()[idx],
                         tableInfo.fieldSizes.value()[idx],
                         tableInfo.cppTypeName.value()[idx]);
+        }
+    }
 
     return 0;
 }

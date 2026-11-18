@@ -62,9 +62,9 @@ namespace {
     }
 
     std::string make_table_file() {
-        auto       path = make_path("readWriteTableFields");
+        auto           path = make_path("readWriteTableFields");
         h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
-        auto       type = make_particle_type();
+        auto           type = make_particle_type();
         file.createTable(type, "somegroup/particleTable", "particleTable", {5}, true);
         file.appendTableRecords(std::vector<Particle>(10), "somegroup/particleTable");
         return path;
@@ -72,7 +72,7 @@ namespace {
 }
 
 TEST_CASE("Single table fields can be addressed through all supported selector overloads", "[table-fields]") {
-    h5pp::v1::File        file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
+    h5pp::v1::File    file(make_table_file(), h5pp::FileAccess::READWRITE, 0);
     std::vector<Axis> axis_fields;
 
     axis_fields.emplace_back(file.readTableField<Axis>("somegroup/particleTable", "y", h5pp::TableSelection::FIRST));

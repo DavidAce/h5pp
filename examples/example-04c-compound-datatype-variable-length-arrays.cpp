@@ -46,14 +46,19 @@ int main() {
     createOptions.h5Type = H5_VOLCANO_TYPE;
 
     // We can now write single volcano datasets ...
-    Volcano volcanoSingle{"Mount Vesuvius", {1906, 1944}};
+    Volcano volcanoSingle{
+        "Mount Vesuvius",
+        {1906, 1944}
+    };
     printEvent(volcanoSingle, "Writing to file:");
     file.dataset("volcano_single").create(volcanoSingle, createOptions).write(volcanoSingle);
 
     // ... or even containers of volcanoes.
-    std::vector<Volcano> volcanoVector{{"Mount Vesuvius", {1906, 1944}},
-                                       {"Mount Spurr", {1953, 1992}},
-                                       {"Kelud", {1919, 1951, 1966, 1990}}};
+    std::vector<Volcano> volcanoVector{
+        {"Mount Vesuvius",             {1906, 1944}},
+        {   "Mount Spurr",             {1953, 1992}},
+        {         "Kelud", {1919, 1951, 1966, 1990}}
+    };
     printEvents(volcanoVector, "Writing to file:");
     file.dataset("volcano_vector").create(volcanoVector, createOptions).write(volcanoVector);
 

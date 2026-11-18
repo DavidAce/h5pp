@@ -60,7 +60,7 @@ TEST_CASE("File copy operations preserve bindings, settings and usability", "[fi
 
 TEST_CASE("File move operations rebind objects to the moved file identity", "[file-copy][move]") {
     h5pp::v1::File file_e(h5pp::v1::File(make_path("copySwap-E"), h5pp::FileAccess::REPLACE, 0));
-    auto       path_e = file_e.getFilePath();
+    auto           path_e = file_e.getFilePath();
     file_e.setCompressionLevel(6);
     file_e.writeDataset(std::string("E"), "groupE/E");
 

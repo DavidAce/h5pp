@@ -81,9 +81,8 @@ namespace h5pp::inline v2 {
         }
         [[nodiscard]] std::vector<std::string> findAttributes(std::string_view searchKey = "") const {
             std::vector<std::string> matches;
-            for(const auto &attrName : getAttributeNames()) {
+            for(const auto &attrName : getAttributeNames())
                 if(searchKey.empty() or attrName.find(searchKey) != std::string::npos) matches.emplace_back(attrName);
-            }
             return matches;
         }
         [[nodiscard]] BasicAttribute<FileType> attribute(std::string_view attrName) const {

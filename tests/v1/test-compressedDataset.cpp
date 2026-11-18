@@ -6,7 +6,9 @@
 #include <vector>
 
 namespace {
-    h5pp::v1::File make_file(std::string_view name) { return h5pp::v1::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0); }
+    h5pp::v1::File make_file(std::string_view name) {
+        return h5pp::v1::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0);
+    }
 
     bool compression_available() { return h5pp::hdf5::isCompressionAvaliable(); }
 

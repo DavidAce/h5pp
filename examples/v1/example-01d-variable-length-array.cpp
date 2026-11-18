@@ -23,7 +23,6 @@ int main() {
     return 0;
 }
 
-
 /* Output
 
 Wrote vlen dataset: [0, 1, 2, 3]

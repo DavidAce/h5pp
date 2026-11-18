@@ -9,16 +9,16 @@
 namespace h5pp::inline v2 {
     class File {
         private:
-        fs::path                        filePath;                                      /*!< Full path to the file */
-        h5pp::FileAccess                fileAccess         = h5pp::FileAccess::RENAME; /*!< File open/create policy. */
-        mutable std::optional<hid::h5f> fileHandle         = std::nullopt;             /*!< Keeps a file handle alive in batch operations */
-        mutable std::weak_ptr<hid::h5f>                    scopedFileHandle; /*!< A handle owned by keep-open tokens, when present. */
-        mutable LogLevel                logLevel           = LogLevel::info; /*!< Log verbosity from 0 [trace] to 6 [off] */
-        bool                            logTimestamp       = false;          /*!< Add a time stamp to console log output */
-        hid::h5e                        error_stack        = H5E_DEFAULT;    /*!< Reference to the error stack used by HDF5 */
-        int                             currentCompression = -1;             /*!< Compression level (-1 is off, 0 is none, 9 is max) */
+        fs::path                        filePath;                              /*!< Full path to the file */
+        h5pp::FileAccess                fileAccess = h5pp::FileAccess::RENAME; /*!< File open/create policy. */
+        mutable std::optional<hid::h5f> fileHandle = std::nullopt;             /*!< Keeps a file handle alive in batch operations */
+        mutable std::weak_ptr<hid::h5f> scopedFileHandle;                      /*!< A handle owned by keep-open tokens, when present. */
+        mutable LogLevel                logLevel                        = LogLevel::info; /*!< Log verbosity from 0 [trace] to 6 [off] */
+        bool                            logTimestamp                    = false;          /*!< Add a time stamp to console log output */
+        hid::h5e                        error_stack                     = H5E_DEFAULT;    /*!< Reference to the error stack used by HDF5 */
+        int                             currentCompression              = -1; /*!< Compression level (-1 is off, 0 is none, 9 is max) */
         // File copies and their objects share allocation records for explicit reclamation.
-        std::shared_ptr<std::vector<ReclaimInfo::Reclaim>> reclaimStack       = std::make_shared<std::vector<ReclaimInfo::Reclaim>>();
+        std::shared_ptr<std::vector<ReclaimInfo::Reclaim>> reclaimStack = std::make_shared<std::vector<ReclaimInfo::Reclaim>>();
 
         void init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
@@ -80,7 +80,7 @@ namespace h5pp::inline v2 {
             }
 
             KeepFileOpenToken(const KeepFileOpenToken &)                = delete;
-            KeepFileOpenToken &operator=(const KeepFileOpenToken &) = delete;
+            KeepFileOpenToken &operator=(const KeepFileOpenToken &)     = delete;
             KeepFileOpenToken(KeepFileOpenToken &&) noexcept            = default;
             KeepFileOpenToken &operator=(KeepFileOpenToken &&) noexcept = default;
         };
@@ -376,9 +376,7 @@ namespace h5pp::inline v2 {
             if(not fileHandle.has_value()) fileHandle = openFileHandle();
         }
 
-        void setKeepFileClosed() const {
-            fileHandle         = std::nullopt;
-        }
+        void setKeepFileClosed() const { fileHandle = std::nullopt; }
 
         void setCompressionLevel(unsigned int compressionZeroToNine) {
             currentCompression = h5pp::hdf5::getValidCompressionLevel(compressionZeroToNine);
@@ -496,8 +494,8 @@ namespace h5pp::inline v2 {
         }
 
         template<typename h5x_src>
-        [[deprecated(
-            "Use file.table(targetPath).ensure(options).appendRecordsFrom(srcLocation, srcTablePath, selection) instead")]] [[nodiscard]] TableInfo
+        [[deprecated("Use file.table(targetPath).ensure(options).appendRecordsFrom(srcLocation, srcTablePath, selection) instead")]]
+        [[nodiscard]] TableInfo
             appendTableRecords(const h5x_src            &srcLocation,
                                std::string_view          srcTablePath,
                                std::string_view          tgtTablePath,

@@ -41,14 +41,14 @@ namespace {
     }
 
     [[nodiscard]] h5pp::cx128 make_complex(const h5pp::fp128 &real, const h5pp::fp128 &imag) {
-#if defined(H5PP_USE_QUADMATH)
-        h5pp::cx128 value {};
+    #if defined(H5PP_USE_QUADMATH)
+        h5pp::cx128 value{};
         __real__ value = real;
         __imag__ value = imag;
         return value;
-#else
-        return h5pp::cx128 {real, imag};
-#endif
+    #else
+        return h5pp::cx128{real, imag};
+    #endif
     }
 
     [[nodiscard]] h5pp::hid::h5t make_record_type() {
@@ -131,20 +131,20 @@ TEST_CASE("float128 compound records round-trip with explicit HDF5 types", "[flo
 
     auto recordType = make_record_type();
 
-    QuadRecord singleRecord {
-        .scalar = make_value(22.0L, 7.0L),
+    QuadRecord singleRecord{
+        .scalar  = make_value(22.0L, 7.0L),
         .complex = make_complex(make_value(-3.0L, 5.0L), make_value(7.0L, 9.0L)),
     };
     std::vector<QuadRecord> recordVector = {
         singleRecord,
-        QuadRecord {
-            .scalar = make_value(-355.0L, 113.0L),
-            .complex = make_complex(make_value(1.0L, 3.0L), make_value(-2.0L, 5.0L)),
-        },
-        QuadRecord {
-            .scalar = make_value(1234567.0L, 8192.0L),
-            .complex = make_complex(make_value(-11.0L, 13.0L), make_value(17.0L, 19.0L)),
-        },
+        QuadRecord{
+                   .scalar  = make_value(-355.0L,  113.0L),
+                   .complex = make_complex(make_value(1.0L,  3.0L), make_value(-2.0L,  5.0L)),
+                   },
+        QuadRecord{
+                   .scalar  = make_value(1234567.0L, 8192.0L),
+                   .complex = make_complex(make_value(-11.0L, 13.0L), make_value(17.0L, 19.0L)),
+                   },
     };
 
     h5pp::DatasetCreateOptions create;
@@ -172,7 +172,9 @@ TEST_CASE("float128 compound records round-trip with explicit HDF5 types", "[flo
 
 #else
 
-TEST_CASE("float128 support is unavailable in this build", "[float128]") { SUCCEED("H5PP_USE_QUADMATH and H5PP_USE_FLOAT128 are both disabled"); }
+TEST_CASE("float128 support is unavailable in this build", "[float128]") {
+    SUCCEED("H5PP_USE_QUADMATH and H5PP_USE_FLOAT128 are both disabled");
+}
 
 #endif
 

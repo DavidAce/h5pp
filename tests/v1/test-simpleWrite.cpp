@@ -44,7 +44,7 @@ namespace {
 }
 
 TEST_CASE("Simple writes cover scalars, containers, pointers, vlen data and user structs", "[simple-write]") {
-    auto       path = make_path("simpleWrite");
+    auto           path = make_path("simpleWrite");
     h5pp::v1::File file(path, h5pp::FileAccess::REPLACE, 0);
 
     bool                 boolean_value   = true;

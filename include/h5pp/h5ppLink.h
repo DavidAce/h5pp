@@ -66,9 +66,8 @@ namespace h5pp::inline v2 {
         }
         [[nodiscard]] std::vector<std::string> findAttributes(std::string_view searchKey = "") const {
             std::vector<std::string> matches;
-            for(const auto &attrName : getAttributeNames()) {
+            for(const auto &attrName : getAttributeNames())
                 if(searchKey.empty() or attrName.find(searchKey) != std::string::npos) matches.emplace_back(attrName);
-            }
             return matches;
         }
         [[nodiscard]] BasicAttribute<FileType> attribute(std::string_view attrName) const {
@@ -79,7 +78,7 @@ namespace h5pp::inline v2 {
             return BasicDataset<FileType>(fileHandle_, plists_, fileAccess_, compression_, linkPath_);
         }
         [[nodiscard]] BasicTable<FileType> asTable() const { return BasicTable<FileType>(fileHandle_, plists_, reclaimStack_, linkPath_); }
-        [[nodiscard]] BasicGroup<FileType>   asGroup() const;
+        [[nodiscard]] BasicGroup<FileType> asGroup() const;
 
         void deleteLink() requires detail::MutableFile<FileType>
         {

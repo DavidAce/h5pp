@@ -36,8 +36,8 @@ int main() {
     /*
      * NOTE
      * The full signature of readTableRecords(...) is
-     * readTableRecords(DataType &data, std::string_view tablePath, std::optional<size_t> startIdx = std::nullopt, std::optional<size_t> numRecords =
-     std::nullopt)
+     * readTableRecords(DataType &data, std::string_view tablePath, std::optional<size_t> startIdx = std::nullopt, std::optional<size_t>
+     numRecords = std::nullopt)
      * When startIdx and/or numRecords (arguments 3 and 4) are missing, h5pp can decide them for you. The behavior is explained in this
      pseudocode:
      *

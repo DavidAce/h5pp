@@ -4,7 +4,9 @@
 #include <vector>
 
 namespace {
-    h5pp::File make_file(std::string_view name) { return h5pp::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0); }
+    h5pp::File make_file(std::string_view name) {
+        return h5pp::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0);
+    }
 
     void require_layout(const h5pp::DsetInfo &info, H5D_layout_t expected) {
         REQUIRE(info.h5Layout.has_value());
@@ -49,7 +51,7 @@ TEST_CASE("Automatic layout selection follows the compact, contiguous and chunke
 TEST_CASE("Automatic layout selection treats multidimensional data by total byte size", "[layout][auto][multidim]") {
     auto file = make_file("layout-multidim");
 
-    std::vector<double> compact_data(63 * 64, 1.0);   // 32256 bytes
+    std::vector<double> compact_data(63 * 64, 1.0);    // 32256 bytes
     std::vector<double> contiguous_data(64 * 64, 2.0); // 32768 bytes
     std::vector<double> chunked_data(256 * 256, 3.0);  // 524288 bytes
 

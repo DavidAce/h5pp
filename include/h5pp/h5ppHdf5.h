@@ -2015,11 +2015,12 @@ namespace h5pp::hdf5 {
             // Read the stored bytes before applying any decompression ourselves.
             // Check the buffer on both API versions: HDF5 1.x cannot check its size.
             auto readRawChunk = [&](std::vector<std::byte> &rawBuffer) {
-                if(chunkByteStorage > rawBuffer.size())
+                if(chunkByteStorage > rawBuffer.size()) {
                     throw h5pp::runtime_error("Failed to read chunk at offset {}: buffer has {} bytes, but the stored chunk needs {} bytes",
                                               chunkOffset,
                                               rawBuffer.size(),
                                               chunkByteStorage);
+                }
 
     #if H5_VERSION_GE(2, 0, 0)
                 size_t requiredBytes = rawBuffer.size();
@@ -2809,18 +2810,18 @@ namespace h5pp::hdf5 {
         for(auto &name : info.fieldNames.value()) fieldNames.push_back(name.c_str());
         int    compression = info.compression.value() == 0 ? 0 : 1; // Only true/false (1/0). Is set to level 6 in HDF5 sources
         herr_t retval      = H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
-                                       info.getLocId(),
-                                       util::safe_str(info.tablePath.value()).c_str(),
-                                       info.numFields.value(),
-                                       info.numRecords.value(),
-                                       info.recordBytes.value(),
-                                       fieldNames.data(),
-                                       info.fieldOffsets.value().data(),
-                                       fieldTypesHidT.data(),
-                                       info.chunkDims.value()[0],
-                                       nullptr,
-                                       compression,
-                                       nullptr);
+                                            info.getLocId(),
+                                            util::safe_str(info.tablePath.value()).c_str(),
+                                            info.numFields.value(),
+                                            info.numRecords.value(),
+                                            info.recordBytes.value(),
+                                            fieldNames.data(),
+                                            info.fieldOffsets.value().data(),
+                                            fieldTypesHidT.data(),
+                                            info.chunkDims.value()[0],
+                                            nullptr,
+                                            compression,
+                                            nullptr);
         if(retval < 0) throw h5pp::runtime_error("Could not create table {}\n{}", info.string(), info.string_fields());
 
         // Setup fields so that this TableInfo can be reused for read/write after

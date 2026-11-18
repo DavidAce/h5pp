@@ -5,8 +5,8 @@
 
 int main() {
     // Initialize a file
-    h5pp::v1::File  file(H5PP_EXAMPLE_DIR "example-02b-text.h5", h5pp::FileAccess::REPLACE, 2);
-    std::string singleString = "This is a dummy string";
+    h5pp::v1::File file(H5PP_EXAMPLE_DIR "example-02b-text.h5", h5pp::FileAccess::REPLACE, 2);
+    std::string    singleString = "This is a dummy string";
 
     // Write to file
     file.writeDataset(singleString, "example-group/mySingleString");

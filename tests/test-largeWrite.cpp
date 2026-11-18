@@ -22,8 +22,7 @@ TEST_CASE("Large standard-library datasets round-trip with their dimensions inta
 
     std::string                       text = "teststring";
     std::vector<std::complex<double>> vectorComplex(10000);
-    for(size_t idx = 0; idx < vectorComplex.size(); ++idx)
-        vectorComplex[idx] = {static_cast<double>(idx), -static_cast<double>(idx % 17)};
+    for(size_t idx = 0; idx < vectorComplex.size(); ++idx) vectorComplex[idx] = {static_cast<double>(idx), -static_cast<double>(idx % 17)};
 
     file.dataset("simpleWriteGroup/String").write(text);
     file.dataset("largeWriteGroup/vectorComplexDouble").write(vectorComplex);

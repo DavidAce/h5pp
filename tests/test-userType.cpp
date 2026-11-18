@@ -104,7 +104,7 @@ TEST_CASE("Vectors of explicit compound user types preserve record order and fie
     file.dataset("particles").create(particles, create).write(particles);
 
     h5pp::DatasetReadOptions read;
-    read.h5Type = types.particle_type;
+    read.h5Type         = types.particle_type;
     auto particles_read = file.dataset("particles").read<std::vector<Particle>>(read);
 
     REQUIRE(particles_read == particles);
@@ -133,11 +133,11 @@ TEST_CASE("Resizable compound datasets accept appends when created with an expli
     file.dataset("particles").create(first_batch, create).write(first_batch);
 
     h5pp::DatasetAppendOptions append;
-    append.h5Type = types.particle_type;
+    append.h5Type              = types.particle_type;
     [[maybe_unused]] auto info = file.dataset("particles").append(second_batch, 0, append);
 
     h5pp::DatasetReadOptions read;
-    read.h5Type = types.particle_type;
+    read.h5Type   = types.particle_type;
     auto combined = file.dataset("particles").read<std::vector<Particle>>(read);
     REQUIRE(combined.size() == first_batch.size() + second_batch.size());
     REQUIRE(std::equal(first_batch.begin(), first_batch.end(), combined.begin()));

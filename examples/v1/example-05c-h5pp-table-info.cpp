@@ -53,18 +53,24 @@ int main() {
     if(tableInfo.tableTitle.has_value()) h5pp::print("Table title   : {}\n", tableInfo.tableTitle.value());
     if(tableInfo.numRecords.has_value()) h5pp::print("Table records : {}\n", tableInfo.numRecords.value());
     if(tableInfo.numFields.has_value() and tableInfo.fieldNames.has_value() and tableInfo.fieldSizes.has_value() and
-       tableInfo.cppTypeName.has_value())
-        for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++)
+       tableInfo.cppTypeName.has_value()) {
+        for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++) {
             h5pp::print("-- Field name [{}] | Size [{}] bytes | Type [{}]\n",
                         tableInfo.fieldNames.value()[idx],
                         tableInfo.fieldSizes.value()[idx],
                         tableInfo.cppTypeName.value()[idx]);
+        }
+    }
 
     // Or get a preformatted string with .string()
     h5pp::print("TableInfo::string(): {}\n", tableInfo.string());
 
     // Initialize a table in a vector
-    std::vector<Stats> cityStats{Stats{"London", 9787426, 1737}, Stats{"Stockholm", 1605030, 382}, Stats{"Santiago", 5220161, 641}};
+    std::vector<Stats> cityStats{
+        Stats{   "London", 9787426, 1737},
+        Stats{"Stockholm", 1605030,  382},
+        Stats{ "Santiago", 5220161,  641}
+    };
 
     // Write the table to file, which updates tableInfo
     tableInfo = file.appendTableRecords(cityStats, "tables/cityStats");
@@ -75,12 +81,14 @@ int main() {
     if(tableInfo.tableTitle.has_value()) h5pp::print("Table title   : {}\n", tableInfo.tableTitle.value());
     if(tableInfo.numRecords.has_value()) h5pp::print("Table records : {}\n", tableInfo.numRecords.value());
     if(tableInfo.numFields.has_value() and tableInfo.fieldNames.has_value() and tableInfo.fieldSizes.has_value() and
-       tableInfo.cppTypeName.has_value())
-        for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++)
+       tableInfo.cppTypeName.has_value()) {
+        for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++) {
             h5pp::print("-- Field name [{}] | Size [{}] bytes | Type [{}]\n",
                         tableInfo.fieldNames.value()[idx],
                         tableInfo.fieldSizes.value()[idx],
                         tableInfo.cppTypeName.value()[idx]);
+        }
+    }
     h5pp::print("TableInfo::string(): {}\n", tableInfo.string());
     return 0;
 }

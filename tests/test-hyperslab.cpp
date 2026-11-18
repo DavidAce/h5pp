@@ -14,12 +14,12 @@ namespace {
 TEST_CASE("hyperslab write", "[hyperslab][write]") {
     h5pp::File file(make_path("hyperslab"), h5pp::FileAccess::REPLACE, 0);
 
-    std::vector<double> data5x5(25, 0.0);
+    std::vector<double>       data5x5(25, 0.0);
     h5pp::DatasetWriteOptions asMatrix;
     asMatrix.dims = {5, 5};
     file.dataset("data5x5").write(data5x5, asMatrix);
 
-    std::vector<double> patchData = {1.0, 2.0, 3.0, 4.0};
+    std::vector<double>       patchData = {1.0, 2.0, 3.0, 4.0};
     h5pp::DatasetWriteOptions patch;
     patch.dims = {2, 2};
     file.dataset("data5x5").select({1, 2}, {2, 2}).write(patchData, patch);
@@ -48,15 +48,21 @@ TEST_CASE("hyperslab read", "[hyperslab][read]") {
 TEST_CASE("hyperslab write with explicit data slab", "[hyperslab][data-slab]") {
     h5pp::File file(make_path("hyperslab-data-slab"), h5pp::FileAccess::REPLACE, 0);
 
-    std::vector<double> data5x5(25, 0.0);
+    std::vector<double>       data5x5(25, 0.0);
     h5pp::DatasetWriteOptions asMatrix;
     asMatrix.dims = {5, 5};
     file.dataset("data5x5").write(data5x5, asMatrix);
 
     std::vector<double> data3x3 = {
-        0.0, 0.0, 0.0,
-        0.0, 1.0, 2.0,
-        0.0, 3.0, 4.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        2.0,
+        0.0,
+        3.0,
+        4.0,
     };
 
     h5pp::DatasetWriteOptions patch;

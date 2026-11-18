@@ -13,12 +13,12 @@ namespace h5pp::inline v2 {
     requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
     class BasicDataset {
         private:
-        hid::h5f                            fileHandle_;
-        PropertyLists                       plists_;
-        FileAccess                          fileAccess_;
-        int                                 compression_;
-        std::string                         dsetPath_;
-        std::optional<Hyperslab>            dsetSlab_      = std::nullopt;
+        hid::h5f                 fileHandle_;
+        PropertyLists            plists_;
+        FileAccess               fileAccess_;
+        int                      compression_;
+        std::string              dsetPath_;
+        std::optional<Hyperslab> dsetSlab_ = std::nullopt;
 
         void requireWritable_(std::string_view operation) const {
             if(fileAccess_ == h5pp::FileAccess::READONLY)
@@ -74,9 +74,8 @@ namespace h5pp::inline v2 {
         }
         [[nodiscard]] std::vector<std::string> findAttributes(std::string_view searchKey = "") const {
             std::vector<std::string> matches;
-            for(const auto &attrName : getAttributeNames()) {
+            for(const auto &attrName : getAttributeNames())
                 if(searchKey.empty() or attrName.find(searchKey) != std::string::npos) matches.emplace_back(attrName);
-            }
             return matches;
         }
 
@@ -141,10 +140,10 @@ namespace h5pp::inline v2 {
         {
             if(dsetSlab_.has_value()) throw h5pp::runtime_error("Cannot append through a selected dataset view [{}]", dsetPath_);
             requireWritable_("write");
-            auto ioOptions     = detail::makeOptions(dsetPath_, options);
-            auto fileHandle    = fileHandle_;
-            auto dsetInfo      = h5pp::scan::readDsetInfo(fileHandle, ioOptions, plists_);
-            auto dataInfo      = h5pp::scan::scanDataInfo(data, ioOptions);
+            auto ioOptions  = detail::makeOptions(dsetPath_, options);
+            auto fileHandle = fileHandle_;
+            auto dsetInfo   = h5pp::scan::readDsetInfo(fileHandle, ioOptions, plists_);
+            auto dataInfo   = h5pp::scan::scanDataInfo(data, ioOptions);
             h5pp::hdf5::extendDataset(dsetInfo, dataInfo, axis);
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists_);
             return dsetInfo;

@@ -27,7 +27,7 @@ TEST_CASE("Attribute names and fixed-size strings are read without embedded null
         REQUIRE(name.size() == 9);
     }
 
-    std::string fixedString = "String with fixed size";
+    std::string               fixedString = "String with fixed size";
     h5pp::DatasetWriteOptions fixedStringOptions;
     fixedStringOptions.dims = std::vector<hsize_t>{23};
     file.dataset("stringDummy_fixedSize").write(fixedString, fixedStringOptions);
@@ -35,7 +35,7 @@ TEST_CASE("Attribute names and fixed-size strings are read without embedded null
     require_null_free(fixedRead);
     REQUIRE(fixedRead == fixedString);
 
-    std::string attribute = "This is a dummy string attribute";
+    std::string                 attribute = "This is a dummy string attribute";
     h5pp::AttributeWriteOptions fixedAttrWriteOptions;
     fixedAttrWriteOptions.dims = std::vector<hsize_t>{attribute.size() + 1};
     file.attribute("stringDummy_fixedSize", "stringAttribute_fixed").write(attribute, fixedAttrWriteOptions);
@@ -77,8 +77,8 @@ TEST_CASE("Vector-of-strings datasets and attributes preserve expected text sema
     H5Tset_size(customString, 5);
     H5Tset_strpad(customString, H5T_STR_NULLTERM);
 
-    std::vector<std::string> fixedUpper    = {"this", "is", "a variable", "length", "vector", "with", "fixed", "upper size"};
-    std::vector<std::string> fixedExpected = {"this", "is", "a va", "leng", "vect", "with", "fixe", "uppe"};
+    std::vector<std::string>   fixedUpper    = {"this", "is", "a variable", "length", "vector", "with", "fixed", "upper size"};
+    std::vector<std::string>   fixedExpected = {"this", "is", "a va", "leng", "vect", "with", "fixe", "uppe"};
     h5pp::DatasetCreateOptions fixedCreateOptions;
     fixedCreateOptions.h5Type = customString;
     file.dataset("vecStringFixed").create(fixedUpper, fixedCreateOptions).write(fixedUpper);

@@ -28,7 +28,7 @@ int main() {
     // We can create a custom HDF5 type for multi-dimensional arrays using H5Tarray_create. It takes the
     // rank (i.e. number of indices) and the size of each dimension in a C-style array pointer.
     // In this case we just have a 1D array.
-    std::array<hsize_t, 1> dims = {4}; // "dims" describes the shape of a "coordinates" array: here it has 1 dimension of size 4
+    std::array<hsize_t, 1> dims          = {4}; // "dims" describes the shape of a "coordinates" array: here it has 1 dimension of size 4
     h5pp::hid::h5t         H5_COORD_TYPE = H5Tarray_create(H5T_NATIVE_DOUBLE, static_cast<unsigned>(dims.size()), dims.data());
 
     // Create a custom HDF5 type for the char array.
@@ -55,7 +55,10 @@ int main() {
     // Now we can write single points or even containers with points.
 
     // Write a single point to file
-    SpaceTimePoint point{{1, 2, 3, 0}, "space"};
+    SpaceTimePoint point{
+        {1, 2, 3, 0},
+        "space"
+    };
     file.dataset("point").create(point, createOptions).write(point);
 
     // Read a single point back from file and print it
