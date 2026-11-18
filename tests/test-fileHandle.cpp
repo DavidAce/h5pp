@@ -13,7 +13,7 @@ namespace {
 TEST_CASE("advanced file controls and file-handle guards are reachable", "[file-handle][advanced]") {
     h5pp::File file(make_path("advanced"), h5pp::FileAccess::REPLACE, 0);
 
-    auto advanced = file.advanced();
+    auto &advanced = file.advanced();
     advanced.setCloseDegree(H5F_CLOSE_STRONG);
     advanced.vlenEnableReclaimsTracking();
     advanced.vlenDisableReclaimsTracking();
@@ -25,12 +25,12 @@ TEST_CASE("advanced file controls and file-handle guards are reachable", "[file-
             auto keepInner = advanced.keepFileOpen();
             auto handle    = advanced.openFileHandle();
             REQUIRE(handle.valid());
-            REQUIRE(handle.refcount() >= 4);
+            REQUIRE(handle.refcount() >= 2);
         }
 
         auto handle = advanced.openFileHandle();
         REQUIRE(handle.valid());
-        REQUIRE(handle.refcount() >= 3);
+        REQUIRE(handle.refcount() >= 2);
     }
 
     file.setKeepFileOpened();
@@ -38,7 +38,7 @@ TEST_CASE("advanced file controls and file-handle guards are reachable", "[file-
         auto keep   = file.keepFileOpen();
         auto handle = advanced.openFileHandle();
         REQUIRE(handle.valid());
-        REQUIRE(handle.refcount() >= 3);
+        REQUIRE(handle.refcount() >= 2);
     }
     file.setKeepFileClosed();
 

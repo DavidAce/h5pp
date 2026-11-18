@@ -13,14 +13,17 @@ namespace h5pp::inline v2 {
     requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
     class BasicDataset {
         private:
-        FileType                           &file_;
+        hid::h5f                            fileHandle_;
+        PropertyLists                       plists_;
+        FileAccess                          fileAccess_;
+        int                                 compression_;
         std::string                         dsetPath_;
         std::optional<Hyperslab>            dsetSlab_      = std::nullopt;
         std::optional<DatasetCreateOptions> createOptions_ = std::nullopt;
 
         void requireWritable_(std::string_view operation) const {
-            if(file_.fileAccess == h5pp::FileAccess::READONLY)
-                throw h5pp::runtime_error("Attempted to {} on read-only file [{}]", operation, file_.filePath.string());
+            if(fileAccess_ == h5pp::FileAccess::READONLY)
+                throw h5pp::runtime_error("Attempted to {} on read-only dataset [{}]", operation, dsetPath_);
         }
 
         public:
@@ -28,29 +31,52 @@ namespace h5pp::inline v2 {
                      std::string_view                    dsetPath,
                      std::optional<Hyperslab>            dsetSlab      = std::nullopt,
                      std::optional<DatasetCreateOptions> createOptions = std::nullopt)
-            : file_(file), dsetPath_(dsetPath), dsetSlab_(std::move(dsetSlab)), createOptions_(std::move(createOptions)) {}
+            : BasicDataset(file.openFileHandle(),
+                           file.plists,
+                           file.getFileAccess(),
+                           file.getCompressionLevel(),
+                           dsetPath,
+                           std::move(dsetSlab),
+                           std::move(createOptions)) {}
 
-        [[nodiscard]] bool exists() const {
-            return h5pp::hdf5::checkIfLinkExists(file_.openFileHandle(), dsetPath_, file_.plists.linkAccess);
-        }
+        private:
+        template<typename OtherFileType>
+        requires(std::is_same_v<std::remove_cv_t<OtherFileType>, h5pp::v2::File>)
+        friend class BasicGroup;
+        template<typename OtherFileType>
+        requires(std::is_same_v<std::remove_cv_t<OtherFileType>, h5pp::v2::File>)
+        friend class BasicLink;
+
+        BasicDataset(const hid::h5f                     &fileHandle,
+                     const PropertyLists                &plists,
+                     FileAccess                          fileAccess,
+                     int                                 compression,
+                     std::string_view                    dsetPath,
+                     std::optional<Hyperslab>            dsetSlab      = std::nullopt,
+                     std::optional<DatasetCreateOptions> createOptions = std::nullopt)
+            : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess), compression_(compression), dsetPath_(dsetPath),
+              dsetSlab_(std::move(dsetSlab)), createOptions_(std::move(createOptions)) {}
+
+        public:
+        [[nodiscard]] bool     exists() const { return h5pp::hdf5::checkIfLinkExists(fileHandle_, dsetPath_, plists_.linkAccess); }
         [[nodiscard]] DsetInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(dsetPath_);
-            return h5pp::scan::readDsetInfo(file_.openFileHandle(), options, file_.plists);
+            return h5pp::scan::readDsetInfo(fileHandle_, options, plists_);
         }
         [[nodiscard]] std::optional<std::vector<hsize_t>> getChunkDimensions() const {
-            auto fileHandle = file_.openFileHandle();
-            auto dataset    = h5pp::hdf5::openLink<hid::h5d>(fileHandle, dsetPath_, std::nullopt, file_.plists.dsetAccess);
+            auto fileHandle = fileHandle_;
+            auto dataset    = h5pp::hdf5::openLink<hid::h5d>(fileHandle, dsetPath_, std::nullopt, plists_.dsetAccess);
             return h5pp::hdf5::getChunkDimensions(dataset);
         }
         [[nodiscard]] TypeInfo getTypeInfo() const {
-            return h5pp::hdf5::getTypeInfo(file_.openFileHandle(), dsetPath_, std::nullopt, file_.plists.dsetAccess);
+            return h5pp::hdf5::getTypeInfo(fileHandle_, dsetPath_, std::nullopt, plists_.dsetAccess);
         }
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes() const {
-            return h5pp::hdf5::getTypeInfo_allAttributes(file_.openFileHandle(), dsetPath_, std::nullopt, file_.plists.linkAccess);
+            return h5pp::hdf5::getTypeInfo_allAttributes(fileHandle_, dsetPath_, std::nullopt, plists_.linkAccess);
         }
         [[nodiscard]] std::vector<std::string> getAttributeNames() const {
-            return h5pp::hdf5::getAttributeNames(file_.openFileHandle(), dsetPath_, std::nullopt, file_.plists.linkAccess);
+            return h5pp::hdf5::getAttributeNames(fileHandle_, dsetPath_, std::nullopt, plists_.linkAccess);
         }
         [[nodiscard]] std::vector<std::string> findAttributes(std::string_view searchKey = "") const {
             std::vector<std::string> matches;
@@ -70,16 +96,16 @@ namespace h5pp::inline v2 {
         [[nodiscard]] DsetInfo create(const DatasetCreateOptions &createOptions) requires detail::MutableFile<FileType>
         {
             requireWritable_("create dataset");
-            auto options = detail::makeLegacyOptions(file_, dsetPath_, createOptions);
+            auto options = detail::makeLegacyOptions(compression_, dsetPath_, createOptions);
             options.assertWellDefined();
             if(not options.linkPath) throw h5pp::runtime_error("Error creating dataset: No dataset path specified");
             if(not options.dataDims)
                 throw h5pp::runtime_error("Error creating dataset [{}]: Dimensions or size not specified", options.linkPath.value());
             if(not options.h5Type)
                 throw h5pp::runtime_error("Error creating dataset [{}]: HDF5 type not specified", options.linkPath.value());
-            auto fileHandle = file_.openFileHandle();
-            auto dsetInfo   = h5pp::scan::makeDsetInfo(fileHandle, options, file_.plists);
-            h5pp::hdf5::createDataset(dsetInfo, file_.plists);
+            auto fileHandle = fileHandle_;
+            auto dsetInfo   = h5pp::scan::makeDsetInfo(fileHandle, options, plists_);
+            h5pp::hdf5::createDataset(dsetInfo, plists_);
             return dsetInfo;
         }
 
@@ -94,7 +120,7 @@ namespace h5pp::inline v2 {
         }
 
         [[nodiscard]] BasicAttribute<FileType> attribute(std::string_view attrName) const {
-            return BasicAttribute<FileType>(file_, dsetPath_, attrName);
+            return BasicAttribute<FileType>(fileHandle_, plists_, fileAccess_, dsetPath_, attrName);
         }
 
         void resize(const DimsType &dims, std::optional<h5pp::ResizePolicy> resizePolicy = std::nullopt)
@@ -104,7 +130,7 @@ namespace h5pp::inline v2 {
             Options options;
             options.linkPath     = dsetPath_;
             options.resizePolicy = resizePolicy;
-            auto info            = h5pp::scan::inferDsetInfo(file_.openFileHandle(), dsetPath_, options, file_.plists);
+            auto info            = h5pp::scan::inferDsetInfo(fileHandle_, dsetPath_, options, plists_);
             if(not info.dsetExists.value()) throw h5pp::runtime_error("Failed to resize dataset [{}]: dataset does not exist", dsetPath_);
             h5pp::hdf5::resizeDataset(info, dims, resizePolicy);
         }
@@ -116,11 +142,11 @@ namespace h5pp::inline v2 {
             if(dsetSlab_) throw h5pp::runtime_error("Cannot append through a selected dataset view [{}]", dsetPath_);
             requireWritable_("write");
             auto legacyOptions = detail::makeLegacyOptions(dsetPath_, options);
-            auto fileHandle    = file_.openFileHandle();
-            auto dsetInfo      = h5pp::scan::readDsetInfo(fileHandle, legacyOptions, file_.plists);
+            auto fileHandle    = fileHandle_;
+            auto dsetInfo      = h5pp::scan::readDsetInfo(fileHandle, legacyOptions, plists_);
             auto dataInfo      = h5pp::scan::scanDataInfo(data, legacyOptions);
             h5pp::hdf5::extendDataset(dsetInfo, dataInfo, axis);
-            h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, file_.plists);
+            h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists_);
             return dsetInfo;
         }
 
@@ -129,16 +155,16 @@ namespace h5pp::inline v2 {
         void write(const DataType &data, const DatasetWriteOptions &options = DatasetWriteOptions()) {
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
             requireWritable_("write");
-            auto legacyOptions = detail::makeLegacyOptions(file_, dsetPath_, dsetSlab_, createOptions_, options);
+            auto legacyOptions = detail::makeLegacyOptions(compression_, dsetPath_, dsetSlab_, createOptions_, options);
             legacyOptions.assertWellDefined();
             auto dataInfo   = h5pp::scan::scanDataInfo(data, legacyOptions);
-            auto fileHandle = file_.openFileHandle();
-            auto dsetInfo   = h5pp::scan::inferDsetInfo(fileHandle, data, legacyOptions, file_.plists);
-            if(dsetInfo.hasLocId()) h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), legacyOptions, file_.plists);
-            else h5pp::scan::readDsetInfo(dsetInfo, fileHandle, legacyOptions, file_.plists);
-            if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) h5pp::hdf5::createDataset(dsetInfo, file_.plists);
+            auto fileHandle = fileHandle_;
+            auto dsetInfo   = h5pp::scan::inferDsetInfo(fileHandle, data, legacyOptions, plists_);
+            if(dsetInfo.hasLocId()) h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), legacyOptions, plists_);
+            else h5pp::scan::readDsetInfo(dsetInfo, fileHandle, legacyOptions, plists_);
+            if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) h5pp::hdf5::createDataset(dsetInfo, plists_);
             h5pp::hdf5::resizeDataset(dsetInfo, dataInfo);
-            h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, file_.plists);
+            h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists_);
         }
 
         template<typename DataType>
@@ -158,15 +184,15 @@ namespace h5pp::inline v2 {
             auto legacyOptions = detail::makeLegacyOptions(dsetPath_, dsetSlab_, options);
             if(not dsetSlab_) {
                 legacyOptions.assertWellDefined();
-                auto fileHandle = file_.openFileHandle();
-                auto dsetInfo   = h5pp::scan::readDsetInfo(fileHandle, legacyOptions, file_.plists);
+                auto fileHandle = fileHandle_;
+                auto dsetInfo   = h5pp::scan::readDsetInfo(fileHandle, legacyOptions, plists_);
                 auto dataInfo   = h5pp::scan::scanDataInfo(data, legacyOptions);
                 h5pp::hdf5::resizeData(data, dataInfo, dsetInfo);
-                h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, file_.plists);
+                h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists_);
                 return;
             }
 
-            auto dsetInfo = h5pp::scan::readDsetInfo(file_.openFileHandle(), legacyOptions, file_.plists);
+            auto dsetInfo = h5pp::scan::readDsetInfo(fileHandle_, legacyOptions, plists_);
             if(dsetInfo.dsetExists and not dsetInfo.dsetExists.value())
                 throw h5pp::runtime_error("Cannot read dataset [{}]: It does not exist", dsetPath_);
 
@@ -195,7 +221,7 @@ namespace h5pp::inline v2 {
                 h5pp::scan::scanDataInfo(dataInfo, data, legacyOptions);
             }
 
-            h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, file_.plists);
+            h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists_);
         }
     };
 

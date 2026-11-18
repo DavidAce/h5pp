@@ -34,8 +34,7 @@ namespace h5pp::inline v2::detail {
         return std::nullopt;
     }
 
-    template<typename FileType>
-    [[nodiscard]] inline Options makeLegacyOptions(const FileType                            &file,
+    [[nodiscard]] inline Options makeLegacyOptions(int                                        compression,
                                                    std::string_view                           dsetPath,
                                                    const std::optional<Hyperslab>            &dsetSlab,
                                                    const std::optional<DatasetCreateOptions> &createOptions,
@@ -49,21 +48,19 @@ namespace h5pp::inline v2::detail {
         options.dsetSlab     = dsetSlab;
         options.h5Type       = writeOptions.h5Type;
         options.resizePolicy = writeOptions.resizePolicy;
-        if(createOptions) {
+        if(createOptions.has_value()) {
             options.dsetChunkDims = toOptDimsType(createOptions->dimsChunk);
             options.dsetMaxDims   = toOptDimsType(createOptions->dimsMax);
             options.h5Layout      = createOptions->h5Layout;
             if(not options.h5Type) options.h5Type = createOptions->h5Type;
-            options.compression = file.getCompressionLevel(createOptions->compression);
+            options.compression = createOptions->compression ? hdf5::getValidCompressionLevel(createOptions->compression) : compression;
         } else {
-            options.compression = file.getCompressionLevel(std::nullopt);
+            options.compression = compression;
         }
         return options;
     }
 
-    template<typename FileType>
-    [[nodiscard]] inline Options
-        makeLegacyOptions(const FileType &file, std::string_view dsetPath, const DatasetCreateOptions &createOptions) {
+    [[nodiscard]] inline Options makeLegacyOptions(int compression, std::string_view dsetPath, const DatasetCreateOptions &createOptions) {
         Options options;
         options.linkPath      = h5pp::util::safe_str(dsetPath);
         options.dataDims      = toOptDimsType(createOptions.dims);
@@ -71,7 +68,7 @@ namespace h5pp::inline v2::detail {
         options.dsetMaxDims   = toOptDimsType(createOptions.dimsMax);
         options.h5Layout      = createOptions.h5Layout;
         options.h5Type        = createOptions.h5Type;
-        options.compression   = file.getCompressionLevel(createOptions.compression);
+        options.compression   = createOptions.compression ? hdf5::getValidCompressionLevel(createOptions.compression) : compression;
         return options;
     }
 

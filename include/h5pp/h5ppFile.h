@@ -4,6 +4,7 @@
 #include "h5ppInitListType.h"
 #include "h5ppScan.h"
 #include "h5ppVersion.h"
+#include <memory>
 
 namespace h5pp::inline v2 {
     class File {
@@ -11,12 +12,13 @@ namespace h5pp::inline v2 {
         fs::path                        filePath;                                      /*!< Full path to the file */
         h5pp::FileAccess                fileAccess         = h5pp::FileAccess::RENAME; /*!< File open/create policy. */
         mutable std::optional<hid::h5f> fileHandle         = std::nullopt;             /*!< Keeps a file handle alive in batch operations */
-        mutable bool                    keepFileOpenPinned = false; /*!< Tracks whether the cached handle should survive scoped tokens */
+        mutable std::weak_ptr<hid::h5f>                    scopedFileHandle; /*!< A handle owned by keep-open tokens, when present. */
         mutable LogLevel                logLevel           = LogLevel::info; /*!< Log verbosity from 0 [trace] to 6 [off] */
         bool                            logTimestamp       = false;          /*!< Add a time stamp to console log output */
         hid::h5e                        error_stack        = H5E_DEFAULT;    /*!< Reference to the error stack used by HDF5 */
         int                             currentCompression = -1;             /*!< Compression level (-1 is off, 0 is none, 9 is max) */
-        mutable std::vector<ReclaimInfo::Reclaim> reclaimStack; /*!< Stores alloc metadata from variable-length reads to free */
+        // File copies and their objects share allocation records for explicit reclamation.
+        std::shared_ptr<std::vector<ReclaimInfo::Reclaim>> reclaimStack       = std::make_shared<std::vector<ReclaimInfo::Reclaim>>();
 
         void init() {
             h5pp::logger::setLogger("h5pp|init", logLevel, logTimestamp);
@@ -29,9 +31,11 @@ namespace h5pp::inline v2 {
             filePath = h5pp::hdf5::createFile(filePath, fileAccess, plists);
         }
 
+        public:
         [[nodiscard]] hid::h5f openFileHandle() const {
             h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
             if(fileHandle) return fileHandle.value();
+            if(auto scopedHandle = scopedFileHandle.lock()) return *scopedHandle;
             if(fileAccess == h5pp::FileAccess::READONLY) {
                 h5pp::logger::log->trace("Opening file [{}] with READONLY access", filePath.string());
                 hid_t fid = H5Fopen(filePath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
@@ -45,6 +49,7 @@ namespace h5pp::inline v2 {
             return fid;
         }
 
+        private:
         template<typename FileType>
         requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
         friend class BasicDataset;
@@ -65,118 +70,88 @@ namespace h5pp::inline v2 {
         PropertyLists plists = PropertyLists();
 
         struct KeepFileOpenToken {
-            const File *file_ = nullptr;
-            hid::h5f    pin_;
-            bool        createdCache_ = false;
+            std::shared_ptr<hid::h5f> pin_;
 
-            void release_() noexcept {
-                (void) pin_.release();
-                if(createdCache_ and file_ and file_->fileHandle and not file_->keepFileOpenPinned and file_->fileHandle->refcount() == 1)
-                    file_->fileHandle = std::nullopt;
-                file_         = nullptr;
-                createdCache_ = false;
-            }
-
-            explicit KeepFileOpenToken(const File &file) : file_(&file) {
-                if(not file_->fileHandle) {
-                    file_->fileHandle = file_->openFileHandle();
-                    createdCache_     = true;
+            explicit KeepFileOpenToken(const File &file) : pin_(file.scopedFileHandle.lock()) {
+                if(not pin_) {
+                    pin_                  = std::make_shared<hid::h5f>(file.openFileHandle());
+                    file.scopedFileHandle = pin_;
                 }
-                pin_ = file_->fileHandle.value();
             }
 
-            KeepFileOpenToken(const KeepFileOpenToken &)            = delete;
+            KeepFileOpenToken(const KeepFileOpenToken &)                = delete;
             KeepFileOpenToken &operator=(const KeepFileOpenToken &) = delete;
-
-            KeepFileOpenToken(KeepFileOpenToken &&other) noexcept
-                : file_(std::exchange(other.file_, nullptr)), pin_(std::move(other.pin_)),
-                  createdCache_(std::exchange(other.createdCache_, false)) {}
-
-            KeepFileOpenToken &operator=(KeepFileOpenToken &&other) noexcept {
-                if(this == &other) return *this;
-                release_();
-                file_         = std::exchange(other.file_, nullptr);
-                pin_          = std::move(other.pin_);
-                createdCache_ = std::exchange(other.createdCache_, false);
-                return *this;
-            }
-
-            ~KeepFileOpenToken() { release_(); }
+            KeepFileOpenToken(KeepFileOpenToken &&) noexcept            = default;
+            KeepFileOpenToken &operator=(KeepFileOpenToken &&) noexcept = default;
         };
         using FileHandleToken = KeepFileOpenToken;
 
-        class Advanced {
-            private:
-            File &file_;
+        using Advanced = File;
 
-            public:
-            explicit Advanced(File &file) : file_(file) {}
-
-            void setCloseDegree(H5F_close_degree_t degree) {
-                if(file_.plists.fileAccess == H5P_DEFAULT) file_.plists.fileAccess = H5Fget_access_plist(file_.openFileHandle());
-                H5Pset_fclose_degree(file_.plists.fileAccess, degree);
-                if(file_.fileHandle) {
-                    file_.fileHandle = std::nullopt;
-                    file_.fileHandle = file_.openFileHandle();
-                }
+        void setCloseDegree(H5F_close_degree_t degree) {
+            if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            H5Pset_fclose_degree(plists.fileAccess, degree);
+            if(fileHandle) {
+                fileHandle = std::nullopt;
+                fileHandle = openFileHandle();
             }
+        }
 
-            void setDriver_core(bool writeOnClose = false, size_t bytesPerMalloc = 10240000) {
-                if(file_.plists.fileAccess == H5P_DEFAULT) file_.plists.fileAccess = H5Fget_access_plist(file_.openFileHandle());
-                H5Pset_fapl_core(file_.plists.fileAccess, bytesPerMalloc, static_cast<hbool_t>(writeOnClose));
-                if(file_.fileHandle) {
-                    file_.fileHandle = std::nullopt;
-                    file_.fileHandle = file_.openFileHandle();
-                }
+        void setDriver_core(bool writeOnClose = false, size_t bytesPerMalloc = 10240000) {
+            if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            H5Pset_fapl_core(plists.fileAccess, bytesPerMalloc, static_cast<hbool_t>(writeOnClose));
+            if(fileHandle) {
+                fileHandle = std::nullopt;
+                fileHandle = openFileHandle();
             }
+        }
 
-            void setDriver_sec2() {
-                if(file_.plists.fileAccess == H5P_DEFAULT) file_.plists.fileAccess = H5Fget_access_plist(file_.openFileHandle());
-                H5Pset_fapl_sec2(file_.plists.fileAccess);
-                if(file_.fileHandle) {
-                    file_.fileHandle = std::nullopt;
-                    file_.fileHandle = file_.openFileHandle();
-                }
+        void setDriver_sec2() {
+            if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            H5Pset_fapl_sec2(plists.fileAccess);
+            if(fileHandle) {
+                fileHandle = std::nullopt;
+                fileHandle = openFileHandle();
             }
+        }
 
-            void setDriver_stdio() {
-                if(file_.plists.fileAccess == H5P_DEFAULT) file_.plists.fileAccess = H5Fget_access_plist(file_.openFileHandle());
-                H5Pset_fapl_stdio(file_.plists.fileAccess);
-                if(file_.fileHandle) {
-                    file_.fileHandle = std::nullopt;
-                    file_.fileHandle = file_.openFileHandle();
-                }
+        void setDriver_stdio() {
+            if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            H5Pset_fapl_stdio(plists.fileAccess);
+            if(fileHandle) {
+                fileHandle = std::nullopt;
+                fileHandle = openFileHandle();
             }
+        }
 
 #ifdef H5PP_USE_MPI
-            void setDriver_mpio(MPI_Comm comm, MPI_Info info) {
-                file_.plists.fileAccess = H5Fget_access_plist(file_.openFileHandle());
-                H5Pset_fapl_mpio(file_.plists.fileAccess, comm, info);
-                if(file_.fileHandle) {
-                    file_.fileHandle = std::nullopt;
-                    file_.fileHandle = file_.openFileHandle();
-                }
+        void setDriver_mpio(MPI_Comm comm, MPI_Info info) {
+            plists.fileAccess = H5Fget_access_plist(openFileHandle());
+            H5Pset_fapl_mpio(plists.fileAccess, comm, info);
+            if(fileHandle) {
+                fileHandle = std::nullopt;
+                fileHandle = openFileHandle();
             }
+        }
 #endif
 
-            [[nodiscard]] hid::h5f          openFileHandle() const { return file_.openFileHandle(); }
-            [[nodiscard]] KeepFileOpenToken keepFileOpen() const { return file_.keepFileOpen(); }
-            [[nodiscard]] FileHandleToken   getFileHandleToken() const { return file_.getFileHandleToken(); }
-            [[nodiscard]] File             &getLowLevelFile() { return file_; }
+        [[nodiscard]] File &getLowLevelFile() & { return *this; }
+        File               &getLowLevelFile() && = delete;
 
-            void vlenReclaim() const {
-                for(auto &item : file_.reclaimStack) item.reclaim();
-                file_.reclaimStack.clear();
-            }
+        void vlenReclaim() const {
+            if(not reclaimStack) return;
+            for(auto &item : *reclaimStack) item.reclaim();
+            reclaimStack->clear();
+        }
 
-            void vlenDropReclaims() const {
-                for(auto &item : file_.reclaimStack) item.drop();
-                file_.reclaimStack.clear();
-            }
+        void vlenDropReclaims() const {
+            if(not reclaimStack) return;
+            for(auto &item : *reclaimStack) item.drop();
+            reclaimStack->clear();
+        }
 
-            void vlenEnableReclaimsTracking() { file_.plists.vlenTrackReclaims = true; }
-            void vlenDisableReclaimsTracking() { file_.plists.vlenTrackReclaims = false; }
-        };
+        void vlenEnableReclaimsTracking() { plists.vlenTrackReclaims = true; }
+        void vlenDisableReclaimsTracking() { plists.vlenTrackReclaims = false; }
 
         File() = default;
 
@@ -216,7 +191,8 @@ namespace h5pp::inline v2 {
         [[nodiscard]] ConstAttribute attribute(std::string_view linkPath, std::string_view attrName) const {
             return ConstAttribute(*this, linkPath, attrName);
         }
-        [[nodiscard]] Advanced advanced() { return Advanced(*this); }
+        [[nodiscard]] Advanced &advanced() & { return *this; }
+        [[nodiscard]] Advanced  advanced()  &&{ return std::move(*this); }
 
         [[nodiscard]] KeepFileOpenToken keepFileOpen() const { return KeepFileOpenToken(*this); }
         [[nodiscard]] FileHandleToken   getFileHandleToken() const { return keepFileOpen(); }
@@ -392,12 +368,10 @@ namespace h5pp::inline v2 {
         }
 
         void setKeepFileOpened() const {
-            keepFileOpenPinned = true;
             if(not fileHandle) fileHandle = openFileHandle();
         }
 
         void setKeepFileClosed() const {
-            keepFileOpenPinned = false;
             fileHandle         = std::nullopt;
         }
 
