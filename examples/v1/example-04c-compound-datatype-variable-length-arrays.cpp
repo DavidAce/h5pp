@@ -4,19 +4,19 @@
 // To achieve this, the memory layout of the struct has to be registered with HDF5 in advance.
 
 // This time we consider the case where the struct data members are variable-length arrays.
-// Since the memory layout of this struct must be known at compile-time, the struct members need to be pointers to
+// Since the memory layout of this struct must be known at compile-time, the struct members need to be wrappers over
 // dynamically allocated data.
 
-// for numeric types, h5pp provides h5pp::vlen_t<> which is a wrapper for HDF5's hvl_t with automatic memory management. It can be for
+// for numeric types, h5pp provides h5pp::varr_t<> which is a wrapper for HDF5's hvl_t with automatic memory management. It can be used for
 // writing variable-length elements in datasets or table fields.
 
 struct Volcano {
     h5pp::vstr_t      name; // Name of the volcano
-    h5pp::varr_t<int> year; // Year of eruption events. vlen_t is t with a wich a struct with void* p and size_t length to describe the data
+    h5pp::varr_t<int> year; // Year of eruption events. varr_t wraps hvl_t to describe variable-length data
 
     // This is a sentinel telling h5pp to expect a vlen type in this struct.
     // Note that "vlen_type" must be spelled exactly like this, and a single "using vlen_type" is enough,
-    // even if there are multiple vlen_t members. The purpose of it is to disable any tracking of variable-length allocations
+    // even if there are multiple varr_t members. The purpose of it is to disable any tracking of variable-length allocations
     // when reading this type of data. To disable tracking completely, use h5pp::v1::File::vlenDisableReclaimsTracking() instead.
     using vlen_type = h5pp::varr_t<int>;
 };
@@ -40,7 +40,7 @@ int main() {
     H5Tinsert(H5_VOLCANO_TYPE, "name", HOFFSET(Volcano, name), h5pp::vstr_t::get_h5type());
     H5Tinsert(H5_VOLCANO_TYPE, "year", HOFFSET(Volcano, year), h5pp::varr_t<int>::get_h5type());
 
-    // We can now write single volcano dataests ...
+    // We can now write single volcano datasets ...
 
     Volcano volcano_single{"Mount Vesuvius", {1906, 1944}};
     print_event(volcano_single, "Writing to file:");
@@ -66,16 +66,16 @@ int main() {
 /* Console output:
 
 Writing to file:
-    -- Mount Vesuvius                  : 1906 1944
+    -- Mount Vesuvius                  : [1906, 1944]
     Writing to file:
-    -- Mount Vesuvius                  : 1906 1944
-    -- Mount Spurr                     : 1953 1992
-    -- Kelud                           : 1919 1951 1966 1990
+    -- Mount Vesuvius                  : [1906, 1944]
+    -- Mount Spurr                     : [1953, 1992]
+    -- Kelud                           : [1919, 1951, 1966, 1990]
     Read from file:
-    -- Mount Vesuvius                  : 1906 1944
+    -- Mount Vesuvius                  : [1906, 1944]
     Read from file:
-    -- Mount Vesuvius                  : 1906 1944
-    -- Mount Spurr                     : 1953 1992
-    -- Kelud                           : 1919 1951 1966 1990
+    -- Mount Vesuvius                  : [1906, 1944]
+    -- Mount Spurr                     : [1953, 1992]
+    -- Kelud                           : [1919, 1951, 1966, 1990]
 
 */

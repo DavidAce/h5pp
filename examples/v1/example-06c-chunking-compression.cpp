@@ -3,7 +3,7 @@
 /*
  * This example shows how to enable compression in HDF5 datasets with H5D_CHUNKED layout.
  * Datasets with H5D_CHUNKED layout are more versatile than the other layouts, i.e.
- * H5D_CONTIGUOUS (default) and H5D_COMPACT.
+ * H5D_CONTIGUOUS and H5D_COMPACT.
  * The H5D_CHUNKED layout has a bit more overhead and enables
  *      - unlimited max-size datasets
  *      - resizeable datasets
@@ -21,7 +21,7 @@ int main() {
      *       The compression level is a number from 0 (off) to 9 (highest compression).
      *       For high levels (like 7,8 or 9) there can be a large increase in computational effort
      *       with very little reduction in file size. A good trade-off between performance and
-     *       file size found at levels around 2 to 5.
+     *       file size is found at levels around 2 to 5.
      */
 
     // Set a default compression level.
@@ -56,7 +56,7 @@ int main() {
                       3);
 
     // Write data alternative version 2
-    // Slighly les verbose is to use writeDataset_chunked
+    // Slightly less verbose is to use writeDataset_chunked
     // Tip: An IDE with autocomplete can be very useful to get this right...
     file.writeDataset_chunked(v_write, "myStdVectorDouble_alt2", std::nullopt, std::nullopt, std::nullopt, std::nullopt, 3);
 

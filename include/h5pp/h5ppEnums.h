@@ -13,7 +13,7 @@ namespace h5pp {
       *
       * See the original file access permissions in the HDF5 Documentation
       * for [H5F_CREATE](https://portal.hdfgroup.org/display/HDF5/H5F_CREATE)
-      * and [H5F_OPEN](https://portal.hdfgroup.org/display/HDF5/H5F_CREATE).
+      * and [H5F_OPEN](https://portal.hdfgroup.org/display/HDF5/H5F_OPEN).
       *
       * `h5pp` offers more flags for file access permissions than HDF5. The new flags are primarily intended to
       * prevent accidental loss of data, but also to clarify intent and avoid mutually exclusive options.
@@ -27,7 +27,7 @@ namespace h5pp {
       * | `RENAME` **default**      | Create renamed file                  | Create new file | Never deletes existing files. Invents a new filename to avoid collision by appending "-#" (#=1,2,3...) to the stem of the filename |
       * | `READWRITE`               | Open with read-write access          | Create new file | Never deletes existing files, but is allowed to open/modify |
       * | `BACKUP`                  | Rename existing file and create new  | Create new file | Avoids collision by backing up the existing file, appending `.bak_#` (`#`=1,2,3...) to the filename |
-      * | `REPLACE`                 | Truncate (overwrite)                 | Create new file | Deletes the existing file and create a new one in place |
+      * | `REPLACE`                 | Truncate (overwrite)                 | Create new file | Deletes the existing file and creates a new one in place |
       *
       *
       * - When a new file is created, the intermediate directories are always created automatically.
@@ -40,7 +40,7 @@ namespace h5pp {
         RENAME,             /* Never deletes existing files. Invents a new filename to avoid collision by appending "-#" (#=1,2,3...) to the stem of the filename */
         READWRITE,          /* Never deletes existing files, but is allowed to open/modify */
         BACKUP,             /* Avoids collision by backing up the existing file, appending ".bak_#" (#=1,2,3...) to the filename */
-        REPLACE             /* Deletes the existing file and create a new one in place */
+        REPLACE             /* Deletes the existing file and creates a new one in place */
     };
     using FilePermission = FileAccess;
     /* clang-format on */
@@ -50,14 +50,14 @@ namespace h5pp {
     enum class TableSelection {
         FIRST, /*!< Selects the first element in a table */
         LAST,  /*!< Selects the last element in a table */
-        ALL,   /*!< Selects the all elements in a table */
+        ALL,   /*!< Selects all elements in a table */
     };
 
     /*! \brief Set policy for modifying dataset dimensions when overwriting
      */
     enum class ResizePolicy {
         FIT,  /*!< Overwriting a dataset will shrink or grow existing dimensions to fit new data (default on H5D_CHUNKED) */
-        GROW, /*!< Overwriting a dataset will may grow existing dimensions, but never shrink, to fit new data (works only on H5D_CHUNKED) */
+        GROW, /*!< Overwriting a dataset may grow existing dimensions, but never shrink, to fit new data (works only on H5D_CHUNKED) */
         OFF,  /*!< Overwriting a dataset will not modify existing dimensions */
     };
 

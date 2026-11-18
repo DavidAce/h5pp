@@ -9,7 +9,7 @@ struct Particle {
     double x = 0, y = 0, z = 0, t = 0;
     int    id = 0;
     void   dummy_function(int) {} // Functions are OK
-    // Se example 04b for the case of static-size array members
+    // See example 04b for the case of static-size array members
 };
 
 void print_particle(const Particle &p) { h5pp::print("x:{:.3f} y:{:.3f} z:{:.3f} t:{:.3f} id:{}\n", p.x, p.y, p.z, p.t, p.id); }

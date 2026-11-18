@@ -5,8 +5,6 @@
 namespace h5pp {
     /*!
      * Property lists that describe policies for common tasks in HDF5.
-     * Note that we do not include dataset property lists here because
-     * those are local to each individual dataset.
      * Some of these can be used/modified to setup MPI usage.
      * */
     struct PropertyLists {

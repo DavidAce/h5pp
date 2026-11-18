@@ -60,7 +60,7 @@ namespace h5pp::hdf5 {
     [[nodiscard]] inline std::vector<std::string_view> pathCumulativeSplit(std::string_view path, std::string_view delim) {
         // Here the resulting vector "output" will contain increasingly longer string_views, that are subsets of the path.
         // Note that no string data is allocated here, these are simply views into a string allocated elsewhere.
-        // For example if path is "this/is/a/long/path, the vector will contain the following views
+        // For example if path is "this/is/a/long/path", the vector will contain the following views
         // [0]: this
         // [1]: this/is
         // [2]: this/is/a
@@ -1335,7 +1335,7 @@ namespace h5pp::hdf5 {
             info.dsetSize = h5pp::hdf5::getSize(info.h5Space.value());
             info.dsetRank = h5pp::hdf5::getRank(info.h5Space.value());
 
-            // Now se select the space on the extended dataset where the given data will fit
+            // Now we select the space on the extended dataset where the given data will fit
             // Draw the target space on a hyperslab
             Hyperslab slab;
             slab.extent               = embeddedDims;
@@ -1466,7 +1466,7 @@ namespace h5pp::hdf5 {
          * Requirements
          *      - dsetInfo.resizePolicy == FIT | GROW
          *      - dsetInfo.h5Layout == H5D_CHUNKED
-         * If the requirements are fullfilled, this function makes sure the dataset is large enough to receive data.
+         * If the requirements are fulfilled, this function makes sure the dataset is large enough to receive data.
          * This also takes hyperslabs into account:
          *      - If there is a hyperslab in dataInfo, the new dimensions should be at least this big
          *      - If there is a hyperslab in dsetInfo, the new dimensions should be increased to include it.
@@ -1499,8 +1499,8 @@ namespace h5pp::hdf5 {
         // This function is used when reading data from file into memory.
         // It resizes the data so the space in memory can fit the data read from file.
         // Note that this resizes the data to fit the bounding box of the data selected in the fileSpace.
-        // A selection of elements in memory space must occurr after calling this function.
-        if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) return; // h5pp never uses malloc
+        // A selection of elements in memory space must occur after calling this function.
+        if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) return; // Pointer and array buffers are not resized
         if(bytes == 0) return;
         if(H5Tget_class(type) == H5T_STRING) {
             if constexpr(type::sfinae::is_text_v<DataType>) {
@@ -1554,7 +1554,7 @@ namespace h5pp::hdf5 {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
     inline void resizeData(DataType &data, DataInfo &dataInfo, const DsetInfo &info) {
-        if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) return; // h5pp never uses malloc
+        if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) return; // Pointer and array buffers are not resized
         if(not info.h5Space.has_value())
             throw h5pp::runtime_error("Could not resize given data container: DsetInfo field [h5Space] is not defined");
         if(not info.h5Type.has_value())
@@ -1580,7 +1580,7 @@ namespace h5pp::hdf5 {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_const_v<DataType>>>
     inline void resizeData(DataType &data, DataInfo &dataInfo, const AttrInfo &attrInfo) {
-        if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) return; // h5pp never uses malloc
+        if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) return; // Pointer and array buffers are not resized
         if(not attrInfo.h5Space.has_value())
             throw h5pp::runtime_error("Could not resize given data container: AttrInfo field [h5Space] is not defined");
         if(not attrInfo.h5Type.has_value())
@@ -1667,7 +1667,7 @@ namespace h5pp::hdf5 {
             else if constexpr(ObjType == H5O_type_t::H5O_TYPE_UNKNOWN) return "unknown";
             else if constexpr(ObjType == H5O_type_t::H5O_TYPE_NAMED_DATATYPE) return "named datatype";
             else if constexpr(ObjType == H5O_type_t::H5O_TYPE_NTYPES) return "ntypes";
-            else return "map"; // Only in HDF5 v 1.12
+            else return "map"; // Available in HDF5 1.12 and later
         }
         [[nodiscard]] inline std::string_view getObjTypeName(H5O_type_t type) {
             if     (type == H5O_type_t::H5O_TYPE_DATASET) return "dataset";
@@ -1675,7 +1675,7 @@ namespace h5pp::hdf5 {
             else if(type == H5O_type_t::H5O_TYPE_UNKNOWN) return "unknown";
             else if(type == H5O_type_t::H5O_TYPE_NAMED_DATATYPE) return "named datatype";
             else if(type == H5O_type_t::H5O_TYPE_NTYPES) return "ntypes";
-            return "map"; // Only in HDF5 v 1.12
+            return "map"; // Available in HDF5 1.12 and later
         }
         template<H5L_type_t LinkType>
         [[nodiscard]] inline constexpr std::string_view getLinkTypeName() {
@@ -1698,7 +1698,7 @@ namespace h5pp::hdf5 {
         template<H5O_type_t ObjType, typename InfoType>
         inline herr_t matcher([[maybe_unused]] hid_t id, const char *name, [[maybe_unused]] const InfoType *info, void *opdata) {
             // If object type is the one requested, and name matches the search key, then add it to the match list (a vector<string>)
-            // If the search depth is passed the depth specified, return immediately
+            // If the search depth is past the depth specified, return immediately
             // Return 0 to continue searching
             // Return 1 to finish the search. Normally when we've reached max search hits.
 
@@ -1843,7 +1843,7 @@ namespace h5pp::hdf5 {
     }
 
     inline void createDataset(DsetInfo &dsetInfo, const PropertyLists &plists = PropertyLists()) {
-        // Here we create, the dataset id and set its properties before writing data to it.
+        // Here we create the dataset id and set its properties before writing data to it.
         dsetInfo.assertCreateReady();
         if(dsetInfo.dsetExists.has_value() and dsetInfo.dsetExists.value()) {
             h5pp::logger::log->trace("No need to create dataset [{}]: exists already", dsetInfo.dsetPath.value());
@@ -2112,16 +2112,16 @@ namespace h5pp::hdf5 {
             size_t     typeSize  = h5pp::hdf5::getBytesPerElem(datatype);
             size_t     chunkSize = h5pp::util::getSizeFromDimensions(chunkDims);
             hsize_t    chunkByte = chunkSize * typeSize;
-            hid_t      h5dset    = dataset.value();    // Repeated calls to .value() takes time because validity is always checked
-            hid_t      h5dcpl    = dsetCreate.value(); // Repeated calls to .value() takes time because validity is always checked
-            hid_t      h5dxpl    = dsetXfer.value();   // Repeated calls to .value() takes time because validity is always checked
+            hid_t      h5dset    = dataset.value();    // Repeated calls to .value() take time because validity is always checked
+            hid_t      h5dcpl    = dsetCreate.value(); // Repeated calls to .value() take time because validity is always checked
+            hid_t      h5dxpl    = dsetXfer.value();   // Repeated calls to .value() take time because validity is always checked
             auto       filters   = getFilters(h5dcpl);
             auto       deflate   = getDeflateLevel(h5dcpl);
             const auto rank      = dims.size();
 
             // Compute the total number of chunks currently in the dataset
             hsize_t chunkCount = 0;                    // The total number of chunks currently in the dataset
-            hid_t   h5space    = H5Dget_space(h5dset); // Must be created because H5Dget_num_chunks can't take H5S_SPACE_ALL yet
+            hid_t   h5space    = H5Dget_space(h5dset); // Must be created because H5Dget_num_chunks can't take H5S_ALL yet
             herr_t  ers        = H5Sselect_all(h5space);
             if(ers < 0) throw h5pp::runtime_error("writeDataset_chunkwise: failed to select all elements in space");
             herr_t ern = H5Dget_num_chunks(h5dset, h5space, &chunkCount);
@@ -2162,10 +2162,10 @@ namespace h5pp::hdf5 {
             uint32_t read_mask  = 0; // Tells which filters to skip on read
             uint32_t write_mask = 0; // Tells which filters to skip on write
 
-            /* Allocate a reusable chunk buffers */
+            /* Allocate a reusable chunk buffer */
             std::vector<std::byte> chunkBuffer(chunkByte); // Takes existing chunks and modifies
 
-            /* Allocate a reusable hyperslabs */
+            /* Allocate reusable hyperslabs */
             h5pp::Hyperslab chunkSlab, olapSlab;
             chunkSlab.offset = std::vector<hsize_t>(rank);
             chunkSlab.extent = chunkDims;
@@ -2424,8 +2424,8 @@ namespace h5pp::hdf5 {
         // Read the data
         if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
             // When H5T_VARIABLE,
-            //      1) H5Dread expects [const char **], which is what we get from vdata.data().
-            //      2) H5Dread allocates memory on each const char * which has to be reclaimed later.
+            //      1) H5Dread expects [char **], which is what we get from vdata.data().
+            //      2) H5Dread allocates memory on each char * which has to be reclaimed later.
             // Otherwise,
             //      1) H5Dread expects [char *], i.e. *vdata.data()
             //      2) Allocation on char * must be done before reading.
@@ -2606,8 +2606,8 @@ namespace h5pp::hdf5 {
         // Read the data
         if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
             // When H5T_VARIABLE,
-            //      1) H5Aread expects [const char **], which is what we get from vdata.data().
-            //      2) H5Aread allocates memory on each const char * which has to be reclaimed later.
+            //      1) H5Aread expects [char **], which is what we get from vdata.data().
+            //      2) H5Aread allocates memory on each char * which has to be reclaimed later.
             // Otherwise,
             //      1) H5Aread expects [char *], i.e. *vdata.data()
             //      2) Allocation on char * must be done before reading.
@@ -2616,7 +2616,7 @@ namespace h5pp::hdf5 {
                 std::vector<char *> vdata(type::safe_cast<size_t>(size)); // Allocate pointers for "size" number of strings
                 // HDF5 allocates space for each string
                 retval = H5Aread(attrInfo.h5Attr.value(), attrInfo.h5Type.value(), vdata.data());
-                // Now vdata contains the whole dataset, and we need to put the data into the user-given container.
+                // Now vdata contains the whole attribute, and we need to put the data into the user-given container.
                 if constexpr(std::is_same_v<DataType, std::string>) {
                     // A vector of strings (vdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
@@ -2640,14 +2640,14 @@ namespace h5pp::hdf5 {
 #endif
                 if(reclaim_err < 0) throw h5pp::runtime_error("readAttribute: failed to reclaim variable-length array buffer");
             } else {
-                // All the elements in the dataset have the same string size
-                // The whole dataset is read into a contiguous block of memory.
+                // All the elements in the attribute have the same string size
+                // The whole attribute is read into a contiguous block of memory.
                 size_t      bytesPerString = H5Tget_size(attrInfo.h5Type.value()); // Includes null terminator
                 auto        size           = H5Sget_select_npoints(attrInfo.h5Space.value());
                 std::string fdata;
                 fdata.resize(type::safe_cast<size_t>(size) * bytesPerString);
                 retval = H5Aread(attrInfo.h5Attr.value(), attrInfo.h5Type.value(), fdata.data());
-                // Now fdata contains the whole dataset, and we need to put the data into the user-given container.
+                // Now fdata contains the whole attribute, and we need to put the data into the user-given container.
                 if constexpr(std::is_same_v<DataType, std::string>) {
                     // A vector of strings (fdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
@@ -2801,7 +2801,7 @@ namespace h5pp::hdf5 {
                     plists); // The existence of the group has to be checked, unfortunately
 
         // Copy member type data to a vector of hid_t for compatibility.
-        // Note that there is no need to close thes hid_t since info will close them.
+        // Note that there is no need to close these hid_t since info will close them.
         std::vector<hid_t> fieldTypesHidT(info.fieldTypes.value().begin(), info.fieldTypes.value().end());
 
         // Copy member name data to a vector of const char * for compatibility
@@ -2949,7 +2949,7 @@ namespace h5pp::hdf5 {
                                   const PropertyLists   &plists = PropertyLists()) {
         /*
          *  This function replaces H5TBwrite_records() and avoids creating expensive temporaries for the dataset id and type id for the
-         * compound table type. In addition, it has the ability to extend the existing the dataset if the incoming data larger than the
+         * compound table type. In addition, it has the ability to extend the existing dataset if the incoming data is larger than the
          * current bound
          */
         info.assertWriteReady();
@@ -3441,7 +3441,7 @@ namespace h5pp::hdf5 {
 
     template<typename h5x_src,
              typename h5x_tgt,
-             // enable_if so the compiler doesn't think it can use overload with std::string those arguments
+             // enable_if so the compiler doesn't think it can use overload with std::string on those arguments
              typename = std::enable_if_t<type::sfinae::is_hdf5_loc_id<h5x_src>>,
              typename = std::enable_if_t<type::sfinae::is_hdf5_loc_id<h5x_tgt>>>
     inline void copyLink(const h5x_src       &srcLocId,
@@ -3471,7 +3471,7 @@ namespace h5pp::hdf5 {
 
     template<typename h5x_src,
              typename h5x_tgt,
-             // enable_if so the compiler doesn't think it can use overload with fs::path those arguments
+             // enable_if so the compiler doesn't think it can use overload with fs::path on those arguments
              typename = std::enable_if_t<type::sfinae::is_hdf5_loc_id<h5x_src>>,
              typename = std::enable_if_t<type::sfinae::is_hdf5_loc_id<h5x_tgt>>>
     inline void moveLink(const h5x_src       &srcLocId,

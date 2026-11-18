@@ -2,7 +2,7 @@
 
 /* This example shows how to enable chunking in HDF5 datasets and to set the chunking dimensions manually.
  * Datasets with H5D_CHUNKED layout are more versatile than the other layouts, i.e.
- * H5D_CONTIGUOUS (default) and H5D_COMPACT.
+ * H5D_CONTIGUOUS and H5D_COMPACT.
  * The H5D_CHUNKED layout has a bit more overhead and enables
  *      - unlimited max-size datasets
  *      - resizeable datasets
@@ -48,7 +48,7 @@ int main() {
      *         and can be skipped using "std::nullopt". All arguments of type "h5pp::OptDimsType" can
      *         be skipped with std::nullopt.
      *         See example 08a where the dimension parameter is used to reinterpret
-     *         the shape of the given container (e.g. {500,2} or {200,200,600} are also valid).
+     *         the shape of the given container (e.g. {500,2} or {10,10,10} are also valid).
      *         If h5pp detects no argument, or if std::nullopt is given, then h5pp will deduce this
      *         argument based on the given data container. If you pass a C-style pointer to a raw data buffer
      *         then this argument can't be deduced so you must give the dimensions explicitly.

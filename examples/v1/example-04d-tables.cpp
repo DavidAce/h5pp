@@ -6,7 +6,7 @@
  * Tables can be suitable for time-series data or coordinate sets, for instance.
  * To achieve this, the memory layout of the struct has to be registered with HDF5 in advance.
  * Note that the struct cannot have dynamic-size members such as std::vector or std::string.
- * It is safest to stick to std::trivial and std::standard_layout (aka std::pod) structs.
+ * It is safest to stick to trivial and standard-layout (POD) structs.
  *
  */
 struct Particle {
@@ -36,7 +36,7 @@ int main() {
     /*
      * NOTE
      * The full signature of readTableRecords(...) is
-     * readTableRecords(std::string_view tablePath, std::optional<size_t> startIdx = std::nullopt, std::optional<size_t> numRecords =
+     * readTableRecords(DataType &data, std::string_view tablePath, std::optional<size_t> startIdx = std::nullopt, std::optional<size_t> numRecords =
      std::nullopt)
      * When startIdx and/or numRecords (arguments 3 and 4) are missing, h5pp can decide them for you. The behavior is explained in this
      pseudocode:

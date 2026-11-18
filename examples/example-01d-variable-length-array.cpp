@@ -22,7 +22,7 @@ int main() {
 
 /* Output
 
-Wrote vlen dataset: [0, 1, 2, 3]
-Read  vlen dataset: [0, 1, 2, 3] | alt: [0, 1, 2, 3]
+v2 API wrote vlen dataset: [0, 1, 2, 3]
+v2 API read  vlen dataset: [0, 1, 2, 3]
 
  */

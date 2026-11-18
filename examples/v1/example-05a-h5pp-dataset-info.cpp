@@ -4,7 +4,7 @@
  * This example shows how to use a DsetInfo object.
  *
  * When transferring a dataset to/from file h5pp scans its type, shape, link path
- * and many other properties. The results from a scan populates a struct of type "DsetInfo".
+ * and many other properties. The results from a scan populate a struct of type "DsetInfo".
  *
  * The DsetInfo of a dataset can be obtained with h5pp::v1::File::getDatasetInfo(<dataset path>),
  * but is also returned from a h5pp::v1::File::writeDataset(...) operation.

@@ -1,8 +1,8 @@
 #include <h5pp/v1/h5pp.h>
 
 /*
- * In this example write a variable-length array into a single entry in a dataset.
- * h5pp provides a variable-length wrapper h5pp::vlen_t which
+ * In this example we write a variable-length array into a single entry in a dataset.
+ * h5pp provides a variable-length wrapper h5pp::varr_t for this purpose.
  *
  */
 
@@ -15,7 +15,7 @@ int main() {
     h5pp::varr_t<int> readVlen;                // Allocate for a new variable-length int array
     file.readDataset(readVlen, "vlenIntData"); // Read data
 
-    // h5pp::vlen_t<T> can be copied to std::vector<T> on the fly
+    // h5pp::varr_t<T> can be copied to std::vector<T> on the fly
     std::vector<int> readVlen_alt = file.readDataset<h5pp::varr_t<int>>("vlenIntData"); // Or read by assignment
 
     h5pp::print("Wrote vlen dataset: {}\n", writeVlen);

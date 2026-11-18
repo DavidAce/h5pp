@@ -96,10 +96,10 @@ namespace h5pp {
         std::optional<Hyperslab>        dsetSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from the dataset  */
         std::optional<Hyperslab>        attrSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from the attribute  */
         std::optional<Hyperslab>        dataSlab      = std::nullopt; /*!< Select hyperslab, a subset of the data to participate in transfers to/from memory  */
-        std::optional<hid::h5t>         h5Type        = std::nullopt; /*!< (On create) Type of dataset. Override automatic type detection. */
+        std::optional<hid::h5t>         h5Type        = std::nullopt; /*!< HDF5 type. Override automatic type detection. */
         std::optional<H5D_layout_t>     h5Layout      = std::nullopt; /*!< (On create) Layout of dataset. Choose between H5D_CHUNKED,H5D_COMPACT and H5D_CONTIGUOUS */
-        std::optional<int>              compression   = std::nullopt; /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
-        std::optional<h5pp::ResizePolicy> resizePolicy    = std::nullopt; /*!< Type of resizing if needed. Choose GROW, TO_FIT,OFF */
+        std::optional<int>              compression   = std::nullopt; /*!< (On create) Compression level 0-9, 0 = off, 9 gives best compression and is slowest */
+        std::optional<h5pp::ResizePolicy> resizePolicy    = std::nullopt; /*!< Type of resizing if needed. Choose GROW, FIT,OFF */
         /* clang-format on */
         [[nodiscard]] std::string string(bool enable = true) const {
             if(not enable) return {};
@@ -812,7 +812,7 @@ namespace h5pp {
         std::optional<time_t>         btime        = std::nullopt; /*!< Birth time                                    */
         std::optional<hsize_t>        num_attrs    = std::nullopt; /*!< Number of attributes attached to object       */
         std::optional<int64_t>        corder       = std::nullopt; /*!< Link creation order position                  */
-        std::optional<hbool_t>        corder_valid = std::nullopt; /*!< Whether corder can assumed to be valid        */
+        std::optional<hbool_t>        corder_valid = std::nullopt; /*!< Whether corder can be assumed to be valid        */
         std::optional<H5T_cset_t>     cset         = std::nullopt; /*!< Character set encoding for the linkPath       */
 
         [[nodiscard]] std::string string(bool enable = true) const {

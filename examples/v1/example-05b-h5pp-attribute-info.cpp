@@ -9,7 +9,7 @@
  * is to add descriptive metadata to an HDF5 object.
  *
  * When transferring attribute data to/from file h5pp scans the attribute type, shape, link path
- * and many other such properties. The results from a scan populates a struct of type "AttrInfo".
+ * and many other such properties. The results from a scan populate a struct of type "AttrInfo".
 
  * The AttrInfo of an attribute can be obtained with h5pp::v1::File::getAttributeInfo(<link path>,<attr name>),
  * but is also returned from a h5pp::v1::File::writeAttribute(...) operation.

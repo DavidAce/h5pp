@@ -11,7 +11,7 @@ int main() {
     Eigen::MatrixXcd matrixWrite = Eigen::MatrixXcd::Random(5, 5);
 
     // Write the matrix using the v2 API.
-    // Inside the file, the data will be stored in a dataset named "myEigenMatrix" under the group "myGroup".
+    // Inside the file, the data will be stored in a dataset named "myEigenMatrix" under the group "v2Api/myGroup".
     file.dataset("v2Api/myGroup/myEigenMatrix").write(matrixWrite);
 
     // Read it back in one line.

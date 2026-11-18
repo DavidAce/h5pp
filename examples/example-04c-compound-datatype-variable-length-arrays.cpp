@@ -70,16 +70,16 @@ int main() {
 /* Console output:
 
 Writing to file:
--- Mount Vesuvius                  : 1906 1944
+-- Mount Vesuvius                  : [1906, 1944]
 Writing to file:
--- Mount Vesuvius                  : 1906 1944
--- Mount Spurr                     : 1953 1992
--- Kelud                           : 1919 1951 1966 1990
+-- Mount Vesuvius                  : [1906, 1944]
+-- Mount Spurr                     : [1953, 1992]
+-- Kelud                           : [1919, 1951, 1966, 1990]
 Read from file:
--- Mount Vesuvius                  : 1906 1944
+-- Mount Vesuvius                  : [1906, 1944]
 Read from file:
--- Mount Vesuvius                  : 1906 1944
--- Mount Spurr                     : 1953 1992
--- Kelud                           : 1919 1951 1966 1990
+-- Mount Vesuvius                  : [1906, 1944]
+-- Mount Spurr                     : [1953, 1992]
+-- Kelud                           : [1919, 1951, 1966, 1990]
 
 */

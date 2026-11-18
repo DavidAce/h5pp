@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
 
-# Append search paths for find_package and find_library calls
+# Append search paths for find_package calls
 if(NOT "${CMAKE_CURRENT_LIST_DIR}/modules" IN_LIST CMAKE_MODULE_PATH)
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/modules")
 endif()

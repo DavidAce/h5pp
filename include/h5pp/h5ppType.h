@@ -202,7 +202,7 @@ namespace h5pp::type {
         else if constexpr (std::is_same_v<DecayType, hvl_t>)                 return H5Tvlen_create(H5T_NATIVE_OPAQUE); // Last resort ... user should provide a h5 type at runtime
         else if constexpr (std::is_enum_v<DecayType>)                        return getH5Type<std::underlying_type_t<DecayType>>(); // Last resort ... user should provide a h5 type at runtime
         else if constexpr (std::is_class_v<DecayType>) {
-            // Last resort ... unless the user should provides a h5 type at runtime.
+            // Last resort ... unless the user provides an HDF5 type at runtime.
             // When reading, h5pp will try using the dset type instead.
             hid::h5t type = H5Tcreate(H5T_OPAQUE, sizeof(DecayType));
             H5Tset_tag(type, h5pp::format("<{}>", sfinae::type_name<DecayType>()).c_str() );

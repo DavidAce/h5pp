@@ -6,7 +6,7 @@
  * Tables can be suitable for time-series data or coordinate sets, for instance.
  * In this case we consider the case where a column in the table contains "ragged" data,
  * meaning that cells have varying length arrays (VLA).
- * We use the "hvl_t" struct, which describes the length of data and a pointer to it,
+ * We use the h5pp::varr_t wrapper around "hvl_t", which describes the length of data and a pointer to it,
  * to pass data to and from HDF5.
  *
  */
@@ -16,7 +16,7 @@ struct ScienceEntry {
 
     // This is a sentinel telling h5pp to expect a vlen type in this struct.
     // Note that "vlen_type" must be spelled exactly like this, and a single "using vlen_type" is enough,
-    // even if there are multiple vlen_t members. The purpose of it is to disable any tracking of variable-length allocations
+    // even if there are multiple varr_t members. The purpose of it is to disable any tracking of variable-length allocations
     // when reading this type of data. To disable tracking completely, use h5pp::v1::File::vlenDisableReclaimsTracking() instead.
     using vlen_type = h5pp::varr_t<int>;
 };

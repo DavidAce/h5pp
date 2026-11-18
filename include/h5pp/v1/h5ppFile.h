@@ -67,7 +67,7 @@ namespace h5pp::v1 {
         /*! Default constructor */
         File() = default;
         template<typename LogLevelType = LogLevel>
-        explicit File(h5pp::fs::path       filePath_,                                /*!< Path a new file */
+        explicit File(h5pp::fs::path       filePath_,                                /*!< Path to a new file */
                       h5pp::FileAccess     fileAccess_   = h5pp::FileAccess::RENAME, /*!< Set file access permission in case of collision */
                       LogLevelType         logLevel_     = LogLevel::info,           /*!< Logging verbosity level 0 (most) to 6 (least). */
                       bool                 logTimestamp_ = false,                    /*!< True prepends a timestamp to log output */
@@ -77,7 +77,7 @@ namespace h5pp::v1 {
             init();
         }
         template<typename LogLevelType = LogLevel>
-        explicit File(h5pp::fs::path       filePath_,                      /*!< Path a new file */
+        explicit File(h5pp::fs::path       filePath_,                      /*!< Path to a new file */
                       unsigned int         H5F_ACC_FLAGS,                  /*!< Set HDF5 access flag for new files */
                       LogLevelType         logLevel_     = LogLevel::info, /*!< Logging verbosity level 0 (most) to 6 (least). */
                       bool                 logTimestamp_ = false,          /*!< True prepends a timestamp to log output */
@@ -106,7 +106,7 @@ namespace h5pp::v1 {
             reclaimStack.clear();
         }
 
-        /*! Enable tracking of variable-length data allocations (e.g. when reading tables containgin H5T_VLEN members) */
+        /*! Enable tracking of variable-length data allocations (e.g. when reading tables containing H5T_VLEN members) */
         void vlenEnableReclaimsTracking() { plists.vlenTrackReclaims = true; }
 
         /*! Disable tracking of variable-length data allocations (users should call H5Treclaim or free manually) */
@@ -115,7 +115,7 @@ namespace h5pp::v1 {
         /*! Returns an HDF5 file handle
          *
          * - The file permission is set when initializing h5pp::v1::File.
-         * - Use `h5pp::setKeepFileOpened()` to keep a cached handle. Use `h5pp::setKeepFileClosed()` to close the cached handle.
+         * - Use `setKeepFileOpened()` to keep a cached handle. Use `setKeepFileClosed()` to close the cached handle.
          */
         [[nodiscard]] hid::h5f openFileHandle() const {
             h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
@@ -194,9 +194,9 @@ namespace h5pp::v1 {
          * From the [HDF5 documentation](https://portal.hdfgroup.org/display/HDF5/H5P_SET_FCLOSE_DEGREE):
          *
          *  `H5F_close_degree_t`::
-         *  - `H5F_CLOSE_DEFAULT` : Use the degree pre-defined by underlining VFL
+         *  - `H5F_CLOSE_DEFAULT` : Use the degree pre-defined by underlying VFL
          *  - `H5F_CLOSE_WEAK`    : file closes only after all opened objects are closed
-         *  - `H5F_CLOSE_SEMI`    : if no opened objects, file is close; otherwise, file close fails
+         *  - `H5F_CLOSE_SEMI`    : if no opened objects, file is closed; otherwise, file close fails
          *  - `H5F_CLOSE_STRONG`  : if there are opened objects, close them first, then close file
          * */
         void setCloseDegree(H5F_close_degree_t degree) {
@@ -344,8 +344,7 @@ namespace h5pp::v1 {
 
         /*! Move a link (dataset/table/group) into another file.
          *
-         *  **NOTE:** The link is deleted from this file, but the storage space is not recovered.
-         *  This is a fundamental limitation of HDF5.
+         *  **NOTE:** The link is deleted from this file, but the file may retain unused storage space.
          */
         void moveLinkToFile(std::string_view      localLinkPath,               /*!< Path to link in this file */
                             const h5pp::fs::path &targetFilePath,              /*!< Path to file to move into */
@@ -358,8 +357,7 @@ namespace h5pp::v1 {
 
         /*! Move a link (dataset/table/group) from another file into this.
          *
-         *  **NOTE:** The link is deleted from the other file, but the storage space is not recovered.
-         *  This is a fundamental limitation of HDF5.
+         *  **NOTE:** The link is deleted from the other file, but the file may retain unused storage space.
          */
         void moveLinkFromFile(std::string_view      localLinkPath,  /*!< Path to link in this file */
                               const h5pp::fs::path &sourceFilePath, /*!< Path to file to copy from */
@@ -370,8 +368,7 @@ namespace h5pp::v1 {
 
         /*! Move a link (dataset/table/group) from this file to any hid::h5x location (group or file).
          *
-         *  **NOTE:** The link is deleted from the target location, but the storage space is not recovered.
-         *  This is a fundamental limitation of HDF5.
+         *  **NOTE:** The link is deleted from this file, but the file may retain unused storage space.
          */
         template<typename h5x_tgt>
         void moveLinkToLocation(
@@ -385,17 +382,16 @@ namespace h5pp::v1 {
             return h5pp::hdf5::moveLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath, locMode, plists);
         }
 
-        /*! Move a link (dataset/table/group) from this file to any hid::h5x location (group or file).
+        /*! Move a link (dataset/table/group) from any hid::h5x location (group or file) into this file.
          *
-         *  **NOTE:** The link is deleted from the target location, but the storage space is not recovered.
-         *  This is a fundamental limitation of HDF5.
+         *  **NOTE:** The link is deleted from the source location, but the file may retain unused storage space.
          */
         template<typename h5x_src>
         void moveLinkFromLocation(
             std::string_view localLinkPath,                 /*!< Path to link in this file */
             const h5x_src   &sourceLocationId,              /*!< Source hid::h5x location handle (group or file) */
             std::string_view sourceLinkPath,                /*!< Path to link in the source file */
-            LocationMode     locMode = LocationMode::DETECT /*!< Specify whether targetLocationId is in this file or another */
+            LocationMode     locMode = LocationMode::DETECT /*!< Specify whether sourceLocationId is in this file or another */
         ) {
             static_assert(type::sfinae::is_h5pp_loc_id<h5x_src>);
             return h5pp::hdf5::moveLink(sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, locMode, plists);
@@ -610,7 +606,7 @@ namespace h5pp::v1 {
             const OptDimsType &         dsetMaxDims    = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
             std::optional<hid::h5t>     h5Type         = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
             std::optional<ResizePolicy> resizePolicy   = std::nullopt, /*!< Type of resizing if needed. Choose GROW, FIT,OFF */
-            const std::optional<int> compression    = std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+            const std::optional<int> compression    = std::nullopt) /*!< (On create) Compression level 0-9, 0 = off, 9 gives best compression and is slowest */
         /* clang-format on */
         {
             Options options;
@@ -636,7 +632,7 @@ namespace h5pp::v1 {
             const OptDimsType &         dsetChunkDims = std::nullopt, /*!< (On create) Chunking dimensions. Only valid for H5D_CHUNKED datasets */
             const OptDimsType &         dsetMaxDims   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
             std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose GROW, FIT, OFF */
-            const std::optional<int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+            const std::optional<int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 gives best compression and is slowest */
             /* clang-format on */
         ) {
             Options options;
@@ -662,7 +658,7 @@ namespace h5pp::v1 {
             const OptDimsType &         dsetMaxDims   = std::nullopt, /*!< (On create) Maximum dimensions. Only valid for H5D_CHUNKED datasets */
             std::optional<hid::h5t>     h5Type        = std::nullopt, /*!< (On create) Type of dataset. Override automatic type detection. */
             std::optional<ResizePolicy> resizePolicy  = std::nullopt, /*!< Type of resizing if needed. Choose GROW, FIT, OFF */
-            const std::optional<int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 is gives best compression and is slowest */
+            const std::optional<int> compression   = std::nullopt  /*!< (On create) Compression level 0-9, 0 = off, 9 gives best compression and is slowest */
             /* clang-format on */
         ) {
             Options options;
@@ -696,7 +692,7 @@ namespace h5pp::v1 {
                                          std::string_view        dsetPath,
                                          const OptDimsType      &dataDims = std::nullopt,
                                          std::optional<hid::h5t> h5Type   = std::nullopt) {
-            Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty, ´,
+            Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty
             options.linkPath    = dsetPath;
             options.dataDims    = dataDims;
             options.h5Layout    = H5D_CONTIGUOUS;
@@ -713,7 +709,7 @@ namespace h5pp::v1 {
                                       const OptDimsType       &dsetMaxDims   = std::nullopt,
                                       std::optional<hid::h5t>  h5Type        = std::nullopt,
                                       const std::optional<int> compression   = std::nullopt) {
-            Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty, ´,
+            Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty
             options.linkPath      = dsetPath;
             options.dataDims      = dataDims;
             options.dsetChunkDims = dsetChunkDims;
@@ -726,7 +722,7 @@ namespace h5pp::v1 {
 
         template<typename DataType>
         DsetInfo writeDataset_compressed(const DataType &data, std::string_view dsetPath, const std::optional<int> compression = 3) {
-            Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty, ´,
+            Options options; // Get optional iterable should have three different return states, nullopt, empty or nonempty
             options.linkPath    = dsetPath;
             options.h5Layout    = H5D_CHUNKED;
             options.compression = getCompressionLevel(compression);
@@ -1486,7 +1482,7 @@ namespace h5pp::v1 {
         void createExternalLink(std::string_view targetFilePath, /*!< Path to an external hdf5 file with the desired link. If relative, it
                                                                     is relative to the current file */
                                 std::string_view targetLinkPath, /*!< Full path to link within the external file */
-                                std::string_view softLinkPath    /*!< Full path to the new soft link created within this file  */
+                                std::string_view softLinkPath    /*!< Full path to the new external link created within this file  */
         ) {
             // The given targetFilePath is written as-is into the TARGETFILE property of the new external link.
             // Therefore, it is important that it is written either as:

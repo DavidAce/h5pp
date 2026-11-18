@@ -34,7 +34,7 @@ int main() {
     auto               *writePtr = writeBuffer.data();
 
     h5pp::DatasetWriteOptions writeOptions;
-    writeOptions.dims = {writeBuffer.size()}; // Size information can be a scalar "10" or a list "{10}"
+    writeOptions.dims = {writeBuffer.size()}; // Size information is given as a list, such as "{10}"
 
     // Write data using the v2 API.
     file.dataset("v2Api/myArrayDouble").write(writePtr, writeOptions);

@@ -1,6 +1,6 @@
 
 
-# Fix issue with linking -pthreads or -lpthreads
+# Fix issue with linking -pthread or -lpthread
 if(NOT THREADS_PREFER_PTHREAD_FLAG)
     set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 endif()

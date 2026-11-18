@@ -44,7 +44,7 @@ function(find_spdlog)
                 PATH_SUFFIXES spdlog/include include spdlog include/spdlog spdlog/include/spdlog
                 )
     if(SPDLOG_INCLUDE_DIR)
-        # There may o compiled library to go with the headers
+        # There may be a compiled library to go with the headers
         find_library(SPDLOG_LIBRARY
                 NAMES spdlog spdlogd
                 HINTS ${SPDLOG_INCLUDE_DIR} ${SPDLOG_INCLUDE_DIR}../ ${CMAKE_PREFIX_PATH} ${CMAKE_INSTALL_PREFIX}

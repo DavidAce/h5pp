@@ -4,11 +4,11 @@
  * This example shows how to use a TableInfo object.
  *
  * When creating a table or transferring a table record to/from file, h5pp scans its type, shape, link path
- * and many other properties. The results from a scan populates a struct of type "TableInfo".
+ * and many other properties. The results from a scan populate a struct of type "TableInfo".
  *
  * The TableInfo of a dataset can be obtained with h5pp::v1::File::getTableInfo(<table path>),
  * but is also returned from a h5pp::v1::File::createTable(...) operation, or a
- * h5pp::v1::File::appendTableRecords operations
+ * h5pp::v1::File::appendTableRecords operation
  *
  * The scanning process introduces some overhead, which is why reusing the
  * struct can be desirable, in particular to speed up repeated operations.
@@ -60,7 +60,7 @@ int main() {
                         tableInfo.fieldSizes.value()[idx],
                         tableInfo.cppTypeName.value()[idx]);
 
-    // Or get a preformated string with .string()
+    // Or get a preformatted string with .string()
     h5pp::print("TableInfo::string(): {}\n", tableInfo.string());
 
     // Initialize a table in a vector

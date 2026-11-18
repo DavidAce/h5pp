@@ -3,7 +3,7 @@
 
 /* This example shows how to enable chunking in HDF5 datasets and to set the chunk dimensions manually.
  * Datasets with H5D_CHUNKED layout are more versatile than the other layouts, i.e.
- * H5D_CONTIGUOUS (default) and H5D_COMPACT.
+ * H5D_CONTIGUOUS and H5D_COMPACT.
  * The H5D_CHUNKED layout has a bit more overhead and enables
  *      - unlimited max-size datasets
  *      - resizable datasets
@@ -47,7 +47,7 @@ int main() {
      *
      * Note 3: dims describes the dataset dimensions, or shape. This field is optional.
      *         See example 08a where the dimension parameter is used to reinterpret
-     *         the shape of the given container (for example {500,2} or {200,200,600} are also valid).
+     *         the shape of the given container (for example {500,2} or {10,10,10} are also valid).
      *         If you pass a C-style pointer to a raw data buffer then dims cannot be deduced,
      *         so you must give it explicitly.
      */

@@ -12,8 +12,8 @@ namespace h5pp::scan {
      * Populates a DsetInfo object by reading properties from a dataset on file
      *
      * @param info A struct with information about a dataset
-     * @param file a h5f file identifier
-     * @param dsetPath the full path to a dataset in an HDF5 file
+     * @param loc A valid HDF5 location (group or file)
+     * @param options A struct containing optional metadata
      * @param plists (optional) access property for the file. Used to determine link access property when searching for the dataset.
      */
     template<typename h5x>
@@ -81,9 +81,9 @@ namespace h5pp::scan {
     }
 
     /*! \fn readDsetInfo
-     * Infers information for a new dataset based and passed options only
+     * Reads information for an existing dataset using the passed options
      * @param loc A valid HDF5 location (group or file)
-     * @param dsetPath The path to the dataset relative to loc
+     * @param options A struct containing optional metadata
      * @param plists (optional) access property for the file. Used to determine link access property when searching for the dataset.
      */
     template<typename h5x>
@@ -194,7 +194,7 @@ namespace h5pp::scan {
     }
 
     /*! \brief Populates a DsetInfo object.
-     *  If the attribute exists properties are read from file.
+     *  If the dataset exists properties are read from file.
      *  Otherwise properties are inferred from the given data
      * @param loc A valid HDF5 location (group or file)
      * @param data The data from which to infer properties
@@ -850,7 +850,7 @@ namespace h5pp::scan {
             throw h5pp::runtime_error("Could not infer table info for new table [{}]: No table title given", info.tablePath.value());
     }
 
-    /*! \brief Populates an LinkInfo object with properties read from file */
+    /*! \brief Populates a LinkInfo object with properties read from file */
     template<typename h5x>
     inline void readLinkInfo(LinkInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
         static_assert(h5pp::type::sfinae::is_h5pp_loc_id<h5x>,
@@ -872,7 +872,7 @@ namespace h5pp::scan {
         /* It's important to note the convention used here:
          *      * linkPath is relative to loc.
          *      * loc can be a file or group, but NOT a dataset.
-         *      * h5Link is the object on which the attribute is attached.
+         *      * h5Link is the object referred to by the link.
          *      * h5Link is an h5o object which means that it can be a file, group or dataset.
          *      * loc != h5Link.
          *

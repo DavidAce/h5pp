@@ -4,7 +4,7 @@
 /* This example shows how to enable chunking of HDF5 datasets and allow
  * h5pp to determine the chunk dimensions automatically.
  * Datasets with H5D_CHUNKED layout are more versatile than the other layouts, i.e.
- * H5D_CONTIGUOUS (default) and H5D_COMPACT.
+ * H5D_CONTIGUOUS and H5D_COMPACT.
  * The H5D_CHUNKED layout has a bit more overhead and enables
  *      - unlimited max-size datasets
  *      - resizable datasets

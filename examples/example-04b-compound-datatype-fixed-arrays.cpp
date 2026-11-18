@@ -39,11 +39,11 @@ int main() {
     // Now set the size with H5Tset_size. Remember to add at least 1 extra char to leave space for the null terminator '\0'.
     H5Tset_size(H5_CHAR_TYPE, 10);
 
-    // Optionally set the null terminator '\0' and possibly padding.
+    // Optionally set the string termination '\0' and possibly padding.
     H5Tset_strpad(H5_CHAR_TYPE, H5T_STR_NULLTERM);
 
     // Register the whole struct as a compound type. It is important to register
-    // the struct members in the same order they were declared.
+    // the correct offset for each struct member.
     h5pp::hid::h5t H5_POINT_TYPE = H5Tcreate(H5T_COMPOUND, sizeof(SpaceTimePoint));
     H5Tinsert(H5_POINT_TYPE, "coordinates", HOFFSET(SpaceTimePoint, coordinates), H5_COORD_TYPE);
     H5Tinsert(H5_POINT_TYPE, "type", HOFFSET(SpaceTimePoint, type), H5_CHAR_TYPE);

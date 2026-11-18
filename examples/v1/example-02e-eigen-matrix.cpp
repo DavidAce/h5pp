@@ -5,11 +5,11 @@ int main() {
     h5pp::v1::File file(H5PP_EXAMPLE_DIR "example-02e-eigen.h5", h5pp::FileAccess::REPLACE, 0);
 
 #ifdef H5PP_USE_EIGEN3
-    // Initialize a 10x10 Eigen matrix with random complex entries
+    // Initialize a 5x5 Eigen matrix with random complex entries
     Eigen::MatrixXcd m1 = Eigen::MatrixXcd::Random(5, 5);
 
     // Write the matrix
-    // Inside the file, the data will be stored in a dataset named "myEigenMatrix" under the group "myMatrixCollection"
+    // Inside the file, the data will be stored in a dataset named "myEigenMatrix" under the group "myGroup"
     file.writeDataset(m1, "myGroup/myEigenMatrix");
 
     // Read it back in one line. Note that we pass the type as a template parameter

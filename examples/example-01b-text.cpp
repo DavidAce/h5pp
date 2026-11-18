@@ -4,7 +4,7 @@
 /*
  * In this example we use h5pp to write and read an std::string.
  * By default, h5pp uses UTF-8 and stores std::string data as a variable-length array, i.e. H5T_VARIABLE.
- * For fixed-size datasets use const char * or specify the size of the std::string buffer in the
+ * For fixed-size datasets specify the size of the std::string buffer in the
  * dataset options when writing.
  */
 

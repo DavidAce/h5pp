@@ -45,7 +45,7 @@ namespace h5pp::type::custom {
         }
 
         static bool equal(const hid::h5t &other) {
-            // Try to compare without initializing complex_id
+            // Check the size before initializing float_id
             if(H5Tget_size(other) != 16) return false;
             init();
             if(float_id.valid() and H5Tequal(float_id, other) == 1) return true;

@@ -21,7 +21,7 @@ namespace h5pp {
  *  \namespace eigen
  *  This namespace makes shorthand typedef's to Eigen's unsupported Tensor module, and provides handy functions
  *  to interface between `Eigen::Tensor` and `Eigen::Matrix` objects.
- *  The contents of this namespace is co clear it is self-documenting ;)
+ *  The contents of this namespace are so clear it is self-documenting ;)
  */
 #ifdef H5PP_USE_EIGEN3
     namespace eigen {
@@ -159,7 +159,7 @@ namespace h5pp {
         //    //****************************//
 
         // Detects if Derived is a plain object, like "MatrixXd" or similar.
-        // std::decay removes pointer or ref qualifiers if present
+        // std::decay removes cv and ref qualifiers if present
         template<typename Derived>
         using is_plainObject = std::is_base_of<Eigen::PlainObjectBase<std::decay_t<Derived>>, std::decay_t<Derived>>;
         template<typename Derived>

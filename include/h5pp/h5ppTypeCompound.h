@@ -148,7 +148,7 @@ namespace h5pp::type::compound {
             if(not value_id.valid()) value_id = getValueType<T>();
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 0)))) return false;
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 1)))) return false;
-            // The user seem to be using this type, so we initialize it to speed up later comparisons
+            // The user seems to be using this type, so we initialize it to speed up later comparisons
             init();
             return true;
         }
@@ -193,7 +193,7 @@ namespace h5pp::type::compound {
             if(not value_id.valid()) value_id = getValueType<T>();
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 0)))) return false;
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 1)))) return false;
-            // The user seem to be using this type, so we initialize it to speed up later comparisons
+            // The user seems to be using this type, so we initialize it to speed up later comparisons
             init();
             return true;
         }
@@ -235,7 +235,7 @@ namespace h5pp::type::compound {
         static constexpr std::string_view get_fieldY_name() { return fieldY; }
         static constexpr std::string_view get_fieldZ_name() { return fieldZ; }
         static bool                       equal(const hid::h5t &other) {
-            // Try to compare without initializing scalar2_id
+            // Try to compare without initializing scalar3_id
             if(scalar3_id.valid() and H5Tequal(scalar3_id, other) == 1) return true;
             if(H5Tget_size(other) != sizeof(Scalar3<T>)) return false;
             if(not is_scalar3(other)) return false;
@@ -243,7 +243,7 @@ namespace h5pp::type::compound {
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 0)))) return false;
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 1)))) return false;
             if(not H5Tequal(value_id, hid::h5t(H5Tget_member_type(other, 2)))) return false;
-            // The user seem to be using this type, so we initialize it to speed up later comparisons
+            // The user seems to be using this type, so we initialize it to speed up later comparisons
             init();
             return true;
         }

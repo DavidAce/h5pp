@@ -41,7 +41,7 @@ endif()
 
 include(cmake/SetupCcache.cmake)
 
-# Setup paths that find_package should search, or where to find the conan executable
+# Setup paths that find_package should search
 include(cmake/SetupPaths.cmake)
 
 # Print cmake build info options and host properties

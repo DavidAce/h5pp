@@ -17,7 +17,7 @@ namespace h5pp {
         OptDimsType                 offset      = std::nullopt;   /*!< The start position of a hyperslab */
         OptDimsType                 extent      = std::nullopt;   /*!< The extent (or "count") of a hyperslab */
         OptDimsType                 stride      = std::nullopt;   /*!< The stride of a hyperslab. Empty means contiguous */
-        OptDimsType                 blocks      = std::nullopt;   /*!< The blocks size of each element in  the hyperslab. Empty means 1x1 */
+        OptDimsType                 blocks      = std::nullopt;   /*!< The block size of each element in the hyperslab. Empty means 1x1 */
         std::optional<H5S_sel_type> select_type = std::nullopt;   /*!< Use to select hyperslab (i.e. subset), none, all, hyperslabs */
         H5S_seloper_t               select_oper = H5S_SELECT_SET; /*!< Default clears previous selection.  */
 

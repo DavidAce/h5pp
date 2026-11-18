@@ -1,7 +1,7 @@
 #include <h5pp/v1/h5pp.h>
 #include <iostream>
 
-// This example shows how to use to write data into a portion of a dataset, a so-called "hyperslab", using h5pp::Options
+// This example shows how to write data into a portion of a dataset, a so-called "hyperslab", using h5pp::Hyperslab
 
 /********************************************************************
    Note that the HDF5 C-API uses row-major layout!

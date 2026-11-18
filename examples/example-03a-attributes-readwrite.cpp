@@ -5,7 +5,7 @@
  * An attribute is similar to a dataset, but can be attached to datasets, groups or files.
  * Attributes are often used to store descriptive metadata.
  *
- * This example shows how to add a couple of attributes to a dataset "intGroup/myInt".
+ * This example shows how to add a couple of attributes to a dataset "v2Api/intGroup/myInt".
  */
 
 int main() {
