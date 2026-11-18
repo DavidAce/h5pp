@@ -33,11 +33,11 @@ int main() {
     auto dsetInfo = file.getDatasetInfo("group/intVector");
 
     // Print the members of the info struct
-    if(dsetInfo.dsetPath) h5pp::print("Int vector path : {}\n", dsetInfo.dsetPath.value());
-    if(dsetInfo.dsetSize) h5pp::print("Int vector size : {}\n", dsetInfo.dsetSize.value());
-    if(dsetInfo.dsetByte) h5pp::print("Int vector bytes: {}\n", dsetInfo.dsetByte.value());
-    if(dsetInfo.dsetRank) h5pp::print("Int vector rank : {}\n", dsetInfo.dsetRank.value());
-    if(dsetInfo.dsetDims) h5pp::print("Int vector dims : {}\n", dsetInfo.dsetDims.value());
+    if(dsetInfo.dsetPath.has_value()) h5pp::print("Int vector path : {}\n", dsetInfo.dsetPath.value());
+    if(dsetInfo.dsetSize.has_value()) h5pp::print("Int vector size : {}\n", dsetInfo.dsetSize.value());
+    if(dsetInfo.dsetByte.has_value()) h5pp::print("Int vector bytes: {}\n", dsetInfo.dsetByte.value());
+    if(dsetInfo.dsetRank.has_value()) h5pp::print("Int vector rank : {}\n", dsetInfo.dsetRank.value());
+    if(dsetInfo.dsetDims.has_value()) h5pp::print("Int vector dims : {}\n", dsetInfo.dsetDims.value());
 
     // And so on... OR, just use .string()
     h5pp::print("dsetInfo.string(): {}\n", dsetInfo.string());
@@ -46,11 +46,11 @@ int main() {
     dsetInfo = file.getDatasetInfo("group/stringVector");
 
     // Print the members of the info struct
-    if(dsetInfo.dsetPath) h5pp::print("String vector path : {}\n", dsetInfo.dsetPath.value());
-    if(dsetInfo.dsetSize) h5pp::print("String vector size : {}\n", dsetInfo.dsetSize.value());
-    if(dsetInfo.dsetByte) h5pp::print("String vector bytes: {}\n", dsetInfo.dsetByte.value());
-    if(dsetInfo.dsetRank) h5pp::print("String vector rank : {}\n", dsetInfo.dsetRank.value());
-    if(dsetInfo.dsetDims) h5pp::print("String vector dims : {}\n", dsetInfo.dsetDims.value());
+    if(dsetInfo.dsetPath.has_value()) h5pp::print("String vector path : {}\n", dsetInfo.dsetPath.value());
+    if(dsetInfo.dsetSize.has_value()) h5pp::print("String vector size : {}\n", dsetInfo.dsetSize.value());
+    if(dsetInfo.dsetByte.has_value()) h5pp::print("String vector bytes: {}\n", dsetInfo.dsetByte.value());
+    if(dsetInfo.dsetRank.has_value()) h5pp::print("String vector rank : {}\n", dsetInfo.dsetRank.value());
+    if(dsetInfo.dsetDims.has_value()) h5pp::print("String vector dims : {}\n", dsetInfo.dsetDims.value());
 
     // And so on... OR, just use .string()
     h5pp::print("dsetInfo.string(): {}\n", dsetInfo.string());
@@ -60,11 +60,11 @@ int main() {
     dsetInfo = file.getDatasetInfo("group/doubleVector");
 
     // Print the members of the info struct
-    if(dsetInfo.dsetPath) h5pp::print("Double vector path : {}\n", dsetInfo.dsetPath.value());
-    if(dsetInfo.dsetSize) h5pp::print("Double vector size : {}\n", dsetInfo.dsetSize.value());
-    if(dsetInfo.dsetByte) h5pp::print("Double vector bytes: {}\n", dsetInfo.dsetByte.value());
-    if(dsetInfo.dsetRank) h5pp::print("Double vector rank : {}\n", dsetInfo.dsetRank.value());
-    if(dsetInfo.dsetDims) h5pp::print("Double vector dims : {}\n", dsetInfo.dsetDims.value());
+    if(dsetInfo.dsetPath.has_value()) h5pp::print("Double vector path : {}\n", dsetInfo.dsetPath.value());
+    if(dsetInfo.dsetSize.has_value()) h5pp::print("Double vector size : {}\n", dsetInfo.dsetSize.value());
+    if(dsetInfo.dsetByte.has_value()) h5pp::print("Double vector bytes: {}\n", dsetInfo.dsetByte.value());
+    if(dsetInfo.dsetRank.has_value()) h5pp::print("Double vector rank : {}\n", dsetInfo.dsetRank.value());
+    if(dsetInfo.dsetDims.has_value()) h5pp::print("Double vector dims : {}\n", dsetInfo.dsetDims.value());
 
     // And so on... OR, just use .string()
     h5pp::print("dsetInfo.string(): {}\n", dsetInfo.string());

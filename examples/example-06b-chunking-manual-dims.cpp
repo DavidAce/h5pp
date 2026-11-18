@@ -64,10 +64,10 @@ int main() {
 
     // Print selected dataset metadata.
     auto dsetInfo = dataset.getInfo();
-    if(dsetInfo.dsetPath) h5pp::print("Dataset path : {}\n", dsetInfo.dsetPath.value());
-    if(dsetInfo.dsetDims) h5pp::print("Dataset dims : {}\n", dsetInfo.dsetDims.value());
-    if(dsetInfo.dsetChunk) h5pp::print("Chunk dims   : {}\n", dsetInfo.dsetChunk.value());
-    if(dsetInfo.h5Layout) h5pp::print("Layout       : {}\n", static_cast<int>(dsetInfo.h5Layout.value()));
+    if(dsetInfo.dsetPath.has_value()) h5pp::print("Dataset path : {}\n", dsetInfo.dsetPath.value());
+    if(dsetInfo.dsetDims.has_value()) h5pp::print("Dataset dims : {}\n", dsetInfo.dsetDims.value());
+    if(dsetInfo.dsetChunk.has_value()) h5pp::print("Chunk dims   : {}\n", dsetInfo.dsetChunk.value());
+    if(dsetInfo.h5Layout.has_value()) h5pp::print("Layout       : {}\n", static_cast<int>(dsetInfo.h5Layout.value()));
 
     return 0;
 }

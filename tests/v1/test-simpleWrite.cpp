@@ -134,7 +134,7 @@ TEST_CASE("Simple writes cover scalars, containers, pointers, vlen data and user
     }
 
     auto vector_int_info = file.getDatasetInfo("simpleWriteGroup/vectorInt");
-    REQUIRE(vector_int_info.dsetDims);
+    REQUIRE(vector_int_info.dsetDims.has_value());
     REQUIRE(vector_int_info.dsetDims.value() == std::vector<hsize_t>{pointer_int_write.size()});
 
     auto found_datasets = file.findDatasets();
@@ -172,10 +172,10 @@ TEST_CASE("Simple writes cover scalars, containers, pointers, vlen data and user
 
         file.writeDataset(big_tensor, "compressedWriteGroup/bigTensor");
         auto tensor_info = file.getDatasetInfo("compressedWriteGroup/bigTensor");
-        REQUIRE(tensor_info.dsetDims);
+        REQUIRE(tensor_info.dsetDims.has_value());
         REQUIRE(tensor_info.dsetDims.value() == std::vector<hsize_t>{12, 18, 8, 3});
-        REQUIRE(tensor_info.compression);
-        REQUIRE(tensor_info.h5Layout);
+        REQUIRE(tensor_info.compression.has_value());
+        REQUIRE(tensor_info.h5Layout.has_value());
         REQUIRE(tensor_info.h5Layout.value() == H5D_CONTIGUOUS);
         REQUIRE(tensor_info.compression.value() == -1);
     }

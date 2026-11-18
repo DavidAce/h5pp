@@ -32,6 +32,8 @@ namespace h5pp {
     };
 
     struct OptDimsType : std::optional<std::vector<hsize_t>> {
+        using std::optional<std::vector<hsize_t>>::has_value;
+
         OptDimsType() = default;
         OptDimsType(std::nullopt_t) : std::optional<std::vector<hsize_t>>(std::nullopt) {}
         explicit OptDimsType(H5D_layout_t) = delete;

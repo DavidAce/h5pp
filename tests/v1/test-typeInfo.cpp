@@ -59,17 +59,17 @@ TEST_CASE("Type info exposes dataset metadata for stored objects", "[type-info]"
     h5pp::v1::File file(path, h5pp::FileAccess::READONLY, 0);
 
     auto info = file.getTypeInfoDataset("testGroup/vectorDouble");
-    REQUIRE(info.cppTypeIndex);
+    REQUIRE(info.cppTypeIndex.has_value());
     REQUIRE(info.cppTypeIndex.value() == std::type_index(typeid(double)));
-    REQUIRE(info.cppTypeBytes);
+    REQUIRE(info.cppTypeBytes.has_value());
     REQUIRE(info.cppTypeBytes.value() == sizeof(double));
-    REQUIRE(info.h5Path);
-    REQUIRE(info.h5Size);
-    REQUIRE(info.h5Rank);
-    REQUIRE(info.h5Dims);
-    REQUIRE(info.h5Type);
+    REQUIRE(info.h5Path.has_value());
+    REQUIRE(info.h5Size.has_value());
+    REQUIRE(info.h5Rank.has_value());
+    REQUIRE(info.h5Dims.has_value());
+    REQUIRE(info.h5Type.has_value());
     REQUIRE(info.h5Path.value().find("testGroup/vectorDouble") != std::string::npos);
-    if(info.h5Name) REQUIRE(info.h5Name.value() == "vectorDouble");
+    if(info.h5Name.has_value()) REQUIRE(info.h5Name.value() == "vectorDouble");
     REQUIRE(info.h5Size.value() == 10);
     REQUIRE(info.h5Rank.value() == 1);
     REQUIRE(info.h5Dims.value() == std::vector<hsize_t>{10});
@@ -91,9 +91,9 @@ TEST_CASE("Type info exposes per-attribute metadata across scalar, array and str
     std::vector<std::string> names;
     names.reserve(infos.size());
     for(const auto &info : infos) {
-        REQUIRE(info.h5Name);
-        REQUIRE(info.h5Path);
-        REQUIRE(info.h5Type);
+        REQUIRE(info.h5Name.has_value());
+        REQUIRE(info.h5Path.has_value());
+        REQUIRE(info.h5Type.has_value());
         names.emplace_back(info.h5Name.value());
     }
 
@@ -110,25 +110,25 @@ TEST_CASE("Type info exposes per-attribute metadata across scalar, array and str
                                               "AttributeVectorDouble"});
 
     auto attr_int = file.getTypeInfoAttribute("testGroup/vectorDouble", "AttributeInt");
-    REQUIRE(attr_int.cppTypeIndex);
+    REQUIRE(attr_int.cppTypeIndex.has_value());
     REQUIRE(attr_int.cppTypeIndex.value() == std::type_index(typeid(int)));
-    REQUIRE(attr_int.h5Rank);
+    REQUIRE(attr_int.h5Rank.has_value());
     REQUIRE(attr_int.h5Rank.value() == 0);
     REQUIRE(H5Tget_class(attr_int.h5Type.value()) == H5T_INTEGER);
 
     auto attr_vector = file.getTypeInfoAttribute("testGroup/vectorDouble", "AttributeVectorComplexDouble");
-    REQUIRE(attr_vector.cppTypeIndex);
+    REQUIRE(attr_vector.cppTypeIndex.has_value());
     REQUIRE(attr_vector.cppTypeIndex.value() == std::type_index(typeid(std::complex<double>)));
-    REQUIRE(attr_vector.cppTypeBytes);
+    REQUIRE(attr_vector.cppTypeBytes.has_value());
     REQUIRE(attr_vector.cppTypeBytes.value() == sizeof(std::complex<double>));
-    REQUIRE(attr_vector.h5Dims);
+    REQUIRE(attr_vector.h5Dims.has_value());
     REQUIRE(attr_vector.h5Dims.value() == std::vector<hsize_t>{4});
-    REQUIRE(attr_vector.h5Rank);
+    REQUIRE(attr_vector.h5Rank.has_value());
     REQUIRE(attr_vector.h5Rank.value() == 1);
     REQUIRE(H5Tget_class(attr_vector.h5Type.value()) == H5T_COMPOUND);
 
     auto attr_string = file.getInfo<h5pp::TypeInfo>("testGroup/vectorDouble", "AttributeString");
-    REQUIRE(attr_string.h5Name);
+    REQUIRE(attr_string.h5Name.has_value());
     REQUIRE(attr_string.h5Name.value() == "AttributeString");
     REQUIRE(H5Tis_variable_str(attr_string.h5Type.value()) > 0);
 }

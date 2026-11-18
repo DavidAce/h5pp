@@ -255,8 +255,8 @@ namespace h5pp::util {
          *  Any dataset with an unlimited dimension must also be chunked; see H5Pset_chunk.
          *  Similarly, a dataset must be chunked if current_dims does not equal maximum_dims.
          */
-        if(h5_layout and h5_layout.value() == H5D_CHUNKED) return std::vector<hsize_t>(dims.size(), H5S_UNLIMITED);
-        else if(h5_layout and h5_layout.value() != H5D_CHUNKED) return std::nullopt;
+        if(h5_layout.has_value() and h5_layout.value() == H5D_CHUNKED) return std::vector<hsize_t>(dims.size(), H5S_UNLIMITED);
+        else if(h5_layout.has_value() and h5_layout.value() != H5D_CHUNKED) return std::nullopt;
         else return dims;
     }
 
@@ -312,10 +312,10 @@ namespace h5pp::util {
             // If the max dimension is H5S_UNLIMITED, then the dataset can grow to any dimension.
             // Conversely, if the dataset is not H5D_CHUNKED, then dims == max dims must hold always
 
-            if(dimsMax) {
+            if(dimsMax.has_value()) {
                 // Here dimsMax was given by the user, and we have to do some sanity checks
                 // Check that the ranks match
-                if(dimsMax and dimsMax->size() != dims.size()) {
+                if(dimsMax.has_value() and dimsMax->size() != dims.size()) {
                     throw h5pp::runtime_error("Number of dimensions (rank) mismatch: dims {} | max dims {}\n"
                                               "\t Hint: Dimension lists must have the same number of elements",
                                               dims,
@@ -417,17 +417,17 @@ namespace h5pp::util {
                 return num * h5pp::util::getBytesPerElem<value_type>();
             }
         } else if constexpr(h5pp::type::sfinae::is_text_v<DataType>) { // E.g. char[n]
-            if(not size) size = getCharArraySize(data) + 1;            // Add null terminator
+            if(not size.has_value()) size = getCharArraySize(data) + 1; // Add null terminator
             return size.value() * h5pp::util::getBytesPerElem<DataType>();
         } else if constexpr(std::is_array_v<DataType>) {
-            if(not size) size = h5pp::util::getArraySize(data);
+            if(not size.has_value()) size = h5pp::util::getArraySize(data);
             return size.value() * h5pp::util::getBytesPerElem<DataType>();
         } else if constexpr(std::is_pointer_v<DataType>) {
-            if(not size)
+            if(not size.has_value())
                 throw h5pp::runtime_error("Could not determine total amount of bytes in buffer: Pointer data has no specified size");
             return size.value() * h5pp::util::getBytesPerElem<DataType>();
         } else {
-            if(not size) size = h5pp::util::getSize(data);
+            if(not size.has_value()) size = h5pp::util::getSize(data);
             return size.value() * h5pp::util::getBytesPerElem<DataType>();
         }
     }
@@ -479,12 +479,12 @@ namespace h5pp::util {
         decideLayout(const DataType &data, std::optional<std::vector<hsize_t>> dsetDims, std::optional<std::vector<hsize_t>> dsetDimsMax) {
         // Here we try to compute the maximum number of bytes of this dataset, so we can decide its layout
         hsize_t size = 0;
-        if(dsetDimsMax) {
-            if(dsetDims and dsetDims.value() != dsetDimsMax.value()) return H5D_CHUNKED;
+        if(dsetDimsMax.has_value()) {
+            if(dsetDims.has_value() and dsetDims.value() != dsetDimsMax.value()) return H5D_CHUNKED;
             for(auto &dim : dsetDimsMax.value())
                 if(dim == H5S_UNLIMITED) return H5D_CHUNKED;
             size = getSizeFromDimensions(dsetDimsMax.value());
-        } else if(dsetDims) {
+        } else if(dsetDims.has_value()) {
             size = getSizeFromDimensions(dsetDims.value());
         } else {
             size = getSize(data);
@@ -504,13 +504,13 @@ namespace h5pp::util {
         //  * A chunk dimension cannot be larger than the corresponding max dimension
         //  * A chunk dimension can be larger or smaller than the dataset dimension
 
-        if(layout and layout.value() != H5D_CHUNKED) return std::nullopt;
+        if(layout.has_value() and layout.value() != H5D_CHUNKED) return std::nullopt;
         if(dims.empty()) return dims; // Scalar
         // We try to compute the maximum dimension to get a good estimate
         // of the data volume
         // Make sure the chunk dimensions have strictly nonzero volume
         for(auto &dim : dims) dim = std::max<hsize_t>(1, dim);
-        if(dimsMax) {
+        if(dimsMax.has_value()) {
             // If max dims are given, dims that are not H5S_UNLIMITED are used as an upper bound
             // for that dimension
             if(dimsMax->size() != dims.size()) {
@@ -757,8 +757,8 @@ namespace h5pp::util {
                                                          TableSelection       &selection,
                                                          std::optional<size_t> numRecords,
                                                          std::optional<size_t> recordBytes) {
-        if(not numRecords) throw h5pp::runtime_error("parseTableSelection: undefined table field [numRecords]");
-        if(not recordBytes) throw h5pp::runtime_error("parseTableSelection: undefined table field [recordBytes]");
+        if(not numRecords.has_value()) throw h5pp::runtime_error("parseTableSelection: undefined table field [numRecords]");
+        if(not recordBytes.has_value()) throw h5pp::runtime_error("parseTableSelection: undefined table field [recordBytes]");
         // Used when reading from file into data
         size_t      offset = 0;
         size_t      extent = 1;
@@ -888,7 +888,7 @@ namespace h5pp::util {
     }
 
     inline std::pair<size_t, size_t> parseTableSelection(TableSelection &selection, std::optional<size_t> numRecords) {
-        if(not numRecords) throw h5pp::runtime_error("parseTableSelection: undefined table field [numRecords]");
+        if(not numRecords.has_value()) throw h5pp::runtime_error("parseTableSelection: undefined table field [numRecords]");
         // Used when reading from file into data
         size_t offset = 0;
         size_t extent = 1;

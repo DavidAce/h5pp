@@ -78,8 +78,8 @@ TEST_CASE("Large auto-written datasets stay writable after growing beyond the in
     REQUIRE(file.readDataset<std::vector<std::complex<double>>>("overWriteGroup_auto/vectorComplexDouble") == grown);
 
     auto info = file.dataset("overWriteGroup_auto/vectorComplexDouble").getInfo();
-    REQUIRE(info.h5Layout);
-    REQUIRE(info.dsetDims);
+    REQUIRE(info.h5Layout.has_value());
+    REQUIRE(info.dsetDims.has_value());
     REQUIRE(info.dsetDims.value() == std::vector<hsize_t>{grown.size()});
 }
 

@@ -35,7 +35,7 @@ TEST_CASE("Soft links expose target datasets and attributes", "[soft-link]") {
     REQUIRE(file.readAttribute<std::string>("softlinks/dsetA", "note") == "through-soft-link");
 
     auto link_info = file.getLinkInfo("softlinks/dsetA");
-    REQUIRE(link_info.h5LinkType);
+    REQUIRE(link_info.h5LinkType.has_value());
     REQUIRE(link_info.h5LinkType.value() == H5L_TYPE_SOFT);
 }
 

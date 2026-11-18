@@ -19,22 +19,22 @@ int main() {
     // Start with the string attribute.
     auto stringAttribute = file.attribute("group/dataset", "stringAttribute");
     auto attributeInfo   = stringAttribute.getInfo();
-    if(attributeInfo.linkPath) h5pp::print("String attribute link : {}\n", attributeInfo.linkPath.value());
-    if(attributeInfo.attrName) h5pp::print("String attribute name : {}\n", attributeInfo.attrName.value());
-    if(attributeInfo.attrSize) h5pp::print("String attribute size : {}\n", attributeInfo.attrSize.value());
-    if(attributeInfo.attrByte) h5pp::print("String attribute bytes: {}\n", attributeInfo.attrByte.value());
-    if(attributeInfo.attrRank) h5pp::print("String attribute rank : {}\n", attributeInfo.attrRank.value());
-    if(attributeInfo.attrDims) h5pp::print("String attribute dims : {}\n", attributeInfo.attrDims.value());
+    if(attributeInfo.linkPath.has_value()) h5pp::print("String attribute link : {}\n", attributeInfo.linkPath.value());
+    if(attributeInfo.attrName.has_value()) h5pp::print("String attribute name : {}\n", attributeInfo.attrName.value());
+    if(attributeInfo.attrSize.has_value()) h5pp::print("String attribute size : {}\n", attributeInfo.attrSize.value());
+    if(attributeInfo.attrByte.has_value()) h5pp::print("String attribute bytes: {}\n", attributeInfo.attrByte.value());
+    if(attributeInfo.attrRank.has_value()) h5pp::print("String attribute rank : {}\n", attributeInfo.attrRank.value());
+    if(attributeInfo.attrDims.has_value()) h5pp::print("String attribute dims : {}\n", attributeInfo.attrDims.value());
 
     // Then inspect the vector attribute.
     auto vectorAttribute = file.attribute("group/dataset", "vectorAttribute");
     attributeInfo        = vectorAttribute.getInfo();
-    if(attributeInfo.linkPath) h5pp::print("Vector attribute link : {}\n", attributeInfo.linkPath.value());
-    if(attributeInfo.attrName) h5pp::print("Vector attribute name : {}\n", attributeInfo.attrName.value());
-    if(attributeInfo.attrSize) h5pp::print("Vector attribute size : {}\n", attributeInfo.attrSize.value());
-    if(attributeInfo.attrByte) h5pp::print("Vector attribute bytes: {}\n", attributeInfo.attrByte.value());
-    if(attributeInfo.attrRank) h5pp::print("Vector attribute rank : {}\n", attributeInfo.attrRank.value());
-    if(attributeInfo.attrDims) h5pp::print("Vector attribute dims : {}\n", attributeInfo.attrDims.value());
+    if(attributeInfo.linkPath.has_value()) h5pp::print("Vector attribute link : {}\n", attributeInfo.linkPath.value());
+    if(attributeInfo.attrName.has_value()) h5pp::print("Vector attribute name : {}\n", attributeInfo.attrName.value());
+    if(attributeInfo.attrSize.has_value()) h5pp::print("Vector attribute size : {}\n", attributeInfo.attrSize.value());
+    if(attributeInfo.attrByte.has_value()) h5pp::print("Vector attribute bytes: {}\n", attributeInfo.attrByte.value());
+    if(attributeInfo.attrRank.has_value()) h5pp::print("Vector attribute rank : {}\n", attributeInfo.attrRank.value());
+    if(attributeInfo.attrDims.has_value()) h5pp::print("Vector attribute dims : {}\n", attributeInfo.attrDims.value());
 
     return 0;
 }

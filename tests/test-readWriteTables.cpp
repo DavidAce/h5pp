@@ -64,7 +64,7 @@ TEST_CASE("Tables can be created, appended, inspected and partially read through
     REQUIRE(info.numFields.value() == 6);
     REQUIRE(info.recordBytes.value() == sizeof(Particle));
     REQUIRE_THAT(info.fieldSizes.value(), Catch::Matchers::Equals(std::vector<size_t>{8, 8, 8, 8, 24, 10}));
-    REQUIRE(fieldInfo.fieldNames);
+    REQUIRE(fieldInfo.fieldNames.has_value());
     REQUIRE(fieldInfo.fieldNames.value().size() == 6);
     REQUIRE(fieldInfo.fieldNames.value()[0] == "x");
     REQUIRE(fieldInfo.fieldNames.value()[1] == "y");
@@ -157,11 +157,11 @@ TEST_CASE("Stored table creation options are used when records are first appende
     auto info = table.getInfo();
     CHECK(info.tableTitle == options.title);
     CHECK(info.numRecords == 6);
-    REQUIRE(info.h5Type);
+    REQUIRE(info.h5Type.has_value());
     CHECK(H5Tequal(info.h5Type.value(), options.h5Type.value()) > 0);
-    REQUIRE(info.chunkDims);
+    REQUIRE(info.chunkDims.has_value());
     CHECK(info.chunkDims.value() == std::vector<hsize_t>{2});
-    REQUIRE(info.h5DsetCreate);
+    REQUIRE(info.h5DsetCreate.has_value());
     CHECK(h5pp::hdf5::getDeflateLevel(info.h5DsetCreate.value()) > 0);
     auto read = table.readRecords<std::vector<Particle>>();
     REQUIRE(read.size() == 6);
@@ -169,9 +169,9 @@ TEST_CASE("Stored table creation options are used when records are first appende
 
     auto copied     = file.table("copied").ensure(options);
     auto copiedInfo = copied.appendRecordsFrom(info);
-    REQUIRE(copiedInfo.chunkDims);
+    REQUIRE(copiedInfo.chunkDims.has_value());
     CHECK(copiedInfo.chunkDims.value() == std::vector<hsize_t>{2});
-    REQUIRE(copiedInfo.h5DsetCreate);
+    REQUIRE(copiedInfo.h5DsetCreate.has_value());
     CHECK(h5pp::hdf5::getDeflateLevel(copiedInfo.h5DsetCreate.value()) > 0);
     auto copiedRecords = copied.readRecords<std::vector<Particle>>();
     REQUIRE(copiedRecords.size() == read.size());

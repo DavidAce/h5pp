@@ -11,7 +11,7 @@
  */
 
 size_t getSizeFromDims(const h5pp::v2::OptDims &dims) {
-    if(not dims or dims->empty()) return 1;
+    if(not dims.has_value() or dims->empty()) return 1;
     size_t size = 1;
     for(auto dim : dims.value()) size *= static_cast<size_t>(dim);
     return size;
@@ -41,7 +41,7 @@ template<typename ReadAttribute>
 void traverseAttributes(h5pp::File &file, std::string_view linkPath, ReadAttribute readAttribute) {
     for(const auto &attrName : file.link(linkPath).getAttributeNames()) {
         auto info = file.attribute(linkPath, attrName).getInfo();
-        if(not info.h5Type) continue;
+        if(not info.h5Type.has_value()) continue;
 
         auto [cppTypeIndex, cppTypeName, cppTypeBytes] = h5pp::type::getCppType(info.h5Type.value());
         auto h5Size = getSizeFromDims(info.attrDims);

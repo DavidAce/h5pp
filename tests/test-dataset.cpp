@@ -160,7 +160,7 @@ TEST_CASE("Datasets round-trip representative containers and expose basic handle
     auto dset = file.dataset("vectorDouble");
     REQUIRE(dset.exists());
     auto info = dset.getInfo();
-    REQUIRE(info.dsetDims);
+    REQUIRE(info.dsetDims.has_value());
     REQUIRE(info.dsetDims.value() == std::vector<hsize_t>{vectorDouble.size()});
 
 #ifdef H5PP_USE_EIGEN3

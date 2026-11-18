@@ -76,7 +76,7 @@ TEST_CASE("Explicit compound user types round-trip as datasets and attributes", 
     REQUIRE(attr_read == particle);
 
     auto info = file.getDatasetInfo("singleParticle");
-    REQUIRE(info.h5Type);
+    REQUIRE(info.h5Type.has_value());
     REQUIRE(H5Tget_class(info.h5Type.value()) == H5T_COMPOUND);
 }
 
@@ -94,7 +94,7 @@ TEST_CASE("Vectors of explicit compound user types preserve record order and fie
     REQUIRE(particles_read == particles);
 
     auto info = file.getDatasetInfo("particles");
-    REQUIRE(info.dsetDims);
+    REQUIRE(info.dsetDims.has_value());
     REQUIRE(info.dsetDims.value() == std::vector<hsize_t>{particles.size()});
 }
 

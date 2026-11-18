@@ -142,7 +142,7 @@ TEST_CASE("Generic read/write round-trips cover scalars, STL containers, compoun
     REQUIRE(vectorReadBytes.size() == vectorDouble.size() * sizeof(double));
 
     auto info = file.getDatasetInfo("vectorDouble");
-    REQUIRE(info.dsetDims);
+    REQUIRE(info.dsetDims.has_value());
     REQUIRE(info.dsetDims.value() == std::vector<hsize_t>{vectorDouble.size()});
 
 #ifdef H5PP_USE_EIGEN3

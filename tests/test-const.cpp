@@ -104,7 +104,7 @@ TEST_CASE("const file exposes read-only table handles", "[const][table]") {
     auto              constInfo = constFile.table("tables/records").getInfo();
     auto              constData = constFile.table("tables/records").readRecords<std::vector<Record>>(0, 3);
 
-    REQUIRE(constInfo.numRecords);
+    REQUIRE(constInfo.numRecords.has_value());
     REQUIRE(constInfo.numRecords.value() == 3);
     REQUIRE(constData.size() == 3);
     REQUIRE(constData[1].id == 2);

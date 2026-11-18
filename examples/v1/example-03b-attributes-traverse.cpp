@@ -29,7 +29,7 @@ int main() {
 
     auto typeInfoAttributes = file.getTypeInfoAttributes("intGroup/myInt"); // Get a vector of structs "TypeInfo", one for each attribute.
     for(const auto &typeInfo : typeInfoAttributes) {
-        if(typeInfo.cppTypeIndex) { // Check that cppTypeIndex has been set (it normally has)
+        if(typeInfo.cppTypeIndex.has_value()) { // Check that cppTypeIndex has been set (it normally has)
             // cppTypeIndex.value() is an object of type std::type_index which can be compared against typeid(T).
             // Here we will simply test each type and print the name and contents of the attribute if there is a match
 

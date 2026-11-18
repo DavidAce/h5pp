@@ -83,8 +83,8 @@ TEST_CASE("Hyperslabs describe scalar, all and empty dataspace selections", "[hy
         h5pp::hid::h5s  space  = H5Screate_simple(2, dims, nullptr);
         h5pp::Hyperslab slab(space);
         CHECK(slab.select_type == H5S_SEL_ALL);
-        REQUIRE(slab.offset);
-        REQUIRE(slab.extent);
+        REQUIRE(slab.offset.has_value());
+        REQUIRE(slab.extent.has_value());
         CHECK(slab.offset.value() == std::vector<hsize_t>{0, 0});
         CHECK(slab.extent.value() == std::vector<hsize_t>{4, 6});
         CHECK_FALSE(slab.empty());
@@ -111,10 +111,10 @@ TEST_CASE("Regular hyperslabs preserve offsets, counts, strides and blocks", "[h
     REQUIRE(H5Sselect_hyperslab(space, H5S_SELECT_SET, offset, stride, count, blocks) >= 0);
     h5pp::Hyperslab slab(space);
     CHECK(slab.select_type == H5S_SEL_HYPERSLABS);
-    REQUIRE(slab.offset);
-    REQUIRE(slab.extent);
-    REQUIRE(slab.stride);
-    REQUIRE(slab.blocks);
+    REQUIRE(slab.offset.has_value());
+    REQUIRE(slab.extent.has_value());
+    REQUIRE(slab.stride.has_value());
+    REQUIRE(slab.blocks.has_value());
     CHECK(slab.offset.value() == std::vector<hsize_t>{1, 1});
     CHECK(slab.extent.value() == std::vector<hsize_t>{2, 2});
     CHECK(slab.stride.value() == std::vector<hsize_t>{3, 4});

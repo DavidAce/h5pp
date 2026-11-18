@@ -35,12 +35,13 @@ int main() {
     auto attrInfo = file.getAttributeInfo("group/dataset", "stringAttribute");
 
     // Access the properties of the attribute
-    if(attrInfo.linkPath) h5pp::print("String attribute link : {}\n", attrInfo.linkPath.value());
-    if(attrInfo.attrName) h5pp::print("String attribute name : {}\n", attrInfo.attrName.value());
-    if(attrInfo.attrSize) h5pp::print("String attribute size : {}\n", attrInfo.attrSize.value());
-    if(attrInfo.attrByte) h5pp::print("String attribute bytes: {}\n", attrInfo.attrByte.value());
-    if(attrInfo.attrRank) h5pp::print("String attribute rank : {}\n", attrInfo.attrRank.value());
-    if(attrInfo.attrDims) h5pp::print("String attribute dims : {}\n", attrInfo.attrDims.value()); // A string is scalar: should print "{}"
+    if(attrInfo.linkPath.has_value()) h5pp::print("String attribute link : {}\n", attrInfo.linkPath.value());
+    if(attrInfo.attrName.has_value()) h5pp::print("String attribute name : {}\n", attrInfo.attrName.value());
+    if(attrInfo.attrSize.has_value()) h5pp::print("String attribute size : {}\n", attrInfo.attrSize.value());
+    if(attrInfo.attrByte.has_value()) h5pp::print("String attribute bytes: {}\n", attrInfo.attrByte.value());
+    if(attrInfo.attrRank.has_value()) h5pp::print("String attribute rank : {}\n", attrInfo.attrRank.value());
+    if(attrInfo.attrDims.has_value())
+        h5pp::print("String attribute dims : {}\n", attrInfo.attrDims.value()); // A string is scalar: should print "{}"
 
     // And so on... OR, just use .string()
     h5pp::print("attrInfo.string(): {}\n", attrInfo.string());
@@ -50,12 +51,12 @@ int main() {
     attrInfo = file.getAttributeInfo("group/dataset", "vectorAttribute");
 
     // Access the properties of the attribute
-    if(attrInfo.linkPath) h5pp::print("Vector attribute link : {}\n", attrInfo.linkPath.value());
-    if(attrInfo.attrName) h5pp::print("Vector attribute name : {}\n", attrInfo.attrName.value());
-    if(attrInfo.attrSize) h5pp::print("Vector attribute size : {}\n", attrInfo.attrSize.value());
-    if(attrInfo.attrByte) h5pp::print("Vector attribute bytes: {}\n", attrInfo.attrByte.value());
-    if(attrInfo.attrRank) h5pp::print("Vector attribute rank : {}\n", attrInfo.attrRank.value());
-    if(attrInfo.attrDims) h5pp::print("Vector attribute dims : {}\n", attrInfo.attrDims.value());
+    if(attrInfo.linkPath.has_value()) h5pp::print("Vector attribute link : {}\n", attrInfo.linkPath.value());
+    if(attrInfo.attrName.has_value()) h5pp::print("Vector attribute name : {}\n", attrInfo.attrName.value());
+    if(attrInfo.attrSize.has_value()) h5pp::print("Vector attribute size : {}\n", attrInfo.attrSize.value());
+    if(attrInfo.attrByte.has_value()) h5pp::print("Vector attribute bytes: {}\n", attrInfo.attrByte.value());
+    if(attrInfo.attrRank.has_value()) h5pp::print("Vector attribute rank : {}\n", attrInfo.attrRank.value());
+    if(attrInfo.attrDims.has_value()) h5pp::print("Vector attribute dims : {}\n", attrInfo.attrDims.value());
 
     // And so on... OR, just use .string()
     h5pp::print("attrInfo.string(): {}\n", attrInfo.string());

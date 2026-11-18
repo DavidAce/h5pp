@@ -76,23 +76,23 @@ TEST_CASE("float128 scalars and complex values round-trip as datasets and attrib
     require_equal(file.readAttribute<h5pp::cx128>("quad/complex", "complexAttr"), complexValue);
 
     auto scalarTypeInfo = file.dataset("quad/scalar").getTypeInfo();
-    REQUIRE(scalarTypeInfo.cppTypeBytes);
+    REQUIRE(scalarTypeInfo.cppTypeBytes.has_value());
     REQUIRE(scalarTypeInfo.cppTypeBytes.value() == sizeof(h5pp::fp128));
-    REQUIRE(scalarTypeInfo.cppTypeIndex);
+    REQUIRE(scalarTypeInfo.cppTypeIndex.has_value());
     REQUIRE(scalarTypeInfo.cppTypeIndex.value() == std::type_index(typeid(h5pp::fp128)));
-    REQUIRE(scalarTypeInfo.h5Type);
+    REQUIRE(scalarTypeInfo.h5Type.has_value());
     REQUIRE(H5Tget_class(scalarTypeInfo.h5Type.value()) == H5T_FLOAT);
 
     auto complexTypeInfo = file.dataset("quad/complex").getTypeInfo();
-    REQUIRE(complexTypeInfo.cppTypeBytes);
+    REQUIRE(complexTypeInfo.cppTypeBytes.has_value());
     REQUIRE(complexTypeInfo.cppTypeBytes.value() == sizeof(h5pp::cx128));
-    REQUIRE(complexTypeInfo.h5Type);
+    REQUIRE(complexTypeInfo.h5Type.has_value());
     REQUIRE(H5Tget_class(complexTypeInfo.h5Type.value()) == H5T_COMPOUND);
 
     auto attrTypeInfo = file.attribute("quad/complex", "complexAttr").getTypeInfo();
-    REQUIRE(attrTypeInfo.cppTypeBytes);
+    REQUIRE(attrTypeInfo.cppTypeBytes.has_value());
     REQUIRE(attrTypeInfo.cppTypeBytes.value() == sizeof(h5pp::cx128));
-    REQUIRE(attrTypeInfo.h5Type);
+    REQUIRE(attrTypeInfo.h5Type.has_value());
     REQUIRE(H5Tget_class(attrTypeInfo.h5Type.value()) == H5T_COMPOUND);
 }
 
@@ -118,11 +118,11 @@ TEST_CASE("float128 vectors preserve exact binary values", "[float128][vector]")
     require_vector_equal(file.readDataset<std::vector<h5pp::cx128>>("quad/complexes"), complexValues);
 
     auto scalarInfo = file.dataset("quad/scalars").getInfo();
-    REQUIRE(scalarInfo.dsetDims);
+    REQUIRE(scalarInfo.dsetDims.has_value());
     REQUIRE(scalarInfo.dsetDims.value() == std::vector<hsize_t>{scalarValues.size()});
 
     auto complexInfo = file.dataset("quad/complexes").getInfo();
-    REQUIRE(complexInfo.dsetDims);
+    REQUIRE(complexInfo.dsetDims.has_value());
     REQUIRE(complexInfo.dsetDims.value() == std::vector<hsize_t>{complexValues.size()});
 }
 
@@ -166,7 +166,7 @@ TEST_CASE("float128 compound records round-trip with explicit HDF5 types", "[flo
     require_equal(file.readAttribute<QuadRecord>("quad/record", "recordAttr", attrRead), singleRecord);
 
     auto info = file.dataset("quad/record").getInfo();
-    REQUIRE(info.h5Type);
+    REQUIRE(info.h5Type.has_value());
     REQUIRE(H5Tget_class(info.h5Type.value()) == H5T_COMPOUND);
 }
 

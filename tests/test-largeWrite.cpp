@@ -32,7 +32,7 @@ TEST_CASE("Large standard-library datasets round-trip with their dimensions inta
     REQUIRE(file.readDataset<std::vector<std::complex<double>>>("largeWriteGroup/vectorComplexDouble") == vectorComplex);
 
     auto info = file.dataset("largeWriteGroup/vectorComplexDouble").getInfo();
-    REQUIRE(info.dsetDims);
+    REQUIRE(info.dsetDims.has_value());
     REQUIRE(info.dsetDims.value() == std::vector<hsize_t>{vectorComplex.size()});
 }
 

@@ -51,7 +51,7 @@ namespace h5pp::logger {
                                                    std::optional<h5pp::LogLevel>,
                                                    std::optional<size_t>,
                                                    std::optional<int>>) {
-            if(levelZeroToSix) return setLogLevel(levelZeroToSix.value());
+            if(levelZeroToSix.has_value()) return setLogLevel(levelZeroToSix.value());
             else return;
         }
     }
@@ -125,7 +125,7 @@ namespace h5pp::logger {
             if(log != nullptr) log->set_level(Num2Level(levelZeroToSix));
         } else if constexpr(type::sfinae::
                                 is_any_v<LogLevelType, std::optional<h5pp::LogLevel>, std::optional<size_t>, std::optional<int>>) {
-            if(levelZeroToSix) return setLogLevel(levelZeroToSix.value());
+            if(levelZeroToSix.has_value()) return setLogLevel(levelZeroToSix.value());
             else return;
         }
     }

@@ -34,7 +34,7 @@ namespace h5pp::inline v2 {
         public:
         [[nodiscard]] hid::h5f openFileHandle() const {
             h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
-            if(fileHandle) return fileHandle.value();
+            if(fileHandle.has_value()) return fileHandle.value();
             if(auto scopedHandle = scopedFileHandle.lock()) return *scopedHandle;
             if(fileAccess == h5pp::FileAccess::READONLY) {
                 h5pp::logger::log->trace("Opening file [{}] with READONLY access", filePath.string());
@@ -91,7 +91,7 @@ namespace h5pp::inline v2 {
         void setCloseDegree(H5F_close_degree_t degree) {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fclose_degree(plists.fileAccess, degree);
-            if(fileHandle) {
+            if(fileHandle.has_value()) {
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
@@ -100,7 +100,7 @@ namespace h5pp::inline v2 {
         void setDriver_core(bool writeOnClose = false, size_t bytesPerMalloc = 10240000) {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_core(plists.fileAccess, bytesPerMalloc, static_cast<hbool_t>(writeOnClose));
-            if(fileHandle) {
+            if(fileHandle.has_value()) {
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
@@ -109,7 +109,7 @@ namespace h5pp::inline v2 {
         void setDriver_sec2() {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_sec2(plists.fileAccess);
-            if(fileHandle) {
+            if(fileHandle.has_value()) {
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
@@ -118,7 +118,7 @@ namespace h5pp::inline v2 {
         void setDriver_stdio() {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_stdio(plists.fileAccess);
-            if(fileHandle) {
+            if(fileHandle.has_value()) {
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
@@ -128,7 +128,7 @@ namespace h5pp::inline v2 {
         void setDriver_mpio(MPI_Comm comm, MPI_Info info) {
             plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_mpio(plists.fileAccess, comm, info);
-            if(fileHandle) {
+            if(fileHandle.has_value()) {
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
@@ -368,7 +368,7 @@ namespace h5pp::inline v2 {
         }
 
         void setKeepFileOpened() const {
-            if(not fileHandle) fileHandle = openFileHandle();
+            if(not fileHandle.has_value()) fileHandle = openFileHandle();
         }
 
         void setKeepFileClosed() const {
@@ -381,7 +381,7 @@ namespace h5pp::inline v2 {
 
         [[nodiscard]] int getCompressionLevel() const { return currentCompression; }
         [[nodiscard]] int getCompressionLevel(const std::optional<int> compression) const {
-            if(compression) return h5pp::hdf5::getValidCompressionLevel(compression.value());
+            if(compression.has_value()) return h5pp::hdf5::getValidCompressionLevel(compression.value());
             return currentCompression;
         }
 

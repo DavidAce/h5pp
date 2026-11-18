@@ -6,17 +6,17 @@
 
 namespace {
     void require_dims(const h5pp::DsetInfo &info, const std::vector<hsize_t> &expected) {
-        REQUIRE(info.dsetDims);
+        REQUIRE(info.dsetDims.has_value());
         REQUIRE(info.dsetDims.value() == expected);
     }
 
     void require_max_dims(const h5pp::DsetInfo &info, const std::vector<hsize_t> &expected) {
-        REQUIRE(info.dsetDimsMax);
+        REQUIRE(info.dsetDimsMax.has_value());
         REQUIRE(info.dsetDimsMax.value() == expected);
     }
 
     void require_chunked_layout(const h5pp::DsetInfo &info) {
-        REQUIRE(info.h5Layout);
+        REQUIRE(info.h5Layout.has_value());
         REQUIRE(info.h5Layout.value() == H5D_CHUNKED);
     }
 

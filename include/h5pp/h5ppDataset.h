@@ -98,10 +98,10 @@ namespace h5pp::inline v2 {
             requireWritable_("create dataset");
             auto options = detail::makeLegacyOptions(compression_, dsetPath_, createOptions);
             options.assertWellDefined();
-            if(not options.linkPath) throw h5pp::runtime_error("Error creating dataset: No dataset path specified");
-            if(not options.dataDims)
+            if(not options.linkPath.has_value()) throw h5pp::runtime_error("Error creating dataset: No dataset path specified");
+            if(not options.dataDims.has_value())
                 throw h5pp::runtime_error("Error creating dataset [{}]: Dimensions or size not specified", options.linkPath.value());
-            if(not options.h5Type)
+            if(not options.h5Type.has_value())
                 throw h5pp::runtime_error("Error creating dataset [{}]: HDF5 type not specified", options.linkPath.value());
             auto fileHandle = fileHandle_;
             auto dsetInfo   = h5pp::scan::makeDsetInfo(fileHandle, options, plists_);
@@ -139,7 +139,7 @@ namespace h5pp::inline v2 {
         [[nodiscard]] DsetInfo append(const DataType &data, size_t axis, const DatasetAppendOptions &options = DatasetAppendOptions())
             requires detail::MutableFile<FileType>
         {
-            if(dsetSlab_) throw h5pp::runtime_error("Cannot append through a selected dataset view [{}]", dsetPath_);
+            if(dsetSlab_.has_value()) throw h5pp::runtime_error("Cannot append through a selected dataset view [{}]", dsetPath_);
             requireWritable_("write");
             auto legacyOptions = detail::makeLegacyOptions(dsetPath_, options);
             auto fileHandle    = fileHandle_;
@@ -162,7 +162,7 @@ namespace h5pp::inline v2 {
             auto dsetInfo   = h5pp::scan::inferDsetInfo(fileHandle, data, legacyOptions, plists_);
             if(dsetInfo.hasLocId()) h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), legacyOptions, plists_);
             else h5pp::scan::readDsetInfo(dsetInfo, fileHandle, legacyOptions, plists_);
-            if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) h5pp::hdf5::createDataset(dsetInfo, plists_);
+            if(not dsetInfo.dsetExists.has_value() or not dsetInfo.dsetExists.value()) h5pp::hdf5::createDataset(dsetInfo, plists_);
             h5pp::hdf5::resizeDataset(dsetInfo, dataInfo);
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists_);
         }
@@ -182,7 +182,7 @@ namespace h5pp::inline v2 {
         void readInto(DataType &data, const DatasetReadOptions &options = DatasetReadOptions()) const {
             static_assert(not std::is_const_v<DataType>);
             auto legacyOptions = detail::makeLegacyOptions(dsetPath_, dsetSlab_, options);
-            if(not dsetSlab_) {
+            if(not dsetSlab_.has_value()) {
                 legacyOptions.assertWellDefined();
                 auto fileHandle = fileHandle_;
                 auto dsetInfo   = h5pp::scan::readDsetInfo(fileHandle, legacyOptions, plists_);
@@ -193,17 +193,17 @@ namespace h5pp::inline v2 {
             }
 
             auto dsetInfo = h5pp::scan::readDsetInfo(fileHandle_, legacyOptions, plists_);
-            if(dsetInfo.dsetExists and not dsetInfo.dsetExists.value())
+            if(dsetInfo.dsetExists.has_value() and not dsetInfo.dsetExists.value())
                 throw h5pp::runtime_error("Cannot read dataset [{}]: It does not exist", dsetPath_);
 
             h5pp::DataInfo dataInfo;
-            if(legacyOptions.dataDims) dataInfo.dataDims = legacyOptions.dataDims;
-            else if(dsetInfo.dsetSlab and dsetInfo.dsetSlab->extent) dataInfo.dataDims = dsetInfo.dsetSlab->extent;
-            if(legacyOptions.dataSlab) dataInfo.dataSlab = legacyOptions.dataSlab;
-            if(legacyOptions.h5Type) dataInfo.h5Type = legacyOptions.h5Type;
-            else if(dsetInfo.h5Type) dataInfo.h5Type = dsetInfo.h5Type;
+            if(legacyOptions.dataDims.has_value()) dataInfo.dataDims = legacyOptions.dataDims;
+            else if(dsetInfo.dsetSlab.has_value() and dsetInfo.dsetSlab->extent.has_value()) dataInfo.dataDims = dsetInfo.dsetSlab->extent;
+            if(legacyOptions.dataSlab.has_value()) dataInfo.dataSlab = legacyOptions.dataSlab;
+            if(legacyOptions.h5Type.has_value()) dataInfo.h5Type = legacyOptions.h5Type;
+            else if(dsetInfo.h5Type.has_value()) dataInfo.h5Type = dsetInfo.h5Type;
 
-            if(dataInfo.dataDims) {
+            if(dataInfo.dataDims.has_value()) {
                 h5pp::util::resizeData(data, dataInfo.dataDims.value());
                 dataInfo.dataSize = h5pp::util::getSizeFromDimensions(dataInfo.dataDims.value());
                 dataInfo.dataRank = h5pp::util::getRankFromDimensions(dataInfo.dataDims.value());
@@ -216,7 +216,7 @@ namespace h5pp::inline v2 {
                 dataInfo.dataSize = size;
                 dataInfo.dataByte = bytes;
                 dataInfo.h5Space  = h5pp::util::getMemSpace(dataInfo.dataSize.value(), dataInfo.dataDims.value());
-                if(dataInfo.dataSlab) h5pp::hdf5::selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
+                if(dataInfo.dataSlab.has_value()) h5pp::hdf5::selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
             } else {
                 h5pp::scan::scanDataInfo(dataInfo, data, legacyOptions);
             }

@@ -7,13 +7,13 @@ namespace {
     h5pp::File make_file(std::string_view name) { return h5pp::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0); }
 
     void require_layout(const h5pp::DsetInfo &info, H5D_layout_t expected) {
-        REQUIRE(info.h5Layout);
+        REQUIRE(info.h5Layout.has_value());
         REQUIRE(info.h5Layout.value() == expected);
     }
 
     void require_chunked(const h5pp::DsetInfo &info) {
         require_layout(info, H5D_CHUNKED);
-        REQUIRE(info.dsetChunk);
+        REQUIRE(info.dsetChunk.has_value());
         REQUIRE_FALSE(info.dsetChunk->empty());
     }
 }
@@ -98,9 +98,9 @@ TEST_CASE("Automatic layout selection forces chunking for extensible datasets re
 
     require_chunked(unlimited_info);
     require_chunked(capped_info);
-    REQUIRE(unlimited_info.dsetDimsMax);
+    REQUIRE(unlimited_info.dsetDimsMax.has_value());
     REQUIRE(unlimited_info.dsetDimsMax.value() == std::vector<hsize_t>{H5S_UNLIMITED});
-    REQUIRE(capped_info.dsetDimsMax);
+    REQUIRE(capped_info.dsetDimsMax.has_value());
     REQUIRE(capped_info.dsetDimsMax.value() == std::vector<hsize_t>{4});
 
     REQUIRE(file.readDataset<std::vector<int>>("layout/unlimited") == data);

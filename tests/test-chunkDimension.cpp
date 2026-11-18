@@ -8,26 +8,26 @@ namespace {
     h5pp::File make_file(std::string_view name) { return h5pp::File(h5pp::format(H5PP_TEST_DIR "{}.h5", name), h5pp::FileAccess::REPLACE, 0); }
 
     void require_dims(const h5pp::DsetInfo &info, const std::vector<hsize_t> &expected) {
-        REQUIRE(info.dsetDims);
+        REQUIRE(info.dsetDims.has_value());
         REQUIRE(info.dsetDims.value() == expected);
     }
 
     void require_max_dims(const h5pp::DsetInfo &info, const std::vector<hsize_t> &expected) {
-        REQUIRE(info.dsetDimsMax);
+        REQUIRE(info.dsetDimsMax.has_value());
         REQUIRE(info.dsetDimsMax.value() == expected);
     }
 
     void require_chunk_dims(const std::optional<std::vector<hsize_t>> &actual, const std::vector<hsize_t> &expected) {
-        REQUIRE(actual);
+        REQUIRE(actual.has_value());
         REQUIRE(actual.value() == expected);
     }
 
     void require_chunk_dims(const h5pp::DsetInfo &info, const std::vector<hsize_t> &expected) {
-        REQUIRE(info.dsetChunk);
+        REQUIRE(info.dsetChunk.has_value());
         REQUIRE(info.dsetChunk.value() == expected);
     }
 
-    void require_no_chunk_dims(const std::optional<std::vector<hsize_t>> &actual) { REQUIRE_FALSE(actual); }
+    void require_no_chunk_dims(const std::optional<std::vector<hsize_t>> &actual) { REQUIRE_FALSE(actual.has_value()); }
 
     std::vector<double> make_linear_data(size_t count, double start = 0.0) {
         std::vector<double> data(count);
@@ -45,7 +45,7 @@ TEST_CASE("Automatic chunking reports concrete chunk dimensions for large comple
     file.writeDataset(data, "chunkedgroup/vectorComplexDouble", create);
     auto info = file.getDatasetInfo("chunkedgroup/vectorComplexDouble");
 
-    REQUIRE(info.h5Layout);
+    REQUIRE(info.h5Layout.has_value());
     REQUIRE(info.h5Layout.value() == H5D_CHUNKED);
     require_dims(info, {data.size()});
     require_chunk_dims(info, {16384});
@@ -66,7 +66,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         file.writeDataset(data, "chunked/manual", create);
         auto info = file.getDatasetInfo("chunked/manual");
 
-        REQUIRE(info.h5Layout);
+        REQUIRE(info.h5Layout.has_value());
         REQUIRE(info.h5Layout.value() == H5D_CHUNKED);
         require_dims(info, {1000});
         require_chunk_dims(info, {10000});
@@ -85,7 +85,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         file.writeDataset(data, "chunked/fixedMax", create);
         auto info = file.getDatasetInfo("chunked/fixedMax");
 
-        REQUIRE(info.h5Layout);
+        REQUIRE(info.h5Layout.has_value());
         REQUIRE(info.h5Layout.value() == H5D_CHUNKED);
         require_dims(info, {10, 10});
         require_max_dims(info, {32, 64});
@@ -104,7 +104,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         create.h5Type   = H5Tcopy(H5T_NATIVE_DOUBLE);
         auto info       = file.dataset("chunked/extensible").create(create);
 
-        REQUIRE(info.h5Layout);
+        REQUIRE(info.h5Layout.has_value());
         REQUIRE(info.h5Layout.value() == H5D_CHUNKED);
         require_dims(info, {0, 2});
         require_max_dims(info, {H5S_UNLIMITED, 2});
@@ -127,7 +127,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         compact_create.h5Layout = H5D_COMPACT;
         file.writeDataset(compact_data, "layout/compact", compact_create);
         auto compact_info = file.getDatasetInfo("layout/compact");
-        REQUIRE(compact_info.h5Layout);
+        REQUIRE(compact_info.h5Layout.has_value());
         REQUIRE(compact_info.h5Layout.value() == H5D_COMPACT);
         require_no_chunk_dims(file.dataset("layout/compact").getChunkDimensions());
 
@@ -136,7 +136,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         contiguous_create.h5Layout = H5D_CONTIGUOUS;
         file.writeDataset(contiguous_data, "layout/contiguous", contiguous_create);
         auto contiguous_info = file.getDatasetInfo("layout/contiguous");
-        REQUIRE(contiguous_info.h5Layout);
+        REQUIRE(contiguous_info.h5Layout.has_value());
         REQUIRE(contiguous_info.h5Layout.value() == H5D_CONTIGUOUS);
         require_no_chunk_dims(file.dataset("layout/contiguous").getChunkDimensions());
 

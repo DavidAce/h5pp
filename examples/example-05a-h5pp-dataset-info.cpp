@@ -25,28 +25,28 @@ int main() {
 
     // Get a DsetInfo object with information about the integer dataset.
     auto datasetInfo = file.dataset("group/intVector").getInfo();
-    if(datasetInfo.dsetPath) h5pp::print("Int vector path : {}\n", datasetInfo.dsetPath.value());
-    if(datasetInfo.dsetSize) h5pp::print("Int vector size : {}\n", datasetInfo.dsetSize.value());
-    if(datasetInfo.dsetByte) h5pp::print("Int vector bytes: {}\n", datasetInfo.dsetByte.value());
-    if(datasetInfo.dsetRank) h5pp::print("Int vector rank : {}\n", datasetInfo.dsetRank.value());
-    if(datasetInfo.dsetDims) h5pp::print("Int vector dims : {}\n", datasetInfo.dsetDims.value());
+    if(datasetInfo.dsetPath.has_value()) h5pp::print("Int vector path : {}\n", datasetInfo.dsetPath.value());
+    if(datasetInfo.dsetSize.has_value()) h5pp::print("Int vector size : {}\n", datasetInfo.dsetSize.value());
+    if(datasetInfo.dsetByte.has_value()) h5pp::print("Int vector bytes: {}\n", datasetInfo.dsetByte.value());
+    if(datasetInfo.dsetRank.has_value()) h5pp::print("Int vector rank : {}\n", datasetInfo.dsetRank.value());
+    if(datasetInfo.dsetDims.has_value()) h5pp::print("Int vector dims : {}\n", datasetInfo.dsetDims.value());
 
     // Inspect the string dataset in the same way.
     datasetInfo = file.dataset("group/stringVector").getInfo();
-    if(datasetInfo.dsetPath) h5pp::print("String vector path : {}\n", datasetInfo.dsetPath.value());
-    if(datasetInfo.dsetSize) h5pp::print("String vector size : {}\n", datasetInfo.dsetSize.value());
-    if(datasetInfo.dsetByte) h5pp::print("String vector bytes: {}\n", datasetInfo.dsetByte.value());
-    if(datasetInfo.dsetRank) h5pp::print("String vector rank : {}\n", datasetInfo.dsetRank.value());
-    if(datasetInfo.dsetDims) h5pp::print("String vector dims : {}\n", datasetInfo.dsetDims.value());
+    if(datasetInfo.dsetPath.has_value()) h5pp::print("String vector path : {}\n", datasetInfo.dsetPath.value());
+    if(datasetInfo.dsetSize.has_value()) h5pp::print("String vector size : {}\n", datasetInfo.dsetSize.value());
+    if(datasetInfo.dsetByte.has_value()) h5pp::print("String vector bytes: {}\n", datasetInfo.dsetByte.value());
+    if(datasetInfo.dsetRank.has_value()) h5pp::print("String vector rank : {}\n", datasetInfo.dsetRank.value());
+    if(datasetInfo.dsetDims.has_value()) h5pp::print("String vector dims : {}\n", datasetInfo.dsetDims.value());
 
     // Compare that with the chunked dataset.
     datasetInfo = doubleVector.getInfo();
-    if(datasetInfo.dsetPath) h5pp::print("Double vector path : {}\n", datasetInfo.dsetPath.value());
-    if(datasetInfo.dsetSize) h5pp::print("Double vector size : {}\n", datasetInfo.dsetSize.value());
-    if(datasetInfo.dsetByte) h5pp::print("Double vector bytes: {}\n", datasetInfo.dsetByte.value());
-    if(datasetInfo.dsetRank) h5pp::print("Double vector rank : {}\n", datasetInfo.dsetRank.value());
-    if(datasetInfo.dsetDims) h5pp::print("Double vector dims : {}\n", datasetInfo.dsetDims.value());
-    if(datasetInfo.dsetChunk) h5pp::print("Double vector chunk: {}\n", datasetInfo.dsetChunk.value());
+    if(datasetInfo.dsetPath.has_value()) h5pp::print("Double vector path : {}\n", datasetInfo.dsetPath.value());
+    if(datasetInfo.dsetSize.has_value()) h5pp::print("Double vector size : {}\n", datasetInfo.dsetSize.value());
+    if(datasetInfo.dsetByte.has_value()) h5pp::print("Double vector bytes: {}\n", datasetInfo.dsetByte.value());
+    if(datasetInfo.dsetRank.has_value()) h5pp::print("Double vector rank : {}\n", datasetInfo.dsetRank.value());
+    if(datasetInfo.dsetDims.has_value()) h5pp::print("Double vector dims : {}\n", datasetInfo.dsetDims.value());
+    if(datasetInfo.dsetChunk.has_value()) h5pp::print("Double vector chunk: {}\n", datasetInfo.dsetChunk.value());
 
     // Resize the chunked dataset by overwriting it with a larger vector through the same handle.
     doubleVector.write(std::vector<double>(150, 2.71));
@@ -54,10 +54,10 @@ int main() {
     // Then fetch a fresh DsetInfo object to inspect the updated metadata.
     datasetInfo = doubleVector.getInfo();
     h5pp::print("After resize\n");
-    if(datasetInfo.dsetSize) h5pp::print("Double vector size : {}\n", datasetInfo.dsetSize.value());
-    if(datasetInfo.dsetByte) h5pp::print("Double vector bytes: {}\n", datasetInfo.dsetByte.value());
-    if(datasetInfo.dsetRank) h5pp::print("Double vector rank : {}\n", datasetInfo.dsetRank.value());
-    if(datasetInfo.dsetDims) h5pp::print("Double vector dims : {}\n", datasetInfo.dsetDims.value());
+    if(datasetInfo.dsetSize.has_value()) h5pp::print("Double vector size : {}\n", datasetInfo.dsetSize.value());
+    if(datasetInfo.dsetByte.has_value()) h5pp::print("Double vector bytes: {}\n", datasetInfo.dsetByte.value());
+    if(datasetInfo.dsetRank.has_value()) h5pp::print("Double vector rank : {}\n", datasetInfo.dsetRank.value());
+    if(datasetInfo.dsetDims.has_value()) h5pp::print("Double vector dims : {}\n", datasetInfo.dsetDims.value());
 
     return 0;
 }

@@ -119,7 +119,7 @@ namespace h5pp::v1 {
          */
         [[nodiscard]] hid::h5f openFileHandle() const {
             h5pp::logger::setLogger("h5pp|" + filePath.filename().string(), logLevel, logTimestamp);
-            if(fileHandle) return fileHandle.value();
+            if(fileHandle.has_value()) return fileHandle.value();
             // Give the option to override the close degree
             // When a file handle is closed, the default in h5pp is to first close all associated id's, and then close the file
             // (H5F_CLOSE_STRONG) Setting H5F_CLOSE_WEAK keeps the file handle alive until associated id's are closed.
@@ -161,7 +161,7 @@ namespace h5pp::v1 {
             // Check before setting onto self:
             // otherwise repeated calls to setKeepFileOpened() would increment the reference count,
             // without there existing a handle to decrement it --> memory leak
-            if(not fileHandle) fileHandle = openFileHandle();
+            if(not fileHandle.has_value()) fileHandle = openFileHandle();
         }
 
         /*! Close a cached file handle if it exists */
@@ -202,7 +202,7 @@ namespace h5pp::v1 {
         void setCloseDegree(H5F_close_degree_t degree) {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fclose_degree(plists.fileAccess, degree);
-            if(fileHandle) { // Refresh if the filehandle being kept is open
+            if(fileHandle.has_value()) { // Refresh if the filehandle being kept is open
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
@@ -219,7 +219,7 @@ namespace h5pp::v1 {
         ) {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_core(plists.fileAccess, bytesPerMalloc, static_cast<hbool_t>(writeOnClose));
-            if(fileHandle) { // Refresh if the filehandle being kept is open
+            if(fileHandle.has_value()) { // Refresh if the filehandle being kept is open
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
@@ -233,7 +233,7 @@ namespace h5pp::v1 {
         void setDriver_sec2() {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_sec2(plists.fileAccess);
-            if(fileHandle) { // Refresh if the filehandle being kept is open
+            if(fileHandle.has_value()) { // Refresh if the filehandle being kept is open
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
@@ -246,7 +246,7 @@ namespace h5pp::v1 {
         void setDriver_stdio() {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_stdio(plists.fileAccess);
-            if(fileHandle) { // Refresh if the filehandle being kept is open
+            if(fileHandle.has_value()) { // Refresh if the filehandle being kept is open
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
@@ -261,7 +261,7 @@ namespace h5pp::v1 {
         void setDriver_mpio(MPI_Comm comm, MPI_Info info) {
             plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_mpio(plists.fileAccess, comm, info);
-            if(fileHandle) { // Refresh if the filehandle being kept is open
+            if(fileHandle.has_value()) { // Refresh if the filehandle being kept is open
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
@@ -453,7 +453,7 @@ namespace h5pp::v1 {
          */
         [[nodiscard]] int getCompressionLevel(const std::optional<int> compression /*!< Suggested compression level */
         ) const {
-            if(compression) return h5pp::hdf5::getValidCompressionLevel(compression.value());
+            if(compression.has_value()) return h5pp::hdf5::getValidCompressionLevel(compression.value());
             else return currentCompression;
         }
 
@@ -496,10 +496,10 @@ namespace h5pp::v1 {
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to create dataset on read-only file [{}]", filePath.string());
             options.assertWellDefined();
-            if(not options.linkPath) throw h5pp::runtime_error("Error creating dataset: No dataset path specified");
-            if(not options.dataDims)
+            if(not options.linkPath.has_value()) throw h5pp::runtime_error("Error creating dataset: No dataset path specified");
+            if(not options.dataDims.has_value())
                 throw h5pp::runtime_error("Error creating dataset [{}]: Dimensions or size not specified", options.linkPath.value());
-            if(not options.h5Type)
+            if(not options.h5Type.has_value())
                 throw h5pp::runtime_error("Error creating dataset [{}]: HDF5 type not specified", options.linkPath.value());
             auto dsetInfo = h5pp::scan::makeDsetInfo(openFileHandle(), options, plists);
             File::createDataset(dsetInfo);
@@ -565,7 +565,7 @@ namespace h5pp::v1 {
             // Fill missing metadata in given dset
             if(dsetInfo.hasLocId()) h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), options, plists);
             else h5pp::scan::readDsetInfo(dsetInfo, openFileHandle(), options, plists);
-            if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
+            if(not dsetInfo.dsetExists.has_value() or not dsetInfo.dsetExists.value()) createDataset(dsetInfo);
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             // Resize dataset to fit the given data (or a selection therein)
             h5pp::hdf5::resizeDataset(dsetInfo, dataInfo);
@@ -743,7 +743,7 @@ namespace h5pp::v1 {
             options.dsetSlab     = hyperslab;
             options.resizePolicy = ResizePolicy::OFF;
             auto dsetInfo        = h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
-            if(not dsetInfo.dsetExists or not dsetInfo.dsetExists.value())
+            if(not dsetInfo.dsetExists.has_value() or not dsetInfo.dsetExists.value())
                 throw h5pp::runtime_error("Could not write hyperslab: dataset [{}] does not exist", dsetPath);
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
             // Resize dataset to fit the given data (or a selection therein)
@@ -816,7 +816,7 @@ namespace h5pp::v1 {
             options.assertWellDefined();
             // Generate the metadata for the dataset on file
             auto dsetInfo = h5pp::scan::readDsetInfo(openFileHandle(), options, plists);
-            if(dsetInfo.dsetExists and not dsetInfo.dsetExists.value())
+            if(dsetInfo.dsetExists.has_value() and not dsetInfo.dsetExists.value())
                 throw h5pp::runtime_error("Cannot read dataset [{}]: It does not exist", options.linkPath.value());
             // Generate the metadata for given data
             auto dataInfo = h5pp::scan::scanDataInfo(data, options);
@@ -1171,11 +1171,11 @@ namespace h5pp::v1 {
                                      std::string_view       tgtTablePath,
                                      TableSelection         srcSelection = TableSelection::ALL,
                                      Options                options      = Options()) {
-            if(not options.linkPath) options.linkPath = tgtTablePath;
+            if(not options.linkPath.has_value()) options.linkPath = tgtTablePath;
             auto tgtInfo = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
-            if(not tgtInfo.tableExists or not tgtInfo.tableExists.value()) {
+            if(not tgtInfo.tableExists.has_value() or not tgtInfo.tableExists.value()) {
                 srcInfo.assertCreateReady();
-                if(not options.h5Type) options.h5Type = srcInfo.h5Type;
+                if(not options.h5Type.has_value()) options.h5Type = srcInfo.h5Type;
                 h5pp::scan::makeTableInfo(tgtInfo, openFileHandle(), options, srcInfo.tableTitle.value(), plists);
                 createTable(tgtInfo, options);
             }
@@ -1202,7 +1202,7 @@ namespace h5pp::v1 {
                               hsize_t                tgtOffset) {
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to write on read-only file [{}]", filePath.string());
-            if(not srcInfo.numRecords) throw h5pp::runtime_error("Source TableInfo has undefined field [numRecords]");
+            if(not srcInfo.numRecords.has_value()) throw h5pp::runtime_error("Source TableInfo has undefined field [numRecords]");
             srcExtent = std::min(srcInfo.numRecords.value() - srcOffset, srcExtent);
             h5pp::hdf5::copyTableRecords(srcInfo, srcOffset, srcExtent, tgtInfo, tgtOffset, plists);
         }
@@ -1222,9 +1222,9 @@ namespace h5pp::v1 {
                                    Options                options      = Options()) {
             options.linkPath = h5pp::util::safe_str(tgtTablePath);
             auto tgtInfo     = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
-            if(not tgtInfo.tableExists or not tgtInfo.tableExists.value()) {
+            if(not tgtInfo.tableExists.has_value() or not tgtInfo.tableExists.value()) {
                 srcInfo.assertCreateReady();
-                if(not options.h5Type) options.h5Type = srcInfo.h5Type;
+                if(not options.h5Type.has_value()) options.h5Type = srcInfo.h5Type;
                 h5pp::scan::makeTableInfo(tgtInfo, openFileHandle(), options, srcInfo.tableTitle.value(), plists);
                 createTable(tgtInfo, options);
             }
@@ -1240,9 +1240,9 @@ namespace h5pp::v1 {
                                    Options                options = Options()) {
             options.linkPath = h5pp::util::safe_str(tgtTablePath);
             auto tgtInfo     = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
-            if(not tgtInfo.tableExists or not tgtInfo.tableExists.value()) {
+            if(not tgtInfo.tableExists.has_value() or not tgtInfo.tableExists.value()) {
                 srcInfo.assertCreateReady();
-                if(not options.h5Type) options.h5Type = srcInfo.h5Type;
+                if(not options.h5Type.has_value()) options.h5Type = srcInfo.h5Type;
                 h5pp::scan::makeTableInfo(tgtInfo, openFileHandle(), options, srcInfo.tableTitle.value(), plists);
                 createTable(tgtInfo, options);
             }
@@ -1322,7 +1322,7 @@ namespace h5pp::v1 {
 
             DataType data;
             auto     info = readTableRecords(data, tablePath, offset, extent);
-            if(info.reclaimInfo) reclaimStack.emplace_back(info.reclaimInfo.value());
+            if(info.reclaimInfo.has_value()) reclaimStack.emplace_back(info.reclaimInfo.value());
             return data;
         }
 
@@ -1334,7 +1334,7 @@ namespace h5pp::v1 {
             }
             DataType data;
             auto     info = readTableRecords(data, tablePath, tableSelection);
-            if(info.reclaimInfo) reclaimStack.emplace_back(info.reclaimInfo.value());
+            if(info.reclaimInfo.has_value()) reclaimStack.emplace_back(info.reclaimInfo.value());
             return data;
         }
 
@@ -1373,7 +1373,7 @@ namespace h5pp::v1 {
             }
             DataType data;
             auto     info = readTableField(data, tablePath, fields, offset, extent);
-            if(info.reclaimInfo) reclaimStack.emplace_back(info.reclaimInfo.value());
+            if(info.reclaimInfo.has_value()) reclaimStack.emplace_back(info.reclaimInfo.value());
             return data;
         }
 

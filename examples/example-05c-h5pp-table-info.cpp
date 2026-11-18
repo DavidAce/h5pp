@@ -32,10 +32,11 @@ int main() {
     auto tableInfo = table.getInfo();
 
     h5pp::print("Table info before appending records\n");
-    if(tableInfo.tablePath) h5pp::print("Table path    : {}\n", tableInfo.tablePath.value());
-    if(tableInfo.tableTitle) h5pp::print("Table title   : {}\n", tableInfo.tableTitle.value());
-    if(tableInfo.numRecords) h5pp::print("Table records : {}\n", tableInfo.numRecords.value());
-    if(tableInfo.numFields and tableInfo.fieldNames and tableInfo.fieldSizes and tableInfo.cppTypeName)
+    if(tableInfo.tablePath.has_value()) h5pp::print("Table path    : {}\n", tableInfo.tablePath.value());
+    if(tableInfo.tableTitle.has_value()) h5pp::print("Table title   : {}\n", tableInfo.tableTitle.value());
+    if(tableInfo.numRecords.has_value()) h5pp::print("Table records : {}\n", tableInfo.numRecords.value());
+    if(tableInfo.numFields.has_value() and tableInfo.fieldNames.has_value() and tableInfo.fieldSizes.has_value() and
+       tableInfo.cppTypeName.has_value())
         for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++)
             h5pp::print("-- Field name [{}] | Size [{}] bytes | Type [{}]\n",
                         tableInfo.fieldNames.value()[idx],
@@ -54,10 +55,11 @@ int main() {
     tableInfo = table.getInfo();
 
     h5pp::print("Table info after appending records\n");
-    if(tableInfo.tablePath) h5pp::print("Table path    : {}\n", tableInfo.tablePath.value());
-    if(tableInfo.tableTitle) h5pp::print("Table title   : {}\n", tableInfo.tableTitle.value());
-    if(tableInfo.numRecords) h5pp::print("Table records : {}\n", tableInfo.numRecords.value());
-    if(tableInfo.numFields and tableInfo.fieldNames and tableInfo.fieldSizes and tableInfo.cppTypeName)
+    if(tableInfo.tablePath.has_value()) h5pp::print("Table path    : {}\n", tableInfo.tablePath.value());
+    if(tableInfo.tableTitle.has_value()) h5pp::print("Table title   : {}\n", tableInfo.tableTitle.value());
+    if(tableInfo.numRecords.has_value()) h5pp::print("Table records : {}\n", tableInfo.numRecords.value());
+    if(tableInfo.numFields.has_value() and tableInfo.fieldNames.has_value() and tableInfo.fieldSizes.has_value() and
+       tableInfo.cppTypeName.has_value())
         for(size_t idx = 0; idx < tableInfo.numFields.value(); idx++)
             h5pp::print("-- Field name [{}] | Size [{}] bytes | Type [{}]\n",
                         tableInfo.fieldNames.value()[idx],

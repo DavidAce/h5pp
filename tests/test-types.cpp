@@ -82,7 +82,7 @@ namespace {
         require_equal(readback, value);
 
         auto info = file.dataset(path).getTypeInfo();
-        REQUIRE(info.cppTypeBytes);
+        REQUIRE(info.cppTypeBytes.has_value());
         REQUIRE(info.cppTypeBytes.value() == sizeof(Scalar));
     }
 
@@ -94,7 +94,7 @@ namespace {
         require_equal(readback, value);
 
         auto info = file.dataset(path).getTypeInfo();
-        REQUIRE(info.cppTypeBytes);
+        REQUIRE(info.cppTypeBytes.has_value());
         REQUIRE(info.cppTypeBytes.value() == sizeof(std::complex<Scalar>));
     }
 }

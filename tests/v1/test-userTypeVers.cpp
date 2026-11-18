@@ -144,8 +144,8 @@ TEST_CASE("Vectors of versioned compound datasets remain compatible across layou
 
     auto info_v1 = file.getDatasetInfo("vectorParticle1");
     auto info_v2 = file.getDatasetInfo("vectorParticle2");
-    REQUIRE(info_v1.dsetDims);
-    REQUIRE(info_v2.dsetDims);
+    REQUIRE(info_v1.dsetDims.has_value());
+    REQUIRE(info_v2.dsetDims.has_value());
     REQUIRE(info_v1.dsetDims.value() == std::vector<hsize_t>{vp1.size()});
     REQUIRE(info_v2.dsetDims.value() == std::vector<hsize_t>{vp2.size()});
 

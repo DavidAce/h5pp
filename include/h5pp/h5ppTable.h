@@ -20,26 +20,30 @@ namespace h5pp::inline v2 {
 
         [[nodiscard]] Options tableCreateOptions_() const {
             Options options;
-            if(not createOptions_) return options;
-            if(createOptions_->h5Type) options.h5Type = createOptions_->h5Type;
-            if(createOptions_->dimsChunk) options.dsetChunkDims = detail::toOptDimsType(createOptions_->dimsChunk);
-            if(createOptions_->compression) options.compression = h5pp::hdf5::getValidCompressionLevel(createOptions_->compression);
+            if(not createOptions_.has_value()) return options;
+            if(createOptions_->h5Type.has_value()) options.h5Type = createOptions_->h5Type;
+            if(createOptions_->dimsChunk.has_value()) options.dsetChunkDims = detail::toOptDimsType(createOptions_->dimsChunk);
+            if(createOptions_->compression.has_value())
+                options.compression = h5pp::hdf5::getValidCompressionLevel(createOptions_->compression);
             return options;
         }
 
         void createIfMissing_() requires detail::MutableFile<FileType>
         {
             if(h5pp::hdf5::checkIfLinkExists(fileHandle_, tablePath_, plists_.linkAccess)) return;
-            if(not createOptions_)
+            if(not createOptions_.has_value())
                 throw h5pp::runtime_error("Cannot create missing table [{}]: no creation options were provided", tablePath_);
-            if(not createOptions_->h5Type) throw h5pp::runtime_error("Cannot create missing table [{}]: h5Type is not set", tablePath_);
-            if(not createOptions_->title) throw h5pp::runtime_error("Cannot create missing table [{}]: title is not set", tablePath_);
+            if(not createOptions_->h5Type.has_value())
+                throw h5pp::runtime_error("Cannot create missing table [{}]: h5Type is not set", tablePath_);
+            if(not createOptions_->title.has_value())
+                throw h5pp::runtime_error("Cannot create missing table [{}]: title is not set", tablePath_);
 
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             options.h5Type   = createOptions_->h5Type;
-            if(createOptions_->dimsChunk) options.dsetChunkDims = detail::toOptDimsType(createOptions_->dimsChunk);
-            if(createOptions_->compression) options.compression = h5pp::hdf5::getValidCompressionLevel(createOptions_->compression);
+            if(createOptions_->dimsChunk.has_value()) options.dsetChunkDims = detail::toOptDimsType(createOptions_->dimsChunk);
+            if(createOptions_->compression.has_value())
+                options.compression = h5pp::hdf5::getValidCompressionLevel(createOptions_->compression);
             auto info = h5pp::scan::makeTableInfo(fileHandle_, options, createOptions_->title.value(), plists_);
             h5pp::hdf5::createTable(info, plists_);
         }
@@ -156,9 +160,9 @@ namespace h5pp::inline v2 {
             Options options  = tableCreateOptions_();
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto tgtInfo     = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
-            if(not tgtInfo.tableExists or not tgtInfo.tableExists.value()) {
+            if(not tgtInfo.tableExists.has_value() or not tgtInfo.tableExists.value()) {
                 srcInfo.assertCreateReady();
-                if(not options.h5Type) options.h5Type = srcInfo.h5Type;
+                if(not options.h5Type.has_value()) options.h5Type = srcInfo.h5Type;
                 h5pp::scan::makeTableInfo(tgtInfo, fileHandle_, options, srcInfo.tableTitle.value(), plists_);
                 h5pp::hdf5::createTable(tgtInfo, plists_);
             }
@@ -178,9 +182,9 @@ namespace h5pp::inline v2 {
             auto srcInfo     = h5pp::scan::readTableInfo(srcLocation, options, plists_);
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto tgtInfo     = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
-            if(not tgtInfo.tableExists or not tgtInfo.tableExists.value()) {
+            if(not tgtInfo.tableExists.has_value() or not tgtInfo.tableExists.value()) {
                 srcInfo.assertCreateReady();
-                if(not options.h5Type) options.h5Type = srcInfo.h5Type;
+                if(not options.h5Type.has_value()) options.h5Type = srcInfo.h5Type;
                 h5pp::scan::makeTableInfo(tgtInfo, fileHandle_, options, srcInfo.tableTitle.value(), plists_);
                 h5pp::hdf5::createTable(tgtInfo, plists_);
             }
@@ -202,7 +206,7 @@ namespace h5pp::inline v2 {
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto info        = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
             h5pp::hdf5::readTableRecords(data, info, offset, extent, plists_);
-            if(info.reclaimInfo) reclaimStack_->emplace_back(info.reclaimInfo.value());
+            if(info.reclaimInfo.has_value()) reclaimStack_->emplace_back(info.reclaimInfo.value());
             return data;
         }
 
@@ -218,7 +222,7 @@ namespace h5pp::inline v2 {
             auto info             = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
             auto [offset, extent] = util::parseTableSelection(data, selection, info.numRecords, info.recordBytes);
             h5pp::hdf5::readTableRecords(data, info, offset, extent, plists_);
-            if(info.reclaimInfo) reclaimStack_->emplace_back(info.reclaimInfo.value());
+            if(info.reclaimInfo.has_value()) reclaimStack_->emplace_back(info.reclaimInfo.value());
             return data;
         }
 
@@ -257,7 +261,7 @@ namespace h5pp::inline v2 {
             if(fieldSelection.has_indices()) h5pp::hdf5::readTableField(data, info, fieldSelection.get_indices(), offset, extent, plists_);
             else if(fieldSelection.has_names()) h5pp::hdf5::readTableField(data, info, fieldSelection.get_names(), offset, extent, plists_);
             else throw h5pp::runtime_error("No field names or indices have been specified");
-            if(info.reclaimInfo) reclaimStack_->emplace_back(info.reclaimInfo.value());
+            if(info.reclaimInfo.has_value()) reclaimStack_->emplace_back(info.reclaimInfo.value());
             return data;
         }
 
