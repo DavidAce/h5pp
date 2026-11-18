@@ -25,7 +25,6 @@ option(H5PP_ENABLE_FMT                  "Enables the {fmt} formatting library"  
 option(H5PP_ENABLE_SPDLOG               "Enables Spdlog for logging h5pp internal info to stdout (implies fmt)"   OFF)
 option(H5PP_ENABLE_MPI                  "Enables use of MPI (work in progress)"                                   OFF)
 option(H5PP_ENABLE_ASAN                 "Enable runtime address sanitizer -fsanitize=address"                     OFF)
-option(H5PP_ENABLE_PCH                  "Enable precompiled headers (if supported) to speed up test compilation"  OFF)
 option(H5PP_ENABLE_CCACHE               "Enable ccache (if available) to speed up test compilation"               OFF)
 option(H5PP_ENABLE_COVERAGE             "Enable test coverage"                                                    OFF)
 option(H5PP_USE_FLOAT128                "Use C++23 std::float128_t (requires <stdfloat> and compiler support)"    OFF)
@@ -172,12 +171,14 @@ endif ()
 if (H5PP_ENABLE_TESTS AND TARGET h5pp)
     enable_testing()
     add_subdirectory(tests)
+    add_subdirectory(tests/v1)
 endif ()
 
 
 # Build examples
 if (H5PP_BUILD_EXAMPLES AND TARGET h5pp)
     add_subdirectory(examples)
+    add_subdirectory(examples/v1)
 endif ()
 
 

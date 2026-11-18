@@ -165,7 +165,6 @@ configuration. CMake targets are recommended for handling these link details.
 | `H5PP_ENABLE_TESTS` | `OFF` | Build the existing Catch2 tests |
 | `H5PP_BUILD_EXAMPLES` | `OFF` | Build examples |
 | `H5PP_BUILD_DOCS` | `OFF` | Build documentation with Doxygen and Sphinx |
-| `H5PP_ENABLE_PCH` | `OFF` | Use precompiled headers for tests/examples |
 | `H5PP_ENABLE_CCACHE` | `OFF` | Use ccache for development builds |
 | `H5PP_ENABLE_ASAN` | `OFF` | Enable AddressSanitizer |
 | `H5PP_ENABLE_COVERAGE` | `OFF` | Enable coverage instrumentation for tests |

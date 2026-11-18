@@ -50,7 +50,6 @@
         "H5PP_BUILD_DOCS": false,
         "H5PP_ENABLE_MPI": false,
         "H5PP_ENABLE_ASAN": false,
-        "H5PP_ENABLE_PCH": false,
         "H5PP_ENABLE_CCACHE": true,
         "H5PP_ENABLE_COVERAGE": false,
         "H5PP_USE_QUADMATH": false,
