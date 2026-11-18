@@ -27,8 +27,8 @@ int main() {
     file.writeDataset(42, "group/dataset");
 
     // Write some attributes into the dataset
-    file.writeAttribute("this a some dummy string", "stringAttribute", "group/dataset");
-    file.writeAttribute(std::vector<int>{1, 2, 3, 4}, "vectorAttribute", "group/dataset");
+    file.writeAttribute("this a some dummy string", "group/dataset", "stringAttribute");
+    file.writeAttribute(std::vector<int>{1, 2, 3, 4}, "group/dataset", "vectorAttribute");
 
     // Let's start with the string attribute
     // Get a struct populated with information about the attribute

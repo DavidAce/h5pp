@@ -16,9 +16,9 @@ int main() {
     file.writeDataset(42, "intGroup/myInt");
 
     // Write some attributes to the dataset
-    file.writeAttribute("this is some info about my int", "myInt_stringAttribute", "intGroup/myInt");
-    file.writeAttribute(3.14, "myInt_doubleAttribute", "intGroup/myInt");
-    file.writeAttribute(std::vector<int>{1, 2, 3, 4}, "myInt_vectorAttribute", "intGroup/myInt");
+    file.writeAttribute("this is some info about my int", "intGroup/myInt", "myInt_stringAttribute");
+    file.writeAttribute(3.14, "intGroup/myInt", "myInt_doubleAttribute");
+    file.writeAttribute(std::vector<int>{1, 2, 3, 4}, "intGroup/myInt", "myInt_vectorAttribute");
 
     // Now we imagine wanting to iterate through all attributes of "intGroup/myInt" and print their contents.
     // The most pressing concern is that we may not know beforehand what type we should read data into.
@@ -44,15 +44,15 @@ int main() {
                                     typeInfo.h5Size.value());
 
             if(typeInfo.cppTypeIndex.value() == typeid(std::string) and typeInfo.h5Size.value() == 1)
-                h5pp::print("{} = {}\n", msg, file.readAttribute<std::string>(typeInfo.h5Name.value(), typeInfo.h5Path.value()));
+                h5pp::print("{} = {}\n", msg, file.readAttribute<std::string>(typeInfo.h5Path.value(), typeInfo.h5Name.value()));
             if(typeInfo.cppTypeIndex.value() == typeid(int) and typeInfo.h5Size.value() == 1)
-                h5pp::print("{} = {}\n", msg, file.readAttribute<int>(typeInfo.h5Name.value(), typeInfo.h5Path.value()));
+                h5pp::print("{} = {}\n", msg, file.readAttribute<int>(typeInfo.h5Path.value(), typeInfo.h5Name.value()));
             if(typeInfo.cppTypeIndex.value() == typeid(int) and typeInfo.h5Size.value() > 1)
-                h5pp::print("{} = {}\n", msg, file.readAttribute<std::vector<int>>(typeInfo.h5Name.value(), typeInfo.h5Path.value()));
+                h5pp::print("{} = {}\n", msg, file.readAttribute<std::vector<int>>(typeInfo.h5Path.value(), typeInfo.h5Name.value()));
             if(typeInfo.cppTypeIndex.value() == typeid(double) and typeInfo.h5Size.value() == 1)
-                h5pp::print("{} = {}\n", msg, file.readAttribute<double>(typeInfo.h5Name.value(), typeInfo.h5Path.value()));
+                h5pp::print("{} = {}\n", msg, file.readAttribute<double>(typeInfo.h5Path.value(), typeInfo.h5Name.value()));
             if(typeInfo.cppTypeIndex.value() == typeid(double) and typeInfo.h5Size.value() > 1)
-                h5pp::print("{} = {}\n", msg, file.readAttribute<std::vector<double>>(typeInfo.h5Name.value(), typeInfo.h5Path.value()));
+                h5pp::print("{} = {}\n", msg, file.readAttribute<std::vector<double>>(typeInfo.h5Path.value(), typeInfo.h5Name.value()));
 
             // ... and so on. In practice, it is simpler to create templated helper functions to avoid code duplication here.
         }

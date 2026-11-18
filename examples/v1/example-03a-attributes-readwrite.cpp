@@ -17,16 +17,16 @@ int main() {
     file.writeDataset(42, "intGroup/myInt");
 
     // We can now add attributes to the dataset
-    file.writeAttribute("this is some info about my int", "myInt_stringAttribute", "intGroup/myInt");
-    file.writeAttribute(3.14, "myInt_doubleAttribute", "intGroup/myInt");
+    file.writeAttribute("this is some info about my int", "intGroup/myInt", "myInt_stringAttribute");
+    file.writeAttribute(3.14, "intGroup/myInt", "myInt_doubleAttribute");
 
     // List all attributes associated with our dataset. The following will be printed:
-    //      {"myInt_stringAttribute", "myInt_doubleAttribute"}
+    //      ["myInt_stringAttribute", "myInt_doubleAttribute"]
     h5pp::print("{}\n", file.getAttributeNames("intGroup/myInt"));
 
     // Read the attribute data back
-    auto stringAttribute = file.readAttribute<std::string>("myInt_stringAttribute", "intGroup/myInt");
-    auto doubleAttribute = file.readAttribute<double>("myInt_doubleAttribute", "intGroup/myInt");
+    auto stringAttribute = file.readAttribute<std::string>("intGroup/myInt", "myInt_stringAttribute");
+    auto doubleAttribute = file.readAttribute<double>("intGroup/myInt", "myInt_doubleAttribute");
 
     // Print the data
     h5pp::print("stringAttribute read: {}\n", stringAttribute);
