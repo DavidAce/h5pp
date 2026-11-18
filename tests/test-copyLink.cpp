@@ -20,14 +20,18 @@ namespace {
         auto numbers_path = h5pp::format("{}/numbers", root);
         auto complex_path = h5pp::format("{}/nested/complex", root);
 
-        file.writeDataset(std::string("A"), text_path);
-        file.writeDataset(std::vector<int>{1, 2, 3, 4}, numbers_path);
-        file.writeDataset(std::vector<std::complex<double>>{{1.0, 2.0}, {3.0, 4.0}}, complex_path);
+        file.dataset(text_path).write(std::string("A"));
+        file.dataset(numbers_path).write(std::vector<int>{1, 2, 3, 4});
+        file.dataset(complex_path)
+            .write(std::vector<std::complex<double>>{
+                {1.0, 2.0},
+                {3.0, 4.0}
+        });
 
-        file.writeAttribute(root_path, "group_attr", std::string("group-attr"));
-        file.writeAttribute(text_path, "dataset_attr", std::string("text-attr"));
-        file.writeAttribute(numbers_path, "dataset_attr", std::string("numbers-attr"));
-        file.writeAttribute(complex_path, "dataset_attr", std::string("complex-attr"));
+        file.attribute(root_path, "group_attr").write(std::string("group-attr"));
+        file.attribute(text_path, "dataset_attr").write(std::string("text-attr"));
+        file.attribute(numbers_path, "dataset_attr").write(std::string("numbers-attr"));
+        file.attribute(complex_path, "dataset_attr").write(std::string("complex-attr"));
     }
 }
 
@@ -39,24 +43,24 @@ TEST_CASE("link handles copy across files in both source-driven and destination-
     file_a.link("groupA/A").copyToFile(file_b_path, "groupA_from_file_A/A", h5pp::FileAccess::REPLACE);
 
     h5pp::File file_b(file_b_path, h5pp::FileAccess::READWRITE, 0);
-    REQUIRE(file_b.readDataset<std::string>("groupA_from_file_A/A") == "A");
-    REQUIRE(file_b.readAttribute<std::string>("groupA_from_file_A/A", "dataset_attr") == "text-attr");
+    REQUIRE(file_b.dataset("groupA_from_file_A/A").read<std::string>() == "A");
+    REQUIRE(file_b.attribute("groupA_from_file_A/A", "dataset_attr").read<std::string>() == "text-attr");
 
-    file_b.writeDataset(std::string("B"), "groupB/B");
-    file_b.writeDataset(std::vector<int>{9, 8, 7}, "groupB/numbers");
-    file_b.writeAttribute("groupB", "group_attr", std::string("groupB-attr"));
-    file_b.writeAttribute("groupB/B", "dataset_attr", std::string("from-file-b"));
-    file_b.writeAttribute("groupB/numbers", "dataset_attr", std::string("numbers-from-file-b"));
+    file_b.dataset("groupB/B").write(std::string("B"));
+    file_b.dataset("groupB/numbers").write(std::vector<int>{9, 8, 7});
+    file_b.attribute("groupB", "group_attr").write(std::string("groupB-attr"));
+    file_b.attribute("groupB/B", "dataset_attr").write(std::string("from-file-b"));
+    file_b.attribute("groupB/numbers", "dataset_attr").write(std::string("numbers-from-file-b"));
 
     file_a.link("groupA_from_file_B/B").copyFromFile(file_b.getFilePath(), "groupB/B");
     file_a.link("groupA_from_file_B/numbers").copyFromFile(file_b.getFilePath(), "groupB/numbers");
 
-    REQUIRE(file_a.readDataset<std::string>("groupA/A") == "A");
-    REQUIRE(file_a.readAttribute<std::string>("groupA/A", "dataset_attr") == "text-attr");
-    REQUIRE(file_a.readDataset<std::string>("groupA_from_file_B/B") == "B");
-    REQUIRE(file_a.readDataset<std::vector<int>>("groupA_from_file_B/numbers") == std::vector<int>{9, 8, 7});
-    REQUIRE(file_a.readAttribute<std::string>("groupA_from_file_B/B", "dataset_attr") == "from-file-b");
-    REQUIRE(file_a.readAttribute<std::string>("groupA_from_file_B/numbers", "dataset_attr") == "numbers-from-file-b");
+    REQUIRE(file_a.dataset("groupA/A").read<std::string>() == "A");
+    REQUIRE(file_a.attribute("groupA/A", "dataset_attr").read<std::string>() == "text-attr");
+    REQUIRE(file_a.dataset("groupA_from_file_B/B").read<std::string>() == "B");
+    REQUIRE(file_a.dataset("groupA_from_file_B/numbers").read<std::vector<int>>() == std::vector<int>{9, 8, 7});
+    REQUIRE(file_a.attribute("groupA_from_file_B/B", "dataset_attr").read<std::string>() == "from-file-b");
+    REQUIRE(file_a.attribute("groupA_from_file_B/numbers", "dataset_attr").read<std::string>() == "numbers-from-file-b");
 }
 
 TEST_CASE("copyLink location APIs support recursive group copies and relative source paths", "[copy-link][location]") {
@@ -65,60 +69,65 @@ TEST_CASE("copyLink location APIs support recursive group copies and relative so
     auto mirror = make_file("copyLink-location-mirror");
 
     write_source_tree(source, "sourceGroup");
-    target.createGroup("receiving");
+    target.group("receiving").create();
 
     auto target_handle   = target.advanced().openFileHandle();
     auto receiving_group = h5pp::hdf5::openLink<h5pp::hid::h5g>(target_handle, "receiving");
     source.link("sourceGroup").copyToLocation(receiving_group, "copiedGroup");
 
-    REQUIRE(target.readDataset<std::string>("receiving/copiedGroup/A") == "A");
-    REQUIRE(target.readDataset<std::vector<int>>("receiving/copiedGroup/numbers") == std::vector<int>{1, 2, 3, 4});
-    REQUIRE(target.readDataset<std::vector<std::complex<double>>>("receiving/copiedGroup/nested/complex") ==
-            std::vector<std::complex<double>>{{1.0, 2.0}, {3.0, 4.0}});
-    REQUIRE(target.readAttribute<std::string>("receiving/copiedGroup", "group_attr") == "group-attr");
-    REQUIRE(target.readAttribute<std::string>("receiving/copiedGroup/A", "dataset_attr") == "text-attr");
-    REQUIRE(target.readAttribute<std::string>("receiving/copiedGroup/nested/complex", "dataset_attr") == "complex-attr");
+    REQUIRE(target.dataset("receiving/copiedGroup/A").read<std::string>() == "A");
+    REQUIRE(target.dataset("receiving/copiedGroup/numbers").read<std::vector<int>>() == std::vector<int>{1, 2, 3, 4});
+    REQUIRE(target.dataset("receiving/copiedGroup/nested/complex").read<std::vector<std::complex<double>>>() ==
+            std::vector<std::complex<double>>{
+                {1.0, 2.0},
+                {3.0, 4.0}
+    });
+    REQUIRE(target.attribute("receiving/copiedGroup", "group_attr").read<std::string>() == "group-attr");
+    REQUIRE(target.attribute("receiving/copiedGroup/A", "dataset_attr").read<std::string>() == "text-attr");
+    REQUIRE(target.attribute("receiving/copiedGroup/nested/complex", "dataset_attr").read<std::string>() == "complex-attr");
 
     auto nested_group = h5pp::hdf5::openLink<h5pp::hid::h5g>(target_handle, "receiving/copiedGroup/nested");
     mirror.link("imports/complexCopy").copyFromLocation(nested_group, "complex");
 
-    REQUIRE(mirror.readDataset<std::vector<std::complex<double>>>("imports/complexCopy") ==
-            std::vector<std::complex<double>>{{1.0, 2.0}, {3.0, 4.0}});
-    REQUIRE(mirror.readAttribute<std::string>("imports/complexCopy", "dataset_attr") == "complex-attr");
-    REQUIRE(source.readAttribute<std::string>("sourceGroup", "group_attr") == "group-attr");
+    REQUIRE(mirror.dataset("imports/complexCopy").read<std::vector<std::complex<double>>>() == std::vector<std::complex<double>>{
+                                                                                                   {1.0, 2.0},
+                                                                                                   {3.0, 4.0}
+    });
+    REQUIRE(mirror.attribute("imports/complexCopy", "dataset_attr").read<std::string>() == "complex-attr");
+    REQUIRE(source.attribute("sourceGroup", "group_attr").read<std::string>() == "group-attr");
 }
 
 TEST_CASE("copyLink reports missing sources and target collisions", "[copy-link][errors]") {
     auto source = make_file("copyLink-errors-source");
     auto target = make_file("copyLink-errors-target");
 
-    source.writeDataset(std::vector<int>{1, 2, 3}, "source/data");
-    source.writeAttribute("source/data", "dataset_attr", std::string("source-attr"));
-    target.writeDataset(std::vector<int>{9, 9, 9}, "existing/data");
-    target.writeAttribute("existing/data", "dataset_attr", std::string("existing-attr"));
+    source.dataset("source/data").write(std::vector<int>{1, 2, 3});
+    source.attribute("source/data", "dataset_attr").write(std::string("source-attr"));
+    target.dataset("existing/data").write(std::vector<int>{9, 9, 9});
+    target.attribute("existing/data", "dataset_attr").write(std::string("existing-attr"));
 
     REQUIRE_THROWS_AS(source.link("missing/data").copyToFile(target.getFilePath(), "imports/missing"), std::runtime_error);
     REQUIRE_THROWS_AS(source.link("source/data").copyToFile(target.getFilePath(), "existing/data"), std::runtime_error);
     REQUIRE_THROWS_AS(target.link("imports/no-file").copyFromFile(make_path("copyLink-errors-no-such-file"), "source/data"),
                       std::runtime_error);
 
-    REQUIRE_FALSE(target.linkExists("imports/missing"));
-    REQUIRE_FALSE(target.linkExists("imports/no-file"));
-    REQUIRE(target.readDataset<std::vector<int>>("existing/data") == std::vector<int>{9, 9, 9});
-    REQUIRE(target.readAttribute<std::string>("existing/data", "dataset_attr") == "existing-attr");
+    REQUIRE_FALSE(target.link("imports/missing").exists());
+    REQUIRE_FALSE(target.link("imports/no-file").exists());
+    REQUIRE(target.dataset("existing/data").read<std::vector<int>>() == std::vector<int>{9, 9, 9});
+    REQUIRE(target.attribute("existing/data", "dataset_attr").read<std::string>() == "existing-attr");
 }
 
 TEST_CASE("link handles copy within the same file and preserve attributes", "[copy-link][same-file]") {
     auto file = make_file("copyLink-same-file");
 
-    file.writeDataset(9, "source/value");
-    file.writeAttribute("source/value", "kind", std::string("payload"));
+    file.dataset("source/value").write(9);
+    file.attribute("source/value", "kind").write(std::string("payload"));
 
     auto source = file.link("source/value");
     source.copyTo("copies/value", h5pp::FileAccess::REPLACE);
 
-    REQUIRE(file.readDataset<int>("copies/value") == 9);
-    REQUIRE(file.readAttribute<std::string>("copies/value", "kind") == "payload");
+    REQUIRE(file.dataset("copies/value").read<int>() == 9);
+    REQUIRE(file.attribute("copies/value", "kind").read<std::string>() == "payload");
 }
 
 int main(int argc, char *argv[]) {

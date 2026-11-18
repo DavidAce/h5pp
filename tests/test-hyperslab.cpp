@@ -24,7 +24,7 @@ TEST_CASE("hyperslab write", "[hyperslab][write]") {
     patch.dims = {2, 2};
     file.dataset("data5x5").select({1, 2}, {2, 2}).write(patchData, patch);
 
-    auto readBack = file.readDataset<std::vector<double>>("data5x5");
+    auto readBack = file.dataset("data5x5").read<std::vector<double>>();
     REQUIRE(readBack[7] == Catch::Approx(1.0));
     REQUIRE(readBack[8] == Catch::Approx(2.0));
     REQUIRE(readBack[12] == Catch::Approx(3.0));
@@ -64,7 +64,7 @@ TEST_CASE("hyperslab write with explicit data slab", "[hyperslab][data-slab]") {
     patch.dataSlab = h5pp::Hyperslab({1, 1}, {2, 2});
     file.dataset("data5x5").select({1, 2}, {2, 2}).write(data3x3, patch);
 
-    auto readBack = file.readDataset<std::vector<double>>("data5x5");
+    auto readBack = file.dataset("data5x5").read<std::vector<double>>();
     REQUIRE(readBack[7] == Catch::Approx(1.0));
     REQUIRE(readBack[8] == Catch::Approx(2.0));
     REQUIRE(readBack[12] == Catch::Approx(3.0));

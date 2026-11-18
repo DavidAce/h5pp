@@ -12,17 +12,17 @@ TEST_CASE("Optional reads return values for existing objects and nullopt for mis
     auto path = make_path("readOptional");
 
     h5pp::File writer(path, h5pp::FileAccess::REPLACE, 0);
-    REQUIRE_NOTHROW(writer.writeDataset(42.0, "someGroup/someNumber"));
-    REQUIRE_NOTHROW(writer.writeDataset(std::vector<int>{1, 2, 3}, "someGroup/vector"));
-    REQUIRE_NOTHROW(writer.writeAttribute("someGroup/someNumber", "someComment", std::string("My favorite number")));
-    REQUIRE_NOTHROW(writer.writeAttribute("someGroup/vector", "labels", std::vector<std::string>{"alpha", "beta"}));
+    REQUIRE_NOTHROW(writer.dataset("someGroup/someNumber").write(42.0));
+    REQUIRE_NOTHROW(writer.dataset("someGroup/vector").write(std::vector<int>{1, 2, 3}));
+    REQUIRE_NOTHROW(writer.attribute("someGroup/someNumber", "someComment").write(std::string("My favorite number")));
+    REQUIRE_NOTHROW(writer.attribute("someGroup/vector", "labels").write(std::vector<std::string>{"alpha", "beta"}));
 
     h5pp::File file(path, h5pp::FileAccess::READWRITE, 0);
 
-    auto number  = file.readDataset<std::optional<double>>("someGroup/someNumber");
-    auto vector  = file.readDataset<std::optional<std::vector<int>>>("someGroup/vector");
-    auto comment = file.readAttribute<std::optional<std::string>>("someGroup/someNumber", "someComment");
-    auto labels  = file.readAttribute<std::optional<std::vector<std::string>>>("someGroup/vector", "labels");
+    auto number  = file.dataset("someGroup/someNumber").read<std::optional<double>>();
+    auto vector  = file.dataset("someGroup/vector").read<std::optional<std::vector<int>>>();
+    auto comment = file.attribute("someGroup/someNumber", "someComment").read<std::optional<std::string>>();
+    auto labels  = file.attribute("someGroup/vector", "labels").read<std::optional<std::vector<std::string>>>();
 
     REQUIRE(number.has_value());
     REQUIRE(vector.has_value());
@@ -34,10 +34,10 @@ TEST_CASE("Optional reads return values for existing objects and nullopt for mis
     REQUIRE(comment.value() == "My favorite number");
     REQUIRE(labels.value() == std::vector<std::string>{"alpha", "beta"});
 
-    auto missing_number  = file.readDataset<std::optional<double>>("someGroup/anotherNumber");
-    auto missing_vector  = file.readDataset<std::optional<std::vector<int>>>("someGroup/missingVector");
-    auto missing_comment = file.readAttribute<std::optional<std::string>>("someGroup/someNumber", "anotherComment");
-    auto missing_labels  = file.readAttribute<std::optional<std::vector<std::string>>>("someGroup/vector", "missingLabels");
+    auto missing_number  = file.dataset("someGroup/anotherNumber").read<std::optional<double>>();
+    auto missing_vector  = file.dataset("someGroup/missingVector").read<std::optional<std::vector<int>>>();
+    auto missing_comment = file.attribute("someGroup/someNumber", "anotherComment").read<std::optional<std::string>>();
+    auto missing_labels  = file.attribute("someGroup/vector", "missingLabels").read<std::optional<std::vector<std::string>>>();
 
     REQUIRE_FALSE(missing_number.has_value());
     REQUIRE_FALSE(missing_vector.has_value());

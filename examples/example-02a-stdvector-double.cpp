@@ -10,7 +10,10 @@ namespace {
     }
 }
 
-void v2Api(h5pp::File &file) {
+int main() {
+    // Initialize a file
+    h5pp::File file(H5PP_EXAMPLE_DIR "example-02a-stdvector-double.h5", h5pp::FileAccess::REPLACE);
+
     // Initialize a vector of doubles.
     std::vector<double> vWrite        = {1.0, 2.0, 3.0, 4.0};
     auto                createOptions = makeCreateOptions(vWrite.size());
@@ -21,25 +24,5 @@ void v2Api(h5pp::File &file) {
 
     h5pp::print("v2 API wrote dataset: {}\n", vWrite);
     h5pp::print("v2 API read  dataset: {}\n", vRead);
-}
-
-void v1Api(h5pp::File &file) {
-    // Initialize a vector of doubles.
-    std::vector<double> vWrite        = {1.0, 2.0, 3.0, 4.0};
-    auto                createOptions = makeCreateOptions(vWrite.size());
-
-    // Write data using the v1 API and the same creation options.
-    file.writeDataset(vWrite, "v1Api/myStdVectorDouble", createOptions);
-    auto vRead = file.readDataset<std::vector<double>>("v1Api/myStdVectorDouble");
-
-    h5pp::print("v1 API wrote dataset: {}\n", vWrite);
-    h5pp::print("v1 API read  dataset: {}\n", vRead);
-}
-
-int main() {
-    // Initialize a file
-    h5pp::File file(H5PP_EXAMPLE_DIR "example-02a-stdvector-double.h5", h5pp::FileAccess::REPLACE);
-    v2Api(file); // Show the v2 API
-    v1Api(file); // Show the v1 API
     return 0;
 }

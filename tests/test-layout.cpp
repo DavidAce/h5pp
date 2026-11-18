@@ -29,9 +29,9 @@ TEST_CASE("Automatic layout selection follows the compact, contiguous and chunke
     std::vector<double> contiguous_data(contiguous_count, 2.0);
     std::vector<double> chunked_data(chunked_count, 3.0);
 
-    file.writeDataset(compact_data, "layout/compact");
-    file.writeDataset(contiguous_data, "layout/contiguous");
-    file.writeDataset(chunked_data, "layout/chunked");
+    file.dataset("layout/compact").write(compact_data);
+    file.dataset("layout/contiguous").write(contiguous_data);
+    file.dataset("layout/chunked").write(chunked_data);
 
     auto compact_info    = file.dataset("layout/compact").getInfo();
     auto contiguous_info = file.dataset("layout/contiguous").getInfo();
@@ -41,9 +41,9 @@ TEST_CASE("Automatic layout selection follows the compact, contiguous and chunke
     require_layout(contiguous_info, H5D_CONTIGUOUS);
     require_chunked(chunked_info);
 
-    REQUIRE(file.readDataset<std::vector<double>>("layout/compact") == compact_data);
-    REQUIRE(file.readDataset<std::vector<double>>("layout/contiguous") == contiguous_data);
-    REQUIRE(file.readDataset<std::vector<double>>("layout/chunked") == chunked_data);
+    REQUIRE(file.dataset("layout/compact").read<std::vector<double>>() == compact_data);
+    REQUIRE(file.dataset("layout/contiguous").read<std::vector<double>>() == contiguous_data);
+    REQUIRE(file.dataset("layout/chunked").read<std::vector<double>>() == chunked_data);
 }
 
 TEST_CASE("Automatic layout selection treats multidimensional data by total byte size", "[layout][auto][multidim]") {
@@ -73,9 +73,9 @@ TEST_CASE("Automatic layout selection treats multidimensional data by total byte
     require_chunked(chunked_info);
     REQUIRE(chunked_info.dsetChunk.value() == std::vector<hsize_t>{256, 256});
 
-    REQUIRE(file.readDataset<std::vector<double>>("layout/compact2d") == compact_data);
-    REQUIRE(file.readDataset<std::vector<double>>("layout/contiguous2d") == contiguous_data);
-    REQUIRE(file.readDataset<std::vector<double>>("layout/chunked2d") == chunked_data);
+    REQUIRE(file.dataset("layout/compact2d").read<std::vector<double>>() == compact_data);
+    REQUIRE(file.dataset("layout/contiguous2d").read<std::vector<double>>() == contiguous_data);
+    REQUIRE(file.dataset("layout/chunked2d").read<std::vector<double>>() == chunked_data);
 }
 
 TEST_CASE("Automatic layout selection forces chunking for extensible datasets regardless of size", "[layout][auto][extensible]") {
@@ -86,12 +86,12 @@ TEST_CASE("Automatic layout selection forces chunking for extensible datasets re
     h5pp::DatasetCreateOptions unlimited_create;
     unlimited_create.dims    = {data.size()};
     unlimited_create.dimsMax = {H5S_UNLIMITED};
-    file.writeDataset(data, "layout/unlimited", unlimited_create);
+    file.dataset("layout/unlimited").ensure(unlimited_create).write(data);
 
     h5pp::DatasetCreateOptions capped_create;
     capped_create.dims    = {data.size()};
     capped_create.dimsMax = {4};
-    file.writeDataset(data, "layout/capped", capped_create);
+    file.dataset("layout/capped").ensure(capped_create).write(data);
 
     auto unlimited_info = file.dataset("layout/unlimited").getInfo();
     auto capped_info    = file.dataset("layout/capped").getInfo();
@@ -103,8 +103,8 @@ TEST_CASE("Automatic layout selection forces chunking for extensible datasets re
     REQUIRE(capped_info.dsetDimsMax.has_value());
     REQUIRE(capped_info.dsetDimsMax.value() == std::vector<hsize_t>{4});
 
-    REQUIRE(file.readDataset<std::vector<int>>("layout/unlimited") == data);
-    REQUIRE(file.readDataset<std::vector<int>>("layout/capped") == data);
+    REQUIRE(file.dataset("layout/unlimited").read<std::vector<int>>() == data);
+    REQUIRE(file.dataset("layout/capped").read<std::vector<int>>() == data);
 }
 
 int main(int argc, char *argv[]) {

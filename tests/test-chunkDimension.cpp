@@ -42,8 +42,8 @@ TEST_CASE("Automatic chunking reports concrete chunk dimensions for large comple
     std::vector<std::complex<double>> data(10000, {10.0, 5.0});
     h5pp::DatasetCreateOptions        create;
     create.h5Layout = H5D_CHUNKED;
-    file.writeDataset(data, "chunkedgroup/vectorComplexDouble", create);
-    auto info = file.getDatasetInfo("chunkedgroup/vectorComplexDouble");
+    file.dataset("chunkedgroup/vectorComplexDouble").ensure(create).write(data);
+    auto info = file.dataset("chunkedgroup/vectorComplexDouble").getInfo();
 
     REQUIRE(info.h5Layout.has_value());
     REQUIRE(info.h5Layout.value() == H5D_CHUNKED);
@@ -51,7 +51,7 @@ TEST_CASE("Automatic chunking reports concrete chunk dimensions for large comple
     require_chunk_dims(info, {16384});
     require_chunk_dims(file.dataset("chunkedgroup/vectorComplexDouble").getChunkDimensions(), {16384});
 
-    REQUIRE(file.readDataset<std::vector<std::complex<double>>>("chunkedgroup/vectorComplexDouble") == data);
+    REQUIRE(file.dataset("chunkedgroup/vectorComplexDouble").read<std::vector<std::complex<double>>>() == data);
 }
 
 TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-chunked datasets", "[chunk][metadata]") {
@@ -63,15 +63,15 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         create.dims      = {1000};
         create.h5Layout  = H5D_CHUNKED;
         create.dimsChunk = {10000};
-        file.writeDataset(data, "chunked/manual", create);
-        auto info = file.getDatasetInfo("chunked/manual");
+        file.dataset("chunked/manual").ensure(create).write(data);
+        auto info = file.dataset("chunked/manual").getInfo();
 
         REQUIRE(info.h5Layout.has_value());
         REQUIRE(info.h5Layout.value() == H5D_CHUNKED);
         require_dims(info, {1000});
         require_chunk_dims(info, {10000});
         require_chunk_dims(file.dataset("chunked/manual").getChunkDimensions(), {10000});
-        REQUIRE(file.readDataset<std::vector<double>>("chunked/manual") == data);
+        REQUIRE(file.dataset("chunked/manual").read<std::vector<double>>() == data);
     }
 
     SECTION("Automatic chunk dimensions respect fixed max dimensions") {
@@ -82,8 +82,8 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         create.dims     = {10, 10};
         create.h5Layout = H5D_CHUNKED;
         create.dimsMax  = {32, 64};
-        file.writeDataset(data, "chunked/fixedMax", create);
-        auto info = file.getDatasetInfo("chunked/fixedMax");
+        file.dataset("chunked/fixedMax").ensure(create).write(data);
+        auto info = file.dataset("chunked/fixedMax").getInfo();
 
         REQUIRE(info.h5Layout.has_value());
         REQUIRE(info.h5Layout.value() == H5D_CHUNKED);
@@ -91,7 +91,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         require_max_dims(info, {32, 64});
         require_chunk_dims(info, {32, 64});
         require_chunk_dims(file.dataset("chunked/fixedMax").getChunkDimensions(), {32, 64});
-        REQUIRE(file.readDataset<std::vector<double>>("chunked/fixedMax") == data);
+        REQUIRE(file.dataset("chunked/fixedMax").read<std::vector<double>>() == data);
     }
 
     SECTION("Empty extensible datasets still get usable automatic chunk dimensions") {
@@ -116,7 +116,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         auto appended    = file.dataset("chunked/extensible").append(std::vector<double>{1.0, 2.0}, 0, append);
         require_dims(appended, {1, 2});
         require_chunk_dims(file.dataset("chunked/extensible").getChunkDimensions(), {46, 2});
-        REQUIRE(file.readDataset<std::vector<double>>("chunked/extensible") == std::vector<double>{1.0, 2.0});
+        REQUIRE(file.dataset("chunked/extensible").read<std::vector<double>>() == std::vector<double>{1.0, 2.0});
     }
 
     SECTION("Contiguous and compact datasets report no chunk dimensions") {
@@ -125,8 +125,8 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         std::vector<int> compact_data = {1, 2, 3, 4};
         h5pp::DatasetCreateOptions compact_create;
         compact_create.h5Layout = H5D_COMPACT;
-        file.writeDataset(compact_data, "layout/compact", compact_create);
-        auto compact_info = file.getDatasetInfo("layout/compact");
+        file.dataset("layout/compact").ensure(compact_create).write(compact_data);
+        auto compact_info = file.dataset("layout/compact").getInfo();
         REQUIRE(compact_info.h5Layout.has_value());
         REQUIRE(compact_info.h5Layout.value() == H5D_COMPACT);
         require_no_chunk_dims(file.dataset("layout/compact").getChunkDimensions());
@@ -134,14 +134,14 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
         auto contiguous_data = make_linear_data(128, 5.0);
         h5pp::DatasetCreateOptions contiguous_create;
         contiguous_create.h5Layout = H5D_CONTIGUOUS;
-        file.writeDataset(contiguous_data, "layout/contiguous", contiguous_create);
-        auto contiguous_info = file.getDatasetInfo("layout/contiguous");
+        file.dataset("layout/contiguous").ensure(contiguous_create).write(contiguous_data);
+        auto contiguous_info = file.dataset("layout/contiguous").getInfo();
         REQUIRE(contiguous_info.h5Layout.has_value());
         REQUIRE(contiguous_info.h5Layout.value() == H5D_CONTIGUOUS);
         require_no_chunk_dims(file.dataset("layout/contiguous").getChunkDimensions());
 
-        REQUIRE(file.readDataset<std::vector<int>>("layout/compact") == compact_data);
-        REQUIRE(file.readDataset<std::vector<double>>("layout/contiguous") == contiguous_data);
+        REQUIRE(file.dataset("layout/compact").read<std::vector<int>>() == compact_data);
+        REQUIRE(file.dataset("layout/contiguous").read<std::vector<double>>() == contiguous_data);
     }
 }
 

@@ -23,7 +23,7 @@ TEST_CASE("Contiguous datasets support slab updates and same-sized overwrites", 
 
     h5pp::DatasetCreateOptions contiguousCreate;
     contiguousCreate.h5Layout = H5D_CONTIGUOUS;
-    file.writeDataset(original, "overWriteGroup_contiguous/vectorComplexDouble", contiguousCreate);
+    file.dataset("overWriteGroup_contiguous/vectorComplexDouble").ensure(contiguousCreate).write(original);
 
     h5pp::DatasetWriteOptions partialWrite;
     partialWrite.dims = std::vector<hsize_t>{partial.size()};
@@ -31,14 +31,15 @@ TEST_CASE("Contiguous datasets support slab updates and same-sized overwrites", 
 
     auto expected = original;
     std::copy(partial.begin(), partial.end(), expected.begin());
-    REQUIRE(file.readDataset<std::vector<std::complex<double>>>("overWriteGroup_contiguous/vectorComplexDouble") == expected);
+    REQUIRE(file.dataset("overWriteGroup_contiguous/vectorComplexDouble").read<std::vector<std::complex<double>>>() == expected);
 
     auto rewrite = make_complex_series(10, 100.0);
-    REQUIRE_NOTHROW(file.writeDataset(rewrite, "overWriteGroup_contiguous/vectorComplexDouble"));
-    REQUIRE(file.readDataset<std::vector<std::complex<double>>>("overWriteGroup_contiguous/vectorComplexDouble") == rewrite);
+    REQUIRE_NOTHROW(file.dataset("overWriteGroup_contiguous/vectorComplexDouble").write(rewrite));
+    REQUIRE(file.dataset("overWriteGroup_contiguous/vectorComplexDouble").read<std::vector<std::complex<double>>>() == rewrite);
 
-    REQUIRE_THROWS_AS(file.writeDataset(make_complex_series(5, 2.0), "overWriteGroup_contiguous/vectorComplexDouble"), std::runtime_error);
-    REQUIRE_THROWS_AS(file.writeDataset(make_complex_series(15, 2.0), "overWriteGroup_contiguous/vectorComplexDouble"), std::runtime_error);
+    REQUIRE_THROWS_AS(file.dataset("overWriteGroup_contiguous/vectorComplexDouble").write(make_complex_series(5, 2.0)), std::runtime_error);
+    REQUIRE_THROWS_AS(file.dataset("overWriteGroup_contiguous/vectorComplexDouble").write(make_complex_series(15, 2.0)),
+                      std::runtime_error);
 }
 
 TEST_CASE("Chunked datasets overwrite, grow and shrink cleanly", "[overwrite][chunked]") {
@@ -47,24 +48,24 @@ TEST_CASE("Chunked datasets overwrite, grow and shrink cleanly", "[overwrite][ch
     auto initial = make_complex_series(5, 1.0);
     h5pp::DatasetCreateOptions chunkedCreate;
     chunkedCreate.h5Layout = H5D_CHUNKED;
-    file.writeDataset(initial, "overWriteGroup_chunked/vectorComplexDouble", chunkedCreate);
-    REQUIRE(file.readDataset<std::vector<std::complex<double>>>("overWriteGroup_chunked/vectorComplexDouble") == initial);
+    file.dataset("overWriteGroup_chunked/vectorComplexDouble").ensure(chunkedCreate).write(initial);
+    REQUIRE(file.dataset("overWriteGroup_chunked/vectorComplexDouble").read<std::vector<std::complex<double>>>() == initial);
 
     auto grown = make_complex_series(150, 2.0);
-    REQUIRE_NOTHROW(file.writeDataset(grown, "overWriteGroup_chunked/vectorComplexDouble"));
-    REQUIRE(file.readDataset<std::vector<std::complex<double>>>("overWriteGroup_chunked/vectorComplexDouble") == grown);
+    REQUIRE_NOTHROW(file.dataset("overWriteGroup_chunked/vectorComplexDouble").write(grown));
+    REQUIRE(file.dataset("overWriteGroup_chunked/vectorComplexDouble").read<std::vector<std::complex<double>>>() == grown);
 
-    file.writeDataset(std::string("this is a teststring"), "overWriteGroup_chunked/somestring", chunkedCreate);
-    file.writeDataset(std::string("this is a slightly longer string"), "overWriteGroup_chunked/somestring");
-    REQUIRE(file.readDataset<std::string>("overWriteGroup_chunked/somestring") == "this is a slightly longer string");
+    file.dataset("overWriteGroup_chunked/somestring").ensure(chunkedCreate).write(std::string("this is a teststring"));
+    file.dataset("overWriteGroup_chunked/somestring").write(std::string("this is a slightly longer string"));
+    REQUIRE(file.dataset("overWriteGroup_chunked/somestring").read<std::string>() == "this is a slightly longer string");
 
     auto shrunk = make_complex_series(15, 3.0);
     file.dataset("overWriteGroup_chunked/vectorComplexDouble").resize(shrunk.size(), h5pp::ResizePolicy::FIT);
-    REQUIRE_NOTHROW(file.writeDataset(shrunk, "overWriteGroup_chunked/vectorComplexDouble"));
-    REQUIRE(file.readDataset<std::vector<std::complex<double>>>("overWriteGroup_chunked/vectorComplexDouble") == shrunk);
+    REQUIRE_NOTHROW(file.dataset("overWriteGroup_chunked/vectorComplexDouble").write(shrunk));
+    REQUIRE(file.dataset("overWriteGroup_chunked/vectorComplexDouble").read<std::vector<std::complex<double>>>() == shrunk);
 
-    file.writeDataset(std::string("short string"), "overWriteGroup_chunked/somestring");
-    REQUIRE(file.readDataset<std::string>("overWriteGroup_chunked/somestring") == "short string");
+    file.dataset("overWriteGroup_chunked/somestring").write(std::string("short string"));
+    REQUIRE(file.dataset("overWriteGroup_chunked/somestring").read<std::string>() == "short string");
 }
 
 TEST_CASE("Large auto-written datasets stay writable after growing beyond the initial size", "[overwrite][auto-layout]") {
@@ -73,9 +74,9 @@ TEST_CASE("Large auto-written datasets stay writable after growing beyond the in
     auto initial = make_complex_series(32 * 1024, 1.0);
     auto grown   = make_complex_series(128 * 1024, 1.0);
 
-    file.writeDataset(initial, "overWriteGroup_auto/vectorComplexDouble");
-    REQUIRE_NOTHROW(file.writeDataset(grown, "overWriteGroup_auto/vectorComplexDouble"));
-    REQUIRE(file.readDataset<std::vector<std::complex<double>>>("overWriteGroup_auto/vectorComplexDouble") == grown);
+    file.dataset("overWriteGroup_auto/vectorComplexDouble").write(initial);
+    REQUIRE_NOTHROW(file.dataset("overWriteGroup_auto/vectorComplexDouble").write(grown));
+    REQUIRE(file.dataset("overWriteGroup_auto/vectorComplexDouble").read<std::vector<std::complex<double>>>() == grown);
 
     auto info = file.dataset("overWriteGroup_auto/vectorComplexDouble").getInfo();
     REQUIRE(info.h5Layout.has_value());
@@ -101,9 +102,9 @@ TEST_CASE("Chunked Eigen datasets can be overwritten across shape changes", "[ov
 
     h5pp::DatasetCreateOptions chunkedCreate;
     chunkedCreate.h5Layout = H5D_CHUNKED;
-    file.writeDataset(matrixInt, "overWriteGroup_chunked/matrixInt", chunkedCreate);
-    file.writeDataset(matrixDouble, "overWriteGroup_chunked/matrixDouble", chunkedCreate);
-    file.writeDataset(matrixComplex, "overWriteGroup_chunked/matrixComplexDouble", chunkedCreate);
+    file.dataset("overWriteGroup_chunked/matrixInt").ensure(chunkedCreate).write(matrixInt);
+    file.dataset("overWriteGroup_chunked/matrixDouble").ensure(chunkedCreate).write(matrixDouble);
+    file.dataset("overWriteGroup_chunked/matrixComplexDouble").ensure(chunkedCreate).write(matrixComplex);
 
     matrixInt.resize(60, 60);
     matrixDouble.resize(60, 60);
@@ -116,13 +117,13 @@ TEST_CASE("Chunked Eigen datasets can be overwritten across shape changes", "[ov
         }
     }
 
-    file.writeDataset(matrixInt, "overWriteGroup_chunked/matrixInt");
-    file.writeDataset(matrixDouble, "overWriteGroup_chunked/matrixDouble");
-    file.writeDataset(matrixComplex, "overWriteGroup_chunked/matrixComplexDouble");
+    file.dataset("overWriteGroup_chunked/matrixInt").write(matrixInt);
+    file.dataset("overWriteGroup_chunked/matrixDouble").write(matrixDouble);
+    file.dataset("overWriteGroup_chunked/matrixComplexDouble").write(matrixComplex);
 
-    REQUIRE(file.readDataset<Eigen::MatrixXi>("overWriteGroup_chunked/matrixInt") == matrixInt);
-    REQUIRE(file.readDataset<Eigen::MatrixXd>("overWriteGroup_chunked/matrixDouble") == matrixDouble);
-    REQUIRE(file.readDataset<Eigen::MatrixXcd>("overWriteGroup_chunked/matrixComplexDouble") == matrixComplex);
+    REQUIRE(file.dataset("overWriteGroup_chunked/matrixInt").read<Eigen::MatrixXi>() == matrixInt);
+    REQUIRE(file.dataset("overWriteGroup_chunked/matrixDouble").read<Eigen::MatrixXd>() == matrixDouble);
+    REQUIRE(file.dataset("overWriteGroup_chunked/matrixComplexDouble").read<Eigen::MatrixXcd>() == matrixComplex);
 }
 #endif
 

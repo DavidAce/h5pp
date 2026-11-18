@@ -62,11 +62,11 @@ namespace h5pp::inline v2 {
         requires detail::MutableFile<FileType>
         void write(const DataType &data, const AttributeWriteOptions &options = AttributeWriteOptions()) {
             requireWritable_("write");
-            auto legacyOptions = detail::makeLegacyOptions(linkPath_, attrName_, options);
-            legacyOptions.assertWellDefined();
-            auto dataInfo   = h5pp::scan::scanDataInfo(data, legacyOptions);
+            auto ioOptions = detail::makeOptions(linkPath_, attrName_, options);
+            ioOptions.assertWellDefined();
+            auto dataInfo   = h5pp::scan::scanDataInfo(data, ioOptions);
             auto fileHandle = fileHandle_;
-            auto attrInfo   = h5pp::scan::inferAttrInfo(fileHandle, data, legacyOptions, plists_);
+            auto attrInfo   = h5pp::scan::inferAttrInfo(fileHandle, data, ioOptions, plists_);
             h5pp::hdf5::createAttribute(attrInfo);
             h5pp::hdf5::writeAttribute(data, dataInfo, attrInfo);
         }
@@ -85,11 +85,11 @@ namespace h5pp::inline v2 {
         template<typename DataType>
         void readInto(DataType &data, const AttributeReadOptions &options = AttributeReadOptions()) const {
             static_assert(not std::is_const_v<DataType>);
-            auto legacyOptions = detail::makeLegacyOptions(linkPath_, attrName_, options);
-            legacyOptions.assertWellDefined();
+            auto ioOptions = detail::makeOptions(linkPath_, attrName_, options);
+            ioOptions.assertWellDefined();
             auto fileHandle = fileHandle_;
-            auto attrInfo   = h5pp::scan::readAttrInfo(fileHandle, legacyOptions, plists_);
-            auto dataInfo   = h5pp::scan::scanDataInfo(data, legacyOptions);
+            auto attrInfo   = h5pp::scan::readAttrInfo(fileHandle, ioOptions, plists_);
+            auto dataInfo   = h5pp::scan::scanDataInfo(data, ioOptions);
             h5pp::hdf5::resizeData(data, dataInfo, attrInfo);
             h5pp::hdf5::readAttribute(data, dataInfo, attrInfo, plists_);
         }

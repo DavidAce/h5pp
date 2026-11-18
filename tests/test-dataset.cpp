@@ -24,12 +24,6 @@ namespace {
         }
     }
 
-    const std::vector<std::optional<H5D_layout_t>> layouts      = {std::nullopt, H5D_COMPACT, H5D_CONTIGUOUS, H5D_CHUNKED};
-    const std::vector<std::string>                 layout_names = {"auto", "compact", "contiguous", "chunked"};
-
-    void require_zero_vector(h5pp::File &file, std::string_view path) {
-        REQUIRE(file.readDataset<std::vector<double>>(path) == std::vector<double>{0, 0, 0, 0});
-    }
 }
 
 template<typename T>
@@ -154,7 +148,7 @@ TEST_CASE("Datasets round-trip representative containers and expose basic handle
     require_roundtrip(file, vlenDouble, "vlenDouble");
     require_roundtrip(file, vectorVlenDouble, "vectorVlenDouble");
 
-    auto vectorReadBytes = file.readDataset<std::vector<std::byte>>("vectorDouble");
+    auto vectorReadBytes = file.dataset("vectorDouble").read<std::vector<std::byte>>();
     REQUIRE(vectorReadBytes.size() == vectorDouble.size() * sizeof(double));
 
     auto dset = file.dataset("vectorDouble");
@@ -205,54 +199,6 @@ TEST_CASE("Datasets round-trip representative containers and expose basic handle
     require_roundtrip<Eigen::TensorMap<Eigen::Tensor<double, 2>>, Eigen::Tensor<double, 2>>(file, tensorMapDouble, "tensorMapDouble");
     require_roundtrip<Eigen::MatrixXd, Eigen::VectorXd>(file, vectorMatrix, "vectorMatrix");
 #endif
-}
-
-TEST_CASE("v1 API and v2 API create and write datasets across layouts", "[dataset][api]") {
-    auto file = h5pp::File(make_path("datasetApi"), h5pp::FileAccess::REPLACE, 0);
-
-    for(size_t idx = 0; idx < layouts.size(); ++idx) {
-        SECTION(h5pp::format("v2 API create: {}", layout_names[idx])) {
-            h5pp::DatasetCreateOptions create;
-            create.h5Type   = H5Tcopy(H5T_NATIVE_DOUBLE);
-            create.dims     = {4};
-            create.h5Layout = layouts[idx];
-
-            auto path         = h5pp::format("createGroup/vectorDouble_{}", layout_names[idx]);
-            auto created_info = file.dataset(path).create(create);
-            REQUIRE(created_info.dsetPath.value() == path);
-            require_zero_vector(file, path);
-        }
-    }
-
-    std::vector<double> data = {1, 2, 3, 4};
-
-    h5pp::DatasetCreateOptions chunked_create;
-    chunked_create.h5Type    = H5Tcopy(H5T_NATIVE_DOUBLE);
-    chunked_create.dims      = {4};
-    chunked_create.h5Layout  = H5D_CHUNKED;
-    chunked_create.dimsChunk = {2};
-    chunked_create.dimsMax   = {H5S_UNLIMITED};
-
-    file.writeDataset(data, "manual/writeV1Api", chunked_create);
-    auto v1_info = file.dataset("manual/writeV1Api").getInfo();
-    REQUIRE(v1_info.h5Layout.value() == H5D_CHUNKED);
-    REQUIRE(v1_info.dsetChunk.value() == std::vector<hsize_t>{2});
-    REQUIRE(v1_info.dsetDimsMax.value() == std::vector<hsize_t>{H5S_UNLIMITED});
-    REQUIRE(file.readDataset<std::vector<double>>("manual/writeV1Api") == data);
-
-    h5pp::DatasetCreateOptions typed_create;
-    typed_create.h5Type   = H5Tcopy(H5T_NATIVE_DOUBLE);
-    typed_create.dims     = {4};
-    typed_create.h5Layout = H5D_CONTIGUOUS;
-    file.dataset("manual/writeV2Api").ensure(typed_create).write(data);
-    REQUIRE(file.dataset("manual/writeV2Api").getInfo().h5Layout.value() == H5D_CONTIGUOUS);
-    REQUIRE(file.readDataset<std::vector<double>>("manual/writeV2Api") == data);
-
-    h5pp::DatasetWriteOptions write;
-    write.resizePolicy = h5pp::ResizePolicy::FIT;
-    file.writeDataset(std::vector<double>{5, 6}, "manual/writeV1Api", write);
-    REQUIRE(file.readDataset<std::vector<double>>("manual/writeV1Api") == std::vector<double>{5, 6});
-    REQUIRE(file.dataset("manual/writeV1Api").getInfo().dsetDims.value() == std::vector<hsize_t>{2});
 }
 
 TEST_CASE("Dataset creation rejects incomplete options without creating a link", "[dataset][validation]") {

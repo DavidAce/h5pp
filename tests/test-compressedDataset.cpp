@@ -43,7 +43,7 @@ TEST_CASE("Default compression applies to chunked writes but does not force chun
     file.setCompressionLevel(9);
     REQUIRE(file.getCompressionLevel() == (compression_available() ? 9 : 0));
 
-    file.writeDataset(bigData, "compressedWriteGroup/bigVector");
+    file.dataset("compressedWriteGroup/bigVector").write(bigData);
     auto bigInfo = file.dataset("compressedWriteGroup/bigVector").getInfo();
 
     require_dims(bigInfo, {bigData.size()});
@@ -51,14 +51,14 @@ TEST_CASE("Default compression applies to chunked writes but does not force chun
     REQUIRE(bigInfo.compression.has_value());
     REQUIRE(bigInfo.compression.value() == (compression_available() ? 9 : -1));
 
-    file.writeDataset(mediumData, "compressedWriteGroup/mediumVector");
+    file.dataset("compressedWriteGroup/mediumVector").write(mediumData);
     auto mediumInfo = file.dataset("compressedWriteGroup/mediumVector").getInfo();
 
     require_dims(mediumInfo, {mediumData.size()});
     require_contiguous(mediumInfo);
     require_compression(mediumInfo, -1);
 
-    REQUIRE(file.readDataset<std::vector<double>>("compressedWriteGroup/mediumVector") == mediumData);
+    REQUIRE(file.dataset("compressedWriteGroup/mediumVector").read<std::vector<double>>() == mediumData);
 }
 
 TEST_CASE("Compression settings cover overrides, clamping and ignored requests", "[compression][apis]") {
@@ -71,7 +71,7 @@ TEST_CASE("Compression settings cover overrides, clamping and ignored requests",
     h5pp::DatasetCreateOptions overrideCreate;
     overrideCreate.h5Layout    = H5D_CHUNKED;
     overrideCreate.compression = 7;
-    file.writeDataset(data, "compressedWriteGroup/overrideLevel", overrideCreate);
+    file.dataset("compressedWriteGroup/overrideLevel").ensure(overrideCreate).write(data);
     auto overrideInfo = file.dataset("compressedWriteGroup/overrideLevel").getInfo();
     require_chunked(overrideInfo);
     REQUIRE(overrideInfo.compression.has_value());
@@ -80,7 +80,7 @@ TEST_CASE("Compression settings cover overrides, clamping and ignored requests",
     h5pp::DatasetCreateOptions clampedCreate;
     clampedCreate.h5Layout    = H5D_CHUNKED;
     clampedCreate.compression = 42;
-    file.writeDataset(data, "compressedWriteGroup/clampedLevel", clampedCreate);
+    file.dataset("compressedWriteGroup/clampedLevel").ensure(clampedCreate).write(data);
     auto clampedInfo = file.dataset("compressedWriteGroup/clampedLevel").getInfo();
     require_chunked(clampedInfo);
     REQUIRE(clampedInfo.compression.has_value());
@@ -90,14 +90,14 @@ TEST_CASE("Compression settings cover overrides, clamping and ignored requests",
     contiguousCreate.dims        = std::vector<hsize_t>{data.size()};
     contiguousCreate.h5Layout    = H5D_CONTIGUOUS;
     contiguousCreate.compression = 7;
-    file.writeDataset(data, "compressedWriteGroup/explicitContiguous", contiguousCreate);
+    file.dataset("compressedWriteGroup/explicitContiguous").ensure(contiguousCreate).write(data);
     auto ignoredInfo = file.dataset("compressedWriteGroup/explicitContiguous").getInfo();
     require_contiguous(ignoredInfo);
     require_compression(ignoredInfo, -1);
 
-    REQUIRE(file.readDataset<std::vector<double>>("compressedWriteGroup/overrideLevel") == data);
-    REQUIRE(file.readDataset<std::vector<double>>("compressedWriteGroup/clampedLevel") == data);
-    REQUIRE(file.readDataset<std::vector<double>>("compressedWriteGroup/explicitContiguous") == data);
+    REQUIRE(file.dataset("compressedWriteGroup/overrideLevel").read<std::vector<double>>() == data);
+    REQUIRE(file.dataset("compressedWriteGroup/clampedLevel").read<std::vector<double>>() == data);
+    REQUIRE(file.dataset("compressedWriteGroup/explicitContiguous").read<std::vector<double>>() == data);
 }
 
 #ifdef H5PP_USE_EIGEN3
@@ -113,14 +113,14 @@ TEST_CASE("Eigen tensors still write through the compression path", "[compressio
     Eigen::Tensor<double, 4> bigTensor(40, 180, 40, 5);
     bigTensor.setConstant(1.0);
 
-    file.writeDataset(bigTensor, "compressedWriteGroup/bigTensor");
+    file.dataset("compressedWriteGroup/bigTensor").write(bigTensor);
     auto info = file.dataset("compressedWriteGroup/bigTensor").getInfo();
 
     require_chunked(info);
     require_dims(info, {40, 180, 40, 5});
     require_compression(info, 9);
 
-    auto readback = file.readDataset<Eigen::Tensor<double, 4>>("compressedWriteGroup/bigTensor");
+    auto readback = file.dataset("compressedWriteGroup/bigTensor").read<Eigen::Tensor<double, 4>>();
     REQUIRE(readback.size() == bigTensor.size());
     REQUIRE(std::equal(readback.data(), readback.data() + readback.size(), bigTensor.data()));
 }

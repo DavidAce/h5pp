@@ -34,11 +34,11 @@ namespace h5pp::inline v2::detail {
         return std::nullopt;
     }
 
-    [[nodiscard]] inline Options makeLegacyOptions(int                                        compression,
-                                                   std::string_view                           dsetPath,
-                                                   const std::optional<Hyperslab>            &dsetSlab,
-                                                   const std::optional<DatasetCreateOptions> &createOptions,
-                                                   const DatasetWriteOptions                 &writeOptions) {
+    [[nodiscard]] inline Options makeOptions(int                                        compression,
+                                             std::string_view                           dsetPath,
+                                             const std::optional<Hyperslab>            &dsetSlab,
+                                             const std::optional<DatasetCreateOptions> &createOptions,
+                                             const DatasetWriteOptions                 &writeOptions) {
         Options options;
         options.linkPath = h5pp::util::safe_str(dsetPath);
         if(writeOptions.dims.has_value()) options.dataDims = toOptDimsType(writeOptions.dims);
@@ -61,7 +61,7 @@ namespace h5pp::inline v2::detail {
         return options;
     }
 
-    [[nodiscard]] inline Options makeLegacyOptions(int compression, std::string_view dsetPath, const DatasetCreateOptions &createOptions) {
+    [[nodiscard]] inline Options makeOptions(int compression, std::string_view dsetPath, const DatasetCreateOptions &createOptions) {
         Options options;
         options.linkPath      = h5pp::util::safe_str(dsetPath);
         options.dataDims      = toOptDimsType(createOptions.dims);
@@ -74,7 +74,7 @@ namespace h5pp::inline v2::detail {
         return options;
     }
 
-    [[nodiscard]] inline Options makeLegacyOptions(std::string_view dsetPath, const DatasetAppendOptions &appendOptions) {
+    [[nodiscard]] inline Options makeOptions(std::string_view dsetPath, const DatasetAppendOptions &appendOptions) {
         Options options;
         options.linkPath = h5pp::util::safe_str(dsetPath);
         options.dataDims = toOptDimsType(appendOptions.dims);
@@ -83,7 +83,7 @@ namespace h5pp::inline v2::detail {
     }
 
     [[nodiscard]] inline Options
-        makeLegacyOptions(std::string_view dsetPath, const std::optional<Hyperslab> &dsetSlab, const DatasetReadOptions &readOptions) {
+        makeOptions(std::string_view dsetPath, const std::optional<Hyperslab> &dsetSlab, const DatasetReadOptions &readOptions) {
         Options options;
         options.linkPath = h5pp::util::safe_str(dsetPath);
         if(readOptions.dims.has_value()) options.dataDims = toOptDimsType(readOptions.dims);
@@ -95,7 +95,7 @@ namespace h5pp::inline v2::detail {
     }
 
     [[nodiscard]] inline Options
-        makeLegacyOptions(std::string_view linkPath, std::string_view attrName, const AttributeWriteOptions &writeOptions) {
+        makeOptions(std::string_view linkPath, std::string_view attrName, const AttributeWriteOptions &writeOptions) {
         Options options;
         options.linkPath = h5pp::util::safe_str(linkPath);
         options.attrName = h5pp::util::safe_str(attrName);
@@ -105,7 +105,7 @@ namespace h5pp::inline v2::detail {
     }
 
     [[nodiscard]] inline Options
-        makeLegacyOptions(std::string_view linkPath, std::string_view attrName, const AttributeReadOptions &readOptions) {
+        makeOptions(std::string_view linkPath, std::string_view attrName, const AttributeReadOptions &readOptions) {
         Options options;
         options.linkPath = h5pp::util::safe_str(linkPath);
         options.attrName = h5pp::util::safe_str(attrName);

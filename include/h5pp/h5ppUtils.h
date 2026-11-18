@@ -245,15 +245,15 @@ namespace h5pp::util {
 
     [[nodiscard]] inline std::optional<std::vector<hsize_t>> decideDimensionsMax(const std::vector<hsize_t> &dims,
                                                                                  std::optional<H5D_layout_t> h5_layout) {
-        /* From the docs
-         *  Any element of current_dims can be 0 (zero).
+        /* From the HDF5 docs
+         *  Any element of dims can be 0 (zero).
          *  Note that no data can be written to a dataset if the size of any dimension of its current dataspace is 0.
          *  This is sometimes a useful initial state for a dataset.
-         *  Maximum_dims may be the null pointer, in which case the upper limit is the same as current_dims.
-         *  Otherwise, no element of maximum_dims should be smaller than the corresponding element of current_dims.
+         *  Maximum_dims may be the null pointer, in which case the upper limit is the same as dims.
+         *  Otherwise, no element of maximum_dims should be smaller than the corresponding element of dims.
          *  If an element of maximum_dims is H5S_UNLIMITED, the maximum size of the corresponding dimension is unlimited.
          *  Any dataset with an unlimited dimension must also be chunked; see H5Pset_chunk.
-         *  Similarly, a dataset must be chunked if current_dims does not equal maximum_dims.
+         *  Similarly, a dataset must be chunked if dims does not equal maximum_dims.
          */
         if(h5_layout.has_value() and h5_layout.value() == H5D_CHUNKED) return std::vector<hsize_t>(dims.size(), H5S_UNLIMITED);
         else if(h5_layout.has_value() and h5_layout.value() != H5D_CHUNKED) return std::nullopt;

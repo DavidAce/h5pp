@@ -17,30 +17,10 @@ size_t getSizeFromDims(const h5pp::v2::OptDims &dims) {
     return size;
 }
 
-struct V2ApiAttributeReader {
-    h5pp::File       &file;
-    std::string_view  linkPath;
-
-    template<typename T>
-    T operator()(std::string_view attrName) const {
-        return file.attribute(linkPath, attrName).template read<T>();
-    }
-};
-
-struct V1ApiAttributeReader {
-    h5pp::File       &file;
-    std::string_view  linkPath;
-
-    template<typename T>
-    T operator()(std::string_view attrName) const {
-        return file.readAttribute<T>(linkPath, attrName);
-    }
-};
-
-template<typename ReadAttribute>
-void traverseAttributes(h5pp::File &file, std::string_view linkPath, ReadAttribute readAttribute) {
+void traverseAttributes(h5pp::File &file, std::string_view linkPath) {
     for(const auto &attrName : file.link(linkPath).getAttributeNames()) {
-        auto info = file.attribute(linkPath, attrName).getInfo();
+        auto attribute = file.attribute(linkPath, attrName);
+        auto info      = attribute.getInfo();
         if(not info.h5Type.has_value()) continue;
 
         auto [cppTypeIndex, cppTypeName, cppTypeBytes] = h5pp::type::getCppType(info.h5Type.value());
@@ -48,22 +28,20 @@ void traverseAttributes(h5pp::File &file, std::string_view linkPath, ReadAttribu
         auto message = h5pp::format("Attribute {}::{} [{} | size {}]", linkPath, attrName, cppTypeName, h5Size);
         [[maybe_unused]] auto bytes = cppTypeBytes;
 
-        if(cppTypeIndex == typeid(std::string) and h5Size == 1)
-            h5pp::print("{} = {}\n", message, readAttribute.template operator()<std::string>(attrName));
-        if(cppTypeIndex == typeid(int) and h5Size == 1)
-            h5pp::print("{} = {}\n", message, readAttribute.template operator()<int>(attrName));
-        if(cppTypeIndex == typeid(int) and h5Size > 1)
-            h5pp::print("{} = {}\n", message, readAttribute.template operator()<std::vector<int>>(attrName));
-        if(cppTypeIndex == typeid(double) and h5Size == 1)
-            h5pp::print("{} = {}\n", message, readAttribute.template operator()<double>(attrName));
-        if(cppTypeIndex == typeid(double) and h5Size > 1)
-            h5pp::print("{} = {}\n", message, readAttribute.template operator()<std::vector<double>>(attrName));
+        if(cppTypeIndex == typeid(std::string) and h5Size == 1) h5pp::print("{} = {}\n", message, attribute.read<std::string>());
+        if(cppTypeIndex == typeid(int) and h5Size == 1) h5pp::print("{} = {}\n", message, attribute.read<int>());
+        if(cppTypeIndex == typeid(int) and h5Size > 1) h5pp::print("{} = {}\n", message, attribute.read<std::vector<int>>());
+        if(cppTypeIndex == typeid(double) and h5Size == 1) h5pp::print("{} = {}\n", message, attribute.read<double>());
+        if(cppTypeIndex == typeid(double) and h5Size > 1) h5pp::print("{} = {}\n", message, attribute.read<std::vector<double>>());
 
         // ... and so on. In practice, it is simpler to create templated helper functions to avoid code duplication here.
     }
 }
 
-void v2Api(h5pp::File &file) {
+int main() {
+    // Initialize a file
+    h5pp::File file(H5PP_EXAMPLE_DIR "example-03b-attributes-traverse.h5", h5pp::FileAccess::REPLACE);
+
     // Write a dummy integer to file.
     file.dataset("v2Api/intGroup/myInt").write(42);
 
@@ -75,26 +53,7 @@ void v2Api(h5pp::File &file) {
     // Now we imagine wanting to iterate through all attributes of "v2Api/intGroup/myInt" and print their contents.
     // The most pressing concern is that we may not know beforehand what type we should read data into.
     // This has no simple solution, since C++ is statically typed. We have to check a list of types during runtime.
-    traverseAttributes(file, "v2Api/intGroup/myInt", V2ApiAttributeReader{file, "v2Api/intGroup/myInt"});
-}
-
-void v1Api(h5pp::File &file) {
-    // Write a dummy integer to file.
-    file.writeDataset(42, "v1Api/intGroup/myInt");
-
-    // Write some attributes to the dataset.
-    file.writeAttribute("v1Api/intGroup/myInt", "myInt_stringAttribute", std::string("this is some info about my int"));
-    file.writeAttribute("v1Api/intGroup/myInt", "myInt_doubleAttribute", 3.14);
-    file.writeAttribute("v1Api/intGroup/myInt", "myInt_vectorAttribute", std::vector<int>{1, 2, 3, 4});
-
-    traverseAttributes(file, "v1Api/intGroup/myInt", V1ApiAttributeReader{file, "v1Api/intGroup/myInt"});
-}
-
-int main() {
-    // Initialize a file
-    h5pp::File file(H5PP_EXAMPLE_DIR "example-03b-attributes-traverse.h5", h5pp::FileAccess::REPLACE);
-    v2Api(file);  // Show the v2 API
-    v1Api(file); // Show the v1 API
+    traverseAttributes(file, "v2Api/intGroup/myInt");
     return 0;
 }
 
@@ -104,8 +63,5 @@ Attribute v2Api/intGroup/myInt::myInt_stringAttribute [std::__cxx11::basic_strin
 Attribute v2Api/intGroup/myInt::myInt_doubleAttribute [double | size 1] = 3.14
 Attribute v2Api/intGroup/myInt::myInt_vectorAttribute [int | size 4] = [1, 2, 3, 4]
 
-Attribute v1Api/intGroup/myInt::myInt_stringAttribute [std::__cxx11::basic_string<char> | size 1] = this is some info about my int
-Attribute v1Api/intGroup/myInt::myInt_doubleAttribute [double | size 1] = 3.14
-Attribute v1Api/intGroup/myInt::myInt_vectorAttribute [int | size 4] = [1, 2, 3, 4]
 
 */

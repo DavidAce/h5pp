@@ -39,25 +39,25 @@ TEST_CASE("Chunkwise writes update only the selected slab", "[direct-write][chun
         createOptions.dimsChunk  = {12, 12};
         createOptions.dimsMax    = {90, 90};
         createOptions.compression = 0;
-        low.writeDataset(fill, "dset_direct", createOptions);
-        [[maybe_unused]] auto dsetInfo = low.getDatasetInfo("dset_direct");
+        low.dataset("dset_direct").ensure(createOptions).write(fill);
+        [[maybe_unused]] auto dsetInfo = low.dataset("dset_direct").getInfo();
 
         std::vector<int> block(6 * 6);
         for(size_t idx = 0; idx < block.size(); idx++) block[idx] = static_cast<int>(idx);
 
         h5pp::Options options;
         options.linkPath = "dset_direct";
-        auto dsetInfoLegacy = h5pp::scan::readDsetInfo(low.advanced().openFileHandle(), options, low.plists);
-        dsetInfoLegacy.dsetSlab = h5pp::Hyperslab({4, 4}, {6, 6});
-        h5pp::hdf5::selectHyperslab(dsetInfoLegacy.h5Space.value(), dsetInfoLegacy.dsetSlab.value());
+        auto chunkInfo     = h5pp::scan::readDsetInfo(low.advanced().openFileHandle(), options, low.plists);
+        chunkInfo.dsetSlab = h5pp::Hyperslab({4, 4}, {6, 6});
+        h5pp::hdf5::selectHyperslab(chunkInfo.h5Space.value(), chunkInfo.dsetSlab.value());
 
         options.dataDims = {6, 6};
         auto data_info   = h5pp::scan::scanDataInfo(block, options);
-        h5pp::hdf5::writeDataset_chunkwise(block, data_info, dsetInfoLegacy, low.plists);
+        h5pp::hdf5::writeDataset_chunkwise(block, data_info, chunkInfo, low.plists);
 
-        auto written = file.readDataset<std::vector<int>>("dset_direct");
+        auto written = file.dataset("dset_direct").read<std::vector<int>>();
         REQUIRE(written.size() == fill.size());
-        REQUIRE(file.getDatasetInfo("dset_direct").dsetDims.value() == std::vector<hsize_t>{12, 12});
+        REQUIRE(file.dataset("dset_direct").getInfo().dsetDims.value() == std::vector<hsize_t>{12, 12});
 
         for(size_t row = 0; row < 12; row++) {
             for(size_t col = 0; col < 12; col++) {

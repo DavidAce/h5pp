@@ -30,18 +30,18 @@ namespace {
         char                              attribute_char_array[]         = "This is a char array";
 
         h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
-        file.writeDataset(std::vector<double>(10, 5.0), "testGroup/vectorDouble");
+        file.dataset("testGroup/vectorDouble").write(std::vector<double>(10, 5.0));
 
-        file.writeAttribute("testGroup/vectorDouble", "AttributeInt", attribute_int);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeDouble", attribute_double);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeComplexInt", attribute_complex_int);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeComplexDouble", attribute_complex_double);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeArrayLong", attribute_array_long);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeCArrayFloat", attribute_carray_float);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeVectorDouble", attribute_vector_double);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeVectorComplexDouble", attribute_vector_complex_double);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeString", attribute_string);
-        file.writeAttribute("testGroup/vectorDouble", "AttributeCharArray", attribute_char_array);
+        file.attribute("testGroup/vectorDouble", "AttributeInt").write(attribute_int);
+        file.attribute("testGroup/vectorDouble", "AttributeDouble").write(attribute_double);
+        file.attribute("testGroup/vectorDouble", "AttributeComplexInt").write(attribute_complex_int);
+        file.attribute("testGroup/vectorDouble", "AttributeComplexDouble").write(attribute_complex_double);
+        file.attribute("testGroup/vectorDouble", "AttributeArrayLong").write(attribute_array_long);
+        file.attribute("testGroup/vectorDouble", "AttributeCArrayFloat").write(attribute_carray_float);
+        file.attribute("testGroup/vectorDouble", "AttributeVectorDouble").write(attribute_vector_double);
+        file.attribute("testGroup/vectorDouble", "AttributeVectorComplexDouble").write(attribute_vector_complex_double);
+        file.attribute("testGroup/vectorDouble", "AttributeString").write(attribute_string);
+        file.attribute("testGroup/vectorDouble", "AttributeCharArray").write(attribute_char_array);
     }
 }
 

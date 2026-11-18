@@ -11,14 +11,14 @@ namespace {
     }
 
     void write_tree(h5pp::File &file) {
-        file.writeDataset(0.0, "dsetA");
-        file.writeDataset(0.1, "group1/dsetB2");
-        file.writeDataset(0.1, "group1/dsetB1");
-        file.writeDataset(0.1, "group1/dsetB0");
-        file.writeDataset(0.2, "group1/group2/dsetC");
-        file.writeDataset(0.2, "group3/group4/group5/dsetD");
-        file.writeDataset(0.2, "group3/group4/group5/dsetE");
-        file.createSoftLink("group1/group2/dsetC", "links/toC");
+        file.dataset("dsetA").write(0.0);
+        file.dataset("group1/dsetB2").write(0.1);
+        file.dataset("group1/dsetB1").write(0.1);
+        file.dataset("group1/dsetB0").write(0.1);
+        file.dataset("group1/group2/dsetC").write(0.2);
+        file.dataset("group3/group4/group5/dsetD").write(0.2);
+        file.dataset("group3/group4/group5/dsetE").write(0.2);
+        file.link("group1/group2/dsetC").createSoftLink("links/toC");
     }
 }
 

@@ -12,9 +12,9 @@ namespace {
 
     void seed_file(const std::string &path) {
         h5pp::File file(path, h5pp::FileAccess::REPLACE, 0);
-        file.writeDataset(42.0, "realgroup1/realgroup2/dsetA");
-        file.writeDataset(43.0, "realgroup1/realgroup2/realgroup3/dsetB");
-        file.writeAttribute("realgroup1/realgroup2/dsetA", "note", std::string("through-soft-link"));
+        file.dataset("realgroup1/realgroup2/dsetA").write(42.0);
+        file.dataset("realgroup1/realgroup2/realgroup3/dsetB").write(43.0);
+        file.attribute("realgroup1/realgroup2/dsetA", "note").write(std::string("through-soft-link"));
     }
 }
 
@@ -27,14 +27,14 @@ TEST_CASE("Soft links expose target datasets and attributes", "[soft-link]") {
     REQUIRE_NOTHROW(file.link("realgroup1/realgroup2/realgroup3").createSoftLink("softlinks/realgroup3"));
     REQUIRE_NOTHROW(file.link("realgroup1/realgroup2/dsetA").createSoftLink("softlinks/dsetA"));
 
-    REQUIRE(file.linkExists("softlinks/realgroup2/dsetA"));
-    REQUIRE(file.linkExists("softlinks/realgroup3/dsetB"));
-    REQUIRE(file.linkExists("softlinks/dsetA"));
-    REQUIRE(file.readDataset<double>("softlinks/realgroup2/dsetA") == 42.0);
-    REQUIRE(file.readDataset<double>("softlinks/realgroup3/dsetB") == 43.0);
-    REQUIRE(file.readAttribute<std::string>("softlinks/dsetA", "note") == "through-soft-link");
+    REQUIRE(file.link("softlinks/realgroup2/dsetA").exists());
+    REQUIRE(file.link("softlinks/realgroup3/dsetB").exists());
+    REQUIRE(file.link("softlinks/dsetA").exists());
+    REQUIRE(file.dataset("softlinks/realgroup2/dsetA").read<double>() == 42.0);
+    REQUIRE(file.dataset("softlinks/realgroup3/dsetB").read<double>() == 43.0);
+    REQUIRE(file.attribute("softlinks/dsetA", "note").read<std::string>() == "through-soft-link");
 
-    auto link_info = file.getLinkInfo("softlinks/dsetA");
+    auto link_info = file.link("softlinks/dsetA").getInfo();
     REQUIRE(link_info.h5LinkType.has_value());
     REQUIRE(link_info.h5LinkType.value() == H5L_TYPE_SOFT);
 }
@@ -47,17 +47,17 @@ TEST_CASE("Writing through soft links mutates the target object graph", "[soft-l
     file.link("realgroup1/realgroup2").createSoftLink("softlinks/realgroup2");
     file.link("realgroup1/realgroup2/realgroup3").createSoftLink("softlinks/realgroup3");
 
-    REQUIRE_NOTHROW(file.writeDataset(44.0, "softlinks/realgroup2/dsetC"));
-    REQUIRE_NOTHROW(file.writeDataset(45.0, "softlinks/realgroup3/dsetD"));
-    REQUIRE_NOTHROW(file.writeAttribute("softlinks/realgroup2/dsetC", "values", std::vector<int>{1, 2, 3}));
+    REQUIRE_NOTHROW(file.dataset("softlinks/realgroup2/dsetC").write(44.0));
+    REQUIRE_NOTHROW(file.dataset("softlinks/realgroup3/dsetD").write(45.0));
+    REQUIRE_NOTHROW(file.attribute("softlinks/realgroup2/dsetC", "values").write(std::vector<int>{1, 2, 3}));
 
-    REQUIRE(file.linkExists("softlinks/realgroup2/dsetC"));
-    REQUIRE(file.linkExists("softlinks/realgroup3/dsetD"));
-    REQUIRE(file.linkExists("realgroup1/realgroup2/dsetC"));
-    REQUIRE(file.linkExists("realgroup1/realgroup2/realgroup3/dsetD"));
-    REQUIRE(file.readDataset<double>("realgroup1/realgroup2/dsetC") == 44.0);
-    REQUIRE(file.readDataset<double>("realgroup1/realgroup2/realgroup3/dsetD") == 45.0);
-    REQUIRE(file.readAttribute<std::vector<int>>("realgroup1/realgroup2/dsetC", "values") == std::vector<int>{1, 2, 3});
+    REQUIRE(file.link("softlinks/realgroup2/dsetC").exists());
+    REQUIRE(file.link("softlinks/realgroup3/dsetD").exists());
+    REQUIRE(file.link("realgroup1/realgroup2/dsetC").exists());
+    REQUIRE(file.link("realgroup1/realgroup2/realgroup3/dsetD").exists());
+    REQUIRE(file.dataset("realgroup1/realgroup2/dsetC").read<double>() == 44.0);
+    REQUIRE(file.dataset("realgroup1/realgroup2/realgroup3/dsetD").read<double>() == 45.0);
+    REQUIRE(file.attribute("realgroup1/realgroup2/dsetC", "values").read<std::vector<int>>() == std::vector<int>{1, 2, 3});
 }
 
 TEST_CASE("Deleting soft links leaves the underlying targets intact", "[soft-link]") {
@@ -69,15 +69,15 @@ TEST_CASE("Deleting soft links leaves the underlying targets intact", "[soft-lin
         file.link("realgroup1/realgroup2").createSoftLink("softlinks/realgroup2");
         file.link("realgroup1/realgroup2/realgroup3").createSoftLink("softlinks/realgroup3");
 
-        REQUIRE(file.linkExists("softlinks/realgroup3/dsetB"));
+        REQUIRE(file.link("softlinks/realgroup3/dsetB").exists());
         REQUIRE_NOTHROW(file.link("softlinks/realgroup3").deleteLink());
-        REQUIRE_FALSE(file.linkExists("softlinks/realgroup3"));
-        REQUIRE(file.linkExists("realgroup1/realgroup2/realgroup3/dsetB"));
+        REQUIRE_FALSE(file.link("softlinks/realgroup3").exists());
+        REQUIRE(file.link("realgroup1/realgroup2/realgroup3/dsetB").exists());
     }
 
     h5pp::File reopened(path, h5pp::FileAccess::READONLY, 0);
-    REQUIRE(reopened.readDataset<double>("realgroup1/realgroup2/dsetA") == 42.0);
-    REQUIRE(reopened.readDataset<double>("realgroup1/realgroup2/realgroup3/dsetB") == 43.0);
+    REQUIRE(reopened.dataset("realgroup1/realgroup2/dsetA").read<double>() == 42.0);
+    REQUIRE(reopened.dataset("realgroup1/realgroup2/realgroup3/dsetB").read<double>() == 43.0);
 }
 
 int main(int argc, char *argv[]) {

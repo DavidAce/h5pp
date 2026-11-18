@@ -18,7 +18,10 @@ namespace {
     }
 }
 
-void v2Api(h5pp::File &file) {
+int main() {
+    // Initialize a file
+    h5pp::File file(H5PP_EXAMPLE_DIR "example-02b-stdvector-text.h5", h5pp::FileAccess::REPLACE, 2);
+
     // Write and read a single string.
     std::string singleString = "This is a dummy string";
     file.dataset("v2Api/example-group/mySingleString").write(singleString);
@@ -38,34 +41,5 @@ void v2Api(h5pp::File &file) {
     h5pp::print("v2 API read : {}\n", singleStringRead);
     h5pp::print("v2 API multiple strings as vector of strings: \n{}\n", multipleStringsRead);
     h5pp::print("v2 API multiple strings as string separated by \\n: \n{}\n", multipleStringsAsString);
-}
-
-void v1Api(h5pp::File &file) {
-    // Write and read a single string.
-    std::string singleString = "This is a dummy string";
-    file.writeDataset(singleString, "v1Api/example-group/mySingleString");
-    auto singleStringRead = file.readDataset<std::string>("v1Api/example-group/mySingleString");
-
-    // We can write multiple strings at a time ...
-    auto multipleStrings = makeMultipleStrings();
-    file.writeDataset(multipleStrings, "v1Api/example-group/multipleStrings");
-
-    // ... and read them back in one go.
-    auto multipleStringsRead = file.readDataset<std::vector<std::string>>("v1Api/example-group/multipleStrings");
-
-    // Or read them all into a single string, using \n as separator for each element.
-    auto multipleStringsAsString = file.readDataset<std::string>("v1Api/example-group/multipleStrings");
-
-    h5pp::print("v1 API wrote: {}\n", singleString);
-    h5pp::print("v1 API read : {}\n", singleStringRead);
-    h5pp::print("v1 API multiple strings as vector of strings: \n{}\n", multipleStringsRead);
-    h5pp::print("v1 API multiple strings as string separated by \\n: \n{}\n", multipleStringsAsString);
-}
-
-int main() {
-    // Initialize a file
-    h5pp::File file(H5PP_EXAMPLE_DIR "example-02b-stdvector-text.h5", h5pp::FileAccess::REPLACE, 2);
-    v2Api(file);  // Show the v2 API
-    v1Api(file); // Show the v1 API
     return 0;
 }

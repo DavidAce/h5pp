@@ -42,8 +42,8 @@ TEST_CASE("advanced file controls and file-handle guards are reachable", "[file-
     }
     file.setKeepFileClosed();
 
-    file.writeDataset(42, "data/value");
-    REQUIRE(file.readDataset<int>("data/value") == 42);
+    file.dataset("data/value").write(42);
+    REQUIRE(file.dataset("data/value").read<int>() == 42);
 }
 
 int main(int argc, char *argv[]) {

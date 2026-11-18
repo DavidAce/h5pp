@@ -65,15 +65,15 @@ TEST_CASE("float128 scalars and complex values round-trip as datasets and attrib
     auto scalarValue  = make_value(-355.0L, 113.0L);
     auto complexValue = make_complex(make_value(22.0L, 7.0L), make_value(-13.0L, 17.0L));
 
-    file.writeDataset(scalarValue, "quad/scalar");
-    file.writeDataset(complexValue, "quad/complex");
-    file.writeAttribute("quad/scalar", "scalarAttr", scalarValue);
-    file.writeAttribute("quad/complex", "complexAttr", complexValue);
+    file.dataset("quad/scalar").write(scalarValue);
+    file.dataset("quad/complex").write(complexValue);
+    file.attribute("quad/scalar", "scalarAttr").write(scalarValue);
+    file.attribute("quad/complex", "complexAttr").write(complexValue);
 
-    require_equal(file.readDataset<h5pp::fp128>("quad/scalar"), scalarValue);
-    require_equal(file.readDataset<h5pp::cx128>("quad/complex"), complexValue);
-    require_equal(file.readAttribute<h5pp::fp128>("quad/scalar", "scalarAttr"), scalarValue);
-    require_equal(file.readAttribute<h5pp::cx128>("quad/complex", "complexAttr"), complexValue);
+    require_equal(file.dataset("quad/scalar").read<h5pp::fp128>(), scalarValue);
+    require_equal(file.dataset("quad/complex").read<h5pp::cx128>(), complexValue);
+    require_equal(file.attribute("quad/scalar", "scalarAttr").read<h5pp::fp128>(), scalarValue);
+    require_equal(file.attribute("quad/complex", "complexAttr").read<h5pp::cx128>(), complexValue);
 
     auto scalarTypeInfo = file.dataset("quad/scalar").getTypeInfo();
     REQUIRE(scalarTypeInfo.cppTypeBytes.has_value());
@@ -111,11 +111,11 @@ TEST_CASE("float128 vectors preserve exact binary values", "[float128][vector]")
         make_complex(make_value(-9.0L, 11.0L), make_value(1.0L, 65536.0L)),
     };
 
-    file.writeDataset(scalarValues, "quad/scalars");
-    file.writeDataset(complexValues, "quad/complexes");
+    file.dataset("quad/scalars").write(scalarValues);
+    file.dataset("quad/complexes").write(complexValues);
 
-    require_vector_equal(file.readDataset<std::vector<h5pp::fp128>>("quad/scalars"), scalarValues);
-    require_vector_equal(file.readDataset<std::vector<h5pp::cx128>>("quad/complexes"), complexValues);
+    require_vector_equal(file.dataset("quad/scalars").read<std::vector<h5pp::fp128>>(), scalarValues);
+    require_vector_equal(file.dataset("quad/complexes").read<std::vector<h5pp::cx128>>(), complexValues);
 
     auto scalarInfo = file.dataset("quad/scalars").getInfo();
     REQUIRE(scalarInfo.dsetDims.has_value());
@@ -149,21 +149,21 @@ TEST_CASE("float128 compound records round-trip with explicit HDF5 types", "[flo
 
     h5pp::DatasetCreateOptions create;
     create.h5Type = recordType;
-    file.writeDataset(singleRecord, "quad/record", create);
-    file.writeDataset(recordVector, "quad/records", create);
+    file.dataset("quad/record").ensure(create).write(singleRecord);
+    file.dataset("quad/records").ensure(create).write(recordVector);
 
     h5pp::AttributeWriteOptions attrWrite;
     attrWrite.h5Type = recordType;
-    file.writeAttribute("quad/record", "recordAttr", singleRecord, attrWrite);
+    file.attribute("quad/record", "recordAttr").write(singleRecord, attrWrite);
 
     h5pp::DatasetReadOptions read;
     read.h5Type = recordType;
     h5pp::AttributeReadOptions attrRead;
     attrRead.h5Type = recordType;
 
-    require_equal(file.readDataset<QuadRecord>("quad/record", read), singleRecord);
-    require_vector_equal(file.readDataset<std::vector<QuadRecord>>("quad/records", read), recordVector);
-    require_equal(file.readAttribute<QuadRecord>("quad/record", "recordAttr", attrRead), singleRecord);
+    require_equal(file.dataset("quad/record").read<QuadRecord>(read), singleRecord);
+    require_vector_equal(file.dataset("quad/records").read<std::vector<QuadRecord>>(read), recordVector);
+    require_equal(file.attribute("quad/record", "recordAttr").read<QuadRecord>(attrRead), singleRecord);
 
     auto info = file.dataset("quad/record").getInfo();
     REQUIRE(info.h5Type.has_value());

@@ -11,23 +11,23 @@ namespace {
     }
 
     void write_tree(h5pp::File &file) {
-        file.writeDataset(0.0, "dsetA");
-        file.writeDataset(0.1, "group1/dsetB2");
-        file.writeDataset(0.1, "group1/dsetB1");
-        file.writeDataset(0.1, "group1/dsetB0");
-        file.writeDataset(0.2, "group1/group2/dsetC");
-        file.writeDataset(0.2, "group3/group4/group5/dsetD");
-        file.writeDataset(0.2, "group3/group4/group5/dsetE");
-        file.createSoftLink("group1/group2/dsetC", "links/toC");
+        file.dataset("dsetA").write(0.0);
+        file.dataset("group1/dsetB2").write(0.1);
+        file.dataset("group1/dsetB1").write(0.1);
+        file.dataset("group1/dsetB0").write(0.1);
+        file.dataset("group1/group2/dsetC").write(0.2);
+        file.dataset("group3/group4/group5/dsetD").write(0.2);
+        file.dataset("group3/group4/group5/dsetE").write(0.2);
+        file.link("group1/group2/dsetC").createSoftLink("links/toC");
     }
 }
 
-TEST_CASE("group and link handles navigate and expose rooted queries", "[group][link][handles]") {
+TEST_CASE("v2 groups and links navigate and query child paths", "[v2][group][link]") {
     auto file = make_file();
     write_tree(file);
-    file.writeAttribute("group1", "label", std::string("g1"));
-    file.writeAttribute("group1/group2/dsetC", "units", std::string("arb"));
-    file.writeAttribute("group1/group2/dsetC", "description", std::string("dataset C"));
+    file.attribute("group1", "label").write(std::string("g1"));
+    file.attribute("group1/group2/dsetC", "units").write(std::string("arb"));
+    file.attribute("group1/group2/dsetC", "description").write(std::string("dataset C"));
 
     auto group = file.group("group1");
     REQUIRE(group.exists());
@@ -49,10 +49,10 @@ TEST_CASE("group and link handles navigate and expose rooted queries", "[group][
     REQUIRE_FALSE(link.asDataset().attribute("missing").exists());
 }
 
-TEST_CASE("group handles expose rooted existence info and link creation", "[group][rooted]") {
+TEST_CASE("v2 groups support child-path queries and link creation", "[v2][group]") {
     auto file = make_file();
     write_tree(file);
-    file.writeAttribute("group1/group2/dsetC", "units", std::string("arb"));
+    file.attribute("group1/group2/dsetC", "units").write(std::string("arb"));
 
     auto root = file.group("group1");
     REQUIRE(root.linkExists("group2/dsetC"));
@@ -63,13 +63,13 @@ TEST_CASE("group handles expose rooted existence info and link creation", "[grou
     REQUIRE(root.getAttributeNames("group2/dsetC") == std::vector<std::string>{"units"});
 
     root.createGroup("scratch/nested");
-    REQUIRE(file.linkExists("group1/scratch/nested"));
+    REQUIRE(file.link("group1/scratch/nested").exists());
 
     root.createSoftLink("group2/dsetC", "links/toC");
-    REQUIRE(file.readDataset<double>("group1/links/toC") == Catch::Approx(0.2));
+    REQUIRE(file.dataset("group1/links/toC").read<double>() == Catch::Approx(0.2));
 
     root.deleteLink("links/toC");
-    REQUIRE_FALSE(file.linkExists("group1/links/toC"));
+    REQUIRE_FALSE(file.link("group1/links/toC").exists());
 }
 
 int main(int argc, char *argv[]) {

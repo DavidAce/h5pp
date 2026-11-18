@@ -83,8 +83,8 @@ static_assert(CanReadTableHandle<h5pp::ConstTable>);
 TEST_CASE("const file exposes read-only dataset and attribute handles", "[const][dataset][attribute]") {
     h5pp::File file(make_path("const-handles"), h5pp::FileAccess::REPLACE, 0);
 
-    file.writeDataset(std::vector<int>{1, 2, 3}, "data/vector");
-    file.writeAttribute("data/vector", "unit", std::string("arb"));
+    file.dataset("data/vector").write(std::vector<int>{1, 2, 3});
+    file.attribute("data/vector", "unit").write(std::string("arb"));
 
     const h5pp::File &constFile = file;
     auto              data      = constFile.dataset("data/vector").read<std::vector<int>>();

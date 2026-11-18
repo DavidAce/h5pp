@@ -25,11 +25,11 @@ TEST_CASE("Large standard-library datasets round-trip with their dimensions inta
     for(size_t idx = 0; idx < vectorComplex.size(); ++idx)
         vectorComplex[idx] = {static_cast<double>(idx), -static_cast<double>(idx % 17)};
 
-    file.writeDataset(text, "simpleWriteGroup/String");
-    file.writeDataset(vectorComplex, "largeWriteGroup/vectorComplexDouble");
+    file.dataset("simpleWriteGroup/String").write(text);
+    file.dataset("largeWriteGroup/vectorComplexDouble").write(vectorComplex);
 
-    REQUIRE(file.readDataset<std::string>("simpleWriteGroup/String") == text);
-    REQUIRE(file.readDataset<std::vector<std::complex<double>>>("largeWriteGroup/vectorComplexDouble") == vectorComplex);
+    REQUIRE(file.dataset("simpleWriteGroup/String").read<std::string>() == text);
+    REQUIRE(file.dataset("largeWriteGroup/vectorComplexDouble").read<std::vector<std::complex<double>>>() == vectorComplex);
 
     auto info = file.dataset("largeWriteGroup/vectorComplexDouble").getInfo();
     REQUIRE(info.dsetDims.has_value());
@@ -54,13 +54,13 @@ TEST_CASE("Large Eigen matrices of several scalar types round-trip", "[large-wri
         for(Eigen::Index col = 0; col < matrixComplex.cols(); ++col)
             matrixComplex(row, col) = {static_cast<double>(row + col), static_cast<double>(row - col)};
 
-    file.writeDataset(matrixInt, "largeWriteGroup/matrixInt");
-    file.writeDataset(matrixDouble, "largeWriteGroup/matrixDouble");
-    file.writeDataset(matrixComplex, "largeWriteGroup/matrixComplexDouble");
+    file.dataset("largeWriteGroup/matrixInt").write(matrixInt);
+    file.dataset("largeWriteGroup/matrixDouble").write(matrixDouble);
+    file.dataset("largeWriteGroup/matrixComplexDouble").write(matrixComplex);
 
-    require_equal_matrix(matrixInt, file.readDataset<Eigen::MatrixXi>("largeWriteGroup/matrixInt"));
-    require_equal_matrix(matrixDouble, file.readDataset<Eigen::MatrixXd>("largeWriteGroup/matrixDouble"));
-    require_equal_matrix(matrixComplex, file.readDataset<Eigen::MatrixXcd>("largeWriteGroup/matrixComplexDouble"));
+    require_equal_matrix(matrixInt, file.dataset("largeWriteGroup/matrixInt").read<Eigen::MatrixXi>());
+    require_equal_matrix(matrixDouble, file.dataset("largeWriteGroup/matrixDouble").read<Eigen::MatrixXd>());
+    require_equal_matrix(matrixComplex, file.dataset("largeWriteGroup/matrixComplexDouble").read<Eigen::MatrixXcd>());
 }
 #endif
 

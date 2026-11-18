@@ -96,7 +96,7 @@ namespace h5pp::inline v2 {
         [[nodiscard]] DsetInfo create(const DatasetCreateOptions &createOptions) requires detail::MutableFile<FileType>
         {
             requireWritable_("create dataset");
-            auto options = detail::makeLegacyOptions(compression_, dsetPath_, createOptions);
+            auto options = detail::makeOptions(compression_, dsetPath_, createOptions);
             options.assertWellDefined();
             if(not options.linkPath.has_value()) throw h5pp::runtime_error("Error creating dataset: No dataset path specified");
             if(not options.dataDims.has_value())
@@ -141,10 +141,10 @@ namespace h5pp::inline v2 {
         {
             if(dsetSlab_.has_value()) throw h5pp::runtime_error("Cannot append through a selected dataset view [{}]", dsetPath_);
             requireWritable_("write");
-            auto legacyOptions = detail::makeLegacyOptions(dsetPath_, options);
+            auto ioOptions     = detail::makeOptions(dsetPath_, options);
             auto fileHandle    = fileHandle_;
-            auto dsetInfo      = h5pp::scan::readDsetInfo(fileHandle, legacyOptions, plists_);
-            auto dataInfo      = h5pp::scan::scanDataInfo(data, legacyOptions);
+            auto dsetInfo      = h5pp::scan::readDsetInfo(fileHandle, ioOptions, plists_);
+            auto dataInfo      = h5pp::scan::scanDataInfo(data, ioOptions);
             h5pp::hdf5::extendDataset(dsetInfo, dataInfo, axis);
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists_);
             return dsetInfo;
@@ -155,13 +155,13 @@ namespace h5pp::inline v2 {
         void write(const DataType &data, const DatasetWriteOptions &options = DatasetWriteOptions()) {
             static_assert(not type::sfinae::is_h5pp_id<DataType>);
             requireWritable_("write");
-            auto legacyOptions = detail::makeLegacyOptions(compression_, dsetPath_, dsetSlab_, createOptions_, options);
-            legacyOptions.assertWellDefined();
-            auto dataInfo   = h5pp::scan::scanDataInfo(data, legacyOptions);
+            auto ioOptions = detail::makeOptions(compression_, dsetPath_, dsetSlab_, createOptions_, options);
+            ioOptions.assertWellDefined();
+            auto dataInfo   = h5pp::scan::scanDataInfo(data, ioOptions);
             auto fileHandle = fileHandle_;
-            auto dsetInfo   = h5pp::scan::inferDsetInfo(fileHandle, data, legacyOptions, plists_);
-            if(dsetInfo.hasLocId()) h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), legacyOptions, plists_);
-            else h5pp::scan::readDsetInfo(dsetInfo, fileHandle, legacyOptions, plists_);
+            auto dsetInfo   = h5pp::scan::inferDsetInfo(fileHandle, data, ioOptions, plists_);
+            if(dsetInfo.hasLocId()) h5pp::scan::readDsetInfo(dsetInfo, dsetInfo.getLocId(), ioOptions, plists_);
+            else h5pp::scan::readDsetInfo(dsetInfo, fileHandle, ioOptions, plists_);
             if(not dsetInfo.dsetExists.has_value() or not dsetInfo.dsetExists.value()) h5pp::hdf5::createDataset(dsetInfo, plists_);
             h5pp::hdf5::resizeDataset(dsetInfo, dataInfo);
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists_);
@@ -181,26 +181,26 @@ namespace h5pp::inline v2 {
         template<typename DataType>
         void readInto(DataType &data, const DatasetReadOptions &options = DatasetReadOptions()) const {
             static_assert(not std::is_const_v<DataType>);
-            auto legacyOptions = detail::makeLegacyOptions(dsetPath_, dsetSlab_, options);
+            auto ioOptions = detail::makeOptions(dsetPath_, dsetSlab_, options);
             if(not dsetSlab_.has_value()) {
-                legacyOptions.assertWellDefined();
+                ioOptions.assertWellDefined();
                 auto fileHandle = fileHandle_;
-                auto dsetInfo   = h5pp::scan::readDsetInfo(fileHandle, legacyOptions, plists_);
-                auto dataInfo   = h5pp::scan::scanDataInfo(data, legacyOptions);
+                auto dsetInfo   = h5pp::scan::readDsetInfo(fileHandle, ioOptions, plists_);
+                auto dataInfo   = h5pp::scan::scanDataInfo(data, ioOptions);
                 h5pp::hdf5::resizeData(data, dataInfo, dsetInfo);
                 h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists_);
                 return;
             }
 
-            auto dsetInfo = h5pp::scan::readDsetInfo(fileHandle_, legacyOptions, plists_);
+            auto dsetInfo = h5pp::scan::readDsetInfo(fileHandle_, ioOptions, plists_);
             if(dsetInfo.dsetExists.has_value() and not dsetInfo.dsetExists.value())
                 throw h5pp::runtime_error("Cannot read dataset [{}]: It does not exist", dsetPath_);
 
             h5pp::DataInfo dataInfo;
-            if(legacyOptions.dataDims.has_value()) dataInfo.dataDims = legacyOptions.dataDims;
+            if(ioOptions.dataDims.has_value()) dataInfo.dataDims = ioOptions.dataDims;
             else if(dsetInfo.dsetSlab.has_value() and dsetInfo.dsetSlab->extent.has_value()) dataInfo.dataDims = dsetInfo.dsetSlab->extent;
-            if(legacyOptions.dataSlab.has_value()) dataInfo.dataSlab = legacyOptions.dataSlab;
-            if(legacyOptions.h5Type.has_value()) dataInfo.h5Type = legacyOptions.h5Type;
+            if(ioOptions.dataSlab.has_value()) dataInfo.dataSlab = ioOptions.dataSlab;
+            if(ioOptions.h5Type.has_value()) dataInfo.h5Type = ioOptions.h5Type;
             else if(dsetInfo.h5Type.has_value()) dataInfo.h5Type = dsetInfo.h5Type;
 
             if(dataInfo.dataDims.has_value()) {
@@ -218,7 +218,7 @@ namespace h5pp::inline v2 {
                 dataInfo.h5Space  = h5pp::util::getMemSpace(dataInfo.dataSize.value(), dataInfo.dataDims.value());
                 if(dataInfo.dataSlab.has_value()) h5pp::hdf5::selectHyperslab(dataInfo.h5Space.value(), dataInfo.dataSlab.value());
             } else {
-                h5pp::scan::scanDataInfo(dataInfo, data, legacyOptions);
+                h5pp::scan::scanDataInfo(dataInfo, data, ioOptions);
             }
 
             h5pp::hdf5::readDataset(data, dataInfo, dsetInfo, plists_);

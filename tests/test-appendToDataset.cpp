@@ -32,48 +32,48 @@ TEST_CASE("Dataset append preserves growth semantics across explicit creations",
     seed.dims      = {4, 1};
     seed.h5Layout  = H5D_CHUNKED;
     seed.dimsChunk = {4, 100};
-    file.writeDataset(data, "group/VectorDoubletemp", seed);
+    file.dataset("group/VectorDoubletemp").ensure(seed).write(data);
 
-    file.writeDataset(data, "group/VectorDoubletemp2");
-    file.writeDataset(data, "group/VectorDouble0");
+    file.dataset("group/VectorDoubletemp2").write(data);
+    file.dataset("group/VectorDouble0").write(data);
 
     h5pp::DatasetWriteOptions dimsOnlyWrite;
     dimsOnlyWrite.dims = {4};
-    file.writeDataset(data, "group/VectorDouble1", dimsOnlyWrite);
+    file.dataset("group/VectorDouble1").write(data, dimsOnlyWrite);
 
     h5pp::DatasetCreateOptions extensible;
     extensible.dims      = {4, 1};
     extensible.h5Layout  = H5D_CHUNKED;
     extensible.dimsChunk = {4, 100};
     extensible.dimsMax   = {4, H5S_UNLIMITED};
-    file.writeDataset(data, "group/VectorDouble5", extensible);
+    file.dataset("group/VectorDouble5").ensure(extensible).write(data);
 
-    file.writeDataset(data, "group/VectorDouble6");
-    file.writeDataset(data, "group/VectorDouble7");
+    file.dataset("group/VectorDouble6").write(data);
+    file.dataset("group/VectorDouble7").write(data);
 
-    require_chunked_layout(file.getDatasetInfo("group/VectorDoubletemp"));
-    require_dims(file.getDatasetInfo("group/VectorDoubletemp"), {4, 1});
-    require_chunked_layout(file.getDatasetInfo("group/VectorDouble5"));
-    require_dims(file.getDatasetInfo("group/VectorDouble5"), {4, 1});
-    require_max_dims(file.getDatasetInfo("group/VectorDouble5"), {4, H5S_UNLIMITED});
+    require_chunked_layout(file.dataset("group/VectorDoubletemp").getInfo());
+    require_dims(file.dataset("group/VectorDoubletemp").getInfo(), {4, 1});
+    require_chunked_layout(file.dataset("group/VectorDouble5").getInfo());
+    require_dims(file.dataset("group/VectorDouble5").getInfo(), {4, 1});
+    require_max_dims(file.dataset("group/VectorDouble5").getInfo(), {4, H5S_UNLIMITED});
 
-    REQUIRE(file.readDataset<std::vector<double>>("group/VectorDoubletemp2") == data);
-    REQUIRE(file.readDataset<std::vector<double>>("group/VectorDouble0") == data);
-    REQUIRE(file.readDataset<std::vector<double>>("group/VectorDouble1") == data);
-    REQUIRE(file.readDataset<std::vector<double>>("group/VectorDouble6") == data);
-    REQUIRE(file.readDataset<std::vector<double>>("group/VectorDouble7") == data);
+    REQUIRE(file.dataset("group/VectorDoubletemp2").read<std::vector<double>>() == data);
+    REQUIRE(file.dataset("group/VectorDouble0").read<std::vector<double>>() == data);
+    REQUIRE(file.dataset("group/VectorDouble1").read<std::vector<double>>() == data);
+    REQUIRE(file.dataset("group/VectorDouble6").read<std::vector<double>>() == data);
+    REQUIRE(file.dataset("group/VectorDouble7").read<std::vector<double>>() == data);
 
     auto append_info = file.dataset("group/VectorDouble5").append(std::vector<double>{5, 6, 7, 8}, 1);
     require_dims(append_info, {4, 2});
     append_info = file.dataset("group/VectorDouble5").append(std::vector<double>{9, 10, 11, 12}, 1);
     require_dims(append_info, {4, 3});
 
-    REQUIRE(file.readDataset<std::vector<double>>("group/VectorDouble5") == std::vector<double>{1, 5, 9, 2, 6, 10, 3, 7, 11, 4, 8, 12});
+    REQUIRE(file.dataset("group/VectorDouble5").read<std::vector<double>>() == std::vector<double>{1, 5, 9, 2, 6, 10, 3, 7, 11, 4, 8, 12});
 
     h5pp::DatasetCreateOptions emptyColumns;
     emptyColumns.dims      = {data.size(), 0};
     emptyColumns.h5Layout  = H5D_CHUNKED;
-    emptyColumns.h5Type    = file.getDatasetInfo("group/VectorDouble5").h5Type;
+    emptyColumns.h5Type         = file.dataset("group/VectorDouble5").getInfo().h5Type;
     [[maybe_unused]] auto info0 = file.dataset("group/VectorDouble8").create(emptyColumns);
     [[maybe_unused]] auto info1 = file.dataset("group/VectorDouble8_alt").create(emptyColumns);
 
@@ -83,8 +83,8 @@ TEST_CASE("Dataset append preserves growth semantics across explicit creations",
     auto info8_alt  = file.dataset("group/VectorDouble8_alt").append(data, 1, appendDims);
     require_dims(info8, {4, 1});
     require_dims(info8_alt, {4, 1});
-    REQUIRE(file.readDataset<std::vector<double>>("group/VectorDouble8") == data);
-    REQUIRE(file.readDataset<std::vector<double>>("group/VectorDouble8_alt") == data);
+    REQUIRE(file.dataset("group/VectorDouble8").read<std::vector<double>>() == data);
+    REQUIRE(file.dataset("group/VectorDouble8_alt").read<std::vector<double>>() == data);
 }
 
 TEST_CASE("Append handles more types and more contrived growth patterns", "[append]") {
@@ -106,7 +106,7 @@ TEST_CASE("Append handles more types and more contrived growth patterns", "[appe
         info = file.dataset("group/rows").append(std::vector<double>{4, 5, 6}, 0, append);
         require_dims(info, {2, 3});
 
-        REQUIRE(file.readDataset<std::vector<double>>("group/rows") == std::vector<double>{1, 2, 3, 4, 5, 6});
+        REQUIRE(file.dataset("group/rows").read<std::vector<double>>() == std::vector<double>{1, 2, 3, 4, 5, 6});
     }
 
     SECTION("Append complex values into a 1d unlimited dataset") {
@@ -122,12 +122,12 @@ TEST_CASE("Append handles more types and more contrived growth patterns", "[appe
         create.dimsChunk = {initial.size()};
         create.dimsMax   = {H5S_UNLIMITED};
         create.h5Layout  = H5D_CHUNKED;
-        file.writeDataset(initial, "group/complex", create);
+        file.dataset("group/complex").ensure(create).write(initial);
 
         auto info = file.dataset("group/complex").append(more, 0);
         require_dims(info, {expect.size()});
 
-        REQUIRE(file.readDataset<std::vector<std::complex<double>>>("group/complex") == expect);
+        REQUIRE(file.dataset("group/complex").read<std::vector<std::complex<double>>>() == expect);
     }
 
     SECTION("Append fixed-size integer arrays into a 1d unlimited dataset") {
@@ -143,14 +143,14 @@ TEST_CASE("Append handles more types and more contrived growth patterns", "[appe
         create.dimsChunk = {initial.size()};
         create.dimsMax   = {H5S_UNLIMITED};
         create.h5Layout  = H5D_CHUNKED;
-        file.writeDataset(initial, "group/integers", create);
+        file.dataset("group/integers").ensure(create).write(initial);
 
         h5pp::DatasetAppendOptions append;
         append.dims = {more.size()};
         auto info   = file.dataset("group/integers").append(more, 0, append);
         require_dims(info, {expect.size()});
 
-        REQUIRE(file.readDataset<std::vector<long long>>("group/integers") == expect);
+        REQUIRE(file.dataset("group/integers").read<std::vector<long long>>() == expect);
     }
 }
 
@@ -160,7 +160,7 @@ TEST_CASE("Append rejects invalid resize scenarios", "[append]") {
     h5pp::DatasetCreateOptions fixed;
     fixed.dims     = {4};
     fixed.h5Layout = H5D_CONTIGUOUS;
-    file.writeDataset(std::vector<double>{1, 2, 3, 4}, "group/fixed", fixed);
+    file.dataset("group/fixed").ensure(fixed).write(std::vector<double>{1, 2, 3, 4});
     REQUIRE_THROWS(file.dataset("group/fixed").append(std::vector<double>{5, 6}, 0));
 
     h5pp::DatasetCreateOptions columns;
@@ -168,7 +168,7 @@ TEST_CASE("Append rejects invalid resize scenarios", "[append]") {
     columns.h5Layout  = H5D_CHUNKED;
     columns.dimsChunk = {4, 1};
     columns.dimsMax   = {4, H5S_UNLIMITED};
-    file.writeDataset(std::vector<double>{1, 2, 3, 4}, "group/columns", columns);
+    file.dataset("group/columns").ensure(columns).write(std::vector<double>{1, 2, 3, 4});
 
     h5pp::DatasetAppendOptions wrongCols;
     wrongCols.dims = {5, 1};

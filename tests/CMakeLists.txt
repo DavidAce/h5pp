@@ -45,6 +45,12 @@ foreach (test ${TESTS})
 endforeach()
 
 
+# Only this test intentionally calls the deprecated v1 API methods.
+target_compile_options(h5pp-test-v1Api PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-deprecated-declarations>)
+
+
 # Speed up compilation with precompiled headers
 if(H5PP_ENABLE_PCH)
     if(COMMAND target_precompile_headers)

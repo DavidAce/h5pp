@@ -12,10 +12,10 @@ int main() {
     fileB.dataset("data/in/fileB/datasetB").write("Data on file B");
 
     // Copy a dataset from fileA into fileB.
-    fileA.copyLinkToFile("data/in/fileA/datasetA", fileB.getFilePath(), "data/from/fileA/datasetA");
+    fileA.link("data/in/fileA/datasetA").copyToFile(fileB.getFilePath(), "data/from/fileA/datasetA");
 
     // And copy a dataset from fileB into fileA.
-    fileA.copyLinkFromFile("data/from/fileB/datasetB", fileB.getFilePath(), "data/in/fileB/datasetB");
+    fileA.link("data/from/fileB/datasetB").copyFromFile(fileB.getFilePath(), "data/in/fileB/datasetB");
 
     return 0;
 }
