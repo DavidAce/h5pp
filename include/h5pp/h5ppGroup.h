@@ -114,7 +114,7 @@ namespace h5pp::inline v2 {
         }
 
         [[nodiscard]] BasicTable<FileType> table(std::string_view tablePath) const {
-            return BasicTable<FileType>(fileHandle_, plists_, reclaimStack_, detail::joinLinkPath(groupPath_, tablePath));
+            return BasicTable<FileType>(fileHandle_, plists_, fileAccess_, reclaimStack_, detail::joinLinkPath(groupPath_, tablePath));
         }
 
         [[nodiscard]] std::vector<std::string>
@@ -134,6 +134,7 @@ namespace h5pp::inline v2 {
 
         void create() requires traits::is_mutable_file_v<FileType>
         {
+            if(fileAccess_ == FileAccess::READONLY) throw h5pp::runtime_error("Attempted to create a group with read-only file access: [{}]", groupPath_);
             h5pp::hdf5::createGroup(fileHandle_, groupPath_, std::nullopt, plists_);
         }
 

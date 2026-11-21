@@ -57,4 +57,41 @@ TEST_CASE("Opening a missing file read-only does not create it", "[file-access]"
     CHECK_FALSE(h5pp::fs::exists(path));
 }
 
+namespace {
+    template<typename T>
+    concept CanCopyLink = requires(T link) { link.copyTo("copy"); };
+    template<typename T>
+    concept CanCopyFrom = requires(T link, const h5pp::hid::h5f &source) { link.copyFromLocation(source, "source"); };
+    static_assert(CanCopyLink<h5pp::Link>);
+    static_assert(not CanCopyLink<h5pp::ConstLink>);
+    static_assert(not CanCopyFrom<h5pp::ConstLink>);
+}
+
+TEST_CASE("Read-only objects reject writes while a writable file handle exists", "[file-access]") {
+    h5pp::File writer(make_path("readonly-shared"), h5pp::FileAccess::REPLACE, 0);
+    auto       token = writer.keepFileOpen();
+    writer.dataset("values").write(7);
+    h5pp::hid::h5t rowType = H5Tcreate(H5T_COMPOUND, sizeof(int));
+    REQUIRE(H5Tinsert(rowType, "value", 0, H5T_NATIVE_INT) >= 0);
+    auto table = writer.table("rows").create(rowType, "rows");
+    table.appendRecords(std::vector<int>{1});
+    h5pp::File reader(writer.getFilePath(), h5pp::FileAccess::READONLY, 0);
+    CHECK_THROWS(reader.group("new-group").create());
+    CHECK_THROWS(reader.table("rows").appendRecords(std::vector<int>{2}));
+    CHECK_THROWS(reader.table("rows").writeRecords(std::vector<int>{2}));
+    CHECK_THROWS(reader.table("absent").create(rowType, "absent"));
+    CHECK_THROWS(reader.table("rows").appendRecordsFrom(table.getInfo()));
+    CHECK_THROWS(reader.group("/").table("rows").appendRecords(std::vector<int>{2}));
+    CHECK_THROWS(reader.link("rows").asTable().appendRecords(std::vector<int>{2}));
+    CHECK_THROWS(reader.link("values").deleteLink());
+    CHECK_THROWS(reader.link("values").copyTo("copy"));
+    CHECK_THROWS(reader.link("values").moveTo("moved"));
+    CHECK_THROWS(reader.link("values").createSoftLink("soft"));
+    CHECK_THROWS(reader.link("absent").copyFromLocation(writer.openFileHandle(), "values"));
+    CHECK(table.readRecords<std::vector<int>>() == std::vector<int>{1});
+    CHECK(writer.dataset("values").read<int>() == 7);
+    CHECK_FALSE(writer.link("copy").exists());
+    CHECK_FALSE(writer.link("absent").exists());
+}
+
 int main(int argc, char *argv[]) { return Catch::Session().run(argc, argv); }

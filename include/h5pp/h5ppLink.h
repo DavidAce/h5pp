@@ -25,6 +25,11 @@ namespace h5pp::inline v2 {
         fs::path                                           filePath_;
         std::string                                        linkPath_;
 
+        void requireWritable_(std::string_view operation) const {
+            if(fileAccess_ == FileAccess::READONLY)
+                throw h5pp::runtime_error("Attempted to {} on read-only link [{}]", operation, linkPath_);
+        }
+
         public:
         BasicLink(FileType &file, std::string_view linkPath)
             : BasicLink(file.openFileHandle(),
@@ -77,11 +82,14 @@ namespace h5pp::inline v2 {
         [[nodiscard]] BasicDataset<FileType> asDataset() const {
             return BasicDataset<FileType>(fileHandle_, plists_, fileAccess_, compression_, linkPath_);
         }
-        [[nodiscard]] BasicTable<FileType> asTable() const { return BasicTable<FileType>(fileHandle_, plists_, reclaimStack_, linkPath_); }
+        [[nodiscard]] BasicTable<FileType> asTable() const {
+            return BasicTable<FileType>(fileHandle_, plists_, fileAccess_, reclaimStack_, linkPath_);
+        }
         [[nodiscard]] BasicGroup<FileType> asGroup() const;
 
         void deleteLink() requires traits::is_mutable_file_v<FileType>
         {
+            requireWritable_("modify link");
             h5pp::hdf5::deleteLink(fileHandle_, linkPath_, plists_.linkAccess);
         }
 
@@ -91,11 +99,17 @@ namespace h5pp::inline v2 {
             h5pp::hdf5::copyLink(filePath_.string(), linkPath_, targetFilePath, targetLinkPath, perm, plists_);
         }
 
-        void copyFromFile(const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath) {
+        void copyFromFile(const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath)
+            requires traits::is_mutable_file_v<FileType>
+        {
+            requireWritable_("modify link");
             h5pp::hdf5::copyLink(sourceFilePath, sourceLinkPath, filePath_.string(), linkPath_, h5pp::FileAccess::READWRITE, plists_);
         }
 
-        void copyTo(std::string_view targetLinkPath, const FileAccess &perm = FileAccess::READWRITE) const {
+        void copyTo(std::string_view targetLinkPath, const FileAccess &perm = FileAccess::READWRITE) const
+            requires traits::is_mutable_file_v<FileType>
+        {
+            requireWritable_("modify link");
             static_cast<void>(perm);
             h5pp::hdf5::copyLink(fileHandle_, linkPath_, fileHandle_, targetLinkPath, plists_);
         }
@@ -106,7 +120,9 @@ namespace h5pp::inline v2 {
         }
 
         template<typename h5x_src>
-        void copyFromLocation(const h5x_src &sourceLocationId, std::string_view sourceLinkPath) {
+        void copyFromLocation(const h5x_src &sourceLocationId, std::string_view sourceLinkPath) requires traits::is_mutable_file_v<FileType>
+        {
+            requireWritable_("modify link");
             h5pp::hdf5::copyLink(sourceLocationId, sourceLinkPath, fileHandle_, linkPath_, plists_);
         }
 
@@ -114,18 +130,21 @@ namespace h5pp::inline v2 {
                         std::string_view      targetLinkPath,
                         const FileAccess     &perm = FileAccess::READWRITE) requires traits::is_mutable_file_v<FileType>
         {
+            requireWritable_("modify link");
             h5pp::hdf5::moveLink(filePath_.string(), linkPath_, targetFilePath, targetLinkPath, perm, plists_);
         }
 
         void moveFromFile(const h5pp::fs::path &sourceFilePath, std::string_view sourceLinkPath)
             requires traits::is_mutable_file_v<FileType>
         {
+            requireWritable_("modify link");
             h5pp::hdf5::moveLink(sourceFilePath, sourceLinkPath, filePath_.string(), linkPath_, h5pp::FileAccess::READWRITE, plists_);
         }
 
         void moveTo(std::string_view targetLinkPath, const FileAccess &perm = FileAccess::READWRITE)
             requires traits::is_mutable_file_v<FileType>
         {
+            requireWritable_("modify link");
             static_cast<void>(perm);
             h5pp::hdf5::moveLink(fileHandle_, linkPath_, fileHandle_, targetLinkPath, LocationMode::DETECT, plists_);
         }
@@ -134,6 +153,7 @@ namespace h5pp::inline v2 {
         void moveToLocation(const h5x_tgt &targetLocationId, std::string_view targetLinkPath, LocationMode locMode = LocationMode::DETECT)
             requires traits::is_mutable_file_v<FileType>
         {
+            requireWritable_("modify link");
             h5pp::hdf5::moveLink(fileHandle_, linkPath_, targetLocationId, targetLinkPath, locMode, plists_);
         }
 
@@ -141,11 +161,13 @@ namespace h5pp::inline v2 {
         void moveFromLocation(const h5x_src &sourceLocationId, std::string_view sourceLinkPath, LocationMode locMode = LocationMode::DETECT)
             requires traits::is_mutable_file_v<FileType>
         {
+            requireWritable_("modify link");
             h5pp::hdf5::moveLink(sourceLocationId, sourceLinkPath, fileHandle_, linkPath_, locMode, plists_);
         }
 
         void createSoftLink(std::string_view softLinkPath) requires traits::is_mutable_file_v<FileType>
         {
+            requireWritable_("modify link");
             std::string targetLinkFullPath = linkPath_.front() == '/' ? linkPath_ : h5pp::format("/{}", linkPath_);
             h5pp::hdf5::createSoftLink(targetLinkFullPath, fileHandle_, softLinkPath, plists_);
         }
@@ -153,6 +175,7 @@ namespace h5pp::inline v2 {
         void createExternalLink(std::string_view targetFilePath, std::string_view targetLinkPath)
             requires traits::is_mutable_file_v<FileType>
         {
+            requireWritable_("modify link");
 #if __cplusplus > 201703L
             if(fs::path(targetFilePath).is_relative()) {
                 auto prox = fs::proximate(targetFilePath, filePath_.string());

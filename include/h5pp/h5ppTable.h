@@ -14,12 +14,18 @@ namespace h5pp::inline v2 {
         private:
         hid::h5f                                           fileHandle_;
         PropertyLists                                      plists_;
+        FileAccess                                         fileAccess_;
         std::shared_ptr<std::vector<ReclaimInfo::Reclaim>> reclaimStack_;
         std::string                                        tablePath_;
 
+        void requireWritable_(std::string_view operation) const {
+            if(fileAccess_ == FileAccess::READONLY)
+                throw h5pp::runtime_error("Attempted to {} on read-only table [{}]", operation, tablePath_);
+        }
+
         public:
         BasicTable(FileType &file, std::string_view tablePath)
-            : BasicTable(file.openFileHandle(), file.plists, file.reclaimStack, tablePath) {}
+            : BasicTable(file.openFileHandle(), file.plists, file.getFileAccess(), file.reclaimStack, tablePath) {}
 
         private:
         template<typename OtherFileType>
@@ -31,9 +37,10 @@ namespace h5pp::inline v2 {
 
         BasicTable(const hid::h5f                                           &fileHandle,
                    const PropertyLists                                      &plists,
+                   FileAccess                                                fileAccess,
                    const std::shared_ptr<std::vector<ReclaimInfo::Reclaim>> &reclaimStack,
                    std::string_view                                          tablePath)
-            : fileHandle_(fileHandle), plists_(plists), reclaimStack_(reclaimStack), tablePath_(tablePath) {}
+            : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess), reclaimStack_(reclaimStack), tablePath_(tablePath) {}
 
         public:
         [[nodiscard]] bool      exists() const { return h5pp::hdf5::checkIfLinkExists(fileHandle_, tablePath_, plists_.linkAccess); }
@@ -70,6 +77,7 @@ namespace h5pp::inline v2 {
 
         [[nodiscard]] BasicTable create(const TableCreateOptions &createOptions) requires traits::is_mutable_file_v<FileType>
         {
+            requireWritable_("create table");
             if(exists()) return *this;
             if(not createOptions.h5Type.has_value()) throw h5pp::runtime_error("Cannot create table [{}]: h5Type is not set", tablePath_);
             if(not createOptions.title.has_value()) throw h5pp::runtime_error("Cannot create table [{}]: title is not set", tablePath_);
@@ -96,6 +104,7 @@ namespace h5pp::inline v2 {
         template<typename DataType>
         requires traits::is_mutable_file_v<FileType>
         void appendRecords(const DataType &data, std::optional<hsize_t> extent = std::nullopt) {
+            requireWritable_("append records");
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto info        = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
@@ -106,6 +115,7 @@ namespace h5pp::inline v2 {
         template<typename DataType>
         requires traits::is_mutable_file_v<FileType>
         void writeRecords(const DataType &data, hsize_t offset = 0, std::optional<hsize_t> extent = std::nullopt) {
+            requireWritable_("write records");
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto info        = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
@@ -115,6 +125,7 @@ namespace h5pp::inline v2 {
         [[nodiscard]] TableInfo appendRecordsFrom(const h5pp::TableInfo &srcInfo, TableSelection selection = TableSelection::ALL)
             requires traits::is_mutable_file_v<FileType>
         {
+            requireWritable_("append records");
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto tgtInfo     = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
