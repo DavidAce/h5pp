@@ -31,8 +31,8 @@ namespace h5pp::type::custom {
 #else
                 if(H5Tset_fields(float_id, 0, 1, 15, 16, 112) < 0) throw h5pp::runtime_error("H5Tset_fields failed");
 #endif
-                if(H5Tset_ebias(float_id, 127) < 0) throw h5pp::runtime_error("H5Tset_ebias failed");
-                if(H5Tset_norm(float_id, H5T_NORM_MSBSET) < 0) throw h5pp::runtime_error("H5Tset_norm failed");
+                if(H5Tset_ebias(float_id, 16383) < 0) throw h5pp::runtime_error("H5Tset_ebias failed");
+                if(H5Tset_norm(float_id, H5T_NORM_IMPLIED) < 0) throw h5pp::runtime_error("H5Tset_norm failed");
                 if(H5Tset_inpad(float_id, H5T_PAD_ZERO) < 0) throw h5pp::runtime_error("H5Tset_inpad failed");
                 if(H5Tset_pad(float_id, H5T_PAD_ZERO, H5T_PAD_ZERO) < 0) throw h5pp::runtime_error("H5Tset_pad failed");
             }

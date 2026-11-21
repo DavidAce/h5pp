@@ -170,6 +170,21 @@ TEST_CASE("float128 compound records round-trip with explicit HDF5 types", "[flo
     REQUIRE(H5Tget_class(info.h5Type.value()) == H5T_COMPOUND);
 }
 
+TEST_CASE("Binary128 metadata supports conversion to double", "[float128][conversion]") {
+    auto type = h5pp::type::getH5Type<h5pp::fp128>();
+    CHECK(H5Tget_ebias(type) == 16383);
+    CHECK(H5Tget_norm(type) == H5T_NORM_IMPLIED);
+    for(double expected : {0.0, 1.0, -2.5, 1024.0}) {
+        alignas(h5pp::fp128) unsigned char buffer[sizeof(h5pp::fp128)]{};
+        auto                               value = static_cast<h5pp::fp128>(expected);
+        std::memcpy(buffer, &value, sizeof(value));
+        REQUIRE(H5Tconvert(type, H5T_NATIVE_DOUBLE, 1, buffer, nullptr, H5P_DEFAULT) >= 0);
+        double actual;
+        std::memcpy(&actual, buffer, sizeof(actual));
+        CHECK(actual == expected);
+    }
+}
+
 #else
 
 TEST_CASE("float128 support is unavailable in this build", "[float128]") {
