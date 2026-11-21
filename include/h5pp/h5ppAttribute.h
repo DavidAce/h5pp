@@ -59,7 +59,7 @@ namespace h5pp::inline v2 {
         }
 
         template<typename DataType>
-        requires detail::MutableFile<FileType>
+        requires traits::is_mutable_file_v<FileType>
         void write(const DataType &data, const AttributeWriteOptions &options = AttributeWriteOptions()) {
             requireWritable_("write");
             auto ioOptions = detail::makeOptions(linkPath_, attrName_, options);
@@ -73,7 +73,7 @@ namespace h5pp::inline v2 {
 
         template<typename DataType>
         [[nodiscard]] DataType read(const AttributeReadOptions &options = AttributeReadOptions()) const {
-            if constexpr(h5pp::type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(h5pp::traits::is_specialization_v<DataType, std::optional>) {
                 if(not exists()) return std::nullopt;
                 return read<typename DataType::value_type>(options);
             }

@@ -1,6 +1,6 @@
 #pragma once
 #include "h5ppExcept.h"
-#include "h5ppTypeSfinae.h"
+#include "h5ppTypeTraits.h"
 #ifdef H5PP_USE_EIGEN3
     #include <Eigen/Core>
     #include <unsupported/Eigen/CXX11/Tensor>
@@ -279,7 +279,7 @@ namespace h5pp {
         }
     }
 
-    namespace type::sfinae {
+    namespace traits {
 
         template<typename T>
         using is_eigen_matrix = std::is_base_of<Eigen::MatrixBase<std::decay_t<T>>, std::decay_t<T>>;

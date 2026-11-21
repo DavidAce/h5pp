@@ -68,7 +68,7 @@ namespace h5pp::inline v2 {
             return false;
         }
 
-        [[nodiscard]] BasicTable create(const TableCreateOptions &createOptions) requires detail::MutableFile<FileType>
+        [[nodiscard]] BasicTable create(const TableCreateOptions &createOptions) requires traits::is_mutable_file_v<FileType>
         {
             if(exists()) return *this;
             if(not createOptions.h5Type.has_value()) throw h5pp::runtime_error("Cannot create table [{}]: h5Type is not set", tablePath_);
@@ -85,7 +85,7 @@ namespace h5pp::inline v2 {
         }
 
         [[nodiscard]] BasicTable create(const hid::h5t &h5Type, std::string_view title, const TableCreateOptions &createOptions = {})
-            requires detail::MutableFile<FileType>
+            requires traits::is_mutable_file_v<FileType>
         {
             auto options   = createOptions;
             options.h5Type = h5Type;
@@ -94,7 +94,7 @@ namespace h5pp::inline v2 {
         }
 
         template<typename DataType>
-        requires detail::MutableFile<FileType>
+        requires traits::is_mutable_file_v<FileType>
         void appendRecords(const DataType &data, std::optional<hsize_t> extent = std::nullopt) {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
@@ -104,7 +104,7 @@ namespace h5pp::inline v2 {
         }
 
         template<typename DataType>
-        requires detail::MutableFile<FileType>
+        requires traits::is_mutable_file_v<FileType>
         void writeRecords(const DataType &data, hsize_t offset = 0, std::optional<hsize_t> extent = std::nullopt) {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
@@ -113,7 +113,7 @@ namespace h5pp::inline v2 {
         }
 
         [[nodiscard]] TableInfo appendRecordsFrom(const h5pp::TableInfo &srcInfo, TableSelection selection = TableSelection::ALL)
-            requires detail::MutableFile<FileType>
+            requires traits::is_mutable_file_v<FileType>
         {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
@@ -131,9 +131,9 @@ namespace h5pp::inline v2 {
         }
 
         template<typename h5x_src>
-        [[nodiscard]] TableInfo appendRecordsFrom(const h5x_src   &srcLocation,
-                                                  std::string_view srcTablePath,
-                                                  TableSelection   selection = TableSelection::ALL) requires detail::MutableFile<FileType>
+        [[nodiscard]] TableInfo
+            appendRecordsFrom(const h5x_src &srcLocation, std::string_view srcTablePath, TableSelection selection = TableSelection::ALL)
+                requires traits::is_mutable_file_v<FileType>
         {
             Options options;
             options.linkPath = h5pp::util::safe_str(srcTablePath);
@@ -144,7 +144,7 @@ namespace h5pp::inline v2 {
         template<typename DataType>
         [[nodiscard]] DataType readRecords(std::optional<hsize_t> offset = std::nullopt,
                                            std::optional<hsize_t> extent = std::nullopt) const {
-            if constexpr(h5pp::type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(h5pp::traits::is_specialization_v<DataType, std::optional>) {
                 if(not exists()) return std::nullopt;
                 return readRecords<typename DataType::value_type>(offset, extent);
             }
@@ -159,7 +159,7 @@ namespace h5pp::inline v2 {
 
         template<typename DataType>
         [[nodiscard]] DataType readRecords(TableSelection selection) const {
-            if constexpr(h5pp::type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(h5pp::traits::is_specialization_v<DataType, std::optional>) {
                 if(not exists()) return std::nullopt;
                 return readRecords<typename DataType::value_type>(selection);
             }
@@ -197,7 +197,7 @@ namespace h5pp::inline v2 {
                                          std::optional<hsize_t> offset = std::nullopt,
                                          std::optional<hsize_t> extent = std::nullopt) const {
             h5pp::NamesOrIndices fieldSelection(fields);
-            if constexpr(h5pp::type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(h5pp::traits::is_specialization_v<DataType, std::optional>) {
                 if(not fieldExists(fieldSelection)) return std::nullopt;
                 return readField<typename DataType::value_type>(fieldSelection, offset, extent);
             }
@@ -215,7 +215,7 @@ namespace h5pp::inline v2 {
         template<typename DataType, typename Fields>
         [[nodiscard]] DataType readField(const Fields &fields, TableSelection selection) const {
             h5pp::NamesOrIndices fieldSelection(fields);
-            if constexpr(h5pp::type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(h5pp::traits::is_specialization_v<DataType, std::optional>) {
                 if(not fieldExists(fieldSelection)) return std::nullopt;
                 return readField<typename DataType::value_type>(fieldSelection, selection);
             }
@@ -241,7 +241,7 @@ namespace h5pp::inline v2 {
         template<typename DataType, typename Fields>
         void readFieldInto(DataType &data, const Fields &fields, TableSelection selection) const {
             static_assert(not std::is_const_v<DataType>);
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
             h5pp::NamesOrIndices fieldSelection(fields);
             auto                 info = getInfo();
             info.assertReadReady();

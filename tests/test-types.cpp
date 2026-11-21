@@ -99,11 +99,12 @@ namespace {
     }
 }
 
-static_assert(h5pp::type::sfinae::has_data_v<std::vector<double>>);
-static_assert(h5pp::type::sfinae::has_size_v<std::vector<double>>);
-static_assert(h5pp::type::sfinae::has_data_v<std::span<double>>);
-static_assert(h5pp::type::sfinae::has_size_v<std::span<double>>);
-static_assert(!h5pp::type::sfinae::has_data_v<std::vector<bool>>);
+static_assert(h5pp::traits::type_name<int>() == "int");
+static_assert(h5pp::traits::has_data_v<std::vector<double>>);
+static_assert(h5pp::traits::has_size_v<std::vector<double>>);
+static_assert(h5pp::traits::has_data_v<std::span<double>>);
+static_assert(h5pp::traits::has_size_v<std::span<double>>);
+static_assert(!h5pp::traits::has_data_v<std::vector<bool>>);
 
 TEST_CASE("Datasets support the advertised scalar families and selected std::complex variants", "[types][dataset]") {
     h5pp::File file(make_path("types-scalars"), h5pp::FileAccess::REPLACE, 0);

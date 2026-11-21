@@ -5,7 +5,7 @@
 #include "h5ppTypeCast.h"
 #include "h5ppTypeCompound.h"
 #include "h5ppTypeCustom.h"
-#include "h5ppTypeSfinae.h"
+#include "h5ppTypeTraits.h"
 #include "h5ppVarr.h"
 #include "h5ppVstr.h"
 #include <cstddef>
@@ -13,7 +13,7 @@
 #include <H5version.h>
 #include <typeindex>
 
-namespace tc = h5pp::type::sfinae;
+namespace tc = h5pp::traits;
 namespace h5pp::type {
 
     [[nodiscard]] inline std::string getH5ClassName(H5T_class_t h5class) {
@@ -110,13 +110,13 @@ namespace h5pp::type {
 
     template<typename h5t1, typename h5t2>
     [[nodiscard]] inline bool H5Tequal_recurse(const h5t1 &type1, const h5t2 &type2) {
-        static_assert(type::sfinae::is_hdf5_type_id<h5t1> and type::sfinae::is_hdf5_type_id<h5t2>,
+        static_assert(traits::is_hdf5_type_id<h5t1> and traits::is_hdf5_type_id<h5t2>,
                       "Template function [h5pp::hdf5::H5Tequal_recurse<h5t>(const h5t1 & type1, const h5t2 & type2)]\n"
                       "requires type h5t1 and h5t2 to be: [h5pp::hid::h5t] or [hid_t]");
         // If types are compound, check recursively that all members have equal types and names
-        if constexpr(type::sfinae::are_same_v<hid_t, h5t1, h5t2>) {
+        if constexpr(traits::are_same_v<hid_t, h5t1, h5t2>) {
             if(type1 == type2) return true;
-        } else if constexpr(type::sfinae::are_same_v<hid::h5t, h5t1, h5t2>) {
+        } else if constexpr(traits::are_same_v<hid::h5t, h5t1, h5t2>) {
             if(type1.value() == type2.value()) return true;
         }
 
@@ -138,7 +138,7 @@ namespace h5pp::type {
                 if(not H5Tequal_recurse(t1, t2)) return false;
             }
             return true;
-        } else if constexpr(type::sfinae::is_h5pp_type_id<h5t1> and type::sfinae::is_h5pp_type_id<h5t2>) {
+        } else if constexpr(traits::is_h5pp_type_id<h5t1> and traits::is_h5pp_type_id<h5t2>) {
             return type1 == type2;
         } else {
             htri_t res = H5Tequal(type1, type2);
@@ -151,7 +151,7 @@ namespace h5pp::type {
     template<typename DataType, size_t depth = 0>
     [[nodiscard]] hid::h5t getH5Type() {
         //        if(h5type.has_value()) return h5type.value(); // Intercept
-        namespace tc    = h5pp::type::sfinae;
+        namespace tc    = h5pp::traits;
         using DecayType = typename std::decay<DataType>::type;
 
         /* clang-format off */
@@ -205,21 +205,21 @@ namespace h5pp::type {
             // Last resort ... unless the user provides an HDF5 type at runtime.
             // When reading, h5pp will try using the dset type instead.
             hid::h5t type = H5Tcreate(H5T_OPAQUE, sizeof(DecayType));
-            H5Tset_tag(type, h5pp::format("<{}>", sfinae::type_name<DecayType>()).c_str() );
+            H5Tset_tag(type, h5pp::format("<{}>", traits::type_name<DecayType>()).c_str() );
             return type;
 
         }
-        else static_assert(type::sfinae::unrecognized_type_v<DecayType> and "h5pp could not match the given C++ type to an HDF5 type.");
+        else static_assert(traits::unrecognized_type_v<DecayType> and "h5pp could not match the given C++ type to an HDF5 type.");
         /* clang-format on */
         throw h5pp::runtime_error("getH5Type could not match the type provided [{}] | size {}",
-                                  type::sfinae::type_name<DecayType>(),
+                                  traits::type_name<DecayType>(),
                                   sizeof(DecayType));
         return hid_t(0);
     }
 
     template<typename T>
     [[nodiscard]] std::tuple<std::type_index, std::string, size_t> getCppType() {
-        return {typeid(T), std::string(type::sfinae::type_name<T>()), sizeof(T)};
+        return {typeid(T), std::string(traits::type_name<T>()), sizeof(T)};
     }
 
     [[nodiscard]] inline std::tuple<std::type_index, std::string, size_t> getCppType(const hid::h5t &type) {

@@ -5,7 +5,6 @@ namespace h5pp {
 }
 
 #include "h5ppAttribute.h"
-#include "h5ppConcepts.h"
 #include "h5ppConvert.h"
 #include "h5ppDataset.h"
 #include "h5ppFile.h"

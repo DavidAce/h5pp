@@ -1,5 +1,5 @@
 #pragma once
-#include "h5ppTypeSfinae.h"
+#include "h5ppTypeTraits.h"
 #include <H5Tpublic.h>
 /*! \namespace h5pp
  * \brief A simple C++20 wrapper for the HDF5 library
@@ -119,7 +119,7 @@ namespace h5pp {
     constexpr std::string_view enum2str(const T &item) {
         /* clang-format off */
         static_assert(std::is_enum_v<T>);
-        static_assert(type::sfinae::is_any_v<T,
+        static_assert(traits::is_any_v<T,
         FileAccess,
         TableSelection,
         ResizePolicy,
@@ -173,7 +173,7 @@ namespace h5pp {
             case H5T_class_t::H5T_NCLASSES:  return "H5T_NCLASSES";
             default:                         return "H5T_NO_CLASS";
         }
-        else static_assert(type::sfinae::unrecognized_type_v<T> and "enum2str(): Not a known enum");
+        else static_assert(traits::unrecognized_type_v<T> and "enum2str(): Not a known enum");
         /* clang-format on */
         return "UNKNOWN ENUM";
     }

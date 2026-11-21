@@ -63,8 +63,8 @@ namespace h5pp::type::vlen {
         bool                 empty() const;
 
         template<typename V,
-                 typename = std::enable_if_t<(std::is_constructible_v<T, std::string> || sfinae::is_vstr_v<T> || sfinae::is_fstr_v<T>) &&
-                                             (std::is_floating_point_v<V> || type::sfinae::is_std_complex_v<V>
+                 typename = std::enable_if_t<(std::is_constructible_v<T, std::string> || traits::is_vstr_v<T> || traits::is_fstr_v<T>) &&
+                                             (std::is_floating_point_v<V> || traits::is_std_complex_v<V>
 #if defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
                                               || std::is_same_v<V, h5pp::fp128> || std::is_same_v<V, h5pp::cx128> ||
                                               std::is_same_v<V, std::complex<h5pp::fp128>>
@@ -109,12 +109,12 @@ namespace h5pp::type::vlen {
     template<typename T>
     template<typename V>
     varr_t<T>::varr_t(const V &v) {
-        static_assert(sfinae::has_size_v<V>);
-        static_assert(sfinae::is_iterable_v<V> or sfinae::has_data_v<V>);
+        static_assert(traits::has_size_v<V>);
+        static_assert(traits::is_iterable_v<V> or traits::has_data_v<V>);
         vl.len = v.size();
         vl.p   = calloc(v.size(), sizeof(T));
-        if constexpr(sfinae::is_iterable_v<V>) std::copy(v.begin(), v.end(), begin());
-        else if constexpr(sfinae::has_data_v<V>) std::copy(v.data(), v.data() + v.size(), begin());
+        if constexpr(traits::is_iterable_v<V>) std::copy(v.begin(), v.end(), begin());
+        else if constexpr(traits::has_data_v<V>) std::copy(v.data(), v.data() + v.size(), begin());
     }
 
     template<typename T>
@@ -161,13 +161,13 @@ namespace h5pp::type::vlen {
     template<typename T>
     template<typename V>
     varr_t<T> &varr_t<T>::operator=(const V &v) {
-        static_assert(h5pp::type::sfinae::has_size_v<V>);
-        static_assert(sfinae::is_iterable_v<V> or sfinae::has_data_v<V>);
+        static_assert(h5pp::traits::has_size_v<V>);
+        static_assert(traits::is_iterable_v<V> or traits::has_data_v<V>);
         clear();
         vl.len = v.size();
         vl.p   = calloc(v.size(), sizeof(T));
-        if constexpr(sfinae::is_iterable_v<V>) std::copy(v.begin(), v.end(), begin());
-        else if constexpr(sfinae::has_data_v<V>) std::copy(v.data(), v.data() + v.size(), begin());
+        if constexpr(traits::is_iterable_v<V>) std::copy(v.begin(), v.end(), begin());
+        else if constexpr(traits::has_data_v<V>) std::copy(v.data(), v.data() + v.size(), begin());
         return *this;
     }
     template<typename T>
@@ -304,15 +304,15 @@ namespace h5pp::type::vlen {
         else if constexpr (std::is_same_v<T, uint32_t>)                 return H5Tvlen_create(H5T_NATIVE_UINT32);
         else if constexpr (std::is_same_v<T, uint64_t>)                 return H5Tvlen_create(H5T_NATIVE_UINT64);
         else if constexpr (std::is_same_v<T, bool>)                     return H5Tvlen_create(H5T_NATIVE_UINT8);
-        else if constexpr (sfinae::is_vstr_v<T>)                        return H5Tvlen_create(T::get_h5type());
-        else if constexpr (sfinae::is_fstr_v<T>)                        return H5Tvlen_create(T::get_h5type());
+        else if constexpr (traits::is_vstr_v<T>)                        return H5Tvlen_create(T::get_h5type());
+        else if constexpr (traits::is_fstr_v<T>)                        return H5Tvlen_create(T::get_h5type());
         #if defined(H5PP_USE_FLOAT128) || defined(H5PP_USE_QUADMATH)
         else if constexpr (std::is_same_v<T, h5pp::fp128>)               return type::custom::H5T_FLOAT128::h5type();
         #endif
-        else if constexpr (type::sfinae::is_std_complex_v<T>)           return H5Tvlen_create(type::compound::H5T_COMPLEX<typename T::value_type>::h5type());
-        else if constexpr (type::sfinae::is_Scalar2_v<T>)               return H5Tvlen_create(type::compound::H5T_SCALAR2<type::sfinae::get_Scalar2_t<T>>::h5type());
-        else if constexpr (type::sfinae::is_Scalar3_v<T>)               return H5Tvlen_create(type::compound::H5T_SCALAR3<type::sfinae::get_Scalar3_t<T>>::h5type());
-        else static_assert(type::sfinae::invalid_type_v<T> and "h5pp could not match the given C++ type to an variable-length HDF5 type.");
+        else if constexpr (traits::is_std_complex_v<T>)           return H5Tvlen_create(type::compound::H5T_COMPLEX<typename T::value_type>::h5type());
+        else if constexpr (traits::is_Scalar2_v<T>)               return H5Tvlen_create(type::compound::H5T_SCALAR2<traits::get_Scalar2_t<T>>::h5type());
+        else if constexpr (traits::is_Scalar3_v<T>)               return H5Tvlen_create(type::compound::H5T_SCALAR3<traits::get_Scalar3_t<T>>::h5type());
+        else static_assert(traits::invalid_type_v<T> and "h5pp could not match the given C++ type to an variable-length HDF5 type.");
         /* clang-format on */
     }
 
@@ -321,7 +321,7 @@ namespace h5pp {
     using h5pp::type::vlen::varr_t;
 }
 
-namespace h5pp::type::sfinae {
+namespace h5pp::traits {
     template<typename T>
     struct is_varr_t : public std::false_type {};
     template<typename T>

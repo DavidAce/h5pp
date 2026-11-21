@@ -4,7 +4,7 @@
 #include "h5ppFloat128.h"
 #include "h5ppFormat.h"
 #include "h5ppHid.h"
-#include "h5ppTypeSfinae.h"
+#include "h5ppTypeTraits.h"
 #include <complex>
 #include <H5Tpublic.h>
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "h5ppExcept.h"
-#include "h5ppTypeSfinae.h"
+#include "h5ppTypeTraits.h"
 #include <type_traits>
 
 namespace h5pp::type {
@@ -21,9 +21,9 @@ namespace h5pp::type {
                 if constexpr(static_cast<big_t>(srcMax) <= static_cast<big_t>(tgtMax)) return static_cast<tgt_t>(src);
                 if(src > static_cast<big_t>(tgtMax)) {
                     throw h5pp::overflow_error("integral overflow during cast: src [{}]={} > tgt [{}]={} (max)",
-                                               h5pp::type::sfinae::type_name<src_t>(),
+                                               h5pp::traits::type_name<src_t>(),
                                                src,
-                                               h5pp::type::sfinae::type_name<tgt_t>(),
+                                               h5pp::traits::type_name<tgt_t>(),
                                                tgtMax);
                 }
             } else if constexpr(std::is_signed_v<src_t> and std::is_signed_v<tgt_t>) {
@@ -32,37 +32,37 @@ namespace h5pp::type {
                     return static_cast<tgt_t>(src);
                 } else if(src > static_cast<big_t>(tgtMax)) {
                     throw h5pp::overflow_error("integral overflow during cast: src [{}]={} > tgt [{}]={} (max)",
-                                               h5pp::type::sfinae::type_name<src_t>(),
+                                               h5pp::traits::type_name<src_t>(),
                                                src,
-                                               h5pp::type::sfinae::type_name<tgt_t>(),
+                                               h5pp::traits::type_name<tgt_t>(),
                                                tgtMax);
                 } else if(src < static_cast<big_t>(tgtMin)) {
                     throw h5pp::overflow_error("integral sign error during cast: src [{}]={} < tgt [{}]={} (min)",
-                                               h5pp::type::sfinae::type_name<src_t>(),
+                                               h5pp::traits::type_name<src_t>(),
                                                src,
-                                               h5pp::type::sfinae::type_name<tgt_t>(),
+                                               h5pp::traits::type_name<tgt_t>(),
                                                tgtMin);
                 }
             } else if constexpr(std::is_signed_v<src_t> and std::is_unsigned_v<tgt_t>) {
                 if(src < 0) {
                     throw h5pp::overflow_error("integral sign error during cast: src [{}]={} < tgt [{}]={} (min)",
-                                               h5pp::type::sfinae::type_name<src_t>(),
+                                               h5pp::traits::type_name<src_t>(),
                                                src,
-                                               h5pp::type::sfinae::type_name<tgt_t>(),
+                                               h5pp::traits::type_name<tgt_t>(),
                                                tgtMin);
                 } else if(static_cast<ubig_t>(src) > static_cast<ubig_t>(tgtMax)) {
                     throw h5pp::overflow_error("integral overflow during cast: src [{}]={} > tgt [{}]={} (max)",
-                                               h5pp::type::sfinae::type_name<src_t>(),
+                                               h5pp::traits::type_name<src_t>(),
                                                src,
-                                               h5pp::type::sfinae::type_name<tgt_t>(),
+                                               h5pp::traits::type_name<tgt_t>(),
                                                tgtMax);
                 }
             } else if constexpr(std::is_unsigned_v<src_t> and std::is_signed_v<tgt_t>) {
                 if(static_cast<ubig_t>(src) > static_cast<ubig_t>(tgtMax)) {
                     throw h5pp::overflow_error("integral overflow during cast: src [{}]={} > tgt [{}]={} (max)",
-                                               h5pp::type::sfinae::type_name<src_t>(),
+                                               h5pp::traits::type_name<src_t>(),
                                                src,
-                                               h5pp::type::sfinae::type_name<tgt_t>(),
+                                               h5pp::traits::type_name<tgt_t>(),
                                                tgtMax);
                 }
             }

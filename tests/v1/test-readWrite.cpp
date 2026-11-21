@@ -25,10 +25,10 @@ namespace {
 
 template<typename T>
 void require_scalar_equal(const T &lhs, const T &rhs) {
-    if constexpr(h5pp::type::sfinae::is_Scalar2_v<T>) {
+    if constexpr(h5pp::traits::is_Scalar2_v<T>) {
         REQUIRE(require_equal_value(lhs.x, rhs.x));
         REQUIRE(require_equal_value(lhs.y, rhs.y));
-    } else if constexpr(h5pp::type::sfinae::is_Scalar3_v<T>) {
+    } else if constexpr(h5pp::traits::is_Scalar3_v<T>) {
         REQUIRE(require_equal_value(lhs.x, rhs.x));
         REQUIRE(require_equal_value(lhs.y, rhs.y));
         REQUIRE(require_equal_value(lhs.z, rhs.z));
@@ -39,7 +39,7 @@ void require_scalar_equal(const T &lhs, const T &rhs) {
 
 template<typename WriteType, typename ReadType = WriteType>
 void require_roundtrip(h5pp::v1::File &file, const WriteType &writeData, std::string_view dsetpath) {
-    using namespace h5pp::type::sfinae;
+    using namespace h5pp::traits;
     file.writeDataset(writeData, dsetpath);
     auto readData = file.readDataset<ReadType>(dsetpath);
 
@@ -78,7 +78,7 @@ TEST_CASE("Generic read/write round-trips cover scalars, STL containers, compoun
     using cplx = std::complex<double>;
 
     static_assert(
-        h5pp::type::sfinae::has_data_v<std::vector<double>> and
+        h5pp::traits::has_data_v<std::vector<double>> and
         "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     struct Field2 {

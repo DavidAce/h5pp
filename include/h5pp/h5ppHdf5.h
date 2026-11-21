@@ -9,7 +9,7 @@
 #include "h5ppLogger.h"
 #include "h5ppPropertyLists.h"
 #include "h5ppTypeCast.h"
-#include "h5ppTypeSfinae.h"
+#include "h5ppTypeTraits.h"
 #include "h5ppUtils.h"
 #include <cstddef>
 #include <hdf5.h>
@@ -82,7 +82,7 @@ namespace h5pp::hdf5 {
 
     template<typename h5x>
     [[nodiscard]] std::string getName(const h5x &object) {
-        static_assert(type::sfinae::is_hdf5_id<h5x>);
+        static_assert(traits::is_hdf5_id<h5x>);
         // Read about the buffer size inconsistency here
         // http://hdf-forum.184993.n3.nabble.com/H5Iget-name-inconsistency-td193143.html
         std::string buf;
@@ -325,7 +325,7 @@ namespace h5pp::hdf5 {
     void assertWriteBufferIsLargeEnough(const DataType &data, const hid::h5s &space, const hid::h5t &type) {
         if(H5Tget_class(type) == H5T_STRING) {
             if(H5Tis_variable_str(type)) return; // This transfers the string from memory until finding a null terminator
-            if constexpr(type::sfinae::is_text_v<DataType>) {
+            if constexpr(traits::is_text_v<DataType>) {
                 auto hdf5Byte = H5Tget_size(type); // Chars including null-terminator. The memory buffer must fit this size. Also, these
                                                    // many bytes will participate in IO
                 auto hdf5Size = getSizeSelected(space);
@@ -344,12 +344,12 @@ namespace h5pp::hdf5 {
                         hdf5Size,
                         hdf5Byte,
                         hdf5Byte - 1,
-                        type::sfinae::type_name<DataType>());
+                        traits::type_name<DataType>());
                 }
             }
         } else {
             if constexpr(std::is_pointer_v<DataType>) return;
-            if constexpr(not type::sfinae::has_size_v<DataType>) return;
+            if constexpr(not traits::has_size_v<DataType>) return;
             auto hdf5Size = getSizeSelected(space);
             auto hdf5Byte = h5pp::util::getBytesPerElem<DataType>() * hdf5Size;
             auto dataByte = h5pp::util::getBytesTotal(data);
@@ -364,7 +364,7 @@ namespace h5pp::hdf5 {
                                           dataByte,
                                           hdf5Size,
                                           hdf5Byte,
-                                          type::sfinae::type_name<DataType>());
+                                          traits::type_name<DataType>());
             }
         }
     }
@@ -373,7 +373,7 @@ namespace h5pp::hdf5 {
     void assertReadSpaceIsLargeEnough(const DataType &data, const hid::h5s &space, const hid::h5t &type) {
         if(H5Tget_class(type) == H5T_STRING) {
             if(H5Tis_variable_str(type)) return; // These are resized on the fly
-            if constexpr(type::sfinae::is_text_v<DataType>) {
+            if constexpr(traits::is_text_v<DataType>) {
                 // The memory buffer must fit hdf5Byte: that's how many bytes will participate in IO
                 auto hdf5Byte = H5Tget_size(type); // Chars including null-terminator.
                 auto hdf5Size = getSizeSelected(space);
@@ -392,12 +392,12 @@ namespace h5pp::hdf5 {
                         hdf5Size,
                         hdf5Byte,
                         hdf5Byte - 1,
-                        type::sfinae::type_name<DataType>());
+                        traits::type_name<DataType>());
                 }
             }
         } else {
             if constexpr(std::is_pointer_v<DataType>) return;
-            if constexpr(not type::sfinae::has_size_v<DataType>) return;
+            if constexpr(not traits::has_size_v<DataType>) return;
             auto hdf5Size = getSizeSelected(space);
             auto hdf5Byte = h5pp::util::getBytesPerElem<DataType>() * hdf5Size;
             auto dataByte = h5pp::util::getBytesTotal(data);
@@ -412,7 +412,7 @@ namespace h5pp::hdf5 {
                                           dataByte,
                                           hdf5Size,
                                           hdf5Byte,
-                                          type::sfinae::type_name<DataType>());
+                                          traits::type_name<DataType>());
             }
         }
     }
@@ -441,7 +441,7 @@ namespace h5pp::hdf5 {
 
     template<typename DataType, typename = std::enable_if_t<not std::is_base_of_v<hid::hid_base<DataType>, DataType>>>
     void assertBytesPerElemMatch(const hid::h5t &h5Type) {
-        if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::byte>) return;
+        if constexpr(h5pp::traits::is_container_of_v<DataType, std::byte>) return;
         size_t dsetTypeSize = 0;
         size_t dataTypeSize = h5pp::util::getBytesPerElem<DataType>();
         if(H5Tget_class(h5Type) == H5T_STRING) dsetTypeSize = H5Tget_size(H5T_C_S1);
@@ -457,7 +457,7 @@ namespace h5pp::hdf5 {
                     dsetTypeSize,
                     type::getH5TypeName(nativeType),
                     nativeSize,
-                    type::sfinae::type_name<DataType>(),
+                    traits::type_name<DataType>(),
                     dataTypeSize);
             }
 
@@ -471,9 +471,9 @@ namespace h5pp::hdf5 {
         }
     }
 
-    template<typename DataType, typename = std::enable_if_t<not type::sfinae::is_h5pp_id<DataType>>>
+    template<typename DataType, typename = std::enable_if_t<not traits::is_h5pp_id<DataType>>>
     void assertReadTypeIsLargeEnough(const hid::h5t &h5Type) {
-        if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::byte>) return;
+        if constexpr(h5pp::traits::is_container_of_v<DataType, std::byte>) return;
         size_t dsetTypeSize = h5pp::hdf5::getBytesPerElem(h5Type);
         size_t dataTypeSize = h5pp::util::getBytesPerElem<DataType>();
         if(H5Tget_class(h5Type) == H5T_STRING) dsetTypeSize = H5Tget_size(H5T_C_S1);
@@ -485,13 +485,13 @@ namespace h5pp::hdf5 {
             if(dataTypeSize > dsetTypeSize) {
                 h5pp::logger::log->debug(
                     "Given data-type is too large: elements of type [{}] are [{}] bytes (each) | target HDF5 type is [{}] bytes",
-                    type::sfinae::type_name<DataType>(),
+                    traits::type_name<DataType>(),
                     dataTypeSize,
                     dsetTypeSize);
             } else if(dataTypeSize < dsetTypeSize) {
                 throw h5pp::runtime_error(
                     "Given data-type is too small: elements of type [{}] are [{}] bytes (each) | target HDF5 type is [{}] bytes",
-                    type::sfinae::type_name<DataType>(),
+                    traits::type_name<DataType>(),
                     dataTypeSize,
                     dsetTypeSize);
             } else {
@@ -533,7 +533,7 @@ namespace h5pp::hdf5 {
             if(H5Tget_size(type) != 1) return; // String properties have already been set, probably by the user
 
             herr_t retval = 0;
-            if constexpr(type::sfinae::is_text_v<DataType>) {
+            if constexpr(traits::is_text_v<DataType>) {
                 if(dims.empty()) {
                     // Case 1
                     retval = H5Tset_size(type, H5T_VARIABLE);
@@ -557,7 +557,7 @@ namespace h5pp::hdf5 {
                     size                = 1;
                     bytes               = desiredSize;
                 }
-            } else if(type::sfinae::has_text_v<DataType>) {
+            } else if(traits::has_text_v<DataType>) {
                 // Case 3
                 retval = H5Tset_size(type, H5T_VARIABLE);
                 bytes  = h5pp::util::getBytesTotal(data);
@@ -578,7 +578,7 @@ namespace h5pp::hdf5 {
 
     template<typename h5x>
     [[nodiscard]] inline bool checkIfLinkExists(const h5x &loc, std::string_view linkPath, const hid::h5p &linkAccess = H5P_DEFAULT) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+        static_assert(traits::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::checkIfLinkExists<h5x>(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         for(const auto &subPath : pathCumulativeSplit(linkPath, "/")) {
@@ -598,10 +598,10 @@ namespace h5pp::hdf5 {
                                std::string_view    linkPath,
                                std::optional<bool> linkExists = std::nullopt,
                                const hid::h5p     &access     = H5P_DEFAULT) {
-        static_assert(type::sfinae::is_h5pp_link_id<h5x>,
+        static_assert(traits::is_h5pp_link_id<h5x>,
                       "Template function [h5pp::hdf5::openLink<h5x>(...)] requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x_loc>,
+        static_assert(traits::is_hdf5_loc_id<h5x_loc>,
                       "Template function [h5pp::hdf5::openLink<h5x>(const h5x_loc & loc, ...)] requires type h5x_loc to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         if constexpr(not h5pp::ndebug) {
@@ -630,7 +630,7 @@ namespace h5pp::hdf5 {
                             std::string_view     relGroupPath,
                             std::optional<bool>  groupExists = std::nullopt,
                             const PropertyLists &plists      = PropertyLists()) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+        static_assert(traits::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::createGroup(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         // Check if group exists already
@@ -653,7 +653,7 @@ namespace h5pp::hdf5 {
 
     template<typename h5x>
     [[nodiscard]] inline bool checkIfAttrExists(const h5x &link, std::string_view attrName, const hid::h5p &linkAccess = H5P_DEFAULT) {
-        static_assert(type::sfinae::is_hdf5_link_id<h5x>,
+        static_assert(traits::is_hdf5_link_id<h5x>,
                       "Template function [h5pp::hdf5::checkIfAttrExists<h5x>(const h5x & link, ...) requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         //        if(attrExists and attrExists.value()) return true;
@@ -669,7 +669,7 @@ namespace h5pp::hdf5 {
                                                 std::string_view    attrName,
                                                 std::optional<bool> linkExists = std::nullopt,
                                                 const hid::h5p     &linkAccess = H5P_DEFAULT) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+        static_assert(traits::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::checkIfAttrExists<h5x>(const h5x & loc, ..., ...)] requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         if(not linkExists.has_value()) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
@@ -734,7 +734,7 @@ namespace h5pp::hdf5 {
 
     template<typename h5x>
     [[nodiscard]] inline std::vector<std::string> getAttributeNames(const h5x &link) {
-        static_assert(type::sfinae::is_hdf5_link_id<h5x>,
+        static_assert(traits::is_hdf5_link_id<h5x>,
                       "Template function [h5pp::hdf5::getAttributeNames(const h5x & link, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         auto                     numAttrs = H5Aget_num_attrs(link);
@@ -753,7 +753,7 @@ namespace h5pp::hdf5 {
                                                                     std::optional<bool> linkExists = std::nullopt,
                                                                     const hid::h5p     &linkAccess = H5P_DEFAULT) {
         static_assert(
-            type::sfinae::is_hdf5_loc_id<h5x>,
+            traits::is_hdf5_loc_id<h5x>,
             "Template function [h5pp::hdf5::getAttributeNames(const h5x & link, std::string_view linkPath)] requires type h5x to be: "
             "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         auto link = openLink<hid::h5o>(loc, linkPath, linkExists, linkAccess);
@@ -782,13 +782,13 @@ namespace h5pp::hdf5 {
         return getTypeInfo(dsetPath, std::nullopt, H5Dget_space(dataset), H5Dget_type(dataset));
     }
 
-    template<typename h5x, typename = std::enable_if_t<type::sfinae::is_hdf5_loc_id<h5x>>>
+    template<typename h5x, typename = std::enable_if_t<traits::is_hdf5_loc_id<h5x>>>
     // enable_if so the compiler doesn't think it can use overload with std::string on first argument
     [[nodiscard]] inline TypeInfo getTypeInfo(const h5x          &loc,
                                               std::string_view    dsetName,
                                               std::optional<bool> dsetExists = std::nullopt,
                                               const hid::h5p     &dsetAccess = H5P_DEFAULT) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x>);
+        static_assert(traits::is_hdf5_loc_id<h5x>);
         auto dataset = openLink<hid::h5d>(loc, dsetName, dsetExists, dsetAccess);
         return getTypeInfo(dataset);
     }
@@ -800,14 +800,14 @@ namespace h5pp::hdf5 {
         return getTypeInfo(linkPath, attrName, H5Aget_space(attribute), H5Aget_type(attribute));
     }
 
-    template<typename h5x, typename = std::enable_if_t<type::sfinae::is_hdf5_loc_id<h5x>>>
+    template<typename h5x, typename = std::enable_if_t<traits::is_hdf5_loc_id<h5x>>>
     [[nodiscard]] inline TypeInfo getTypeInfo(const h5x          &loc,
                                               std::string_view    linkPath,
                                               std::string_view    attrName,
                                               std::optional<bool> linkExists = std::nullopt,
                                               std::optional<bool> attrExists = std::nullopt,
                                               const hid::h5p     &linkAccess = H5P_DEFAULT) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x>);
+        static_assert(traits::is_hdf5_loc_id<h5x>);
         if(not linkExists.has_value()) linkExists = checkIfLinkExists(loc, linkPath, linkAccess);
         if(not linkExists.value())
             throw h5pp::runtime_error("Attribute [{}] does not exist because its link does not exist: [{}]", attrName, linkPath);
@@ -824,7 +824,7 @@ namespace h5pp::hdf5 {
 
     template<typename h5x>
     [[nodiscard]] std::vector<TypeInfo> getTypeInfo_allAttributes(const h5x &link) {
-        static_assert(type::sfinae::is_hdf5_link_id<h5x>,
+        static_assert(traits::is_hdf5_link_id<h5x>,
                       "Template function [h5pp::hdf5::getTypeInfo_allAttributes(const h5x & link)] requires type h5x to be: "
                       "[h5pp::hid::h5d], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         std::vector<TypeInfo> allAttrInfo;
@@ -843,7 +843,7 @@ namespace h5pp::hdf5 {
                                                                          std::string_view    linkPath,
                                                                          std::optional<bool> linkExists = std::nullopt,
                                                                          const hid::h5p     &linkAccess = H5P_DEFAULT) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+        static_assert(traits::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::getTypeInfo_allAttributes(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         auto link = openLink<hid::h5o>(loc, linkPath, linkExists, linkAccess);
@@ -852,7 +852,7 @@ namespace h5pp::hdf5 {
 
     template<typename h5x>
     inline void deleteLink(const h5x &loc, std::string_view linkPath, const hid::h5p &linkAccess = H5P_DEFAULT) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+        static_assert(traits::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::deleteLink(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         if(checkIfLinkExists(loc, linkPath, linkAccess)) {
@@ -864,7 +864,7 @@ namespace h5pp::hdf5 {
     template<typename h5x>
     inline void
         deleteAttribute(const h5x &loc, std::string_view linkPath, std::string_view attrName, const hid::h5p &linkAccess = H5P_DEFAULT) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+        static_assert(traits::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::deleteAttribute(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         if(checkIfLinkExists(loc, linkPath, linkAccess)) {
@@ -881,7 +881,7 @@ namespace h5pp::hdf5 {
                                const h5x           &loc,
                                std::string_view     softLinkPath,
                                const PropertyLists &plists = PropertyLists()) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+        static_assert(traits::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::createSoftLink(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         if constexpr(not h5pp::ndebug) {
@@ -904,7 +904,7 @@ namespace h5pp::hdf5 {
                                const h5x           &hardLinkLoc,
                                std::string_view     hardLinkPath,
                                const PropertyLists &plists = PropertyLists()) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+        static_assert(traits::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::createHardLink(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         if constexpr(not h5pp::ndebug) {
@@ -930,7 +930,7 @@ namespace h5pp::hdf5 {
                             const h5x           &loc,
                             std::string_view     softLinkPath,
                             const PropertyLists &plists = PropertyLists()) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+        static_assert(traits::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::hdf5::createExternalLink(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         h5pp::logger::log->trace("Creating external link [{}] from file [{}] : [{}]", softLinkPath, targetFilePath, targetLinkPath);
@@ -1503,11 +1503,11 @@ namespace h5pp::hdf5 {
         if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) return; // Pointer and array buffers are not resized
         if(bytes == 0) return;
         if(H5Tget_class(type) == H5T_STRING) {
-            if constexpr(type::sfinae::is_text_v<DataType>) {
+            if constexpr(traits::is_text_v<DataType>) {
                 // Minus one: String resize allocates the null-terminator automatically, and bytes is the number of characters including
                 // null-terminator
                 h5pp::util::resizeData(data, {type::safe_cast<hsize_t>(bytes) - 1});
-            } else if constexpr(type::sfinae::has_text_v<DataType> and type::sfinae::is_iterable_v<DataType>) {
+            } else if constexpr(traits::has_text_v<DataType> and traits::is_iterable_v<DataType>) {
                 // We have a container such as std::vector<std::string> here, and the dataset may have multiple string elements
                 auto size = getSizeSelected(space);
                 h5pp::util::resizeData(data, {type::safe_cast<hsize_t>(size)});
@@ -1519,7 +1519,7 @@ namespace h5pp::hdf5 {
                 }
             } else {
                 throw h5pp::runtime_error("Could not resize given container for text data: Unrecognized type for text [{}]",
-                                          type::sfinae::type_name<DataType>());
+                                          traits::type_name<DataType>());
             }
         } else if(H5Sget_simple_extent_type(space) == H5S_SCALAR) {
             h5pp::util::resizeData(data, {type::safe_cast<hsize_t>(1)});
@@ -1536,7 +1536,7 @@ namespace h5pp::hdf5 {
             } else {
                 H5Sget_simple_extent_dims(space, extent.data(), nullptr);
             }
-            if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::byte> and h5pp::type::sfinae::has_resize_v<DataType>) {
+            if constexpr(h5pp::traits::is_container_of_v<DataType, std::byte> and h5pp::traits::has_resize_v<DataType>) {
                 // This adds support for reading arbitrary data into std::vector<std::byte>
                 auto numBytes = getBytesPerElem(type) * util::getSizeFromDimensions(extent);
                 data.resize(numBytes);
@@ -1545,7 +1545,7 @@ namespace h5pp::hdf5 {
             }
             if(bytes != h5pp::util::getBytesTotal(data)) {
                 h5pp::logger::log->warn("Size mismatch after resizing container [{}]: data [{}] bytes | dset [{}] bytes ",
-                                        h5pp::type::sfinae::type_name<DataType>(),
+                                        h5pp::traits::type_name<DataType>(),
                                         h5pp::util::getBytesTotal(data),
                                         bytes);
             }
@@ -1566,8 +1566,7 @@ namespace h5pp::hdf5 {
         auto newDims = h5pp::util::getDimensions(data);
         if(oldDims != newDims) {
             // Update the metadata
-            if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::byte>)
-                dataInfo.dataDims = getDimensions(info.h5Space.value());
+            if constexpr(h5pp::traits::is_container_of_v<DataType, std::byte>) dataInfo.dataDims = getDimensions(info.h5Space.value());
             else dataInfo.dataDims = h5pp::util::getDimensions(data); // Will fail if no dataDims passed on a pointer
             dataInfo.dataSize = h5pp::util::getSizeFromDimensions(dataInfo.dataDims.value());
             dataInfo.dataRank = h5pp::util::getRankFromDimensions(dataInfo.dataDims.value());
@@ -1621,7 +1620,7 @@ namespace h5pp::hdf5 {
 
     template<typename DataType>
     void assertSpacesEqual(const hid::h5s &dataSpace, const hid::h5s &dsetSpace, const hid::h5t &dsetType) {
-        if constexpr(h5pp::type::sfinae::is_container_of_v<DataType, std::byte>)
+        if constexpr(h5pp::traits::is_container_of_v<DataType, std::byte>)
             return; // The spaces will be mismatched, but the buffer size is checked elsewhere
 
         if(H5Tis_variable_str(dsetType) or H5Tget_class(dsetType) == H5T_STRING) {
@@ -1765,12 +1764,12 @@ namespace h5pp::hdf5 {
                                     std::string_view          root,
                                     std::vector<std::string> &matchList,
                                     const PropertyLists      &plists = PropertyLists()) {
-            static_assert(type::sfinae::is_hdf5_loc_id<h5x>,
+            static_assert(traits::is_hdf5_loc_id<h5x>,
                           "Template function [h5pp::hdf5::visit_by_name(const h5x & loc, ...)] requires type h5x to be: "
                           "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
             auto safe_root = util::safe_str(root);
 
-            if constexpr(h5pp::type::sfinae::is_any_v<h5x, hid::h5f, hid::h5g>) {
+            if constexpr(h5pp::traits::is_any_v<h5x, hid::h5f, hid::h5g>) {
                 if(internal::maxDepth == 0) {
                     // Faster when we don't need to iterate recursively
                     hsize_t idx = 0;
@@ -1901,23 +1900,23 @@ namespace h5pp::hdf5 {
     template<typename DataType>
     [[nodiscard]] std::vector<const char *> getCharPtrVector(const DataType &data) {
         std::vector<const char *> sv;
-        if constexpr(type::sfinae::is_text_v<DataType> and type::sfinae::has_data_v<DataType>) { // Takes care of std::string
+        if constexpr(traits::is_text_v<DataType> and traits::has_data_v<DataType>) { // Takes care of std::string
             sv.push_back(data.data());
-        } else if constexpr(type::sfinae::is_text_v<DataType>) { // Takes care of char pointers and arrays
+        } else if constexpr(traits::is_text_v<DataType>) { // Takes care of char pointers and arrays
             sv.push_back(data);
-        } else if constexpr(type::sfinae::is_iterable_v<DataType>) { // Takes care of containers with text
+        } else if constexpr(traits::is_iterable_v<DataType>) { // Takes care of containers with text
             for(auto &elem : data) {
-                if constexpr(type::sfinae::is_text_v<decltype(elem)> and
-                             type::sfinae::has_data_v<decltype(elem)>) { // Takes care of containers with std::string
+                if constexpr(traits::is_text_v<decltype(elem)> and
+                             traits::has_data_v<decltype(elem)>) { // Takes care of containers with std::string
                     sv.push_back(elem.data());
-                } else if constexpr(type::sfinae::is_text_v<decltype(elem)>) { // Takes care of containers  of char pointers and arrays
+                } else if constexpr(traits::is_text_v<decltype(elem)>) { // Takes care of containers  of char pointers and arrays
                     sv.push_back(elem);
                 } else {
                     sv.push_back(&elem); // Takes care of other things?
                 }
             }
         } else {
-            throw h5pp::runtime_error("Failed to get char pointer of datatype [{}]", type::sfinae::type_name<DataType>());
+            throw h5pp::runtime_error("Failed to get char pointer of datatype [{}]", traits::type_name<DataType>());
         }
         return sv;
     }
@@ -2140,7 +2139,7 @@ namespace h5pp::hdf5 {
                         "Chunk-wise write details: data [type {} | size {} | {} bytes/item | {} bytes{}] dset [size {} | {} "
                         "bytes/item | storage {} bytes | deflate {} | dims {}{}] chunk [size {} | {} bytes | dims {} | count {} | "
                         "capacity {} | room {}]",
-                        type::sfinae::type_name<DataType>(),
+                        traits::type_name<DataType>(),
                         h5pp::util::getSize(data),
                         h5pp::util::getBytesPerElem<DataType>(),
                         h5pp::util::getBytesTotal(data),
@@ -2235,9 +2234,9 @@ namespace h5pp::hdf5 {
     template<typename DataType>
     const void *
         getTextPtrForH5Dwrite(const DataType &data, const hid::h5t &h5Type, std::string &tempBuf, std::vector<const char *> &vlenBuf) {
-        static_assert(not type::sfinae::is_h5pp_id<DataType>);
+        static_assert(not traits::is_h5pp_id<DataType>);
         auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
-        if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
+        if constexpr(traits::is_text_v<DataType> or traits::has_text_v<DataType>) {
             vlenBuf = getCharPtrVector(data);
 
             if(H5Tis_variable_str(h5Type) > 0) {
@@ -2245,7 +2244,7 @@ namespace h5pp::hdf5 {
                 dataPtr = reinterpret_cast<const void **>(vlenBuf.data());
             } else if(vlenBuf.size() == 1) {
                 dataPtr = static_cast<const void *>(*vlenBuf.data());
-            } else if constexpr(type::sfinae::has_text_v<DataType> and type::sfinae::is_iterable_v<DataType>) {
+            } else if constexpr(traits::has_text_v<DataType> and traits::is_iterable_v<DataType>) {
                 // We have a fixed-size string array now. We have to copy the strings to a contiguous array.
                 // vlenBuf already contains the pointer to each string, and bytesPerStr should be the size of each string
                 // including null terminators
@@ -2268,9 +2267,9 @@ namespace h5pp::hdf5 {
                       const DataInfo      &dataInfo,
                       const DsetInfo      &dsetInfo,
                       const PropertyLists &plists = PropertyLists()) {
-        static_assert(not type::sfinae::is_h5pp_id<DataType>);
+        static_assert(not traits::is_h5pp_id<DataType>);
 #ifdef H5PP_USE_EIGEN3
-        if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
+        if constexpr(traits::is_eigen_colmajor_v<DataType> and not traits::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting data to row-major storage order");
             const auto tempRowm = eigen::to_RowMajor(data); // Convert to Row Major first;
             h5pp::hdf5::writeDataset(tempRowm, dataInfo, dsetInfo, plists);
@@ -2295,7 +2294,7 @@ namespace h5pp::hdf5 {
         [[maybe_unused]] auto                      dataPtr = h5pp::util::getVoidPointer<const void *>(data);
         [[maybe_unused]] std::string               tempBuf; // A buffer in case we need to make text data contiguous
         [[maybe_unused]] std::vector<const char *> vlenBuf;
-        if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
+        if constexpr(traits::is_text_v<DataType> or traits::has_text_v<DataType>) {
             /* This will reseat dataPtr automatically, for the different ways that text data can be represented
              *    tempBuf: if H5Tis_variable_str == false:
              *             Holds a contiguous block of memory, into which we copy each fixed-length string in the given data.
@@ -2324,7 +2323,7 @@ namespace h5pp::hdf5 {
                                 [[maybe_unused]] DataInfo                  &dataInfo,
                                 [[maybe_unused]] DsetInfo                  &dsetInfo,
                                 [[maybe_unused]] const h5pp::PropertyLists &plists = PropertyLists()) {
-        if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
+        if constexpr(traits::is_text_v<DataType> or traits::has_text_v<DataType>) {
             h5pp::logger::log->warn("Chunk-wise write fallback: text data is not supported; using regular dataset write");
             writeDataset(data, dataInfo, dsetInfo, plists);
             return;
@@ -2334,7 +2333,7 @@ namespace h5pp::hdf5 {
             return;
         } else {
 #ifdef H5PP_USE_EIGEN3
-            if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
+            if constexpr(traits::is_eigen_colmajor_v<DataType> and not traits::is_eigen_1d_v<DataType>) {
                 h5pp::logger::log->debug("Converting data to row-major storage order");
                 const auto tempRowm = eigen::to_RowMajor(data); // Convert to Row Major first;
                 h5pp::hdf5::writeDataset_chunkwise(tempRowm, dataInfo, dsetInfo, plists);
@@ -2392,10 +2391,10 @@ namespace h5pp::hdf5 {
     template<typename DataType>
     void readDataset(DataType &data, const DataInfo &dataInfo, const DsetInfo &dsetInfo, const PropertyLists &plists = PropertyLists()) {
         static_assert(not std::is_const_v<DataType>);
-        static_assert(not type::sfinae::is_h5pp_id<DataType>);
+        static_assert(not traits::is_h5pp_id<DataType>);
         // Transpose the data container before reading
 #ifdef H5PP_USE_EIGEN3
-        if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
+        if constexpr(traits::is_eigen_colmajor_v<DataType> and not traits::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting data to row-major storage order");
             auto tempRowMajor = eigen::to_RowMajor(data); // Convert to Row Major first;
             h5pp::hdf5::readDataset(tempRowMajor, dataInfo, dsetInfo, plists);
@@ -2423,7 +2422,7 @@ namespace h5pp::hdf5 {
         [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<void *>(data);
 
         // Read the data
-        if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
+        if constexpr(traits::is_text_v<DataType> or traits::has_text_v<DataType>) {
             // When H5T_VARIABLE,
             //      1) H5Dread expects [char **], which is what we get from vdata.data().
             //      2) H5Dread allocates memory on each char * which has to be reclaimed later.
@@ -2443,20 +2442,20 @@ namespace h5pp::hdf5 {
                                  plists.dsetXfer,
                                  vdata.data());
                 // Now vdata contains the whole dataset, and we need to put the data into the user-given container.
-                if constexpr(std::is_same_v<DataType, std::string> or type::sfinae::is_vstr_v<DataType>) {
+                if constexpr(std::is_same_v<DataType, std::string> or traits::is_vstr_v<DataType>) {
                     // A vector of strings (vdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
                     for(size_t i = 0; i < vdata.size(); i++) {
                         if(!vdata.empty() and vdata[i].data() != nullptr) data.append(vdata[i].c_str());
                         if(i < vdata.size() - 1) data.append("\n");
                     }
-                } else if constexpr(type::sfinae::has_resize_v<DataType> and (type::sfinae::is_container_of_v<DataType, h5pp::vstr_t> or
-                                                                              type::sfinae::is_container_of_v<DataType, std::string>)) {
+                } else if constexpr(traits::has_resize_v<DataType> and (traits::is_container_of_v<DataType, h5pp::vstr_t> or
+                                                                        traits::is_container_of_v<DataType, std::string>)) {
                     data.clear();
                     data.resize(vdata.size());
                     for(size_t i = 0; i < data.size(); i++) data[i] = vdata[i];
                 } else {
-                    static_assert(type::sfinae::unrecognized_type_v<DataType> and
+                    static_assert(traits::unrecognized_type_v<DataType> and
                                   "To read text-data, please use h5pp::vstr_t, std::string or a container of them such as std::vector");
                 }
             } else {
@@ -2473,7 +2472,7 @@ namespace h5pp::hdf5 {
                                  plists.dsetXfer,
                                  fdata.data());
                 // Now fdata contains the whole dataset, and we need to put the data into the user-given container.
-                if constexpr(std::is_same_v<DataType, std::string> or type::sfinae::is_vstr_v<DataType>) {
+                if constexpr(std::is_same_v<DataType, std::string> or traits::is_vstr_v<DataType>) {
                     // A vector of strings (fdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
                     for(size_t i = 0; i < type::safe_cast<size_t>(size); i++) {
@@ -2481,8 +2480,8 @@ namespace h5pp::hdf5 {
                         if(data.size() < fdata.size() - 1) data.append("\n");
                     }
                     data.erase(std::find(data.begin(), data.end(), '\0'), data.end()); // Prune all but the last null terminator
-                } else if constexpr(type::sfinae::has_resize_v<DataType> and (type::sfinae::is_container_of_v<DataType, h5pp::vstr_t> or
-                                                                              type::sfinae::is_container_of_v<DataType, std::string>)) {
+                } else if constexpr(traits::has_resize_v<DataType> and (traits::is_container_of_v<DataType, h5pp::vstr_t> or
+                                                                        traits::is_container_of_v<DataType, std::string>)) {
                     if(data.size() != type::safe_cast<size_t>(size)) {
                         throw h5pp::runtime_error("Given container of strings has the wrong size: dset size {} | container size {}",
                                                   size,
@@ -2495,7 +2494,7 @@ namespace h5pp::hdf5 {
                         data[i].erase(std::find(data[i].begin(), data[i].end(), '\0'), data[i].end());
                     }
                 } else {
-                    static_assert(type::sfinae::unrecognized_type_v<DataType> and
+                    static_assert(traits::unrecognized_type_v<DataType> and
                                   "To read text-data, please use h5pp::vstr_t, std::string or a container of them such as std::vector");
                 }
             }
@@ -2524,9 +2523,9 @@ namespace h5pp::hdf5 {
 
     template<typename DataType>
     void writeAttribute(const DataType &data, const DataInfo &dataInfo, const AttrInfo &attrInfo) {
-        static_assert(not type::sfinae::is_h5pp_id<DataType>);
+        static_assert(not traits::is_h5pp_id<DataType>);
 #ifdef H5PP_USE_EIGEN3
-        if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
+        if constexpr(traits::is_eigen_colmajor_v<DataType> and not traits::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting attribute data to row-major storage order");
             const auto tempRowm = eigen::to_RowMajor(data); // Convert to Row Major first;
             h5pp::hdf5::writeAttribute(tempRowm, dataInfo, attrInfo);
@@ -2555,7 +2554,7 @@ namespace h5pp::hdf5 {
         // Get the memory address to the data buffer
         [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<const void *>(data);
 
-        if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
+        if constexpr(traits::is_text_v<DataType> or traits::has_text_v<DataType>) {
             auto vec = getCharPtrVector(data);
             if(H5Tis_variable_str(attrInfo.h5Type->value()) > 0)
                 retval = H5Awrite(attrInfo.h5Attr.value(), attrInfo.h5Type.value(), vec.data());
@@ -2575,7 +2574,7 @@ namespace h5pp::hdf5 {
     void readAttribute(DataType &data, const DataInfo &dataInfo, const AttrInfo &attrInfo, const PropertyLists &plists = PropertyLists()) {
         // Transpose the data container before reading
 #ifdef H5PP_USE_EIGEN3
-        if constexpr(type::sfinae::is_eigen_colmajor_v<DataType> and not type::sfinae::is_eigen_1d_v<DataType>) {
+        if constexpr(traits::is_eigen_colmajor_v<DataType> and not traits::is_eigen_1d_v<DataType>) {
             h5pp::logger::log->debug("Converting data to row-major storage order");
             auto tempRowMajor = eigen::to_RowMajor(data); // Convert to Row Major first;
             h5pp::hdf5::readAttribute(tempRowMajor, dataInfo, attrInfo);
@@ -2605,7 +2604,7 @@ namespace h5pp::hdf5 {
         [[maybe_unused]] auto dataPtr = h5pp::util::getVoidPointer<void *>(data);
 
         // Read the data
-        if constexpr(type::sfinae::is_text_v<DataType> or type::sfinae::has_text_v<DataType>) {
+        if constexpr(traits::is_text_v<DataType> or traits::has_text_v<DataType>) {
             // When H5T_VARIABLE,
             //      1) H5Aread expects [char **], which is what we get from vdata.data().
             //      2) H5Aread allocates memory on each char * which has to be reclaimed later.
@@ -2625,7 +2624,7 @@ namespace h5pp::hdf5 {
                         if(!vdata.empty() and vdata[i] != nullptr) data.append(vdata[i]);
                         if(i < vdata.size() - 1) data.append("\n");
                     }
-                } else if constexpr(type::sfinae::is_container_of_v<DataType, std::string> and type::sfinae::has_resize_v<DataType>) {
+                } else if constexpr(traits::is_container_of_v<DataType, std::string> and traits::has_resize_v<DataType>) {
                     data.clear();
                     data.resize(vdata.size());
                     for(size_t i = 0; i < data.size(); i++) data[i] = std::string(vdata[i]);
@@ -2656,7 +2655,7 @@ namespace h5pp::hdf5 {
                         data.append(fdata.substr(i * bytesPerString, bytesPerString));
                         if(data.size() < fdata.size() - 1) data.append("\n");
                     }
-                } else if constexpr(type::sfinae::is_container_of_v<DataType, std::string> and type::sfinae::has_resize_v<DataType>) {
+                } else if constexpr(traits::is_container_of_v<DataType, std::string> and traits::has_resize_v<DataType>) {
                     data.clear();
                     data.resize(type::safe_cast<size_t>(size));
                     for(size_t i = 0; i < type::safe_cast<size_t>(size); i++) data[i] = fdata.substr(i * bytesPerString, bytesPerString);
@@ -2864,7 +2863,7 @@ namespace h5pp::hdf5 {
         }
 
         if(not offset.has_value() and not extent.has_value()) {
-            if constexpr(type::sfinae::has_resize_v<DataType>) {
+            if constexpr(traits::has_resize_v<DataType>) {
                 offset = 0;
                 extent = info.numRecords.value();
             } else {
@@ -2872,7 +2871,7 @@ namespace h5pp::hdf5 {
                 extent = 1;
             }
         } else if(offset.has_value() and not extent.has_value()) {
-            if constexpr(type::sfinae::has_resize_v<DataType>) extent = info.numRecords.value() - offset.value();
+            if constexpr(traits::has_resize_v<DataType>) extent = info.numRecords.value() - offset.value();
             else extent = 1;
         } else if(extent.has_value() and not offset.has_value()) {
             offset = info.numRecords.value() - extent.value();
@@ -2899,7 +2898,7 @@ namespace h5pp::hdf5 {
                 throw h5pp::runtime_error("readTableRecords: Type size mismatch:\n"
                                           "Buffer [{}] has {} bytes/element\n"
                                           "Table [{}] has {} bytes/record",
-                                          type::sfinae::type_name<DataType>(),
+                                          traits::type_name<DataType>(),
                                           dtypeSize,
                                           info.tablePath.value(),
                                           info.recordBytes.value());
@@ -2912,7 +2911,7 @@ namespace h5pp::hdf5 {
                                      extent.value(),
                                      info.numRecords.value(),
                                      info.recordBytes.value(),
-                                     type::sfinae::type_name<DataType>(),
+                                     traits::type_name<DataType>(),
                                      info.tablePath.value());
         }
 
@@ -2962,7 +2961,7 @@ namespace h5pp::hdf5 {
                 else if(data.size() % info.recordBytes.value() != 0) errmsg.append("is not a multiple of");
                 if(not errmsg.empty()) {
                     throw h5pp::logic_error("The data buffer size [{} : {} bytes] {} the record size of table [{} : {} bytes]",
-                                            h5pp::type::sfinae::type_name<DataType>(),
+                                            h5pp::traits::type_name<DataType>(),
                                             data.size(),
                                             errmsg,
                                             info.tablePath.value(),
@@ -2994,7 +2993,7 @@ namespace h5pp::hdf5 {
                                           "    write extent  : {} records",
                                           info.tablePath.value(),
                                           info.recordBytes.value(),
-                                          type::sfinae::type_name<DataType>(),
+                                          traits::type_name<DataType>(),
                                           data.size(),
                                           bufferRecords,
                                           extent.value());
@@ -3008,7 +3007,7 @@ namespace h5pp::hdf5 {
                 throw h5pp::runtime_error("writeTableRecords: Type size mismatch:\n"
                                           "Buffer [{}] has {} bytes/element\n"
                                           "Table [{}] has {} bytes/record",
-                                          type::sfinae::type_name<DataType>(),
+                                          traits::type_name<DataType>(),
                                           dtypeSize,
                                           info.tablePath.value(),
                                           info.recordBytes.value());
@@ -3037,7 +3036,7 @@ namespace h5pp::hdf5 {
                 offset,
                 extent.value(),
                 info.recordBytes.value(),
-                type::sfinae::type_name<DataType>(),
+                traits::type_name<DataType>(),
                 info.tablePath.value(),
                 numRecordsOld,
                 numRecordsNew);
@@ -3103,10 +3102,10 @@ namespace h5pp::hdf5 {
                                       numRecordsOld,
                                       numRecordsNew - numRecordsOld,
                                       info.recordBytes.value(),
-                                      type::sfinae::type_name<DataType>(),
+                                      traits::type_name<DataType>(),
                                       util::getSize(data),
                                       util::getBytesPerElem<DataType>(),
-                                      type::sfinae::value_type_name<DataType>(),
+                                      traits::value_type_name<DataType>(),
                                       offset,
                                       extent.value(),
                                       Hyperslab(dataSpace).string(),
@@ -3182,12 +3181,12 @@ namespace h5pp::hdf5 {
 
     template<typename T>
     inline bool checkIfTableFieldsExists(const hid::h5t &h5Type, const std::vector<T> &fields) {
-        static_assert(std::is_integral_v<T> or h5pp::type::sfinae::is_text_v<T>);
+        static_assert(std::is_integral_v<T> or h5pp::traits::is_text_v<T>);
         return std::all_of(fields.begin(), fields.end(), [&h5Type](const auto &field) {
             if constexpr(std::is_integral_v<T>) {
                 return H5Tget_member_class(h5Type, type::safe_cast<unsigned int>(field)) >= 0;
-            } else if constexpr(h5pp::type::sfinae::is_text_v<T>) {
-                if constexpr(h5pp::type::sfinae::has_data_v<T>) return H5Tget_member_index(h5Type, field.data()) >= 0;
+            } else if constexpr(h5pp::traits::is_text_v<T>) {
+                if constexpr(h5pp::traits::has_data_v<T>) return H5Tget_member_index(h5Type, field.data()) >= 0;
                 else return H5Tget_member_index(h5Type, field) >= 0;
             }
         });
@@ -3216,7 +3215,7 @@ namespace h5pp::hdf5 {
                                std::optional<hsize_t> extent = std::nullopt,
                                const PropertyLists   &plists = PropertyLists()) {
         static_assert(not std::is_const_v<DataType>);
-        static_assert(not type::sfinae::is_h5pp_id<DataType>);
+        static_assert(not traits::is_h5pp_id<DataType>);
         // If none of offset or extent are given:
         //          If data resizeable: offset = 0, extent = totalRecords
         //          If data not resizeable: offset = last record index, extent = 1.
@@ -3229,7 +3228,7 @@ namespace h5pp::hdf5 {
             offset = util::wrapUnsigned(offset.value(), info.numRecords.value()); // Allows python style negative indexing
         hsize_t totalRecords = info.numRecords.value();
         if(not offset.has_value() and not extent.has_value()) {
-            if constexpr(type::sfinae::has_resize_v<DataType>) {
+            if constexpr(traits::has_resize_v<DataType>) {
                 offset = 0;
                 extent = totalRecords;
             } else {
@@ -3237,7 +3236,7 @@ namespace h5pp::hdf5 {
                 extent = 1;
             }
         } else if(offset.has_value() and not extent.has_value()) {
-            if constexpr(type::sfinae::has_resize_v<DataType>) extent = totalRecords - offset.value();
+            if constexpr(traits::has_resize_v<DataType>) extent = totalRecords - offset.value();
             else extent = 1;
         } else if(extent.has_value() and not offset.has_value()) {
             offset = totalRecords - extent.value();
@@ -3269,7 +3268,7 @@ namespace h5pp::hdf5 {
                                      extent.value(),
                                      info.numRecords.value(),
                                      info.recordBytes.value(),
-                                     type::sfinae::type_name<DataType>(),
+                                     traits::type_name<DataType>(),
                                      info.tablePath.value());
         }
         if constexpr(not h5pp::ndebug) {
@@ -3332,15 +3331,15 @@ namespace h5pp::hdf5 {
             }
             [[maybe_unused]] size_t bufoffset = 0;
             for(size_t idx = 0; idx < size; idx++) {
-                if constexpr(type::sfinae::has_value_type_v<DataType>) {
+                if constexpr(traits::has_value_type_v<DataType>) {
                     using value_type = typename DataType::value_type;
-                    if constexpr(type::sfinae::is_std_vector_v<value_type>) {
+                    if constexpr(traits::is_std_vector_v<value_type>) {
                         // Vector of vectors
                         using inner_value_type = typename DataType::value_type::value_type;
                         auto begin             = static_cast<inner_value_type *>(vdata[idx].p);
                         auto end               = static_cast<inner_value_type *>(vdata[idx].p) + vdata[idx].len;
                         data.emplace_back(begin, end);
-                    } else if constexpr(type::sfinae::is_std_vector_v<DataType>) {
+                    } else if constexpr(traits::is_std_vector_v<DataType>) {
                         // Plain vector takes all the data
                         auto begin = static_cast<value_type *>(vdata[idx].p);
                         auto end   = static_cast<value_type *>(vdata[idx].p) + vdata[idx].len;
@@ -3403,7 +3402,7 @@ namespace h5pp::hdf5 {
                                           info.tablePath.value(),
                                           error_msg,
                                           fieldSizeSum,
-                                          type::sfinae::type_name<DataType>(),
+                                          traits::type_name<DataType>(),
                                           dtypeSize);
             }
         }
@@ -3443,17 +3442,17 @@ namespace h5pp::hdf5 {
     template<typename h5x_src,
              typename h5x_tgt,
              // enable_if so the compiler doesn't think it can use overload with std::string on those arguments
-             typename = std::enable_if_t<type::sfinae::is_hdf5_loc_id<h5x_src>>,
-             typename = std::enable_if_t<type::sfinae::is_hdf5_loc_id<h5x_tgt>>>
+             typename = std::enable_if_t<traits::is_hdf5_loc_id<h5x_src>>,
+             typename = std::enable_if_t<traits::is_hdf5_loc_id<h5x_tgt>>>
     inline void copyLink(const h5x_src       &srcLocId,
                          std::string_view     srcLinkPath,
                          const h5x_tgt       &tgtLocId,
                          std::string_view     tgtLinkPath,
                          const PropertyLists &plists = PropertyLists()) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x_src>,
+        static_assert(traits::is_hdf5_loc_id<h5x_src>,
                       "Template function [h5pp::hdf5::copyLink(const h5x_src & srcLocId, ...)] requires type h5x_src to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x_tgt>,
+        static_assert(traits::is_hdf5_loc_id<h5x_tgt>,
                       "Template function [h5pp::hdf5::copyLink(..., ..., const h5x_tgt & tgtLocId, ...)] requires type h5x_tgt to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
 
@@ -3473,18 +3472,18 @@ namespace h5pp::hdf5 {
     template<typename h5x_src,
              typename h5x_tgt,
              // enable_if so the compiler doesn't think it can use overload with fs::path on those arguments
-             typename = std::enable_if_t<type::sfinae::is_hdf5_loc_id<h5x_src>>,
-             typename = std::enable_if_t<type::sfinae::is_hdf5_loc_id<h5x_tgt>>>
+             typename = std::enable_if_t<traits::is_hdf5_loc_id<h5x_src>>,
+             typename = std::enable_if_t<traits::is_hdf5_loc_id<h5x_tgt>>>
     inline void moveLink(const h5x_src       &srcLocId,
                          std::string_view     srcLinkPath,
                          const h5x_tgt       &tgtLocId,
                          std::string_view     tgtLinkPath,
                          LocationMode         locationMode = LocationMode::DETECT,
                          const PropertyLists &plists       = PropertyLists()) {
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x_src>,
+        static_assert(traits::is_hdf5_loc_id<h5x_src>,
                       "Template function [h5pp::hdf5::moveLink(const h5x_src & srcLocId, ...)] requires type h5x_src to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
-        static_assert(type::sfinae::is_hdf5_loc_id<h5x_tgt>,
+        static_assert(traits::is_hdf5_loc_id<h5x_tgt>,
                       "Template function [h5pp::hdf5::moveLink(..., ..., const h5x_tgt & tgtLocId, ...)] requires type h5x_tgt to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
 

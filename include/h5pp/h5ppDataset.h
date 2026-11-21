@@ -79,7 +79,7 @@ namespace h5pp::inline v2 {
             return matches;
         }
 
-        [[nodiscard]] BasicDataset create(const DatasetCreateOptions &createOptions) requires detail::MutableFile<FileType>
+        [[nodiscard]] BasicDataset create(const DatasetCreateOptions &createOptions) requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("create dataset");
             auto options = detail::makeOptions(compression_, dsetPath_, createOptions);
@@ -98,7 +98,7 @@ namespace h5pp::inline v2 {
         // Infer missing creation properties from data without writing its values.
         template<typename DataType>
         [[nodiscard]] BasicDataset create(const DataType &data, const DatasetCreateOptions &createOptions = {})
-            requires detail::MutableFile<FileType>
+            requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("create dataset");
             auto options = detail::makeOptions(compression_, dsetPath_, createOptions);
@@ -123,7 +123,7 @@ namespace h5pp::inline v2 {
         }
 
         void resize(const DimsType &dims, std::optional<h5pp::ResizePolicy> resizePolicy = std::nullopt)
-            requires detail::MutableFile<FileType>
+            requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("resize dataset");
             Options options;
@@ -136,7 +136,7 @@ namespace h5pp::inline v2 {
 
         template<typename DataType>
         [[nodiscard]] DsetInfo append(const DataType &data, size_t axis, const DatasetAppendOptions &options = DatasetAppendOptions())
-            requires detail::MutableFile<FileType>
+            requires traits::is_mutable_file_v<FileType>
         {
             if(dsetSlab_.has_value()) throw h5pp::runtime_error("Cannot append through a selected dataset view [{}]", dsetPath_);
             requireWritable_("write");
@@ -150,9 +150,9 @@ namespace h5pp::inline v2 {
         }
 
         template<typename DataType>
-        requires detail::MutableFile<FileType>
+        requires traits::is_mutable_file_v<FileType>
         void write(const DataType &data, const DatasetWriteOptions &options = DatasetWriteOptions()) {
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
             requireWritable_("write");
             auto ioOptions = detail::makeOptions(compression_, dsetPath_, dsetSlab_, options);
             ioOptions.assertWellDefined();
@@ -168,7 +168,7 @@ namespace h5pp::inline v2 {
 
         template<typename DataType>
         [[nodiscard]] DataType read(const DatasetReadOptions &options = DatasetReadOptions()) const {
-            if constexpr(h5pp::type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(h5pp::traits::is_specialization_v<DataType, std::optional>) {
                 if(not exists()) return std::nullopt;
                 return read<typename DataType::value_type>(options);
             }

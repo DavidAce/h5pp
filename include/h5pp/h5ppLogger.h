@@ -3,7 +3,7 @@
 #include "h5ppFormat.h"
 #include "h5ppOptional.h"
 #include "h5ppSpdlog.h"
-#include "h5ppTypeSfinae.h"
+#include "h5ppTypeTraits.h"
 
 namespace h5pp::logger {
 #if defined(SPDLOG_H) && defined(H5PP_USE_SPDLOG)
@@ -25,7 +25,7 @@ namespace h5pp::logger {
 
     template<typename LogLevelType>
     inline bool logIf(LogLevelType levelZeroToSix) {
-        static_assert(type::sfinae::is_any_v<LogLevelType, spdlog::level::level_enum, h5pp::LogLevel> or std::is_integral_v<LogLevelType>);
+        static_assert(traits::is_any_v<LogLevelType, spdlog::level::level_enum, h5pp::LogLevel> or std::is_integral_v<LogLevelType>);
         if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or std::is_integral_v<LogLevelType>)
             return getLogLevel() <= levelZeroToSix;
         else if constexpr(std::is_same_v<LogLevelType, spdlog::level::level_enum>) return getLogLevel() <= static_cast<int>(levelZeroToSix);
@@ -33,24 +33,24 @@ namespace h5pp::logger {
 
     template<typename LogLevelType>
     inline void setLogLevel(LogLevelType levelZeroToSix) {
-        static_assert(type::sfinae::is_any_v<LogLevelType,
-                                             spdlog::level::level_enum,
-                                             h5pp::LogLevel,
-                                             std::optional<spdlog::level::level_enum>,
-                                             std::optional<h5pp::LogLevel>,
-                                             std::optional<size_t>,
-                                             std::optional<int>> or
+        static_assert(traits::is_any_v<LogLevelType,
+                                       spdlog::level::level_enum,
+                                       h5pp::LogLevel,
+                                       std::optional<spdlog::level::level_enum>,
+                                       std::optional<h5pp::LogLevel>,
+                                       std::optional<size_t>,
+                                       std::optional<int>> or
                       std::is_integral_v<LogLevelType>);
 
         if constexpr(std::is_same_v<LogLevelType, spdlog::level::level_enum>) {
             log->set_level(levelZeroToSix);
         } else if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or std::is_integral_v<LogLevelType>) {
             log->set_level(static_cast<spdlog::level::level_enum>(Level2Num(levelZeroToSix)));
-        } else if constexpr(type::sfinae::is_any_v<LogLevelType,
-                                                   std::optional<spdlog::level::level_enum>,
-                                                   std::optional<h5pp::LogLevel>,
-                                                   std::optional<size_t>,
-                                                   std::optional<int>>) {
+        } else if constexpr(traits::is_any_v<LogLevelType,
+                                             std::optional<spdlog::level::level_enum>,
+                                             std::optional<h5pp::LogLevel>,
+                                             std::optional<size_t>,
+                                             std::optional<int>>) {
             if(levelZeroToSix.has_value()) return setLogLevel(levelZeroToSix.value());
             else return;
         }
@@ -117,14 +117,12 @@ namespace h5pp::logger {
     template<typename LogLevelType>
     inline void setLogLevel(LogLevelType levelZeroToSix) {
         static_assert(
-            type::sfinae::
-                is_any_v<LogLevelType, h5pp::LogLevel, std::optional<h5pp::LogLevel>, std::optional<size_t>, std::optional<int>> or
+            traits::is_any_v<LogLevelType, h5pp::LogLevel, std::optional<h5pp::LogLevel>, std::optional<size_t>, std::optional<int>> or
             std::is_integral_v<LogLevelType>);
 
         if constexpr(std::is_same_v<LogLevelType, h5pp::LogLevel> or std::is_integral_v<LogLevelType>) {
             if(log != nullptr) log->set_level(Num2Level(levelZeroToSix));
-        } else if constexpr(type::sfinae::
-                                is_any_v<LogLevelType, std::optional<h5pp::LogLevel>, std::optional<size_t>, std::optional<int>>) {
+        } else if constexpr(traits::is_any_v<LogLevelType, std::optional<h5pp::LogLevel>, std::optional<size_t>, std::optional<int>>) {
             if(levelZeroToSix.has_value()) return setLogLevel(levelZeroToSix.value());
             else return;
         }

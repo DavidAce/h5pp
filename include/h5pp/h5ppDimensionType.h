@@ -2,7 +2,7 @@
 #include "h5ppExcept.h"
 #include "h5ppFormat.h"
 #include "h5ppTypeCast.h"
-#include "h5ppTypeSfinae.h"
+#include "h5ppTypeTraits.h"
 #include <H5Dpublic.h>
 #include <optional>
 #include <utility>
@@ -27,7 +27,7 @@ namespace h5pp {
         template<typename... ARGS, typename = std::enable_if_t<(... && std::is_integral_v<ARGS>)>>
         DimsType(const ARGS &...args) : std::vector<hsize_t>(std::initializer_list<hsize_t>{h5pp::type::safe_cast<hsize_t>(args)...}) {}
 
-        template<typename T, typename = std::enable_if_t<h5pp::type::sfinae::is_iterable_v<T>>>
+        template<typename T, typename = std::enable_if_t<h5pp::traits::is_iterable_v<T>>>
         DimsType(T &&dims_) : std::vector<hsize_t>(std::begin(dims_), std::end(dims_)) {}
     };
 
@@ -48,10 +48,10 @@ namespace h5pp {
         OptDimsType(const ARGS &...args)
             : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>{h5pp::type::safe_cast<hsize_t>(args)...}) {}
 
-        template<typename T, typename = std::enable_if_t<h5pp::type::sfinae::is_iterable_v<T>>>
+        template<typename T, typename = std::enable_if_t<h5pp::traits::is_iterable_v<T>>>
         OptDimsType(T &&dims_) : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(std::begin(dims_), std::end(dims_))) {}
 
-        template<typename T, typename = std::enable_if_t<h5pp::type::sfinae::is_iterable_v<T>>>
+        template<typename T, typename = std::enable_if_t<h5pp::traits::is_iterable_v<T>>>
         OptDimsType(const std::optional<T> &dims_)
             : std::optional<std::vector<hsize_t>>(dims_.has_value() ? OptDimsType(dims_.value()) : std::nullopt) {}
     };
@@ -72,13 +72,13 @@ namespace h5pp {
     //     template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
     //     OptDimsType(T v) : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(1ul, type::safe_cast<hsize_t>(v))) {}
     //
-    //     template<typename T, typename = std::enable_if_t<h5pp::type::sfinae::is_iterable_v<T>>>
+    //     template<typename T, typename = std::enable_if_t<h5pp::traits::is_iterable_v<T>>>
     //     OptDimsType(T &&dims_) : std::optional<std::vector<hsize_t>>(std::vector<hsize_t>(std::begin(dims_), std::end(dims_))) {}
     //
     //     template<typename T>
     //     OptDimsType(std::optional<T> &&dims_)
     //         : std::optional<std::vector<hsize_t>>(dims_.has_value() ? OptDimsType(dims_.value()) : std::nullopt) {
-    //         static_assert(h5pp::type::sfinae::is_iterable_v<T>);
+    //         static_assert(h5pp::traits::is_iterable_v<T>);
     //     }
     // };
 }

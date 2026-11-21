@@ -328,7 +328,7 @@ namespace h5pp::v1 {
                                 const h5x_tgt   &targetLocationId, /*!< Target hid::h5x location handle (group or file) */
                                 std::string_view targetLinkPath    /*!< Path to link in the target file */
         ) const {
-            static_assert(type::sfinae::is_h5pp_loc_id<h5x_tgt>);
+            static_assert(traits::is_h5pp_loc_id<h5x_tgt>);
             return h5pp::hdf5::copyLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath, plists);
         }
 
@@ -338,7 +338,7 @@ namespace h5pp::v1 {
                                   const h5x_src   &sourceLocationId, /*!< Source hid::h5x location handle*/
                                   std::string_view sourceLinkPath    /*!< Path to link in the source file */
         ) {
-            static_assert(type::sfinae::is_h5pp_loc_id<h5x_src>);
+            static_assert(traits::is_h5pp_loc_id<h5x_src>);
             return h5pp::hdf5::copyLink(sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, plists);
         }
 
@@ -378,7 +378,7 @@ namespace h5pp::v1 {
             LocationMode     locMode = LocationMode::DETECT /*!< Specify whether targetLocationId is in this file or another */
 
         ) const {
-            static_assert(type::sfinae::is_h5pp_loc_id<h5x_tgt>);
+            static_assert(traits::is_h5pp_loc_id<h5x_tgt>);
             return h5pp::hdf5::moveLink(openFileHandle(), localLinkPath, targetLocationId, targetLinkPath, locMode, plists);
         }
 
@@ -393,7 +393,7 @@ namespace h5pp::v1 {
             std::string_view sourceLinkPath,                /*!< Path to link in the source file */
             LocationMode     locMode = LocationMode::DETECT /*!< Specify whether sourceLocationId is in this file or another */
         ) {
-            static_assert(type::sfinae::is_h5pp_loc_id<h5x_src>);
+            static_assert(traits::is_h5pp_loc_id<h5x_src>);
             return h5pp::hdf5::moveLink(sourceLocationId, sourceLinkPath, openFileHandle(), localLinkPath, locMode, plists);
         }
 
@@ -524,7 +524,7 @@ namespace h5pp::v1 {
 
         template<typename DataType>
         DsetInfo createDataset(const DataType &data, const Options &options) {
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to create dataset on read-only file [{}]", filePath.string());
             auto dsetInfo = h5pp::scan::inferDsetInfo(openFileHandle(), data, options, plists);
@@ -585,7 +585,7 @@ namespace h5pp::v1 {
 
         template<typename DataType>
         DsetInfo writeDataset(const DataType &data, const Options &options) {
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to write on read-only file [{}]", filePath.string());
             options.assertWellDefined();
@@ -758,7 +758,7 @@ namespace h5pp::v1 {
         template<typename DataType>
         [[nodiscard]] DataType readDataset(DataInfo &dataInfo, const DsetInfo &dsetInfo) const {
             static_assert(not std::is_const_v<DataType>);
-            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(traits::is_specialization_v<DataType, std::optional>) {
                 dsetInfo.assertReadReady();
                 if(dsetInfo.dsetExists.value() or linkExists(dsetInfo.dsetPath.value()))
                     return readDataset<typename DataType::value_type>(dataInfo, dsetInfo);
@@ -779,7 +779,7 @@ namespace h5pp::v1 {
         template<typename DataType>
         [[nodiscard]] DataType readDataset(const DsetInfo &dsetInfo, const Options &options = Options()) const {
             static_assert(not std::is_const_v<DataType>);
-            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(traits::is_specialization_v<DataType, std::optional>) {
                 dsetInfo.assertReadReady();
                 if(dsetInfo.dsetExists.value() or linkExists(dsetInfo.dsetPath.value()))
                     return readDataset<typename DataType::value_type>(dsetInfo, options);
@@ -793,7 +793,7 @@ namespace h5pp::v1 {
         template<typename DataType>
         [[nodiscard]] DataType readDataset(const DsetInfo &dsetInfo, const DimsType &dataDims) const {
             static_assert(not std::is_const_v<DataType>);
-            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(traits::is_specialization_v<DataType, std::optional>) {
                 dsetInfo.assertReadReady();
                 if(dsetInfo.dsetExists.value() or linkExists(dsetInfo.dsetPath.value()))
                     return readDataset<typename DataType::value_type>(dsetInfo, dataDims);
@@ -821,7 +821,7 @@ namespace h5pp::v1 {
         template<typename DataType>
         [[nodiscard]] DataType readDataset(std::string_view dsetPath, const Options &options) const {
             static_assert(not std::is_const_v<DataType>);
-            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(traits::is_specialization_v<DataType, std::optional>) {
                 if(linkExists(dsetPath)) return readDataset<typename DataType::value_type>(dsetPath, options);
                 return std::nullopt;
             }
@@ -851,7 +851,7 @@ namespace h5pp::v1 {
                                            const OptDimsType      &dataDims = std::nullopt,
                                            std::optional<hid::h5t> h5Type   = std::nullopt) const {
             static_assert(not std::is_const_v<DataType>);
-            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(traits::is_specialization_v<DataType, std::optional>) {
                 if(linkExists(dsetPath)) return readDataset<typename DataType::value_type>(dsetPath, dataDims, h5Type);
                 return std::nullopt;
             }
@@ -1044,7 +1044,7 @@ namespace h5pp::v1 {
         template<typename DataType>
         [[nodiscard]] DataType readAttribute(const Options &options) const {
             static_assert(not std::is_const_v<DataType>);
-            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(traits::is_specialization_v<DataType, std::optional>) {
                 options.assertWellDefined();
                 if(attributeExists(options.linkPath.value(), options.attrName.value()))
                     return readAttribute<typename DataType::value_type>(options);
@@ -1061,7 +1061,7 @@ namespace h5pp::v1 {
                                              const OptDimsType      &dataDims = std::nullopt,
                                              std::optional<hid::h5t> h5Type   = std::nullopt) const {
             static_assert(not std::is_const_v<DataType>);
-            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(traits::is_specialization_v<DataType, std::optional>) {
                 if(attributeExists(linkPath, attrName))
                     return readAttribute<typename DataType::value_type>(linkPath, attrName, dataDims, h5Type);
                 return std::nullopt;
@@ -1115,7 +1115,7 @@ namespace h5pp::v1 {
                                     std::string_view       tablePath,
                                     hsize_t                offset = 0,
                                     std::optional<hsize_t> extent = std::nullopt) {
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to write on read-only file [{}]", filePath.string());
             Options options;
@@ -1127,7 +1127,7 @@ namespace h5pp::v1 {
 
         template<typename DataType>
         TableInfo appendTableRecords(const DataType &data, std::string_view tablePath, std::optional<hsize_t> extent = std::nullopt) {
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to write on read-only file [{}]", filePath.string());
             Options options;
@@ -1140,7 +1140,7 @@ namespace h5pp::v1 {
 
         template<typename DataType>
         TableInfo appendTableRecords(const DataType &data, TableInfo &info, std::optional<hsize_t> extent = std::nullopt) {
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
             if(fileAccess == h5pp::FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to write on read-only file [{}]", filePath.string());
             info.assertWriteReady(); // Check to avoid bad access on numRecords below, in case of error.
@@ -1185,7 +1185,7 @@ namespace h5pp::v1 {
                                      std::string_view tgtTablePath,
                                      TableSelection   srcSelection = TableSelection::ALL,
                                      Options          options      = Options()) {
-            static_assert(type::sfinae::is_h5pp_loc_id<h5x_src>);
+            static_assert(traits::is_h5pp_loc_id<h5x_src>);
             options.linkPath = h5pp::util::safe_str(srcTablePath);
             auto srcInfo     = h5pp::scan::readTableInfo(srcLocation, options, plists);
             return appendTableRecords(srcInfo, tgtTablePath, srcSelection, options);
@@ -1253,7 +1253,7 @@ namespace h5pp::v1 {
                                    hsize_t          tgtOffset,
                                    TableSelection   srcSelection = TableSelection::ALL,
                                    Options          options      = Options()) {
-            static_assert(type::sfinae::is_h5pp_loc_id<h5x_src>);
+            static_assert(traits::is_h5pp_loc_id<h5x_src>);
             options.linkPath = h5pp::util::safe_str(srcTablePath);
             auto srcInfo     = h5pp::scan::readTableInfo(srcLocation, options, plists);
             return copyTableRecords(srcInfo, tgtTablePath, tgtOffset, srcSelection, options);
@@ -1267,7 +1267,7 @@ namespace h5pp::v1 {
                                    std::string_view tgtTablePath,
                                    hsize_t          tgtOffset,
                                    Options          options = Options()) {
-            static_assert(type::sfinae::is_h5pp_loc_id<h5x_src>);
+            static_assert(traits::is_h5pp_loc_id<h5x_src>);
             options.linkPath = h5pp::util::safe_str(srcTablePath);
             auto srcInfo     = h5pp::scan::readTableInfo(srcLocation, options, plists);
             return copyTableRecords(srcInfo, srcOffset, srcExtent, tgtTablePath, tgtOffset, options);
@@ -1311,7 +1311,7 @@ namespace h5pp::v1 {
         [[nodiscard]] DataType readTableRecords(std::string_view       tablePath,
                                                 std::optional<hsize_t> offset = std::nullopt,
                                                 std::optional<hsize_t> extent = std::nullopt) const {
-            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(traits::is_specialization_v<DataType, std::optional>) {
                 if(linkExists(tablePath)) return readTableRecords<typename DataType::value_type>(tablePath, offset, extent);
                 return std::nullopt;
             }
@@ -1324,7 +1324,7 @@ namespace h5pp::v1 {
 
         template<typename DataType>
         [[nodiscard]] DataType readTableRecords(std::string_view tablePath, h5pp::TableSelection tableSelection) const {
-            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(traits::is_specialization_v<DataType, std::optional>) {
                 if(linkExists(tablePath)) return readTableRecords<typename DataType::value_type>(tablePath, tableSelection);
                 return std::nullopt;
             }
@@ -1363,7 +1363,7 @@ namespace h5pp::v1 {
                                               const NamesOrIndices  &fields,
                                               std::optional<hsize_t> offset = std::nullopt,
                                               std::optional<hsize_t> extent = std::nullopt) const {
-            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+            if constexpr(traits::is_specialization_v<DataType, std::optional>) {
                 if(fieldExists(tablePath, fields)) return readTableField<typename DataType::value_type>(tablePath, fields, offset, extent);
                 else return std::nullopt;
             }
@@ -1376,7 +1376,7 @@ namespace h5pp::v1 {
         template<typename DataType>
         void readTableField(DataType &data, std::string_view tablePath, const NamesOrIndices &fields, TableSelection tableSelection) const {
             static_assert(not std::is_const_v<DataType>);
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath);
             auto info        = h5pp::scan::readTableInfo(openFileHandle(), options, plists);
@@ -1395,8 +1395,8 @@ namespace h5pp::v1 {
         template<typename DataType>
         void readTableField(DataType &data, std::string_view tablePath, const NamesOrIndices &fields) const {
             static_assert(not std::is_const_v<DataType>);
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
-            static_assert(type::sfinae::has_resize_v<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
+            static_assert(traits::has_resize_v<DataType>);
             readTableField(data, tablePath, fields, h5pp::TableSelection::ALL);
         }
 
@@ -1404,8 +1404,8 @@ namespace h5pp::v1 {
         [[nodiscard]] DataType
             readTableField(std::string_view tablePath, const NamesOrIndices &fields, TableSelection tableSelection) const {
             static_assert(not std::is_const_v<DataType>);
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
-            if constexpr(type::sfinae::is_specialization_v<DataType, std::optional>) {
+            static_assert(not traits::is_h5pp_id<DataType>);
+            if constexpr(traits::is_specialization_v<DataType, std::optional>) {
                 if(fieldExists(tablePath, fields)) return readTableField<typename DataType::value_type>(tablePath, fields, tableSelection);
                 else return std::nullopt;
             } else {
@@ -1417,15 +1417,15 @@ namespace h5pp::v1 {
         template<typename DataType>
         [[nodiscard]] DataType readTableField(std::string_view tablePath, const NamesOrIndices &fields) const {
             static_assert(not std::is_const_v<DataType>);
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
-            static_assert(type::sfinae::has_resize_v<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
+            static_assert(traits::has_resize_v<DataType>);
             return readTableField<DataType>(tablePath, fields, h5pp::TableSelection::ALL);
         }
 
         template<typename DataType>
         [[nodiscard]] DataType readTableField(const TableInfo &info, const hid::h5t &fieldId, hsize_t offset, hsize_t extent) const {
             static_assert(not std::is_const_v<DataType>);
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
             DataType data;
             h5pp::hdf5::readTableField(data, info, fieldId, offset, extent, plists);
             return data;
@@ -1434,7 +1434,7 @@ namespace h5pp::v1 {
         template<typename DataType>
         [[nodiscard]] DataType readTableField(const TableInfo &info, const hid::h5t &fieldId, TableSelection tableSelection) const {
             static_assert(not std::is_const_v<DataType>);
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
             info.assertReadReady();
             DataType data;
             auto [offset, extent] = util::parseTableSelection(data, tableSelection, fieldId, info);
@@ -1444,8 +1444,8 @@ namespace h5pp::v1 {
         template<typename DataType>
         [[nodiscard]] DataType readTableField(const TableInfo &info, const hid::h5t &fieldId) const {
             static_assert(not std::is_const_v<DataType>);
-            static_assert(not type::sfinae::is_h5pp_id<DataType>);
-            static_assert(type::sfinae::has_resize_v<DataType>);
+            static_assert(not traits::is_h5pp_id<DataType>);
+            static_assert(traits::has_resize_v<DataType>);
             return readTableField<DataType>(info, fieldId, TableSelection::ALL);
         }
 
@@ -1643,7 +1643,7 @@ namespace h5pp::v1 {
             } else if constexpr(std::is_same_v<InfoType, LinkInfo>) {
                 return getLinkInfo(linkPath);
             } else {
-                static_assert(type::sfinae::invalid_type_v<InfoType>,
+                static_assert(traits::invalid_type_v<InfoType>,
                               "Template function 'h5pp::v1::File::getInfo<InfoType>(std::string_view linkPath)' "
                               "requires template type 'InfoType' to be one of "
                               "[h5pp::DsetInfo], [h5pp::TableInfo], [h5pp::TableFieldInfo], [h5pp::TypeInfo] or [h5pp::LinkInfo]");
@@ -1657,7 +1657,7 @@ namespace h5pp::v1 {
             } else if constexpr(std::is_same_v<InfoType, TypeInfo>) {
                 return getTypeInfoAttribute(linkPath, attrName);
             } else {
-                static_assert(type::sfinae::invalid_type_v<InfoType>,
+                static_assert(traits::invalid_type_v<InfoType>,
                               "Template function 'h5pp::v1::File::getInfo<InfoType>(std::string_view linkPath, std::string_view attrName)' "
                               "requires template type 'InfoType' to be either "
                               "[h5pp::AttrInfo] or [h5pp::TypeInfo]");

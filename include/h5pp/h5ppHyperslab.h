@@ -4,7 +4,7 @@
 #include "h5ppHid.h"
 #include "h5ppOptional.h"
 #include "h5ppTypeCast.h"
-#include "h5ppTypeSfinae.h"
+#include "h5ppTypeTraits.h"
 #include <H5Spublic.h>
 #include <type_traits>
 #include <utility>
@@ -82,7 +82,7 @@ namespace h5pp {
 
         template<typename h5x>
         void applySelection(const h5x &space) const {
-            static_assert(type::sfinae::is_hdf5_space_id<h5x>);
+            static_assert(traits::is_hdf5_space_id<h5x>);
             H5S_seloper_t sel = select_oper;
             if(H5Sget_select_type(space) != H5S_SEL_HYPERSLABS and sel != H5S_SELECT_SET)
                 sel = H5S_SELECT_SET; // First hyperslab selection must be H5S_SELECT_SET

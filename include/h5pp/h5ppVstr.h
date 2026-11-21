@@ -3,7 +3,7 @@
 #include "h5ppFloat128.h"
 #include "h5ppHid.h"
 #include "h5ppLogger.h"
-#include "h5ppTypeSfinae.h"
+#include "h5ppTypeTraits.h"
 #include <algorithm>
 #include <charconv>
 #include <complex>
@@ -38,7 +38,7 @@ namespace h5pp::type::vlen {
 
         template<typename T>
         static constexpr bool is_float() {
-            return std::is_floating_point_v<T> || type::sfinae::is_std_complex_v<T> //
+            return std::is_floating_point_v<T> || traits::is_std_complex_v<T> //
 #if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
                    || std::is_same_v<T, h5pp::fp128>               //
                    || std::is_same_v<T, h5pp::cx128>               //
@@ -93,7 +93,7 @@ namespace h5pp::type::vlen {
         void                      append(std::string_view v);
 
         template<typename T,
-                 typename = std::enable_if_t<std::is_floating_point_v<T> || type::sfinae::is_std_complex_v<T>
+                 typename = std::enable_if_t<std::is_floating_point_v<T> || traits::is_std_complex_v<T>
 #if defined(H5PP_USE_QUADMATH) || defined(H5PP_USE_FLOAT128)
                                              || std::is_same_v<T, h5pp::fp128> || std::is_same_v<T, h5pp::cx128> ||
                                              std::is_same_v<T, std::complex<h5pp::fp128>>
@@ -133,7 +133,7 @@ namespace h5pp::type::vlen {
     #endif
         } else
 #endif
-            if constexpr(sfinae::is_std_complex_v<T>) {
+            if constexpr(traits::is_std_complex_v<T>) {
             return h5pp::format("({},{})", float_to_string(std::real(val)), float_to_string(std::imag(val)));
         } else if constexpr(std::is_arithmetic_v<T>) {
             constexpr auto bufsize      = std::numeric_limits<T>::max_digits10 + 10;
@@ -341,7 +341,7 @@ namespace h5pp::type::vlen {
                 return T{real, imag};
             };
             auto complex_from_chars = [](std::string_view s) -> T {
-                static_assert(sfinae::is_std_complex_v<T>);
+                static_assert(traits::is_std_complex_v<T>);
                 using V = typename T::value_type;
                 V rval  = std::numeric_limits<V>::quiet_NaN();
                 V ival  = std::numeric_limits<V>::quiet_NaN();
@@ -401,7 +401,7 @@ namespace h5pp {
     using h5pp::type::vlen::vstr_t;
 }
 
-namespace h5pp::type::sfinae {
+namespace h5pp::traits {
 
     template<typename T>
     constexpr bool is_vstr_v = std::is_same_v<T, h5pp::vstr_t>;

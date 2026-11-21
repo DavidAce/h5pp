@@ -22,11 +22,11 @@ namespace h5pp::hid {
 }
 
 /*!
- * \brief A collection of type-detection utilities using SFINAE
+ * \brief A collection of type traits and concepts
  */
-namespace h5pp::type::sfinae {
+namespace h5pp::traits {
 
-    // SFINAE detection
+    // Compile-time diagnostics
     template<typename...>
     struct print_type_and_quit_compile_time;
 
@@ -46,15 +46,15 @@ namespace h5pp::type::sfinae {
         std::string_view name, prefix, suffix;
 #ifdef __clang__
         name   = __PRETTY_FUNCTION__;
-        prefix = "auto h5pp::type::sfinae::type_name() [T = ";
+        prefix = "auto h5pp::traits::type_name() [T = ";
         suffix = "]";
 #elif defined(__GNUC__)
         name   = __PRETTY_FUNCTION__;
-        prefix = "constexpr auto h5pp::type::sfinae::type_name() [with T = ";
+        prefix = "constexpr auto h5pp::traits::type_name() [with T = ";
         suffix = "]";
 #elif defined(_MSC_VER)
         name   = __FUNCSIG__;
-        prefix = "auto __cdecl h5pp::type::sfinae::type_name<";
+        prefix = "auto __cdecl h5pp::traits::type_name<";
         suffix = ">(void)";
 #endif
         name.remove_prefix(prefix.size());
@@ -74,6 +74,9 @@ namespace h5pp::type::sfinae {
 
     template<typename T>
     concept is_pointer_type = std::is_pointer_v<T>;
+
+    template<typename FileType>
+    concept is_mutable_file_v = not std::is_const_v<FileType>;
 
     template<typename T>
     concept is_arithmetic_v = std::integral<std::remove_cvref_t<T>> || std::floating_point<std::remove_cvref_t<T>>;
@@ -544,8 +547,8 @@ namespace h5pp::type::sfinae {
     struct has_std_complex {
         private:
         static constexpr bool test() {
-            if constexpr(h5pp::type::sfinae::has_value_type_v<T>) return h5pp::type::sfinae::is_std_complex_v<typename T::value_type>;
-            else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>) return h5pp::type::sfinae::is_std_complex_v<typename T::Scalar>;
+            if constexpr(h5pp::traits::has_value_type_v<T>) return h5pp::traits::is_std_complex_v<typename T::value_type>;
+            else if constexpr(h5pp::traits::has_Scalar_v<T>) return h5pp::traits::is_std_complex_v<typename T::Scalar>;
             else return false;
         }
 
@@ -620,8 +623,8 @@ namespace h5pp::type::sfinae {
     struct has_Scalar2 {
         private:
         static constexpr bool test() {
-            if constexpr(h5pp::type::sfinae::has_value_type_v<T>) return h5pp::type::sfinae::is_Scalar2_v<typename T::value_type>;
-            else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>) return h5pp::type::sfinae::is_Scalar2_v<typename T::Scalar>;
+            if constexpr(h5pp::traits::has_value_type_v<T>) return h5pp::traits::is_Scalar2_v<typename T::value_type>;
+            else if constexpr(h5pp::traits::has_Scalar_v<T>) return h5pp::traits::is_Scalar2_v<typename T::Scalar>;
             else return false;
         }
 
@@ -636,8 +639,8 @@ namespace h5pp::type::sfinae {
     struct has_Scalar3 {
         private:
         static constexpr bool test() {
-            if constexpr(h5pp::type::sfinae::has_value_type_v<T>) return h5pp::type::sfinae::is_Scalar3_v<typename T::value_type>;
-            else if constexpr(h5pp::type::sfinae::has_Scalar_v<T>) return h5pp::type::sfinae::is_Scalar3_v<typename T::Scalar>;
+            if constexpr(h5pp::traits::has_value_type_v<T>) return h5pp::traits::is_Scalar3_v<typename T::value_type>;
+            else if constexpr(h5pp::traits::has_Scalar_v<T>) return h5pp::traits::is_Scalar3_v<typename T::Scalar>;
             else return false;
         }
 

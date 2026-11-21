@@ -132,28 +132,28 @@ namespace h5pp::inline v2 {
             return h5pp::hdf5::findLinks<H5O_TYPE_GROUP>(fileHandle_, searchKey, groupPath_, maxHits, maxDepth, followSymlinks, plists_);
         }
 
-        void create() requires detail::MutableFile<FileType>
+        void create() requires traits::is_mutable_file_v<FileType>
         {
             h5pp::hdf5::createGroup(fileHandle_, groupPath_, std::nullopt, plists_);
         }
 
-        void createGroup(std::string_view childPath) requires detail::MutableFile<FileType>
+        void createGroup(std::string_view childPath) requires traits::is_mutable_file_v<FileType>
         {
             group(childPath).create();
         }
 
-        void deleteLink(std::string_view childPath) requires detail::MutableFile<FileType>
+        void deleteLink(std::string_view childPath) requires traits::is_mutable_file_v<FileType>
         {
             link(childPath).deleteLink();
         }
 
-        void createSoftLink(std::string_view targetChildPath, std::string_view softChildPath) requires detail::MutableFile<FileType>
+        void createSoftLink(std::string_view targetChildPath, std::string_view softChildPath) requires traits::is_mutable_file_v<FileType>
         {
             link(targetChildPath).createSoftLink(detail::joinLinkPath(groupPath_, softChildPath));
         }
 
         void createExternalLink(std::string_view targetFilePath, std::string_view targetLinkPath, std::string_view softChildPath)
-            requires detail::MutableFile<FileType>
+            requires traits::is_mutable_file_v<FileType>
         {
             link(softChildPath).createExternalLink(targetFilePath, targetLinkPath);
         }

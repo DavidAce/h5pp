@@ -1,9 +1,9 @@
 #pragma once
 
-#include "h5ppConcepts.h"
 #include "h5ppInitListType.h"
 #include "h5ppOptions.h"
 #include "h5ppScan.h"
+#include "h5ppTypeTraits.h"
 #include "h5ppVersion.h"
 
 namespace h5pp::inline v2 {

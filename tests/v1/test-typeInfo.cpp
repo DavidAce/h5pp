@@ -51,7 +51,7 @@ namespace {
 
 TEST_CASE("Type info exposes dataset metadata for stored objects", "[type-info]") {
     static_assert(
-        h5pp::type::sfinae::has_data_v<std::vector<double>> &&
+        h5pp::traits::has_data_v<std::vector<double>> &&
         "Compile time type-checker failed. Could not properly detect class member data. Check that you are using a supported compiler!");
 
     auto path = make_path("typeInfo");

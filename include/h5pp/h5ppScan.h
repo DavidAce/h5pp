@@ -3,7 +3,7 @@
 #include "h5ppConstants.h"
 #include "h5ppHdf5.h"
 #include "h5ppInfoTypes.h"
-#include "h5ppTypeSfinae.h"
+#include "h5ppTypeTraits.h"
 #include "h5ppUtils.h"
 
 namespace h5pp::scan {
@@ -18,7 +18,7 @@ namespace h5pp::scan {
      */
     template<typename h5x>
     inline void readDsetInfo(h5pp::DsetInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
-        static_assert(h5pp::type::sfinae::is_h5pp_loc_id<h5x>,
+        static_assert(h5pp::traits::is_h5pp_loc_id<h5x>,
                       "Template function [h5pp::scan::readDsetInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
@@ -102,7 +102,7 @@ namespace h5pp::scan {
      */
     template<typename h5x>
     inline h5pp::DsetInfo makeDsetInfo(const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
-        static_assert(h5pp::type::sfinae::is_h5pp_loc_id<h5x>,
+        static_assert(h5pp::traits::is_h5pp_loc_id<h5x>,
                       "Template function [h5pp::scan::makeDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
@@ -206,11 +206,11 @@ namespace h5pp::scan {
                                                       const DataType      &data,
                                                       const Options       &options = Options(),
                                                       const PropertyLists &plists  = PropertyLists()) {
-        static_assert(not type::sfinae::is_h5pp_id<DataType>);
-        static_assert(h5pp::type::sfinae::is_h5pp_loc_id<h5x>,
+        static_assert(not traits::is_h5pp_id<DataType>);
+        static_assert(h5pp::traits::is_h5pp_loc_id<h5x>,
                       "Template function [h5pp::scan::inferDsetInfo(const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
-        static_assert(not h5pp::type::sfinae::is_h5pp_id<DataType>,
+        static_assert(not h5pp::traits::is_h5pp_id<DataType>,
                       "Template function [h5pp::scan::inferDsetInfo(...,const DataType & data, ...)] requires type DataType to be "
                       "none of the h5pp::hid::h5x identifiers");
         auto info = readDsetInfo(loc, options, plists);
@@ -234,7 +234,7 @@ namespace h5pp::scan {
                 throw h5pp::runtime_error("Error creating metadata for new dataset [{}]: "
                                           "Dimensions for new dataset must be specified for pointer data of type [{}]",
                                           info.dsetPath.value(),
-                                          h5pp::type::sfinae::type_name<DataType>());
+                                          h5pp::traits::type_name<DataType>());
             }
         }
 
@@ -313,8 +313,8 @@ namespace h5pp::scan {
     /*! \brief Populates a DataInfo object by scanning the given data type.*/
     template<typename DataType>
     inline void scanDataInfo(DataInfo &info, const DataType &data, const Options &options = Options()) {
-        static_assert(not type::sfinae::is_h5pp_id<DataType>);
-        h5pp::logger::log->debug("Scanning metadata of datatype [{}]", h5pp::type::sfinae::type_name<DataType>());
+        static_assert(not traits::is_h5pp_id<DataType>);
+        h5pp::logger::log->debug("Scanning metadata of datatype [{}]", h5pp::traits::type_name<DataType>());
         // The point of passing options is to reinterpret the shape of the data and not to resize!
         // The data container should already be resized before entering this function.
 
@@ -330,7 +330,7 @@ namespace h5pp::scan {
             if(not info.dataDims.has_value()) {
                 throw h5pp::runtime_error(
                     h5pp::format("Error deducing data info: Dimensions must be specified for pointer data of type [{}]",
-                                 h5pp::type::sfinae::type_name<DataType>()));
+                                 h5pp::traits::type_name<DataType>()));
             }
         }
 
@@ -361,7 +361,7 @@ namespace h5pp::scan {
     /*! \brief Populates an AttrInfo object with properties read from file */
     template<typename h5x>
     inline void readAttrInfo(AttrInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
-        static_assert(h5pp::type::sfinae::is_h5pp_loc_id<h5x>,
+        static_assert(h5pp::traits::is_h5pp_loc_id<h5x>,
                       "Template function [h5pp::scan::readAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
@@ -443,11 +443,11 @@ namespace h5pp::scan {
                               const DataType      &data,
                               const Options       &options,
                               const PropertyLists &plists = PropertyLists()) {
-        static_assert(not type::sfinae::is_h5pp_id<DataType>);
-        static_assert(h5pp::type::sfinae::is_h5pp_loc_id<h5x>,
+        static_assert(not traits::is_h5pp_id<DataType>);
+        static_assert(h5pp::traits::is_h5pp_loc_id<h5x>,
                       "Template function [h5pp::scan::readAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
-        static_assert(not h5pp::type::sfinae::is_h5pp_loc_id<DataType>,
+        static_assert(not h5pp::traits::is_h5pp_loc_id<DataType>,
                       "Template function [h5pp::scan::readAttrInfo(...,..., const DataType & data, ...)] requires type DataType to be: "
                       "none of [h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 
@@ -480,7 +480,7 @@ namespace h5pp::scan {
                                                       "specified for pointer data of type [{}]",
                                                       options.attrName.value(),
                                                       options.linkPath.value(),
-                                                      h5pp::type::sfinae::type_name<DataType>());
+                                                      h5pp::traits::type_name<DataType>());
         }
 
         // Next infer the missing properties
@@ -524,7 +524,7 @@ namespace h5pp::scan {
     /*! \brief Populates an AttrInfo object based entirely on given options */
     template<typename h5x>
     inline void makeAttrInfo(AttrInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
-        static_assert(h5pp::type::sfinae::is_h5pp_loc_id<h5x>,
+        static_assert(h5pp::traits::is_h5pp_loc_id<h5x>,
                       "Template function [h5pp::scan::makeAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         info = readAttrInfo(loc, options, plists);
@@ -581,7 +581,7 @@ namespace h5pp::scan {
 
     template<typename h5x>
     inline void inferAttrInfo(AttrInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
-        static_assert(h5pp::type::sfinae::is_h5pp_loc_id<h5x>,
+        static_assert(h5pp::traits::is_h5pp_loc_id<h5x>,
                       "Template function [h5pp::scan::inferAttrInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         if(not options.linkPath.has_value() and not info.linkPath.has_value())
@@ -616,7 +616,7 @@ namespace h5pp::scan {
                                    std::optional<hid::h5d> h5Dset     = std::nullopt,
                                    std::optional<hid::h5t> h5Type     = std::nullopt,
                                    const hid::h5p         &dsetAccess = H5P_DEFAULT) {
-        static_assert(h5pp::type::sfinae::is_any_v<InfoType, TableInfo, TableFieldInfo>);
+        static_assert(h5pp::traits::is_any_v<InfoType, TableInfo, TableFieldInfo>);
         if constexpr(std::is_same_v<InfoType, TableInfo>) {
             if(info.h5Dset.has_value() and not h5Dset.has_value()) h5Dset = info.h5Dset;
             if(info.h5Type.has_value() and not h5Type.has_value()) h5Type = info.h5Type;
@@ -679,7 +679,7 @@ namespace h5pp::scan {
                                                           std::optional<hid::h5d> h5Dset     = std::nullopt,
                                                           std::optional<hid::h5t> h5Type     = std::nullopt,
                                                           const hid::h5p         &dsetAccess = H5P_DEFAULT) {
-        static_assert(type::sfinae::is_hdf5_obj_id<h5x>,
+        static_assert(traits::is_hdf5_obj_id<h5x>,
                       "Template function [h5pp::hdf5::getTableFieldInfo(const h5x & loc)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5d], [h5pp::hid::h5o] or [hid_t] "
                       "and tablePath should be an absolute path to the table");
@@ -695,7 +695,7 @@ namespace h5pp::scan {
     /*! \brief Populates a TableInfo object with properties read from file */
     template<typename h5x>
     inline void readTableInfo(TableInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
-        static_assert(h5pp::type::sfinae::is_hdf5_loc_id<h5x>,
+        static_assert(h5pp::traits::is_hdf5_loc_id<h5x>,
                       "Template function [h5pp::scan::readTableInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g], [h5pp::hid::h5o] or [hid_t]");
         if(not options.linkPath.has_value() and not info.tablePath.has_value())
@@ -833,7 +833,7 @@ namespace h5pp::scan {
 
     template<typename h5x>
     inline void inferTableInfo(TableInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
-        static_assert(h5pp::type::sfinae::is_h5pp_loc_id<h5x>,
+        static_assert(h5pp::traits::is_h5pp_loc_id<h5x>,
                       "Template function [h5pp::scan::inferTableInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
         if(not options.linkPath.has_value() and not info.tablePath.has_value())
@@ -853,7 +853,7 @@ namespace h5pp::scan {
     /*! \brief Populates a LinkInfo object with properties read from file */
     template<typename h5x>
     inline void readLinkInfo(LinkInfo &info, const h5x &loc, const Options &options, const PropertyLists &plists = PropertyLists()) {
-        static_assert(h5pp::type::sfinae::is_h5pp_loc_id<h5x>,
+        static_assert(h5pp::traits::is_h5pp_loc_id<h5x>,
                       "Template function [h5pp::scan::readLinkInfo(..., const h5x & loc, ...)] requires type h5x to be: "
                       "[h5pp::hid::h5f], [h5pp::hid::h5g] or [h5pp::hid::h5o]");
 

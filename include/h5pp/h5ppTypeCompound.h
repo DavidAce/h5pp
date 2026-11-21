@@ -2,7 +2,7 @@
 #include "h5ppExcept.h"
 #include "h5ppHid.h"
 #include "h5ppTypeCustom.h"
-#include "h5ppTypeSfinae.h"
+#include "h5ppTypeTraits.h"
 #include <complex>
 #include <H5Tpublic.h>
 
@@ -33,14 +33,14 @@ namespace h5pp::type::compound {
             else if constexpr (std::is_same_v<DecayType, char> )                  return H5Tcopy(H5T_NATIVE_CHAR);
             else if constexpr (std::is_same_v<DecayType, unsigned char> )         return H5Tcopy(H5T_NATIVE_UCHAR);
             else if constexpr (std::is_same_v<DecayType, float>)                  return H5Tcopy(H5T_NATIVE_FLOAT);
-            else static_assert(type::sfinae::unrecognized_type_v<DecayType> and "Failed to match this type with a native HDF5 type");
+            else static_assert(traits::unrecognized_type_v<DecayType> and "Failed to match this type with a native HDF5 type");
         }
-        else if constexpr(sfinae::has_value_type_v<DecayType> or sfinae::has_Scalar_v<DecayType>){
-            if constexpr (type::sfinae::has_Scalar_v <DecayType>)                 return getValueType<typename DecayType::Scalar>();
-            if constexpr (type::sfinae::has_value_type_v <DecayType>)             return getValueType<typename DataType::value_type>();
+        else if constexpr(traits::has_value_type_v<DecayType> or traits::has_Scalar_v<DecayType>){
+            if constexpr (traits::has_Scalar_v <DecayType>)                 return getValueType<typename DecayType::Scalar>();
+            if constexpr (traits::has_value_type_v <DecayType>)             return getValueType<typename DataType::value_type>();
         }
         else
-            static_assert(sfinae::invalid_type_v<DecayType> and "This Complex/ScalarN type is not supported");
+            static_assert(traits::invalid_type_v<DecayType> and "This Complex/ScalarN type is not supported");
         /* clang-format on */
     }
 
