@@ -165,6 +165,18 @@ TEST_CASE("Hyperslabs reject point and irregular selections", "[hyperslab][valid
 #endif
 }
 
+TEST_CASE("Selected variable-length strings are packed into the read buffer", "[hyperslab][text]") {
+    h5pp::File               file(make_path("hyperslab-strings"), h5pp::FileAccess::REPLACE, 0);
+    std::vector<std::string> values{"zero", "one", "two", "three", "four", "five"};
+    file.dataset("strings").write(values);
+    CHECK(file.dataset("strings").select({4}, {2}).read<std::vector<std::string>>() == std::vector<std::string>{"four", "five"});
+    h5pp::DatasetWriteOptions options;
+    options.dims = {2, 3};
+    file.dataset("matrix").write(values, options);
+    CHECK(file.dataset("matrix").select({0, 1}, {2, 2}).read<std::vector<std::string>>() ==
+          std::vector<std::string>{"one", "two", "four", "five"});
+}
+
 int main(int argc, char *argv[]) {
     Catch::Session session;
     return session.run(argc, argv);

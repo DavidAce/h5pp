@@ -2434,14 +2434,17 @@ namespace h5pp::hdf5 {
                 hssize_t size = H5Sget_select_npoints(dsetInfo.h5Space.value());
                 if(size < 0) throw h5pp::runtime_error("H5S_select_npoints: failed on dataset [{}]", dsetInfo.dsetPath.value());
                 std::vector<h5pp::vstr_t> vdata(type::safe_cast<size_t>(size));
+                hsize_t                   count       = type::safe_cast<hsize_t>(size);
+                hid::h5s                  memorySpace = H5Screate_simple(1, &count, nullptr);
+                // Pack the selected strings into the temporary buffer, irrespective of their file positions.
                 // HDF5 allocates space for each string in vdata
-                retval = H5Dread(dsetInfo.h5Dset.value(),
-                                 dsetInfo.h5Type.value(),
-                                 H5S_ALL,
-                                 dsetInfo.h5Space.value(),
-                                 plists.dsetXfer,
-                                 vdata.data());
-                // Now vdata contains the whole dataset, and we need to put the data into the user-given container.
+                retval                                = H5Dread(dsetInfo.h5Dset.value(),
+                                                                dsetInfo.h5Type.value(),
+                                                                memorySpace,
+                                                                dsetInfo.h5Space.value(),
+                                                                plists.dsetXfer,
+                                                                vdata.data());
+                // Now vdata contains the selected strings, and we need to put the data into the user-given container.
                 if constexpr(std::is_same_v<DataType, std::string> or traits::is_vstr_v<DataType>) {
                     // A vector of strings (vdata) can be put into a single string (data) with entries separated by new-lines
                     data.clear();
