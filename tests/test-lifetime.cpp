@@ -175,4 +175,47 @@ TEST_CASE("File copies retain table allocation records for explicit reclamation"
     CHECK(counts.freed == counts.allocated);
 }
 
+TEST_CASE("Table reads retain variable-length allocation records", "[lifetime][vlen]") {
+    struct Record {
+        hvl_t values;
+    };
+    struct Counts {
+        size_t allocated = 0, freed = 0;
+    } counts;
+    h5pp::File file(make_path("reclaim-into"), h5pp::FileAccess::REPLACE, 0);
+    REQUIRE(H5Pset_vlen_mem_manager(
+                file.plists.dsetXfer,
+                [](size_t size, void *context) -> void * {
+                    ++static_cast<Counts *>(context)->allocated;
+                    return std::malloc(size);
+                },
+                &counts,
+                [](void *memory, void *context) {
+                    ++static_cast<Counts *>(context)->freed;
+                    std::free(memory);
+                },
+                &counts) >= 0);
+    h5pp::hid::h5t arrayType = H5Tvlen_create(H5T_NATIVE_INT);
+    h5pp::hid::h5t rowType   = H5Tcreate(H5T_COMPOUND, sizeof(Record));
+    REQUIRE(H5Tinsert(rowType, "values", HOFFSET(Record, values), arrayType) >= 0);
+    auto table = file.table("rows").create(rowType, "rows");
+    int  values[]{1, 2, 3};
+    table.appendRecords(std::vector<Record>{{{3, values}}});
+    std::vector<hvl_t> records;
+    SECTION("Record offset and extent") { table.readRecordsInto(records, 0, 1); }
+    SECTION("Record selection") { table.readRecordsInto(records, h5pp::TableSelection::ALL); }
+    SECTION("Field offset and extent") { table.readFieldInto(records, "values", 0, 1); }
+    SECTION("Field selection") { table.readFieldInto(records, "values", h5pp::TableSelection::ALL); }
+    SECTION("Returned field selection") { records = table.readField<std::vector<hvl_t>>("values", h5pp::TableSelection::ALL); }
+    REQUIRE(records.size() == 1);
+    REQUIRE(records[0].len == 3);
+    CHECK(static_cast<int *>(records[0].p)[2] == 3);
+    REQUIRE(counts.allocated > 0);
+    CHECK(counts.freed == 0);
+    file.vlenReclaim();
+    CHECK(counts.freed == counts.allocated);
+    file.vlenReclaim();
+    CHECK(counts.freed == counts.allocated);
+}
+
 int main(int argc, char *argv[]) { return Catch::Session().run(argc, argv); }

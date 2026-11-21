@@ -192,6 +192,7 @@ namespace h5pp::inline v2 {
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto info        = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
             h5pp::hdf5::readTableRecords(data, info, offset, extent, plists_);
+            if(info.reclaimInfo.has_value()) reclaimStack_->emplace_back(info.reclaimInfo.value());
         }
 
         template<typename DataType>
@@ -201,6 +202,7 @@ namespace h5pp::inline v2 {
             auto info             = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
             auto [offset, extent] = util::parseTableSelection(data, selection, info.numRecords, info.recordBytes);
             h5pp::hdf5::readTableRecords(data, info, offset, extent, plists_);
+            if(info.reclaimInfo.has_value()) reclaimStack_->emplace_back(info.reclaimInfo.value());
         }
 
         template<typename DataType, typename Fields>
@@ -247,6 +249,7 @@ namespace h5pp::inline v2 {
             if(fieldSelection.has_indices()) h5pp::hdf5::readTableField(data, info, fieldSelection.get_indices(), offset, extent, plists_);
             else if(fieldSelection.has_names()) h5pp::hdf5::readTableField(data, info, fieldSelection.get_names(), offset, extent, plists_);
             else throw h5pp::runtime_error("No field names or indices have been specified");
+            if(info.reclaimInfo.has_value()) reclaimStack_->emplace_back(info.reclaimInfo.value());
         }
 
         template<typename DataType, typename Fields>
@@ -266,6 +269,7 @@ namespace h5pp::inline v2 {
             } else {
                 throw h5pp::runtime_error("No field names or indices have been specified");
             }
+            if(info.reclaimInfo.has_value()) reclaimStack_->emplace_back(info.reclaimInfo.value());
         }
     };
 

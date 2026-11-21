@@ -3322,7 +3322,7 @@ namespace h5pp::hdf5 {
                 /* Save metadata so that VLEN allocation can be reclaimed/free'd later */
                 if(util::should_track_vlen_reclaims<DataType>(info.h5Type.value(), plists)) {
                     info.reclaimInfo =
-                        h5pp::ReclaimInfo::Reclaim(info.h5Type.value(), dataSpace, plists.dsetXfer, vdata.data(), info.tablePath.value());
+                        h5pp::ReclaimInfo::Reclaim(h5t_fields, dataSpace, plists.dsetXfer, data.data(), info.tablePath.value());
                 }
                 return;
             }
