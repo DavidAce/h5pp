@@ -3561,28 +3561,21 @@ namespace h5pp::hdf5 {
                              FileAccess            tgtFileAccess = FileAccess::COLLISION_FAIL,
                              const PropertyLists  &plists        = PropertyLists()) {
         h5pp::logger::log->trace("Copying file [{}] --> [{}]", srcFilePath.string(), tgtFilePath.string());
-        auto tgtPath = h5pp::hdf5::createFile(tgtFilePath, tgtFileAccess, plists);
         auto srcPath = fs::absolute(srcFilePath);
         try {
-            if(not fs::exists(srcPath)) {
-                throw h5pp::runtime_error("Could not copy file [{}] --> [{}]: source file does not exist [{}]",
-                                          srcFilePath.string(),
-                                          tgtFilePath.string(),
-                                          srcPath.string());
-            }
-            if(tgtPath == srcPath)
-                h5pp::logger::log->debug("Skipped copying file: source and target files have the same path [{}]", srcPath.string());
+            if(not fs::exists(srcPath) or not fileIsValid(srcPath))
+                throw h5pp::runtime_error("Source is not an HDF5 file [{}]", srcPath.string());
+            auto requestedPath = fs::absolute(tgtFilePath).lexically_normal();
+            if(srcPath.lexically_normal() == requestedPath or (fs::exists(requestedPath) and fs::equivalent(srcPath, requestedPath)))
+                throw h5pp::runtime_error("Source and destination refer to the same file [{}]", srcPath.string());
 
-            hid_t hidSrc = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
-            hid_t hidTgt = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
-            if(hidSrc < 0) throw h5pp::runtime_error("Failed to open source file [{}] in read-only mode", srcPath.string());
-
-            if(hidTgt < 0) throw h5pp::runtime_error("Failed to open target file [{}] in read-write mode", tgtPath.string());
-
-            hid::h5f srcFile = hidSrc;
-            hid::h5f tgtFile = hidTgt;
-            hid::h5p lcpl    = H5Pcopy(plists.linkCreate);
-            hid::h5p ocpypl  = H5Pcreate(H5P_OBJECT_COPY);
+            hid::h5f srcFile = H5Fopen(srcPath.string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
+            if(H5Fflush(srcFile, H5F_SCOPE_GLOBAL) < 0) throw h5pp::runtime_error("Failed to flush source [{}]", srcPath.string());
+            auto     rootAttributes = getAttributeNames(srcFile, "/");
+            auto     tgtPath        = h5pp::hdf5::createFile(tgtFilePath, tgtFileAccess, plists);
+            hid::h5f tgtFile        = H5Fopen(tgtPath.string().c_str(), H5F_ACC_RDWR, plists.fileAccess);
+            hid::h5p lcpl           = H5Pcopy(plists.linkCreate);
+            hid::h5p ocpypl         = H5Pcreate(H5P_OBJECT_COPY);
             if(H5Pset_create_intermediate_group(lcpl, 1) < 0) // Set to create intermediate groups
                 throw h5pp::runtime_error("H5Pset_create_intermediate_group failed");
 
@@ -3602,10 +3595,40 @@ namespace h5pp::hdf5 {
                         link);
                 }
             }
-            // ... Find out how to copy attributes that are written on the root itself
+            for(const auto &name : rootAttributes) {
+                hid::h5a source     = H5Aopen_by_name(srcFile, "/", name.c_str(), H5P_DEFAULT, plists.linkAccess);
+                hid::h5t type       = H5Aget_type(source);
+                auto     references = H5Tdetect_class(type, H5T_REFERENCE);
+                if(references < 0) throw h5pp::runtime_error("Failed to inspect root attribute [{}]", name);
+                if(references > 0) {
+                    h5pp::logger::log->critical("Skipping root attribute [{}] on [/] in file [{}]: it contains HDF5 references "
+                                                "and will not be copied to [{}]. Moving the file permanently loses this attribute.",
+                                                name,
+                                                srcPath.string(),
+                                                tgtPath.string());
+                    continue;
+                }
+                hid::h5s space  = H5Aget_space(source);
+                hid::h5p acpl   = H5Aget_create_plist(source);
+                hid::h5g root   = H5Gopen2(tgtFile, "/", plists.groupAccess);
+                hid::h5a target = H5Acreate2(root, name.c_str(), type, space, acpl, H5P_DEFAULT);
+                auto     count  = H5Sget_simple_extent_npoints(space);
+                if(count < 0) throw h5pp::runtime_error("Failed to inspect root attribute [{}]", name);
+                if(count == 0) continue;
+                std::vector<unsigned char> data(type::safe_cast<size_t>(count) * H5Tget_size(type));
+                auto                       read    = H5Aread(source, type, data.data());
+                auto                       written = read < 0 ? -1 : H5Awrite(target, type, data.data());
+                // Also releases strings and variable-length members nested in compound/array types.
+#if H5_VERSION_GE(1, 12, 0)
+                auto reclaimed = H5Treclaim(type, space, H5P_DEFAULT, data.data());
+#else
+                auto reclaimed = H5Dvlen_reclaim(type, space, H5P_DEFAULT, data.data());
+#endif
+                if(read < 0 or written < 0 or reclaimed < 0) throw h5pp::runtime_error("Failed to copy root attribute [{}]", name);
+            }
             return tgtPath;
         } catch(const std::exception &ex) {
-            throw h5pp::runtime_error("Could not copy file [{}] --> [{}]: ", srcFilePath.string(), tgtFilePath.string(), ex.what());
+            throw h5pp::runtime_error("Could not copy file [{}] --> [{}]: {}", srcFilePath.string(), tgtFilePath.string(), ex.what());
         }
     }
 
@@ -3651,6 +3674,50 @@ namespace h5pp::hdf5 {
                              FileAccess            tgtFileAccess = FileAccess::COLLISION_FAIL,
                              const PropertyLists  &plists        = PropertyLists()) {
         h5pp::logger::log->trace("Moving file by copy+remove: [{}] --> [{}]", src.string(), tgt.string());
+        {
+            hid::h5f probe = H5Fopen(fs::absolute(src).string().c_str(), H5F_ACC_RDONLY, plists.fileAccess);
+            auto     count = H5Fget_obj_count(H5F_OBJ_ALL, H5F_OBJ_ALL);
+            if(count < 0) throw h5pp::runtime_error("Failed to inspect open handles for [{}]", src.string());
+            std::vector<hid_t> ids(type::safe_cast<size_t>(count));
+            count = H5Fget_obj_ids(H5F_OBJ_ALL, H5F_OBJ_ALL, ids.size(), ids.data());
+            if(count < 0) throw h5pp::runtime_error("Failed to list open handles for [{}]", src.string());
+            std::string handles;
+            for(ssize_t i = 0; i < count; ++i) {
+                auto id   = ids[type::safe_cast<size_t>(i)];
+                auto refs = H5Iget_ref(id);
+                if(id == probe.value() and refs == 1) continue;
+                std::string kind;
+                switch(H5Iget_type(id)) {
+                    case H5I_FILE: kind = "file"; break;
+                    case H5I_DATASET: kind = "dataset"; break;
+                    case H5I_GROUP: kind = "group"; break;
+                    case H5I_ATTR: kind = "attribute"; break;
+                    case H5I_DATATYPE: kind = "datatype"; break;
+                    default: kind = "object"; break;
+                }
+                if(H5Iget_type(id) == H5I_DATATYPE and H5Tcommitted(id) == 0) continue;
+                auto filenameSize = H5Fget_name(id, nullptr, 0);
+                if(filenameSize < 0) throw h5pp::runtime_error("Failed to identify file for handle [{}]", id);
+                std::string filename(type::safe_cast<size_t>(filenameSize) + 1, '\0');
+                if(H5Fget_name(id, filename.data(), filename.size()) < 0)
+                    throw h5pp::runtime_error("Failed to identify file for handle [{}]", id);
+                filename.resize(filename.size() - 1);
+                std::error_code error;
+                if(filename.empty() or not fs::equivalent(src, filename, error)) continue;
+                auto path = getName(id);
+                if(path.empty()) path = "<unnamed>";
+                handles +=
+                    h5pp::format("\n  {} [{}], file [{}], id {}, references {}", kind, path, fs::absolute(filename).string(), id, refs);
+            }
+            if(not handles.empty()) {
+                throw h5pp::runtime_error("Cannot move file [{}] to [{}] while handles remain open:{}\n"
+                                          "Release these handles and keep-open tokens before moving the file. "
+                                          "h5pp objects that retain only a file handle are listed as file references.",
+                                          fs::absolute(src).string(),
+                                          fs::absolute(tgt).string(),
+                                          handles);
+            }
+        }
         auto tgtPath = h5pp::hdf5::copyFile(src, tgt, tgtFileAccess, plists); // Returns the path to the newly created file
         auto srcPath = fs::absolute(src);
         if(fs::exists(tgtPath)) {

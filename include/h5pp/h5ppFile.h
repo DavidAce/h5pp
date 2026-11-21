@@ -202,6 +202,10 @@ namespace h5pp::inline v2 {
         }
 
         [[nodiscard]] fs::path moveFileTo(const h5pp::fs::path &targetFilePath, const FileAccess &perm = FileAccess::COLLISION_FAIL) {
+            if(fileAccess == FileAccess::READONLY) throw h5pp::runtime_error("Cannot move read-only file [{}]", filePath.string());
+            // Release only our own cache; independently held identifiers must prevent the move.
+            if(fileHandle.has_value() and fileHandle->refcount() == 1 and H5Fget_obj_count(fileHandle.value(), H5F_OBJ_ALL) == 1)
+                fileHandle.reset();
             auto newPath = h5pp::hdf5::moveFile(getFilePath(), targetFilePath, perm, plists);
             if(fs::exists(newPath)) filePath = newPath;
             return newPath;
