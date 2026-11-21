@@ -34,7 +34,7 @@ namespace h5pp::type::flen {
     struct fstr_t {
         private:
         template<typename T>
-        std::string               float_to_string(const T &f);
+        std::string               float_to_string(const T &val);
         char                      ptr[N] = {'\0'};
         [[nodiscard]] const char *begin() const;
         [[nodiscard]] const char *end() const;
