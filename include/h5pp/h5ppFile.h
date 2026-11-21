@@ -335,9 +335,9 @@ namespace h5pp::inline v2 {
 
         template<typename DataType>
         [[deprecated("Use file.attribute(linkPath, attrName).write(data, options) instead")]]
-        void writeAttribute(std::string_view             linkPath,
+        void writeAttribute(const DataType              &data,
+                            std::string_view             linkPath,
                             std::string_view             attrName,
-                            const DataType              &data,
                             const AttributeWriteOptions &options = AttributeWriteOptions()) {
             attribute(linkPath, attrName).write(data, options);
         }

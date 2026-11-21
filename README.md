@@ -28,7 +28,7 @@ Go to [quickstart](https://github.com/DavidAce/h5pp/tree/v2/quickstart) to see w
 * [Introduction](#introduction)
 * [Features](#features)
 * [Examples](#examples)
-* [Migration](#migration-from-h5pp-v1-to-v2)
+* [Migration](#moving-from-h5pp-v1-to-v2)
 * [Get h5pp](#get-h5pp)
 * [Requirements](#requirements)
 * [Install](#install)
@@ -99,39 +99,54 @@ high-level wrappers already that help the user experience, but as a matter of op
 
 Find more examples in the [examples directory](https://github.com/DavidAce/h5pp/tree/v2/examples).
 
-## Migration from h5pp v1 to v2
+## Moving from h5pp v1 to v2
 
-For `h5pp` 2.x, `#include <h5pp/h5pp.h>` provides the v2 API through `h5pp::File`.
-Several v1 API calls are also retained on this class so existing code can be migrated gradually.
-
-For the v1 API, use `h5pp::v1::File` and include:
+The v1 API has moved into the `h5pp::v1` namespace:
 
 ```c++
     #include <h5pp/v1/h5pp.h>
+    ...
+    h5pp::v1::File file("file.h5");
 ```
 
-These common v1 API calls remain available on `h5pp::File`:
+For the v2 API, use:
 
 ```c++
-    file.writeDataset(data, "group/dataset");
-    auto data2 = file.readDataset<std::vector<double>>("group/dataset");
+    #include <h5pp/h5pp.h>
+    ...
+    h5pp::File file("file.h5");
+```
 
-    file.writeAttribute("group/dataset", "unit", std::string("m/s"));
-    auto unit = file.readAttribute<std::string>("group/dataset", "unit");
+To avoid breaking too much existing code, some of the most common v1 API calls remain available in v2 but will emit a
+deprecation notice during compilation. For example, the following code works in v2 (but should be updated promptly):
+
+```c++
+    #include <h5pp/h5pp.h>
+    ...
+    h5pp::File file("somePath/someFile.h5", h5pp::FileAccess::READWRITE); // Open or create a file
+    std::vector<double> v = {1.0, 2.0, 3.0};
+
+    file.writeDataset(v, "myStdVector");                                 // working (but deprecated) v1 API call
+    auto w = file.readDataset<std::vector<double>>("myStdVector");       // working (but deprecated) v1 API call
+
+    file.writeAttribute("m/s", "myStdVector", "units");                  // working (but deprecated) v1 API call
+    auto unit = file.readAttribute<std::string>("myStdVector", "units"); // working (but deprecated) v1 API call
 ```
 
 The equivalent v2 API calls are:
 
 ```c++
-    file.dataset("group/dataset").write(data);
-    auto data2 = file.dataset("group/dataset").read<std::vector<double>>();
+    #include <h5pp/h5pp.h>
+    ...
+    h5pp::File file("somePath/someFile.h5", h5pp::FileAccess::READWRITE);
+    std::vector<double> v = {1.0, 2.0, 3.0};
 
-    file.attribute("group/dataset", "unit").write(std::string("m/s"));
-    auto unit = file.attribute("group/dataset", "unit").read<std::string>();
+    file.dataset("myStdVector").write(v);
+    auto w = file.dataset("myStdVector").read<std::vector<double>>();
+
+    file.dataset("myStdVector").attribute("units").write("m/s");
+    auto unit = file.dataset("myStdVector").attribute("units").read<std::string>();
 ```
-
-These retained v1 API calls are deprecated. Compiler warnings show the corresponding v2 API call.
-
 
 ## Get h5pp
 
