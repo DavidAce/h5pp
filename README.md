@@ -4,7 +4,7 @@
 [![macOS 26](https://github.com/DavidAce/h5pp/actions/workflows/macos26.yml/badge.svg?branch=v2)](https://github.com/DavidAce/h5pp/actions/workflows/macos26.yml)
 [![Documentation Status](https://readthedocs.org/projects/h5pp/badge/?version=latest)](https://h5pp.readthedocs.io/en/latest/?badge=latest)
 [![Conan](https://img.shields.io/badge/Install%20with-conan-green)](https://conan.io/center/h5pp)
-[![codecov](https://codecov.io/gh/davidace/h5pp/branch/dev/graph/badge.svg)](https://codecov.io/gh/davidace/h5pp)
+[![codecov](https://codecov.io/gh/davidace/h5pp/branch/v2/graph/badge.svg)](https://codecov.io/gh/davidace/h5pp)
 
 ---
 
@@ -36,12 +36,12 @@ Go to [quickstart](https://github.com/DavidAce/h5pp/tree/v2/quickstart) to see w
 ## Introduction
 
 [HDF5](https://www.hdfgroup.org/) is a portable file format for storing large datasets efficiently. HDF5 has
-official [low-level API's for C and Fortran](https://portal.hdfgroup.org/display/HDF5/Core+Library) with wrappers
+official [low-level APIs for C and Fortran](https://portal.hdfgroup.org/display/HDF5/Core+Library) with wrappers
 for C++ and Java, and third-party bindings for Python, Julia, Matlab and many other languages. This makes HDF5 a
 great tool for handling data in a collaborative setting.
 
-Although well documented, the low-level C API is vast and using it directly can be challenging. There are many
-high-level wrappers already that help the user experience, but as a matter of opinion, things could be even simpler.
+Although well documented, the low-level C API is vast and using it directly can be challenging. This was the motivation
+for developing `h5pp`.
 
 ### Goals
 
@@ -61,6 +61,8 @@ high-level wrappers already that help the user experience, but as a matter of op
 * Type support:
     * all numeric types: `(u)int#_t`, `float`, `double`, `long double`.
     * **`std::complex<>`** with any of the types above.
+    * Optional 128-bit floating-point and complex types: `h5pp::fp128` and `h5pp::cx128`
+      ([configuration](#128-bit-floating-point-support)).
     * CUDA-style POD-structs with `x,y` or `x,y,z` members as atomic type, such as `float3` or `double2`. These work
       with any of the types above. In `h5pp` these go by the name `Scalar2<>` and `Scalar3<>`.
     * Contiguous containers with a `.data()` member, such as `std::vector<>`.
@@ -68,26 +70,27 @@ high-level wrappers already that help the user experience, but as a matter of op
     * [**Eigen**](http://eigen.tuxfamily.org) types such as `Eigen::Matrix<>`, `Eigen::Array<>` and `Eigen::Tensor<>`,
       with automatic conversion to/from row-major storage
     * Text types `std::string`, `char` arrays, and `std::vector<std::string>`.
-    * Structs as HDF5 Compound types ([example](https://github.com/DavidAce/h5pp/blob/master/examples/example-04a-compound-datatype-scalars.cpp))
+    * Structs as HDF5 Compound types
+      ([example](https://github.com/DavidAce/h5pp/blob/v2/examples/example-04a-compound-datatype-scalars.cpp))
     * Structs as HDF5 Tables (with user-defined compound HDF5 types for entries)
     * Ragged "variable-length" data in HDF5 Table columns using `h5pp::varr_t<>` and `h5pp::vstr_t`.
 * Modern CMake installation of `h5pp` and (opt-in) installation of dependencies.
-* Multi-platform: Linux, Windows, OSX. (Developed under Linux).
+* Multi-platform: Linux, Windows, macOS. (Developed under Linux).
 
 ## Examples
 
-### Write an `std::vector`
+### Write a `std::vector`
 
 ```c++
     #include <h5pp/h5pp.h>
     int main() {
         std::vector<double> v = {1.0, 2.0, 3.0};      // Define some data
-        h5pp::File file("somePath/someFile.h5");      // Create or open a file
+        h5pp::File file("somePath/someFile.h5");      // Create a file
         file.dataset("myStdVector").write(v);         // Write the vector to a dataset
     }
 ```
 
-### Read an `std::vector`
+### Read a `std::vector`
 
 ```c++
     #include <h5pp/h5pp.h>
@@ -165,7 +168,7 @@ There are currently 2 ways to obtain `h5pp`:
 
 * [**Eigen**](http://eigen.tuxfamily.org) >= 3.4.0: Store Eigen containers. Enable with `#define H5PP_USE_EIGEN3`.
 * [**spdlog**](https://github.com/gabime/spdlog) >= 1.12.0: Logging library. Enable with `#define H5PP_USE_SPDLOG`.
-* [**fmt**](https://github.com/fmtlib/fmt) >= 9.1.0: String formatting (used in `spdlog`). Enable with `#define H5PP_USE_FMT`.
+* [**fmt**](https://github.com/fmtlib/fmt) >= 9.1.0: String formatting. Enable with `#define H5PP_USE_FMT`.
 
 **NOTE:** Logging works the same with or without [Spdlog](https://github.com/gabime/spdlog) enabled. When Spdlog is *
 not* found, a hand-crafted logger is used in its place to give identical output but without any performance
@@ -177,13 +180,23 @@ can be used without either provider. The CMake provider builds HDF5 2.1.1;
 the Conan recipe currently selects HDF5 1.x. See the
 [installation guide](docs/source/installation.md#requirements) for the full version list.
 
+### 128-bit floating-point support
+
+Choose at most one option when configuring with CMake:
+
+* `-DH5PP_USE_QUADMATH=ON`: GCC's `__float128` and `__complex128` with libquadmath. Requires C++20.
+* `-DH5PP_USE_FLOAT128=ON`: `std::float128_t` and `std::complex<std::float128_t>`. Requires C++23 and
+  a compiler and standard library that provide these types.
+
+Both options provide `h5pp::fp128` and `h5pp::cx128`. They are off by default.
+Without CMake, define the corresponding preprocessor macro and supply any required libraries.
+
 ## Install
 
-This branch describes h5pp **2.0.0**. Use the `v2` checkout; do not assume the
-same version has already been published to ConanCenter.
+Instructions for h5pp **2.0.0**:
 
 ```bash
-git clone --branch v2 https://github.com/DavidAce/h5pp.git
+git clone https://github.com/DavidAce/h5pp.git
 cd h5pp
 ```
 
@@ -202,14 +215,14 @@ to choose a different location for both; set `PKG_INSTALL_PREFIX` only if the
 dependencies should go elsewhere. Dependencies are installed during configuration;
 h5pp is installed by `cmake --install`.
 Alternatively, use `ninja-pkg-conan` with Conan >= 2.0.5 on `PATH` to resolve
-dependencies with Conan. Its dependencies remain in Conan's cache.
-Both presets leave optional integrations, tests, and examples off by default.
-The supplied build presets select Release; the configure presets support
+dependencies with Conan. These presets enable Eigen, fmt, and spdlog. Tests and examples are off by default.
+These build presets select Release; the configure presets support
 multiple configurations.
 
 ### Use dependencies you installed yourself
 
-Without a provider, CMake finds existing dependencies:
+Without a provider, CMake finds existing dependencies. This preset also enables
+Eigen, fmt, and spdlog:
 
 ```bash
 cmake --workflow --preset ninja

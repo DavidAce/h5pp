@@ -75,8 +75,8 @@ cmake --workflow --preset ninja
 cmake --install build/ninja --config Release
 ```
 
-Optional integrations are off by default in a plain configuration; enable
-only the ones your project needs. HDF5 is always required. The library is
+The `ninja` preset enables Eigen, fmt, and spdlog. Without a preset, optional
+integrations are off by default. HDF5 is always required. The library is
 header-only, so a build without tests, examples, or documentation has no h5pp
 source files to compile.
 
@@ -89,8 +89,8 @@ cmake --workflow --preset ninja-pkg-cmake
 cmake --install build/ninja-pkg-cmake --config Release
 ```
 
-Optional integrations, tests, and examples are off by default. To use the
-provider without a preset, pass it when configuring a new build:
+The preset enables Eigen, fmt, and spdlog; tests and examples are off by default.
+To use the provider without a preset, pass it when configuring a new build:
 
 ```bash
 cmake -S . -B build/provider \
