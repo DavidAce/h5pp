@@ -7,7 +7,7 @@ Using `h5pp` is intended to be simple. After initializing a file, most of the wo
 
 ```{include} ../../README.md
 :start-after: "## Examples"
-:end-before: "## Migration"
+:end-before: "## Moving from h5pp v1 to v2"
 ```
 
 ## File Access

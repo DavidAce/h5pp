@@ -62,7 +62,7 @@ for developing `h5pp`.
     * all numeric types: `(u)int#_t`, `float`, `double`, `long double`.
     * **`std::complex<>`** with any of the types above.
     * Optional 128-bit floating-point and complex types: `h5pp::fp128` and `h5pp::cx128`
-      ([configuration](#128-bit-floating-point-support)).
+      ([configuration](docs/source/installation.md#128-bit-floating-point-options)).
     * CUDA-style POD-structs with `x,y` or `x,y,z` members as atomic type, such as `float3` or `double2`. These work
       with any of the types above. In `h5pp` these go by the name `Scalar2<>` and `Scalar3<>`.
     * Contiguous containers with a `.data()` member, such as `std::vector<>`.

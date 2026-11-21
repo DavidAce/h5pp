@@ -161,7 +161,7 @@
 
 ## class h5pp::v1::File
 
-See [Migration](index.md#migration-from-h5pp-v1-to-v2) for using this class with existing code.
+See [Migration](index.md#moving-from-h5pp-v1-to-v2) for using this class with existing code.
 
 ```{eval-rst}
 .. doxygenclass:: h5pp::v1::File
