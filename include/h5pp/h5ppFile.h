@@ -494,14 +494,20 @@ namespace h5pp::inline v2 {
         }
 
         template<typename h5x_src>
-        [[deprecated("Use file.table(targetPath).ensure(options).appendRecordsFrom(srcLocation, srcTablePath, selection) instead")]]
+        [[deprecated("Use file.table(targetPath).create(options).appendRecordsFrom(srcLocation, srcTablePath, selection) instead")]]
         [[nodiscard]] TableInfo
             appendTableRecords(const h5x_src            &srcLocation,
                                std::string_view          srcTablePath,
                                std::string_view          tgtTablePath,
                                TableSelection            srcSelection = TableSelection::ALL,
                                const TableCreateOptions &options      = TableCreateOptions()) {
-            return table(tgtTablePath).ensure(options).appendRecordsFrom(srcLocation, srcTablePath, srcSelection);
+            Options sourceOptions;
+            sourceOptions.linkPath = h5pp::util::safe_str(srcTablePath);
+            auto source            = h5pp::scan::readTableInfo(srcLocation, sourceOptions, plists);
+            auto creation          = options;
+            if(not creation.h5Type.has_value()) creation.h5Type = source.h5Type;
+            if(not creation.title.has_value()) creation.title = source.tableTitle;
+            return table(tgtTablePath).create(creation).appendRecordsFrom(source, srcSelection);
         }
 
         template<typename DataType>

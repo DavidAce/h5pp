@@ -16,41 +16,10 @@ namespace h5pp::inline v2 {
         PropertyLists                                      plists_;
         std::shared_ptr<std::vector<ReclaimInfo::Reclaim>> reclaimStack_;
         std::string                                        tablePath_;
-        std::optional<TableCreateOptions>                  createOptions_ = std::nullopt;
-
-        [[nodiscard]] Options tableCreateOptions_() const {
-            Options options;
-            if(not createOptions_.has_value()) return options;
-            if(createOptions_->h5Type.has_value()) options.h5Type = createOptions_->h5Type;
-            if(createOptions_->dimsChunk.has_value()) options.dsetChunkDims = detail::toOptDimsType(createOptions_->dimsChunk);
-            if(createOptions_->compression.has_value())
-                options.compression = h5pp::hdf5::getValidCompressionLevel(createOptions_->compression);
-            return options;
-        }
-
-        void createIfMissing_() requires detail::MutableFile<FileType>
-        {
-            if(h5pp::hdf5::checkIfLinkExists(fileHandle_, tablePath_, plists_.linkAccess)) return;
-            if(not createOptions_.has_value())
-                throw h5pp::runtime_error("Cannot create missing table [{}]: no creation options were provided", tablePath_);
-            if(not createOptions_->h5Type.has_value())
-                throw h5pp::runtime_error("Cannot create missing table [{}]: h5Type is not set", tablePath_);
-            if(not createOptions_->title.has_value())
-                throw h5pp::runtime_error("Cannot create missing table [{}]: title is not set", tablePath_);
-
-            Options options;
-            options.linkPath = h5pp::util::safe_str(tablePath_);
-            options.h5Type   = createOptions_->h5Type;
-            if(createOptions_->dimsChunk.has_value()) options.dsetChunkDims = detail::toOptDimsType(createOptions_->dimsChunk);
-            if(createOptions_->compression.has_value())
-                options.compression = h5pp::hdf5::getValidCompressionLevel(createOptions_->compression);
-            auto info = h5pp::scan::makeTableInfo(fileHandle_, options, createOptions_->title.value(), plists_);
-            h5pp::hdf5::createTable(info, plists_);
-        }
 
         public:
-        BasicTable(FileType &file, std::string_view tablePath, std::optional<TableCreateOptions> createOptions = std::nullopt)
-            : BasicTable(file.openFileHandle(), file.plists, file.reclaimStack, tablePath, std::move(createOptions)) {}
+        BasicTable(FileType &file, std::string_view tablePath)
+            : BasicTable(file.openFileHandle(), file.plists, file.reclaimStack, tablePath) {}
 
         private:
         template<typename OtherFileType>
@@ -63,10 +32,8 @@ namespace h5pp::inline v2 {
         BasicTable(const hid::h5f                                           &fileHandle,
                    const PropertyLists                                      &plists,
                    const std::shared_ptr<std::vector<ReclaimInfo::Reclaim>> &reclaimStack,
-                   std::string_view                                          tablePath,
-                   std::optional<TableCreateOptions>                         createOptions = std::nullopt)
-            : fileHandle_(fileHandle), plists_(plists), reclaimStack_(reclaimStack), tablePath_(tablePath),
-              createOptions_(std::move(createOptions)) {}
+                   std::string_view                                          tablePath)
+            : fileHandle_(fileHandle), plists_(plists), reclaimStack_(reclaimStack), tablePath_(tablePath) {}
 
         public:
         [[nodiscard]] bool      exists() const { return h5pp::hdf5::checkIfLinkExists(fileHandle_, tablePath_, plists_.linkAccess); }
@@ -101,41 +68,34 @@ namespace h5pp::inline v2 {
             return false;
         }
 
-        [[nodiscard]] BasicTable ensure(const TableCreateOptions &createOptions) requires detail::MutableFile<FileType>
-        {
-            auto copy           = *this;
-            copy.createOptions_ = createOptions;
-            return copy;
-        }
-
-        [[nodiscard]] BasicTable ensure(const hid::h5t &h5Type, std::string_view title, const TableCreateOptions &createOptions = {})
-            requires detail::MutableFile<FileType>
-        {
-            auto copy                   = ensure(createOptions);
-            copy.createOptions_->h5Type = h5Type;
-            copy.createOptions_->title  = h5pp::util::safe_str(title);
-            return copy;
-        }
-
         [[nodiscard]] BasicTable create(const TableCreateOptions &createOptions) requires detail::MutableFile<FileType>
         {
-            auto copy = ensure(createOptions);
-            copy.createIfMissing_();
-            return copy;
+            if(exists()) return *this;
+            if(not createOptions.h5Type.has_value()) throw h5pp::runtime_error("Cannot create table [{}]: h5Type is not set", tablePath_);
+            if(not createOptions.title.has_value()) throw h5pp::runtime_error("Cannot create table [{}]: title is not set", tablePath_);
+
+            Options options;
+            options.linkPath      = h5pp::util::safe_str(tablePath_);
+            options.h5Type        = createOptions.h5Type;
+            options.dsetChunkDims = detail::toOptDimsType(createOptions.dimsChunk);
+            if(createOptions.compression.has_value()) options.compression = h5pp::hdf5::getValidCompressionLevel(createOptions.compression);
+            auto info = h5pp::scan::makeTableInfo(fileHandle_, options, createOptions.title.value(), plists_);
+            h5pp::hdf5::createTable(info, plists_);
+            return *this;
         }
 
         [[nodiscard]] BasicTable create(const hid::h5t &h5Type, std::string_view title, const TableCreateOptions &createOptions = {})
             requires detail::MutableFile<FileType>
         {
-            auto copy = ensure(h5Type, title, createOptions);
-            copy.createIfMissing_();
-            return copy;
+            auto options   = createOptions;
+            options.h5Type = h5Type;
+            options.title  = h5pp::util::safe_str(title);
+            return create(options);
         }
 
         template<typename DataType>
         requires detail::MutableFile<FileType>
         void appendRecords(const DataType &data, std::optional<hsize_t> extent = std::nullopt) {
-            createIfMissing_();
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto info        = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
@@ -146,7 +106,6 @@ namespace h5pp::inline v2 {
         template<typename DataType>
         requires detail::MutableFile<FileType>
         void writeRecords(const DataType &data, hsize_t offset = 0, std::optional<hsize_t> extent = std::nullopt) {
-            createIfMissing_();
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto info        = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
@@ -156,12 +115,12 @@ namespace h5pp::inline v2 {
         [[nodiscard]] TableInfo appendRecordsFrom(const h5pp::TableInfo &srcInfo, TableSelection selection = TableSelection::ALL)
             requires detail::MutableFile<FileType>
         {
-            Options options  = tableCreateOptions_();
+            Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto tgtInfo     = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
             if(not tgtInfo.tableExists.has_value() or not tgtInfo.tableExists.value()) {
                 srcInfo.assertCreateReady();
-                if(not options.h5Type.has_value()) options.h5Type = srcInfo.h5Type;
+                options.h5Type = srcInfo.h5Type;
                 h5pp::scan::makeTableInfo(tgtInfo, fileHandle_, options, srcInfo.tableTitle.value(), plists_);
                 h5pp::hdf5::createTable(tgtInfo, plists_);
             }
@@ -176,21 +135,10 @@ namespace h5pp::inline v2 {
                                                   std::string_view srcTablePath,
                                                   TableSelection   selection = TableSelection::ALL) requires detail::MutableFile<FileType>
         {
-            Options options  = tableCreateOptions_();
+            Options options;
             options.linkPath = h5pp::util::safe_str(srcTablePath);
             auto srcInfo     = h5pp::scan::readTableInfo(srcLocation, options, plists_);
-            options.linkPath = h5pp::util::safe_str(tablePath_);
-            auto tgtInfo     = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
-            if(not tgtInfo.tableExists.has_value() or not tgtInfo.tableExists.value()) {
-                srcInfo.assertCreateReady();
-                if(not options.h5Type.has_value()) options.h5Type = srcInfo.h5Type;
-                h5pp::scan::makeTableInfo(tgtInfo, fileHandle_, options, srcInfo.tableTitle.value(), plists_);
-                h5pp::hdf5::createTable(tgtInfo, plists_);
-            }
-            tgtInfo.assertWriteReady();
-            auto [offset, extent] = util::parseTableSelection(selection, srcInfo.numRecords.value());
-            h5pp::hdf5::copyTableRecords(srcInfo, offset, extent, tgtInfo, tgtInfo.numRecords.value(), plists_);
-            return tgtInfo;
+            return appendRecordsFrom(srcInfo, selection);
         }
 
         template<typename DataType>

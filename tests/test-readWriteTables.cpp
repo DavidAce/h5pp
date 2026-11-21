@@ -140,15 +140,17 @@ TEST_CASE("Appending and copying table records preserves metadata and selected r
     CHECK(copied_last.y == 0.0);
 }
 
-TEST_CASE("Stored table creation options are used when records are first appended", "[tables]") {
-    h5pp::File               file(make_path("tableEnsure"), h5pp::FileAccess::REPLACE, 0);
+TEST_CASE("Table creation is immediate and preserves its creation properties", "[tables]") {
+    h5pp::File               file(make_path("tableCreate"), h5pp::FileAccess::REPLACE, 0);
     h5pp::TableCreateOptions options;
-    options.title       = "ensured table";
+    options.title       = "created table";
     options.h5Type      = make_particle_type();
     options.dimsChunk   = {2};
     options.compression = 1;
-    auto table          = file.table("particles").ensure(options);
-    REQUIRE_FALSE(table.exists());
+    auto table          = file.table("particles").create(options);
+    REQUIRE(table.exists());
+    CHECK(table.getInfo().numRecords == 0);
+    CHECK(table.readRecords<std::vector<Particle>>().empty());
 
     std::vector<Particle> records(3);
     for(size_t idx = 0; idx < records.size(); ++idx) records[idx].x = static_cast<double>(idx + 1);
@@ -167,7 +169,14 @@ TEST_CASE("Stored table creation options are used when records are first appende
     REQUIRE(read.size() == 6);
     for(size_t idx = 0; idx < read.size(); ++idx) require_particle_equal(read[idx], records[idx % records.size()]);
 
-    auto copied     = file.table("copied").ensure(options);
+    auto existing = table.create({});
+    CHECK(existing.getInfo().numRecords == 6);
+    CHECK(existing.getInfo().tableTitle == options.title);
+    CHECK(existing.getInfo().chunkDims == options.dimsChunk);
+
+    auto copied = file.table("copied").create(options);
+    REQUIRE(copied.exists());
+    CHECK(copied.getInfo().numRecords == 0);
     auto copiedInfo = copied.appendRecordsFrom(info);
     REQUIRE(copiedInfo.chunkDims.has_value());
     CHECK(copiedInfo.chunkDims.value() == std::vector<hsize_t>{2});
@@ -178,22 +187,21 @@ TEST_CASE("Stored table creation options are used when records are first appende
     for(size_t idx = 0; idx < read.size(); ++idx) require_particle_equal(copiedRecords[idx], read[idx]);
 }
 
-TEST_CASE("Appending to a missing table requires complete creation options", "[tables][validation]") {
+TEST_CASE("Table creation rejects incomplete options and record writes require an existing table", "[tables][validation]") {
     h5pp::File                  file(make_path("tableInvalidCreate"), h5pp::FileAccess::REPLACE, 0);
     auto                        table = file.table("missing");
     const std::vector<Particle> records(1);
-    SECTION("no creation options") {
-        REQUIRE_THROWS_WITH(table.appendRecords(records), Catch::Matchers::ContainsSubstring("no creation options"));
-    }
+    SECTION("append to a missing table") { REQUIRE_THROWS(table.appendRecords(records)); }
+    SECTION("write to a missing table") { REQUIRE_THROWS(table.writeRecords(records)); }
     SECTION("missing datatype") {
         h5pp::TableCreateOptions options;
         options.title = "missing datatype";
-        REQUIRE_THROWS_WITH(table.ensure(options).appendRecords(records), Catch::Matchers::ContainsSubstring("h5Type is not set"));
+        REQUIRE_THROWS_WITH(table.create(options), Catch::Matchers::ContainsSubstring("h5Type is not set"));
     }
     SECTION("missing title") {
         h5pp::TableCreateOptions options;
         options.h5Type = make_particle_type();
-        REQUIRE_THROWS_WITH(table.ensure(options).appendRecords(records), Catch::Matchers::ContainsSubstring("title is not set"));
+        REQUIRE_THROWS_WITH(table.create(options), Catch::Matchers::ContainsSubstring("title is not set"));
     }
     CHECK_FALSE(table.exists());
 }

@@ -73,4 +73,20 @@ TEST_CASE("v1 dataset calls work alongside the v2 API", "[v1][v2][dataset]") {
     REQUIRE(file.attributeExists("manual/writeV1Api", "unit"));
 }
 
+TEST_CASE("v1 table copying uses source metadata and explicit creation options", "[v1][v2][table]") {
+    h5pp::File     file(make_path("tableApi"), h5pp::FileAccess::REPLACE, 0);
+    h5pp::hid::h5t rowType = H5Tcreate(H5T_COMPOUND, sizeof(int));
+    REQUIRE(H5Tinsert(rowType, "value", 0, H5T_NATIVE_INT) >= 0);
+    const std::vector<int> values = {1, 2, 3};
+    file.table("source").create(rowType, "source rows").appendRecords(values);
+    h5pp::TableCreateOptions options;
+    options.dimsChunk   = {2};
+    options.compression = 1;
+    auto copied         = file.appendTableRecords(file.openFileHandle(), "source", "copy", h5pp::TableSelection::ALL, options);
+    CHECK(copied.tableTitle.value() == "source rows");
+    CHECK(copied.chunkDims.value() == std::vector<hsize_t>{2});
+    CHECK(h5pp::hdf5::getDeflateLevel(copied.h5DsetCreate.value()) > 0);
+    CHECK(file.table("copy").readRecords<std::vector<int>>() == values);
+}
+
 int main(int argc, char *argv[]) { return Catch::Session().run(argc, argv); }

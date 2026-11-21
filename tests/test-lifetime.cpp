@@ -21,7 +21,7 @@ TEST_CASE("Objects and their children remain usable after File destruction", "[l
         file.attribute("group/values", "unit").write(std::string("m"));
         h5pp::hid::h5t rowType = H5Tcreate(H5T_COMPOUND, sizeof(int));
         REQUIRE(H5Tinsert(rowType, "value", 0, H5T_NATIVE_INT) >= 0);
-        auto table = file.table("group/rows").ensure(rowType, "rows");
+        auto table = file.table("group/rows").create(rowType, "rows");
         return std::tuple{file.dataset("group/values"),
                           file.attribute("group/values", "unit"),
                           table,
