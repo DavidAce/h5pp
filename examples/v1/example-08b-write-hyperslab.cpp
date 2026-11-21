@@ -40,8 +40,8 @@ int main() {
 
     // Now we need to select a 2x2 hyperslab in data5x5. There are three ways of doing this:
     // 1) Define a hyperslab and give it to .writeHyperslab(...). (simplest)
-    // 2) Define a hyperslab in an instance of "h5pp::DsetInfo" corresponding to data5x5, and pass to .writeDataset(...) (see example 08e)
-    // 3) Define a hyperslab in an instance of "h5pp::Options" and pass that to .writeDataset(...). (see example 08d)
+    // 2) Define a hyperslab in an instance of "h5pp::DsetInfo" corresponding to data5x5, and pass to .writeDataset(...) (see example 08d)
+    // 3) Define a hyperslab in an instance of "h5pp::Options" and pass that to .writeDataset(...). (see example 08e)
 
     // Let's try 1) here:
 

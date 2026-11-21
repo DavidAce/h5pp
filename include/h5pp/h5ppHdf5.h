@@ -1471,6 +1471,7 @@ namespace h5pp::hdf5 {
          *      - If there is a hyperslab in dataInfo, the new dimensions should be at least this big
          *      - If there is a hyperslab in dsetInfo, the new dimensions should be increased to include it.
          */
+        if(dsetInfo.resizePolicy == ResizePolicy::OFF) return;
         try {
             dataInfo.assertWriteReady();
             auto newDimensions = dataInfo.dataDims.value();
@@ -1498,7 +1499,7 @@ namespace h5pp::hdf5 {
     inline void resizeData(DataType &data, const hid::h5s &space, const hid::h5t &type, size_t bytes) {
         // This function is used when reading data from file into memory.
         // It resizes the data so the space in memory can fit the data read from file.
-        // Note that this resizes the data to fit the bounding box of the data selected in the fileSpace.
+        // Selected elements are packed into memory without the gaps between hyperslab blocks.
         // A selection of elements in memory space must occur after calling this function.
         if constexpr(std::is_pointer_v<DataType> or std::is_array_v<DataType>) return; // Pointer and array buffers are not resized
         if(bytes == 0) return;
@@ -1526,13 +1527,19 @@ namespace h5pp::hdf5 {
         } else {
             int                  rank = H5Sget_simple_extent_ndims(space);
             std::vector<hsize_t> extent(type::safe_cast<size_t>(rank),
-                                        0); // This will have the bounding box containing the current selection
+                                        0); // Dimensions of the packed selection
             H5S_sel_type         select_type = H5Sget_select_type(space);
             if(select_type == H5S_sel_type::H5S_SEL_HYPERSLABS) {
+#if H5_VERSION_GE(1, 10, 0)
+                Hyperslab slab(space);
+                extent = slab.extent.value();
+                for(size_t idx = 0; idx < extent.size(); ++idx) extent[idx] *= slab.blocks->at(idx);
+#else
                 std::vector<hsize_t> start(type::safe_cast<size_t>(rank), 0);
                 std::vector<hsize_t> end(type::safe_cast<size_t>(rank), 0);
                 H5Sget_select_bounds(space, start.data(), end.data());
                 for(size_t idx = 0; idx < extent.size(); idx++) extent[idx] = std::max<hsize_t>(0, 1 + end[idx] - start[idx]);
+#endif
             } else {
                 H5Sget_simple_extent_dims(space, extent.data(), nullptr);
             }
@@ -1561,8 +1568,14 @@ namespace h5pp::hdf5 {
             throw h5pp::runtime_error("Could not resize given data container: DsetInfo field [h5Type] is not defined");
         if(not info.dsetByte.has_value())
             throw h5pp::runtime_error("Could not resize given data container: DsetInfo field [dsetByte] is not defined");
-        auto oldDims = h5pp::util::getDimensions(data);                                     // Store the old dimensions
-        resizeData(data, info.h5Space.value(), info.h5Type.value(), info.dsetByte.value()); // Resize the container
+        auto bytes = info.dsetByte.value();
+        if(info.dsetSlab.has_value()) {
+            selectHyperslab(info.h5Space.value(), info.dsetSlab.value());
+            if(H5Tis_variable_str(info.h5Type.value()) == 0)
+                bytes = getSizeSelected(info.h5Space.value()) * H5Tget_size(info.h5Type.value());
+        }
+        auto oldDims = h5pp::util::getDimensions(data);                     // Store the old dimensions
+        resizeData(data, info.h5Space.value(), info.h5Type.value(), bytes); // Resize the container
         auto newDims = h5pp::util::getDimensions(data);
         if(oldDims != newDims) {
             // Update the metadata

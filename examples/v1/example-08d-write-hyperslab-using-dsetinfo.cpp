@@ -58,7 +58,7 @@ int main() {
     dsetInfo.dsetSlab->extent = {2, 2}; // The dimensions of data2x2
 
     // The shape of data2x2 can be inferred from the shape of the hyperslab, or be specified in
-    // an optional "h5pp::Options" (as in example 08b) given as the third argument to writeDataset below
+    // an optional "h5pp::Options" (as in example 08e) given as the third argument to writeDataset below
     file.writeDataset(data2x2, dsetInfo);
 
     // Print the result

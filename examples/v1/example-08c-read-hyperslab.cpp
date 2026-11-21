@@ -37,7 +37,7 @@ int main() {
     h5pp::print("Read 2x4 matrix:\n");
     for(size_t row = 0; row < 2ul; row++) {
         for(size_t col = 0; col < 4ul; col++) {
-            size_t idx = row * 2 + col;
+            size_t idx = row * 4 + col;
             h5pp::print("{} ", read2x4[idx]);
         }
         h5pp::print("\n");
