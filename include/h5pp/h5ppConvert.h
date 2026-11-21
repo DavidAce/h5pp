@@ -39,9 +39,8 @@ namespace h5pp::inline v2::detail {
                                              const std::optional<Hyperslab> &dsetSlab,
                                              const DatasetWriteOptions      &writeOptions) {
         Options options;
-        options.linkPath = h5pp::util::safe_str(dsetPath);
-        if(writeOptions.dims.has_value()) options.dataDims = toOptDimsType(writeOptions.dims);
-        else if(dsetSlab.has_value() and dsetSlab->extent.has_value()) options.dataDims = h5pp::OptDimsType(dsetSlab->extent.value());
+        options.linkPath     = h5pp::util::safe_str(dsetPath);
+        options.dataDims     = toOptDimsType(writeOptions.dims);
         options.dataSlab     = writeOptions.dataSlab;
         options.dsetSlab     = dsetSlab;
         options.h5Type       = writeOptions.h5Type;
@@ -75,8 +74,13 @@ namespace h5pp::inline v2::detail {
         makeOptions(std::string_view dsetPath, const std::optional<Hyperslab> &dsetSlab, const DatasetReadOptions &readOptions) {
         Options options;
         options.linkPath = h5pp::util::safe_str(dsetPath);
-        if(readOptions.dims.has_value()) options.dataDims = toOptDimsType(readOptions.dims);
-        else if(dsetSlab.has_value() and dsetSlab->extent.has_value()) options.dataDims = h5pp::OptDimsType(dsetSlab->extent.value());
+        if(readOptions.dims.has_value()) {
+            options.dataDims = toOptDimsType(readOptions.dims);
+        } else if(not readOptions.dataSlab.has_value() and dsetSlab.has_value() and dsetSlab->extent.has_value()) {
+            options.dataDims = h5pp::OptDimsType(dsetSlab->extent.value());
+            if(dsetSlab->blocks.has_value())
+                for(size_t axis = 0; axis < options.dataDims->size(); ++axis) options.dataDims->at(axis) *= dsetSlab->blocks->at(axis);
+        }
         options.dataSlab = readOptions.dataSlab;
         options.dsetSlab = dsetSlab;
         options.h5Type   = readOptions.h5Type;

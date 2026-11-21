@@ -1482,14 +1482,22 @@ namespace h5pp::hdf5 {
                                               dataInfo.dataSlab->string());
                 }
                 newDimensions = dataInfo.dataSlab->extent.value();
+                if(dataInfo.dataSlab->blocks.has_value())
+                    for(size_t idx = 0; idx < newDimensions.size(); ++idx) newDimensions[idx] *= dataInfo.dataSlab->blocks->at(idx);
+                // A memory selection can have a different shape from the whole dataset.
+                if(not dsetInfo.dsetSlab.has_value() and util::getSizeFromDimensions(newDimensions) == dsetInfo.dsetSize.value()) return;
             }
             if(dsetInfo.dsetSlab.has_value() and dsetInfo.dsetSlab->offset.has_value() and dsetInfo.dsetSlab->extent.has_value()) {
                 const auto &offset = dsetInfo.dsetSlab->offset.value();
                 const auto &extent = dsetInfo.dsetSlab->extent.value();
-                if(newDimensions.size() != offset.size() or newDimensions.size() != extent.size())
-                    throw h5pp::runtime_error("rank mismatch: \n data dims {}\n dset slab {}", newDimensions, dsetInfo.dsetSlab->string());
-                for(size_t idx = 0; idx < newDimensions.size(); idx++)
-                    newDimensions[idx] = std::max(newDimensions[idx], offset[idx] + extent[idx]);
+                if(offset.size() != extent.size())
+                    throw h5pp::runtime_error("rank mismatch in dataset hyperslab {}", dsetInfo.dsetSlab->string());
+                newDimensions = offset;
+                for(size_t idx = 0; idx < newDimensions.size(); idx++) {
+                    auto stride = dsetInfo.dsetSlab->stride.has_value() ? dsetInfo.dsetSlab->stride->at(idx) : hsize_t{1};
+                    auto block  = dsetInfo.dsetSlab->blocks.has_value() ? dsetInfo.dsetSlab->blocks->at(idx) : hsize_t{1};
+                    newDimensions[idx] += extent[idx] == 0 ? 0 : (extent[idx] - 1) * stride + block;
+                }
             }
             resizeDataset(dsetInfo, newDimensions);
         } catch(const std::exception &e) { throw h5pp::runtime_error("Failed to resize dataset: {}", e.what()); }
@@ -2436,6 +2444,46 @@ namespace h5pp::hdf5 {
 
         // Read the data
         if constexpr(traits::is_text_v<DataType> or traits::has_text_v<DataType>) {
+            if constexpr(traits::is_container_of_v<DataType, h5pp::vstr_t> or traits::is_container_of_v<DataType, std::string>) {
+                if(dataInfo.dataSlab.has_value()) {
+                    auto                      count    = type::safe_cast<size_t>(dataInfo.dataSize.value());
+                    auto                      width    = H5Tget_size(dsetInfo.h5Type.value());
+                    bool                      variable = H5Tis_variable_str(dsetInfo.h5Type.value()) > 0;
+                    std::vector<h5pp::vstr_t> strings(variable ? count : 0);
+                    std::string               fixed(variable ? 0 : count * width, '\0');
+                    void                     *buffer = variable ? static_cast<void *>(strings.data()) : static_cast<void *>(fixed.data());
+                    if(H5Dread(dsetInfo.h5Dset.value(),
+                               dsetInfo.h5Type.value(),
+                               dataInfo.h5Space.value(),
+                               dsetInfo.h5Space.value(),
+                               plists.dsetXfer,
+                               buffer) < 0) {
+                        throw h5pp::runtime_error("Failed to read selected strings from [{}]", dsetInfo.dsetPath.value());
+                    }
+                    std::vector<size_t> indices(type::safe_cast<size_t>(getSizeSelected(dataInfo.h5Space.value())));
+                    auto                context = std::pair{indices.data(), getDimensions(dataInfo.h5Space.value())};
+                    // H5Diterate visits the selected memory coordinates, including null strings.
+                    auto                collect = [](void *, hid_t, unsigned rank, const hsize_t *point, void *state) -> herr_t {
+                        auto &[next, dims] = *static_cast<decltype(context) *>(state);
+                        size_t index       = 0;
+                        for(unsigned axis = 0; axis < rank; ++axis) index = index * dims[axis] + point[axis];
+                        *next++ = index;
+                        return 0;
+                    };
+                    if(H5Diterate(buffer, dsetInfo.h5Type.value(), dataInfo.h5Space.value(), collect, &context) < 0)
+                        throw h5pp::runtime_error("Failed to iterate selected string buffer");
+                    for(auto index : indices) {
+                        if(variable) {
+                            data[index] = std::string_view(strings[index]);
+                        } else {
+                            auto first  = fixed.data() + index * width;
+                            auto last   = std::find(first, first + width, '\0');
+                            data[index] = std::string_view(first, type::safe_cast<size_t>(last - first));
+                        }
+                    }
+                    return;
+                }
+            }
             // When H5T_VARIABLE,
             //      1) H5Dread expects [char **], which is what we get from vdata.data().
             //      2) H5Dread allocates memory on each char * which has to be reclaimed later.
