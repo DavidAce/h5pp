@@ -142,7 +142,7 @@ function(pkg_install pkg_name)
     # The success file records the build inputs and the files that were installed.
     # Include all package recipes so changes to zlib/libaec also rebuild HDF5.
     file(GLOB_RECURSE PKG_RECIPES LIST_DIRECTORIES FALSE "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/external_*/*")
-    list(APPEND PKG_RECIPES "${CMAKE_CURRENT_FUNCTION_LIST_FILE}" "${CMAKE_TOOLCHAIN_FILE}")
+    list(APPEND PKG_RECIPES "${CMAKE_CURRENT_FUNCTION_LIST_FILE}" "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/SourceArchive.cmake" "${CMAKE_TOOLCHAIN_FILE}")
     list(SORT PKG_RECIPES)
     foreach(recipe IN LISTS PKG_RECIPES)
         if(EXISTS "${recipe}")

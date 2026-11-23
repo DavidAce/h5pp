@@ -7,9 +7,13 @@ include(GNUInstallDirs)
 include(ExternalProject)
 
 
+include("${CMAKE_CURRENT_LIST_DIR}/../SourceArchive.cmake")
+h5pp_source_archive(LIBAEC
+        "https://github.com/Deutsches-Klimarechenzentrum/libaec/releases/download/v1.1.7/libaec-1.1.7.tar.gz"
+        "MD5=14dc76315b49b949c8882ead3a984fc9")
+
 ExternalProject_Add(external_aec
-        URL         https://github.com/Deutsches-Klimarechenzentrum/libaec/releases/download/v1.1.7/libaec-1.1.7.tar.gz
-        URL_MD5     14dc76315b49b949c8882ead3a984fc9 #v1.1.7
+        ${H5PP_SOURCE_ARGS}
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         USES_TERMINAL_DOWNLOAD TRUE

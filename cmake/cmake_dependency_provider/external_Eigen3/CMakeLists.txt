@@ -4,9 +4,13 @@ if(INIT_CACHE_FILE)
     set(INIT_CACHE_ARG -C${INIT_CACHE_FILE})
 endif()
 include(ExternalProject)
+include("${CMAKE_CURRENT_LIST_DIR}/../SourceArchive.cmake")
+h5pp_source_archive(EIGEN3
+        "https://gitlab.com/libeigen/eigen/-/archive/5.0.1/eigen-5.0.1.tar.bz2"
+        "MD5=457323cbf3688f52b3623c0aa85044b7")
+
 ExternalProject_Add(external_eigen3
-        URL  https://gitlab.com/libeigen/eigen/-/archive/5.0.1/eigen-5.0.1.tar.bz2
-        URL_MD5 457323cbf3688f52b3623c0aa85044b7
+        ${H5PP_SOURCE_ARGS}
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         USES_TERMINAL_DOWNLOAD TRUE

@@ -26,9 +26,13 @@ option(HDF5_BUILD_TOOLS             "" ON)
 #set(SZIP_ROOT      ${CMAKE_INSTALL_PREFIX} CACHE STRING "")
 
 
+include("${CMAKE_CURRENT_LIST_DIR}/../SourceArchive.cmake")
+h5pp_source_archive(HDF5
+        "https://support.hdfgroup.org/releases/hdf5/2.1.1/downloads/hdf5-2.1.1.tar.gz"
+        "MD5=105d909d2d11374c6e78fda414802e93")
+
 ExternalProject_Add(external_hdf5
-        URL         https://support.hdfgroup.org/releases/hdf5/2.1.1/downloads/hdf5-2.1.1.tar.gz
-        URL_MD5     105d909d2d11374c6e78fda414802e93 # 2.1.1
+        ${H5PP_SOURCE_ARGS}
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         USES_TERMINAL_DOWNLOAD TRUE

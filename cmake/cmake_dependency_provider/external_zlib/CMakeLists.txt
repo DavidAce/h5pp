@@ -9,13 +9,17 @@ include(ExternalProject)
 # Static zlib may be linked into a shared HDF5 library.
 option(CMAKE_POSITION_INDEPENDENT_CODE "Build position-independent libraries" ON)
 
+include("${CMAKE_CURRENT_LIST_DIR}/../SourceArchive.cmake")
+h5pp_source_archive(ZLIB
+        "https://github.com/madler/zlib/archive/refs/tags/v1.4.tar.gz"
+        "MD5=67a96ddfe1b7b0193f585ccc0770903e")
+
 ExternalProject_Add(external_zlib
 #        URL         https://github.com/madler/zlib/archive/refs/tags/v1.2.12.tar.gz
 #        URL         https://github.com/madler/zlib/archive/refs/tags/v1.3.tar.gz
-        URL         https://github.com/madler/zlib/archive/refs/tags/v1.4.tar.gz
+        ${H5PP_SOURCE_ARGS}
 #        URL_MD5     db5b7326d4e0dbcbd1981b640d495c9b # v1.2.12
 #        URL_MD5     c3d6da426165d651fd3bddef29406928 # v1.3
-        URL_MD5     67a96ddfe1b7b0193f585ccc0770903e # v1.4
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         USES_TERMINAL_DOWNLOAD TRUE

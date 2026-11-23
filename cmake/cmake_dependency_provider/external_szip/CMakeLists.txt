@@ -6,9 +6,13 @@ endif()
 include(GNUInstallDirs)
 include(ExternalProject)
 
+include("${CMAKE_CURRENT_LIST_DIR}/../SourceArchive.cmake")
+h5pp_source_archive(SZIP
+        "https://support.hdfgroup.org/ftp/lib-external/szip/2.1.1/src/szip-2.1.1.tar.gz"
+        "MD5=5addbf2a5b1bf928b92c47286e921f72")
+
 ExternalProject_Add(external_szip
-        URL         https://support.hdfgroup.org/ftp/lib-external/szip/2.1.1/src/szip-2.1.1.tar.gz
-        URL_MD5     5addbf2a5b1bf928b92c47286e921f72
+        ${H5PP_SOURCE_ARGS}
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         USES_TERMINAL_DOWNLOAD TRUE

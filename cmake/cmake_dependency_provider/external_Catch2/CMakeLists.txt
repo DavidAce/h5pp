@@ -11,9 +11,13 @@ if(NOT CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 20 OR CMAKE_CXX_STANDARD EQ
     set(CMAKE_CXX_STANDARD 20)
 endif()
 
+include("${CMAKE_CURRENT_LIST_DIR}/../SourceArchive.cmake")
+h5pp_source_archive(CATCH2
+        "https://github.com/catchorg/Catch2/archive/refs/tags/v3.13.0.tar.gz"
+        "SHA256=650795f6501af514f806e78c554729847b98db6935e69076f36bb03ed2e985ef")
+
 ExternalProject_Add(external_catch2
-        URL         https://github.com/catchorg/Catch2/archive/refs/tags/v3.13.0.tar.gz
-        URL_HASH    SHA256=650795f6501af514f806e78c554729847b98db6935e69076f36bb03ed2e985ef
+        ${H5PP_SOURCE_ARGS}
         PREFIX      ${CMAKE_BINARY_DIR}
         INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
         USES_TERMINAL_DOWNLOAD TRUE

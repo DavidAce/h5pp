@@ -102,6 +102,13 @@ cmake -S . -B build/provider \
 
 Dependencies are installed during configuration. `cmake --install` installs h5pp.
 
+For local sources, set `H5PP_<DEPENDENCY>_SOURCE_ARCHIVE` to an absolute archive
+path, and optionally `H5PP_<DEPENDENCY>_SOURCE_ARCHIVE_MD5_SUM` to its MD5 checksum.
+Use `HDF5`, `ZLIB`, `LIBAEC`, `FMT`, `SPDLOG`, `EIGEN3`, `CATCH2` or `SZIP` for
+`<DEPENDENCY>`. For example, `-DH5PP_HDF5_SOURCE_ARCHIVE=/sources/hdf5.tar.gz`.
+No checksum is checked for a local archive unless supplied. Offline builds need
+local archives for every dependency the provider builds.
+
 With this provider, both go into `<build>/pkg-install` by default. Set
 `CMAKE_INSTALL_PREFIX` during configuration to choose another directory. Set
 `PKG_INSTALL_PREFIX` only if dependencies should go elsewhere.
