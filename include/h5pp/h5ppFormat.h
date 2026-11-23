@@ -158,7 +158,7 @@ namespace h5pp {
 
     template<typename S, typename... Args>
     [[nodiscard]] std::string format_runtime(S &&fmtstring, Args &&...args) {
-        return format(std::forward<S>(fmtstring), std::forward<Args>(args)...);
+        return h5pp::format(std::forward<S>(fmtstring), std::forward<Args>(args)...);
     }
 
     template<typename... Args>
