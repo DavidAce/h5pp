@@ -419,7 +419,7 @@ namespace h5pp::inline v2 {
         }
     };
 
-    /** @brief Dataset operations obtained from a mutable File. */
+    /** @brief Dataset operations obtained from a non-const File. */
     using Dataset      = BasicDataset<h5pp::v2::File>;
     /** @brief Dataset reads and inspection obtained from a const File. */
     using ConstDataset = BasicDataset<const h5pp::v2::File>;

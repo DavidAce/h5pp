@@ -8,6 +8,30 @@
 namespace h5pp::inline v2 {
     class File;
 
+    /**
+     * @brief Table handle.
+     *
+     * A table stores records of an HDF5 compound datatype in a one-dimensional,
+     * extendible dataset. Obtain a Table with write methods from a non-const File
+     * or Group. ConstTable provides read-only methods.
+     *
+     * Call create() before writing records. Each table object keeps the file open
+     * and remains usable after the File object is destroyed. Release these objects
+     * before File::moveFileTo().
+     *
+     * @code{.cpp}
+     * struct Particle { double mass; };
+     * h5pp::hid::h5t recordType = H5Tcreate(H5T_COMPOUND, sizeof(Particle));
+     * H5Tinsert(recordType, "mass", HOFFSET(Particle, mass), H5T_NATIVE_DOUBLE);
+     * std::vector<Particle> records{{1.0}, {2.0}};
+     * auto table = file.table("particles").create(recordType, "Particle records");
+     * table.appendRecords(records);
+     * auto copy = table.readRecords<std::vector<Particle>>();
+     * auto masses = table.readField<std::vector<double>>("mass");
+     * @endcode
+     *
+     * @tparam FileType File for Table, or const File for ConstTable.
+     */
     template<typename FileType>
     requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
     class BasicTable {
@@ -24,6 +48,11 @@ namespace h5pp::inline v2 {
         }
 
         public:
+        /**
+         * @brief Refer to a table without creating it.
+         * @param file File containing the table.
+         * @param tablePath Table path relative to the file root.
+         */
         BasicTable(FileType &file, std::string_view tablePath)
             : BasicTable(file.openFileHandle(), file.plists, file.getFileAccess(), file.reclaimStack, tablePath) {}
 
@@ -43,21 +72,30 @@ namespace h5pp::inline v2 {
             : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess), reclaimStack_(reclaimStack), tablePath_(tablePath) {}
 
         public:
+        /** @brief Check whether a link exists at the table path. */
         [[nodiscard]] bool      exists() const { return h5pp::hdf5::checkIfLinkExists(fileHandle_, tablePath_, plists_.linkAccess); }
+        /** @brief Read table metadata, including record count and compound datatype. */
         [[nodiscard]] TableInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             return h5pp::scan::readTableInfo(fileHandle_, options, plists_);
         }
+        /** @brief Read field names, datatypes, byte offsets and sizes. */
         [[nodiscard]] TableFieldInfo getFieldInfo() const {
             return h5pp::scan::getTableFieldInfo(fileHandle_, tablePath_, std::nullopt, std::nullopt, plists_.dsetAccess);
         }
+        /** @brief Read datatype information for attributes on the table. */
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes() const {
             return h5pp::hdf5::getTypeInfo_allAttributes(fileHandle_, tablePath_, std::nullopt, plists_.linkAccess);
         }
+        /** @brief List attribute names on the table. */
         [[nodiscard]] std::vector<std::string> getAttributeNames() const {
             return h5pp::hdf5::getAttributeNames(fileHandle_, tablePath_, std::nullopt, plists_.linkAccess);
         }
+        /**
+         * @brief Find attribute names on the table containing a substring.
+         * @param searchKey Substring to match. An empty string returns all names.
+         */
         [[nodiscard]] std::vector<std::string> findAttributes(std::string_view searchKey = "") const {
             std::vector<std::string> matches;
             for(const auto &attrName : getAttributeNames())
@@ -65,6 +103,10 @@ namespace h5pp::inline v2 {
             return matches;
         }
 
+        /**
+         * @brief Check whether all requested fields exist.
+         * @param fields Field names or zero-based indices, accepted by NamesOrIndices.
+         */
         template<typename Fields>
         [[nodiscard]] bool fieldExists(const Fields &fields) const {
             h5pp::NamesOrIndices fieldSelection(fields);
@@ -75,6 +117,14 @@ namespace h5pp::inline v2 {
             return false;
         }
 
+        /**
+         * @brief Create an empty table with the specified compound datatype and title.
+         *
+         * An existing table is left unchanged, including its title and creation properties.
+         *
+         * @param createOptions Requires h5Type and title; chunk dimensions and compression are optional.
+         * @return A copy of this object, for chained calls.
+         */
         [[nodiscard]] BasicTable create(const TableCreateOptions &createOptions) requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("create table");
@@ -92,6 +142,13 @@ namespace h5pp::inline v2 {
             return *this;
         }
 
+        /**
+         * @brief Create an empty table from a compound datatype and title.
+         * @param h5Type HDF5 compound datatype describing one record, including field offsets.
+         * @param title Descriptive table title.
+         * @param createOptions Optional chunk dimensions and compression. h5Type and title arguments take precedence.
+         * @return A copy of this object, for chained calls.
+         */
         [[nodiscard]] BasicTable create(const hid::h5t &h5Type, std::string_view title, const TableCreateOptions &createOptions = {})
             requires traits::is_mutable_file_v<FileType>
         {
@@ -101,6 +158,11 @@ namespace h5pp::inline v2 {
             return create(options);
         }
 
+        /**
+         * @brief Append records to an existing table.
+         * @param data Records whose memory layout matches the table's compound datatype.
+         * @param extent Number of records to write; inferred from data when omitted. Required for pointer data.
+         */
         template<typename DataType>
         requires traits::is_mutable_file_v<FileType>
         void appendRecords(const DataType &data, std::optional<hsize_t> extent = std::nullopt) {
@@ -112,6 +174,12 @@ namespace h5pp::inline v2 {
             h5pp::hdf5::writeTableRecords(data, info, info.numRecords.value(), extent);
         }
 
+        /**
+         * @brief Write records at an offset, extending the table if necessary.
+         * @param data Records whose memory layout matches the table's compound datatype.
+         * @param offset Zero-based first record to overwrite.
+         * @param extent Number of records to write; inferred from data when omitted. Required for pointer data.
+         */
         template<typename DataType>
         requires traits::is_mutable_file_v<FileType>
         void writeRecords(const DataType &data, hsize_t offset = 0, std::optional<hsize_t> extent = std::nullopt) {
@@ -122,6 +190,15 @@ namespace h5pp::inline v2 {
             h5pp::hdf5::writeTableRecords(data, info, offset, extent);
         }
 
+        /**
+         * @brief Append records from another table, creating this table if absent.
+         *
+         * A missing table is created with the source datatype and title.
+         *
+         * @param srcInfo Source table metadata with open dataset and datatype identifiers.
+         * @param selection ALL, FIRST or LAST source records.
+         * @return Destination metadata after appending.
+         */
         [[nodiscard]] TableInfo appendRecordsFrom(const h5pp::TableInfo &srcInfo, TableSelection selection = TableSelection::ALL)
             requires traits::is_mutable_file_v<FileType>
         {
@@ -143,6 +220,14 @@ namespace h5pp::inline v2 {
 
         template<typename h5x_src>
         [[nodiscard]] TableInfo
+            /**
+             * @brief Append records from a table at an HDF5 location.
+             * @param srcLocation Source file or group identifier.
+             * @param srcTablePath Table path relative to srcLocation.
+             * @param selection ALL, FIRST or LAST source records.
+             * @return Destination metadata after appending.
+             * @see appendRecordsFrom(const h5pp::TableInfo &, TableSelection)
+             */
             appendRecordsFrom(const h5x_src &srcLocation, std::string_view srcTablePath, TableSelection selection = TableSelection::ALL)
                 requires traits::is_mutable_file_v<FileType>
         {
@@ -152,6 +237,19 @@ namespace h5pp::inline v2 {
             return appendRecordsFrom(srcInfo, selection);
         }
 
+        /**
+         * @brief Read records into a returned value.
+         *
+         * Without offset or extent, resizable containers read all records and single-record
+         * buffers read the last record. With only offset, containers read to the end and
+         * single-record buffers read one record. With only extent, read the last extent records.
+         * With DataType = std::optional<T>, a missing table returns std::nullopt.
+         *
+         * @tparam DataType Record or container type matching the compound datatype's memory layout.
+         * @param offset Zero-based first record.
+         * @param extent Number of records. Required for std::vector<std::byte>.
+         * @see File::vlenReclaim()
+         */
         template<typename DataType>
         [[nodiscard]] DataType readRecords(std::optional<hsize_t> offset = std::nullopt,
                                            std::optional<hsize_t> extent = std::nullopt) const {
@@ -168,6 +266,15 @@ namespace h5pp::inline v2 {
             return data;
         }
 
+        /**
+         * @brief Read ALL, FIRST or LAST records into a returned value.
+         *
+         * With DataType = std::optional<T>, a missing table returns std::nullopt.
+         *
+         * @tparam DataType Record or container type matching the compound datatype's memory layout.
+         * @param selection Records to read. Non-resizable buffers must fit the selection.
+         * @see File::vlenReclaim()
+         */
         template<typename DataType>
         [[nodiscard]] DataType readRecords(TableSelection selection) const {
             if constexpr(h5pp::traits::is_specialization_v<DataType, std::optional>) {
@@ -184,6 +291,14 @@ namespace h5pp::inline v2 {
             return data;
         }
 
+        /**
+         * @brief Read records into a supplied buffer, resizing containers to fit.
+         * @param data Destination with a memory layout matching the table's compound datatype.
+         * @param offset Zero-based first record.
+         * @param extent Number of records. Required for std::vector<std::byte>.
+         * @see readRecords(std::optional<hsize_t>, std::optional<hsize_t>)
+         * @see File::vlenReclaim()
+         */
         template<typename DataType>
         void readRecordsInto(DataType              &data,
                              std::optional<hsize_t> offset = std::nullopt,
@@ -195,6 +310,12 @@ namespace h5pp::inline v2 {
             if(info.reclaimInfo.has_value()) reclaimStack_->emplace_back(info.reclaimInfo.value());
         }
 
+        /**
+         * @brief Read ALL, FIRST or LAST records into a supplied buffer.
+         * @param data Destination buffer. Resizable containers are resized; other buffers must fit the selection.
+         * @param selection Records to read.
+         * @see File::vlenReclaim()
+         */
         template<typename DataType>
         void readRecordsInto(DataType &data, TableSelection selection) const {
             Options options;
@@ -205,6 +326,19 @@ namespace h5pp::inline v2 {
             if(info.reclaimInfo.has_value()) reclaimStack_->emplace_back(info.reclaimInfo.value());
         }
 
+        /**
+         * @brief Read selected fields from a range of records.
+         *
+         * For one field, use its C++ type or a container of that type. For multiple fields,
+         * use a record type with the selected fields packed in selection order.
+         * Variable-length array fields must be read one at a time.
+         * With DataType = std::optional<T>, missing fields return std::nullopt.
+         *
+         * @param fields Field names or zero-based indices, accepted by NamesOrIndices.
+         * @param offset Zero-based first record.
+         * @param extent Number of records; defaults follow readRecords().
+         * @see File::vlenReclaim()
+         */
         template<typename DataType, typename Fields>
         [[nodiscard]] DataType readField(const Fields          &fields,
                                          std::optional<hsize_t> offset = std::nullopt,
@@ -225,6 +359,13 @@ namespace h5pp::inline v2 {
             return data;
         }
 
+        /**
+         * @brief Read selected fields from ALL, FIRST or LAST records.
+         * @param fields Field names or zero-based indices, accepted by NamesOrIndices.
+         * @param selection Records to read.
+         * @return Field values, or std::nullopt for missing fields when DataType is std::optional<T>.
+         * @see readField(const Fields &, std::optional<hsize_t>, std::optional<hsize_t>)
+         */
         template<typename DataType, typename Fields>
         [[nodiscard]] DataType readField(const Fields &fields, TableSelection selection) const {
             h5pp::NamesOrIndices fieldSelection(fields);
@@ -237,6 +378,14 @@ namespace h5pp::inline v2 {
             return data;
         }
 
+        /**
+         * @brief Read selected fields into a supplied buffer.
+         * @param data Destination for one field or packed fields in selection order.
+         * @param fields Field names or zero-based indices, accepted by NamesOrIndices.
+         * @param offset Zero-based first record.
+         * @param extent Number of records; defaults follow readRecords().
+         * @see File::vlenReclaim()
+         */
         template<typename DataType, typename Fields>
         void readFieldInto(DataType              &data,
                            const Fields          &fields,
@@ -252,6 +401,13 @@ namespace h5pp::inline v2 {
             if(info.reclaimInfo.has_value()) reclaimStack_->emplace_back(info.reclaimInfo.value());
         }
 
+        /**
+         * @brief Read selected fields from ALL, FIRST or LAST records into a supplied buffer.
+         * @param data Destination for one field or packed fields in selection order.
+         * @param fields Field names or zero-based indices, accepted by NamesOrIndices.
+         * @param selection Records to read.
+         * @see File::vlenReclaim()
+         */
         template<typename DataType, typename Fields>
         void readFieldInto(DataType &data, const Fields &fields, TableSelection selection) const {
             static_assert(not std::is_const_v<DataType>);
@@ -273,6 +429,8 @@ namespace h5pp::inline v2 {
         }
     };
 
+    /** @brief Table operations obtained from a non-const File. */
     using Table      = BasicTable<h5pp::v2::File>;
+    /** @brief Table operations obtained from a const File. */
     using ConstTable = BasicTable<const h5pp::v2::File>;
 }

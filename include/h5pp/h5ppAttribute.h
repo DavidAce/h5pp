@@ -7,6 +7,24 @@
 namespace h5pp::inline v2 {
     class File;
 
+    /**
+     * @brief Attribute handle.
+     *
+     * Obtain an Attribute with write methods from a non-const File, Dataset, Group or Link.
+     * ConstAttribute provides read-only methods. The parent object must exist on file;
+     * write() creates the attribute if absent.
+     *
+     * Each attribute object keeps the file open and remains usable after the File
+     * object is destroyed. Release these objects before File::moveFileTo().
+     *
+     * @code{.cpp}
+     * auto attribute = file.dataset("velocity").attribute("units");
+     * attribute.write("m/s");
+     * auto units = attribute.read<std::string>();
+     * @endcode
+     *
+     * @tparam FileType File for Attribute, or const File for ConstAttribute.
+     */
     template<typename FileType>
     requires(std::is_same_v<std::remove_cv_t<FileType>, h5pp::v2::File>)
     class BasicAttribute {
@@ -23,6 +41,12 @@ namespace h5pp::inline v2 {
         }
 
         public:
+        /**
+         * @brief Refer to an attribute without creating it.
+         * @param file File containing the parent object.
+         * @param linkPath Path to the parent dataset, group or named datatype, relative to the file root.
+         * @param attrName Attribute name on that object.
+         */
         BasicAttribute(FileType &file, std::string_view linkPath, std::string_view attrName)
             : BasicAttribute(file.openFileHandle(), file.plists, file.getFileAccess(), linkPath, attrName) {}
 
@@ -45,19 +69,31 @@ namespace h5pp::inline v2 {
             : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess), linkPath_(linkPath), attrName_(attrName) {}
 
         public:
+        /** @brief Check whether the attribute exists on its parent object. */
         [[nodiscard]] bool exists() const {
             return h5pp::hdf5::checkIfAttrExists(fileHandle_, linkPath_, attrName_, std::nullopt, plists_.linkAccess);
         }
+        /** @brief Read attribute metadata, including dimensions and datatype. */
         [[nodiscard]] AttrInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(linkPath_);
             options.attrName = h5pp::util::safe_str(attrName_);
             return h5pp::scan::readAttrInfo(fileHandle_, options, plists_);
         }
+        /** @brief Read datatype information for the attribute. */
         [[nodiscard]] TypeInfo getTypeInfo() const {
             return h5pp::hdf5::getTypeInfo(fileHandle_, linkPath_, attrName_, std::nullopt, std::nullopt, plists_.linkAccess);
         }
 
+        /**
+         * @brief Write the attribute, creating it if absent.
+         *
+         * Dimensions and datatype are inferred from data unless overridden.
+         * Existing attributes retain their dimensions and datatype.
+         *
+         * @param data Values to write.
+         * @param options Override buffer dimensions or datatype. Specify dims for pointer data.
+         */
         template<typename DataType>
         requires traits::is_mutable_file_v<FileType>
         void write(const DataType &data, const AttributeWriteOptions &options = AttributeWriteOptions()) {
@@ -71,6 +107,15 @@ namespace h5pp::inline v2 {
             h5pp::hdf5::writeAttribute(data, dataInfo, attrInfo);
         }
 
+        /**
+         * @brief Read the attribute into a returned value.
+         *
+         * With DataType = std::optional<T>, a missing attribute returns std::nullopt.
+         * Other read errors are still reported as exceptions.
+         *
+         * @tparam DataType Type of the returned data.
+         * @param options Override buffer dimensions or datatype.
+         */
         template<typename DataType>
         [[nodiscard]] DataType read(const AttributeReadOptions &options = AttributeReadOptions()) const {
             if constexpr(h5pp::traits::is_specialization_v<DataType, std::optional>) {
@@ -82,6 +127,15 @@ namespace h5pp::inline v2 {
             return data;
         }
 
+        /**
+         * @brief Read the attribute into a supplied buffer.
+         *
+         * Resizable containers are resized to fit the attribute. Arrays and pointer
+         * buffers must have enough space for the read.
+         *
+         * @param data Destination buffer.
+         * @param options Override buffer dimensions or datatype. Specify dims for pointer data.
+         */
         template<typename DataType>
         void readInto(DataType &data, const AttributeReadOptions &options = AttributeReadOptions()) const {
             static_assert(not std::is_const_v<DataType>);
@@ -95,6 +149,8 @@ namespace h5pp::inline v2 {
         }
     };
 
+    /** @brief Attribute operations obtained from a non-const File. */
     using Attribute      = BasicAttribute<h5pp::v2::File>;
+    /** @brief Attribute operations obtained from a const File. */
     using ConstAttribute = BasicAttribute<const h5pp::v2::File>;
 }

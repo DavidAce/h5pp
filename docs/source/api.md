@@ -12,7 +12,7 @@
 
 ## h5pp::Dataset
 
-`Dataset` and `ConstDataset` are aliases of `BasicDataset` for mutable and const files.
+`Dataset` and `ConstDataset` are aliases of `BasicDataset` for non-const and const files.
 
 ```{eval-rst}
 .. doxygenclass:: h5pp::v2::BasicDataset
@@ -23,7 +23,7 @@
 
 ## h5pp::Attribute
 
-`Attribute` and `ConstAttribute` are aliases of `BasicAttribute` for mutable and const files.
+`Attribute` and `ConstAttribute` are aliases of `BasicAttribute` for non-const and const files.
 
 ```{eval-rst}
 .. doxygenclass:: h5pp::v2::BasicAttribute
@@ -34,7 +34,7 @@
 
 ## h5pp::Table
 
-`Table` and `ConstTable` are aliases of `BasicTable` for mutable and const files.
+`Table` and `ConstTable` are aliases of `BasicTable` for non-const and const files.
 
 ```{eval-rst}
 .. doxygenclass:: h5pp::v2::BasicTable
@@ -45,7 +45,7 @@
 
 ## h5pp::Group
 
-`Group` and `ConstGroup` are aliases of `BasicGroup` for mutable and const files.
+`Group` and `ConstGroup` are aliases of `BasicGroup` for non-const and const files.
 
 ```{eval-rst}
 .. doxygenclass:: h5pp::v2::BasicGroup
@@ -56,7 +56,7 @@
 
 ## h5pp::Link
 
-`Link` and `ConstLink` are aliases of `BasicLink` for mutable and const files.
+`Link` and `ConstLink` are aliases of `BasicLink` for non-const and const files.
 
 ```{eval-rst}
 .. doxygenclass:: h5pp::v2::BasicLink
