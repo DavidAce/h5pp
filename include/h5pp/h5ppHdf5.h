@@ -725,7 +725,11 @@ namespace h5pp::hdf5 {
                 return 0;
             }
         } else {
-            h5pp::logger::log->debug("Compression is not available with this HDF5 library");
+            if(compressionLevel.has_value() and compressionLevel.value() > 0) {
+                h5pp::logger::log->warn(
+                    "Compression level {} requested, but this HDF5 library has no deflate support. Compression is disabled.",
+                    compressionLevel.value());
+            }
             return 0;
         }
     }
