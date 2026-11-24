@@ -72,35 +72,42 @@ namespace h5pp::inline v2 {
             : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess), reclaimStack_(reclaimStack), tablePath_(tablePath) {}
 
         public:
-        [[nodiscard]] const std::string &getPath() const { return tablePath_; } /*!< Object path relative to the file root. */
-        [[nodiscard]] std::string        getName() const {
-            return tablePath_ == "/" ? "/" : tablePath_.substr(tablePath_.find_last_of('/') + 1);
-        } /*!< Object name without its parent path. */
+        //! Object path relative to the file root.
+        [[nodiscard]] const std::string &getPath() const { return tablePath_; }
+        //! Object name without its parent path.
+        [[nodiscard]] std::string getName() const { return tablePath_ == "/" ? "/" : tablePath_.substr(tablePath_.find_last_of('/') + 1); }
+        //! Parent group path; "/" for objects in the file root.
         [[nodiscard]] std::string getParentPath() const {
             auto parent = util::getParentPath(tablePath_);
             return parent.empty() ? "/" : std::string(parent);
-        } /*!< Parent group path; "/" for objects in the file root. */
-        [[nodiscard]] std::string getFilePath() const { return hdf5::getFilePath(fileHandle_); }              /*!< Owning file path. */
-        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); } /*!< Owning filename. */
-        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }                               /*!< File access policy. */
+        }
+        //! Owning file path.
+        [[nodiscard]] std::string getFilePath() const { return hdf5::getFilePath(fileHandle_); }
+        //! Owning filename.
+        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); }
+        //! File access policy.
+        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }
 
-        [[nodiscard]] bool exists() const {
-            return h5pp::hdf5::checkIfLinkExists(fileHandle_, tablePath_, plists_.linkAccess);
-        } /*!< Check whether a link exists at the table path. */
+        //! Check whether a link exists at the table path.
+        [[nodiscard]] bool      exists() const { return h5pp::hdf5::checkIfLinkExists(fileHandle_, tablePath_, plists_.linkAccess); }
+        //! Read table metadata, including record count and compound datatype.
         [[nodiscard]] TableInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             return h5pp::scan::readTableInfo(fileHandle_, options, plists_);
-        } /*!< Read table metadata, including record count and compound datatype. */
+        }
+        //! Read field names, datatypes, byte offsets and sizes.
         [[nodiscard]] TableFieldInfo getFieldInfo() const {
             return h5pp::scan::getTableFieldInfo(fileHandle_, tablePath_, std::nullopt, std::nullopt, plists_.dsetAccess);
-        } /*!< Read field names, datatypes, byte offsets and sizes. */
+        }
+        //! Read datatype information for attributes on the table.
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes() const {
             return h5pp::hdf5::getTypeInfo_allAttributes(fileHandle_, tablePath_, std::nullopt, plists_.linkAccess);
-        } /*!< Read datatype information for attributes on the table. */
+        }
+        //! List attribute names on the table.
         [[nodiscard]] std::vector<std::string> getAttributeNames() const {
             return h5pp::hdf5::getAttributeNames(fileHandle_, tablePath_, std::nullopt, plists_.linkAccess);
-        } /*!< List attribute names on the table. */
+        }
         /**
          * @brief Find attribute names on the table containing a substring.
          * @param searchKey Substring to match. An empty string returns all names.
@@ -112,45 +119,53 @@ namespace h5pp::inline v2 {
             return matches;
         }
 
+        //! Refer to an attribute on the table without creating it.
         BasicAttribute<FileType> attribute(std::string_view attrName) const {
             return BasicAttribute<FileType>(fileHandle_, plists_, fileAccess_, tablePath_, attrName);
-        } /*!< Refer to an attribute on the table without creating it. */
+        }
 
+        //! Read datatype information for the compound record type.
         [[nodiscard]] TypeInfo getTypeInfo() const {
             return h5pp::hdf5::getTypeInfo(fileHandle_, tablePath_, std::nullopt, plists_.dsetAccess);
-        } /*!< Read datatype information for the compound record type. */
+        }
 
+        //! Write records at offset, extending the table if necessary. See writeRecords().
         template<typename DataType>
         requires traits::is_mutable_file_v<FileType>
         BasicTable write(const DataType &data, hsize_t offset = 0, std::optional<hsize_t> extent = std::nullopt) {
             return writeRecords(data, offset, extent);
-        } /*!< Write records at offset, extending the table if necessary. See writeRecords(). */
+        }
 
+        //! Append records to an existing table. See appendRecords().
         template<typename DataType>
         requires traits::is_mutable_file_v<FileType>
         BasicTable append(const DataType &data, std::optional<hsize_t> extent = std::nullopt) {
             return appendRecords(data, extent);
-        } /*!< Append records to an existing table. See appendRecords(). */
+        }
 
+        //! Read records into a returned value. See readRecords().
         template<typename DataType>
         [[nodiscard]] DataType read(std::optional<hsize_t> offset = std::nullopt, std::optional<hsize_t> extent = std::nullopt) const {
             return readRecords<DataType>(offset, extent);
-        } /*!< Read records into a returned value. See readRecords(). */
+        }
 
+        //! Read ALL, FIRST or LAST records into a returned value.
         template<typename DataType>
         [[nodiscard]] DataType read(TableSelection selection) const {
             return readRecords<DataType>(selection);
-        } /*!< Read ALL, FIRST or LAST records into a returned value. */
+        }
 
+        //! Read records into a supplied buffer. See readRecordsInto().
         template<typename DataType>
         void readInto(DataType &data, std::optional<hsize_t> offset = std::nullopt, std::optional<hsize_t> extent = std::nullopt) const {
             readRecordsInto(data, offset, extent);
-        } /*!< Read records into a supplied buffer. See readRecordsInto(). */
+        }
 
+        //! Read ALL, FIRST or LAST records into a supplied buffer.
         template<typename DataType>
         void readInto(DataType &data, TableSelection selection) const {
             readRecordsInto(data, selection);
-        } /*!< Read ALL, FIRST or LAST records into a supplied buffer. */
+        }
 
         /**
          * @brief Check whether all requested fields exist.

@@ -83,32 +83,38 @@ namespace h5pp::inline v2 {
               filePath_(filePath), linkPath_(linkPath) {}
 
         public:
-        [[nodiscard]] std::string getName() const {
-            return linkPath_ == "/" ? "/" : linkPath_.substr(linkPath_.find_last_of('/') + 1);
-        } /*!< Object name without its parent path. */
+        //! Object name without its parent path.
+        [[nodiscard]] std::string getName() const { return linkPath_ == "/" ? "/" : linkPath_.substr(linkPath_.find_last_of('/') + 1); }
+        //! Parent group path; "/" for objects in the file root.
         [[nodiscard]] std::string getParentPath() const {
             auto parent = util::getParentPath(linkPath_);
             return parent.empty() ? "/" : std::string(parent);
-        } /*!< Parent group path; "/" for objects in the file root. */
-        [[nodiscard]] std::string getFilePath() const { return hdf5::getFilePath(fileHandle_); }              /*!< Owning file path. */
-        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); } /*!< Owning filename. */
-        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }                               /*!< File access policy. */
+        }
+        //! Owning file path.
+        [[nodiscard]] std::string getFilePath() const { return hdf5::getFilePath(fileHandle_); }
+        //! Owning filename.
+        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); }
+        //! File access policy.
+        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }
 
-        [[nodiscard]] const std::string &getPath() const { return linkPath_; } /*!< Return the stored link path. */
-        [[nodiscard]] bool               exists() const {
-            return h5pp::hdf5::checkIfLinkExists(fileHandle_, linkPath_, plists_.linkAccess);
-        } /*!< Check whether the link exists. */
+        //! Return the stored link path.
+        [[nodiscard]] const std::string &getPath() const { return linkPath_; }
+        //! Check whether the link exists.
+        [[nodiscard]] bool     exists() const { return h5pp::hdf5::checkIfLinkExists(fileHandle_, linkPath_, plists_.linkAccess); }
+        //! Read link metadata, including the target object type.
         [[nodiscard]] LinkInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(linkPath_);
             return h5pp::scan::readLinkInfo(fileHandle_, options, plists_);
-        } /*!< Read link metadata, including the target object type. */
+        }
+        //! Read datatype information for attributes on the linked object.
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes() const {
             return h5pp::hdf5::getTypeInfo_allAttributes(fileHandle_, linkPath_, std::nullopt, plists_.linkAccess);
-        } /*!< Read datatype information for attributes on the linked object. */
+        }
+        //! List attribute names on the linked object.
         [[nodiscard]] std::vector<std::string> getAttributeNames() const {
             return h5pp::hdf5::getAttributeNames(fileHandle_, linkPath_, std::nullopt, plists_.linkAccess);
-        } /*!< List attribute names on the linked object. */
+        }
         /**
          * @brief Find attribute names on the linked object containing a substring.
          * @param searchKey Substring to match. An empty string returns all names.
@@ -119,23 +125,26 @@ namespace h5pp::inline v2 {
                 if(searchKey.empty() or attrName.find(searchKey) != std::string::npos) matches.emplace_back(attrName);
             return matches;
         }
+        //! Refer to an attribute on the linked object without creating it.
         BasicAttribute<FileType> attribute(std::string_view attrName) const {
             return BasicAttribute<FileType>(fileHandle_, plists_, fileAccess_, linkPath_, attrName);
-        } /*!< Refer to an attribute on the linked object without creating it. */
+        }
 
+        //! Refer to this path as a dataset. Its type is checked when a dataset operation is performed.
         BasicDataset<FileType> asDataset() const {
             return BasicDataset<FileType>(fileHandle_, plists_, fileAccess_, compression_, linkPath_);
-        } /*!< Refer to this path as a dataset. Its type is checked when a dataset operation is performed. */
-        BasicTable<FileType> asTable() const {
-            return BasicTable<FileType>(fileHandle_, plists_, fileAccess_, reclaimStack_, linkPath_);
-        } /*!< Refer to this path as a table. Its type is checked when a table operation is performed. */
-        BasicGroup<FileType> asGroup() const; /*!< Refer to this path as a group without creating it or checking its type. */
+        }
+        //! Refer to this path as a table. Its type is checked when a table operation is performed.
+        BasicTable<FileType> asTable() const { return BasicTable<FileType>(fileHandle_, plists_, fileAccess_, reclaimStack_, linkPath_); }
+        //! Refer to this path as a group without creating it or checking its type.
+        BasicGroup<FileType> asGroup() const;
 
+        //! Delete this link. The object is retained while other hard links or open identifiers refer to it.
         void deleteLink() requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("modify link");
             h5pp::hdf5::deleteLink(fileHandle_, linkPath_, plists_.linkAccess);
-        } /*!< Delete this link. The object is retained while other hard links or open identifiers refer to it. */
+        }
 
         /**
          * @brief Copy the linked object to another file, leaving the source unchanged.

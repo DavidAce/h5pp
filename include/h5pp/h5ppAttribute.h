@@ -73,24 +73,32 @@ namespace h5pp::inline v2 {
             : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess), linkPath_(linkPath), attrName_(attrName) {}
 
         public:
-        [[nodiscard]] const std::string &getLinkPath() const { return linkPath_; } /*!< Path of the object holding the attribute. */
-        [[nodiscard]] const std::string &getName() const { return attrName_; }     /*!< Attribute name on its parent object. */
-        [[nodiscard]] std::string        getFilePath() const { return hdf5::getFilePath(fileHandle_); }       /*!< Owning file path. */
-        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); } /*!< Owning filename. */
-        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }                               /*!< File access policy. */
+        //! Path of the object holding the attribute.
+        [[nodiscard]] const std::string &getLinkPath() const { return linkPath_; }
+        //! Attribute name on its parent object.
+        [[nodiscard]] const std::string &getName() const { return attrName_; }
+        //! Owning file path.
+        [[nodiscard]] std::string        getFilePath() const { return hdf5::getFilePath(fileHandle_); }
+        //! Owning filename.
+        [[nodiscard]] std::string        getFileName() const { return fs::path(getFilePath()).filename().string(); }
+        //! File access policy.
+        [[nodiscard]] FileAccess         getFileAccess() const { return fileAccess_; }
 
+        //! Check whether the attribute exists on its parent object.
         [[nodiscard]] bool exists() const {
             return h5pp::hdf5::checkIfAttrExists(fileHandle_, linkPath_, attrName_, std::nullopt, plists_.linkAccess);
-        } /*!< Check whether the attribute exists on its parent object. */
+        }
+        //! Read attribute metadata, including dimensions and datatype.
         [[nodiscard]] AttrInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(linkPath_);
             options.attrName = h5pp::util::safe_str(attrName_);
             return h5pp::scan::readAttrInfo(fileHandle_, options, plists_);
-        } /*!< Read attribute metadata, including dimensions and datatype. */
+        }
+        //! Read datatype information for the attribute.
         [[nodiscard]] TypeInfo getTypeInfo() const {
             return h5pp::hdf5::getTypeInfo(fileHandle_, linkPath_, attrName_, std::nullopt, std::nullopt, plists_.linkAccess);
-        } /*!< Read datatype information for the attribute. */
+        }
 
         /**
          * @brief Write the attribute, creating it if absent.

@@ -105,17 +105,22 @@ namespace h5pp::inline v2 {
         struct KeepFileOpenToken {
             std::shared_ptr<hid::h5f> pin_;
 
+            //! Retain the file handle, sharing it with existing tokens when possible.
             explicit KeepFileOpenToken(const File &file) : pin_(file.scopedFileHandle.lock()) {
                 if(not pin_) {
                     pin_                  = std::make_shared<hid::h5f>(file.openFileHandle());
                     file.scopedFileHandle = pin_;
                 }
-            } /*!< Retain the file handle, sharing it with existing tokens when possible. */
+            }
 
-            KeepFileOpenToken(const KeepFileOpenToken &)                = delete;  /*!< Disallow copying a token. */
-            KeepFileOpenToken &operator=(const KeepFileOpenToken &)     = delete;  /*!< Disallow copying a token. */
-            KeepFileOpenToken(KeepFileOpenToken &&) noexcept            = default; /*!< Transfer ownership of the retained handle. */
-            KeepFileOpenToken &operator=(KeepFileOpenToken &&) noexcept = default; /*!< Transfer ownership of the retained handle. */
+            //! Disallow copying a token.
+            KeepFileOpenToken(const KeepFileOpenToken &)                = delete;
+            //! Disallow copying a token.
+            KeepFileOpenToken &operator=(const KeepFileOpenToken &)     = delete;
+            //! Transfer ownership of the retained handle.
+            KeepFileOpenToken(KeepFileOpenToken &&) noexcept            = default;
+            //! Transfer ownership of the retained handle.
+            KeepFileOpenToken &operator=(KeepFileOpenToken &&) noexcept = default;
         };
         using FileHandleToken = KeepFileOpenToken; /*!< Alias for KeepFileOpenToken. */
 
@@ -152,6 +157,7 @@ namespace h5pp::inline v2 {
             }
         }
 
+        //! Select the HDF5 POSIX file driver for subsequent opens.
         void setDriver_sec2() {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_sec2(plists.fileAccess);
@@ -159,8 +165,9 @@ namespace h5pp::inline v2 {
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
-        } /*!< Select the HDF5 POSIX file driver for subsequent opens. */
+        }
 
+        //! Select the HDF5 standard C I/O file driver for subsequent opens.
         void setDriver_stdio() {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_stdio(plists.fileAccess);
@@ -168,7 +175,7 @@ namespace h5pp::inline v2 {
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
-        } /*!< Select the HDF5 standard C I/O file driver for subsequent opens. */
+        }
 
 #ifdef H5PP_USE_MPI
         /**
@@ -186,10 +193,10 @@ namespace h5pp::inline v2 {
         }
 #endif
 
-        [[nodiscard]] File &getLowLevelFile() & {
-            return *this;
-        } /*!< Return this File for direct access to HDF5 handles and property lists. */
-        File &getLowLevelFile() && = delete; /*!< Disallow obtaining a reference to a temporary File. */
+        //! Return this File for direct access to HDF5 handles and property lists.
+        [[nodiscard]] File &getLowLevelFile() & { return *this; }
+        //! Disallow obtaining a reference to a temporary File.
+        File               &getLowLevelFile() && = delete;
 
         /**
          * @brief Free tracked HDF5 variable-length allocations and clear their records.
@@ -214,14 +221,13 @@ namespace h5pp::inline v2 {
             reclaimStack->clear();
         }
 
-        void vlenEnableReclaimsTracking() {
-            plists.vlenTrackReclaims = true;
-        } /*!< Enable tracking of HDF5 variable-length allocations for subsequently obtained objects. */
-        void vlenDisableReclaimsTracking() {
-            plists.vlenTrackReclaims = false;
-        } /*!< Disable tracking for subsequently obtained objects. Existing allocation records are retained. */
+        //! Enable tracking of HDF5 variable-length allocations for subsequently obtained objects.
+        void vlenEnableReclaimsTracking() { plists.vlenTrackReclaims = true; }
+        //! Disable tracking for subsequently obtained objects. Existing allocation records are retained.
+        void vlenDisableReclaimsTracking() { plists.vlenTrackReclaims = false; }
 
-        File() = default; /*!< Construct an uninitialized File with no path. Assign an initialized File before file operations. */
+        //! Construct an uninitialized File with no path. Assign an initialized File before file operations.
+        File() = default;
 
         /**
          * @brief Open or create an HDF5 file according to a FileAccess policy.
@@ -309,10 +315,10 @@ namespace h5pp::inline v2 {
          * @return An object with read-only methods.
          */
         ConstTable     table(std::string_view tablePath) const { return ConstTable(*this, tablePath); }
-        Attribute      attribute(std::string_view attrName) { return attribute("/", attrName); } /*!< Refer to a root-group attribute. */
-        ConstAttribute attribute(std::string_view attrName) const {
-            return attribute("/", attrName);
-        } /*!< Read-only root-group attribute. */
+        //! Refer to a root-group attribute.
+        Attribute      attribute(std::string_view attrName) { return attribute("/", attrName); }
+        //! Read-only root-group attribute.
+        ConstAttribute attribute(std::string_view attrName) const { return attribute("/", attrName); }
 
         /**
          * @brief Refer to an attribute without creating it.
@@ -330,8 +336,10 @@ namespace h5pp::inline v2 {
         ConstAttribute attribute(std::string_view linkPath, std::string_view attrName) const {
             return ConstAttribute(*this, linkPath, attrName);
         }
-        [[nodiscard]] Advanced &advanced() & { return *this; } /*!< Return this File. This accessor does not change access permissions. */
-        [[nodiscard]] Advanced  advanced()  &&{ return std::move(*this); } /*!< Move this File into a returned value. */
+        //! Return this File. This accessor does not change access permissions.
+        [[nodiscard]] Advanced &advanced() & { return *this; }
+        //! Move this File into a returned value.
+        [[nodiscard]] Advanced  advanced()  &&{ return std::move(*this); }
 
         /**
          * @brief Keep the file open until the returned token is destroyed.
@@ -348,9 +356,8 @@ namespace h5pp::inline v2 {
          * @endcode
          */
         [[nodiscard]] KeepFileOpenToken keepFileOpen() const { return KeepFileOpenToken(*this); }
-        [[nodiscard]] FileHandleToken   getFileHandleToken() const {
-            return keepFileOpen();
-        } /*!< Return a keep-open token. Equivalent to keepFileOpen(). */
+        //! Return a keep-open token. Equivalent to keepFileOpen().
+        [[nodiscard]] FileHandleToken   getFileHandleToken() const { return keepFileOpen(); }
 
         /**
          * @brief Copy file contents to a destination without changing this File's path.
@@ -611,9 +618,8 @@ namespace h5pp::inline v2 {
             currentCompression = h5pp::hdf5::getValidCompressionLevel(compressionZeroToNine);
         }
 
-        [[nodiscard]] int getCompressionLevel() const {
-            return currentCompression;
-        } /*!< Return the configured default compression level; -1 means disabled. */
+        //! Return the configured default compression level; -1 means disabled.
+        [[nodiscard]] int getCompressionLevel() const { return currentCompression; }
         /**
          * @brief Resolve a compression override or return the configured default.
          * @param compression Optional level, validated and limited to the supported range.
@@ -623,12 +629,14 @@ namespace h5pp::inline v2 {
             return currentCompression;
         }
 
-        [[nodiscard]] h5pp::FileAccess getFileAccess() const { return fileAccess; } /*!< Return the file open/create policy. */
-        [[nodiscard]] std::string      getFileName() const {
-            return filePath.filename().string();
-        } /*!< Return the filename without its parent directories. */
-        [[nodiscard]] std::string getFilePath() const { return filePath.string(); } /*!< Return the filesystem path used by this File. */
-        [[nodiscard]] LogLevel    getLogLevel() const { return logLevel; }          /*!< Return this File's logging verbosity. */
+        //! Return the file open/create policy.
+        [[nodiscard]] h5pp::FileAccess getFileAccess() const { return fileAccess; }
+        //! Return the filename without its parent directories.
+        [[nodiscard]] std::string      getFileName() const { return filePath.filename().string(); }
+        //! Return the filesystem path used by this File.
+        [[nodiscard]] std::string      getFilePath() const { return filePath.string(); }
+        //! Return this File's logging verbosity.
+        [[nodiscard]] LogLevel         getLogLevel() const { return logLevel; }
         /** @deprecated Use file.link(linkPath).exists() instead. */
         [[deprecated("Use file.link(linkPath).exists() instead")]] [[nodiscard]] bool linkExists(std::string_view linkPath) const {
             return h5pp::hdf5::checkIfLinkExists(openFileHandle(), linkPath, plists.linkAccess);
@@ -842,8 +850,7 @@ namespace h5pp::inline v2 {
             table(tablePath).readFieldInto(data, fields, tableSelection);
         }
 
-        [[nodiscard]] bool fileIsValid() const {
-            return h5pp::hdf5::fileIsValid(filePath);
-        } /*!< Check whether the path refers to a readable HDF5 file. */
+        //! Check whether the path refers to a readable HDF5 file.
+        [[nodiscard]] bool fileIsValid() const { return h5pp::hdf5::fileIsValid(filePath); }
     };
 }

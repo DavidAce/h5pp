@@ -70,67 +70,70 @@ namespace h5pp::inline v2 {
               filePath_(filePath), groupPath_(detail::normalizeLinkPath(groupPath)) {}
 
         public:
-        [[nodiscard]] std::string getName() const {
-            return groupPath_ == "/" ? "/" : groupPath_.substr(groupPath_.find_last_of('/') + 1);
-        } /*!< Object name without its parent path. */
+        //! Object name without its parent path.
+        [[nodiscard]] std::string getName() const { return groupPath_ == "/" ? "/" : groupPath_.substr(groupPath_.find_last_of('/') + 1); }
+        //! Parent group path; "/" for objects in the file root.
         [[nodiscard]] std::string getParentPath() const {
             auto parent = util::getParentPath(groupPath_);
             return parent.empty() ? "/" : std::string(parent);
-        } /*!< Parent group path; "/" for objects in the file root. */
-        [[nodiscard]] std::string getFilePath() const { return hdf5::getFilePath(fileHandle_); }              /*!< Owning file path. */
-        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); } /*!< Owning filename. */
-        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }                               /*!< File access policy. */
+        }
+        //! Owning file path.
+        [[nodiscard]] std::string getFilePath() const { return hdf5::getFilePath(fileHandle_); }
+        //! Owning filename.
+        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); }
+        //! File access policy.
+        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }
 
-        [[nodiscard]] const std::string &getPath() const {
-            return groupPath_;
-        } /*!< Return the group path relative to the file root, or "/" for the root group. */
-        [[nodiscard]] bool exists() const {
-            return h5pp::hdf5::checkIfLinkExists(fileHandle_, groupPath_, plists_.linkAccess);
-        } /*!< Check whether a link exists at the group path. */
+        //! Return the group path relative to the file root, or "/" for the root group.
+        [[nodiscard]] const std::string &getPath() const { return groupPath_; }
+        //! Check whether a link exists at the group path.
+        [[nodiscard]] bool     exists() const { return h5pp::hdf5::checkIfLinkExists(fileHandle_, groupPath_, plists_.linkAccess); }
+        //! Read link metadata at the group path.
         [[nodiscard]] LinkInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(groupPath_);
             return h5pp::scan::readLinkInfo(fileHandle_, options, plists_);
-        } /*!< Read link metadata at the group path. */
+        }
+        //! Read datatype information for attributes on this group.
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes() const {
             return h5pp::hdf5::getTypeInfo_allAttributes(fileHandle_, groupPath_, std::nullopt, plists_.linkAccess);
-        } /*!< Read datatype information for attributes on this group. */
+        }
+        //! List attribute names on this group.
         [[nodiscard]] std::vector<std::string> getAttributeNames() const {
             return h5pp::hdf5::getAttributeNames(fileHandle_, groupPath_, std::nullopt, plists_.linkAccess);
-        } /*!< List attribute names on this group. */
-        [[nodiscard]] bool linkExists(std::string_view childPath) const {
-            return link(childPath).exists();
-        } /*!< Check whether a child link exists. */
+        }
+        //! Check whether a child link exists.
+        [[nodiscard]] bool linkExists(std::string_view childPath) const { return link(childPath).exists(); }
+        //! Check whether an attribute exists on the specified child object.
         [[nodiscard]] bool attributeExists(std::string_view childPath, std::string_view attrName) const {
             return link(childPath).attribute(attrName).exists();
-        } /*!< Check whether an attribute exists on the specified child object. */
-        [[nodiscard]] LinkInfo getLinkInfo(std::string_view childPath) const {
-            return link(childPath).getInfo();
-        } /*!< Read metadata for a child link. */
-        [[nodiscard]] DsetInfo getDatasetInfo(std::string_view dsetPath) const {
-            return dataset(dsetPath).getInfo();
-        } /*!< Read metadata for a dataset relative to this group. */
+        }
+        //! Read metadata for a child link.
+        [[nodiscard]] LinkInfo getLinkInfo(std::string_view childPath) const { return link(childPath).getInfo(); }
+        //! Read metadata for a dataset relative to this group.
+        [[nodiscard]] DsetInfo getDatasetInfo(std::string_view dsetPath) const { return dataset(dsetPath).getInfo(); }
+        //! Read metadata for an attribute on a child object.
         [[nodiscard]] AttrInfo getAttributeInfo(std::string_view childPath, std::string_view attrName) const {
             return link(childPath).attribute(attrName).getInfo();
-        } /*!< Read metadata for an attribute on a child object. */
-        [[nodiscard]] TableInfo getTableInfo(std::string_view tablePath) const {
-            return table(tablePath).getInfo();
-        } /*!< Read metadata for a table relative to this group. */
-        [[nodiscard]] TableFieldInfo getTableFieldInfo(std::string_view tablePath) const {
-            return table(tablePath).getFieldInfo();
-        } /*!< Read field names, datatypes and offsets for a table relative to this group. */
-        [[nodiscard]] TypeInfo getTypeInfoDataset(std::string_view dsetPath) const {
-            return dataset(dsetPath).getTypeInfo();
-        } /*!< Read datatype information for a dataset relative to this group. */
-        [[nodiscard]] TypeInfo getTypeInfoAttribute(std::string_view childPath, std::string_view attrName) const {
+        }
+        //! Read metadata for a table relative to this group.
+        [[nodiscard]] TableInfo      getTableInfo(std::string_view tablePath) const { return table(tablePath).getInfo(); }
+        //! Read field names, datatypes and offsets for a table relative to this group.
+        [[nodiscard]] TableFieldInfo getTableFieldInfo(std::string_view tablePath) const { return table(tablePath).getFieldInfo(); }
+        //! Read datatype information for a dataset relative to this group.
+        [[nodiscard]] TypeInfo       getTypeInfoDataset(std::string_view dsetPath) const { return dataset(dsetPath).getTypeInfo(); }
+        //! Read datatype information for an attribute on a child object.
+        [[nodiscard]] TypeInfo       getTypeInfoAttribute(std::string_view childPath, std::string_view attrName) const {
             return link(childPath).attribute(attrName).getTypeInfo();
-        } /*!< Read datatype information for an attribute on a child object. */
+        }
+        //! Read datatype information for attributes on a child object.
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes(std::string_view childPath) const {
             return link(childPath).getTypeInfoAttributes();
-        } /*!< Read datatype information for attributes on a child object. */
+        }
+        //! List attribute names on a child object.
         [[nodiscard]] std::vector<std::string> getAttributeNames(std::string_view childPath) const {
             return link(childPath).getAttributeNames();
-        } /*!< List attribute names on a child object. */
+        }
         /**
          * @brief Find attribute names on this group containing a substring.
          * @param searchKey Substring to match. An empty string returns all names.
@@ -141,10 +144,12 @@ namespace h5pp::inline v2 {
                 if(searchKey.empty() or attrName.find(searchKey) != std::string::npos) matches.emplace_back(attrName);
             return matches;
         }
+        //! Refer to an attribute on this group without creating it.
         BasicAttribute<FileType> attribute(std::string_view attrName) const {
             return BasicAttribute<FileType>(fileHandle_, plists_, fileAccess_, groupPath_, attrName);
-        } /*!< Refer to an attribute on this group without creating it. */
+        }
 
+        //! Refer to a child group without creating it.
         BasicGroup group(std::string_view childPath) const {
             return BasicGroup(fileHandle_,
                               plists_,
@@ -153,8 +158,9 @@ namespace h5pp::inline v2 {
                               reclaimStack_,
                               filePath_,
                               detail::joinLinkPath(groupPath_, childPath));
-        } /*!< Refer to a child group without creating it. */
+        }
 
+        //! Refer to a child link without creating it.
         BasicLink<FileType> link(std::string_view childPath) const {
             return BasicLink<FileType>(fileHandle_,
                                        plists_,
@@ -163,15 +169,17 @@ namespace h5pp::inline v2 {
                                        reclaimStack_,
                                        filePath_,
                                        detail::joinLinkPath(groupPath_, childPath));
-        } /*!< Refer to a child link without creating it. */
+        }
 
+        //! Refer to a dataset relative to this group without creating it.
         BasicDataset<FileType> dataset(std::string_view dsetPath) const {
             return BasicDataset<FileType>(fileHandle_, plists_, fileAccess_, compression_, detail::joinLinkPath(groupPath_, dsetPath));
-        } /*!< Refer to a dataset relative to this group without creating it. */
+        }
 
+        //! Refer to a table relative to this group without creating it.
         BasicTable<FileType> table(std::string_view tablePath) const {
             return BasicTable<FileType>(fileHandle_, plists_, fileAccess_, reclaimStack_, detail::joinLinkPath(groupPath_, tablePath));
-        } /*!< Refer to a table relative to this group without creating it. */
+        }
 
         [[nodiscard]] std::vector<std::string>
             /**
@@ -212,23 +220,26 @@ namespace h5pp::inline v2 {
             return h5pp::hdf5::findLinks<H5O_TYPE_GROUP>(fileHandle_, searchKey, groupPath_, maxHits, maxDepth, followSymlinks, plists_);
         }
 
+        //! Create this group and missing parent groups. An existing group is left unchanged.
         BasicGroup create() requires traits::is_mutable_file_v<FileType>
         {
             if(fileAccess_ == FileAccess::READONLY)
                 throw h5pp::runtime_error("Attempted to create a group with read-only file access: [{}]", groupPath_);
             h5pp::hdf5::createGroup(fileHandle_, groupPath_, std::nullopt, plists_);
             return *this;
-        } /*!< Create this group and missing parent groups. An existing group is left unchanged. */
+        }
 
+        //! Create a child group and missing parent groups.
         BasicGroup createGroup(std::string_view childPath) requires traits::is_mutable_file_v<FileType>
         {
             return group(childPath).create();
-        } /*!< Create a child group and missing parent groups. */
+        }
 
+        //! Delete a child link. The object is retained while other hard links or open identifiers refer to it.
         void deleteLink(std::string_view childPath) requires traits::is_mutable_file_v<FileType>
         {
             link(childPath).deleteLink();
-        } /*!< Delete a child link. The object is retained while other hard links or open identifiers refer to it. */
+        }
 
         /**
          * @brief Create a soft link to an object relative to this group.
@@ -254,10 +265,11 @@ namespace h5pp::inline v2 {
             return link(softChildPath).createExternalLink(targetFilePath, targetLinkPath);
         }
 
+        //! Check whether all requested field names or zero-based indices exist in a child table.
         template<typename Fields>
         [[nodiscard]] bool fieldExists(std::string_view tablePath, const Fields &fields) const {
             return table(tablePath).fieldExists(fields);
-        } /*!< Check whether all requested field names or zero-based indices exist in a child table. */
+        }
     };
 
     template<typename FileType>

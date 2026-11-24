@@ -70,40 +70,48 @@ namespace h5pp::inline v2 {
             : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess), compression_(compression), dsetPath_(dsetPath) {}
 
         public:
-        [[nodiscard]] const std::string &getPath() const { return dsetPath_; } /*!< Object path relative to the file root. */
-        [[nodiscard]] std::string        getName() const {
-            return dsetPath_ == "/" ? "/" : dsetPath_.substr(dsetPath_.find_last_of('/') + 1);
-        } /*!< Object name without its parent path. */
+        //! Object path relative to the file root.
+        [[nodiscard]] const std::string &getPath() const { return dsetPath_; }
+        //! Object name without its parent path.
+        [[nodiscard]] std::string getName() const { return dsetPath_ == "/" ? "/" : dsetPath_.substr(dsetPath_.find_last_of('/') + 1); }
+        //! Parent group path; "/" for objects in the file root.
         [[nodiscard]] std::string getParentPath() const {
             auto parent = util::getParentPath(dsetPath_);
             return parent.empty() ? "/" : std::string(parent);
-        } /*!< Parent group path; "/" for objects in the file root. */
-        [[nodiscard]] std::string getFilePath() const { return hdf5::getFilePath(fileHandle_); }              /*!< Owning file path. */
-        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); } /*!< Owning filename. */
-        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }                               /*!< File access policy. */
+        }
+        //! Owning file path.
+        [[nodiscard]] std::string getFilePath() const { return hdf5::getFilePath(fileHandle_); }
+        //! Owning filename.
+        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); }
+        //! File access policy.
+        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }
 
-        [[nodiscard]] bool exists() const {
-            return h5pp::hdf5::checkIfLinkExists(fileHandle_, dsetPath_, plists_.linkAccess);
-        } /*!< Check whether a link exists at the dataset path. */
+        //! Check whether a link exists at the dataset path.
+        [[nodiscard]] bool     exists() const { return h5pp::hdf5::checkIfLinkExists(fileHandle_, dsetPath_, plists_.linkAccess); }
+        //! Read metadata for the whole dataset, regardless of the current selection.
         [[nodiscard]] DsetInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(dsetPath_);
             return h5pp::scan::readDsetInfo(fileHandle_, options, plists_);
-        } /*!< Read metadata for the whole dataset, regardless of the current selection. */
+        }
+        //! Read chunk dimensions, or return std::nullopt if the dataset is not chunked.
         [[nodiscard]] std::optional<std::vector<hsize_t>> getChunkDimensions() const {
             auto fileHandle = fileHandle_;
             auto dataset    = h5pp::hdf5::openLink<hid::h5d>(fileHandle, dsetPath_, std::nullopt, plists_.dsetAccess);
             return h5pp::hdf5::getChunkDimensions(dataset);
-        } /*!< Read chunk dimensions, or return std::nullopt if the dataset is not chunked. */
+        }
+        //! Read datatype information for the dataset.
         [[nodiscard]] TypeInfo getTypeInfo() const {
             return h5pp::hdf5::getTypeInfo(fileHandle_, dsetPath_, std::nullopt, plists_.dsetAccess);
-        } /*!< Read datatype information for the dataset. */
+        }
+        //! Read datatype information for all attributes on the dataset.
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes() const {
             return h5pp::hdf5::getTypeInfo_allAttributes(fileHandle_, dsetPath_, std::nullopt, plists_.linkAccess);
-        } /*!< Read datatype information for all attributes on the dataset. */
+        }
+        //! List attribute names on the dataset.
         [[nodiscard]] std::vector<std::string> getAttributeNames() const {
             return h5pp::hdf5::getAttributeNames(fileHandle_, dsetPath_, std::nullopt, plists_.linkAccess);
-        } /*!< List attribute names on the dataset. */
+        }
         /**
          * @brief Find attribute names containing a substring.
          * @param searchKey Substring to match. An empty string returns all names.
