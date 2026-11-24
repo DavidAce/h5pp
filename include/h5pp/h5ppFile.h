@@ -105,28 +105,21 @@ namespace h5pp::inline v2 {
         struct KeepFileOpenToken {
             std::shared_ptr<hid::h5f> pin_;
 
-            /** @brief Retain the file handle, sharing it with existing tokens when possible. */
             explicit KeepFileOpenToken(const File &file) : pin_(file.scopedFileHandle.lock()) {
                 if(not pin_) {
                     pin_                  = std::make_shared<hid::h5f>(file.openFileHandle());
                     file.scopedFileHandle = pin_;
                 }
-            }
+            } /*!< Retain the file handle, sharing it with existing tokens when possible. */
 
-            /** @brief Disallow copying a token. */
-            KeepFileOpenToken(const KeepFileOpenToken &)                = delete;
-            /** @brief Disallow copying a token. */
-            KeepFileOpenToken &operator=(const KeepFileOpenToken &)     = delete;
-            /** @brief Transfer ownership of the retained handle. */
-            KeepFileOpenToken(KeepFileOpenToken &&) noexcept            = default;
-            /** @brief Transfer ownership of the retained handle. */
-            KeepFileOpenToken &operator=(KeepFileOpenToken &&) noexcept = default;
+            KeepFileOpenToken(const KeepFileOpenToken &)                = delete;  /*!< Disallow copying a token. */
+            KeepFileOpenToken &operator=(const KeepFileOpenToken &)     = delete;  /*!< Disallow copying a token. */
+            KeepFileOpenToken(KeepFileOpenToken &&) noexcept            = default; /*!< Transfer ownership of the retained handle. */
+            KeepFileOpenToken &operator=(KeepFileOpenToken &&) noexcept = default; /*!< Transfer ownership of the retained handle. */
         };
-        /** @brief Alias for KeepFileOpenToken. */
-        using FileHandleToken = KeepFileOpenToken;
+        using FileHandleToken = KeepFileOpenToken; /*!< Alias for KeepFileOpenToken. */
 
-        /** @brief Alias for File, used by advanced(). */
-        using Advanced = File;
+        using Advanced = File; /*!< Alias for File, used by advanced(). */
 
         /**
          * @brief Set the HDF5 file close degree for subsequent opens.
@@ -159,7 +152,6 @@ namespace h5pp::inline v2 {
             }
         }
 
-        /** @brief Select the HDF5 POSIX file driver for subsequent opens. */
         void setDriver_sec2() {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_sec2(plists.fileAccess);
@@ -167,9 +159,8 @@ namespace h5pp::inline v2 {
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
-        }
+        } /*!< Select the HDF5 POSIX file driver for subsequent opens. */
 
-        /** @brief Select the HDF5 standard C I/O file driver for subsequent opens. */
         void setDriver_stdio() {
             if(plists.fileAccess == H5P_DEFAULT) plists.fileAccess = H5Fget_access_plist(openFileHandle());
             H5Pset_fapl_stdio(plists.fileAccess);
@@ -177,7 +168,7 @@ namespace h5pp::inline v2 {
                 fileHandle = std::nullopt;
                 fileHandle = openFileHandle();
             }
-        }
+        } /*!< Select the HDF5 standard C I/O file driver for subsequent opens. */
 
 #ifdef H5PP_USE_MPI
         /**
@@ -195,10 +186,10 @@ namespace h5pp::inline v2 {
         }
 #endif
 
-        /** @brief Return this File for direct access to HDF5 handles and property lists. */
-        [[nodiscard]] File &getLowLevelFile() & { return *this; }
-        /** @brief Disallow obtaining a reference to a temporary File. */
-        File               &getLowLevelFile() && = delete;
+        [[nodiscard]] File &getLowLevelFile() & {
+            return *this;
+        } /*!< Return this File for direct access to HDF5 handles and property lists. */
+        File &getLowLevelFile() && = delete; /*!< Disallow obtaining a reference to a temporary File. */
 
         /**
          * @brief Free tracked HDF5 variable-length allocations and clear their records.
@@ -223,13 +214,14 @@ namespace h5pp::inline v2 {
             reclaimStack->clear();
         }
 
-        /** @brief Enable tracking of HDF5 variable-length allocations for subsequently obtained objects. */
-        void vlenEnableReclaimsTracking() { plists.vlenTrackReclaims = true; }
-        /** @brief Disable tracking for subsequently obtained objects. Existing allocation records are retained. */
-        void vlenDisableReclaimsTracking() { plists.vlenTrackReclaims = false; }
+        void vlenEnableReclaimsTracking() {
+            plists.vlenTrackReclaims = true;
+        } /*!< Enable tracking of HDF5 variable-length allocations for subsequently obtained objects. */
+        void vlenDisableReclaimsTracking() {
+            plists.vlenTrackReclaims = false;
+        } /*!< Disable tracking for subsequently obtained objects. Existing allocation records are retained. */
 
-        /** @brief Construct an uninitialized File with no path. Assign an initialized File before file operations. */
-        File() = default;
+        File() = default; /*!< Construct an uninitialized File with no path. Assign an initialized File before file operations. */
 
         /**
          * @brief Open or create an HDF5 file according to a FileAccess policy.
@@ -274,71 +266,72 @@ namespace h5pp::inline v2 {
          * @param dsetPath Path relative to the file root.
          * @return An object with write methods; writes require a writable file.
          */
-        [[nodiscard]] Dataset      dataset(std::string_view dsetPath) { return Dataset(*this, dsetPath); }
+        Dataset        dataset(std::string_view dsetPath) { return Dataset(*this, dsetPath); }
         /**
          * @brief Refer to a dataset without creating it.
          * @param dsetPath Path relative to the file root.
          * @return An object with read-only methods.
          */
-        [[nodiscard]] ConstDataset dataset(std::string_view dsetPath) const { return ConstDataset(*this, dsetPath); }
+        ConstDataset   dataset(std::string_view dsetPath) const { return ConstDataset(*this, dsetPath); }
         /**
          * @brief Refer to a group without creating it.
          * @param groupPath Path relative to the file root. The default "/" refers to the root group.
          * @return An object with write methods; writes require a writable file.
          */
-        [[nodiscard]] Group        group(std::string_view groupPath = "/") { return Group(*this, groupPath); }
+        Group          group(std::string_view groupPath = "/") { return Group(*this, groupPath); }
         /**
          * @brief Refer to a group without creating it.
          * @param groupPath Path relative to the file root. The default "/" refers to the root group.
          * @return An object with read-only methods.
          */
-        [[nodiscard]] ConstGroup   group(std::string_view groupPath = "/") const { return ConstGroup(*this, groupPath); }
+        ConstGroup     group(std::string_view groupPath = "/") const { return ConstGroup(*this, groupPath); }
         /**
          * @brief Refer to a link without creating it.
          * @param linkPath Path relative to the file root.
          * @return An object with write methods; writes require a writable file.
          */
-        [[nodiscard]] Link         link(std::string_view linkPath) { return Link(*this, linkPath); }
+        Link           link(std::string_view linkPath) { return Link(*this, linkPath); }
         /**
          * @brief Refer to a link without creating it.
          * @param linkPath Path relative to the file root.
          * @return An object with read-only methods.
          */
-        [[nodiscard]] ConstLink    link(std::string_view linkPath) const { return ConstLink(*this, linkPath); }
+        ConstLink      link(std::string_view linkPath) const { return ConstLink(*this, linkPath); }
         /**
          * @brief Refer to a table without creating it.
          * @param tablePath Path relative to the file root.
          * @return An object with write methods; writes require a writable file.
          */
-        [[nodiscard]] Table        table(std::string_view tablePath) { return Table(*this, tablePath); }
+        Table          table(std::string_view tablePath) { return Table(*this, tablePath); }
         /**
          * @brief Refer to a table without creating it.
          * @param tablePath Path relative to the file root.
          * @return An object with read-only methods.
          */
-        [[nodiscard]] ConstTable   table(std::string_view tablePath) const { return ConstTable(*this, tablePath); }
+        ConstTable     table(std::string_view tablePath) const { return ConstTable(*this, tablePath); }
+        Attribute      attribute(std::string_view attrName) { return attribute("/", attrName); } /*!< Refer to a root-group attribute. */
+        ConstAttribute attribute(std::string_view attrName) const {
+            return attribute("/", attrName);
+        } /*!< Read-only root-group attribute. */
+
         /**
          * @brief Refer to an attribute without creating it.
          * @param linkPath Path relative to the file root.
          * @param attrName Attribute name on the specified object.
          * @return An object with write methods; writes require a writable file.
          */
-        [[nodiscard]] Attribute    attribute(std::string_view linkPath, std::string_view attrName) {
-            return Attribute(*this, linkPath, attrName);
-        }
+        Attribute      attribute(std::string_view linkPath, std::string_view attrName) { return Attribute(*this, linkPath, attrName); }
         /**
          * @brief Refer to an attribute without creating it.
          * @param linkPath Path relative to the file root.
          * @param attrName Attribute name on the specified object.
          * @return An object with read-only methods.
          */
-        [[nodiscard]] ConstAttribute attribute(std::string_view linkPath, std::string_view attrName) const {
+        ConstAttribute attribute(std::string_view linkPath, std::string_view attrName) const {
             return ConstAttribute(*this, linkPath, attrName);
         }
-        /** @brief Return this File. This accessor does not change access permissions. */
-        [[nodiscard]] Advanced &advanced() & { return *this; }
-        /** @brief Move this File into a returned value. */
-        [[nodiscard]] Advanced  advanced()  &&{ return std::move(*this); }
+        [[nodiscard]] Advanced &advanced() & { return *this; } /*!< Return this File. This accessor does not change access permissions. */
+        [[nodiscard]] Advanced  advanced()  &&{ return std::move(*this); } /*!< Move this File into a returned value. */
 
         /**
          * @brief Keep the file open until the returned token is destroyed.
@@ -355,8 +348,9 @@ namespace h5pp::inline v2 {
          * @endcode
          */
         [[nodiscard]] KeepFileOpenToken keepFileOpen() const { return KeepFileOpenToken(*this); }
-        /** @brief Return a keep-open token. Equivalent to keepFileOpen(). */
-        [[nodiscard]] FileHandleToken   getFileHandleToken() const { return keepFileOpen(); }
+        [[nodiscard]] FileHandleToken   getFileHandleToken() const {
+            return keepFileOpen();
+        } /*!< Return a keep-open token. Equivalent to keepFileOpen(). */
 
         /**
          * @brief Copy file contents to a destination without changing this File's path.
@@ -524,7 +518,7 @@ namespace h5pp::inline v2 {
                             std::string_view            dsetPath,
                             size_t                      axis,
                             const DatasetAppendOptions &options = DatasetAppendOptions()) {
-            return dataset(dsetPath).append(data, axis, options);
+            return dataset(dsetPath).append(data, axis, options).getInfo();
         }
 
         /** @deprecated Use file.dataset(path).readInto(data, options) instead. */
@@ -617,8 +611,9 @@ namespace h5pp::inline v2 {
             currentCompression = h5pp::hdf5::getValidCompressionLevel(compressionZeroToNine);
         }
 
-        /** @brief Return the configured default compression level; -1 means disabled. */
-        [[nodiscard]] int getCompressionLevel() const { return currentCompression; }
+        [[nodiscard]] int getCompressionLevel() const {
+            return currentCompression;
+        } /*!< Return the configured default compression level; -1 means disabled. */
         /**
          * @brief Resolve a compression override or return the configured default.
          * @param compression Optional level, validated and limited to the supported range.
@@ -628,14 +623,12 @@ namespace h5pp::inline v2 {
             return currentCompression;
         }
 
-        /** @brief Return the file open/create policy. */
-        [[nodiscard]] h5pp::FileAccess getFileAccess() const { return fileAccess; }
-        /** @brief Return the filename without its parent directories. */
-        [[nodiscard]] std::string      getFileName() const { return filePath.filename().string(); }
-        /** @brief Return the filesystem path used by this File. */
-        [[nodiscard]] std::string      getFilePath() const { return filePath.string(); }
-        /** @brief Return this File's logging verbosity. */
-        [[nodiscard]] LogLevel         getLogLevel() const { return logLevel; }
+        [[nodiscard]] h5pp::FileAccess getFileAccess() const { return fileAccess; } /*!< Return the file open/create policy. */
+        [[nodiscard]] std::string      getFileName() const {
+            return filePath.filename().string();
+        } /*!< Return the filename without its parent directories. */
+        [[nodiscard]] std::string getFilePath() const { return filePath.string(); } /*!< Return the filesystem path used by this File. */
+        [[nodiscard]] LogLevel    getLogLevel() const { return logLevel; }          /*!< Return this File's logging verbosity. */
         /** @deprecated Use file.link(linkPath).exists() instead. */
         [[deprecated("Use file.link(linkPath).exists() instead")]] [[nodiscard]] bool linkExists(std::string_view linkPath) const {
             return h5pp::hdf5::checkIfLinkExists(openFileHandle(), linkPath, plists.linkAccess);
@@ -794,7 +787,7 @@ namespace h5pp::inline v2 {
             auto creation          = options;
             if(not creation.h5Type.has_value()) creation.h5Type = source.h5Type;
             if(not creation.title.has_value()) creation.title = source.tableTitle;
-            return table(tgtTablePath).create(creation).appendRecordsFrom(source, srcSelection);
+            return table(tgtTablePath).create(creation).appendRecordsFrom(source, srcSelection).getInfo();
         }
 
         /** @deprecated Use file.table(path).writeRecords(data, offset, extent) instead. */
@@ -849,7 +842,8 @@ namespace h5pp::inline v2 {
             table(tablePath).readFieldInto(data, fields, tableSelection);
         }
 
-        /** @brief Check whether the path refers to a readable HDF5 file. */
-        [[nodiscard]] bool fileIsValid() const { return h5pp::hdf5::fileIsValid(filePath); }
+        [[nodiscard]] bool fileIsValid() const {
+            return h5pp::hdf5::fileIsValid(filePath);
+        } /*!< Check whether the path refers to a readable HDF5 file. */
     };
 }

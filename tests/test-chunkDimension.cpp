@@ -115,7 +115,7 @@ TEST_CASE("Chunk dimension metadata covers manual, capped, extensible and non-ch
 
         h5pp::DatasetAppendOptions append;
         append.dims   = {1, 2};
-        auto appended = file.dataset("chunked/extensible").append(std::vector<double>{1.0, 2.0}, 0, append);
+        auto appended = file.dataset("chunked/extensible").append(std::vector<double>{1.0, 2.0}, 0, append).getInfo();
         require_dims(appended, {1, 2});
         require_chunk_dims(file.dataset("chunked/extensible").getChunkDimensions(), {46, 2});
         REQUIRE(file.dataset("chunked/extensible").read<std::vector<double>>() == std::vector<double>{1.0, 2.0});

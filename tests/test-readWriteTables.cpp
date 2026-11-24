@@ -128,7 +128,8 @@ TEST_CASE("Appending and copying table records preserves metadata and selected r
     auto       info1 = table.getInfo();
     h5pp::File copy_target(make_path("readWriteTablesCopy"), h5pp::FileAccess::REPLACE, 0);
     auto       info2 = copy_target.table("somegroup/particleTable")
-                           .appendRecordsFrom(file.advanced().openFileHandle(), "somegroup/particleTable", h5pp::TableSelection::LAST);
+                           .appendRecordsFrom(file.advanced().openFileHandle(), "somegroup/particleTable", h5pp::TableSelection::LAST)
+                           .getInfo();
 
     CHECK(info2.tableTitle.value() == info1.tableTitle.value());
     CHECK(info2.numRecords.value() == 1);
@@ -177,7 +178,7 @@ TEST_CASE("Table creation is immediate and preserves its creation properties", "
     auto copied = file.table("copied").create(options);
     REQUIRE(copied.exists());
     CHECK(copied.getInfo().numRecords == 0);
-    auto copiedInfo = copied.appendRecordsFrom(info);
+    auto copiedInfo = copied.appendRecordsFrom(info).getInfo();
     REQUIRE(copiedInfo.chunkDims.has_value());
     CHECK(copiedInfo.chunkDims.value() == std::vector<hsize_t>{2});
     REQUIRE(copiedInfo.h5DsetCreate.has_value());

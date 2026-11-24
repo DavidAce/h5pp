@@ -94,6 +94,17 @@ namespace h5pp::hdf5 {
         return buf.c_str(); // Use .c_str() to convert to a "standard" std::string, i.e. one where .size() does not include \0
     }
 
+    template<typename h5x>
+    [[nodiscard]] std::string getFilePath(const h5x &object) {
+        static_assert(traits::is_hdf5_id<h5x>);
+        auto size = H5Fget_name(object, nullptr, 0);
+        if(size < 0) throw h5pp::runtime_error("Failed to read the owning file path");
+        std::string path(type::safe_cast<size_t>(size) + 1, '\0');
+        if(H5Fget_name(object, path.data(), path.size()) < 0) throw h5pp::runtime_error("Failed to read the owning file path");
+        path.resize(type::safe_cast<size_t>(size));
+        return path;
+    }
+
     [[nodiscard]] inline int getRank(const hid::h5s &space) { return H5Sget_simple_extent_ndims(space); }
 
     [[nodiscard]] inline int getRank(const hid::h5d &dset) {

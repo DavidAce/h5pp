@@ -61,6 +61,10 @@ namespace h5pp::inline v2 {
         requires(std::is_same_v<std::remove_cv_t<OtherFileType>, h5pp::v2::File>)
         friend class BasicLink;
 
+        template<typename OtherFileType>
+        requires(std::is_same_v<std::remove_cv_t<OtherFileType>, h5pp::v2::File>)
+        friend class BasicTable;
+
         BasicAttribute(const hid::h5f      &fileHandle,
                        const PropertyLists &plists,
                        FileAccess           fileAccess,
@@ -69,21 +73,24 @@ namespace h5pp::inline v2 {
             : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess), linkPath_(linkPath), attrName_(attrName) {}
 
         public:
-        /** @brief Check whether the attribute exists on its parent object. */
+        [[nodiscard]] const std::string &getLinkPath() const { return linkPath_; } /*!< Path of the object holding the attribute. */
+        [[nodiscard]] const std::string &getName() const { return attrName_; }     /*!< Attribute name on its parent object. */
+        [[nodiscard]] std::string        getFilePath() const { return hdf5::getFilePath(fileHandle_); }       /*!< Owning file path. */
+        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); } /*!< Owning filename. */
+        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }                               /*!< File access policy. */
+
         [[nodiscard]] bool exists() const {
             return h5pp::hdf5::checkIfAttrExists(fileHandle_, linkPath_, attrName_, std::nullopt, plists_.linkAccess);
-        }
-        /** @brief Read attribute metadata, including dimensions and datatype. */
+        } /*!< Check whether the attribute exists on its parent object. */
         [[nodiscard]] AttrInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(linkPath_);
             options.attrName = h5pp::util::safe_str(attrName_);
             return h5pp::scan::readAttrInfo(fileHandle_, options, plists_);
-        }
-        /** @brief Read datatype information for the attribute. */
+        } /*!< Read attribute metadata, including dimensions and datatype. */
         [[nodiscard]] TypeInfo getTypeInfo() const {
             return h5pp::hdf5::getTypeInfo(fileHandle_, linkPath_, attrName_, std::nullopt, std::nullopt, plists_.linkAccess);
-        }
+        } /*!< Read datatype information for the attribute. */
 
         /**
          * @brief Write the attribute, creating it if absent.
@@ -93,10 +100,11 @@ namespace h5pp::inline v2 {
          *
          * @param data Values to write.
          * @param options Override buffer dimensions or datatype. Specify dims for pointer data.
+         * @return A copy of this object, for chained calls.
          */
         template<typename DataType>
         requires traits::is_mutable_file_v<FileType>
-        void write(const DataType &data, const AttributeWriteOptions &options = AttributeWriteOptions()) {
+        BasicAttribute write(const DataType &data, const AttributeWriteOptions &options = AttributeWriteOptions()) {
             requireWritable_("write");
             auto ioOptions = detail::makeOptions(linkPath_, attrName_, options);
             ioOptions.assertWellDefined();
@@ -105,6 +113,7 @@ namespace h5pp::inline v2 {
             auto attrInfo   = h5pp::scan::inferAttrInfo(fileHandle, data, ioOptions, plists_);
             h5pp::hdf5::createAttribute(attrInfo);
             h5pp::hdf5::writeAttribute(data, dataInfo, attrInfo);
+            return *this;
         }
 
         /**
@@ -149,8 +158,6 @@ namespace h5pp::inline v2 {
         }
     };
 
-    /** @brief Attribute operations obtained from a non-const File. */
-    using Attribute      = BasicAttribute<h5pp::v2::File>;
-    /** @brief Attribute operations obtained from a const File. */
-    using ConstAttribute = BasicAttribute<const h5pp::v2::File>;
+    using Attribute      = BasicAttribute<h5pp::v2::File>;       /*!< Attribute operations obtained from a non-const File. */
+    using ConstAttribute = BasicAttribute<const h5pp::v2::File>; /*!< Attribute operations obtained from a const File. */
 }

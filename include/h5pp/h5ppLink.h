@@ -83,24 +83,32 @@ namespace h5pp::inline v2 {
               filePath_(filePath), linkPath_(linkPath) {}
 
         public:
-        /** @brief Return the stored link path. */
-        [[nodiscard]] const std::string &getPath() const { return linkPath_; }
-        /** @brief Check whether the link exists. */
-        [[nodiscard]] bool     exists() const { return h5pp::hdf5::checkIfLinkExists(fileHandle_, linkPath_, plists_.linkAccess); }
-        /** @brief Read link metadata, including the target object type. */
+        [[nodiscard]] std::string getName() const {
+            return linkPath_ == "/" ? "/" : linkPath_.substr(linkPath_.find_last_of('/') + 1);
+        } /*!< Object name without its parent path. */
+        [[nodiscard]] std::string getParentPath() const {
+            auto parent = util::getParentPath(linkPath_);
+            return parent.empty() ? "/" : std::string(parent);
+        } /*!< Parent group path; "/" for objects in the file root. */
+        [[nodiscard]] std::string getFilePath() const { return hdf5::getFilePath(fileHandle_); }              /*!< Owning file path. */
+        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); } /*!< Owning filename. */
+        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }                               /*!< File access policy. */
+
+        [[nodiscard]] const std::string &getPath() const { return linkPath_; } /*!< Return the stored link path. */
+        [[nodiscard]] bool               exists() const {
+            return h5pp::hdf5::checkIfLinkExists(fileHandle_, linkPath_, plists_.linkAccess);
+        } /*!< Check whether the link exists. */
         [[nodiscard]] LinkInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(linkPath_);
             return h5pp::scan::readLinkInfo(fileHandle_, options, plists_);
-        }
-        /** @brief Read datatype information for attributes on the linked object. */
+        } /*!< Read link metadata, including the target object type. */
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes() const {
             return h5pp::hdf5::getTypeInfo_allAttributes(fileHandle_, linkPath_, std::nullopt, plists_.linkAccess);
-        }
-        /** @brief List attribute names on the linked object. */
+        } /*!< Read datatype information for attributes on the linked object. */
         [[nodiscard]] std::vector<std::string> getAttributeNames() const {
             return h5pp::hdf5::getAttributeNames(fileHandle_, linkPath_, std::nullopt, plists_.linkAccess);
-        }
+        } /*!< List attribute names on the linked object. */
         /**
          * @brief Find attribute names on the linked object containing a substring.
          * @param searchKey Substring to match. An empty string returns all names.
@@ -111,28 +119,23 @@ namespace h5pp::inline v2 {
                 if(searchKey.empty() or attrName.find(searchKey) != std::string::npos) matches.emplace_back(attrName);
             return matches;
         }
-        /** @brief Refer to an attribute on the linked object without creating it. */
-        [[nodiscard]] BasicAttribute<FileType> attribute(std::string_view attrName) const {
+        BasicAttribute<FileType> attribute(std::string_view attrName) const {
             return BasicAttribute<FileType>(fileHandle_, plists_, fileAccess_, linkPath_, attrName);
-        }
+        } /*!< Refer to an attribute on the linked object without creating it. */
 
-        /** @brief Refer to this path as a dataset. Its type is checked when a dataset operation is performed. */
-        [[nodiscard]] BasicDataset<FileType> asDataset() const {
+        BasicDataset<FileType> asDataset() const {
             return BasicDataset<FileType>(fileHandle_, plists_, fileAccess_, compression_, linkPath_);
-        }
-        /** @brief Refer to this path as a table. Its type is checked when a table operation is performed. */
-        [[nodiscard]] BasicTable<FileType> asTable() const {
+        } /*!< Refer to this path as a dataset. Its type is checked when a dataset operation is performed. */
+        BasicTable<FileType> asTable() const {
             return BasicTable<FileType>(fileHandle_, plists_, fileAccess_, reclaimStack_, linkPath_);
-        }
-        /** @brief Refer to this path as a group without creating it or checking its type. */
-        [[nodiscard]] BasicGroup<FileType> asGroup() const;
+        } /*!< Refer to this path as a table. Its type is checked when a table operation is performed. */
+        BasicGroup<FileType> asGroup() const; /*!< Refer to this path as a group without creating it or checking its type. */
 
-        /** @brief Delete this link. The object is retained while other hard links or open identifiers refer to it. */
         void deleteLink() requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("modify link");
             h5pp::hdf5::deleteLink(fileHandle_, linkPath_, plists_.linkAccess);
-        }
+        } /*!< Delete this link. The object is retained while other hard links or open identifiers refer to it. */
 
         /**
          * @brief Copy the linked object to another file, leaving the source unchanged.
@@ -267,11 +270,14 @@ namespace h5pp::inline v2 {
          * @brief Create a soft link pointing to this object's absolute path.
          * @param softLinkPath New soft-link path relative to the file root.
          */
-        void createSoftLink(std::string_view softLinkPath) requires traits::is_mutable_file_v<FileType>
+        BasicLink createSoftLink(std::string_view softLinkPath) requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("modify link");
             std::string targetLinkFullPath = linkPath_.front() == '/' ? linkPath_ : h5pp::format("/{}", linkPath_);
             h5pp::hdf5::createSoftLink(targetLinkFullPath, fileHandle_, softLinkPath, plists_);
+            auto copy      = *this;
+            copy.linkPath_ = softLinkPath;
+            return copy;
         }
 
         /**
@@ -279,7 +285,7 @@ namespace h5pp::inline v2 {
          * @param targetFilePath Target file path, stored in the link. Relative paths are resolved when HDF5 opens it.
          * @param targetLinkPath Object path in the target file.
          */
-        void createExternalLink(std::string_view targetFilePath, std::string_view targetLinkPath)
+        BasicLink createExternalLink(std::string_view targetFilePath, std::string_view targetLinkPath)
             requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("modify link");
@@ -295,11 +301,10 @@ namespace h5pp::inline v2 {
             }
 #endif
             h5pp::hdf5::createExternalLink(targetFilePath, targetLinkPath, fileHandle_, linkPath_, plists_);
+            return *this;
         }
     };
 
-    /** @brief Link operations obtained from a non-const File. */
-    using Link      = BasicLink<h5pp::v2::File>;
-    /** @brief Link operations obtained from a const File. */
-    using ConstLink = BasicLink<const h5pp::v2::File>;
+    using Link      = BasicLink<h5pp::v2::File>;       /*!< Link operations obtained from a non-const File. */
+    using ConstLink = BasicLink<const h5pp::v2::File>; /*!< Link operations obtained from a const File. */
 }

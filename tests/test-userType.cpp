@@ -134,7 +134,7 @@ TEST_CASE("Resizable compound datasets accept appends when created with an expli
 
     h5pp::DatasetAppendOptions append;
     append.h5Type              = types.particle_type;
-    [[maybe_unused]] auto info = file.dataset("particles").append(second_batch, 0, append);
+    [[maybe_unused]] auto info = file.dataset("particles").append(second_batch, 0, append).getInfo();
 
     h5pp::DatasetReadOptions read;
     read.h5Type   = types.particle_type;

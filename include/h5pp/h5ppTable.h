@@ -1,6 +1,6 @@
 #pragma once
 
-#include "h5ppConvert.h"
+#include "h5ppAttribute.h"
 #include <memory>
 #include <string>
 #include <utility>
@@ -72,26 +72,35 @@ namespace h5pp::inline v2 {
             : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess), reclaimStack_(reclaimStack), tablePath_(tablePath) {}
 
         public:
-        /** @brief Check whether a link exists at the table path. */
-        [[nodiscard]] bool      exists() const { return h5pp::hdf5::checkIfLinkExists(fileHandle_, tablePath_, plists_.linkAccess); }
-        /** @brief Read table metadata, including record count and compound datatype. */
+        [[nodiscard]] const std::string &getPath() const { return tablePath_; } /*!< Object path relative to the file root. */
+        [[nodiscard]] std::string        getName() const {
+            return tablePath_ == "/" ? "/" : tablePath_.substr(tablePath_.find_last_of('/') + 1);
+        } /*!< Object name without its parent path. */
+        [[nodiscard]] std::string getParentPath() const {
+            auto parent = util::getParentPath(tablePath_);
+            return parent.empty() ? "/" : std::string(parent);
+        } /*!< Parent group path; "/" for objects in the file root. */
+        [[nodiscard]] std::string getFilePath() const { return hdf5::getFilePath(fileHandle_); }              /*!< Owning file path. */
+        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); } /*!< Owning filename. */
+        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }                               /*!< File access policy. */
+
+        [[nodiscard]] bool exists() const {
+            return h5pp::hdf5::checkIfLinkExists(fileHandle_, tablePath_, plists_.linkAccess);
+        } /*!< Check whether a link exists at the table path. */
         [[nodiscard]] TableInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             return h5pp::scan::readTableInfo(fileHandle_, options, plists_);
-        }
-        /** @brief Read field names, datatypes, byte offsets and sizes. */
+        } /*!< Read table metadata, including record count and compound datatype. */
         [[nodiscard]] TableFieldInfo getFieldInfo() const {
             return h5pp::scan::getTableFieldInfo(fileHandle_, tablePath_, std::nullopt, std::nullopt, plists_.dsetAccess);
-        }
-        /** @brief Read datatype information for attributes on the table. */
+        } /*!< Read field names, datatypes, byte offsets and sizes. */
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes() const {
             return h5pp::hdf5::getTypeInfo_allAttributes(fileHandle_, tablePath_, std::nullopt, plists_.linkAccess);
-        }
-        /** @brief List attribute names on the table. */
+        } /*!< Read datatype information for attributes on the table. */
         [[nodiscard]] std::vector<std::string> getAttributeNames() const {
             return h5pp::hdf5::getAttributeNames(fileHandle_, tablePath_, std::nullopt, plists_.linkAccess);
-        }
+        } /*!< List attribute names on the table. */
         /**
          * @brief Find attribute names on the table containing a substring.
          * @param searchKey Substring to match. An empty string returns all names.
@@ -102,6 +111,46 @@ namespace h5pp::inline v2 {
                 if(searchKey.empty() or attrName.find(searchKey) != std::string::npos) matches.emplace_back(attrName);
             return matches;
         }
+
+        BasicAttribute<FileType> attribute(std::string_view attrName) const {
+            return BasicAttribute<FileType>(fileHandle_, plists_, fileAccess_, tablePath_, attrName);
+        } /*!< Refer to an attribute on the table without creating it. */
+
+        [[nodiscard]] TypeInfo getTypeInfo() const {
+            return h5pp::hdf5::getTypeInfo(fileHandle_, tablePath_, std::nullopt, plists_.dsetAccess);
+        } /*!< Read datatype information for the compound record type. */
+
+        template<typename DataType>
+        requires traits::is_mutable_file_v<FileType>
+        BasicTable write(const DataType &data, hsize_t offset = 0, std::optional<hsize_t> extent = std::nullopt) {
+            return writeRecords(data, offset, extent);
+        } /*!< Write records at offset, extending the table if necessary. See writeRecords(). */
+
+        template<typename DataType>
+        requires traits::is_mutable_file_v<FileType>
+        BasicTable append(const DataType &data, std::optional<hsize_t> extent = std::nullopt) {
+            return appendRecords(data, extent);
+        } /*!< Append records to an existing table. See appendRecords(). */
+
+        template<typename DataType>
+        [[nodiscard]] DataType read(std::optional<hsize_t> offset = std::nullopt, std::optional<hsize_t> extent = std::nullopt) const {
+            return readRecords<DataType>(offset, extent);
+        } /*!< Read records into a returned value. See readRecords(). */
+
+        template<typename DataType>
+        [[nodiscard]] DataType read(TableSelection selection) const {
+            return readRecords<DataType>(selection);
+        } /*!< Read ALL, FIRST or LAST records into a returned value. */
+
+        template<typename DataType>
+        void readInto(DataType &data, std::optional<hsize_t> offset = std::nullopt, std::optional<hsize_t> extent = std::nullopt) const {
+            readRecordsInto(data, offset, extent);
+        } /*!< Read records into a supplied buffer. See readRecordsInto(). */
+
+        template<typename DataType>
+        void readInto(DataType &data, TableSelection selection) const {
+            readRecordsInto(data, selection);
+        } /*!< Read ALL, FIRST or LAST records into a supplied buffer. */
 
         /**
          * @brief Check whether all requested fields exist.
@@ -125,7 +174,7 @@ namespace h5pp::inline v2 {
          * @param createOptions Requires h5Type and title; chunk dimensions and compression are optional.
          * @return A copy of this object, for chained calls.
          */
-        [[nodiscard]] BasicTable create(const TableCreateOptions &createOptions) requires traits::is_mutable_file_v<FileType>
+        BasicTable create(const TableCreateOptions &createOptions) requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("create table");
             if(exists()) return *this;
@@ -149,7 +198,7 @@ namespace h5pp::inline v2 {
          * @param createOptions Optional chunk dimensions and compression. h5Type and title arguments take precedence.
          * @return A copy of this object, for chained calls.
          */
-        [[nodiscard]] BasicTable create(const hid::h5t &h5Type, std::string_view title, const TableCreateOptions &createOptions = {})
+        BasicTable create(const hid::h5t &h5Type, std::string_view title, const TableCreateOptions &createOptions = {})
             requires traits::is_mutable_file_v<FileType>
         {
             auto options   = createOptions;
@@ -165,13 +214,14 @@ namespace h5pp::inline v2 {
          */
         template<typename DataType>
         requires traits::is_mutable_file_v<FileType>
-        void appendRecords(const DataType &data, std::optional<hsize_t> extent = std::nullopt) {
+        BasicTable appendRecords(const DataType &data, std::optional<hsize_t> extent = std::nullopt) {
             requireWritable_("append records");
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto info        = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
             info.assertWriteReady();
             h5pp::hdf5::writeTableRecords(data, info, info.numRecords.value(), extent);
+            return *this;
         }
 
         /**
@@ -182,12 +232,13 @@ namespace h5pp::inline v2 {
          */
         template<typename DataType>
         requires traits::is_mutable_file_v<FileType>
-        void writeRecords(const DataType &data, hsize_t offset = 0, std::optional<hsize_t> extent = std::nullopt) {
+        BasicTable writeRecords(const DataType &data, hsize_t offset = 0, std::optional<hsize_t> extent = std::nullopt) {
             requireWritable_("write records");
             Options options;
             options.linkPath = h5pp::util::safe_str(tablePath_);
             auto info        = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
             h5pp::hdf5::writeTableRecords(data, info, offset, extent);
+            return *this;
         }
 
         /**
@@ -197,9 +248,9 @@ namespace h5pp::inline v2 {
          *
          * @param srcInfo Source table metadata with open dataset and datatype identifiers.
          * @param selection ALL, FIRST or LAST source records.
-         * @return Destination metadata after appending.
+         * @return A copy of this object, for chained calls.
          */
-        [[nodiscard]] TableInfo appendRecordsFrom(const h5pp::TableInfo &srcInfo, TableSelection selection = TableSelection::ALL)
+        BasicTable appendRecordsFrom(const h5pp::TableInfo &srcInfo, TableSelection selection = TableSelection::ALL)
             requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("append records");
@@ -215,21 +266,21 @@ namespace h5pp::inline v2 {
             tgtInfo.assertWriteReady();
             auto [offset, extent] = util::parseTableSelection(selection, srcInfo.numRecords.value());
             h5pp::hdf5::copyTableRecords(srcInfo, offset, extent, tgtInfo, tgtInfo.numRecords.value(), plists_);
-            return tgtInfo;
+            return *this;
         }
 
+        /**
+         * @brief Append records from a table at an HDF5 location.
+         * @param srcLocation Source file or group identifier.
+         * @param srcTablePath Table path relative to srcLocation.
+         * @param selection ALL, FIRST or LAST source records.
+         * @return A copy of this object, for chained calls.
+         * @see appendRecordsFrom(const h5pp::TableInfo &, TableSelection)
+         */
         template<typename h5x_src>
-        [[nodiscard]] TableInfo
-            /**
-             * @brief Append records from a table at an HDF5 location.
-             * @param srcLocation Source file or group identifier.
-             * @param srcTablePath Table path relative to srcLocation.
-             * @param selection ALL, FIRST or LAST source records.
-             * @return Destination metadata after appending.
-             * @see appendRecordsFrom(const h5pp::TableInfo &, TableSelection)
-             */
-            appendRecordsFrom(const h5x_src &srcLocation, std::string_view srcTablePath, TableSelection selection = TableSelection::ALL)
-                requires traits::is_mutable_file_v<FileType>
+        BasicTable appendRecordsFrom(const h5x_src   &srcLocation,
+                                     std::string_view srcTablePath,
+                                     TableSelection   selection = TableSelection::ALL) requires traits::is_mutable_file_v<FileType>
         {
             Options options;
             options.linkPath = h5pp::util::safe_str(srcTablePath);
@@ -429,8 +480,6 @@ namespace h5pp::inline v2 {
         }
     };
 
-    /** @brief Table operations obtained from a non-const File. */
-    using Table      = BasicTable<h5pp::v2::File>;
-    /** @brief Table operations obtained from a const File. */
-    using ConstTable = BasicTable<const h5pp::v2::File>;
+    using Table      = BasicTable<h5pp::v2::File>;       /*!< Table operations obtained from a non-const File. */
+    using ConstTable = BasicTable<const h5pp::v2::File>; /*!< Table operations obtained from a const File. */
 }

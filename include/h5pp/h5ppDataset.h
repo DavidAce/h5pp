@@ -70,32 +70,40 @@ namespace h5pp::inline v2 {
             : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess), compression_(compression), dsetPath_(dsetPath) {}
 
         public:
-        /** @brief Check whether a link exists at the dataset path. */
-        [[nodiscard]] bool     exists() const { return h5pp::hdf5::checkIfLinkExists(fileHandle_, dsetPath_, plists_.linkAccess); }
-        /** @brief Read metadata for the whole dataset, regardless of the current selection. */
+        [[nodiscard]] const std::string &getPath() const { return dsetPath_; } /*!< Object path relative to the file root. */
+        [[nodiscard]] std::string        getName() const {
+            return dsetPath_ == "/" ? "/" : dsetPath_.substr(dsetPath_.find_last_of('/') + 1);
+        } /*!< Object name without its parent path. */
+        [[nodiscard]] std::string getParentPath() const {
+            auto parent = util::getParentPath(dsetPath_);
+            return parent.empty() ? "/" : std::string(parent);
+        } /*!< Parent group path; "/" for objects in the file root. */
+        [[nodiscard]] std::string getFilePath() const { return hdf5::getFilePath(fileHandle_); }              /*!< Owning file path. */
+        [[nodiscard]] std::string getFileName() const { return fs::path(getFilePath()).filename().string(); } /*!< Owning filename. */
+        [[nodiscard]] FileAccess  getFileAccess() const { return fileAccess_; }                               /*!< File access policy. */
+
+        [[nodiscard]] bool exists() const {
+            return h5pp::hdf5::checkIfLinkExists(fileHandle_, dsetPath_, plists_.linkAccess);
+        } /*!< Check whether a link exists at the dataset path. */
         [[nodiscard]] DsetInfo getInfo() const {
             Options options;
             options.linkPath = h5pp::util::safe_str(dsetPath_);
             return h5pp::scan::readDsetInfo(fileHandle_, options, plists_);
-        }
-        /** @brief Read chunk dimensions, or return std::nullopt if the dataset is not chunked. */
+        } /*!< Read metadata for the whole dataset, regardless of the current selection. */
         [[nodiscard]] std::optional<std::vector<hsize_t>> getChunkDimensions() const {
             auto fileHandle = fileHandle_;
             auto dataset    = h5pp::hdf5::openLink<hid::h5d>(fileHandle, dsetPath_, std::nullopt, plists_.dsetAccess);
             return h5pp::hdf5::getChunkDimensions(dataset);
-        }
-        /** @brief Read datatype information for the dataset. */
+        } /*!< Read chunk dimensions, or return std::nullopt if the dataset is not chunked. */
         [[nodiscard]] TypeInfo getTypeInfo() const {
             return h5pp::hdf5::getTypeInfo(fileHandle_, dsetPath_, std::nullopt, plists_.dsetAccess);
-        }
-        /** @brief Read datatype information for all attributes on the dataset. */
+        } /*!< Read datatype information for the dataset. */
         [[nodiscard]] std::vector<TypeInfo> getTypeInfoAttributes() const {
             return h5pp::hdf5::getTypeInfo_allAttributes(fileHandle_, dsetPath_, std::nullopt, plists_.linkAccess);
-        }
-        /** @brief List attribute names on the dataset. */
+        } /*!< Read datatype information for all attributes on the dataset. */
         [[nodiscard]] std::vector<std::string> getAttributeNames() const {
             return h5pp::hdf5::getAttributeNames(fileHandle_, dsetPath_, std::nullopt, plists_.linkAccess);
-        }
+        } /*!< List attribute names on the dataset. */
         /**
          * @brief Find attribute names containing a substring.
          * @param searchKey Substring to match. An empty string returns all names.
@@ -117,7 +125,7 @@ namespace h5pp::inline v2 {
          * @return A copy of this object, for chained calls.
          * @see create(const DataType &, const DatasetCreateOptions &)
          */
-        [[nodiscard]] BasicDataset create(const DatasetCreateOptions &createOptions) requires traits::is_mutable_file_v<FileType>
+        BasicDataset create(const DatasetCreateOptions &createOptions) requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("create dataset");
             auto options = detail::makeOptions(compression_, dsetPath_, createOptions);
@@ -145,7 +153,7 @@ namespace h5pp::inline v2 {
          * @return A copy of this object, for chained calls.
          */
         template<typename DataType>
-        [[nodiscard]] BasicDataset create(const DataType &data, const DatasetCreateOptions &createOptions = {})
+        BasicDataset create(const DataType &data, const DatasetCreateOptions &createOptions = {})
             requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("create dataset");
@@ -164,7 +172,7 @@ namespace h5pp::inline v2 {
          *
          * @param dsetSlab Hyperslab in the dataset's coordinates. Replaces any previous selection on the copy.
          */
-        [[nodiscard]] BasicDataset select(const Hyperslab &dsetSlab) const {
+        BasicDataset select(const Hyperslab &dsetSlab) const {
             auto copy      = *this;
             copy.dsetSlab_ = dsetSlab;
             return copy;
@@ -176,15 +184,13 @@ namespace h5pp::inline v2 {
          * @param extent Number of elements to select along each dimension.
          * @see select(const Hyperslab &)
          */
-        [[nodiscard]] BasicDataset select(const DimsType &offset, const DimsType &extent) const {
-            return select(Hyperslab(offset, extent));
-        }
+        BasicDataset select(const DimsType &offset, const DimsType &extent) const { return select(Hyperslab(offset, extent)); }
 
         /**
          * @brief Refer to an attribute on this dataset without creating it.
          * @param attrName Attribute name. The dataset selection does not affect attributes.
          */
-        [[nodiscard]] BasicAttribute<FileType> attribute(std::string_view attrName) const {
+        BasicAttribute<FileType> attribute(std::string_view attrName) const {
             return BasicAttribute<FileType>(fileHandle_, plists_, fileAccess_, dsetPath_, attrName);
         }
 
@@ -197,8 +203,9 @@ namespace h5pp::inline v2 {
          * @param dims Requested dataset dimensions.
          * @param resizePolicy Defaults to FIT for chunked datasets and OFF for other layouts.
          *                     GROW allows increases only.
+         * @return A copy of this object, for chained calls.
          */
-        void resize(const DimsType &dims, std::optional<h5pp::ResizePolicy> resizePolicy = std::nullopt)
+        BasicDataset resize(const DimsType &dims, std::optional<h5pp::ResizePolicy> resizePolicy = std::nullopt)
             requires traits::is_mutable_file_v<FileType>
         {
             requireWritable_("resize dataset");
@@ -208,6 +215,7 @@ namespace h5pp::inline v2 {
             auto info            = h5pp::scan::inferDsetInfo(fileHandle_, dsetPath_, options, plists_);
             if(not info.dsetExists.value()) throw h5pp::runtime_error("Failed to resize dataset [{}]: dataset does not exist", dsetPath_);
             h5pp::hdf5::resizeDataset(info, dims, resizePolicy);
+            return *this;
         }
 
         /**
@@ -219,10 +227,10 @@ namespace h5pp::inline v2 {
          * @param data Values to append.
          * @param axis Zero-based dimension to extend.
          * @param options Dimensions and datatype of the input buffer. Specify dims for pointer data.
-         * @return Dataset metadata after appending.
+         * @return A copy of this object, for chained calls.
          */
         template<typename DataType>
-        [[nodiscard]] DsetInfo append(const DataType &data, size_t axis, const DatasetAppendOptions &options = DatasetAppendOptions())
+        BasicDataset append(const DataType &data, size_t axis, const DatasetAppendOptions &options = DatasetAppendOptions())
             requires traits::is_mutable_file_v<FileType>
         {
             if(dsetSlab_.has_value()) throw h5pp::runtime_error("Cannot append through a selected dataset view [{}]", dsetPath_);
@@ -233,7 +241,7 @@ namespace h5pp::inline v2 {
             auto dataInfo   = h5pp::scan::scanDataInfo(data, ioOptions);
             h5pp::hdf5::extendDataset(dsetInfo, dataInfo, axis);
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists_);
-            return dsetInfo;
+            return *this;
         }
 
         /**
@@ -246,10 +254,11 @@ namespace h5pp::inline v2 {
          * @param data Values to write.
          * @param options Override buffer dimensions, datatype, memory selection or resize policy.
          *                Specify dims for pointer data.
+         * @return A copy of this object, for chained calls.
          */
         template<typename DataType>
         requires traits::is_mutable_file_v<FileType>
-        void write(const DataType &data, const DatasetWriteOptions &options = DatasetWriteOptions()) {
+        BasicDataset write(const DataType &data, const DatasetWriteOptions &options = DatasetWriteOptions()) {
             static_assert(not traits::is_h5pp_id<DataType>);
             requireWritable_("write");
             auto ioOptions = detail::makeOptions(compression_, dsetPath_, dsetSlab_, options);
@@ -282,6 +291,7 @@ namespace h5pp::inline v2 {
             if(not dsetInfo.dsetExists.has_value() or not dsetInfo.dsetExists.value()) h5pp::hdf5::createDataset(dsetInfo, plists_);
             h5pp::hdf5::resizeDataset(dsetInfo, dataInfo);
             h5pp::hdf5::writeDataset(data, dataInfo, dsetInfo, plists_);
+            return *this;
         }
 
         /**
@@ -302,13 +312,14 @@ namespace h5pp::inline v2 {
          * @param dataSlab Selection in the buffer's coordinates.
          * @param options Use dims for a flat buffer interpreted as multidimensional data, or for a pointer.
          *                dataSlab takes precedence over options.dataSlab.
+         * @return A copy of this object, for chained calls.
          */
         template<typename DataType, typename SlabType>
         requires(traits::is_mutable_file_v<FileType> and traits::type_is<SlabType, Hyperslab>)
-        void write(const DataType &data, const SlabType &dataSlab, const DatasetWriteOptions &options = {}) {
+        BasicDataset write(const DataType &data, const SlabType &dataSlab, const DatasetWriteOptions &options = {}) {
             auto ioOptions     = options;
             ioOptions.dataSlab = dataSlab;
-            write(data, ioOptions);
+            return write(data, ioOptions);
         }
 
         /**
@@ -419,8 +430,6 @@ namespace h5pp::inline v2 {
         }
     };
 
-    /** @brief Dataset operations obtained from a non-const File. */
-    using Dataset      = BasicDataset<h5pp::v2::File>;
-    /** @brief Dataset reads and inspection obtained from a const File. */
-    using ConstDataset = BasicDataset<const h5pp::v2::File>;
+    using Dataset      = BasicDataset<h5pp::v2::File>;       /*!< Dataset operations obtained from a non-const File. */
+    using ConstDataset = BasicDataset<const h5pp::v2::File>; /*!< Dataset reads and inspection obtained from a const File. */
 }

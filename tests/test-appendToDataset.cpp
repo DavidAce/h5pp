@@ -65,9 +65,9 @@ TEST_CASE("Dataset append preserves growth semantics across explicit creations",
     REQUIRE(file.dataset("group/VectorDouble6").read<std::vector<double>>() == data);
     REQUIRE(file.dataset("group/VectorDouble7").read<std::vector<double>>() == data);
 
-    auto append_info = file.dataset("group/VectorDouble5").append(std::vector<double>{5, 6, 7, 8}, 1);
+    auto append_info = file.dataset("group/VectorDouble5").append(std::vector<double>{5, 6, 7, 8}, 1).getInfo();
     require_dims(append_info, {4, 2});
-    append_info = file.dataset("group/VectorDouble5").append(std::vector<double>{9, 10, 11, 12}, 1);
+    append_info = file.dataset("group/VectorDouble5").append(std::vector<double>{9, 10, 11, 12}, 1).getInfo();
     require_dims(append_info, {4, 3});
 
     REQUIRE(file.dataset("group/VectorDouble5").read<std::vector<double>>() == std::vector<double>{1, 5, 9, 2, 6, 10, 3, 7, 11, 4, 8, 12});
@@ -81,8 +81,8 @@ TEST_CASE("Dataset append preserves growth semantics across explicit creations",
 
     h5pp::DatasetAppendOptions appendDims;
     appendDims.dims = {data.size(), 1};
-    auto info8      = file.dataset("group/VectorDouble8").append(data, 1, appendDims);
-    auto info8_alt  = file.dataset("group/VectorDouble8_alt").append(data, 1, appendDims);
+    auto info8      = file.dataset("group/VectorDouble8").append(data, 1, appendDims).getInfo();
+    auto info8_alt  = file.dataset("group/VectorDouble8_alt").append(data, 1, appendDims).getInfo();
     require_dims(info8, {4, 1});
     require_dims(info8_alt, {4, 1});
     REQUIRE(file.dataset("group/VectorDouble8").read<std::vector<double>>() == data);
@@ -103,9 +103,9 @@ TEST_CASE("Append handles more types and more contrived growth patterns", "[appe
 
         h5pp::DatasetAppendOptions append;
         append.dims = {1, 3};
-        auto info   = file.dataset("group/rows").append(std::vector<double>{1, 2, 3}, 0, append);
+        auto info   = file.dataset("group/rows").append(std::vector<double>{1, 2, 3}, 0, append).getInfo();
         require_dims(info, {1, 3});
-        info = file.dataset("group/rows").append(std::vector<double>{4, 5, 6}, 0, append);
+        info = file.dataset("group/rows").append(std::vector<double>{4, 5, 6}, 0, append).getInfo();
         require_dims(info, {2, 3});
 
         REQUIRE(file.dataset("group/rows").read<std::vector<double>>() == std::vector<double>{1, 2, 3, 4, 5, 6});
@@ -132,7 +132,7 @@ TEST_CASE("Append handles more types and more contrived growth patterns", "[appe
         create.h5Layout  = H5D_CHUNKED;
         file.dataset("group/complex").create(initial, create).write(initial);
 
-        auto info = file.dataset("group/complex").append(more, 0);
+        auto info = file.dataset("group/complex").append(more, 0).getInfo();
         require_dims(info, {expect.size()});
 
         REQUIRE(file.dataset("group/complex").read<std::vector<std::complex<double>>>() == expect);
@@ -155,7 +155,7 @@ TEST_CASE("Append handles more types and more contrived growth patterns", "[appe
 
         h5pp::DatasetAppendOptions append;
         append.dims = {more.size()};
-        auto info   = file.dataset("group/integers").append(more, 0, append);
+        auto info   = file.dataset("group/integers").append(more, 0, append).getInfo();
         require_dims(info, {expect.size()});
 
         REQUIRE(file.dataset("group/integers").read<std::vector<long long>>() == expect);
