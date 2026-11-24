@@ -138,9 +138,9 @@ namespace h5pp::util {
         // including the null terminator.
         if constexpr(h5pp::traits::has_size_v<DataType>) return data.size() + 1;            // string and string_view have size without \0
         else if constexpr(std::is_array_v<DataType>) return getArraySize(data, countChars); // getarraysize includes nullterm already
-        else if constexpr(h5pp::traits::has_c_str_v<DataType>) return strlen(data.c_str()) + 1;       // strlen does not include \0
-        else if constexpr(std::is_pointer_v<DataType>) return strlen(data) + 1;                       // strlen does not include \0
-        else return 1;                                                                                // Probably a char?
+        else if constexpr(h5pp::traits::has_c_str_v<DataType>) return strlen(data.c_str()) + 1; // strlen does not include \0
+        else if constexpr(std::is_pointer_v<DataType>) return strlen(data) + 1;                 // strlen does not include \0
+        else return 1;                                                                          // Probably a char?
     }
 
     template<typename DimType = std::initializer_list<hsize_t>>
