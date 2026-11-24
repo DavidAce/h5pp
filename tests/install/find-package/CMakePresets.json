@@ -15,6 +15,11 @@
         "CMAKE_FIND_PACKAGE_PREFER_CONFIG": true,
         "CMAKE_INSTALL_RPATH_USE_LINK_PATH": true
       }
+    },
+    {
+      "name": "conan",
+      "inherits": "default",
+      "toolchainFile": "${sourceDir}/build/conan/conan_toolchain.cmake"
     }
   ],
   "buildPresets": [

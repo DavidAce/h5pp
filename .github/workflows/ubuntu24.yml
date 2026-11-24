@@ -149,13 +149,14 @@ jobs:
           dpkg-deb --info "${RUNNER_TEMP}/h5pp-deb/"*.deb
           sudo apt-get install "${RUNNER_TEMP}/h5pp-deb/"*.deb -y
 
+      - name: Install consumer dependencies
+        if: matrix.manager == 'conan'
+        working-directory: tests/install/find-package
+        run: conan install . --output-folder=build/conan -s build_type=Debug -s compiler.cppstd=20 --build=missing
+
       - name: Configure installed-package test
         working-directory: tests/install/find-package
-        run: |
-          if [ "${{ matrix.manager }}" = "conan" ]; then
-            export CMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/build/${H5PP_CMAKE_PRESET}/conan/build/generators"
-          fi
-          cmake --preset default -Dh5pp_ROOT="${GITHUB_WORKSPACE}/install/${H5PP_CMAKE_PRESET}" -DCMAKE_INSTALL_PREFIX="${RUNNER_TEMP}/h5pp-consumer-install"
+        run: cmake --preset ${{ matrix.manager == 'conan' && 'conan' || 'default' }} -Dh5pp_ROOT="${GITHUB_WORKSPACE}/install/${H5PP_CMAKE_PRESET}" -DCMAKE_INSTALL_PREFIX="${RUNNER_TEMP}/h5pp-consumer-install"
 
       - name: Build installed-package test
         working-directory: tests/install/find-package

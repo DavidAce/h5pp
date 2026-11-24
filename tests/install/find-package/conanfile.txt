@@ -1,0 +1,12 @@
+[requires]
+hdf5/[>=1.10.0 <1.15]
+eigen/5.0.1
+spdlog/[>=1.17.0 <1.18]
+zlib/[>=1.2.11 <2]
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[options]
+hdf5/*:with_zlib=True

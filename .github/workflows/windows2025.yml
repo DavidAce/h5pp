@@ -91,14 +91,15 @@ jobs:
         shell: pwsh
         run: ctest --preset "$env:H5PP_CMAKE_PRESET" --timeout 600 --no-tests=error
 
+      - name: Install consumer dependencies
+        if: matrix.manager == 'conan'
+        working-directory: tests/install/find-package
+        run: conan install . --output-folder=build/conan -s build_type=Debug -s compiler.cppstd=20 --build=missing
+
       - name: Configure installed-package test
         shell: pwsh
         working-directory: tests/install/find-package
-        run: |
-          if ("${{ matrix.manager }}" -eq "conan") {
-            $env:CMAKE_PREFIX_PATH = "$env:GITHUB_WORKSPACE/build/$env:H5PP_CMAKE_PRESET/conan/build/generators"
-          }
-          cmake --preset default -Dh5pp_ROOT="$env:GITHUB_WORKSPACE/install/$env:H5PP_CMAKE_PRESET" -DCMAKE_INSTALL_PREFIX="$env:RUNNER_TEMP/h5pp-consumer-install"
+        run: cmake --preset ${{ matrix.manager == 'conan' && 'conan' || 'default' }} -Dh5pp_ROOT="$env:GITHUB_WORKSPACE/install/$env:H5PP_CMAKE_PRESET" -DCMAKE_INSTALL_PREFIX="$env:RUNNER_TEMP/h5pp-consumer-install"
 
       - name: Build installed-package test
         working-directory: tests/install/find-package
