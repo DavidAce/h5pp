@@ -18,17 +18,17 @@
 # in HDF5_LIBRARIES. Imported targets describe libraries built outside this
 # project. Their file paths are stored in IMPORTED_LOCATION properties.
 # The caller supplies paths with symlinks resolved. Check both IMPORTED_LOCATION
-# and configuration-specific locations, since a package may provide separate
+# and IMPORTED_IMPLIB on Windows, including configuration-specific locations for
 # Debug and Release files. This lets us recover a library's target and its
 # dependencies while keeping the library selection made by find_package.
 function(h5pp_hdf5_target_matches_library tgt HDF5_LIBRARIES result)
     set(${result} FALSE PARENT_SCOPE)
     get_target_property(configs ${tgt} IMPORTED_CONFIGURATIONS)
-    set(properties IMPORTED_LOCATION)
+    set(properties IMPORTED_LOCATION IMPORTED_IMPLIB)
     if(configs)
         foreach(config IN LISTS configs)
             string(TOUPPER "${config}" config)
-            list(APPEND properties "IMPORTED_LOCATION_${config}")
+            list(APPEND properties "IMPORTED_LOCATION_${config}" "IMPORTED_IMPLIB_${config}")
         endforeach()
     endif()
     foreach(property IN LISTS properties)

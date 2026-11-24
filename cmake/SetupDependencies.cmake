@@ -73,7 +73,7 @@ h5pp_get_modern_hdf5_target_name()
 target_link_libraries(h5pp_deps INTERFACE h5pp::hdf5)
 
 # h5pp uses zlib directly for raw chunk compression/decompression.
-find_package(ZLIB QUIET)
+find_package(ZLIB REQUIRED)
 if(TARGET ZLIB::ZLIB)
     target_link_libraries(h5pp_deps INTERFACE ZLIB::ZLIB)
 endif()
