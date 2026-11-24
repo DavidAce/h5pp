@@ -39,6 +39,7 @@ namespace h5pp::inline v2 {
         hid::h5f                                           fileHandle_;
         PropertyLists                                      plists_;
         FileAccess                                         fileAccess_;
+        std::optional<int>                                 compression_;
         std::shared_ptr<std::vector<ReclaimInfo::Reclaim>> reclaimStack_;
         std::string                                        tablePath_;
 
@@ -54,7 +55,12 @@ namespace h5pp::inline v2 {
          * @param tablePath Table path relative to the file root.
          */
         BasicTable(FileType &file, std::string_view tablePath)
-            : BasicTable(file.openFileHandle(), file.plists, file.getFileAccess(), file.reclaimStack, tablePath) {}
+            : BasicTable(file.openFileHandle(),
+                         file.plists,
+                         file.getFileAccess(),
+                         file.getCompressionLevel(),
+                         file.reclaimStack,
+                         tablePath) {}
 
         private:
         template<typename OtherFileType>
@@ -67,9 +73,12 @@ namespace h5pp::inline v2 {
         BasicTable(const hid::h5f                                           &fileHandle,
                    const PropertyLists                                      &plists,
                    FileAccess                                                fileAccess,
+                   int                                                       compression,
                    const std::shared_ptr<std::vector<ReclaimInfo::Reclaim>> &reclaimStack,
                    std::string_view                                          tablePath)
-            : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess), reclaimStack_(reclaimStack), tablePath_(tablePath) {}
+            : fileHandle_(fileHandle), plists_(plists), fileAccess_(fileAccess),
+              compression_(compression < 0 ? std::nullopt : std::optional<int>(compression)), reclaimStack_(reclaimStack),
+              tablePath_(tablePath) {}
 
         public:
         //! Object path relative to the file root.
@@ -185,6 +194,8 @@ namespace h5pp::inline v2 {
          * @brief Create an empty table with the specified compound datatype and title.
          *
          * An existing table is left unchanged, including its title and creation properties.
+         * Compression follows createOptions, then the file setting, then defaults to level 6.
+         * A positive setting enables HDF5 table compression at level 6; 0 or -1 disables it.
          *
          * @param createOptions Requires h5Type and title; chunk dimensions and compression are optional.
          * @return A copy of this object, for chained calls.
@@ -200,7 +211,8 @@ namespace h5pp::inline v2 {
             options.linkPath      = h5pp::util::safe_str(tablePath_);
             options.h5Type        = createOptions.h5Type;
             options.dsetChunkDims = detail::toOptDimsType(createOptions.dimsChunk);
-            if(createOptions.compression.has_value()) options.compression = h5pp::hdf5::getValidCompressionLevel(createOptions.compression);
+            options.compression =
+                h5pp::hdf5::getValidCompressionLevel(createOptions.compression.has_value() ? createOptions.compression : compression_, 6);
             auto info = h5pp::scan::makeTableInfo(fileHandle_, options, createOptions.title.value(), plists_);
             h5pp::hdf5::createTable(info, plists_);
             return *this;
@@ -274,7 +286,8 @@ namespace h5pp::inline v2 {
             auto tgtInfo     = h5pp::scan::readTableInfo(fileHandle_, options, plists_);
             if(not tgtInfo.tableExists.has_value() or not tgtInfo.tableExists.value()) {
                 srcInfo.assertCreateReady();
-                options.h5Type = srcInfo.h5Type;
+                options.h5Type      = srcInfo.h5Type;
+                options.compression = h5pp::hdf5::getValidCompressionLevel(compression_, 6);
                 h5pp::scan::makeTableInfo(tgtInfo, fileHandle_, options, srcInfo.tableTitle.value(), plists_);
                 h5pp::hdf5::createTable(tgtInfo, plists_);
             }

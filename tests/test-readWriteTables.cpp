@@ -141,6 +141,52 @@ TEST_CASE("Appending and copying table records preserves metadata and selected r
     CHECK(copied_last.y == 0.0);
 }
 
+TEST_CASE("Table compression follows table options, file settings and the default", "[tables][compression]") {
+    h5pp::File file(make_path("tableCompression"), h5pp::FileAccess::REPLACE, 0);
+    auto       type        = make_particle_type();
+    bool       available   = h5pp::hdf5::isCompressionAvaliable();
+    auto       check_table = [&](h5pp::Table table, bool compressed, const h5pp::TableCreateOptions &options = {}) {
+        INFO(table.getPath());
+        table.create(type, "compression", options).appendRecords(std::vector<Particle>(3));
+        auto info = table.getInfo();
+        CHECK(info.compression.value() == (available and compressed ? 6 : -1));
+        CHECK(h5pp::hdf5::getDeflateLevel(info.h5DsetCreate.value()) == (available and compressed ? 6 : -1));
+        CHECK(table.readRecords<std::vector<Particle>>().size() == 3);
+    };
+
+    check_table(file.table("default"), true);
+    check_table(file.group("group").table("default"), true);
+    check_table(file.link("link/default").asTable(), true);
+    check_table(file.table("disabled"), false, {.compression = 0});
+    check_table(file.table("negative"), false, {.compression = -1});
+    check_table(file.table("level1"), true, {.compression = 1});
+    check_table(file.table("level9"), true, {.compression = 9});
+
+    file.setCompressionLevel(0);
+    check_table(file.table("fileOff"), false);
+    check_table(file.group("group").table("fileOff"), false);
+    check_table(file.link("link/fileOff").asTable(), false);
+    check_table(file.table("overrideOn"), true, {.compression = 9});
+    auto source = file.table("default").getInfo();
+    auto copied = file.table("copiedOff").appendRecordsFrom(source);
+    CHECK(copied.getInfo().compression.value() == -1);
+
+    file.setCompressionLevel(2);
+    check_table(file.table("fileOn"), true);
+    check_table(file.group("group").table("fileOn"), true);
+    check_table(file.link("link/fileOn").asTable(), true);
+    check_table(file.table("overrideOff"), false, {.compression = 0});
+    check_table(file.table("overrideNegative"), false, {.compression = -1});
+    copied = file.table("copiedOn").appendRecordsFrom(source);
+    CHECK(copied.getInfo().compression.value() == (available ? 6 : -1));
+
+    // Repeated creation leaves the stored compression unchanged.
+    file.table("default").create(type, "unchanged", {.compression = 0});
+    file.table("disabled").create(type, "unchanged", {.compression = 9});
+    CHECK(file.table("default").getInfo().compression.value() == (available ? 6 : -1));
+    CHECK(file.table("disabled").getInfo().compression.value() == -1);
+}
+
 TEST_CASE("Table creation is immediate and preserves its creation properties", "[tables]") {
     h5pp::File               file(make_path("tableCreate"), h5pp::FileAccess::REPLACE, 0);
     h5pp::TableCreateOptions options;

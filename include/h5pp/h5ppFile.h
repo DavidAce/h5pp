@@ -611,7 +611,8 @@ namespace h5pp::inline v2 {
         void setKeepFileClosed() const { fileHandle = std::nullopt; }
 
         /**
-         * @brief Set the default compression for subsequently obtained Dataset objects.
+         * @brief Set the default compression for subsequently obtained Dataset, Table, Group and Link objects.
+         * Tables use level 6 for any positive setting, and disable compression at 0.
          * @param compressionZeroToNine Deflate level from 0 (no compression) to 9 (maximum).
          */
         void setCompressionLevel(unsigned int compressionZeroToNine) {

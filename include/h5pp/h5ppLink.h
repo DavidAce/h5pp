@@ -135,7 +135,9 @@ namespace h5pp::inline v2 {
             return BasicDataset<FileType>(fileHandle_, plists_, fileAccess_, compression_, linkPath_);
         }
         //! Refer to this path as a table. Its type is checked when a table operation is performed.
-        BasicTable<FileType> asTable() const { return BasicTable<FileType>(fileHandle_, plists_, fileAccess_, reclaimStack_, linkPath_); }
+        BasicTable<FileType> asTable() const {
+            return BasicTable<FileType>(fileHandle_, plists_, fileAccess_, compression_, reclaimStack_, linkPath_);
+        }
         //! Refer to this path as a group without creating it or checking its type.
         BasicGroup<FileType> asGroup() const;
 

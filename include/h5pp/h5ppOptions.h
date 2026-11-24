@@ -61,7 +61,7 @@ namespace h5pp::inline v2 {
     struct TableCreateOptions {
         std::optional<std::string> title       = std::nullopt; /*!< Table title; required unless supplied to create(). */
         OptDims                    dimsChunk   = std::nullopt; /*!< Record chunk dimensions; chosen automatically when omitted. */
-        std::optional<int>         compression = std::nullopt; /*!< Deflate level: -1 disabled, 0 none, 9 maximum. */
+        std::optional<int>         compression = std::nullopt; /*!< Positive uses level 6; 0/-1 disables. Default: file setting or 6. */
         std::optional<hid::h5t>    h5Type      = std::nullopt; /*!< Record datatype; required unless supplied to create(). */
     };
 }

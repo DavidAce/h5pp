@@ -178,7 +178,12 @@ namespace h5pp::inline v2 {
 
         //! Refer to a table relative to this group without creating it.
         BasicTable<FileType> table(std::string_view tablePath) const {
-            return BasicTable<FileType>(fileHandle_, plists_, fileAccess_, reclaimStack_, detail::joinLinkPath(groupPath_, tablePath));
+            return BasicTable<FileType>(fileHandle_,
+                                        plists_,
+                                        fileAccess_,
+                                        compression_,
+                                        reclaimStack_,
+                                        detail::joinLinkPath(groupPath_, tablePath));
         }
 
         [[nodiscard]] std::vector<std::string>

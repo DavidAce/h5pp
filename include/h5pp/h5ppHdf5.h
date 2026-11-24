@@ -712,7 +712,7 @@ namespace h5pp::hdf5 {
         }
     }
 
-    [[nodiscard]] inline int getValidCompressionLevel(std::optional<int> compressionLevel = std::nullopt) {
+    [[nodiscard]] inline int getValidCompressionLevel(std::optional<int> compressionLevel = std::nullopt, int defaultLevel = 0) {
         if(isCompressionAvaliable()) {
             if(compressionLevel.has_value()) {
                 if(compressionLevel.value() < 10) {
@@ -722,7 +722,7 @@ namespace h5pp::hdf5 {
                     return 9;
                 }
             } else {
-                return 0;
+                return defaultLevel;
             }
         } else {
             if(compressionLevel.has_value() and compressionLevel.value() > 0) {
@@ -2886,7 +2886,7 @@ namespace h5pp::hdf5 {
         // Copy member name data to a vector of const char * for compatibility
         std::vector<const char *> fieldNames;
         for(auto &name : info.fieldNames.value()) fieldNames.push_back(name.c_str());
-        int    compression = info.compression.value() == 0 ? 0 : 1; // Only true/false (1/0). Is set to level 6 in HDF5 sources
+        int    compression = info.compression.value() > 0 ? 1 : 0; // HDF5 accepts on/off and uses level 6 when enabled.
         herr_t retval      = H5TBmake_table(util::safe_str(info.tableTitle.value()).c_str(),
                                             info.getLocId(),
                                             util::safe_str(info.tablePath.value()).c_str(),
