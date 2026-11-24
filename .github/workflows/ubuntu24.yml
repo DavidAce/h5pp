@@ -135,7 +135,12 @@ jobs:
           configurePreset: '${{ env.H5PP_CMAKE_PRESET }}'
           configurePresetAdditionalArgs: "['-DH5PP_ENABLE_COVERAGE=${{ matrix.coverage && 'TRUE' || 'FALSE' }}','-DH5PP_ENABLE_ASAN=${{ matrix.asan && 'TRUE' || 'FALSE' }}']"
           buildPreset: '${{ env.H5PP_CMAKE_PRESET }}'
-          testPreset: '${{ env.H5PP_CMAKE_PRESET }}'
+
+      - name: Install h5pp
+        run: cmake --install "build/${H5PP_CMAKE_PRESET}" --config Debug
+
+      - name: Run tests
+        run: ctest --preset "$H5PP_CMAKE_PRESET" --timeout 600 --no-tests=error
 
       - name: Build and install the DEB package
         if: matrix.compiler == 'gcc' && matrix.manager == 'find'
@@ -145,19 +150,24 @@ jobs:
           sudo apt-get install "${RUNNER_TEMP}/h5pp-deb/"*.deb -y
 
       - name: Configure installed-package test
-        if: matrix.compiler == 'gcc' && matrix.manager == 'find'
-        run: >-
-          cmake -S tests/install/find-package
-          -B "${RUNNER_TEMP}/h5pp-install-find-package"
-          -DCMAKE_BUILD_TYPE=Debug
+        working-directory: tests/install/find-package
+        run: |
+          if [ "${{ matrix.manager }}" = "conan" ]; then
+            export CMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/build/${H5PP_CMAKE_PRESET}/conan/build/generators"
+          fi
+          cmake --preset default -Dh5pp_ROOT="${GITHUB_WORKSPACE}/install/${H5PP_CMAKE_PRESET}" -DCMAKE_INSTALL_PREFIX="${RUNNER_TEMP}/h5pp-consumer-install"
 
       - name: Build installed-package test
-        if: matrix.compiler == 'gcc' && matrix.manager == 'find'
-        run: cmake --build "${RUNNER_TEMP}/h5pp-install-find-package" --config Debug
+        working-directory: tests/install/find-package
+        run: cmake --build --preset default
+
+      - name: Install consumer executable
+        working-directory: tests/install/find-package
+        run: cmake --install build --config Debug
 
       - name: Run installed-package test
-        if: matrix.compiler == 'gcc' && matrix.manager == 'find'
-        run: ctest --test-dir "${RUNNER_TEMP}/h5pp-install-find-package" --build-config Debug --output-on-failure --no-tests=error
+        working-directory: tests/install/find-package
+        run: ctest --preset default
 
       - name: Configure subdirectory test
         if: matrix.compiler == 'gcc' && matrix.manager == 'find'

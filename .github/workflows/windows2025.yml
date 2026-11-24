@@ -83,6 +83,34 @@ jobs:
           buildPreset: '${{ env.H5PP_CMAKE_PRESET }}'
           buildPresetAdditionalArgs: "['--config Debug']"
 
+      - name: Install h5pp
+        shell: pwsh
+        run: cmake --install "build/$env:H5PP_CMAKE_PRESET" --config Debug
+
       - name: Run tests
         shell: pwsh
-        run: ctest --preset "$env:H5PP_CMAKE_PRESET" --timeout 600
+        run: ctest --preset "$env:H5PP_CMAKE_PRESET" --timeout 600 --no-tests=error
+
+      - name: Configure installed-package test
+        shell: pwsh
+        working-directory: tests/install/find-package
+        run: |
+          if ("${{ matrix.manager }}" -eq "conan") {
+            $env:CMAKE_PREFIX_PATH = "$env:GITHUB_WORKSPACE/build/$env:H5PP_CMAKE_PRESET/conan/build/generators"
+          }
+          cmake --preset default -Dh5pp_ROOT="$env:GITHUB_WORKSPACE/install/$env:H5PP_CMAKE_PRESET" -DCMAKE_INSTALL_PREFIX="$env:RUNNER_TEMP/h5pp-consumer-install"
+
+      - name: Build installed-package test
+        working-directory: tests/install/find-package
+        run: cmake --build --preset default
+
+      - name: Install consumer executable
+        working-directory: tests/install/find-package
+        run: cmake --install build --config Debug
+
+      - name: Run installed-package test
+        shell: pwsh
+        working-directory: tests/install/find-package
+        run: |
+          $env:PATH = "$env:GITHUB_WORKSPACE/install/$env:H5PP_CMAKE_PRESET/bin;$env:PATH"
+          ctest --preset default
