@@ -20,14 +20,15 @@ namespace h5pp {
       *
       * The flags are listed in the order of increasing "danger" that they pose to previously existing files.
       *
-      * | Enumerator | %File exists | No file exists | Comment |
-      * | ----  | ---- | ---- | ---- |
-      * | `READONLY`                | Open with read-only access           | Throw error     | Never writes to disk, fails if the file is not found |
-      * | `COLLISION_FAIL`          | Throw error                          | Create new file | Never deletes existing files and fails if it already exists |
-      * | `RENAME` **default**      | Create renamed file                  | Create new file | Never deletes existing files. Invents a new filename to avoid collision by appending "-#" (#=1,2,3...) to the stem of the filename |
-      * | `READWRITE`               | Open with read-write access          | Create new file | Never deletes existing files, but is allowed to open/modify |
-      * | `BACKUP`                  | Rename existing file and create new  | Create new file | Avoids collision by backing up the existing file, appending `.bak_#` (`#`=1,2,3...) to the filename |
-      * | `REPLACE`                 | Truncate (overwrite)                 | Create new file | Deletes the existing file and creates a new one in place |
+      *
+      * | Enumerator           | %File exists                        | No file exists  | Comment                                                                                                                            |
+      * |----------------------|-------------------------------------|-----------------|------------------------------------------------------------------------------------------------------------------------------------|
+      * | `READONLY`           | Open with read-only access          | Throw error     | Never writes to disk, fails if the file is not found                                                                               |
+      * | `COLLISION_FAIL`     | Throw error                         | Create new file | Never deletes existing files and fails if it already exists                                                                        |
+      * | `RENAME` **default** | Create renamed file                 | Create new file | Never deletes existing files. Invents a new filename to avoid collision by appending "-#" (#=1,2,3...) to the stem of the filename |
+      * | `READWRITE`          | Open with read-write access         | Create new file | Never deletes existing files, but is allowed to open/modify                                                                        |
+      * | `BACKUP`             | Rename existing file and create new | Create new file | Avoids collision by backing up the existing file, appending `.bak_#` (`#`=1,2,3...) to the filename                                |
+      * | `REPLACE`            | Truncate (overwrite)                | Create new file | Deletes the existing file and creates a new one in place                                                                           |
       *
       *
       * - When a new file is created, the intermediate directories are always created automatically.
